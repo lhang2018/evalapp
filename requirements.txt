@@ -1,0 +1,4 @@
+# 核心运行仅依赖标准库。以下为可选增强：
+pytest>=8.0          # 测试
+fastapi>=0.110       # （未强依赖，API 用标准库 http.server）
+requests>=2.30       # openai_compat 适配器使用

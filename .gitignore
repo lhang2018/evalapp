@@ -1,0 +1,14 @@
+# Runtime data and caches
+.evoagent/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+outputs/
+a.txt
+
+# Android build artifacts
+android-app/node_modules/
+android-app/android/.gradle/
+android-app/android/build/
+android-app/android/app/build/
+android-app/.expo/
