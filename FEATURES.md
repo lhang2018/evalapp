@@ -227,6 +227,8 @@ Python 服务端（标准库，SQLite）
 | EVT-08 | 同步批次回执与重放 | ✅ | `core/persistence.py`（`sync_batches`）, `api/server.py` | 同 `batch_id` 重放返回原 `receipt_id` 且 `replayed=true`；批次明细落盘 |
 | EVT-09 | Runtime Manifest 持久化 | ✅ | `core/persistence.py`（`runtime_manifests`）, `core/controller.py` | 每次运行写入 task_id/run_id/设备身份/组件版本，`GET /tasks/{id}/manifests` 可查 |
 | EVT-10 | 设备身份字段 | ✅ | `api/server.py`, `core/controller.py` | `POST /tasks` 接受 `device_id` / `installation_id` / `app_version`，格式校验后写入运行清单 |
+| EVT-11 | 因果顺序与时钟来源 | ✅ | `core/events.py`, `api/events_sync.py` | `run_id` / `sequence_no` / `clock_source` / `runtime_manifest_id` 落库并校验；`query_run()` 按 `sequence_no` 还原，时钟回拨不影响顺序；无序号历史事件退化为时间排序 |
+| EVT-12 | 同步回执协议 | ✅ | `api/server.py` | 回执含 `protocol_version` 1.0、`confirmed` / `unconfirmed` 明确列表与 `confirmed_count`；同 `batch_id` 重放返回原回执 |
 
 ### 2.14 控制面、API 与可观测（PRD 37-40 / 89-90）
 
@@ -314,7 +316,7 @@ Python 服务端（标准库，SQLite）
 | `/tasks` | 提交任务；可选 `client_request_id` 幂等（重复返回原 `task_id` + `202 deduplicated`） |
 | `/tasks/{id}/cancel` | 取消 |
 | `/tasks/{id}/pause` / `/tasks/{id}/resume` | 暂停/恢复（`409 requires_force` 表示需显式 force） |
-| `/events/sync` | 批量事件摄取 → `accepted` / `duplicates` / `rejected`；可选 `batch_id` 返回回执，重放返回原 `receipt_id` |
+| `/events/sync` | 批量事件摄取 → `accepted` / `duplicates` / `rejected` + `confirmed` / `unconfirmed` / `protocol_version`；可选 `batch_id` 返回回执，重放返回原 `receipt_id` 与 `confirmed_count` |
 | `/sync/reconcile` | 版本对账：平台/App 版本/工具契约/签名与制品检查、灰度范围与目标版本 |
 | `/sync/candidates` | 候选阶段同步（GET，`installation_id`）：评测后状态摘要 + 安装实例当前/目标版本；记录下发状态 |
 | `/sync/apply-result` | 更新应用回执（下载/校验/激活/健康检查/回滚）；`apply_id` 幂等 |
@@ -395,7 +397,7 @@ Python 服务端（标准库，SQLite）
 |---|---|---|---|
 | UI-01 | 服务端地址可编辑并持久化 | ✅ | AsyncStorage，`evoagent_base_url` |
 | UI-02 | 在线/离线状态条 + 手动同步 | ✅ | |
-| UI-03 | 同步统计（待发/失败/死信） | ✅ | |
+| UI-03 | 同步统计（待发/在传/隔离/死信） | ✅ | 隔离区列表展示事件类型/run/序号并可重新入队 |
 | UI-04 | 任务提交（在线/离线） | ✅ | 离线保存为 `LOCAL_ONLY` 并注明可执行范围 |
 | UI-05 | 本地任务列表 | ✅ | 状态、重试、对账 |
 | UI-06 | `NEEDS_RECONCILE` 用户确认 | ✅ | 崩溃恢复后不盲重试 |
@@ -424,8 +426,8 @@ Python 服务端（标准库，SQLite）
 | ID | 功能 | 状态 | 代码位置 | 说明 |
 |---|---|---|---|---|
 | OF-01 | 注入式存储 + 整快照原子写 | ✅ | `storage.ts` | `offline_state_v1`；RN 适配见 `src/storage/asyncStorage.ts` |
-| OF-02 | 本地事件队列 | ✅ | `queue.ts` | FIFO、去重、容量 500、`seq` 单调 |
-| OF-03 | 连续 checkpoint | ✅ | `queue.ts` | 只推进连续已确认前缀，不跳空洞 |
+| OF-02 | 本地事件队列 | ✅ | `queue.ts` | FIFO、去重、容量 500、`seq` 单调；每事件带 `run_id` 与 run 内 `sequence_no`（因果顺序，不依赖墙上时钟） |
+| OF-03 | 连续 checkpoint | ✅ | `queue.ts` | 只推进连续已确认前缀，不跳空洞；in-flight / 隔离事件阻塞推进，sensitive 不阻塞 |
 | OF-04 | 死信队列 | ✅ | `queue.ts` | 不静默丢弃，可手动重试 |
 | OF-05 | 隐私过滤 | ✅ | `privacy.ts` | 仅 `standard` 上传；`sensitive` 本地保留；`secret/private` 入队前拒绝 |
 | OF-06 | 指数退避同步 | ✅ | `sync.ts` | 2s→5min，带抖动；`flush()` 手动触发 |
@@ -437,7 +439,12 @@ Python 服务端（标准库，SQLite）
 | OF-12 | 端到端加密 | ⬜ | — | |
 | OF-13 | 多设备冲突合并 | ⬜ | — | |
 | OF-14 | 安装实例标识 | ✅ | `src/update/identity.ts` | 首次生成 `inst_*` 并长期复用；满足服务端 ID 校验 |
-| OF-15 | 批次号与设备信息上报 | ✅ | `apiTransport.ts` | 每批生成 `batch_id`；任务提交携带 `installation_id` / `app_version` |
+| OF-15 | 批次号与设备信息上报 | ✅ | `apiTransport.ts` | 批次号由队列持久化并在重试间保持不变；任务提交携带 `installation_id` / `app_version` |
+| OF-16 | 显式同步状态机 | ✅ | `queue.ts`, `sync.ts` | `pending → in_flight → acknowledged`（确认后删除）；永久拒绝转 `quarantined` 并保留证据 |
+| OF-17 | 崩溃后 in-flight 回收 | ✅ | `queue.ts`, `sync.ts` | in-flight 批次持久化；重启后首批立即回收 stale 批次并重发，不丢事件 |
+| OF-18 | 回执驱动的 ack | ✅ | `sync.ts` | 仅删除服务端 `confirmed`（或 accepted+duplicates）的事件；部分成功保留未确认项，不误删 |
+| OF-19 | 隔离区人工恢复 | ✅ | `queue.ts`, `App.tsx` | 永久错误事件保留在隔离区，展示类型/run/序号，可手动重新入队 |
+| OF-20 | 事件版本与时钟留痕 | ✅ | `tasks.ts`, `apiTransport.ts` | 事件携带 `runtime_manifest_id` 与 `clock_source=device`，服务端校验后落库 |
 
 ### 5.3 设备操作（`android-app/src/device/` + Kotlin）
 
@@ -606,14 +613,14 @@ Python 服务端（标准库，SQLite）
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
 
-### 客户端（`android-app/test/`，60 项）
+### 客户端（`android-app/test/`，66 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
-| `test/offline/queue.test.ts` | FIFO、去重、容量、checkpoint 连续性、死信、ack |
-| `test/offline/sync.test.ts` | 退避、不丢事件、隐私过滤、部分成功 |
+| `test/offline/queue.test.ts` | FIFO、去重、容量、每 run 因果序号、checkpoint 连续性、in-flight 回收、隔离与重新入队、死信、旧快照迁移 |
+| `test/offline/sync.test.ts` | 稳定批次号、退避、不丢事件、部分成功、400 永久拒绝隔离、崩溃后 in-flight 恢复、重复确认 |
 | `test/offline/tasks.test.ts` | 离线提交、幂等键稳定、`NEEDS_RECONCILE`、离线 `time_query` |
-| `test/offline/transport.test.ts` | 时间戳单位转换 |
+| `test/offline/transport.test.ts` | 时间戳单位转换、`run_id`/`sequence_no`/`runtime_manifest_id` 与批次号透传 |
 | `test/device/broker.test.ts` | 风险闸门、确认、五态、不重放、unavailable、快照验证、权限弹窗降级、安全停止与恢复（12 项） |
 | `test/device/observation.test.ts` | 快照归一化、页面变化、预期文本/包名、权限弹窗识别、缺快照不判成功（8 项） |
 | `test/update/manager.test.ts` | 安装 ID、目标校验（摘要/签名/交付方式）、存储空间、双槽位激活、健康检查与自动回滚、回执失败、状态损坏回退、候选阶段同步（19 项） |

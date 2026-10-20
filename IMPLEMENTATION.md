@@ -5,8 +5,8 @@
 逐功能的当前状态、接口、配置与维护约定见 [FEATURES.md](./FEATURES.md)。
 
 基线文档：`EvoAgent自进化智能体产.md`（PRD 1.0）、`EvoAgent自进化智能体系.md`（Architecture 1.0）
-及两份补充设计（映射见下方专节）：`EvoAgent_双端协同进化与版本分发架构补充设计.md`、
-`EvoAgent_服务端逻辑服务划分与协同机制.md`。
+及三份补充设计（映射见下方专节）：`EvoAgent_双端协同进化与版本分发架构补充设计.md`、
+`EvoAgent_服务端逻辑服务划分与协同机制.md`、`EvoAgent_离线日志与可靠同步子系统设计.md`。
 
 ## 服务端核心（Python, `evoagent/`）
 
@@ -46,8 +46,8 @@
 后台常驻同步、端到端加密与多设备冲突合并、远端推送与冲突自动合并；另有 1 项明确不做：
 坐标注入/截屏模拟，不绕过系统权限）。服务端主链路（PRD 7-63、80-88、100-113）已闭环；
 剩余差距集中在客户端交互与外部集成，不影响现有运行与安全边界。
-两份补充设计引入的目标约束（能力包下发、App 侧安全激活、版本对账等）映射见下文「补充设计 A/B 映射」两节；
-版本对账、运行清单、双槽位更新管理器、回执与候选阶段同步已完成，剩余为制品装载。
+三份补充设计引入的目标约束（能力包下发、App 侧安全激活、版本对账、离线可信同步等）映射见下文
+「补充设计 A/B/C 映射」三节；版本对账、运行清单、双槽位更新管理器、回执与候选阶段同步已完成，剩余为制品装载与「人工诊断通道」（离线导出/受控导入/附件）。
 
 | 剩余缺口 | PRD / Arch | 规模 | 当前状态 | 备注 |
 |---|---|---|---|---|
@@ -84,6 +84,7 @@
 
 八个逻辑服务对现有代码的逻辑视图（文档明确：逻辑先行、不要求独立部署；当前为模块化单后端）：
 
+
 | 逻辑服务 | 现有模块 | 状态 | 边界说明 |
 |---|---|---|---|
 | 1. 任务编排服务 | `core/controller.py`, `core/state_machine.py`, `planning/`, `workflows/engine.py` | ✅ | 权威任务状态在运行时控制器 |
@@ -114,6 +115,36 @@
 | §9 故障隔离降级表 | ✅ 进化不可用不影响任务、同步断点补传、门禁失败拒绝晋级、健康异常停推广/回滚（monitor）；App 侧健康失败自动回滚 |
 | §10 关键架构约束 8 条 | ✅ 已承接（逻辑先行/隔离/可追溯/不自批自发/硬预算/离线自治/兼容可恢复/数据最小化→privacy 过滤） |
 | §6 部署边界（3 后端 + 外部模型 + 基础设施） | ⬜ 单进程部署；隔离靠权限与角色（api/auth.py + 审计），物理拆分按文档明确为规模后置 |
+
+## 补充设计 C 映射：《离线日志与可靠同步子系统设计》
+
+该文档与已实现的离线同步链路（`android-app/src/offline/` + `api/events_sync.py`）高度重合，映射基于代码逐项核对：
+
+| 补充 C 条目 | 模块 | 状态 | 说明 |
+|---|---|---|---|
+| §1 原则 1-3（先落盘再同步/三通道独立/至少一次+幂等去重） | `offline/queue.ts` + `api/events_sync.py` | ✅ | 事件先入持久化队列；同步失败不影响记录；`event_id INSERT OR IGNORE` + `client_requests` 幂等 |
+| §1 原则 4 回执持久化语义 | `api/events_sync.py`, `api/server.py` | ✅ | 服务端入库后才返回逐事件 accepted；客户端仅 ack 回执确认的事件（§5.2 第 6 条部分成功明确列出 ✅） |
+| §1 原则 5 历史版本不可覆盖 | `task.runtime_manifest` + `runtime_manifests` 表 | ✅ | 服务端每次运行另存独立清单（`GET /tasks/{id}/manifests` 可查）；客户端事件已随批次携带 `runtime_manifest_id` 引用并落库 |
+| §1 原则 6 日志是证据不是命令 | `core/privacy.py`, 工具层信任边界 | ✅ | 外部内容不可执行已在工具/导入/回放层承接 |
+| §1 原则 7 隐私最小化 | `offline/privacy.ts`, `policy.ts` | ✅ | sensitive 事件仅本地保留，仅 standard 上传；导出前脱敏待实现 🔹 |
+| §1 原则 8 日志≠任务恢复 | `core/checkpoint.py` 分离实现 | ✅ | 检查点/副作用账本/恢复策略独立于事件日志（§10 边界表全行 ✅） |
+| §3.1 事件字段十项 | `offline/types.ts` OfflineEvent + `api/events_sync.py` | ✅/🔹 | 客户端携带 `event_id`/`task_id`/`run_id`/`sequence_no`/`timestamp`/`clock_source=device`/`severity`/`payload`/`privacy_classification`/`runtime_manifest_id`；服务端校验并落库；`attachment_refs` ⬜（随 §6） |
+| §3.2 本地逻辑表 7 张 | `offline/storage.ts` 单一持久化状态 | 🔹 | 运行证据/同步状态/任务状态/隔离区在数据上可区分（state 版本化结构 + `in_flight` 批次），但未按表拆分；`sync_receipts` 未独立持久化 |
+| §4 容量治理 | `offline/queue.ts` | ✅/🔹 | 队列容量上限 + 连续 checkpoint 语义 ✅；按事件类别的保留等级 / 数据损失标记 / 用户提示未实现 🔹 |
+| §5.1 同步状态机四态 | `offline/queue.ts`, `offline/sync.ts` | ✅ | `pending → in_flight → acknowledged`（确认后删除）；永久拒绝转 `quarantined` 持久保留，可人工重新入队；in-flight 批次持久化，重启后回收 stale 批次；未按独立 `sync_batches` 表拆分 🔹 |
+| §5.2 批次与回执协议 8 条 | `offline/apiTransport.ts`, `sync.ts` + `events_sync.py` | ✅ | 稳定 batch_id、事件 ID 不变、部分成功明确、退避抖动、`protocol_version` 1.0、`confirmed`/`unconfirmed` 显式列表、QUARANTINED 隔离均已实现 |
+| §5.3 版本关联与版本对账 | `runtime_manifests` + 对账流程 | ✅ | manifests 独立落表可解析（不做最新版覆盖）；对账已在补充 A §7 完成（`installation_id` + 灰度/兼容服务端判定） |
+| §6 附件上传与完整性校验 | — | ⬜ | attachment_id/SHA-256/分块恢复上传/附件授权通道全未实现（当前无附件体系） |
+| §7 离线诊断包导出 | — | ⬜ | Export Manager、包结构（7.1）、checksums、系统文件选择器导出未实现；当前仅服务端 `GET /admin` 日志视图可查 |
+| §8 诊断包受控导入 | — | ⬜ | ZIP 路径穿越/解压炸弹防护、隔离区 `offline_import` 来源标记、导入审计全未实现 |
+| §9 隐私安全完整性 | `core/privacy.py` + 导入（缺） | ✅/🔹 | 默认结构化事件、传输控制（API 鉴权）、删除/审计 ✅；导出前二次扫描随 §7 缺失 🔹 |
+| §11 验收标准 11 项 | `android-app/test/offline/` | ✅/🔹 | 断网记录/续传/幂等/回执一致/乱序(seq)/版本追溯/恢复隔离/永久错误隔离 ✅；导出完整性/脱敏导出/恶意导入 ⬜；服务端长期不可用告警 🔹 |
+| §12 与总体架构关系 | 补充 B 已映射的群组 | ✅ | 定位一致：同步观测服务 ≠ 门禁 ≠ 版本分发，互不阻塞 |
+
+**说明**：本轮已补齐显式同步状态机、客户端 `sequence_no`/`runtime_manifest_id`/`clock_source` 引用
+与回执协议版本。⬜ 三项（附件 / 离线导出 / 受控导入）仍是主要缺口，属「人工诊断通道」子系统，
+与 PRD 72-76 的自动同步互补；另有 🔹 两项（`sync_receipts` 独立持久化 / 长期不可用告警）。
+验收标准 §11 可直接作为该子系统的测试用例来源。
 
 ## 服务重启恢复记录
 
@@ -164,3 +195,5 @@
 9. **补充 A §4/§5.1**：策略包/能力包制品下载与装载（清单字段、分发筛选已完成；实际包内容由 OTA 承载）
 10. ~~**补充 A §7**：恢复后版本对账~~（已完成：`installation_id` 对账，灰度与兼容检查在服务端判定）
 11. ~~**补充 A §8**：候选状态同步（服务端→App）~~（已完成：`GET /sync/candidates` + `device_candidate_states` + 客户端透明展示；安装实例、部署记录、批次回执此前已落表）
+12. **补充 C §6/§7/§8**：人工诊断通道——附件上传（SHA-256/分块恢复）、离线诊断包导出（Export Manager + checksums + 系统文件选择器）、诊断包受控导入（ZIP 路径穿越/解压炸弹防护、`offline_import` 隔离区、导入审计）；验收用例直接取补充 C §11 表
+13. **补充 C §3.2/§11**：本地 `sync_receipts` 独立持久化（当前回执只保留在服务端 `sync_batches`）与「服务端长期不可用」用户告警；其余四态状态机、in-flight 回收、隔离区与回执协议已在本轮完成

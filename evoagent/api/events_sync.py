@@ -16,7 +16,11 @@ MAX_BATCH = 200
 MAX_PAYLOAD_BYTES = 16 * 1024
 MAX_CLOCK_SKEW_SECONDS = 7 * 24 * 3600
 EVENT_ID_RE = re.compile(r"^[A-Za-z0-9_-]{16,64}$")
+MANIFEST_ID_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
 SEVERITIES = {"info", "warn", "error", "critical"}
+CLOCK_SOURCES = {"device", "server"}
+# 回执协议版本：客户端按版本解释 confirmed/unconfirmed 语义
+SYNC_PROTOCOL_VERSION = "1.0"
 
 
 class BatchError(ValueError):
@@ -75,6 +79,23 @@ def _one(raw: Any, now: float) -> RunEvent:
     if severity not in SEVERITIES:
         raise ValueError(f"未知 severity: {severity}")
 
+    sequence_no = raw.get("sequence_no")
+    if sequence_no is not None:
+        if (not isinstance(sequence_no, int) or isinstance(sequence_no, bool)
+                or sequence_no < 0 or sequence_no > 2 ** 31 - 1):
+            raise ValueError("sequence_no 必须是非负整数")
+
+    runtime_manifest_id = _optional_str(raw, "runtime_manifest_id")
+    if runtime_manifest_id is not None and \
+            not MANIFEST_ID_RE.match(runtime_manifest_id):
+        raise ValueError("runtime_manifest_id 非法（8-128 位标识符）")
+
+    run_id = _optional_str(raw, "run_id")
+
+    clock_source = raw.get("clock_source", "device")
+    if clock_source not in CLOCK_SOURCES:
+        raise ValueError(f"未知 clock_source: {clock_source}")
+
     return RunEvent(
         event_id=event_id,
         event_type=event_type.strip(),
@@ -89,6 +110,9 @@ def _one(raw: Any, now: float) -> RunEvent:
         payload=payload,
         privacy_classification="standard",
         sync_status="synced",
+        sequence_no=sequence_no,
+        runtime_manifest_id=runtime_manifest_id,
+        clock_source=clock_source,
     )
 
 

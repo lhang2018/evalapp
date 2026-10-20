@@ -46,15 +46,19 @@ export class LocalTaskService {
   private readonly repo: OfflineRepository;
   private readonly transport: TaskTransport;
   private readonly now: () => number;
+  /** 客户端运行版本清单引用，随本机事件留痕 */
+  private readonly runtimeManifestId: string | null;
 
   constructor(
     repo: OfflineRepository,
     transport: TaskTransport,
     now: () => number = () => Date.now(),
+    runtimeManifestId: string | null = null,
   ) {
     this.repo = repo;
     this.transport = transport;
     this.now = now;
+    this.runtimeManifestId = runtimeManifestId;
   }
 
   /** 离线可执行意图直接本地完成；其余进入 LOCAL_ONLY 等待上线。 */
@@ -81,6 +85,7 @@ export class LocalTaskService {
       enqueueInto(state, {
         event_type: offline ? "task_completed_local" : "task_queued",
         task_id: task.local_task_id,
+        runtime_manifest_id: this.runtimeManifestId,
         payload: { intent, risk_level: riskLevel, offline: Boolean(offline) },
       }, now);
       return task;
@@ -149,6 +154,7 @@ export class LocalTaskService {
             enqueueInto(current, {
               event_type: "task_submitted",
               task_id: task.local_task_id,
+              runtime_manifest_id: this.runtimeManifestId,
               payload: { server_task_id: response.task_id },
             }, this.now());
           } catch {
@@ -208,6 +214,7 @@ export class LocalTaskService {
                 enqueueInto(current, {
                   event_type: "task_status_changed",
                   task_id: target.local_task_id,
+                  runtime_manifest_id: this.runtimeManifestId,
                   payload: {
                     server_task_id: target.server_task_id,
                     status: info.task_status,

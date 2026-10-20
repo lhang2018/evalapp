@@ -195,7 +195,14 @@ export class EvoAgentClient {
       ...init,
     });
     const body = await resp.json();
-    if (!resp.ok && body?.error) throw new Error(String(body.error));
+    if (!resp.ok) {
+      // 保留状态码与逐事件拒绝明细，供同步队列区分可重试错误与隔离
+      const error = new Error(String(body?.error ?? `HTTP ${resp.status}`)) as
+        Error & { status?: number; body?: unknown };
+      error.status = resp.status;
+      error.body = body;
+      throw error;
+    }
     return body as T;
   }
 
@@ -260,7 +267,17 @@ export class EvoAgentClient {
       accepted: string[];
       duplicates: string[];
       rejected: { event_id: string; error: string }[];
-      receipt?: { receipt_id: string; batch_id: string; replayed: boolean };
+      confirmed?: string[];
+      unconfirmed?: string[];
+      protocol_version?: string;
+      receipt?: {
+        receipt_id: string;
+        batch_id: string;
+        replayed: boolean;
+        received_at: number;
+        protocol_version?: string;
+        confirmed_count?: number;
+      };
     }>("/events/sync", {
       method: "POST",
       body: JSON.stringify(body),

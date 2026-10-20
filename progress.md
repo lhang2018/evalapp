@@ -1051,3 +1051,46 @@
 ### 设计约束（本轮确立）
 - 候选阶段只暴露评测之后的状态；评测前的假设与证据不离开服务端。
 - 候选同步是透明展示通道，不改变激活路径：实际更新仍必须经过对账、签名与回滚路径校验。
+
+## Session 26 (2026-10-20)
+
+### 目标
+- 转换第三份补充设计《离线日志与可靠同步子系统设计》为规范 Markdown，并映射进 IMPLEMENTATION.md 与迭代待办。
+
+### 完成内容
+- [x] `EvoAgent_离线日志与可靠同步子系统设计.docx` → `.md`（docx2md.py，5861 字符）
+- [x] 标题规范化：首行 EvoAgent 合并入 H1，章降为 `##`，节为 `###`
+- [x] 三处 ASCII 图（§2 子系统架构 / §5.1 同步状态机 / §7.1 诊断包结构）加 ```text 围栏
+- [x] IMPLEMENTATION.md：头部基线引用改为三份补充设计；新增「补充设计 C 映射」（18 条逐项核对，
+      基于 `android-app/src/offline/` 与 `api/events_sync.py` 现状）；覆盖率说明更新；迭代待办新增 12、13 项
+- [x] 核实现状修正：服务端事件摄取已支持 `sequence_no`/`runtime_manifest_id`（events_sync.py:81-90）、
+      manifests 独立落表与版本对账（补充 A §7）已完成——客户端批次当时尚未携带这两字段，已标注 🔹
+
+### 映射结论（补充 C）
+- ✅：先落盘再同步、幂等去重、回执持久化语义、隐私最小化、日志≠任务恢复、部分成功明确列出
+- 🔹：显式四态同步状态机/批次表、客户端 manifest 引用、按类别保留等级、协议版本字段
+- ⬜：附件上传（§6）、离线诊断包导出（§7）、诊断包受控导入（§8）——属「人工诊断通道」子系统
+
+## Session 27 (2026-10-20)
+
+### 目标
+- 落地补充 C 的可靠同步核心：服务端因果顺序字段 + 回执协议；客户端显式同步状态机、崩溃恢复与隔离区。
+
+### 完成内容
+- [x] 服务端 `RunEvent` 新增 `sequence_no` / `runtime_manifest_id` / `clock_source`；`_EXTRA_COLUMNS`
+      自动补列（旧库 ALTER）；`query_run()` 按 run 内序号还原，时钟回拨不影响顺序，无序号历史行排在后面
+- [x] `events_sync.py` 校验序号为非负 int、manifest ID 格式（8-128 位）、时钟来源仅 device/server
+- [x] `POST /events/sync` 回执新增 `protocol_version`（1.0）、`confirmed`/`unconfirmed` 明确列表、
+      `confirmed_count`；同 `batch_id` 重放返回原回执并标记 `replayed`
+- [x] 客户端事件模型：`sync_status: pending | in_flight | quarantined`；持久化 `next_sequence` 与
+      `in_flight` 批次；旧快照自动迁移（local/synced → pending，按 run 补序号，字段补默认值）
+- [x] 队列状态机：`claimBatch`（stale 回收）→ `acknowledgeBatch`（仅删 confirmed，部分成功保留
+      未确认标记）→ `quarantineBatch`（保留证据可人工重新入队）；`checkpoint` 被 in-flight/隔离事件阻塞
+- [x] `SyncEngine`：首批以 `staleMs=0` 回收上次进程遗留 in-flight；稳定 `batch_id`；400 逐事件拒绝
+      转隔离，网络错误指数退避（2s→5min + 抖动）；传输层转发 `run_id`/`sequence_no`/`manifest`/`clock_source`
+- [x] App 集成：隔离区列表（事件类型/run/序号 + 重新入队），统计展示在传/隔离数量
+- [x] 测试：Python 335 项、客户端 66 项全绿；`tsc --noEmit` 通过
+
+### 本轮取舍
+- 未实现（仍待补充 C §6/§7/§8）：附件分块上传与 SHA-256、离线诊断包导出、诊断包受控导入。
+- 本地 `sync_receipts` 未独立持久化；回执权威记录仍在服务端 `sync_batches`。

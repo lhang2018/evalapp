@@ -79,8 +79,25 @@ class TestEventBus(unittest.TestCase):
         cols = {r[1] for r in
                 bus._conn.execute("PRAGMA table_info(runtime_events)")}
         for name in ("component_version", "correlation_id", "causation_id",
-                     "privacy_classification", "sync_status"):
+                     "privacy_classification", "sync_status",
+                     "sequence_no", "runtime_manifest_id", "clock_source"):
             self.assertIn(name, cols)
+        bus._conn.close()
+
+    def test_query_run_orders_by_sequence_not_clock(self):
+        bus = EventBus(self.path)
+        # 故意让 sequence 1 的时间晚于 sequence 2，模拟设备时钟回拨
+        bus.ingest(RunEvent(event_id=eid(3), event_type="second", run_id="run-x",
+                            sequence_no=2, timestamp=time.time() - 100))
+        bus.ingest(RunEvent(event_id=eid(4), event_type="first", run_id="run-x",
+                            sequence_no=1, timestamp=time.time()))
+        bus.ingest(RunEvent(event_id=eid(5), event_type="legacy", run_id="run-x",
+                            timestamp=time.time() - 200))
+        rows = bus.query_run("run-x")
+        self.assertEqual([e.event_id for e in rows], [eid(4), eid(3), eid(5)])
+        self.assertEqual(rows[0].sequence_no, 1)
+        self.assertEqual(rows[1].sequence_no, 2)
+        self.assertIsNone(rows[2].sequence_no)
         bus._conn.close()
 
 
@@ -148,6 +165,57 @@ class TestEventSyncApi(unittest.TestCase):
         self.assertEqual(st, 200)
         self.assertEqual(out["accepted"], [eid(13)])
         self.assertEqual(len(out["rejected"]), 3)
+
+    def test_sequence_and_manifest_persisted(self):
+        batch = {"client_id": "c1", "events": [
+            make_event(eid(20), run_id="run-alpha", sequence_no=2,
+                       runtime_manifest_id="manifest_0123456789ab"),
+            make_event(eid(21), run_id="run-alpha", sequence_no=1,
+                       runtime_manifest_id="manifest_0123456789ab"),
+        ]}
+        st, out = self._post("/events/sync", batch)
+        self.assertEqual(st, 200)
+        self.assertEqual(sorted(out["accepted"]), [eid(20), eid(21)])
+
+        rows = self.app.bus.query_run("run-alpha")
+        self.assertEqual([e.event_id for e in rows], [eid(21), eid(20)])
+        self.assertEqual([e.sequence_no for e in rows], [1, 2])
+        self.assertTrue(all(
+            e.runtime_manifest_id == "manifest_0123456789ab" for e in rows))
+        self.assertTrue(all(e.clock_source == "device" for e in rows))
+
+    def test_sequence_and_manifest_validation(self):
+        batch = {"events": [
+            make_event(eid(22), sequence_no=-1),
+            make_event(eid(23), sequence_no="1"),
+            make_event(eid(24), runtime_manifest_id="bad id"),
+            make_event(eid(26), clock_source="satellite"),
+        ]}
+        st, out = self._post("/events/sync", batch)
+        self.assertEqual(st, 400)
+        self.assertEqual(len(out["rejected"]), 4)
+        errors = " ".join(item["error"] for item in out["rejected"])
+        self.assertIn("sequence_no", errors)
+        self.assertIn("runtime_manifest_id", errors)
+        self.assertIn("clock_source", errors)
+
+    def test_receipt_protocol_and_confirmation(self):
+        batch = {"client_id": "c1", "batch_id": "batch_protocol_01",
+                 "events": [make_event(eid(25))]}
+        st, out = self._post("/events/sync", batch)
+        self.assertEqual(st, 200)
+        self.assertEqual(out["confirmed"], [eid(25)])
+        self.assertEqual(out["unconfirmed"], [])
+        self.assertEqual(out["protocol_version"], "1.0")
+        self.assertEqual(out["receipt"]["protocol_version"], "1.0")
+        self.assertEqual(out["receipt"]["confirmed_count"], 1)
+
+        # 同 batch_id 重放：返回原回执内容，不再新建事件
+        st2, again = self._post("/events/sync", batch)
+        self.assertEqual(st2, 200)
+        self.assertTrue(again["receipt"]["replayed"])
+        self.assertEqual(again["confirmed"], [eid(25)])
+        self.assertEqual(again["protocol_version"], "1.0")
 
     def test_batch_level_rejections(self):
         st, out = self._post("/events/sync", {"events": []})

@@ -21,12 +21,18 @@ class RunEvent:
     component_id: str = "system"
     component_version: str = "0.1.0"
     timestamp: float = field(default_factory=time.time)
+    # 时间来源：服务端事件为 server；客户端事件为 device（允许时钟偏差）
+    clock_source: str = "server"
     severity: str = "info"                   # info | warn | error | critical
     correlation_id: Optional[str] = None     # 同一任务内相关性
     causation_id: Optional[str] = None       # 因果链
     payload: Dict[str, Any] = field(default_factory=dict)
     privacy_classification: str = "standard"  # standard | sensitive
     sync_status: str = "local"               # local | synced
+    # 客户端事件在同一 run 内的单调序号；墙上时钟不能替代因果顺序
+    sequence_no: Optional[int] = None
+    # 产生事件时的不可变运行版本清单引用
+    runtime_manifest_id: Optional[str] = None
 
     def json_payload(self) -> str:
         return json.dumps(self.payload, ensure_ascii=False, default=str)
@@ -41,6 +47,9 @@ class RunEvent:
             "payload": self.payload,
             "privacy_classification": self.privacy_classification,
             "sync_status": self.sync_status,
+            "sequence_no": self.sequence_no,
+            "runtime_manifest_id": self.runtime_manifest_id,
+            "clock_source": self.clock_source,
         }
 
 
@@ -50,12 +59,33 @@ _EXTRA_COLUMNS = {
     "causation_id": "TEXT",
     "privacy_classification": "TEXT DEFAULT 'standard'",
     "sync_status": "TEXT DEFAULT 'local'",
+    "sequence_no": "INTEGER",
+    "runtime_manifest_id": "TEXT",
+    "clock_source": "TEXT DEFAULT 'server'",
 }
 
 _EVENT_COLUMNS = (
     "event_id, task_id, run_id, severity, event_type, component_id, timestamp,"
     " payload, component_version, correlation_id, causation_id,"
-    " privacy_classification, sync_status")
+    " privacy_classification, sync_status, sequence_no, runtime_manifest_id,"
+    " clock_source")
+
+
+def _row_to_event(row) -> RunEvent:
+    evt = RunEvent(
+        event_id=row[0], task_id=row[1], run_id=row[2], severity=row[3],
+        event_type=row[4], component_id=row[5], timestamp=row[6],
+        component_version=row[8] or "0.1.0",
+        correlation_id=row[9], causation_id=row[10],
+        privacy_classification=row[11] or "standard",
+        sync_status=row[12] or "local",
+        sequence_no=row[13], runtime_manifest_id=row[14],
+        clock_source=row[15] or "server")
+    try:
+        evt.payload = json.loads(row[7])
+    except Exception:
+        pass
+    return evt
 
 
 class EventBus:
@@ -92,12 +122,14 @@ class EventBus:
         with self._lock:
             cur = self._conn.execute(
                 f"INSERT {mode} INTO runtime_events ({_EVENT_COLUMNS})"
-                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (evt.event_id, evt.task_id, evt.run_id, evt.severity,
                  evt.event_type, evt.component_id, evt.timestamp,
                  evt.json_payload(), evt.component_version,
                  evt.correlation_id, evt.causation_id,
-                 evt.privacy_classification, evt.sync_status))
+                 evt.privacy_classification, evt.sync_status,
+                 evt.sequence_no, evt.runtime_manifest_id,
+                 evt.clock_source))
             self._conn.commit()
             return cur.rowcount > 0
 
@@ -280,20 +312,7 @@ class EventBus:
         sql += " ORDER BY timestamp ASC LIMIT ?"
         args.append(limit)
         rows = self._conn.execute(sql, args).fetchall()
-        out = []
-        for r in rows:
-            e = RunEvent(event_id=r[0], task_id=r[1], run_id=r[2], severity=r[3],
-                         event_type=r[4], component_id=r[5], timestamp=r[6],
-                         component_version=r[8] or "0.1.0",
-                         correlation_id=r[9], causation_id=r[10],
-                         privacy_classification=r[11] or "standard",
-                         sync_status=r[12] or "local")
-            try:
-                e.payload = json.loads(r[7])
-            except Exception:
-                pass
-            out.append(e)
-        return out
+        return [_row_to_event(r) for r in rows]
 
     def query(self, task_id: Optional[str] = None, limit: int = 100) -> List[RunEvent]:
         if self._conn is None:
@@ -306,18 +325,21 @@ class EventBus:
         sql += " ORDER BY timestamp DESC LIMIT ?"
         args.append(limit)
         rows = self._conn.execute(sql, args).fetchall()
-        out = []
-        for r in rows:
-            e = RunEvent(event_id=r[0], task_id=r[1], run_id=r[2], severity=r[3],
-                         event_type=r[4], component_id=r[5], timestamp=r[6],
-                         component_version=r[8] or "0.1.0",
-                         correlation_id=r[9], causation_id=r[10],
-                         privacy_classification=r[11] or "standard",
-                         sync_status=r[12] or "local")
-            try:
-                e.payload = json.loads(r[7])
-            except Exception:
-                pass
-            out.append(e)
+        out = [_row_to_event(r) for r in rows]
         out.reverse()
         return out
+
+    def query_run(self, run_id: str, limit: int = 20000) -> List[RunEvent]:
+        """按 run 内 sequence_no 升序还原顺序（PRD 73 / Arch 9.1）。
+
+        设备时钟可能有偏差，时间戳不能替代序号；历史无序号行排在有序
+        事件之后，并退化为按时间排序。
+        """
+        if self._conn is None:
+            return []
+        rows = self._conn.execute(
+            f"SELECT {_EVENT_COLUMNS} FROM runtime_events WHERE run_id=?"
+            " ORDER BY CASE WHEN sequence_no IS NULL THEN 1 ELSE 0 END,"
+            " sequence_no ASC, timestamp ASC LIMIT ?",
+            (run_id, limit)).fetchall()
+        return [_row_to_event(r) for r in rows]

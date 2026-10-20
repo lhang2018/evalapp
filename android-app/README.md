@@ -8,6 +8,10 @@
 - **离线优先**（`src/offline/`）：任务与事件写入同一本地快照；联网后事件批量幂等上传，
   `LOCAL_ONLY` 任务以稳定 `client_request_id` 补交；连续 checkpoint、死信、指数退避；
   隐私过滤（sensitive 不上传，secret/private 拒绝入队）。
+- **可靠同步**：每事件带 `run_id` + run 内 `sequence_no`、`runtime_manifest_id` 与
+  `clock_source=device`；显式 `pending → in_flight → acknowledged` 状态机，进程重启后回收
+  stale in-flight 批次；稳定批次号与 `protocol_version` 回执，只删除服务端 `confirmed`
+  事件；永久拒绝进入隔离区保留证据，可在界面人工重新入队。
 - **设备操作**（`src/device/` + `android/` Kotlin）：无障碍服务按文本/描述点击节点
   （精确匹配优先、子串仅作回退）、拉起显式 Intent、读取当前窗口节点快照；点击/启动返回
   操作前后快照，由 JS 判定页面变化或前台包名；权限弹窗识别；低/中/高风险分级，高风险需
@@ -32,7 +36,7 @@
 ## 测试（无需 node_modules）
 
 ```bash
-npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门/界面观测/更新管理器，共 60 项
+npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门/界面观测/更新管理器，共 66 项
 npm run typecheck       # 需要先 npm install（tsc）
 ```
 

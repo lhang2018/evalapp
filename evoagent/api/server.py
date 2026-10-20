@@ -24,7 +24,7 @@ from ..memory.store import Credibility, MemoryKind, Scope
 from ..evolution.controller import PUBLISH_RULES
 from .admin import ADMIN_HTML
 from .auth import ApiAuth
-from .events_sync import BatchError, validate_batch
+from .events_sync import BatchError, SYNC_PROTOCOL_VERSION, validate_batch
 
 CLIENT_REQUEST_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
 INSTALLATION_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
@@ -641,13 +641,23 @@ def make_handler(app: App):
                     accepted.append(evt.event_id)
                 else:
                     duplicates.append(evt.event_id)
-            payload = {"accepted": accepted, "duplicates": duplicates,
-                       "rejected": errors}
+            confirmed = accepted + duplicates
+            payload = {
+                "accepted": accepted, "duplicates": duplicates,
+                "rejected": errors,
+                # 部分成功时明确列出已确认与未确认事件
+                "confirmed": confirmed,
+                "unconfirmed": [item["event_id"] for item in errors],
+                "protocol_version": SYNC_PROTOCOL_VERSION,
+            }
             receipt_id = f"rcpt_{uuid.uuid4().hex[:16]}"
             received_at = time.time()
-            payload["receipt"] = {"receipt_id": receipt_id,
-                                  "batch_id": batch_id, "replayed": False,
-                                  "received_at": received_at}
+            payload["receipt"] = {
+                "receipt_id": receipt_id, "batch_id": batch_id,
+                "replayed": False, "received_at": received_at,
+                "protocol_version": SYNC_PROTOCOL_VERSION,
+                "confirmed_count": len(confirmed),
+            }
             if batch_id:
                 stored = {k: v for k, v in payload.items()
                           if k != "receipt"}
@@ -998,7 +1008,12 @@ def _receipt_response(stored: Dict[str, Any], replayed: bool):
     payload["receipt"] = {"receipt_id": stored.get("receipt_id"),
                           "batch_id": stored.get("batch_id"),
                           "replayed": replayed,
-                          "received_at": stored.get("received_at")}
+                          "received_at": stored.get("received_at"),
+                          "protocol_version":
+                              payload.get("protocol_version") or
+                              SYNC_PROTOCOL_VERSION,
+                          "confirmed_count":
+                              len(payload.get("confirmed") or [])}
     status = 200 if (payload.get("accepted") or payload.get("duplicates")) \
         else 400
     return status, payload

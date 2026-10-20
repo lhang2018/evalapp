@@ -57,6 +57,8 @@
 | 41 | 无障碍界面观测与执行校验 | PRD 68：操作前后节点快照、页面变化/包名/预期文本判定、权限弹窗识别、连续未验证安全停止与人工恢复、客户端观测面板与快捷动作 | complete（312 项 Python + 41 项客户端；真机验证） |
 | 42 | 版本对账与客户端更新管理器 | 补充 A §3/§5/§7/§8：运行清单持久化（设备身份）、事件批次回执与重放、`/sync/reconcile`（平台/最低版本/契约/制品/灰度）、`/sync/apply-result`（幂等）、设备安装与部署记录；客户端安装实例 ID、本地复核、双槽位原子切换、健康检查与自动回滚、回执上报；App 更新中心接线 | complete（327 项 Python + 57 项客户端） |
 | 43 | 候选阶段同步 | 补充 A §2/§8：`GET /sync/candidates` 只下发评测后的候选阶段（不含假设/证据），`device_candidate_states` 记录每个安装实例已见状态；客户端更新管理器 `refreshCandidates()` 持久化快照，更新分区只读展示，不参与激活路径 | complete（331 项 Python + 60 项客户端） |
+| 44 | 离线日志与可靠同步文档映射 | 补充 C 转规范 md（含三处 ASCII 围栏）；IMPLEMENTATION 新增「补充设计 C 映射」18 条逐项核对（✅/🔹/⬜），覆盖率与迭代待办更新（12/13 项） | complete |
+| 45 | 离线日志可靠同步实现 | 补充 C §3/§5：服务端 `sequence_no`/`runtime_manifest_id`/`clock_source` 落库与 `query_run` 因果排序、回执协议 1.0（confirmed/unconfirmed/confirmed_count）；客户端 per-run 序号、pending/in_flight/quarantined 状态机、崩溃后 stale in-flight 回收、稳定 batch_id、部分成功精确 ack、永久错误隔离与人工重入、App 隔离区面板 | complete（335 项 Python + 66 项客户端；typecheck 通过） |
 
 ## 关键决策（Decisions）
 | 决策 | 理由 |

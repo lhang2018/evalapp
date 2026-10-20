@@ -69,22 +69,28 @@ export class ClientTransport implements EventSyncTransport, TaskTransport {
     if (info.appVersion) this.appVersion = info.appVersion;
   }
 
-  syncEvents(events: OfflineEvent[]): Promise<SyncResponse> {
+  syncEvents(events: OfflineEvent[], batchId?: string): Promise<SyncResponse> {
     return this.client.syncEvents(
       events.map((event) => ({
         event_id: event.event_id,
         event_type: event.event_type,
         task_id: event.task_id ?? undefined,
+        run_id: event.run_id ?? undefined,
+        runtime_manifest_id: event.runtime_manifest_id ?? undefined,
+        // 同一 run 内的因果顺序；设备时钟只作为参考
+        sequence_no: event.sequence_no,
         // 本地用毫秒（Date.now）；服务端事件时间统一为秒
         timestamp:
           event.timestamp > 1e12 ? event.timestamp / 1000 : event.timestamp,
         severity: event.severity,
         payload: event.payload,
         privacy_classification: event.privacy_classification,
+        // 时间来源随事件留痕（设计字段表要求创建时间带时钟来源）
+        clock_source: event.clock_source,
       })),
       {
-        // 每批独立批次号；event_id 才是服务端权威去重键
-        batch_id: createId("batch"),
+        // 批次号由队列持久化并在重试间保持不变；event_id 才是权威去重键
+        batch_id: batchId ?? createId("batch"),
         client_id: this.clientId,
         installation_id: this.installationId ?? undefined,
       },

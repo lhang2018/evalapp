@@ -42,7 +42,12 @@ import { EventQueue } from "./src/offline/queue.ts";
 import { LocalTaskService } from "./src/offline/tasks.ts";
 import { ClientTransport } from "./src/offline/apiTransport.ts";
 import { SyncEngine } from "./src/offline/sync.ts";
-import type { DeadLetter, LocalTask, QueueStats } from "./src/offline/types.ts";
+import type {
+  DeadLetter,
+  LocalTask,
+  OfflineEvent,
+  QueueStats,
+} from "./src/offline/types.ts";
 import { DeviceBroker } from "./src/device/broker.ts";
 import { NativeDeviceTransport } from "./src/device/nativeTransport.ts";
 import type { NativeDeviceModuleLike } from "./src/device/nativeTransport.ts";
@@ -120,6 +125,7 @@ export default function App(): React.JSX.Element {
   const [localTasks, setLocalTasks] = useState<LocalTask[]>([]);
   const [stats, setStats] = useState<QueueStats | null>(null);
   const [deadLetters, setDeadLetters] = useState<DeadLetter[]>([]);
+  const [quarantined, setQuarantined] = useState<OfflineEvent[]>([]);
   const [deviceAvailable, setDeviceAvailable] = useState(false);
   const [deviceResult, setDeviceResult] = useState<DeviceResult | null>(null);
   const [journal, setJournal] = useState<ActionJournalEntry[]>([]);
@@ -160,7 +166,12 @@ export default function App(): React.JSX.Element {
     const repo = new OfflineRepository(asyncStorageStore);
     const queue = new EventQueue(repo);
     const transport = new ClientTransport(client);
-    const tasks = new LocalTaskService(repo, transport);
+    const tasks = new LocalTaskService(
+      repo,
+      transport,
+      undefined,
+      `client-manifest-${APP_VERSION}`
+    );
     const sync = new SyncEngine(queue, transport, tasks);
     const deviceModule =
       (NativeModules as Record<string, unknown>).EvoAgentDevice as
@@ -192,6 +203,7 @@ export default function App(): React.JSX.Element {
     setLocalTasks(await services.tasks.list());
     setStats(await services.queue.stats());
     setDeadLetters(await services.queue.deadLetters());
+    setQuarantined(await services.queue.quarantined());
     setJournal(services.broker.listJournal());
   }, [services]);
 
@@ -477,6 +489,15 @@ export default function App(): React.JSX.Element {
     [services, reloadLocal, flush]
   );
 
+  const retryQuarantined = useCallback(
+    async (eventId: string) => {
+      await services.queue.retryQuarantined(eventId);
+      await reloadLocal();
+      await flush(true);
+    },
+    [services, reloadLocal, flush]
+  );
+
   const runUpdate = useCallback(
     async (op: () => Promise<UpdateState>) => {
       setUpdateBusy(true);
@@ -585,7 +606,8 @@ export default function App(): React.JSX.Element {
           <Text style={s.hint}>服务端: {baseUrl}</Text>
           {stats && (
             <Text style={s.hint}>
-              待上传 {stats.pending} · 仅本地 {stats.localOnly} · 死信{" "}
+              待上传 {stats.pending} · 在传 {stats.inFlight} · 隔离{" "}
+              {stats.quarantined} · 仅本地 {stats.localOnly} · 死信{" "}
               {stats.dead} · checkpoint {stats.checkpoint}/{stats.capacity}
             </Text>
           )}
@@ -741,6 +763,25 @@ export default function App(): React.JSX.Element {
                   <Button
                     title="重试"
                     onPress={() => retryDead(letter.event.event_id)}
+                  />
+                </View>
+              ))}
+            </>
+          )}
+
+          {quarantined.length > 0 && (
+            <>
+              <Text style={s.section}>隔离事件（服务端拒绝，需人工审查）</Text>
+              {quarantined.map((event) => (
+                <View key={event.event_id} style={s.card}>
+                  <Text style={s.fail}>{event.last_error ?? "服务端拒绝"}</Text>
+                  <Text style={s.mono}>
+                    {event.event_type} · run {event.run_id ?? "client"} · #
+                    {event.sequence_no} · seq {event.seq}
+                  </Text>
+                  <Button
+                    title="重新入队"
+                    onPress={() => retryQuarantined(event.event_id)}
                   />
                 </View>
               ))}

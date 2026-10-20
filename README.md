@@ -160,10 +160,16 @@ Android 客户端 (RN/JS) ──REST──▶ ┌─ 稳定运行轨道 ──�
 
 - **本地队列**：任务与事件写入单一快照（AsyncStorage），提交任务与入队事件同一次落盘；
   队列容量 500，满则拒新；`seq` 单调递增，`checkpoint` 只推进连续已确认前缀。
+  每个事件带 `run_id` 与 run 内单调 `sequence_no`、不可变 `runtime_manifest_id` 和
+  `clock_source=device`——因果顺序不依赖墙上时钟，服务端按序号还原。
 - **幂等同步**：事件以客户端生成的 `event_id` 为主键 `INSERT OR IGNORE`，重复批次返回
   `duplicates`；任务提交带 `client_request_id`，服务端 `client_requests` 表命中即返回原
   `task_id`（`202 deduplicated`）。失败重试与崩溃恢复都不会产生重复任务。
-- **ack 后才删**：服务端确认前事件不删除；连续失败进死信并提供手动重试，不静默丢弃。
+- **回执协议**：批次号在重试间保持不变；服务端回执含 `protocol_version`、`confirmed` /
+  `unconfirmed` 明确列表，客户端只删除确认事件，部分成功不会误删。
+- **ack 后才删与隔离**：服务端确认前事件不删除；网络失败指数退避（2s→5min）；in-flight
+  批次持久化，进程重启后回收 stale 批次继续发送；永久校验错误转隔离区保留证据，可人工
+  重新入队；连续失败进死信并提供手动重试，不静默丢弃。
 - **隐私保守**：仅 `standard` 事件上传；`sensitive`（设备动作、位置、记忆写入等）本地保留；
   含密码/令牌/证件号的载荷在入队前直接拒绝。
 - **崩溃恢复**：`SUBMITTING` 重启后转 `NEEDS_RECONCILE`，需用户确认后重提；已下发但未验证的
