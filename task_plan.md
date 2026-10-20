@@ -63,6 +63,8 @@
 | 47 | 诊断包受控导入 | 补充 C §8：ZIP 仅解析不执行；包/条目/解压总量/压缩比限制、路径穿越与符号链接拒绝、文件与附件白名单、逐文件 SHA-256、`format_version` 与事件字段校验、关联关系审查；按包 SHA-256 幂等写入 `diagnostics_imports`/`diagnostics_import_events`，admin-only，成功与拒绝均审计；GET 审查接口 | complete（344 项 Python + 69 项客户端） |
 | 48 | 离线诊断包导出 | 补充 C §7：纯 TS SHA-256/CRC32 + STORE ZIP；清单/事件 JSONL/运行时清单/任务运行/同步状态/校验和；范围/时间/能力/失败过滤；预览敏感类别与警告；密钥类字段/值强制脱敏，敏感原文与原始负载默认关闭；只读且字节确定；Android SAF 文件选择器交付、临时数据清理 | complete（344 项 Python + 76 项客户端；原生 SAF 待真机验证） |
 | 49 | 客户端导入与同步回执 | 补充 C §3.2/§8/§11：客户端 SAF 选择 ZIP 导入（20 MiB/空包双侧校验、ASCII `X-File-Name`、admin Bearer 仅驻内存、结果与重复提示）；本地回执历史（最近 20 条，按 `receipt_id` 去重）与连续失败/积压超时告警；测试服务端改绑临时端口消除固定端口冲突 | complete（344 项 Python + 85 项客户端；原生导入待真机验证） |
+| 50 | 诊断附件分块上传 | 补充 C §6/§3.1：显式授权、16 KiB–4 MiB 分块与 50 MiB 总量、分块幂等与续传、全文 SHA-256 校验与失败清空、admin-only 正文读取；客户端纯 TS SHA-256/256 KiB 分块/进度持久化；事件 `attachment_refs` 入队、落库与导出 | complete（352 项 Python + 98 项客户端） |
+| 51 | 后台常驻同步 | PRD 72-76：WorkManager 周期同步（最短 15 分钟、联网 + 电量不低，用户可开关/立即运行）；Worker 内直接运行 headless JS（冷启动自动创建 ReactContext），不依赖前台服务；复用离线队列、幂等提交与回执确认；App 状态卡与通知权限 | complete（352 项 Python + 107 项客户端；真机验证前台/后台/冷启动） |
 
 ## 关键决策（Decisions）
 | 决策 | 理由 |
@@ -119,6 +121,8 @@
 | 回执历史与失败计数本地持久化 | 服务端回执是唯一确认来源；本地留最近 20 条便于离线排障，且连续失败/长期无成功可作为「服务端不可用」的客观信号，成功一次即清零 |
 | 诊断包导入 admin 凭证仅驻内存 | 导入属高风险操作；凭证不写 AsyncStorage/不落日志，避免设备丢失后管理权限被连带泄露 |
 | 测试服务端绑定临时端口 | 固定端口在并行/全量运行与 TIME_WAIT 窗口下会互相抢占；`port=0` 由系统分配并由 `server_address` 读取实际端口，测试间彻底隔离 |
+| 后台同步在 Worker 内直接执行 headless JS | Android 12+ 拒绝后台启动前台服务；任务窗口足够完成短同步，前台通知仅尽力展示，冷启动时按需创建 ReactContext |
+| 不绕过 ROM 自启动限制 | HyperOS 等系统默认拒绝后台拉起进程；应用只提示用户授权，不通过系统漏洞或滥用权限规避（PRD 68/84 安全边界） |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -150,6 +154,9 @@
 | 更新回执失败断言读不到错误 | 1 | `activate()` 返回切换时的内存状态；回执失败错误写入持久化状态，测试改查 `status()` |
 | 全量套件偶发 404（单模块通过） | 1 | `submit_task(wait=False)` 返回 202 后才由后台线程落库，客户端立即 GET 存在竞态；改为提交时同步 `save_task`，任务从 CREATED 起即可查询 |
 | 全量套件偶发导入测试失败（单模块通过） | 1 | 多个 API 测试类共用 18301–18304 固定端口，前一实例关闭后连接落到 TIME_WAIT/新实例；`ApiServer` 记录请求端口而非实际端口；改为 `port=0` 并由 `server_address` 读取实际端口 |
+| 无界面任务启动 NPE | 1 | `HeadlessJsTaskConfig` 对 data 做深拷贝，传 null 在构造时崩溃；改为 `Arguments.createMap()` |
+| 后台同步依赖前台服务启动失败 | 1 | Android 12+ 从后台启动 FGS 可能抛 `ForegroundServiceStartNotAllowedException`；改为 Worker 内直接 `HeadlessJsTaskContext.startTask`，`setForegroundAsync` 仅尽力而为 |
+| 冷启动被 HyperOS 拦截 | 1 | `AutoStartManagerService: Reject service`；`MIUIOP(10008)=ignore`，未尝试绕过，改为放开权限后验证并在文档标注用户授权要求 |
 
 ## 备注
 - 无 LLM Key 时运行 `python -m evoagent.cli demo` 走 Mock 模型全链路。

@@ -15,6 +15,7 @@ import {
   KeyboardAvoidingView,
   Linking,
   NativeModules,
+  PermissionsAndroid,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -49,6 +50,11 @@ import type { DiagnosticsSaveModule } from "./src/offline/nativeExport.ts";
 import { NativeDiagnosticsPicker } from "./src/offline/nativeImport.ts";
 import type { DiagnosticsPickerModule } from "./src/offline/nativeImport.ts";
 import { AttachmentService } from "./src/offline/attachments.ts";
+import { NativeBackgroundSync } from "./src/offline/backgroundNative.ts";
+import type {
+  BackgroundSyncModuleLike,
+  BackgroundSyncStatus,
+} from "./src/offline/backgroundNative.ts";
 import type {
   DeadLetter,
   LocalAttachment,
@@ -179,6 +185,9 @@ export default function App(): React.JSX.Element {
   const [attachmentMessage, setAttachmentMessage] = useState<string | null>(
     null,
   );
+  const [bgStatus, setBgStatus] = useState<BackgroundSyncStatus | null>(null);
+  const [bgBusy, setBgBusy] = useState(false);
+  const [bgMessage, setBgMessage] = useState<string | null>(null);
 
   // 服务器地址：模拟器默认 10.0.2.2；真机可填局域网 IP（或 adb reverse 后用 127.0.0.1）
   const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL);
@@ -199,7 +208,7 @@ export default function App(): React.JSX.Element {
     const deviceModule =
       (NativeModules as Record<string, unknown>).EvoAgentDevice as
         | (NativeDeviceModuleLike & DiagnosticsSaveModule &
-          DiagnosticsPickerModule)
+          DiagnosticsPickerModule & BackgroundSyncModuleLike)
         | null;
     const deviceTransport = new NativeDeviceTransport(deviceModule ?? null);
     const broker = new DeviceBroker(deviceTransport, {
@@ -224,6 +233,7 @@ export default function App(): React.JSX.Element {
       exportSink: new NativeExportSink(deviceModule ?? null),
       importPicker: new NativeDiagnosticsPicker(deviceModule ?? null),
       attachments: new AttachmentService(repo, client),
+      background: new NativeBackgroundSync(deviceModule ?? null),
     };
   }, [baseUrl]);
 
@@ -235,6 +245,48 @@ export default function App(): React.JSX.Element {
     setLocalAttachments(await services.attachments.list());
     setJournal(services.broker.listJournal());
   }, [services]);
+
+  const loadBackgroundSync = useCallback(async () => {
+    setBgStatus(await services.background.status());
+  }, [services]);
+
+  const updateBackgroundSync = useCallback(
+    async (action: "enable" | "disable" | "run") => {
+      setBgBusy(true);
+      try {
+        if (action !== "disable" && Platform.OS === "android" && Platform.Version >= 33) {
+          try {
+            await PermissionsAndroid.request(
+              PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+            );
+          } catch {
+            // 通知权限被拒不影响调度；前台服务通知由系统按策略处理
+          }
+        }
+        const status =
+          action === "enable"
+            ? await services.background.enable(30, false)
+            : action === "disable"
+            ? await services.background.disable()
+            : await services.background.runNow();
+        setBgStatus(status);
+        setBgMessage(
+          action === "enable"
+            ? `已启用：每 ${status.interval_minutes} 分钟，在联网且电量不低时由系统调度。`
+            : action === "disable"
+            ? "已关闭后台同步；已排队的事件仍保留，联网后可手动同步。"
+            : "已请求立即运行一次；系统可能延迟到满足联网条件时执行。",
+        );
+      } catch (e: unknown) {
+        setBgMessage(
+          "后台同步操作失败：" + (e instanceof Error ? e.message : String(e)),
+        );
+      } finally {
+        setBgBusy(false);
+      }
+    },
+    [services],
+  );
 
   // 只读系统状态：失败不影响离线队列与在线判定
   const loadSystem = useCallback(async () => {
@@ -434,6 +486,7 @@ export default function App(): React.JSX.Element {
       const available = await services.deviceTransport.isAvailable();
       if (mounted) setDeviceAvailable(available);
       await reloadLocal();
+      await loadBackgroundSync();
       try {
         await services.client.health();
         if (mounted) setOnline(true);
@@ -461,7 +514,7 @@ export default function App(): React.JSX.Element {
       mounted = false;
       clearInterval(timer);
     };
-  }, [services, reloadLocal]);
+  }, [services, reloadLocal, loadBackgroundSync]);
 
   useEffect(() => {
     if (online) void loadSystem();
@@ -818,6 +871,47 @@ export default function App(): React.JSX.Element {
                   onPress={() => flush(true)}
                   disabled={syncing || !online}
                 />
+              </View>
+
+              <Text style={s.section}>后台同步</Text>
+              <View style={s.card}>
+                <Text style={s.hint}>
+                  由系统调度（WorkManager，最短 15 分钟）在联网且电量不低时唤醒无界面
+                  JS，复用同一事件队列与幂等提交；不替代前台轮询，也不自动处理待对账任务。
+                </Text>
+                {bgStatus?.available ? (
+                  <Text style={s.hint}>
+                    状态：{bgStatus.enabled ? "已启用" : "未启用"} · 间隔{" "}
+                    {bgStatus.interval_minutes} 分钟
+                    {bgStatus.last_attempt_at
+                      ? ` · 最近尝试 ${formatTime(
+                          bgStatus.last_attempt_at / 1000,
+                        )}`
+                      : ""}
+                  </Text>
+                ) : (
+                  <Text style={s.hint}>
+                    当前构建未检测到后台同步原生模块，需重新编译安装 APK。
+                  </Text>
+                )}
+                <View style={s.row}>
+                  <Button
+                    title={bgStatus?.enabled ? "重新调度" : "启用后台同步"}
+                    onPress={() => void updateBackgroundSync("enable")}
+                    disabled={!bgStatus?.available || bgBusy}
+                  />
+                  <Button
+                    title={bgBusy ? "处理中…" : "立即运行一次"}
+                    onPress={() => void updateBackgroundSync("run")}
+                    disabled={!bgStatus?.available || bgBusy}
+                  />
+                </View>
+                <Button
+                  title="关闭后台同步"
+                  onPress={() => void updateBackgroundSync("disable")}
+                  disabled={!bgStatus?.available || bgBusy || !bgStatus?.enabled}
+                />
+                {bgMessage && <Text style={s.hint}>{bgMessage}</Text>}
               </View>
 
               <Text style={s.section}>诊断包导出</Text>

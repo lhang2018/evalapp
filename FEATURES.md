@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 352 项 + 客户端 98 项全部通过**。
+测试基线（2026-10-20）：**Python 352 项 + 客户端 107 项全部通过**。
 
 ---
 
@@ -232,6 +232,9 @@ Python 服务端（标准库，SQLite）
 | EVT-13 | 本地回执历史 | ✅ | `android-app/src/offline/{types,storage,queue,sync}.ts` | 回执按 `receipt_id` 去重持久化（最近 20 条），含 accepted/duplicates/rejected/confirmed 计数与 `replayed`；仅回执确认的事件删除 |
 | EVT-14 | 服务端长期不可用告警 | ✅ | `android-app/src/offline/queue.ts`, `App.tsx` | 连续 5 次同步失败，或队列有积压且距上次成功 ≥30 分钟 → `serverUnavailable`；成功同步清零；App 显示待发/失败/死信与告警条 |
 | EVT-15 | 事件附件引用 | ✅ | `core/events.py`, `api/events_sync.py`, `src/offline/{types,storage,queue,apiTransport}.ts`, `src/offline/export.ts` | 事件可携带最多 8 个 `attachment_refs`；ID 规则与附件一致（16-64 位），入队前校验去重；随批次写入 `runtime_events` 并可按 run 还原；导出 JSONL 保留引用 |
+| EVT-16 | 后台周期同步调度 | ✅ | `android/.../SyncScheduler.kt`, `src/offline/backgroundNative.ts` | WorkManager 周期任务，最短 15 分钟、默认 30 分钟；约束为联网 + 电量不低；用户可启用/重新调度/关闭/立即运行一次；状态含间隔与最近尝试时间 |
+| EVT-17 | 无界面同步执行 | ✅ | `android/.../SyncWorker.kt`, `HeadlessSyncRunner.kt`, `src/offline/backgroundRunner.ts` | Worker 内直接启动已注册 headless JS，复用持久化队列与幂等提交；无 ReactContext 时先创建（冷启动）；超时/失败返回 `retry`；前台通知仅尽力展示，不作为执行前提 |
+| EVT-18 | 后台同步界面与隐私边界 | ✅ | `App.tsx` | 离线状态页展示调度状态、间隔与最近尝试；触发时按需申请通知权限；不改动手动同步与待对账任务，敏感事件仍不进入上传队列 |
 
 ### 2.14 控制面、API 与可观测（PRD 37-40 / 89-90）
 
@@ -666,7 +669,7 @@ Python 服务端（标准库，SQLite）
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
 
-### 客户端（`android-app/test/`，98 项）
+### 客户端（`android-app/test/`，107 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -681,6 +684,8 @@ Python 服务端（标准库，SQLite）
 | `test/offline/packageImport.test.ts` | 导入包解码、取消/缺失提示、非法/空/超大拒绝、HTTP 头文件名 ASCII 化（4 项） |
 | `test/offline/importApi.test.ts` | admin Bearer 原样上传、`X-File-Name` 清洗、403 保留状态与消息且不带凭证（2 项） |
 | `test/offline/attachments.test.ts` | 附件显式授权、摘要与分块计划、逐块上传与完成校验、服务端进度续传、网络失败重试、块摘要不符、全文摘要不符清空重传、422 清空重传、重启后字节丢失提示、相同内容重新选择复用记录与进度、已完成不重传、不同内容独立记录、事件引用校验（13 项） |
+| `test/offline/background.test.ts` | 离线健康检查跳过同步、在线先冲刷事件再刷新任务、冲刷失败上报并跳过刷新、刷新失败不抛出、间隔归一化/钳制（5 项） |
+| `test/offline/backgroundNative.test.ts` | 原生模块缺失降级 `unavailable`、状态映射与零值处理、启用前钳制非法间隔、关闭与立即运行各委托一次（4 项） |
 
 运行：
 
@@ -698,7 +703,7 @@ cd android-app && npm run test:offline
 | LLM 辅助诊断假设 | PRD 41-45 / Arch 9.4 | ✅ | 模型输出仅作证据绑定的辅助解释；不改案例状态，探针验证前不可升级候选 |
 | 候选代码隔离沙箱 | PRD 47.4 / L3 | ✅ | 独立子进程 + 审计钩子；非恶意代码强安全边界 |
 | 视觉/OCR/语音操作 | PRD 64/68 | ⬜ | 仅无障碍节点与显式 Intent；节点结果验证已实现，不做截屏/OCR/坐标点击 |
-| 后台常驻同步 | PRD 72-76 | ⬜ | 前台 + 手动重试 |
+| 后台常驻同步 | PRD 72-76 | ✅ | WorkManager 周期同步（最短 15 分钟、联网 + 电量不低、用户可开关/立即运行）；无界面 JS 直接在任务窗口执行，不依赖前台服务；ROM 自启动限制需用户授权 |
 | 端到端加密、多设备冲突合并 | PRD 72-76/86 | ⬜ | |
 | Web 管理端完整界面 | PRD 90 | ✅ | 90.1-90.7 分区已实现；不含富文本编辑/图表库，以表格与 JSON 展示为主 |
 | 发布分支自动化（可视化/远端推送） | PRD 59-63 | ⬜ | 已提供本地分支/标签/ff 合并 CLI；不自动 push、不整合同步冲突 |
@@ -1090,6 +1095,7 @@ cd android-app && npm run android
 | Session 30 | 离线诊断包导出（补充 C §7） | 344 + 76 |
 | Session 31 | 客户端导入、本地回执与不可用告警（补充 C §3.2/§8/§11） | 344 + 85 |
 | Session 32 | 诊断附件分块上传与事件引用（补充 C §6/§3.1） | 352 + 98 |
+| Session 33 | 后台常驻同步（WorkManager + Headless JS，PRD 72-76） | 352 + 107 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 
@@ -1117,3 +1123,14 @@ cd android-app && npm run android
 
 - 新增本文件，作为功能维护的单一入口；`README.md` 增加链接。
 - 测试基线：Python 149、客户端 29。
+
+### 2026-10-20 — 后台常驻同步（WorkManager + Headless JS）
+
+- 需求：PRD 72-76（离线队列在后台继续补传）。
+- 变更：新增 WorkManager 周期同步（最短 15 分钟、默认 30 分钟，联网 + 电量不低）与「立即运行一次」；同步在 Worker 任务窗口内直接启动已注册的无界面 JS，复用持久化队列、幂等提交与回执确认。前台通知仅作尽力展示；Android 12+ 后台启动前台服务被拒时不再中断同步。无 ReactContext 时先创建 React 上下文以支持冷启动。界面提供启用/重新调度/关闭/立即运行与状态（间隔、最近尝试）。
+- 代码：`android-app/android/app/src/main/java/com/evoagent/SyncScheduler.kt`、`SyncWorker.kt`、`HeadlessSyncRunner.kt`、`SyncNotifications.kt`、`DeviceModule.kt`、`src/offline/background.ts`、`backgroundRunner.ts`、`backgroundNative.ts`、`index.js`、`App.tsx`；Gradle 引入 `androidx.work:work-runtime:2.9.1`。
+- 接口/配置：NativeModule `backgroundSyncStatus` / `scheduleBackgroundSync(intervalMinutes, runNow)` / `cancelBackgroundSync` / `runBackgroundSyncNow`；SharedPreferences `evoagent_background_sync`（enabled/interval_minutes/last_attempt_at）；WorkManager unique names `evoagent-background-sync` 与 `evoagent-background-sync-now`。
+- 测试：`test/offline/background.test.ts`（5）+ `backgroundNative.test.ts`（4），客户端 98 → 107；Python 352 保持不变；`tsc --noEmit` 通过。
+- 状态变化：EVT-16…EVT-18 ✅；未实现清单「后台常驻同步」⬜ → ✅。
+- 真机验证（HyperOS / Android 16）：前台「立即运行一次」、断网排队 → 退到桌面 → 恢复网络后的后台调度、以及杀掉进程后的冷启动调度均执行成功（`[background-sync] online=true`、Worker SUCCESS）。
+- 已知限制：HyperOS 等 ROM 默认拒绝后台冷启动（自启动权限 `MIUIOP(10008)=ignore`），需用户显式允许；系统仍可延迟周期任务。后台同步不替代前台轮询，也不自动处理 `NEEDS_RECONCILE` 任务。前台通知在部分系统可能不显示（类型由 WorkManager 合并声明）。

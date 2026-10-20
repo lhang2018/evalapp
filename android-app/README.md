@@ -14,6 +14,11 @@
   事件；永久拒绝进入隔离区保留证据，可在界面人工重新入队。
 - **容量治理**：critical / normal / debug 分级保留（7 天 / 1 天），80% 预警；空间不足时
   优先清理低等级事件并写入损失标记，界面提示，不静默删除未同步证据。
+- **后台同步**（`android/.../SyncScheduler.kt` + `src/offline/background*.ts`）：WorkManager
+  周期任务（最短 15 分钟、默认 30 分钟，联网 + 电量不低），用户可启用/重新调度/关闭/
+  立即运行一次；同步在 Worker 任务窗口内直接启动已注册的无界面 JS，复用同一队列与幂等提交；
+  无 ReactContext 时先创建 React 上下文（冷启动）。前台通知仅尽力展示，Android 12+ 后台
+  启动前台服务被拒时不中断同步。状态展示间隔与最近尝试时间。
 - **设备操作**（`src/device/` + `android/` Kotlin）：无障碍服务按文本/描述点击节点
   （精确匹配优先、子串仅作回退）、拉起显式 Intent、读取当前窗口节点快照；点击/启动返回
   操作前后快照，由 JS 判定页面变化或前台包名；权限弹窗识别；低/中/高风险分级，高风险需
@@ -51,7 +56,7 @@
 ## 测试（无需 node_modules）
 
 ```bash
-npm run test:offline    # node --test：离线队列/同步/任务状态/附件上传/设备闸门/界面观测/更新管理器/诊断包导出与导入，共 98 项
+npm run test:offline    # node --test：离线队列/同步/后台同步/任务状态/附件上传/设备闸门/界面观测/更新管理器/诊断包导出与导入，共 107 项
 npm run typecheck       # 需要先 npm install（tsc）
 ```
 
@@ -83,11 +88,13 @@ npm run android
 **已验证**（2026-10-20）：`./gradlew assembleDebug` 构建通过；在模拟器（API 37）与真机
 （HyperOS，Android 16 / API 36）安装运行；在线任务、真实模型回复、离线队列与事件同步、
 无障碍节点点击与启动（返回 `[verified]` 且带前后快照/页面包名证据）、无页面变化降级为
-`[unverified]`、连续未验证安全停止与人工恢复均实测通过。
+`[unverified]`、连续未验证安全停止与人工恢复均实测通过。后台同步三种路径也已实测：
+前台「立即运行一次」、断网排队后退到桌面再恢复网络的进程存活调度、以及杀进程后的冷启动
+调度，均执行 headless JS 并返回 `Worker SUCCESS`。
 
-**未验证**：诊断包导出/导入的原生 SAF 路径（`DeviceModule.saveDiagnosticsPackage` /
-`pickDiagnosticsPackage` + `MainActivity.onActivityResult`）在最近一次构建之后加入，
-本机没有 Android SDK/模拟器，尚未重新编译与真机执行；TS 侧导出/解码逻辑有单元测试覆盖。
+**部分未验证**：诊断包导出/导入的原生 SAF 路径（`DeviceModule.saveDiagnosticsPackage` /
+`pickDiagnosticsPackage` + `MainActivity.onActivityResult`）已随最近构建编译通过并安装，
+但尚未在真机逐项走通 SAF 选择/保存；TS 侧导出/解码逻辑有单元测试覆盖。
 
 手动构建：
 
@@ -96,7 +103,7 @@ cd android
 ./gradlew assembleDebug        # 或：npx react-native run-android
 ```
 
-验收清单（已在真机走通 1–4 与 7；5–6 由单元测试覆盖）：
+验收清单（已在真机走通 1–4、7、12–13；5–6 由单元测试覆盖）：
 
 1. `adb shell settings get secure enabled_accessibility_services` 能看到 `com.evoagent/.DeviceAccessibilityService`。
 2. 未授权时客户端显示「服务未启用」，点击「点击页面文本」返回 `unavailable`，不崩溃。
@@ -118,6 +125,12 @@ cd android
     「已校验」与块进度，服务端 `GET /attachments/{id}` 为 `complete` 且 SHA-256 一致；
     杀进程后重新选择同一文件（SHA-256 与大小一致）会复用原 `attachment_id` 与既有分块
     进度继续续传，已完成的附件直接显示「已校验」且不重复上传。
+12. 离线状态页「启用后台同步」后显示间隔与最近尝试时间；点「立即运行一次」后 logcat 出现
+    `[background-sync] online=true` 且 `Worker result SUCCESS`；「关闭后台同步」后
+    `adb shell dumpsys jobscheduler | grep evoagent` 无周期任务，已排队事件仍保留。
+13. 断网后点「立即运行一次」，退到桌面并杀进程；恢复网络后系统在后台拉起进程执行同步
+    （需允许自启动/后台运行）。HyperOS 默认拒绝冷启动，可先用
+    `adb shell cmd appops set com.evoagent 10008 allow` 验证。
 
 ## OTA（直接推送升级）接入步骤
 
@@ -138,7 +151,7 @@ android-app/
 ├── src/device/                # 设备操作契约、风险闸门、原生桥接
 ├── src/update/                # 安装实例、版本对账、候选阶段、双槽位更新管理
 ├── src/storage/               # AsyncStorage ↔ KeyValueStore 适配
-├── test/                      # node --test（offline 59 + device 20 + update 19）
+├── test/                      # node --test（offline 68 + device 20 + update 19）
 ├── android/                   # Kotlin 原生壳 + AccessibilityService + DeviceModule（含 SAF 导出/导入）
 └── package.json
 ```
@@ -147,7 +160,13 @@ android-app/
 
 - 视觉/OCR 操作、坐标手势（明确不做自动注入）
 - 语音输入（PRD 64）
-- 后台常驻同步（当前仅前台轮询 + 手动同步）
 - 能力包制品下载与装载（当前更新管理器只切换槽位引用，实际包内容交由 OTA 层）
 - 候选阶段推送（当前为拉取式同步，无服务端主动推送）
 - 后台任务通知（PRD 64）
+
+## 已知限制
+
+- 后台同步由系统调度，周期任务可能被延迟；不替代前台轮询，也不自动处理
+  `NEEDS_RECONCILE` 任务。
+- HyperOS 等 ROM 默认拒绝后台冷启动（自启动权限 `MIUIOP(10008)=ignore`），需用户在系统
+  设置中允许自启动/后台运行；进程存活时的后台调度不受此限制。

@@ -187,6 +187,54 @@ class DeviceModule(
         }
     }
 
+    /** 后台同步调度（WorkManager）；返回最新状态供界面展示。 */
+    @ReactMethod
+    fun scheduleBackgroundSync(
+        intervalMinutes: Double,
+        runNow: Boolean,
+        promise: Promise,
+    ) {
+        try {
+            SyncScheduler.schedule(
+                reactContext,
+                intervalMinutes.toInt(),
+                runNow,
+            )
+            promise.resolve(SyncScheduler.status(reactContext))
+        } catch (error: Exception) {
+            promise.reject("background_sync", error.message ?: "后台同步失败")
+        }
+    }
+
+    @ReactMethod
+    fun cancelBackgroundSync(promise: Promise) {
+        try {
+            SyncScheduler.cancel(reactContext)
+            promise.resolve(SyncScheduler.status(reactContext))
+        } catch (error: Exception) {
+            promise.reject("background_sync", error.message ?: "后台同步失败")
+        }
+    }
+
+    @ReactMethod
+    fun backgroundSyncStatus(promise: Promise) {
+        try {
+            promise.resolve(SyncScheduler.status(reactContext))
+        } catch (error: Exception) {
+            promise.reject("background_sync", error.message ?: "后台同步失败")
+        }
+    }
+
+    @ReactMethod
+    fun runBackgroundSyncNow(promise: Promise) {
+        try {
+            SyncScheduler.enqueueOnce(reactContext)
+            promise.resolve(SyncScheduler.status(reactContext))
+        } catch (error: Exception) {
+            promise.reject("background_sync", error.message ?: "后台同步失败")
+        }
+    }
+
     private fun capture(
         service: DeviceAccessibilityService?,
     ): com.facebook.react.bridge.WritableMap? = try {

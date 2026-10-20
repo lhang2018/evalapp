@@ -1196,3 +1196,68 @@
 - 原生导入选择器与 SAF 路径未在本机重新构建验证（无 Android SDK/模拟器），README 已标注验收项。
 - admin token 不持久化；每次导入需重新输入，避免设备侧留存管理凭证。
 - 剩余：补充 C §6 附件上传（SHA-256/分块恢复/授权通道）；后台常驻同步仍不做。
+
+## Session 32 (2026-10-20)
+
+### 完成事项
+- [x] 服务端附件通道：显式 `consent=true` 初始化；16 KiB–4 MiB 分块、50 MiB 总量；
+      分块 PUT 幂等并返回进度；完成时全文 SHA-256 校验，失败清空并要求整体重传；
+      admin-only 正文读取与审计
+- [x] 客户端 `AttachmentService`：纯 TS SHA-256、256 KiB 分块、逐块持久化进度与续传、
+      块/全文摘要校验；事件 `attachment_refs`（最多 8 项）入队校验、随批次落库与导出
+- [x] 测试：新增附件与事件引用用例，客户端 85 → 98；Python 344 → 352
+
+### 本轮取舍
+- 原始附件字节只驻留内存；重启后需重新选择同一文件，摘要一致时复用原 ID 与分块进度。
+- 已完成附件不重复上传；服务端 422 清空进度后从第一块重传。
+
+## Session 33 (2026-10-20)
+
+### 背景
+- PRD 72-76 的离线队列此前只在应用前台轮询时补传；退到后台后不再同步。
+- 目标：使用 Android 系统调度，在联网且电量不低时唤醒无界面 JS，复用同一队列与幂等提交；
+  用户可开关、设定间隔并立即运行一次。
+
+### 完成事项
+- [x] `SyncScheduler`：WorkManager 周期任务（最短 15 分钟、默认 30 分钟，CONNECTED +
+      电量不低），unique work + UPDATE 策略；`enqueueOnce` 立即运行；关闭时取消周期与一次性任务；
+      SharedPreferences 保存启用状态、间隔与最近尝试时间
+- [x] `SyncWorker`：记录尝试时间后直接在 Worker 内运行 `HeadlessSyncRunner`；
+      前台通知 `setForegroundAsync` 改为尽力而为（5s 超时，失败继续），不再依赖前台服务
+- [x] `HeadlessSyncRunner`：获取 `ReactApplication` → 必要时创建 ReactContext（冷启动）→
+      在 UI 线程 `HeadlessJsTaskContext.startTask` 启动 `EvoAgentBackgroundSync`，
+      用任务 id 关联 start/finish，超时或异常返回 false（Worker 转 `retry`）
+- [x] 移除 `SyncHeadlessService` 与 Manifest 声明；保留 WorkManager
+      `SystemForegroundService` 的 `dataSync` 类型合并声明
+- [x] 客户端纯 TS：`background.ts`（健康检查→flush→refresh 策略与间隔钳制）、
+      `backgroundRunner.ts`（从 AsyncStorage 读取服务地址并组装离线栈）、
+      `backgroundNative.ts`（NativeModule 契约，缺失降级 `unavailable`）；`index.js` 注册 headless task
+- [x] App 离线状态页：后台同步卡片（状态/间隔/最近尝试、启用/重新调度、立即运行一次、
+      关闭），API 33+ 触发时申请通知权限
+- [x] 测试：新增 `background.test.ts`（5）与 `backgroundNative.test.ts`（4），
+      客户端 98 → 107；Python 352 不变；`tsc --noEmit` 通过
+
+### 真机验证（HyperOS，Android 16 / API 36）
+- 前台「立即运行一次」：`[background-sync] online=true flushed=true refreshed=true`，
+  `Worker result SUCCESS`。
+- 断网入队 → 退到桌面 → 恢复网络：WorkManager 在后台启动无界面 JS 并成功。
+- 断网入队 → 杀进程 → 恢复网络：系统冷启动进程，ReactContext 自动创建，同步成功。
+- 未放开自启动权限时系统日志为 `AutoStartManagerService: Reject service`，
+  放开 `MIUIOP(10008)` 后冷启动成功。
+
+### 本轮修复的缺陷
+- `HeadlessJsTaskConfig` 传入 null data 在构造时 NPE：改为传空 `Arguments.createMap()`。
+- Android 12+ 后台启动前台服务可能被拒：改为 Worker 内直接执行 headless JS，
+  前台服务只作尽力通知。
+- 重装 APK 后 MIUI 自启动权限恢复为 `ignore`：文档标注需用户授权，未尝试绕过系统策略。
+
+### 本轮取舍
+- 后台同步不替代前台轮询，也不自动处理 `NEEDS_RECONCILE`；用户仍可手动同步。
+- 周期任务可能被 ROM 延迟；不承诺任意时刻执行。
+- 移除专用前台服务后，部分系统可能不显示同步通知（不影响同步本身）。
+
+### 测试结果
+- `python -m pytest tests/ -q` → 352 passed
+- `cd android-app && npm run test:offline` → 107 passed
+- `npm run typecheck` → 通过
+- 真机构建：`./gradlew assembleDebug` → BUILD SUCCESSFUL
