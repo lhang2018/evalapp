@@ -15,6 +15,8 @@ def builtin_datasets() -> Dict[str, EvalDataset]:
         version="1.0.0",
         task_category="general",
         source="builtin",
+        applicable_models=["mock", "openai_compat"],
+        applicable_capabilities=["time_query", "computation"],
         cases=[
             EvalCase(case_id="smoke_time", input_goal="现在几点了",
                      intent="time_query", domain="general",
@@ -33,6 +35,9 @@ def builtin_datasets() -> Dict[str, EvalDataset]:
         version="1.0.0",
         task_category="general",
         source="builtin_holdout",
+        applicable_models=["mock", "openai_compat"],
+        applicable_capabilities=["computation"],
+        holdout=True,
         cases=[
             EvalCase(case_id="holdout_calc", input_goal="计算 7 * 8",
                      intent="computation", domain="general",

@@ -10,13 +10,13 @@ import time
 from typing import Any, Dict, List, Tuple
 
 from ..core.events import RunEvent
+from ..core.privacy import PRIVACY_LEVELS, is_uploadable
 
 MAX_BATCH = 200
 MAX_PAYLOAD_BYTES = 16 * 1024
 MAX_CLOCK_SKEW_SECONDS = 7 * 24 * 3600
 EVENT_ID_RE = re.compile(r"^[A-Za-z0-9_-]{16,64}$")
 SEVERITIES = {"info", "warn", "error", "critical"}
-PRIVACY_LEVELS = {"standard", "sensitive", "secret", "private"}
 
 
 class BatchError(ValueError):
@@ -55,7 +55,7 @@ def _one(raw: Any, now: float) -> RunEvent:
     privacy = raw.get("privacy_classification", "standard")
     if privacy not in PRIVACY_LEVELS:
         raise ValueError(f"未知隐私级别: {privacy}")
-    if privacy != "standard":
+    if not is_uploadable(privacy):
         raise ValueError(f"服务端不接收 {privacy} 事件")
 
     payload = raw.get("payload", {})

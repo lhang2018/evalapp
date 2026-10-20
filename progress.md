@@ -256,3 +256,43 @@
 ### 设计约束（本轮确立）
 - 节点点击默认精确匹配，子串只作回退，避免误触同页其他控件
 - 服务端地址由客户端持久化配置，不硬编码局域网 IP
+
+## Session 7 (2026-10-20)
+
+### 背景
+- 用户要求：按架构文档继续梳理差距，确定下一步并继续补齐。
+
+### 完成事项
+- [x] 上下文治理（Arch 8.5-8.7 / PRD 29-33）：`memory/context.py` 重写
+  - 装配优先级固定为 intent/domain → 硬约束 → 目标 → 状态 → 工具说明 → 记忆 → 最近结果 →
+    验收条件 → 证据引用 → 压缩摘要；约束/状态/验收不参与裁剪
+  - 动态预算：`config.context_max_chars` 与模型 `context_limit` 共同约束；记忆与结果分别占
+    35% / 30% 份额，避免挤占结构化状态
+  - 结构化压缩 + 自然语言摘要；质量检查覆盖约束保留率、跨域污染、不可信指令、溢出、状态缺失
+  - 控制器在装配前先路由模型，按专家工具白名单生成工具说明，质量异常写入 `context_quality_warning` 事件
+- [x] 评测完整性（PRD 51-54 / Arch 11）
+  - `EvalDataset` 增加适用模型/能力与保留集标记；`EvalReport` 聚合约束违规、工具失败、
+    恢复尝试/成功、安全用例与难度分桶
+  - `EvolutionController` 评测时运行确定性 `SafetySuite`，独立保留集跑基线与候选；
+    安全/保留集结果写入候选与评测报告
+  - `ReleaseGate` fail-closed：无安全证据直接拒绝；新增数据集/版本等价、用例覆盖、
+    硬难度回归、约束违规、工具失败率、恢复成功率、保留集与回滚检查
+  - `ControllerTaskRunner` 证据补齐 `tool_ok` / `recovery_attempted` / `recovered` / 约束违规
+- [x] 隐私分级集中到 `core/privacy.py`，事件同步只接受 `standard`
+- [x] 新增 `tests/test_governance.py`（12 项）并更新受影响的评测测试
+- [x] 文档同步：README / IMPLEMENTATION / task_plan（Phase 25）
+
+### 测试结果
+- `python -m pytest tests/ -q` → 135 passed
+- `cd android-app && npm run test:offline` → 29 passed
+- `python -m evoagent.cli demo` / `workflow` → 通过
+
+### 本轮修复的缺陷
+- 约束保留率快照在压缩后才采集，导致恒为 1.0 → 在裁剪前采集
+- 门禁改为 fail-closed 后旧测试未传安全证据 → 测试显式传入 `safety_ok=True`
+- 动态预算测试使用 800 字符记忆，超出 35% 份额后被宽/窄预算同时丢弃 → 改用可落入宽预算的记忆
+
+### 设计约束（本轮确立）
+- 安全证据缺失不等于通过：门禁必须 fail-closed，安全套件独立于被测候选
+- 保留集只用于门禁决策，不参与候选调优
+- 不可信记忆直接排除，不可信外部结果保留但显式标记为数据；结构化状态永不因压缩丢失

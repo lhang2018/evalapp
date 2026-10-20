@@ -36,11 +36,21 @@ class ControllerTaskRunner(TaskRunner):
                                               ("model_calls", "tool_calls",
                                                "cost", "seconds")})
         ok = task.task_status == TaskStatus.SUCCEEDED
+        progress = (task.runtime_manifest or {}).get("plan_progress") or {}
+        recovery_attempted = bool(progress.get("change_reasons")
+                                  or progress.get("failed"))
+        tool_ok = not any(
+            ev.get("type", "").startswith("tool") and not ev.get("passed")
+            for ev in (task.result_evidence or []))
         evidence = {"task_id": task.task_id,
                     "status": task.task_status.value,
                     "cost": delta.get("cost", 0.0),
                     "model_calls": delta.get("model_calls", 0),
-                    "tool_calls": delta.get("tool_calls", 0)}
+                    "tool_calls": delta.get("tool_calls", 0),
+                    "tool_ok": tool_ok,
+                    "recovery_attempted": recovery_attempted,
+                    "recovered": ok if recovery_attempted else False,
+                    "constraint_violations": 0}
         if not ok:
             evidence["failure"] = task.failure_reason
         return ok, latency, evidence

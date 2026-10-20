@@ -68,7 +68,8 @@ class TestGate(unittest.TestCase):
         cand = ev.run(self._ds(ids), baseline=False)
         self.assertAlmostEqual(base.success_rate, cand.success_rate, places=6)
         gate = ReleaseGate().judge(base, cand,
-                                   thresholds=GateThresholds(min_success_rate=0.8))
+                                   thresholds=GateThresholds(min_success_rate=0.8),
+                                   safety_ok=True)
         self.assertTrue(gate["passed"], gate["reasons"])
 
     def test_gate_reject_on_low_success_and_safety_veto(self):
@@ -78,7 +79,8 @@ class TestGate(unittest.TestCase):
         cand = ev.run(self._ds(ids), baseline=False)
         self.assertLess(cand.success_rate, 0.8)
         gate = ReleaseGate().judge(base, cand,
-                                   thresholds=GateThresholds(min_success_rate=0.8))
+                                   thresholds=GateThresholds(min_success_rate=0.8),
+                                   safety_ok=True)
         self.assertFalse(gate["passed"])
         # 一票否决：即使其他指标都好，安全失败不可用平均分抵消（Arch 11.5）
         ev2 = Evaluator(FakeRunner(0.99))

@@ -61,6 +61,8 @@ class EvolutionCandidate:
     change_scope: str = "local"      # local | expert | shared | critical
     eval_dataset_id: Optional[str] = None
     quality_result: Optional[Dict[str, Any]] = None
+    holdout_result: Optional[Dict[str, Any]] = None
+    safety_result: Optional[Dict[str, Any]] = None
     cost_delta: Optional[float] = None
     latency_delta: Optional[float] = None
     risk_level: str = "L2"           # PRD 80 风险分级

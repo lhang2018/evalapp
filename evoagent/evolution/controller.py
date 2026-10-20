@@ -14,7 +14,9 @@ from ..core.events import EventBus
 from ..tools.registry import ToolRegistry
 from .candidates import (ALLOWED, CandidateStatus, EvolutionCandidate,
                          IllegalCandidateTransition)
-from .evaluator import EvalDataset, Evaluator, EvalReport, ReleaseGate
+from .evaluator import (EvalDataset, Evaluator, EvalReport, GateThresholds,
+                        ReleaseGate)
+from .safety import SafetySuite
 
 # PRD 80 风险分级 L0-L4
 RISK_ORDER = {"L0": 0, "L1": 1, "L2": 2, "L3": 3, "L4": 4}
@@ -49,11 +51,16 @@ class EvolutionController:
                  datasets: Optional[Dict[str, EvalDataset]] = None):
         self.evaluator = evaluator
         self.gate = gate or ReleaseGate()
+        # 生产路径要求安全证据与独立保留集（Arch 11.2 / 11.5）
+        self.gate_thresholds = GateThresholds(require_safety_pass=True,
+                                              require_holdout=True)
+        self.safety = SafetySuite()
         self.budget = budget
         self.bus = event_bus
         self.store = store
         self.releases = releases
         self.datasets: Dict[str, EvalDataset] = dict(datasets or {})
+        self.holdout_dataset: Optional[EvalDataset] = self._find_holdout()
         self.candidates: Dict[str, EvolutionCandidate] = {}
         self.tickets: deque = deque()
         self._seq = 0
@@ -73,6 +80,11 @@ class EvolutionController:
         self.evaluator = evaluator
         if datasets:
             self.datasets.update(datasets)
+        self.holdout_dataset = self._find_holdout()
+
+    def _find_holdout(self) -> Optional[EvalDataset]:
+        return next((ds for ds in self.datasets.values() if ds.is_holdout()),
+                    None)
 
     def _persist(self, cand: EvolutionCandidate) -> None:
         self.candidates[cand.candidate_id] = cand
@@ -181,8 +193,31 @@ class EvolutionController:
         cand.transition(CandidateStatus.TESTING, "进入隔离实验环境测试",
                         {"dataset": dataset.dataset_id})
         cand.transition(CandidateStatus.EVALUATING, "对比基线与候选")
-        report = self.evaluator.run(dataset, baseline=False,
-                                    metadata={"candidate": cand.candidate_id})
+
+        # 安全证据由确定性套件给出，缺失时门禁 fail-closed（Arch 11.5）
+        safety = self.safety.run()
+        cand.safety_result = safety
+
+        report = self.evaluator.run(
+            dataset, baseline=False,
+            metadata={"candidate": cand.candidate_id,
+                      "dataset_version": dataset.version})
+        holdout_report: Optional[EvalReport] = None
+        holdout_baseline: Optional[EvalReport] = None
+        if dataset.is_holdout():
+            holdout_report, holdout_baseline = report, baseline_report
+        elif self.holdout_dataset is not None:
+            # 独立保留集只用于门禁，不参与调优（PRD 52 / Arch 11.2）
+            if baseline_report is not None:
+                holdout_baseline = self.evaluator.run(
+                    self.holdout_dataset, baseline=True,
+                    metadata={"kind": "holdout_baseline"})
+            holdout_report = self.evaluator.run(
+                self.holdout_dataset, baseline=False,
+                metadata={"candidate": cand.candidate_id,
+                          "kind": "holdout"})
+            cand.holdout_result = holdout_report.summary()
+
         cand.quality_result = report.summary()
         cand.cost_delta = report.cost
         cand.latency_delta = report.avg_latency
@@ -191,9 +226,18 @@ class EvolutionController:
                 f"eval_{cand.candidate_id}_{int(time.time())}",
                 dataset.dataset_id, cand.candidate_id,
                 {"baseline": baseline_report.summary() if baseline_report else None,
-                 "candidate": report.summary()})
+                 "candidate": report.summary(),
+                 "holdout": holdout_report.summary()
+                 if holdout_report is not None else None,
+                 "safety": safety})
         if baseline_report is not None:
-            gate = self.gate.judge(baseline_report, report)
+            gate = self.gate.judge(
+                baseline_report, report,
+                thresholds=self.gate_thresholds,
+                safety_ok=safety["passed"],
+                rollback_available=bool(cand.rollback_version),
+                holdout_report=holdout_report,
+                holdout_baseline=holdout_baseline)
             cand.publish_suggestion = "release_ready" if gate["passed"] else "rejected"
             if not gate["passed"]:
                 cand.transition(CandidateStatus.REJECTED,
@@ -206,10 +250,16 @@ class EvolutionController:
                               component_id="evolution",
                               payload={"candidate_id": cand.candidate_id,
                                        "passed": gate["passed"],
-                                       "reasons": gate["reasons"]})
-            return {**gate, "report": report.summary()}
+                                       "reasons": gate["reasons"],
+                                       "safety_passed": safety["passed"],
+                                       "holdout": holdout_report.summary()
+                                       if holdout_report is not None else None})
+            return {**gate, "report": report.summary(),
+                    "holdout": holdout_report.summary()
+                    if holdout_report is not None else None,
+                    "safety": safety}
         self._persist(cand)
-        return {"passed": None, "report": report.summary()}
+        return {"passed": None, "report": report.summary(), "safety": safety}
 
     def approve(self, cand: EvolutionCandidate, approver: str = "auto") -> Dict[str, Any]:
         rule = PUBLISH_RULES.get(cand.risk_level, "strict_review")

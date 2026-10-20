@@ -240,18 +240,28 @@ class RuntimeController:
         return self._run_react(task, budget)
 
     def _run_react(self, task: Task, budget: BudgetController) -> Task:
+        expert = self.experts.get(task.domain) or self.experts.route(task.intent)
+        model = self._route_model(task)
+        whitelist = expert.tool_whitelist if expert else None
         ctx = self.assembler.assemble(
             task.user_goal, intent=task.intent, domain=task.domain,
             constraints=task.constraints, acceptance=task.acceptance_criteria,
-            scope_key=task.task_id)
-        expert = self.experts.get(task.domain) or self.experts.route(task.intent)
+            status=task.task_status.value,
+            tool_docs=self._tool_docs(whitelist),
+            scope_key=task.task_id,
+            max_chars=self._context_limit_chars(model))
+        task.runtime_manifest["context"] = ctx.stats()
+        quality = ctx.quality or {}
+        if quality.get("overflow") or quality.get("untrusted_instructions") \
+                or quality.get("constraint_retention", 1.0) < 1.0:
+            self._emit(task, "context_quality_warning", quality,
+                       severity="warn")
         messages = ctx.to_messages()
         if expert and expert.system_prompt:
             messages.insert(0, ChatMessage(role="system",
                                            content=expert.system_prompt))
         cancel_flag = self._active.get(task.task_id)
         plan = self._plan_from_task(task)
-        model = self._route_model(task)
         outcome = self.react.run(
             messages, budget,
             allowed_tools=expert.tool_whitelist if expert else None,
@@ -565,6 +575,27 @@ class RuntimeController:
             "model_id": getattr(profile, "model_id", None),
             "intent": task.intent, "domain": task.domain}
         return model
+
+    def _context_limit_chars(self, model: Any) -> int:
+        """上下文预算同时受配置与模型窗口约束（Arch 8.5）。"""
+        limit = int(getattr(self.cfg, "context_max_chars", 6000))
+        try:
+            context_limit = int(model.profile().context_limit)
+            # 粗换算：1 token 约 2 字符，留出输出余量
+            limit = min(limit, max(800, context_limit * 2))
+        except Exception:  # noqa: BLE001 —— 无档案时用配置默认值
+            pass
+        return limit
+
+    def _tool_docs(self, whitelist: Optional[List[str]]) -> List[str]:
+        """必要工具说明按权限白名单进入上下文（Arch 8.5 第 5 优先级）。"""
+        docs: List[str] = []
+        for spec in self.tools.schema_for_model(whitelist):
+            schema = spec.get("input_schema") or {}
+            props = schema.get("properties") or {}
+            args = ", ".join(props.keys()) or "无参数"
+            docs.append(f"{spec['tool_id']}({args}): {spec.get('description', '')}")
+        return docs
 
     @staticmethod
     def _plan_from_task(task: Task) -> Optional[ExecutionPlan]:

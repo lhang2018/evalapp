@@ -56,6 +56,8 @@ class Config:
     # ReAct 防循环（PRD 12.3）
     react_max_iterations: int = 20
     react_max_repeat_failures: int = 3
+    # 上下文预算上限（Arch 8.5-8.6；实际值再受模型 context_limit 约束）
+    context_max_chars: int = 6000
     # API 服务与安全控制面（PRD 83-88 / Arch 18）
     api_host: str = "127.0.0.1"
     api_port: int = 8300
