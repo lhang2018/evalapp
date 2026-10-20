@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 327 项 + 客户端 57 项全部通过**。
+测试基线（2026-10-20）：**Python 331 项 + 客户端 60 项全部通过**。
 
 ---
 
@@ -262,6 +262,7 @@ Python 服务端（标准库，SQLite）
 | VS-05 | 设备安装与部署记录 | ✅ | `core/persistence.py` | `device_installations` / `device_deployments`；`GET /sync/installations`（admin） |
 | VS-06 | 回滚目标解析 | ✅ | `release/delivery.py` | 激活时把上一版本记为 last known good；回滚未指定目标时使用该版本 |
 | VS-07 | 下载/校验/激活/回滚回执 | ✅ | `api/server.py` | 动作白名单 + 部署记录 + 非重复回执写审计（`sync.apply_result`） |
+| VS-08 | 候选阶段同步 | ✅ | `release/delivery.py`, `api/server.py`, `core/persistence.py` | `GET /sync/candidates`：只下发评测后的候选阶段（批准/就绪/部署/监测/晋级/回滚），不含假设与证据；记录每个安装实例已见状态（`device_candidate_states`） |
 
 ---
 
@@ -315,6 +316,7 @@ Python 服务端（标准库，SQLite）
 | `/tasks/{id}/pause` / `/tasks/{id}/resume` | 暂停/恢复（`409 requires_force` 表示需显式 force） |
 | `/events/sync` | 批量事件摄取 → `accepted` / `duplicates` / `rejected`；可选 `batch_id` 返回回执，重放返回原 `receipt_id` |
 | `/sync/reconcile` | 版本对账：平台/App 版本/工具契约/签名与制品检查、灰度范围与目标版本 |
+| `/sync/candidates` | 候选阶段同步（GET，`installation_id`）：评测后状态摘要 + 安装实例当前/目标版本；记录下发状态 |
 | `/sync/apply-result` | 更新应用回执（下载/校验/激活/健康检查/回滚）；`apply_id` 幂等 |
 | `/workflows/extract` | 从成功任务抽取候选（可选 `min_support` / `limit`；参数非法 `400`） |
 | `/workflows/candidates/{id}/approve` | 批准候选（admin；评测未通过 `409`） |
@@ -415,6 +417,7 @@ Python 服务端（标准库，SQLite）
 | UI-22 | 更新管理 | ✅ | 当前版本、发布清单、兼容性检查结果、回滚目标与部署/回滚计数（PRD 89.8） |
 | UI-23 | 无障碍观测面板与快捷操作 | ✅ | 只读读取当前界面（包名/节点数/文本摘要）、权限弹窗提示、安全停止状态与人工恢复、固定目标快捷点击 |
 | UI-24 | 客户端更新管理器 | ✅ | 安装实例 ID、对账/校验/激活/健康检查/回滚操作、槽位与已知良好版本展示；原生 APK 提示走平台更新 |
+| UI-25 | 候选阶段透明展示 | ✅ | 更新分区「同步候选状态」：候选 ID/阶段/组件/风险/关联版本；仅展示，激活仍走对账与签名校验 |
 
 ### 5.2 离线核心（`android-app/src/offline/`，纯 TS 可单测）
 
@@ -467,6 +470,7 @@ Python 服务端（标准库，SQLite）
 | UP-05 | 健康检查与自动回滚 | ✅ | `manager.ts` | 健康失败自动回到 last known good；回执带 `to_release_id` |
 | UP-06 | 应用回执上报 | ✅ | `manager.ts`, `apiTransport.ts` | 下载/校验/激活/健康/回滚；`apply_id` 幂等；上报失败不破坏本地已完成切换 |
 | UP-07 | 原生 APK 边界 | ✅ | `manager.ts` | `delivery_mode != capability_slot` 直接 `blocked`，提示走平台应用更新 |
+| UP-08 | 候选阶段同步 | ✅ | `manager.ts`, `apiTransport.ts`, `api.ts` | `refreshCandidates()` 拉取服务端候选阶段并持久化；失败记录错误但不改变本地槽位；旧状态默认空列表 |
 
 ### 5.5 客户端脚本
 
@@ -507,6 +511,7 @@ Python 服务端（标准库，SQLite）
 | `release_manifests` / `release_events` | 发布清单与事件 |
 | `device_installations` | 设备安装实例（平台/App 版本/当前与目标版本/状态） |
 | `device_deployments` | 更新应用回执记录（动作/结果/幂等 ID） |
+| `device_candidate_states` | 每个安装实例已下发的候选阶段（首次/最近时间、关联版本） |
 | `sync_batches` | 事件同步批次与回执（可重放） |
 | `runtime_manifests` | 每次运行的 manifest（task_id/run_id/设备身份/组件版本） |
 | `audit_log` | 审计 |
@@ -601,7 +606,7 @@ Python 服务端（标准库，SQLite）
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
 
-### 客户端（`android-app/test/`，57 项）
+### 客户端（`android-app/test/`，60 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -611,7 +616,7 @@ Python 服务端（标准库，SQLite）
 | `test/offline/transport.test.ts` | 时间戳单位转换 |
 | `test/device/broker.test.ts` | 风险闸门、确认、五态、不重放、unavailable、快照验证、权限弹窗降级、安全停止与恢复（12 项） |
 | `test/device/observation.test.ts` | 快照归一化、页面变化、预期文本/包名、权限弹窗识别、缺快照不判成功（8 项） |
-| `test/update/manager.test.ts` | 安装 ID、目标校验（摘要/签名/交付方式）、存储空间、双槽位激活、健康检查与自动回滚、回执失败、状态损坏回退（16 项） |
+| `test/update/manager.test.ts` | 安装 ID、目标校验（摘要/签名/交付方式）、存储空间、双槽位激活、健康检查与自动回滚、回执失败、状态损坏回退、候选阶段同步（19 项） |
 
 运行：
 
@@ -634,7 +639,7 @@ cd android-app && npm run test:offline
 | Web 管理端完整界面 | PRD 90 | ✅ | 90.1-90.7 分区已实现；不含富文本编辑/图表库，以表格与 JSON 展示为主 |
 | 发布分支自动化（可视化/远端推送） | PRD 59-63 | ⬜ | 已提供本地分支/标签/ff 合并 CLI；不自动 push、不整合同步冲突 |
 | 能力包制品下载与装载 | 补充 A §4/§5 | 🔹 | 清单字段、分发筛选与双槽位引用切换已完成；实际包内容由 OTA（CodePush/Expo Updates）承载，尚未接线 |
-| 候选状态同步（服务端 → App） | 补充 A §2/§8 | ⬜ | 应用结果回传已实现；服务端候选/实验状态主动同步未做 |
+| 候选状态同步（服务端 → App） | 补充 A §2/§8 | ✅ | `GET /sync/candidates` 拉取评测后阶段并展示；仅透明展示，不改变激活路径 |
 
 ---
 
@@ -642,7 +647,7 @@ cd android-app && npm run test:offline
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 327 passed
+python -m pytest tests/ -q                       # 331 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -715,6 +720,23 @@ cd android-app && npm run android
 ---
 
 ## 变更记录
+
+### 2026-10-20 — 候选阶段同步（补充 A §2/§8）
+
+- 需求：`EvoAgent_双端协同进化与版本分发架构补充设计.md` §2（Evolution Sync Service）与 §8（候选状态同步实体）。
+- 变更：服务端新增 `GET /sync/candidates`，按安装实例下发评测后的候选阶段摘要
+  （APPROVAL_PENDING / RELEASE_READY / DEPLOYING / MONITORING / PROMOTED / ROLLED_BACK），
+  不包含假设、证据与评测细节；每次下发写入 `device_candidate_states` 记录首次/最近时间。
+  客户端更新管理器新增 `refreshCandidates()` 与持久化快照，更新分区可手动同步并查看阶段、
+  组件、风险与关联版本；候选展示不影响本地激活路径。
+- 代码：`release/delivery.py`、`core/persistence.py`、`api/server.py`；
+  `android-app/src/update/{types,manager,apiTransport}.ts`、`src/api.ts`、`App.tsx`。
+- 接口/表：`GET /sync/candidates`；`device_candidate_states` 表。
+- 测试：`tests/test_version_sync.py` +4 项、`test/update/manager.test.ts` +3 项；
+  Python 327 → 331，客户端 57 → 60。
+- 状态变化：新增 VS-08、UI-25、UP-08 全部 ✅；§9「候选状态同步」⬜ → ✅。
+- 已知限制：候选阶段为拉取式同步（无推送），App 需手动或进入更新分区时触发；
+  候选与发布清单的关联仅来自候选转换记录中的 `release_id`。
 
 ### 2026-10-20 — 双端版本对账、运行清单与客户端更新管理器（补充 A §3/§5/§8）
 
@@ -928,6 +950,7 @@ cd android-app && npm run android
 | Session 22 | 发布分支/标签/快进合并（PRD 59-60 / 62-63） | 312 + 29 |
 | Session 23 | 无障碍界面观测与执行校验（PRD 68） | 312 + 41 |
 | Session 24 | 版本对账、运行清单与客户端更新管理器（补充 A） | 327 + 57 |
+| Session 25 | 候选阶段同步（服务端 → App） | 331 + 60 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 

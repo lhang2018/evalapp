@@ -5,6 +5,8 @@ import { MemoryStore } from "../../src/offline/storage.ts";
 import { UpdateManager } from "../../src/update/manager.ts";
 import type {
   ApplyResultRequest,
+  CandidateState,
+  CandidateSyncResponse,
   ReconcileRequest,
   ReconcileResponse,
   UpdateTarget,
@@ -49,15 +51,29 @@ function reconcileResponse(t: UpdateTarget | null): ReconcileResponse {
 
 class FakeTransport implements UpdateTransport {
   response: ReconcileResponse = reconcileResponse(null);
+  candidateResponse: CandidateSyncResponse = {
+    installation_id: "inst_test_0001",
+    current_release_id: null,
+    candidates: [],
+    server_time: 1700000000,
+  };
   reconcileCalls: ReconcileRequest[] = [];
+  candidateCalls: string[] = [];
   reports: ApplyResultRequest[] = [];
   reconcileError: Error | null = null;
+  candidateError: Error | null = null;
   reportError: Error | null = null;
 
   async reconcile(req: ReconcileRequest): Promise<ReconcileResponse> {
     this.reconcileCalls.push(req);
     if (this.reconcileError) throw this.reconcileError;
     return this.response;
+  }
+
+  async candidateStates(id: string): Promise<CandidateSyncResponse> {
+    this.candidateCalls.push(id);
+    if (this.candidateError) throw this.candidateError;
+    return this.candidateResponse;
   }
 
   async applyResult(req: ApplyResultRequest) {
@@ -271,4 +287,81 @@ test("corrupted state falls back to an empty slot state", async () => {
   assert.equal(state.phase, "idle");
   assert.equal(state.slots.a, null);
   assert.equal(state.installation_id, "inst_test_0001");
+});
+
+test("candidate sync stores server stages without changing the active slot", async () => {
+  const { manager, transport } = await readyManager(target(), {
+    freeBytes: () => Number.MAX_SAFE_INTEGER,
+    now: () => 2000,
+  });
+  await manager.verify();
+  await manager.activate();
+  const candidate: CandidateState = {
+    candidate_id: "cand_001",
+    status: "MONITORING",
+    target_component: "workflow/demo",
+    target_domain: "general",
+    risk_level: "L2",
+    publish_suggestion: "release_ready",
+    release_id: "rel_cand_001",
+    created_at: 1500,
+    updated_at: 1900,
+  };
+  transport.candidateResponse = {
+    installation_id: "inst_test_0001",
+    current_release_id: "rel_9_1_0",
+    target_release_id: "rel_9_1_0",
+    candidates: [candidate],
+    server_time: 2000,
+  };
+  const state = await manager.refreshCandidates();
+  assert.deepEqual(transport.candidateCalls, ["inst_test_0001"]);
+  assert.equal(state.active_slot, "b");
+  assert.equal(state.candidates.length, 1);
+  assert.equal(state.candidates[0].candidate_id, "cand_001");
+  assert.equal(state.candidates_synced_at, 2000);
+  const persisted = await manager.status();
+  assert.equal(persisted.candidates[0].status, "MONITORING");
+});
+
+test("candidate sync failure records an error and keeps local state", async () => {
+  const { manager, transport } = await readyManager(target(), {
+    freeBytes: () => Number.MAX_SAFE_INTEGER,
+  });
+  await manager.verify();
+  const before = await manager.activate();
+  transport.candidateError = new Error("offline");
+  await assert.rejects(
+    () => manager.refreshCandidates(),
+    /offline/,
+  );
+  const after = await manager.status();
+  assert.equal(after.phase, before.phase);
+  assert.equal(after.active_slot, before.active_slot);
+  assert.match(after.last_error ?? "", /候选状态同步失败/);
+});
+
+test("state persisted before candidate sync defaults to an empty list", async () => {
+  const kv = new MemoryStore();
+  await kv.setItem("update_state_v1", JSON.stringify({
+    version: 1,
+    installation_id: "inst_test_0001",
+    active_slot: "a",
+    slots: { a: null, b: null },
+    last_known_good: null,
+    pending: null,
+    phase: "idle",
+    target: null,
+    checks: [],
+    reasons: [],
+    last_checked_at: null,
+    last_error: null,
+  }));
+  const manager = new UpdateManager(new FakeTransport(), kv, {
+    appVersion: "0.1.0",
+    installationId: "inst_test_0001",
+  });
+  const state = await manager.status();
+  assert.deepEqual(state.candidates, []);
+  assert.equal(state.candidates_synced_at, null);
 });

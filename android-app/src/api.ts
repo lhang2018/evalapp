@@ -8,12 +8,14 @@
  *  POST /tasks/{id}/cancel
  *  POST /events/sync
  *  POST /sync/reconcile
+ *  GET  /sync/candidates
  *  POST /sync/apply-result
  *  GET  /health
  */
 
 import type {
   ApplyResultRequest,
+  CandidateSyncResponse,
   ReconcileRequest,
   ReconcileResponse,
 } from "./update/types.ts";
@@ -271,6 +273,13 @@ export class EvoAgentClient {
       method: "POST",
       body: JSON.stringify(req),
     });
+  }
+
+  /** 候选阶段同步（双端协同 §2）：只读展示，不触发激活。 */
+  syncCandidates(installationId: string): Promise<CandidateSyncResponse> {
+    return this.req<CandidateSyncResponse>(
+      `/sync/candidates?installation_id=${encodeURIComponent(installationId)}`,
+    );
   }
 
   /** 上报更新应用回执（下载/校验/激活/健康检查/回滚）。 */

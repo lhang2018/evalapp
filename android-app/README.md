@@ -18,6 +18,8 @@
 - **版本对账与更新管理器**（`src/update/`）：安装实例 ID 持久化；`/sync/reconcile` 对账
   （平台/最低版本/工具契约/灰度）；本地复核签名、摘要、交付方式与回滚路径；双槽位原子切换、
   健康检查失败自动回滚、应用回执上报。原生 APK 只标记为需二进制更新，必须走平台应用商店。
+- **候选阶段同步**：`/sync/candidates` 拉取评测后的候选状态（批准/就绪/部署/监测/晋级/回滚），
+  在更新分区只读展示；候选阶段不触发激活，实际更新仍走对账与签名校验。
 
 ## 为什么选 React Native
 
@@ -30,7 +32,7 @@
 ## 测试（无需 node_modules）
 
 ```bash
-npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门/界面观测/更新管理器，共 57 项
+npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门/界面观测/更新管理器，共 60 项
 npm run typecheck       # 需要先 npm install（tsc）
 ```
 
@@ -101,9 +103,9 @@ android-app/
 ├── src/api.ts                 # REST 客户端（对应 api/server.py）
 ├── src/offline/               # 本地任务/事件队列、隐私过滤、同步引擎
 ├── src/device/                # 设备操作契约、风险闸门、原生桥接
-├── src/update/                # 安装实例、版本对账、双槽位更新管理
+├── src/update/                # 安装实例、版本对账、候选阶段、双槽位更新管理
 ├── src/storage/               # AsyncStorage ↔ KeyValueStore 适配
-├── test/                      # node --test（offline 21 + device 20 + update 16）
+├── test/                      # node --test（offline 21 + device 20 + update 19）
 ├── android/                   # Kotlin 原生壳 + AccessibilityService + DeviceModule
 └── package.json
 ```
@@ -114,5 +116,5 @@ android-app/
 - 语音输入（PRD 64）
 - 后台常驻同步（当前仅前台轮询 + 手动同步）
 - 能力包制品下载与装载（当前更新管理器只切换槽位引用，实际包内容交由 OTA 层）
-- 服务端 → App 的候选状态同步
+- 候选阶段推送（当前为拉取式同步，无服务端主动推送）
 - 后台任务通知（PRD 64）

@@ -60,6 +60,36 @@ export interface UpdateSlot {
   activated_at: number;
 }
 
+/** 服务端候选改进阶段（仅评测之后的状态会下发）。 */
+export type CandidateSyncStatus =
+  | "APPROVAL_PENDING"
+  | "RELEASE_READY"
+  | "DEPLOYING"
+  | "MONITORING"
+  | "PROMOTED"
+  | "ROLLED_BACK";
+
+export interface CandidateState {
+  candidate_id: string;
+  status: CandidateSyncStatus | string;
+  target_component: string;
+  target_domain?: string;
+  risk_level?: string;
+  publish_suggestion?: string;
+  release_id?: string | null;
+  created_at?: number | null;
+  updated_at: number;
+}
+
+export interface CandidateSyncResponse {
+  installation_id: string;
+  current_release_id: string | null;
+  target_release_id?: string | null;
+  installation_status?: string;
+  candidates: CandidateState[];
+  server_time: number;
+}
+
 export interface UpdateState {
   version: 1;
   installation_id: string;
@@ -73,6 +103,9 @@ export interface UpdateState {
   target: UpdateTarget | null;
   checks: UpdateCheckEntry[];
   reasons: string[];
+  /** 服务端已下发、供透明展示的候选阶段（不代表可激活） */
+  candidates: CandidateState[];
+  candidates_synced_at: number | null;
   last_checked_at: number | null;
   last_error: string | null;
 }
@@ -105,6 +138,7 @@ export interface ApplyResultRequest {
 
 export interface UpdateTransport {
   reconcile(req: ReconcileRequest): Promise<ReconcileResponse>;
+  candidateStates(installationId: string): Promise<CandidateSyncResponse>;
   applyResult(
     req: ApplyResultRequest,
   ): Promise<{ ok: boolean; [key: string]: unknown }>;

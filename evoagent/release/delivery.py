@@ -16,6 +16,11 @@ ACTIONS = ("download_started", "verified", "activation_pending", "activated",
            "activation_failed", "health_check", "rolled_back")
 SLOT_KINDS = {"capability", "workflow", "model_adapter"}
 APP_VERSION_RE = re.compile(r"^[vV]?(\d+)(?:\.(\d+))?(?:\.(\d+))?")
+# 只同步已通过评测的候选阶段；评测前的假设与证据属于服务端内部状态
+CANDIDATE_SYNC_STATUSES = frozenset({
+    "APPROVAL_PENDING", "RELEASE_READY", "DEPLOYING", "MONITORING",
+    "PROMOTED", "ROLLED_BACK",
+})
 
 
 def _version_tuple(raw: str) -> Optional[tuple]:
@@ -31,6 +36,29 @@ def gray_bucket(installation_id: str) -> int:
     """安装实例在灰度中的稳定分桶（0-99）；同一实例结果可重放。"""
     digest = hashlib.sha256(installation_id.encode("utf-8")).hexdigest()
     return int(digest[:8], 16) % 100
+
+
+def _candidate_summary(cand: Any, status: str) -> Dict[str, Any]:
+    log = list(getattr(cand, "transition_log", []) or [])
+    release_id = ""
+    for entry in log:
+        evidence = entry.get("evidence") or {}
+        if isinstance(evidence, dict) and evidence.get("release_id"):
+            release_id = str(evidence["release_id"])
+    updated_at = float(getattr(cand, "created_at", 0) or 0)
+    if log:
+        updated_at = float(log[-1].get("at") or updated_at)
+    return {
+        "candidate_id": getattr(cand, "candidate_id", ""),
+        "status": status,
+        "target_component": getattr(cand, "target_component", ""),
+        "target_domain": getattr(cand, "target_domain", ""),
+        "risk_level": getattr(cand, "risk_level", ""),
+        "publish_suggestion": getattr(cand, "publish_suggestion", ""),
+        "release_id": release_id or None,
+        "created_at": getattr(cand, "created_at", None),
+        "updated_at": updated_at,
+    }
 
 
 class ReleaseDelivery:
@@ -169,6 +197,45 @@ class ReleaseDelivery:
             "reasons": reasons,
             "current_release_id": current,
             "target": target,
+            "server_time": time.time(),
+        }
+
+    # ---- 候选状态同步（双端协同 §2/§8）----
+    def candidate_states(self, *, installation_id: str,
+                         candidates: Any, limit: int = 20) -> Dict[str, Any]:
+        """返回该安装实例可见的候选阶段摘要，并记录已下发状态。
+
+        只暴露评测之后的状态；假设、证据与评测细节留在服务端。候选状态
+        不改变发布与激活路径——App 仍必须走 reconcile/manifest 门禁。
+        """
+        installation_id = (installation_id or "").strip()
+        if not installation_id:
+            raise ValueError("缺少 installation_id")
+        installation = self.store.get_installation(installation_id)
+        if installation is None:
+            raise KeyError("安装实例不存在")
+        limit = max(1, min(int(limit), 100))
+        visible: List[Dict[str, Any]] = []
+        for cand in candidates or []:
+            status = (getattr(cand.status, "value", None)
+                      or str(getattr(cand, "status", "")))
+            if status not in CANDIDATE_SYNC_STATUSES:
+                continue
+            summary = _candidate_summary(cand, status)
+            visible.append(summary)
+        visible.sort(key=lambda item: (item["updated_at"], item["candidate_id"]),
+                     reverse=True)
+        visible = visible[:limit]
+        for item in visible:
+            self.store.record_device_candidate_state(
+                installation_id, item["candidate_id"], item["status"],
+                item["release_id"] or "", item)
+        return {
+            "installation_id": installation_id,
+            "current_release_id": installation.get("current_release_id"),
+            "target_release_id": installation.get("target_release_id"),
+            "installation_status": installation.get("status"),
+            "candidates": visible,
             "server_time": time.time(),
         }
 

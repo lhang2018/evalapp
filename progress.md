@@ -1016,3 +1016,38 @@
 - 服务端给出更新建议，客户端必须独立复核签名/摘要/交付方式/回滚路径；任一失败拒绝激活。
 - 双槽位切换只改引用，健康检查失败必须自动回到 last known good。
 - 原生 APK 不走客户端激活通道，避免绕过平台更新与签名校验。
+
+## Session 25 (2026-10-20)
+
+### 目标
+- 补齐补充设计 A §2/§8 最后一项「候选状态同步（服务端 → App）」。
+
+### 完成事项
+- [x] 服务端：`ReleaseDelivery.candidate_states` 只下发评测后的候选阶段
+      （APPROVAL_PENDING / RELEASE_READY / DEPLOYING / MONITORING / PROMOTED / ROLLED_BACK），
+      摘要含组件/领域/风险/建议/关联版本，不含假设、证据与评测细节
+- [x] `GET /sync/candidates?installation_id=...`：校验安装实例存在；记录每个实例已下发状态
+- [x] 新表 `device_candidate_states`（首次/最近下发时间、状态、关联版本），重复同步保留 first_seen_at
+- [x] 客户端：`CandidateState`/`CandidateSyncResponse` 类型、`UpdateManager.refreshCandidates()`、
+      `ApiUpdateTransport` 与 `EvoAgentClient.syncCandidates` 接线；旧状态快照缺字段时回退空列表
+- [x] App 更新分区新增「同步候选状态」按钮与候选阶段只读列表（含同步时间、组件、风险、版本）
+- [x] 测试：`tests/test_version_sync.py` +4 项；`test/update/manager.test.ts` +3 项
+- [x] 文档：FEATURES（VS-08、UI-25、UP-08、接口/表/测试矩阵/变更记录/Session 25）、
+      IMPLEMENTATION（补充 A §2/§8 转 ✅、覆盖率、决策与迭代待办）、README、android-app/README、
+      task_plan Phase 43
+
+### 测试结果
+- `python -m pytest tests/ -q` → 331 passed
+- `cd android-app && npm run test:offline` → 60 passed；`npx tsc --noEmit` 通过
+
+### 盘点更新
+- `FEATURES.md`：206 项 ✅、0 项部分、4 项待迭代；候选状态同步由 ⬜ 转 ✅。
+
+### 已知限制
+- 候选阶段为拉取式同步，无服务端主动推送；App 需手动触发或进入更新分区时同步。
+- 候选与发布版本的关联取自候选转换记录中的 `release_id`，不额外维护映射表。
+- 测试服共享 SQLite 时，后台任务必须先落库再返回 202（本轮已修复竞态）。
+
+### 设计约束（本轮确立）
+- 候选阶段只暴露评测之后的状态；评测前的假设与证据不离开服务端。
+- 候选同步是透明展示通道，不改变激活路径：实际更新仍必须经过对账、签名与回滚路径校验。

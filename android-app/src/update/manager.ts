@@ -36,6 +36,8 @@ function emptyState(installationId: string): UpdateState {
     target: null,
     checks: [],
     reasons: [],
+    candidates: [],
+    candidates_synced_at: null,
     last_checked_at: null,
     last_error: null,
   };
@@ -60,6 +62,8 @@ function parseState(raw: string | null, fallbackId: string): UpdateState {
       },
       checks: Array.isArray(data.checks) ? data.checks : [],
       reasons: Array.isArray(data.reasons) ? data.reasons : [],
+      candidates: Array.isArray(data.candidates) ? data.candidates : [],
+      candidates_synced_at: data.candidates_synced_at ?? null,
       last_error: data.last_error ?? null,
     };
   } catch {
@@ -166,6 +170,31 @@ export class UpdateManager {
         state.phase = "blocked";
       } else {
         state.phase = state.slots[state.active_slot] ? "active" : "idle";
+      }
+      await this.save(state);
+      return state;
+    });
+  }
+
+  /**
+   * 拉取服务端候选阶段摘要（双端协同 §2）：只作透明展示，
+   * 不改变本地激活路径——实际更新仍必须经过 reconcile 与签名校验。
+   */
+  refreshCandidates(): Promise<UpdateState> {
+    return this.queue(async () => {
+      const state = await this.load();
+      try {
+        const response = await this.transport.candidateStates(
+          state.installation_id,
+        );
+        state.candidates = Array.isArray(response.candidates)
+          ? response.candidates
+          : [];
+        state.candidates_synced_at = this.now();
+      } catch (error) {
+        state.last_error = `候选状态同步失败: ${messageOf(error)}`;
+        await this.save(state);
+        throw error;
       }
       await this.save(state);
       return state;

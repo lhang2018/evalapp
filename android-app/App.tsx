@@ -1100,6 +1100,15 @@ export default function App(): React.JSX.Element {
                       disabled={!online || updateBusy}
                     />
                   </View>
+                  <View style={s.action}>
+                    <Button
+                      title="同步候选状态"
+                      onPress={() =>
+                        void runUpdate(() => services.update.refreshCandidates())
+                      }
+                      disabled={!online || updateBusy}
+                    />
+                  </View>
                   {updateState?.phase === "available" && (
                     <View style={s.action}>
                       <Button
@@ -1147,6 +1156,37 @@ export default function App(): React.JSX.Element {
                     disabled={updateBusy}
                   />
                 )}
+              </View>
+              <View style={s.card}>
+                <Text style={s.goal}>候选改进状态</Text>
+                {updateState?.candidates_synced_at ? (
+                  <Text style={s.hint}>
+                    同步于{" "}
+                    {formatTime(Math.floor(updateState.candidates_synced_at / 1000))}
+                  </Text>
+                ) : (
+                  <Text style={s.hint}>
+                    尚未同步；候选阶段只作透明展示，激活仍走更新对账流程。
+                  </Text>
+                )}
+                {(updateState?.candidates ?? []).map((candidate) => (
+                  <View key={candidate.candidate_id}>
+                    <Text style={s.mono}>
+                      {candidate.candidate_id} · {candidate.status}
+                    </Text>
+                    <Text style={s.hint}>
+                      组件 {candidate.target_component || "-"} · 风险{" "}
+                      {candidate.risk_level || "-"}
+                      {candidate.release_id
+                        ? ` · 版本 ${candidate.release_id}`
+                        : ""}
+                    </Text>
+                  </View>
+                ))}
+                {updateState?.candidates_synced_at &&
+                  (updateState.candidates ?? []).length === 0 && (
+                    <Text style={s.hint}>当前没有可展示的候选阶段。</Text>
+                  )}
               </View>
               {versionInfo && (
                 <View style={s.card}>

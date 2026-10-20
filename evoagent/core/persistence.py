@@ -64,6 +64,11 @@ class Database:
                 data TEXT)""")
             c.execute("""CREATE INDEX IF NOT EXISTS idx_runtime_manifests_task
                 ON runtime_manifests(task_id, created_at)""")
+            # 候选状态同步：记录每个安装实例已看到的候选阶段（双端协同 §2/§8）
+            c.execute("""CREATE TABLE IF NOT EXISTS device_candidate_states(
+                installation_id TEXT, candidate_id TEXT, status TEXT,
+                release_id TEXT, first_seen_at REAL, updated_at REAL, data TEXT,
+                PRIMARY KEY(installation_id, candidate_id))""")
             # 诊断案例（PRD 41-45 / Architecture 9.2-9.3）
             c.execute("""CREATE TABLE IF NOT EXISTS diagnostic_cases(
                 case_id TEXT PRIMARY KEY, task_id TEXT, run_id TEXT, status TEXT,
@@ -323,6 +328,37 @@ class Database:
                  "installation_id": r["installation_id"],
                  "release_id": r["release_id"], "action": r["action"],
                  "outcome": r["outcome"], "created_at": r["created_at"],
+                 "data": json.loads(r["data"] or "{}")} for r in rows]
+
+    # ---- 候选状态同步（双端协同 §2/§8）----
+    def record_device_candidate_state(self, installation_id: str,
+                                      candidate_id: str, status: str,
+                                      release_id: str,
+                                      data: Dict[str, Any]) -> None:
+        now = time.time()
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO device_candidate_states VALUES"
+                " (?,?,?,?,?,?,?)"
+                " ON CONFLICT(installation_id, candidate_id) DO UPDATE SET"
+                " status=excluded.status, release_id=excluded.release_id,"
+                " updated_at=excluded.updated_at, data=excluded.data",
+                (installation_id, candidate_id, status, release_id, now, now,
+                 json.dumps(data, ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def list_device_candidate_states(self, installation_id: str,
+                                     limit: int = 50) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT installation_id, candidate_id, status, release_id,"
+            " first_seen_at, updated_at, data FROM device_candidate_states"
+            " WHERE installation_id=? ORDER BY updated_at DESC LIMIT ?",
+            (installation_id, limit)).fetchall()
+        return [{"installation_id": r["installation_id"],
+                 "candidate_id": r["candidate_id"],
+                 "status": r["status"], "release_id": r["release_id"],
+                 "first_seen_at": r["first_seen_at"],
+                 "updated_at": r["updated_at"],
                  "data": json.loads(r["data"] or "{}")} for r in rows]
 
     # ---- sync receipts（双端协同 §3.3）----

@@ -11,6 +11,7 @@ import urllib.request
 
 from evoagent.api.server import ApiServer
 from evoagent.app import App
+from evoagent.evolution.candidates import CandidateStatus
 
 INSTALLATION = "inst-abcdefgh-0001"
 DEVICE = "device-abcdefgh-0001"
@@ -261,6 +262,84 @@ class TestVersionSyncApi(unittest.TestCase):
         st, out = self._post("/tasks", {
             "goal": "x", "device_id": "bad"})
         self.assertEqual(st, 400)
+
+    # ---- 候选状态同步 ----
+    def _candidate_at(self, target):
+        cand = self.app.evolution.propose_candidate(
+            "v0.1.0", "workflow/demo", "示例问题", "示例假设")
+        if target == "CANDIDATE_CREATED":
+            return cand
+        for name in ("TESTING", "EVALUATING", "APPROVAL_PENDING",
+                     "RELEASE_READY", "DEPLOYING", "MONITORING", "PROMOTED"):
+            cand.transition(CandidateStatus(name), "测试推进")
+            if name == target:
+                break
+        return cand
+
+    def _candidates(self):
+        st, out = self._get(
+            f"/sync/candidates?installation_id={INSTALLATION}&limit=100")
+        self.assertEqual(st, 200)
+        return out
+
+    def test_candidate_states_after_evaluation(self):
+        self._reconcile()
+        cand = self._candidate_at("APPROVAL_PENDING")
+        out = self._candidates()
+        item = next(c for c in out["candidates"]
+                    if c["candidate_id"] == cand.candidate_id)
+        self.assertEqual(item["status"], "APPROVAL_PENDING")
+        self.assertEqual(item["target_component"], "workflow/demo")
+        self.assertEqual(item["risk_level"], cand.risk_level)
+        # 假设与证据留在服务端，不下发客户端
+        self.assertNotIn("hypothesis", item)
+        self.assertNotIn("root_cause_evidence", item)
+        rows = self.app.db.list_device_candidate_states(
+            INSTALLATION, limit=100)
+        row = next(r for r in rows
+                   if r["candidate_id"] == cand.candidate_id)
+        self.assertEqual(row["status"], "APPROVAL_PENDING")
+
+    def test_preevaluation_candidates_hidden(self):
+        self._reconcile()
+        early = self._candidate_at("CANDIDATE_CREATED")
+        out = self._candidates()
+        ids = {c["candidate_id"] for c in out["candidates"]}
+        self.assertNotIn(early.candidate_id, ids)
+
+    def test_candidate_state_release_link_and_refresh(self):
+        self._reconcile()
+        cand = self._candidate_at("RELEASE_READY")
+        cand.transition(CandidateStatus.DEPLOYING, "受控部署",
+                        {"release_id": "rel_cand_0001"})
+        out = self._candidates()
+        item = next(c for c in out["candidates"]
+                    if c["candidate_id"] == cand.candidate_id)
+        self.assertEqual(item["release_id"], "rel_cand_0001")
+        self.assertEqual(item["status"], "DEPLOYING")
+
+        rows = self.app.db.list_device_candidate_states(
+            INSTALLATION, limit=100)
+        first = next(r for r in rows
+                     if r["candidate_id"] == cand.candidate_id)
+        cand.transition(CandidateStatus.MONITORING, "进入发布后监测")
+        out = self._candidates()
+        item = next(c for c in out["candidates"]
+                    if c["candidate_id"] == cand.candidate_id)
+        self.assertEqual(item["status"], "MONITORING")
+        rows = self.app.db.list_device_candidate_states(
+            INSTALLATION, limit=100)
+        again = next(r for r in rows
+                     if r["candidate_id"] == cand.candidate_id)
+        self.assertEqual(again["status"], "MONITORING")
+        self.assertEqual(again["first_seen_at"], first["first_seen_at"])
+
+    def test_candidate_states_validation(self):
+        st, _ = self._get("/sync/candidates?installation_id=bad")
+        self.assertEqual(st, 400)
+        st, _ = self._get(
+            "/sync/candidates?installation_id=inst-unknown-9999")
+        self.assertEqual(st, 404)
 
 
 if __name__ == "__main__":

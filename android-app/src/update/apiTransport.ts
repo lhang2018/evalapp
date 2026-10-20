@@ -2,6 +2,7 @@
 
 import type {
   ApplyResultRequest,
+  CandidateSyncResponse,
   ReconcileRequest,
   ReconcileResponse,
   UpdateTransport,
@@ -9,6 +10,7 @@ import type {
 
 interface HttpLike {
   reconcile(req: ReconcileRequest): Promise<ReconcileResponse>;
+  syncCandidates(installationId: string): Promise<CandidateSyncResponse>;
   applyUpdateResult(
     req: ApplyResultRequest,
   ): Promise<{ ok: boolean; duplicate?: boolean }>;
@@ -23,6 +25,10 @@ export class ApiUpdateTransport implements UpdateTransport {
 
   reconcile(req: ReconcileRequest): Promise<ReconcileResponse> {
     return this.client.reconcile(req);
+  }
+
+  candidateStates(installationId: string): Promise<CandidateSyncResponse> {
+    return this.client.syncCandidates(installationId);
   }
 
   applyResult(

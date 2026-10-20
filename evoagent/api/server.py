@@ -185,6 +185,22 @@ def make_handler(app: App):
                         return self._json(404, {"error": "运行清单不存在"})
                     return self._json(200, manifest)
                 return self._json(404, {"error": "未知路径"})
+            if path == "/sync/candidates":
+                iid = (qs.get("installation_id") or "").strip()
+                if not INSTALLATION_RE.match(iid):
+                    return self._json(400, {"error": "非法 installation_id"})
+                try:
+                    limit = int(qs.get("limit") or 20)
+                except ValueError:
+                    return self._json(400, {"error": "非法 limit"})
+                try:
+                    out = app.delivery.candidate_states(
+                        installation_id=iid,
+                        candidates=app.evolution.all_candidates(),
+                        limit=limit)
+                except KeyError:
+                    return self._json(404, {"error": "安装实例不存在"})
+                return self._json(200, out)
             if path == "/sync/installations":
                 if auth.role != "admin":
                     return self._json(403, {"error": "该操作需要 admin 权限"})
