@@ -42,6 +42,7 @@ from .models.router import ModelRouter
 from .planning.intent import IntentClassifier
 from .planning.planner import PlanningEngine
 from .react.engine import ReactEngine
+from .release.delivery import ReleaseDelivery
 from .release.manager import ReleaseManager
 from .tools.builtin import BUILTIN_FACTORIES
 from .tools.registry import ToolRegistry
@@ -93,6 +94,10 @@ class App:
         # 工具
         self.tools = ToolRegistry(self.permissions, store=self.db)
         self._register_tools()
+
+        # 版本对账与客户端应用回执（双端协同 §5）：只读发布状态，不改变发布权
+        self.delivery = ReleaseDelivery(
+            self.releases, self.db, tool_ids=set(self.tools.health()))
 
         # 记忆与上下文
         self.assembler = ContextAssembler(self.memory)

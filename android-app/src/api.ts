@@ -1,13 +1,23 @@
 /**
  * EvoAgent REST API 客户端。
  * 对应服务端 evoagent/api/server.py 的接口契约：
- *  POST /tasks            {goal, intent, risk_level}
+ *  POST /tasks            {goal, intent, risk_level, client_request_id?}
  *  GET  /tasks            → {tasks: TaskInfo[]}
  *  GET  /tasks/{id}       → TaskInfo
  *  GET  /tasks/{id}/events → {events: RunEvent[]}
  *  POST /tasks/{id}/cancel
+ *  POST /events/sync
+ *  POST /sync/reconcile
+ *  POST /sync/apply-result
  *  GET  /health
  */
+
+import type {
+  ApplyResultRequest,
+  ReconcileRequest,
+  ReconcileResponse,
+} from "./update/types.ts";
+
 export interface TaskInfo {
   task_id: string;
   user_goal: string;
@@ -209,6 +219,11 @@ export class EvoAgentClient {
     intent: string,
     riskLevel = "low",
     clientRequestId?: string,
+    meta: {
+      device_id?: string;
+      installation_id?: string;
+      app_version?: string;
+    } = {},
   ) {
     const body: Record<string, unknown> = {
       goal,
@@ -216,20 +231,57 @@ export class EvoAgentClient {
       risk_level: riskLevel,
     };
     if (clientRequestId) body.client_request_id = clientRequestId;
+    if (meta.device_id) body.device_id = meta.device_id;
+    if (meta.installation_id) body.installation_id = meta.installation_id;
+    if (meta.app_version) body.app_version = meta.app_version;
     return this.req<{ task_id: string; deduplicated?: boolean }>("/tasks", {
       method: "POST",
       body: JSON.stringify(body),
     });
   }
 
-  syncEvents(events: unknown[]) {
+  syncEvents(
+    events: unknown[],
+    meta: {
+      batch_id?: string;
+      client_id?: string;
+      installation_id?: string;
+    } = {},
+  ) {
+    const body: Record<string, unknown> = {
+      client_id: meta.client_id ?? "android",
+      events,
+    };
+    if (meta.batch_id) body.batch_id = meta.batch_id;
+    if (meta.installation_id) body.installation_id = meta.installation_id;
     return this.req<{
       accepted: string[];
       duplicates: string[];
       rejected: { event_id: string; error: string }[];
+      receipt?: { receipt_id: string; batch_id: string; replayed: boolean };
     }>("/events/sync", {
       method: "POST",
-      body: JSON.stringify({ client_id: "android", events }),
+      body: JSON.stringify(body),
+    });
+  }
+
+  /** 版本对账（双端协同 §5.2）：服务端返回目标版本与兼容性检查明细。 */
+  reconcile(req: ReconcileRequest): Promise<ReconcileResponse> {
+    return this.req<ReconcileResponse>("/sync/reconcile", {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+  }
+
+  /** 上报更新应用回执（下载/校验/激活/健康检查/回滚）。 */
+  applyUpdateResult(req: ApplyResultRequest) {
+    return this.req<{
+      ok: boolean;
+      duplicate?: boolean;
+      installation?: Record<string, unknown>;
+    }>("/sync/apply-result", {
+      method: "POST",
+      body: JSON.stringify(req),
     });
   }
 

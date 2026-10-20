@@ -46,6 +46,9 @@ import type { DeadLetter, LocalTask, QueueStats } from "./src/offline/types.ts";
 import { DeviceBroker } from "./src/device/broker.ts";
 import { NativeDeviceTransport } from "./src/device/nativeTransport.ts";
 import type { NativeDeviceModuleLike } from "./src/device/nativeTransport.ts";
+import { UpdateManager } from "./src/update/manager.ts";
+import { ApiUpdateTransport } from "./src/update/apiTransport.ts";
+import type { UpdateState } from "./src/update/types.ts";
 import {
   detectPermissionDialog,
   snapshotTexts,
@@ -64,6 +67,7 @@ import type {
 const POLL_MS = 5000;
 const DEFAULT_BASE_URL = "http://10.0.2.2:8300";
 const BASE_URL_KEY = "evoagent_base_url";
+const APP_VERSION = "0.1.0";
 
 type Section =
   | "tasks"
@@ -144,6 +148,8 @@ export default function App(): React.JSX.Element {
   const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
   const [centerBusy, setCenterBusy] = useState(false);
   const [centerError, setCenterError] = useState<string | null>(null);
+  const [updateState, setUpdateState] = useState<UpdateState | null>(null);
+  const [updateBusy, setUpdateBusy] = useState(false);
 
   // 服务器地址：模拟器默认 10.0.2.2；真机可填局域网 IP（或 adb reverse 后用 127.0.0.1）
   const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL);
@@ -164,7 +170,22 @@ export default function App(): React.JSX.Element {
     const broker = new DeviceBroker(deviceTransport, {
       confirm: confirmHighRisk,
     });
-    return { client, repo, queue, tasks, sync, deviceTransport, broker };
+    const update = new UpdateManager(
+      new ApiUpdateTransport(client),
+      asyncStorageStore,
+      { appVersion: APP_VERSION }
+    );
+    return {
+      client,
+      repo,
+      queue,
+      transport,
+      tasks,
+      sync,
+      deviceTransport,
+      broker,
+      update,
+    };
   }, [baseUrl]);
 
   const reloadLocal = useCallback(async () => {
@@ -358,6 +379,16 @@ export default function App(): React.JSX.Element {
   useEffect(() => {
     let mounted = true;
     (async () => {
+      try {
+        const state = await services.update.init();
+        services.transport.setDeviceInfo({
+          installationId: state.installation_id,
+          appVersion: APP_VERSION,
+        });
+        if (mounted) setUpdateState(state);
+      } catch {
+        // 安装实例初始化失败不阻断离线队列
+      }
       await services.tasks.recoverInterrupted();
       const available = await services.deviceTransport.isAvailable();
       if (mounted) setDeviceAvailable(available);
@@ -445,6 +476,48 @@ export default function App(): React.JSX.Element {
     },
     [services, reloadLocal, flush]
   );
+
+  const runUpdate = useCallback(
+    async (op: () => Promise<UpdateState>) => {
+      setUpdateBusy(true);
+      try {
+        setUpdateState(await op());
+        setCenterError(null);
+      } catch (e: unknown) {
+        setCenterError(e instanceof Error ? e.message : String(e));
+        setUpdateState(await services.update.status());
+      } finally {
+        setUpdateBusy(false);
+      }
+    },
+    [services]
+  );
+
+  const activateUpdate = useCallback(() => {
+    Alert.alert(
+      "激活更新",
+      `切换到候选版本 ${updateState?.target?.version ?? ""}？` +
+        "上一版本会保留为回滚目标，健康检查失败将自动回滚。",
+      [
+        { text: "取消", style: "cancel" },
+        {
+          text: "激活",
+          onPress: () => void runUpdate(() => services.update.activate()),
+        },
+      ]
+    );
+  }, [runUpdate, services, updateState]);
+
+  const rollbackUpdate = useCallback(() => {
+    Alert.alert("回滚更新", "回滚到最近一次确认健康的版本？", [
+      { text: "取消", style: "cancel" },
+      {
+        text: "回滚",
+        style: "destructive",
+        onPress: () => void runUpdate(() => services.update.rollback("用户手动回滚")),
+      },
+    ]);
+  }, [runUpdate, services]);
 
   const refreshSnapshot = useCallback(async () => {
     setDeviceAvailable(await services.deviceTransport.isAvailable());
@@ -985,6 +1058,96 @@ export default function App(): React.JSX.Element {
               )}
               {centerError && <Text style={s.error}>{centerError}</Text>}
               {centerBusy && <ActivityIndicator />}
+              <View style={s.card}>
+                <Text style={s.goal}>本机版本 {APP_VERSION}</Text>
+                <Text style={s.mono}>
+                  安装实例 {updateState?.installation_id ?? "初始化中"}
+                </Text>
+                <Text style={s.hint}>
+                  状态 {updateState?.phase ?? "idle"}
+                  {updateState?.active_slot
+                    ? ` · 活动槽位 ${updateState.active_slot.toUpperCase()}`
+                    : ""}
+                  {updateState?.last_known_good
+                    ? ` · 已知良好 ${updateState.last_known_good.version}`
+                    : ""}
+                </Text>
+                {updateState?.target && (
+                  <Text style={s.hint}>
+                    候选 {updateState.target.version}（
+                    {updateState.target.bundle_kind}）· 灰度{" "}
+                    {updateState.target.gray_percent}% · 交付{" "}
+                    {updateState.target.delivery_mode}
+                  </Text>
+                )}
+                {updateState?.last_error && (
+                  <Text style={s.fail}>{updateState.last_error}</Text>
+                )}
+                {updateState?.reasons.map((reason, index) => (
+                  <Text key={`${index}-${reason}`} style={s.hint}>
+                    · {reason}
+                  </Text>
+                ))}
+                <Text style={s.hint}>
+                  能力包支持双槽位激活与自动回滚；原生 APK 必须走平台应用更新，
+                  客户端只标记为需二进制更新。
+                </Text>
+                <View style={s.row}>
+                  <View style={s.action}>
+                    <Button
+                      title={updateBusy ? "处理中…" : "检查更新"}
+                      onPress={() => void runUpdate(() => services.update.check())}
+                      disabled={!online || updateBusy}
+                    />
+                  </View>
+                  {updateState?.phase === "available" && (
+                    <View style={s.action}>
+                      <Button
+                        title="校验候选"
+                        onPress={() => void runUpdate(() => services.update.verify())}
+                        disabled={updateBusy}
+                      />
+                    </View>
+                  )}
+                </View>
+                {updateState?.phase === "verified" && (
+                  <Button title="激活候选版本" onPress={activateUpdate} />
+                )}
+                {updateState?.phase === "active" && (
+                  <>
+                    <Text style={s.hint}>激活后请确认功能正常再标记健康。</Text>
+                    <View style={s.row}>
+                      <View style={s.action}>
+                        <Button
+                          title="健康检查通过"
+                          onPress={() =>
+                            void runUpdate(() => services.update.healthCheck(true))
+                          }
+                          disabled={updateBusy}
+                        />
+                      </View>
+                      <View style={s.action}>
+                        <Button
+                          title="健康检查失败"
+                          color="#cf222e"
+                          onPress={() =>
+                            void runUpdate(() => services.update.healthCheck(false))
+                          }
+                          disabled={updateBusy}
+                        />
+                      </View>
+                    </View>
+                  </>
+                )}
+                {Boolean(updateState?.last_known_good) && (
+                  <Button
+                    title="回滚到已知良好版本"
+                    color="#cf222e"
+                    onPress={rollbackUpdate}
+                    disabled={updateBusy}
+                  />
+                )}
+              </View>
               {versionInfo && (
                 <View style={s.card}>
                   <Text style={s.goal}>

@@ -91,7 +91,10 @@ class RuntimeController:
                     required_permissions: Optional[List[str]] = None,
                     requires_network: Optional[bool] = None,
                     workflow_suitable: Optional[bool] = None,
-                    open_questions: Optional[List[str]] = None) -> Task:
+                    open_questions: Optional[List[str]] = None,
+                    device_id: Optional[str] = None,
+                    installation_id: Optional[str] = None,
+                    app_version: Optional[str] = None) -> Task:
         task = Task(user_goal=goal,
                     target_object=target_object,
                     expected_output=expected_output,
@@ -110,7 +113,16 @@ class RuntimeController:
         # 迁移回归需固定目标模型执行，不能用常规路由结果代替（PRD 20）
         if model_override:
             task.runtime_manifest["model_override"] = model_override
+        # 运行可追溯到安装实例与客户端版本（双端协同 §3.1）
+        if device_id or installation_id or app_version:
+            task.runtime_manifest["device"] = {
+                "device_id": device_id or None,
+                "installation_id": installation_id or None,
+                "app_version": app_version or None,
+            }
         self._emit(task, "task_created", {"goal": goal})
+        # 后台执行时接口会立即返回 202；任务必须先落库，避免客户端紧接着查询 404
+        self.db.save_task(task)
         if wait:
             self.execute(task, intent_hint=intent, domain_hint=domain)
         else:
@@ -127,7 +139,19 @@ class RuntimeController:
         self._register_active(task)
         started = time.time()
         version_manifest = self._version_manifest()
+        device = task.runtime_manifest.get("device") or {}
+        version_manifest.update({
+            "task_id": task.task_id, "run_id": run_id,
+            "device_id": device.get("device_id"),
+            "installation_id": device.get("installation_id"),
+            "app_version": device.get("app_version"),
+        })
         task.version_manifest = version_manifest
+        # 每次运行固定一份不可变清单，供服务端按 run_id 还原组件组合
+        self.db.save_runtime_manifest(
+            f"manifest_{run_id}", task.task_id, run_id,
+            device.get("device_id"), device.get("installation_id"),
+            version_manifest, created_at=started)
         self._slots.acquire()   # 并发上限由控制器执行，不依赖调用方自觉（Arch 3.2）
         try:
             # 单任务硬预算在分类前建立；分类/规划/ReAct 的模型调用统一计量（PRD 55/56）
@@ -742,8 +766,16 @@ class RuntimeController:
         if self.releases and self.releases.current_release_id:
             m = self.releases.manifests.get(self.releases.current_release_id)
             if m:
-                return {"release_id": m.release_id, "version": m.version,
-                        "artifact_digest": m.artifact_digest}
+                return {
+                    "release_id": m.release_id, "version": m.version,
+                    "artifact_digest": m.artifact_digest,
+                    "code_commit": m.code_commit,
+                    "model_adapter_version": m.model_adapter_version,
+                    "prompt_version": m.prompt_version,
+                    "tools_version": m.tools_version,
+                    "workflow_versions": list(m.workflow_versions),
+                    "env_version": m.env_version,
+                }
         return {"release_id": None, "version": "unreleased"}
 
     def _move(self, task: Task, target: TaskStatus) -> Task:

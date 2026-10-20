@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 312 项 + 客户端 41 项全部通过**。
+测试基线（2026-10-20）：**Python 327 项 + 客户端 57 项全部通过**。
 
 ---
 
@@ -224,6 +224,9 @@ Python 服务端（标准库，SQLite）
 | EVT-05 | 任务幂等提交 | ✅ | `core/persistence.py`, `api/server.py` | `client_request_id` → `client_requests` 表 |
 | EVT-06 | 并发幂等 | ✅ | `api/server.py` | 提交锁 + `INSERT OR IGNORE` 后查询 |
 | EVT-07 | 隐私分级集中定义 | ✅ | `core/privacy.py` | standard / sensitive / secret |
+| EVT-08 | 同步批次回执与重放 | ✅ | `core/persistence.py`（`sync_batches`）, `api/server.py` | 同 `batch_id` 重放返回原 `receipt_id` 且 `replayed=true`；批次明细落盘 |
+| EVT-09 | Runtime Manifest 持久化 | ✅ | `core/persistence.py`（`runtime_manifests`）, `core/controller.py` | 每次运行写入 task_id/run_id/设备身份/组件版本，`GET /tasks/{id}/manifests` 可查 |
+| EVT-10 | 设备身份字段 | ✅ | `api/server.py`, `core/controller.py` | `POST /tasks` 接受 `device_id` / `installation_id` / `app_version`，格式校验后写入运行清单 |
 
 ### 2.14 控制面、API 与可观测（PRD 37-40 / 89-90）
 
@@ -248,6 +251,18 @@ Python 服务端（标准库，SQLite）
 | CP-17 | 备份与恢复（Arch 20.4） | ✅ | `core/backup.py`, `api/server.py`, `cli.py` | 三库在线备份打包 + `manifest.json`（sha256/行数/版本）；校验与完整性检查；恢复前自动安全备份；存在未结束任务拒绝恢复 |
 | CP-18 | 管理端回放/备份面板 | ✅ | `api/admin.py` | 只读回放展示版本/统计/时间线；备份创建、列表与二次确认恢复；动态内容 `textContent` 渲染 |
 
+### 2.15 版本对账与分发（补充 A §5 / §8）
+
+| ID | 功能 | 状态 | 代码位置 | 说明 / 限制 |
+|---|---|---|---|---|
+| VS-01 | 发布清单分发字段 | ✅ | `release/manager.py` | `target_platforms` / `min_app_version` / `required_tool_contracts` / `channel` / `bundle_kind`；旧清单兼容 |
+| VS-02 | 版本对账 | ✅ | `release/delivery.py`, `api/server.py` | `POST /sync/reconcile`：平台/最低 App 版本/工具契约/制品完整性检查，返回 decision/checks/reasons |
+| VS-03 | 灰度范围判定 | ✅ | `release/delivery.py` | sha256(installation_id) 前 8 位取模 100；同一安装实例结果稳定 |
+| VS-04 | 应用结果回传 | ✅ | `release/delivery.py`, `api/server.py` | `POST /sync/apply-result`；`apply_id` 幂等；激活/回滚更新安装状态与部署记录 |
+| VS-05 | 设备安装与部署记录 | ✅ | `core/persistence.py` | `device_installations` / `device_deployments`；`GET /sync/installations`（admin） |
+| VS-06 | 回滚目标解析 | ✅ | `release/delivery.py` | 激活时把上一版本记为 last known good；回滚未指定目标时使用该版本 |
+| VS-07 | 下载/校验/激活/回滚回执 | ✅ | `api/server.py` | 动作白名单 + 部署记录 + 非重复回执写审计（`sync.apply_result`） |
+
 ---
 
 ## 3. REST API 清单
@@ -264,6 +279,8 @@ Python 服务端（标准库，SQLite）
 | `/tasks` | 任务列表 |
 | `/tasks/{id}` | 任务详情 |
 | `/tasks/{id}/events` | 任务事件 |
+| `/tasks/{id}/manifests` | 该任务的运行清单（设备身份与组件版本） |
+| `/runs/{run_id}/manifest` | 单次运行的 manifest（`run_<task_id>`） |
 | `/tasks/{id}/replay?limit=N` | 只读运行回放（需 `execution_trace` 读权限；不重放副作用；敏感负载脱敏） |
 | `/experts` | 专家与能力图 |
 | `/metrics` | 指标（JSON；`?format=prometheus`） |
@@ -286,6 +303,8 @@ Python 服务端（标准库，SQLite）
 | `/logs/evidence?task_id=&limit=` | 诊断证据（admin；返回 `exportable` 标记） |
 | `/admin` | 管理端单页（PRD 90.1-90.7 分区；含诊断操作、候选动作、版本/成本/审计、回放、备份恢复与沙箱；admin 接口需管理令牌） |
 | `/admin/backups` | 备份列表（admin） |
+| `/sync/installations` | 设备安装实例列表（admin） |
+| `/sync/installations/{id}` | 安装实例详情与部署记录（admin） |
 
 ### POST
 
@@ -294,7 +313,9 @@ Python 服务端（标准库，SQLite）
 | `/tasks` | 提交任务；可选 `client_request_id` 幂等（重复返回原 `task_id` + `202 deduplicated`） |
 | `/tasks/{id}/cancel` | 取消 |
 | `/tasks/{id}/pause` / `/tasks/{id}/resume` | 暂停/恢复（`409 requires_force` 表示需显式 force） |
-| `/events/sync` | 批量事件摄取 → `accepted` / `duplicates` / `rejected` |
+| `/events/sync` | 批量事件摄取 → `accepted` / `duplicates` / `rejected`；可选 `batch_id` 返回回执，重放返回原 `receipt_id` |
+| `/sync/reconcile` | 版本对账：平台/App 版本/工具契约/签名与制品检查、灰度范围与目标版本 |
+| `/sync/apply-result` | 更新应用回执（下载/校验/激活/健康检查/回滚）；`apply_id` 幂等 |
 | `/workflows/extract` | 从成功任务抽取候选（可选 `min_support` / `limit`；参数非法 `400`） |
 | `/workflows/candidates/{id}/approve` | 批准候选（admin；评测未通过 `409`） |
 | `/workflows/candidates/{id}/reject` | 拒绝候选（admin；非法状态 `409`） |
@@ -393,6 +414,7 @@ Python 服务端（标准库，SQLite）
 | UI-21 | 权限管理 | ✅ | 无障碍状态、麦克风/文件/通知使用说明、跳转系统设置（PRD 89.5/89.7） |
 | UI-22 | 更新管理 | ✅ | 当前版本、发布清单、兼容性检查结果、回滚目标与部署/回滚计数（PRD 89.8） |
 | UI-23 | 无障碍观测面板与快捷操作 | ✅ | 只读读取当前界面（包名/节点数/文本摘要）、权限弹窗提示、安全停止状态与人工恢复、固定目标快捷点击 |
+| UI-24 | 客户端更新管理器 | ✅ | 安装实例 ID、对账/校验/激活/健康检查/回滚操作、槽位与已知良好版本展示；原生 APK 提示走平台更新 |
 
 ### 5.2 离线核心（`android-app/src/offline/`，纯 TS 可单测）
 
@@ -411,6 +433,8 @@ Python 服务端（标准库，SQLite）
 | OF-11 | 时间戳单位转换 | ✅ | `apiTransport.ts` | 客户端毫秒 → 服务端秒 |
 | OF-12 | 端到端加密 | ⬜ | — | |
 | OF-13 | 多设备冲突合并 | ⬜ | — | |
+| OF-14 | 安装实例标识 | ✅ | `src/update/identity.ts` | 首次生成 `inst_*` 并长期复用；满足服务端 ID 校验 |
+| OF-15 | 批次号与设备信息上报 | ✅ | `apiTransport.ts` | 每批生成 `batch_id`；任务提交携带 `installation_id` / `app_version` |
 
 ### 5.3 设备操作（`android-app/src/device/` + Kotlin）
 
@@ -432,13 +456,25 @@ Python 服务端（标准库，SQLite）
 | DV-14 | 权限弹窗识别 | ✅ | `observation.ts` | 系统权限包名或「允许/拒绝 + 权限」关键词；弹窗出现即不判成功 |
 | DV-15 | 安全停止与人工恢复 | ✅ | `broker.ts` | 连续 3 次失败/未验证停止下发；需显式 `resume()` |
 
-### 5.4 客户端脚本
+### 5.4 更新管理器（`android-app/src/update/`，纯 TS 可单测）
+
+| ID | 功能 | 状态 | 代码位置 | 说明 |
+|---|---|---|---|---|
+| UP-01 | 安装实例标识 | ✅ | `identity.ts` | 首次生成并持久化，服务端 ID 格式校验通过 |
+| UP-02 | 版本对账与本地复核 | ✅ | `manager.ts` | 服务端 decision + 本地独立校验；缺目标/摘要/签名、非能力包、无回滚路径一律 `blocked` |
+| UP-03 | 校验与存储空间检查 | ✅ | `manager.ts` | 摘要/签名缺失拒绝；预留空间不足拒绝激活；`freeBytes` 可注入 |
+| UP-04 | 双槽位原子切换 | ✅ | `manager.ts` | a/b 槽位切换引用，上一版本记为 last known good；同一实例串行化操作 |
+| UP-05 | 健康检查与自动回滚 | ✅ | `manager.ts` | 健康失败自动回到 last known good；回执带 `to_release_id` |
+| UP-06 | 应用回执上报 | ✅ | `manager.ts`, `apiTransport.ts` | 下载/校验/激活/健康/回滚；`apply_id` 幂等；上报失败不破坏本地已完成切换 |
+| UP-07 | 原生 APK 边界 | ✅ | `manager.ts` | `delivery_mode != capability_slot` 直接 `blocked`，提示走平台应用更新 |
+
+### 5.5 客户端脚本
 
 | 脚本 | 说明 |
 |---|---|
 | `npm run android` | 构建并安装 |
 | `npm start` | Metro |
-| `npm run test:offline` | Node 24 原生 TS 测试（`node --test test/offline test/device`） |
+| `npm run test:offline` | Node 24 原生 TS 测试（`node --test test/offline test/device test/update`） |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run ota:publish` | OTA 发布（Expo Updates / CodePush 路线占位） |
 
@@ -469,6 +505,10 @@ Python 服务端（标准库，SQLite）
 | `memory_eval_reports` | 记忆评测报告（指标、用例明细、运行反馈） |
 | `eval_reports` | 评测报告（含元数据） |
 | `release_manifests` / `release_events` | 发布清单与事件 |
+| `device_installations` | 设备安装实例（平台/App 版本/当前与目标版本/状态） |
+| `device_deployments` | 更新应用回执记录（动作/结果/幂等 ID） |
+| `sync_batches` | 事件同步批次与回执（可重放） |
+| `runtime_manifests` | 每次运行的 manifest（task_id/run_id/设备身份/组件版本） |
 | `audit_log` | 审计 |
 
 兼容策略：旧库启动时按 `PRAGMA table_info` 自动补列（如 `runtime_events`）；结构不兼容时重建对应表。
@@ -550,6 +590,7 @@ Python 服务端（标准库，SQLite）
 | `test_evolution_benefit.py` | 十维收益、跨领域回归、发布后监测采集/判定/回滚（21 项） |
 | `test_governance.py` | 上下文治理、评测完整性、fail-closed 门禁（12 项） |
 | `test_event_sync.py` | 事件同步、旧库迁移、幂等提交（8 项） |
+| `test_version_sync.py` | 版本对账/兼容阻断/灰度、应用回执幂等与回滚、批次回执重放、运行清单设备字段（15 项） |
 | `test_model_migration.py` | 九步迁移、回归对比、受控启用/回滚、固定模型覆盖、迁移 API（10 项） |
 | `test_memory_evaluation.py` | 记忆评测指标、过期/冲突用例、运行反馈、报告 API/指标（6 项） |
 | `test_drift.py` | 漂移信号与处置建议、版本变更、事件发射、指标/告警/API（9 项） |
@@ -560,7 +601,7 @@ Python 服务端（标准库，SQLite）
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
 
-### 客户端（`android-app/test/`，41 项）
+### 客户端（`android-app/test/`，57 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -570,6 +611,7 @@ Python 服务端（标准库，SQLite）
 | `test/offline/transport.test.ts` | 时间戳单位转换 |
 | `test/device/broker.test.ts` | 风险闸门、确认、五态、不重放、unavailable、快照验证、权限弹窗降级、安全停止与恢复（12 项） |
 | `test/device/observation.test.ts` | 快照归一化、页面变化、预期文本/包名、权限弹窗识别、缺快照不判成功（8 项） |
+| `test/update/manager.test.ts` | 安装 ID、目标校验（摘要/签名/交付方式）、存储空间、双槽位激活、健康检查与自动回滚、回执失败、状态损坏回退（16 项） |
 
 运行：
 
@@ -591,6 +633,8 @@ cd android-app && npm run test:offline
 | 端到端加密、多设备冲突合并 | PRD 72-76/86 | ⬜ | |
 | Web 管理端完整界面 | PRD 90 | ✅ | 90.1-90.7 分区已实现；不含富文本编辑/图表库，以表格与 JSON 展示为主 |
 | 发布分支自动化（可视化/远端推送） | PRD 59-63 | ⬜ | 已提供本地分支/标签/ff 合并 CLI；不自动 push、不整合同步冲突 |
+| 能力包制品下载与装载 | 补充 A §4/§5 | 🔹 | 清单字段、分发筛选与双槽位引用切换已完成；实际包内容由 OTA（CodePush/Expo Updates）承载，尚未接线 |
+| 候选状态同步（服务端 → App） | 补充 A §2/§8 | ⬜ | 应用结果回传已实现；服务端候选/实验状态主动同步未做 |
 
 ---
 
@@ -598,7 +642,7 @@ cd android-app && npm run test:offline
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 312 passed
+python -m pytest tests/ -q                       # 327 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -671,6 +715,26 @@ cd android-app && npm run android
 ---
 
 ## 变更记录
+
+### 2026-10-20 — 双端版本对账、运行清单与客户端更新管理器（补充 A §3/§5/§8）
+
+- 需求：`EvoAgent_双端协同进化与版本分发架构补充设计.md` §3.2/§3.3/§5.1-5.3/§7/§8/附录 A。
+- 变更：服务端新增运行清单持久化（设备身份 + 组件版本）、事件批次回执与重放、
+  版本对账（平台/最低 App 版本/工具契约/制品完整性/灰度）、应用结果回传（幂等）。
+  客户端新增双槽位更新管理器：本地独立复核签名/摘要/交付方式/回滚路径，
+  校验后原子切换，健康检查失败自动回滚；安装实例 ID 回填到任务与事件批次。
+- 代码：`release/delivery.py`、`release/manager.py`、`core/persistence.py`、
+  `core/controller.py`、`api/server.py`；`android-app/src/update/{types,identity,manager,apiTransport}.ts`、
+  `src/offline/apiTransport.ts`、`src/api.ts`、`App.tsx`。
+- 接口/表：`POST /sync/reconcile`、`/sync/apply-result`、`GET /tasks/{id}/manifests`、
+  `/runs/{run_id}/manifest`、`/sync/installations`；`device_installations`、
+  `device_deployments`、`sync_batches`、`runtime_manifests` 表。
+- 测试：新增 `tests/test_version_sync.py`（15 项）、`test/update/manager.test.ts`（16 项）；
+  Python 312 → 327，客户端 41 → 57。
+- 状态变化：新增 EVT-08…EVT-10、VS-01…VS-07、UI-24、OF-14/OF-15、UP-01…UP-07 全部 ✅。
+- 已知限制：能力包激活只切换槽位引用，实际制品下载/加载由 OTA 承载（未接线）；
+  客户端存储空间检查在 RN 侧使用默认值（无原生磁盘 API），仅注入测试覆盖；
+  候选状态同步（服务端 → App）仍未实现。
 
 ### 2026-10-20 — 候选代码隔离执行（Arch 18.3）
 
@@ -863,6 +927,7 @@ cd android-app && npm run android
 | Session 21 | 真实嵌入向量检索（PRD 25） | 305 + 29 |
 | Session 22 | 发布分支/标签/快进合并（PRD 59-60 / 62-63） | 312 + 29 |
 | Session 23 | 无障碍界面观测与执行校验（PRD 68） | 312 + 41 |
+| Session 24 | 版本对账、运行清单与客户端更新管理器（补充 A） | 327 + 57 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 

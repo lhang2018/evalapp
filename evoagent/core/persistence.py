@@ -42,6 +42,28 @@ class Database:
             c.execute("""CREATE TABLE IF NOT EXISTS client_requests(
                 client_request_id TEXT PRIMARY KEY, task_id TEXT NOT NULL,
                 created_at REAL)""")
+            # 双端协同（Arch 双端 §3/§5/§8）：设备安装实例、运行清单、同步回执
+            c.execute("""CREATE TABLE IF NOT EXISTS device_installations(
+                installation_id TEXT PRIMARY KEY, device_id TEXT, platform TEXT,
+                app_version TEXT, current_release_id TEXT, target_release_id TEXT,
+                status TEXT, created_at REAL, last_seen_at REAL, data TEXT)""")
+            c.execute("""CREATE TABLE IF NOT EXISTS device_deployments(
+                deployment_id TEXT PRIMARY KEY, installation_id TEXT,
+                release_id TEXT, action TEXT, outcome TEXT, created_at REAL,
+                data TEXT)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_device_deployments_installation
+                ON device_deployments(installation_id, created_at)""")
+            c.execute("""CREATE TABLE IF NOT EXISTS sync_batches(
+                batch_id TEXT PRIMARY KEY, receipt_id TEXT, client_id TEXT,
+                installation_id TEXT, received_at REAL, event_count INTEGER,
+                accepted INTEGER, duplicates INTEGER, rejected INTEGER,
+                data TEXT)""")
+            c.execute("""CREATE TABLE IF NOT EXISTS runtime_manifests(
+                manifest_id TEXT PRIMARY KEY, task_id TEXT, run_id TEXT,
+                device_id TEXT, installation_id TEXT, created_at REAL,
+                data TEXT)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_runtime_manifests_task
+                ON runtime_manifests(task_id, created_at)""")
             # 诊断案例（PRD 41-45 / Architecture 9.2-9.3）
             c.execute("""CREATE TABLE IF NOT EXISTS diagnostic_cases(
                 case_id TEXT PRIMARY KEY, task_id TEXT, run_id TEXT, status TEXT,
@@ -213,6 +235,167 @@ class Database:
                 (client_request_id, task_id, time.time()))
             self._conn.commit()
             return cur.rowcount > 0
+
+    # ---- device installations / deployments（双端协同 §3/§5/§8）----
+    def save_installation(self, installation_id: str, device_id: str,
+                          platform: str, app_version: str,
+                          current_release_id: Optional[str],
+                          target_release_id: Optional[str], status: str,
+                          data: Dict[str, Any]) -> None:
+        now = time.time()
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO device_installations VALUES"
+                " (?,?,?,?,?,?,?,?,?,?)"
+                " ON CONFLICT(installation_id) DO UPDATE SET"
+                " device_id=excluded.device_id, platform=excluded.platform,"
+                " app_version=excluded.app_version,"
+                " current_release_id=excluded.current_release_id,"
+                " target_release_id=excluded.target_release_id,"
+                " status=excluded.status, last_seen_at=excluded.last_seen_at,"
+                " data=excluded.data",
+                (installation_id, device_id, platform, app_version,
+                 current_release_id, target_release_id, status, now, now,
+                 json.dumps(data, ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def get_installation(self,
+                         installation_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT installation_id, device_id, platform, app_version,"
+            " current_release_id, target_release_id, status, created_at,"
+            " last_seen_at, data FROM device_installations"
+            " WHERE installation_id=?", (installation_id,)).fetchone()
+        if not row:
+            return None
+        return {"installation_id": row["installation_id"],
+                "device_id": row["device_id"],
+                "platform": row["platform"],
+                "app_version": row["app_version"],
+                "current_release_id": row["current_release_id"],
+                "target_release_id": row["target_release_id"],
+                "status": row["status"],
+                "created_at": row["created_at"],
+                "last_seen_at": row["last_seen_at"],
+                "data": json.loads(row["data"] or "{}")}
+
+    def list_installations(self, limit: int = 100) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT installation_id FROM device_installations"
+            " ORDER BY last_seen_at DESC LIMIT ?", (limit,)).fetchall()
+        return [self.get_installation(r["installation_id"]) for r in rows]
+
+    def save_device_deployment(self, deployment_id: str,
+                               installation_id: str, release_id: str,
+                               action: str, outcome: str,
+                               data: Dict[str, Any]) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO device_deployments VALUES"
+                " (?,?,?,?,?,?,?)",
+                (deployment_id, installation_id, release_id, action, outcome,
+                 time.time(), json.dumps(data, ensure_ascii=False,
+                                         default=str)))
+            self._conn.commit()
+
+    def get_device_deployment(self,
+                              deployment_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT deployment_id, installation_id, release_id, action,"
+            " outcome, created_at, data FROM device_deployments"
+            " WHERE deployment_id=?", (deployment_id,)).fetchone()
+        if not row:
+            return None
+        return {"deployment_id": row["deployment_id"],
+                "installation_id": row["installation_id"],
+                "release_id": row["release_id"], "action": row["action"],
+                "outcome": row["outcome"], "created_at": row["created_at"],
+                "data": json.loads(row["data"] or "{}")}
+
+    def list_device_deployments(self, installation_id: str,
+                                limit: int = 50) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT deployment_id, installation_id, release_id, action,"
+            " outcome, created_at, data FROM device_deployments"
+            " WHERE installation_id=? ORDER BY created_at DESC LIMIT ?",
+            (installation_id, limit)).fetchall()
+        return [{"deployment_id": r["deployment_id"],
+                 "installation_id": r["installation_id"],
+                 "release_id": r["release_id"], "action": r["action"],
+                 "outcome": r["outcome"], "created_at": r["created_at"],
+                 "data": json.loads(r["data"] or "{}")} for r in rows]
+
+    # ---- sync receipts（双端协同 §3.3）----
+    def get_sync_batch(self, batch_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT batch_id, receipt_id, client_id, installation_id,"
+            " received_at, event_count, accepted, duplicates, rejected, data"
+            " FROM sync_batches WHERE batch_id=?", (batch_id,)).fetchone()
+        if not row:
+            return None
+        return {"batch_id": row["batch_id"],
+                "receipt_id": row["receipt_id"],
+                "client_id": row["client_id"],
+                "installation_id": row["installation_id"],
+                "received_at": row["received_at"],
+                "event_count": row["event_count"],
+                "accepted": row["accepted"],
+                "duplicates": row["duplicates"],
+                "rejected": row["rejected"],
+                "data": json.loads(row["data"] or "{}")}
+
+    def save_sync_batch(self, batch_id: str, receipt_id: str,
+                        client_id: str, installation_id: Optional[str],
+                        event_count: int, accepted: int, duplicates: int,
+                        rejected: int, data: Dict[str, Any]) -> bool:
+        """INSERT OR IGNORE；只有首个到达的批次生成回执。"""
+        with self._lock:
+            cur = self._conn.execute(
+                "INSERT OR IGNORE INTO sync_batches VALUES"
+                " (?,?,?,?,?,?,?,?,?,?)",
+                (batch_id, receipt_id, client_id, installation_id,
+                 time.time(), event_count, accepted, duplicates, rejected,
+                 json.dumps(data, ensure_ascii=False, default=str)))
+            self._conn.commit()
+            return cur.rowcount > 0
+
+    # ---- runtime manifests（双端协同 §3.2）----
+    def save_runtime_manifest(self, manifest_id: str, task_id: str,
+                              run_id: str, device_id: Optional[str],
+                              installation_id: Optional[str],
+                              data: Dict[str, Any],
+                              created_at: Optional[float] = None) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO runtime_manifests VALUES"
+                " (?,?,?,?,?,?,?)",
+                (manifest_id, task_id, run_id, device_id, installation_id,
+                 time.time() if created_at is None else created_at,
+                 json.dumps(data, ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def get_runtime_manifest(self,
+                             manifest_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT manifest_id, task_id, run_id, device_id, installation_id,"
+            " created_at, data FROM runtime_manifests WHERE manifest_id=?",
+            (manifest_id,)).fetchone()
+        if not row:
+            return None
+        return {"manifest_id": row["manifest_id"],
+                "task_id": row["task_id"], "run_id": row["run_id"],
+                "device_id": row["device_id"],
+                "installation_id": row["installation_id"],
+                "created_at": row["created_at"],
+                "manifest": json.loads(row["data"] or "{}")}
+
+    def list_runtime_manifests(self, task_id: str,
+                               limit: int = 20) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT manifest_id FROM runtime_manifests WHERE task_id=?"
+            " ORDER BY created_at DESC LIMIT ?",
+            (task_id, limit)).fetchall()
+        return [self.get_runtime_manifest(r["manifest_id"]) for r in rows]
 
     # ---- diagnostics（PRD 41-45）----
     def save_diagnostic_case(self, case: Any) -> None:

@@ -33,6 +33,12 @@ class ReleaseManifest:
     eval_dataset_version: str = ""
     eval_report: Optional[Dict[str, Any]] = None
     compatible_requirements: List[str] = field(default_factory=list)
+    # 下发范围与兼容条件（双端协同 Arch 5.1）：缺失时按“不限制”处理
+    target_platforms: List[str] = field(default_factory=list)
+    min_app_version: str = "0.0.0"
+    required_tool_contracts: List[str] = field(default_factory=list)
+    channel: str = "stable"
+    bundle_kind: str = "capability"
     rollback_target: Optional[str] = None
     artifact_digest: Optional[str] = None
     signed_by: Optional[str] = None

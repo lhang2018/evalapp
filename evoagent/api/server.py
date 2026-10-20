@@ -8,6 +8,8 @@ Android 端通过轮询任务状态与事件流展示进度（PRD 89.2 任务详
 import json
 import re
 import threading
+import time
+import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -25,8 +27,22 @@ from .auth import ApiAuth
 from .events_sync import BatchError, validate_batch
 
 CLIENT_REQUEST_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
+INSTALLATION_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
+DEVICE_ID_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
+BATCH_ID_RE = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
+APPLY_ID_RE = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
 # 幂等提交的检查-创建-登记需要原子化（单进程 API 假设）
 _submit_lock = threading.Lock()
+
+
+def _optional_id(body: Dict[str, Any], name: str,
+                 pattern: re.Pattern) -> Optional[str]:
+    value = body.get(name)
+    if value is None or value == "":
+        return None
+    if not isinstance(value, str) or not pattern.match(value):
+        raise ValueError(f"非法 {name}")
+    return value
 
 
 def make_handler(app: App):
@@ -140,6 +156,9 @@ def make_handler(app: App):
                     except KeyError:
                         return self._json(404, {"error": "任务不存在"})
                     return self._json(200, out)
+                if len(parts) >= 3 and parts[2] == "manifests":
+                    return self._json(200, {"manifests": app.db.list_runtime_manifests(
+                        tid, limit=min(100, int(qs.get("limit") or 20)))})
                 t = app.get_task(tid)
                 if not t:
                     return self._json(404, {"error": "任务不存在"})
@@ -157,6 +176,33 @@ def make_handler(app: App):
                 m = app.release_manifest
                 return self._json(200, {**m.to_dict(),
                                         "current": app.releases.current_release_id})
+            if path.startswith("/runs/"):
+                parts = [p for p in path.split("/") if p]
+                if len(parts) == 3 and parts[2] == "manifest":
+                    manifest = app.db.get_runtime_manifest(
+                        f"manifest_{parts[1]}")
+                    if manifest is None:
+                        return self._json(404, {"error": "运行清单不存在"})
+                    return self._json(200, manifest)
+                return self._json(404, {"error": "未知路径"})
+            if path == "/sync/installations":
+                if auth.role != "admin":
+                    return self._json(403, {"error": "该操作需要 admin 权限"})
+                limit = min(500, int(qs.get("limit") or 100))
+                return self._json(200, {"installations": app.db.list_installations(
+                    limit=limit)})
+            if path.startswith("/sync/installations/"):
+                if auth.role != "admin":
+                    return self._json(403, {"error": "该操作需要 admin 权限"})
+                iid = path.split("/")[3]
+                inst = app.db.get_installation(iid)
+                if inst is None:
+                    return self._json(404, {"error": "安装实例不存在"})
+                limit = min(200, int(qs.get("deployments") or 50))
+                return self._json(200, {"installation": inst,
+                                        "deployments":
+                                            app.db.list_device_deployments(
+                                                iid, limit=limit)})
             if path == "/models":
                 return self._json(200, {
                     "default_model_id": app.router.default_model_id,
@@ -295,6 +341,17 @@ def make_handler(app: App):
                         or not CLIENT_REQUEST_RE.match(request_id)):
                     return self._json(
                         400, {"error": "非法 client_request_id"})
+                try:
+                    device_id = _optional_id(body, "device_id", DEVICE_ID_RE)
+                    installation_id = _optional_id(
+                        body, "installation_id", INSTALLATION_RE)
+                except ValueError as e:
+                    return self._json(400, {"error": str(e)})
+                app_version = body.get("app_version")
+                if app_version is not None and (
+                        not isinstance(app_version, str)
+                        or len(app_version) > 32):
+                    return self._json(400, {"error": "非法 app_version"})
                 parsed, error = _parse_task_model_fields(body)
                 if error:
                     return self._json(400, {"error": error})
@@ -315,12 +372,19 @@ def make_handler(app: App):
                         risk_level=rl,
                         budget_overrides=body.get("budget_policy"),
                         wait=False,
+                        device_id=device_id,
+                        installation_id=installation_id,
+                        app_version=app_version,
                         **parsed)
                     if request_id:
                         app.db.save_request(request_id, t.task_id)
                 return self._json(202, {"task_id": t.task_id, "status": "CREATED"})
             if path == "/events/sync":
                 return self._events_sync(body)
+            if path == "/sync/reconcile":
+                return self._sync_reconcile(body)
+            if path == "/sync/apply-result":
+                return self._sync_apply_result(body, auth.role)
             if path == "/workflows/extract":
                 return self._workflow_extract(body, auth.role)
             if path == "/memory/evaluate":
@@ -537,9 +601,24 @@ def make_handler(app: App):
         # ---------- 客户端事件同步 ----------
         def _events_sync(self, body: Dict[str, Any]):
             try:
+                batch_id = _optional_id(body, "batch_id", BATCH_ID_RE)
+                installation_id = _optional_id(
+                    body, "installation_id", INSTALLATION_RE)
+                client_id = body.get("client_id") or "unknown"
+                if not isinstance(client_id, str) or len(client_id) > 128:
+                    raise ValueError("非法 client_id")
                 events, errors = validate_batch(body)
             except BatchError as exc:
                 return self._json(400, {"error": str(exc)})
+            except ValueError as exc:
+                return self._json(400, {"error": str(exc)})
+
+            # 同一 batch_id 重传返回原回执，而不是把已入库事件重新计数
+            if batch_id:
+                existing = app.db.get_sync_batch(batch_id)
+                if existing is not None:
+                    return self._json(*_receipt_response(existing, True))
+
             accepted, duplicates = [], []
             for evt in events:
                 if app.bus.ingest(evt):
@@ -548,9 +627,98 @@ def make_handler(app: App):
                     duplicates.append(evt.event_id)
             payload = {"accepted": accepted, "duplicates": duplicates,
                        "rejected": errors}
-            if not accepted and not duplicates:
-                return self._json(400, payload)
-            return self._json(200, payload)
+            receipt_id = f"rcpt_{uuid.uuid4().hex[:16]}"
+            received_at = time.time()
+            payload["receipt"] = {"receipt_id": receipt_id,
+                                  "batch_id": batch_id, "replayed": False,
+                                  "received_at": received_at}
+            if batch_id:
+                stored = {k: v for k, v in payload.items()
+                          if k != "receipt"}
+                inserted = app.db.save_sync_batch(
+                    batch_id, receipt_id, client_id, installation_id,
+                    len(events), len(accepted), len(duplicates), len(errors),
+                    stored)
+                if not inserted:
+                    existing = app.db.get_sync_batch(batch_id)
+                    if existing is not None:
+                        return self._json(*_receipt_response(existing, True))
+            status = 200 if (accepted or duplicates) else 400
+            return self._json(status, payload)
+
+        # ---------- 版本对账 / 应用结果（双端协同 §5）----------
+        def _sync_reconcile(self, body: Dict[str, Any]):
+            try:
+                installation_id = _optional_id(
+                    body, "installation_id", INSTALLATION_RE)
+                if not installation_id:
+                    raise ValueError("缺少 installation_id")
+                device_id = _optional_id(
+                    body, "device_id", DEVICE_ID_RE) or ""
+                platform = body.get("platform") or "android"
+                if not isinstance(platform, str):
+                    raise ValueError("platform 必须是字符串")
+                app_version = body.get("app_version")
+                if not isinstance(app_version, str) or not app_version.strip():
+                    raise ValueError("缺少 app_version")
+                current = body.get("current_release_id")
+                if current is not None and (
+                        not isinstance(current, str) or len(current) > 128):
+                    raise ValueError("非法 current_release_id")
+                tools = body.get("tool_contracts") or []
+                if not isinstance(tools, list) or len(tools) > 64 or any(
+                        not isinstance(t, str) or len(t) > 120 for t in tools):
+                    raise ValueError("非法 tool_contracts")
+                out = app.delivery.reconcile(
+                    installation_id=installation_id, device_id=device_id,
+                    platform=platform, app_version=app_version,
+                    current_release_id=current or None, tool_contracts=tools)
+            except ValueError as exc:
+                return self._json(400, {"error": str(exc)})
+            return self._json(200, out)
+
+        def _sync_apply_result(self, body: Dict[str, Any], actor: str):
+            try:
+                installation_id = _optional_id(
+                    body, "installation_id", INSTALLATION_RE)
+                if not installation_id:
+                    raise ValueError("缺少 installation_id")
+                action = body.get("action")
+                if not isinstance(action, str) or not action:
+                    raise ValueError("缺少 action")
+                release_id = body.get("release_id")
+                to_release_id = body.get("to_release_id")
+                for name, value in (("release_id", release_id),
+                                    ("to_release_id", to_release_id)):
+                    if value is not None and (
+                            not isinstance(value, str) or len(value) > 128):
+                        raise ValueError(f"非法 {name}")
+                outcome = body.get("outcome") or "ok"
+                reason = body.get("reason") or ""
+                if not isinstance(outcome, str) or not isinstance(reason, str):
+                    raise ValueError("outcome/reason 必须是字符串")
+                apply_id = _optional_id(body, "apply_id", APPLY_ID_RE)
+                out = app.delivery.record_apply(
+                    installation_id=installation_id, action=action,
+                    release_id=release_id, outcome=outcome,
+                    reason=reason[:500], to_release_id=to_release_id,
+                    apply_id=apply_id)
+            except KeyError as exc:
+                return self._json(404, {"error": str(exc)})
+            except ValueError as exc:
+                return self._json(400, {"error": str(exc)})
+            if not out.get("ok"):
+                return self._json(409, out)
+            if not out.get("duplicate"):
+                app.audit.record(
+                    actor, "sync.apply_result", target=installation_id,
+                    outcome=action,
+                    detail={"release_id": release_id,
+                            "current_release_id":
+                                (out.get("installation") or {}).get(
+                                    "current_release_id"),
+                            "reason": reason[:200]})
+            return self._json(200, out)
 
         # ---------- 模型迁移（PRD 20 / 104 / 111）----------
         def _migration_create(self, body: Dict[str, Any], actor: str):
@@ -806,6 +974,18 @@ def make_handler(app: App):
                                         cand.risk_level, "strict_review")})
 
     return Handler
+
+
+def _receipt_response(stored: Dict[str, Any], replayed: bool):
+    """重放已登记批次时返回原始回执内容（含原始 400/200 语义）。"""
+    payload = dict(stored.get("data") or {})
+    payload["receipt"] = {"receipt_id": stored.get("receipt_id"),
+                          "batch_id": stored.get("batch_id"),
+                          "replayed": replayed,
+                          "received_at": stored.get("received_at")}
+    status = 200 if (payload.get("accepted") or payload.get("duplicates")) \
+        else 400
+    return status, payload
 
 
 _TASK_COMPLEXITIES = {"", "simple", "moderate", "complex"}

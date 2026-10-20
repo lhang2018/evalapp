@@ -15,6 +15,9 @@
   需人工恢复。
 - **无坐标/手势注入**：`canPerformGestures=false`，不绕过系统权限；快照仅回传前台 JS，
   不落盘、不上传。
+- **版本对账与更新管理器**（`src/update/`）：安装实例 ID 持久化；`/sync/reconcile` 对账
+  （平台/最低版本/工具契约/灰度）；本地复核签名、摘要、交付方式与回滚路径；双槽位原子切换、
+  健康检查失败自动回滚、应用回执上报。原生 APK 只标记为需二进制更新，必须走平台应用商店。
 
 ## 为什么选 React Native
 
@@ -27,7 +30,7 @@
 ## 测试（无需 node_modules）
 
 ```bash
-npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门/界面观测，共 41 项
+npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门/界面观测/更新管理器，共 57 项
 npm run typecheck       # 需要先 npm install（tsc）
 ```
 
@@ -78,6 +81,8 @@ cd android
    服务端只产生一个任务（同一 `client_request_id`）。
 6. 同步中杀进程再启动：任务显示 `NEEDS_RECONCILE`，确认重提后不产生重复任务。
 7. 服务端重复接收同一 `event_id` 返回 `duplicates`，客户端 checkpoint 正常推进。
+8. 更新分区「检查更新」返回候选后依次执行校验/激活/健康检查；点击「健康检查失败」后
+   自动回到上一版本并上报 `rolled_back`（回执含 `to_release_id`）。
 
 ## OTA（直接推送升级）接入步骤
 
@@ -96,8 +101,9 @@ android-app/
 ├── src/api.ts                 # REST 客户端（对应 api/server.py）
 ├── src/offline/               # 本地任务/事件队列、隐私过滤、同步引擎
 ├── src/device/                # 设备操作契约、风险闸门、原生桥接
+├── src/update/                # 安装实例、版本对账、双槽位更新管理
 ├── src/storage/               # AsyncStorage ↔ KeyValueStore 适配
-├── test/                      # node --test（offline 21 + device 8）
+├── test/                      # node --test（offline 21 + device 20 + update 16）
 ├── android/                   # Kotlin 原生壳 + AccessibilityService + DeviceModule
 └── package.json
 ```
@@ -107,5 +113,6 @@ android-app/
 - 视觉/OCR 操作、坐标手势（明确不做自动注入）
 - 语音输入（PRD 64）
 - 后台常驻同步（当前仅前台轮询 + 手动同步）
-- 记忆中心 / 预算与模型设置 / 更新管理页（PRD 89.4-89.8）
+- 能力包制品下载与装载（当前更新管理器只切换槽位引用，实际包内容交由 OTA 层）
+- 服务端 → App 的候选状态同步
 - 后台任务通知（PRD 64）

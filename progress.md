@@ -970,3 +970,49 @@
 - 系统调用成功不等于操作生效：必须由前后快照证明页面变化，否则 `unverified`
 - 权限弹窗是阻断信号：出现即不判成功，交还用户处理
 - 安全停止在 JS 闸门完成，不通过关闭系统服务实现，恢复必须显式授权
+
+## Session 24 (2026-10-20)
+
+### 目标
+- 落地补充设计 A 的双端协同：Runtime Manifest 设备身份、同步批次回执、版本对账、
+  应用结果回传与 App 侧安全更新管理（§3.2/§3.3/§5/§7/§8/附录 A）。
+
+### 完成事项
+- [x] 服务端：`release/delivery.py` 版本对账（平台/最低 App 版本/工具契约/制品完整性/
+      确定性灰度桶）与应用回执（`apply_id` 幂等、激活/回滚维护安装状态与部署记录）
+- [x] 发布清单新增 `target_platforms` / `min_app_version` / `required_tool_contracts` /
+      `channel` / `bundle_kind`；旧清单反序列化兼容
+- [x] 持久化新表：`device_installations`、`device_deployments`、`sync_batches`、`runtime_manifests`
+- [x] `POST /sync/reconcile`、`POST /sync/apply-result`、`GET /sync/installations[/{id}]`（admin）；
+      `/events/sync` 支持 `batch_id` 回执与重放；`POST /tasks` 校验并记录设备身份
+- [x] 运行时每次执行写入独立运行清单（task_id/run_id/device_id/installation_id/app_version/组件版本），
+      可通过 `/tasks/{id}/manifests` 与 `/runs/{run_id}/manifest` 查询
+- [x] 客户端 `src/update/`：安装实例 ID、对账本地复核（签名/摘要/交付方式/回滚路径）、
+      存储空间检查、双槽位原子切换、健康检查失败自动回滚、回执上报、串行化操作
+- [x] 客户端传输：每批事件带 `batch_id` 与安装 ID；任务提交携带 `installation_id` / `app_version`
+- [x] App 更新分区：状态/槽位/已知良好版本/候选信息与检查-校验-激活-健康检查-回滚操作、
+      原生 APK 需走平台更新的提示
+- [x] 测试：`tests/test_version_sync.py`（15 项）、`android-app/test/update/manager.test.ts`（16 项）
+- [x] 文档：FEATURES（EVT-08…10、VS-01…07、UI-24、OF-14/15、UP-01…07、表/接口/测试矩阵与变更记录）、
+      IMPLEMENTATION、README、android-app/README、task_plan Phase 42、progress 同步
+- [x] 修复后台任务提交竞态：`wait=False` 时先同步落库再返回 202，客户端立即查询不再 404
+
+### 测试结果
+- `python -m pytest tests/ -q` → 327 passed
+- `cd android-app && npm run test:offline` → 57 passed；`npm run typecheck` 通过
+- `python -m evoagent.cli demo` / `workflow` 输出正常
+
+### 盘点更新
+- `FEATURES.md`：203 项 ✅、0 项部分、5 项待迭代（3 组功能；另 1 项明确不做）。
+- 剩余项：视觉/OCR/语音、后台常驻同步、端到端加密与多设备冲突；能力包制品装载与候选状态同步为后续。
+
+### 已知限制
+- 客户端更新管理器只切换槽位引用；实际能力包下载/加载由 OTA（CodePush/Expo Updates）承载，尚未接线。
+- RN 侧无原生磁盘 API，存储空间检查使用默认值；注入测试已覆盖拒绝路径。
+- 服务端不存储制品本体，只返回摘要与签名状态；分发服务按平台/契约筛选，但不做 CDN/对象存储。
+- 原生 APK 更新不在客户端处理，`delivery_mode=client_binary` 一律阻断并提示平台应用更新。
+
+### 设计约束（本轮确立）
+- 服务端给出更新建议，客户端必须独立复核签名/摘要/交付方式/回滚路径；任一失败拒绝激活。
+- 双槽位切换只改引用，健康检查失败必须自动回到 last known good。
+- 原生 APK 不走客户端激活通道，避免绕过平台更新与签名校验。
