@@ -233,8 +233,10 @@ Web 管理端 90.1-90.7 分区（健康/问题中心/诊断详情/候选实验/�
 范围/时间/能力/失败过滤、预览与强制脱敏、只读不改同步状态、Android 系统文件选择器交付）、
 本地同步回执历史（最近 20 条）与服务端长期不可用告警（连续失败或积压超时）、
 Android 后台周期同步（WorkManager 最短 15 分钟、联网 + 电量不低，用户可开关/立即运行；
-在任务窗口内直接执行无界面 JS，不依赖前台服务，支持冷启动；ROM 自启动限制需用户授权）。
-测试通过：Python 352 项、客户端 107 项。迭代占位：视觉/OCR 操作、真实生成服务适配、能力包制品装载。
+在任务窗口内直接执行无界面 JS，不依赖前台服务，支持冷启动；ROM 自启动限制需用户授权）、
+语音输入与反馈（系统 SpeechRecognizer/TTS，显式授权、结果只填入输入框不自动提交、可取消/停止、
+不可用时降级）。
+测试通过：Python 352 项、客户端 120 项。迭代占位：视觉/OCR 操作、真实生成服务适配、能力包制品装载。
 
 ## 目录
 
@@ -257,8 +259,8 @@ evoagent/                  Python 服务端核心
 tests/                     352 项服务端测试
 android-app/               React Native Android 客户端
   src/offline/             本地任务/事件队列、隐私过滤、同步引擎、后台同步策略、诊断包导出/导入、附件分块上传（纯 TS，可单测）
-  src/device/              设备操作契约/风险闸门/界面观测与结果验证/原生桥接（纯 TS，可单测）
+  src/device/              设备操作契约/风险闸门/界面观测/语音输入与朗读/原生桥接（纯 TS，可单测）
   src/update/              安装实例/版本对账/双槽位更新管理（纯 TS，可单测）
-  android/                 Kotlin 原生壳：AccessibilityService + DeviceModule + WorkManager 后台同步
-  test/                    107 项客户端测试（node --test）
+  android/                 Kotlin 原生壳：AccessibilityService + DeviceModule + VoiceModule + WorkManager 后台同步
+  test/                    120 项客户端测试（node --test）
 ```

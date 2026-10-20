@@ -1261,3 +1261,53 @@
 - `cd android-app && npm run test:offline` → 107 passed
 - `npm run typecheck` → 通过
 - 真机构建：`./gradlew assembleDebug` → BUILD SUCCESSFUL
+
+## Session 34 (2026-10-20)
+
+### 背景
+- PRD 64/69/89.1 要求客户端支持语音输入与语音反馈；此前仅有文本输入。
+- 目标：使用系统语音识别/合成能力，显式授权、结果可控、不可用时明确降级；
+  不引入自建录音或云端语音依赖。
+
+### 完成事项
+- [x] 原生 `EvoAgentVoice`（`VoiceModule.kt`）：`voiceStatus`（识别/合成可用性、麦克风授权、
+      引擎名）、`startVoiceInput`（单次识别，3–30 秒超时）、`cancelVoiceInput`、
+      `speak`（1200 字上限，`QUEUE_FLUSH`）、`stopSpeaking`；会话 ID 丢弃迟到回调，
+      主线程创建/销毁识别器，TTS 异步初始化排队，`invalidate()` 清理资源并兑现挂起 Promise
+- [x] 权限与包可见性：Manifest 增加 `RECORD_AUDIO`，Android 11+ `<queries>` 声明
+      `RecognitionService` 与 `TTS_SERVICE`；`DevicePackage` 注册 VoiceModule
+- [x] 纯 TS 契约 `src/device/voice.ts`：超时钳制、能力归一化、六态识别结果
+      （transcribed/empty/cancelled/denied/unavailable/failed）、四态朗读结果、
+      文本规整与截断；模块缺失或异常一律结构化降级
+- [x] App 集成：任务输入框「语音/停止」按钮，首次点击经 `PermissionsAndroid` 请求麦克风
+      并给出应用内说明；识别文本只填入输入框、不自动提交；结果行「朗读/停止」；
+      权限页展示麦克风/识别/合成状态（PRD 89.1/89.5）
+- [x] 测试：新增 `test/device/voice.test.ts`（13 项），客户端 107 → 120；`tsc --noEmit` 通过；
+      Gradle `assembleDebug` 通过并安装到真机
+
+### 真机验证（HyperOS，Android 16 / API 36）
+- 权限页显示「麦克风：已授权 · 语音识别：可用 · 语音合成：可用」。
+- 静音识别：系统 AsrService 返回 NO_MATCH，界面提示「没有识别到语音内容」。
+- 识别中取消：界面「已取消语音输入」，AsrService 停止并销毁。
+- 拒绝麦克风（拒绝且不再询问）：界面「未授权麦克风，无法语音输入。」，未调用识别器。
+- 朗读任务结果：`CloudTtsEngine speakInternal` 执行，界面「已朗读」。
+- 长文本朗读中停止：TTS `onStop`，界面「已停止朗读」。
+- 无法向麦克风注入语音（TTS 外放会被回声消除），`transcribed` 成功路径未在真机走通。
+
+### 本轮修复的缺陷
+- HyperOS 语音服务 `com.xiaomi.mibrain.speech` 自身 `RECORD_AUDIO` 为 `granted=false`、
+  appops `ignore`，识别请求被系统以 `Attribution not found` 拒绝并返回
+  `ERROR_INSUFFICIENT_PERMISSIONS`。临时授权后识别链路恢复；测试结束已恢复原状态。
+  应用侧不尝试绕过，文档标注需用户在系统设置中为语音服务授权。
+- 首个原生回调与超时并发时可能重复兑现 Promise：用会话 ID 保证只有当前会话能结束请求。
+
+### 本轮取舍
+- 不做后台常驻监听、不做语音唤醒；每次识别都是用户显式触发的一次性会话。
+- 识别文本仅作为任务输入，提交仍由用户确认；高风险设备动作不因语音输入降低确认等级。
+- `transcribed` 成功路径依赖人工朗读验收；其余状态路径与合成链路已真机覆盖。
+
+### 测试结果
+- `python -m pytest tests/ -q` → 352 passed
+- `cd android-app && npm run test:offline` → 120 passed
+- `npm run typecheck` → 通过
+- 真机构建：`./gradlew assembleDebug` → BUILD SUCCESSFUL

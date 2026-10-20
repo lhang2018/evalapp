@@ -82,6 +82,11 @@ import type {
   DeviceResult,
   DeviceRisk,
 } from "./src/device/types.ts";
+import { VoiceService } from "./src/device/voice.ts";
+import type {
+  NativeVoiceModuleLike,
+  VoiceCapability,
+} from "./src/device/voice.ts";
 
 const POLL_MS = 5000;
 const DEFAULT_BASE_URL = "http://10.0.2.2:8300";
@@ -188,6 +193,12 @@ export default function App(): React.JSX.Element {
   const [bgStatus, setBgStatus] = useState<BackgroundSyncStatus | null>(null);
   const [bgBusy, setBgBusy] = useState(false);
   const [bgMessage, setBgMessage] = useState<string | null>(null);
+  const [voiceCapability, setVoiceCapability] = useState<VoiceCapability | null>(
+    null
+  );
+  const [voiceBusy, setVoiceBusy] = useState(false);
+  const [voiceMessage, setVoiceMessage] = useState<string | null>(null);
+  const [speakingTask, setSpeakingTask] = useState<string | null>(null);
 
   // 服务器地址：模拟器默认 10.0.2.2；真机可填局域网 IP（或 adb reverse 后用 127.0.0.1）
   const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL);
@@ -210,6 +221,8 @@ export default function App(): React.JSX.Element {
         | (NativeDeviceModuleLike & DiagnosticsSaveModule &
           DiagnosticsPickerModule & BackgroundSyncModuleLike)
         | null;
+    const voiceModule = (NativeModules as Record<string, unknown>)
+      .EvoAgentVoice as NativeVoiceModuleLike | null | undefined;
     const deviceTransport = new NativeDeviceTransport(deviceModule ?? null);
     const broker = new DeviceBroker(deviceTransport, {
       confirm: confirmHighRisk,
@@ -234,6 +247,7 @@ export default function App(): React.JSX.Element {
       importPicker: new NativeDiagnosticsPicker(deviceModule ?? null),
       attachments: new AttachmentService(repo, client),
       background: new NativeBackgroundSync(deviceModule ?? null),
+      voice: new VoiceService(voiceModule ?? null),
     };
   }, [baseUrl]);
 
@@ -248,6 +262,10 @@ export default function App(): React.JSX.Element {
 
   const loadBackgroundSync = useCallback(async () => {
     setBgStatus(await services.background.status());
+  }, [services]);
+
+  const loadVoiceStatus = useCallback(async () => {
+    setVoiceCapability(await services.voice.status());
   }, [services]);
 
   const updateBackgroundSync = useCallback(
@@ -487,6 +505,7 @@ export default function App(): React.JSX.Element {
       if (mounted) setDeviceAvailable(available);
       await reloadLocal();
       await loadBackgroundSync();
+      await loadVoiceStatus();
       try {
         await services.client.health();
         if (mounted) setOnline(true);
@@ -514,7 +533,7 @@ export default function App(): React.JSX.Element {
       mounted = false;
       clearInterval(timer);
     };
-  }, [services, reloadLocal, loadBackgroundSync]);
+  }, [services, reloadLocal, loadBackgroundSync, loadVoiceStatus]);
 
   useEffect(() => {
     if (online) void loadSystem();
@@ -540,6 +559,76 @@ export default function App(): React.JSX.Element {
       setBusy(false);
     }
   }, [goal, online, services, reloadLocal, flush]);
+
+  // 语音输入：只在用户点击时录音；识别文本只填入输入框，不自动提交
+  const startVoiceInput = useCallback(async () => {
+    if (voiceBusy) return;
+    setVoiceMessage(null);
+    if (Platform.OS === "android") {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+          {
+            title: "麦克风权限",
+            message:
+              "语音输入需要麦克风；识别结果只会填入任务输入框，不会自动提交。",
+            buttonPositive: "允许",
+            buttonNegative: "取消",
+          }
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          setVoiceMessage("未授权麦克风，无法语音输入。");
+          return;
+        }
+      } catch (e: unknown) {
+        setVoiceMessage(
+          "无法请求麦克风权限：" +
+            (e instanceof Error ? e.message : String(e))
+        );
+        return;
+      }
+    }
+    setVoiceBusy(true);
+    try {
+      const result = await services.voice.transcribe(15000);
+      if (result.status === "transcribed") {
+        setGoal(result.transcript);
+      }
+      setVoiceMessage(result.message);
+    } finally {
+      setVoiceBusy(false);
+      await loadVoiceStatus();
+    }
+  }, [voiceBusy, services, loadVoiceStatus]);
+
+  const cancelVoiceInput = useCallback(async () => {
+    await services.voice.cancel();
+    setVoiceBusy(false);
+    setVoiceMessage("已取消语音输入");
+  }, [services]);
+
+  const speakTask = useCallback(
+    async (task: LocalTask) => {
+      const text = task.result?.trim();
+      if (!text) return;
+      setSpeakingTask(task.local_task_id);
+      setVoiceMessage(null);
+      try {
+        const result = await services.voice.speak(text);
+        setVoiceMessage(result.message);
+        await loadVoiceStatus();
+      } finally {
+        setSpeakingTask(null);
+      }
+    },
+    [services, loadVoiceStatus]
+  );
+
+  const stopSpeaking = useCallback(async () => {
+    await services.voice.stop();
+    setSpeakingTask(null);
+    setVoiceMessage("已停止朗读");
+  }, [services]);
 
   const cancelTask = useCallback(
     async (task: LocalTask) => {
@@ -1094,7 +1183,18 @@ export default function App(): React.JSX.Element {
               value={goal}
               onChangeText={setGoal}
             />
+            <View style={s.voiceAction}>
+              <Button
+                title={voiceBusy ? "停止" : "语音"}
+                onPress={() =>
+                  voiceBusy
+                    ? void cancelVoiceInput()
+                    : void startVoiceInput()
+                }
+              />
+            </View>
           </View>
+          {voiceMessage && <Text style={s.hint}>{voiceMessage}</Text>}
           {busy ? (
             <ActivityIndicator />
           ) : (
@@ -1130,7 +1230,23 @@ export default function App(): React.JSX.Element {
               </View>
               <Text style={s.goal}>{task.goal}</Text>
               {task.result ? (
-                <Text style={s.result}>结果: {task.result}</Text>
+                <View style={s.resultRow}>
+                  <Text style={[s.result, s.resultText]}>
+                    结果: {task.result}
+                  </Text>
+                  <View style={s.action}>
+                    <Button
+                      title={
+                        speakingTask === task.local_task_id ? "停止" : "朗读"
+                      }
+                      onPress={() =>
+                        speakingTask === task.local_task_id
+                          ? void stopSpeaking()
+                          : void speakTask(task)
+                      }
+                    />
+                  </View>
+                </View>
               ) : null}
               {task.failure_reason ? (
                 <Text style={s.fail}>失败: {task.failure_reason}</Text>
@@ -1194,7 +1310,22 @@ export default function App(): React.JSX.Element {
               仅使用节点级操作（读取界面文本、按文本点击、显式 Intent），
               不注入坐标，不绕过系统权限；操作后对比界面节点验证结果。
             </Text>
-            <Text style={s.hint}>麦克风：未申请（语音入口待迭代）</Text>
+            <Text style={s.hint}>
+              麦克风：
+              {voiceCapability === null
+                ? "检测中"
+                : voiceCapability.permission_granted
+                ? "已授权"
+                : "未授权"}
+              {" · "}语音识别：
+              {voiceCapability?.recognition_available ? "可用" : "不可用"}
+              {" · "}语音合成：
+              {voiceCapability?.tts_available ? "可用" : "不可用"}
+            </Text>
+            <Text style={s.hint}>
+              语音只在点击时使用：识别文本填入任务输入框，不自动提交；
+              朗读仅播放任务结果文本。
+            </Text>
             <Text style={s.hint}>文件/通知：当前版本未使用</Text>
             <Button title="打开应用权限设置" onPress={() => void Linking.openSettings()} />
           </View>
@@ -1739,6 +1870,9 @@ const s = StyleSheet.create({
   bannerOffline: { backgroundColor: "#ffebe9" },
   bannerText: { fontWeight: "600" },
   inputRow: { flexDirection: "row", marginBottom: 8, marginTop: 8 },
+  voiceAction: { width: 88, marginLeft: 8, justifyContent: "center" },
+  resultRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  resultText: { flex: 1 },
   input: {
     flex: 1,
     borderWidth: 1,

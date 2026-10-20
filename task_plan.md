@@ -65,6 +65,7 @@
 | 49 | 客户端导入与同步回执 | 补充 C §3.2/§8/§11：客户端 SAF 选择 ZIP 导入（20 MiB/空包双侧校验、ASCII `X-File-Name`、admin Bearer 仅驻内存、结果与重复提示）；本地回执历史（最近 20 条，按 `receipt_id` 去重）与连续失败/积压超时告警；测试服务端改绑临时端口消除固定端口冲突 | complete（344 项 Python + 85 项客户端；原生导入待真机验证） |
 | 50 | 诊断附件分块上传 | 补充 C §6/§3.1：显式授权、16 KiB–4 MiB 分块与 50 MiB 总量、分块幂等与续传、全文 SHA-256 校验与失败清空、admin-only 正文读取；客户端纯 TS SHA-256/256 KiB 分块/进度持久化；事件 `attachment_refs` 入队、落库与导出 | complete（352 项 Python + 98 项客户端） |
 | 51 | 后台常驻同步 | PRD 72-76：WorkManager 周期同步（最短 15 分钟、联网 + 电量不低，用户可开关/立即运行）；Worker 内直接运行 headless JS（冷启动自动创建 ReactContext），不依赖前台服务；复用离线队列、幂等提交与回执确认；App 状态卡与通知权限 | complete（352 项 Python + 107 项客户端；真机验证前台/后台/冷启动） |
+| 52 | 语音输入与语音反馈 | PRD 64/69/89.1：原生 `EvoAgentVoice`（系统 SpeechRecognizer/TTS）能力检测、单次识别（3–30 秒超时、六态）、取消、朗读（1200 字上限、可停止）；显式点击才请求麦克风，识别文本只填输入框不自动提交；权限页展示麦克风/识别/合成状态；缺失或不可用统一降级；纯 TS 契约与 13 项测试 | complete（352 项 Python + 120 项客户端；真机验证空结果/取消/拒绝/朗读/停止，识别成功路径待人工） |
 
 ## 关键决策（Decisions）
 | 决策 | 理由 |
@@ -123,6 +124,9 @@
 | 测试服务端绑定临时端口 | 固定端口在并行/全量运行与 TIME_WAIT 窗口下会互相抢占；`port=0` 由系统分配并由 `server_address` 读取实际端口，测试间彻底隔离 |
 | 后台同步在 Worker 内直接执行 headless JS | Android 12+ 拒绝后台启动前台服务；任务窗口足够完成短同步，前台通知仅尽力展示，冷启动时按需创建 ReactContext |
 | 不绕过 ROM 自启动限制 | HyperOS 等系统默认拒绝后台拉起进程；应用只提示用户授权，不通过系统漏洞或滥用权限规避（PRD 68/84 安全边界） |
+| 语音复用系统 SpeechRecognizer/TTS | 不自建录音/合成链路，避免新增模型、网络依赖与隐私面；系统服务的权限与可用性由平台管理，应用只做能力检测与降级（PRD 64/69） |
+| 语音结果只填输入框、不自动提交 | 识别可能出错，提交任务属于用户意图；显式点击才请求麦克风，识别中可取消，避免误提交与后台采集（PRD 64/89.1） |
+| 语音服务不可用统一降级 `unavailable` | 原生模块缺失、系统服务缺失、权限被拒都返回结构化状态而非异常；不尝试绕过系统权限或私有接口 |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -157,6 +161,7 @@
 | 无界面任务启动 NPE | 1 | `HeadlessJsTaskConfig` 对 data 做深拷贝，传 null 在构造时崩溃；改为 `Arguments.createMap()` |
 | 后台同步依赖前台服务启动失败 | 1 | Android 12+ 从后台启动 FGS 可能抛 `ForegroundServiceStartNotAllowedException`；改为 Worker 内直接 `HeadlessJsTaskContext.startTask`，`setForegroundAsync` 仅尽力而为 |
 | 冷启动被 HyperOS 拦截 | 1 | `AutoStartManagerService: Reject service`；`MIUIOP(10008)=ignore`，未尝试绕过，改为放开权限后验证并在文档标注用户授权要求 |
+| HyperOS 语音识别返回 `denied` | 1 | logcat 显示 `Attribution not found` 与语音服务 `isRecordPermGranted=false`；系统语音服务 `com.xiaomi.mibrain.speech` 自身未获 `RECORD_AUDIO`。临时授权后验证识别链路，测试后恢复原状态，并在文档标注需用户为语音服务授权，应用侧不绕过 |
 
 ## 备注
 - 无 LLM Key 时运行 `python -m evoagent.cli demo` 走 Mock 模型全链路。

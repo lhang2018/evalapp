@@ -24,6 +24,11 @@
   操作前后快照，由 JS 判定页面变化或前台包名；权限弹窗识别；低/中/高风险分级，高风险需
   独立确认；执行结果五态并要求证据；已下发未验证的动作不自动重放；连续 3 次未验证安全停止，
   需人工恢复。
+- **语音输入与反馈**（`src/device/voice.ts` + `android/.../VoiceModule.kt`）：点击任务输入框旁
+  「语音」时才请求麦克风，系统 `SpeechRecognizer` 单次识别（3–30 秒超时，默认 10 秒），
+  结果只填入输入框、不自动提交；识别中可取消。六态结果（识别成功/空/取消/拒绝/不可用/失败）
+  统一归一化。任务结果可用系统 TTS 朗读（1200 字上限、可停止）。原生模块或系统服务缺失时
+  降级为 `unavailable`，不崩溃。
 - **无坐标/手势注入**：`canPerformGestures=false`，不绕过系统权限；快照仅回传前台 JS，
   不落盘、不上传。
 - **版本对账与更新管理器**（`src/update/`）：安装实例 ID 持久化；`/sync/reconcile` 对账
@@ -56,7 +61,7 @@
 ## 测试（无需 node_modules）
 
 ```bash
-npm run test:offline    # node --test：离线队列/同步/后台同步/任务状态/附件上传/设备闸门/界面观测/更新管理器/诊断包导出与导入，共 107 项
+npm run test:offline    # node --test：离线队列/同步/后台同步/任务状态/附件上传/设备闸门/界面观测/语音/更新管理器/诊断包导出与导入，共 120 项
 npm run typecheck       # 需要先 npm install（tsc）
 ```
 
@@ -90,7 +95,15 @@ npm run android
 无障碍节点点击与启动（返回 `[verified]` 且带前后快照/页面包名证据）、无页面变化降级为
 `[unverified]`、连续未验证安全停止与人工恢复均实测通过。后台同步三种路径也已实测：
 前台「立即运行一次」、断网排队后退到桌面再恢复网络的进程存活调度、以及杀进程后的冷启动
-调度，均执行 headless JS 并返回 `Worker SUCCESS`。
+调度，均执行 headless JS 并返回 `Worker SUCCESS`。语音能力真机实测：权限页正确显示
+「麦克风已授权 · 语音识别可用 · 语音合成可用」；静音识别返回「没有识别到语音内容」；
+识别中取消返回「已取消语音输入」；拒绝麦克风后返回「未授权麦克风，无法语音输入。」；
+朗读任务结果返回「已朗读」，长文本朗读中停止返回「已停止朗读」。
+
+**语音部分未验证**：本机无法向麦克风注入语音，`transcribed`（识别成功并回填输入框）路径
+未在真机走通，仅由单元测试覆盖归一化逻辑；需人工朗读一句话验收。另：部分 ROM 的语音
+服务（如 HyperOS `com.xiaomi.mibrain.speech`）自身未获 `RECORD_AUDIO` 时，识别会因
+归属校验失败返回 `denied`/`failed`，需在系统设置中为该语音服务授权。
 
 **部分未验证**：诊断包导出/导入的原生 SAF 路径（`DeviceModule.saveDiagnosticsPackage` /
 `pickDiagnosticsPackage` + `MainActivity.onActivityResult`）已随最近构建编译通过并安装，
@@ -103,7 +116,8 @@ cd android
 ./gradlew assembleDebug        # 或：npx react-native run-android
 ```
 
-验收清单（已在真机走通 1–4、7、12–13；5–6 由单元测试覆盖）：
+验收清单（已在真机走通 1–4、7、12–14 的语音降级/拒绝/合成/停止路径；5–6 由单元测试覆盖；
+14 的识别成功路径待人工验证）：
 
 1. `adb shell settings get secure enabled_accessibility_services` 能看到 `com.evoagent/.DeviceAccessibilityService`。
 2. 未授权时客户端显示「服务未启用」，点击「点击页面文本」返回 `unavailable`，不崩溃。
@@ -131,6 +145,9 @@ cd android
 13. 断网后点「立即运行一次」，退到桌面并杀进程；恢复网络后系统在后台拉起进程执行同步
     （需允许自启动/后台运行）。HyperOS 默认拒绝冷启动，可先用
     `adb shell cmd appops set com.evoagent 10008 allow` 验证。
+14. 任务输入框点「语音」：首次弹出应用内说明与系统麦克风授权；允许后朗读一句话，识别文本
+    填入输入框但不自动提交；识别中可停止。拒绝授权时提示「未授权麦克风，无法语音输入。」
+    任务结果点「朗读」听到系统合成语音，朗读中「停止」立即中断。
 
 ## OTA（直接推送升级）接入步骤
 
@@ -148,10 +165,10 @@ android-app/
 ├── index.js                   # RN 入口
 ├── src/api.ts                 # REST 客户端（对应 api/server.py）
 ├── src/offline/               # 本地任务/事件队列、隐私过滤、同步引擎、诊断包导出/导入、附件上传
-├── src/device/                # 设备操作契约、风险闸门、原生桥接
+├── src/device/                # 设备操作契约、风险闸门、界面观测、语音契约、原生桥接
 ├── src/update/                # 安装实例、版本对账、候选阶段、双槽位更新管理
 ├── src/storage/               # AsyncStorage ↔ KeyValueStore 适配
-├── test/                      # node --test（offline 68 + device 20 + update 19）
+├── test/                      # node --test（offline 68 + device 33 + update 19）
 ├── android/                   # Kotlin 原生壳 + AccessibilityService + DeviceModule（含 SAF 导出/导入）
 └── package.json
 ```
@@ -159,7 +176,6 @@ android-app/
 ## 未包含（后续迭代）
 
 - 视觉/OCR 操作、坐标手势（明确不做自动注入）
-- 语音输入（PRD 64）
 - 能力包制品下载与装载（当前更新管理器只切换槽位引用，实际包内容交由 OTA 层）
 - 候选阶段推送（当前为拉取式同步，无服务端主动推送）
 - 后台任务通知（PRD 64）
