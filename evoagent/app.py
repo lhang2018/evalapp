@@ -147,7 +147,7 @@ class App:
                                   self.config.diagnostics)
         self.diagnostics = DiagnosisEngine(
             self.db, self.bus, self.probes, self.config.diagnostics,
-            self.evolution)
+            self.evolution, model=self._model())
         # 环境漂移检测（PRD 44）：只读窗口分析，默认不制造事件
         self.drift = DriftDetector(self.bus, self.db)
         # 运行回放（Arch 20.3）：只读重建，不执行真实副作用

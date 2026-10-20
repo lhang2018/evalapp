@@ -164,7 +164,7 @@ Python 服务端（标准库，SQLite）
 | DG-06 | 趋势聚合 | ✅ | `evolution/diagnostics.py` | 按状态/意图/类别/组件 |
 | DG-07 | 假设显式升级候选 | ✅ | `evolution/controller.py` | 风险 L1-L4 映射；仍需门禁 |
 | DG-08 | 诊断不自动发布 | ✅ | `evolution/controller.py` | 硬约束 |
-| DG-09 | LLM 辅助假设生成 | ⬜ | — | 按 Arch 9.4 模型不判根因 |
+| DG-09 | LLM 辅助假设生成 | ✅ | `evolution/diagnostics.py`, `api/server.py`, `cli.py` | 显式调用 `POST /diagnostics/{id}/hypotheses` 或 `diagnose-assist`；每条必须引用证据快照片段，置信度封顶 0.5、状态 `proposed`，不改案例状态；与规则假设重复则跳过；模型假设须先经固定探针验证才能升级候选（Arch 9.4） |
 | DG-10 | 环境漂移检测 | ✅ | `evolution/drift.py`, `core/metrics.py`, `core/alerts.py` | 工具成功率/契约错误/模型行为/任务分布/组件与依赖版本；当前窗 vs 基线窗；处置建议 stop/health_check/compatible_path/evolution |
 
 ### 2.10 进化与评测（PRD 46-54 / Arch 10-11）
@@ -316,6 +316,7 @@ Python 服务端（标准库，SQLite）
 | `/models/migrations/{id}/apply` | 受控启用（`gray_percent`、`actor`） |
 | `/models/migrations/{id}/rollback` | 回滚迁移（`reason`） |
 | `/diagnostics/{case_id}/experiments` | 运行探针实验（可选 `fault: error|timeout|fail`） |
+| `/diagnostics/{case_id}/hypotheses` | 模型辅助假设（advisory；无模型 `503`；证据未绑定/重复项进 `skipped`） |
 | `/diagnostics/{case_id}/candidates` | 假设升级候选 |
 | `/admin/backup` | 创建三库备份（admin，写审计，`201`） |
 | `/admin/restore` | 恢复指定备份（admin；未结束任务 `409`、缺失 `404`、非法名称 `400`；恢复前自动安全备份） |
@@ -334,6 +335,7 @@ Python 服务端（标准库，SQLite）
 | `status <task_id>` | 查询任务 |
 | `pause <task_id>` / `resume <task_id> [--force]` | 暂停/恢复 |
 | `diagnose [task_id] [--probe ...]` | 诊断案例/探针 |
+| `diagnose-assist <case_id> [--limit N]` | 模型辅助假设（需真实模型；仅 advisory） |
 | `serve [--port N]` | 启动 REST API（默认 8300） |
 | `candidates` / `propose` / `evaluate` / `approve` / `deploy` / `monitor` | 进化候选操作 |
 | `workflows` | 工作流资产库 |
@@ -496,11 +498,14 @@ Python 服务端（标准库，SQLite）
 
 上下文：`context_max_chars` 与模型 `context_limit` 共同约束。
 
+诊断：`max_experiments_per_case=3`、`max_daily_experiments=50`、`max_probe_seconds=10`、
+`max_assist_hypotheses=3`（模型辅助假设单次上限，运行时再限制为 1-5）。
+
 ---
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，255 项）
+### Python（`tests/`，266 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -520,6 +525,7 @@ Python 服务端（标准库，SQLite）
 | `test_memory_router_diag.py` | 记忆关系、路由评分、诊断趋势/故障注入 |
 | `test_workflow.py` | DAG 引擎 |
 | `test_diagnostics.py` | 案例/假设/探针/升级 |
+| `test_diagnostic_assist.py` | 模型辅助假设：证据绑定、置信度封顶、去重、无效 JSON/模型异常降级、探针验证后才可升级、REST 200/404/503（11 项） |
 | `test_evolution.py` | 候选生命周期、评测、门禁 |
 | `test_evolution_benefit.py` | 十维收益、跨领域回归、发布后监测采集/判定/回滚（21 项） |
 | `test_governance.py` | 上下文治理、评测完整性、fail-closed 门禁（12 项） |
@@ -558,7 +564,7 @@ cd android-app && npm run test:offline
 | 项 | PRD / Arch | 状态 | 说明 |
 |---|---|---|---|
 | 真实嵌入向量检索 | PRD 25 | ⬜ | 当前词法 + 哈希向量 |
-| LLM 辅助诊断假设 | PRD 41-45 / Arch 9.4 | ⬜ | 模型不参与根因判定 |
+| LLM 辅助诊断假设 | PRD 41-45 / Arch 9.4 | ✅ | 模型输出仅作证据绑定的辅助解释；不改案例状态，探针验证前不可升级候选 |
 | 候选代码隔离沙箱 | PRD 47.4 / L3 | ⬜ | 评测执行器运行受控任务，不是任意代码沙箱 |
 | 视觉/OCR/语音操作 | PRD 64/68 | ⬜ | 仅无障碍节点与显式 Intent |
 | 后台常驻同步 | PRD 72-76 | ⬜ | 前台 + 手动重试 |
@@ -646,6 +652,23 @@ cd android-app && npm run android
 ---
 
 ## 变更记录
+
+### 2026-10-20 — 模型辅助诊断假设（证据绑定 + 探针门禁）
+
+- 需求：PRD 41-45 / Arch 9.4；迭代待办 #4「LLM 辅助诊断假设」。
+- 变更：新增 `DiagnosisEngine.suggest_hypotheses()`。模型只提出候选解释：
+  `category/component/statement/evidence_refs/confidence`；每条必须有至少一条
+  `evidence_refs` 逐字出现在证据快照（JSON 或规范化行）中，否则丢弃；置信度封顶 0.5、
+  状态固定 `proposed`；与已有规则假设 `(category, component)` 重复时跳过；无效 JSON、
+  模型异常均降级为空结果，不影响诊断。模型输出不改变案例状态、不触发探针。
+- 代码：`evolution/diagnostics.py`（`source` 字段、辅助提示/解析/校验）、
+  `config.py`（`max_assist_hypotheses`）、`app.py`（注入真实模型）、
+  `api/server.py`（`POST /diagnostics/{case_id}/hypotheses`）、`cli.py`（`diagnose-assist`）。
+- 安全：模型假设即使有证据引用也不能直接升级候选，必须先有对应探针实验记录
+  （`promote_to_candidate` 拒绝无实验的 `source=model` 假设）。
+- 验证：真实网关 `deepseek-v4-flash` 在既有案例上生成 2 条辅助假设、1 条重复被跳过；
+  `python -m pytest tests/ -q` → 266 passed。
+- 测试：新增 `tests/test_diagnostic_assist.py`（11 项），Python 255 → 266。
 
 ### 2026-10-20 — 真实模型复用 Claude 全局配置
 

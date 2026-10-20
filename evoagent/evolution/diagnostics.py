@@ -9,6 +9,7 @@
 - 诊断不发布任何改动；候选升级与发布仍走进化门禁（PRD 45/81）。
 """
 
+import json
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -18,6 +19,7 @@ from typing import Any, Dict, List, Optional
 from ..acceptance.verify import Verdict
 from ..core.events import EventBus
 from ..core.task import Task, TaskStatus
+from ..models.base import ChatMessage
 from ..tools.contract import ToolResult
 
 
@@ -56,6 +58,7 @@ class Hypothesis:
     confidence: float = 0.3
     suggested_probes: List[str] = field(default_factory=list)
     status: HypothesisStatus = HypothesisStatus.PROPOSED
+    source: str = "rules"                 # rules | model（模型输出仅为辅助解释）
     created_at: float = field(default_factory=time.time)
 
     @property
@@ -71,7 +74,8 @@ class Hypothesis:
             "opposing_evidence": self.opposing_evidence,
             "confidence": self.confidence, "uncertainty": self.uncertainty,
             "suggested_probes": self.suggested_probes,
-            "status": self.status.value, "created_at": self.created_at,
+            "status": self.status.value, "source": self.source,
+            "created_at": self.created_at,
         }
 
     @classmethod
@@ -238,12 +242,14 @@ class DiagnosisEngine:
 
     def __init__(self, db: Any = None, bus: Optional[EventBus] = None,
                  probe_runner: Any = None, config: Any = None,
-                 evolution: Any = None):
+                 evolution: Any = None, model: Any = None):
         self.db = db
         self.bus = bus
         self.probe_runner = probe_runner
         self.config = config
         self.evolution = evolution
+        # 仅用于生成「辅助解释」；不参与规则判定，也没有根因权威（Arch 9.4）
+        self.model = model
 
     # ================= 案例生成 =================
     def record_failure(self, task: Task, verdict: Optional[Verdict],
@@ -384,6 +390,88 @@ class DiagnosisEngine:
                 h.status = HypothesisStatus.SUPPORTED
         return hypotheses
 
+    # ---- 模型辅助假设（Arch 9.4：仅作解释，不作根因）----
+    def suggest_hypotheses(self, case_id: str,
+                           max_items: Optional[int] = None) -> Dict[str, Any]:
+        """让模型基于已有证据提出候选解释。
+
+        安全约束：
+        - 每条假设必须引用证据快照中真实存在的片段，否则丢弃；
+        - 置信度封顶 ``_MODEL_CONFIDENCE_CAP``，状态保持 proposed；
+        - 不改变案例状态，不触发探针，不发布任何改动；
+        - 与确定性规则假设重复的 (category, component) 直接跳过。
+        """
+        if self.model is None:
+            raise RuntimeError("未配置模型，无法生成辅助假设")
+        case = self.get_case(case_id)
+        if case is None:
+            raise KeyError(case_id)
+        default_limit = getattr(self.config, "max_assist_hypotheses", 3)
+        try:
+            limit = int(max_items) if max_items is not None else default_limit
+        except (TypeError, ValueError):
+            limit = default_limit
+        limit = max(1, min(limit, 5))
+        existing = self._hypotheses_of(case)
+        model_id = ""
+        try:
+            model_id = self.model.profile().model_id
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            raw = self.model.generate([
+                ChatMessage(role="system", content=_ASSIST_SYSTEM_PROMPT),
+                ChatMessage(role="user", content=_assist_prompt(case, existing)),
+            ])
+        except Exception as e:  # noqa: BLE001 —— 模型失败不影响诊断本身
+            return {"case_id": case.case_id, "advisory": True,
+                    "model_id": model_id, "created": [],
+                    "skipped": [{"reason":
+                                 f"model_error: {type(e).__name__}"}]}
+
+        items, parse_error = _parse_hypotheses(raw)
+        if items is None:
+            return {"case_id": case.case_id, "advisory": True,
+                    "model_id": model_id, "created": [],
+                    "skipped": [{"reason": parse_error or "invalid_json"}]}
+
+        evidence_text = _evidence_text(case)
+        known_keys = {(h.category, h.component.lower()) for h in existing}
+        created: List[Hypothesis] = []
+        skipped: List[Dict[str, Any]] = []
+        for item in items:
+            if len(created) >= limit:
+                break
+            parsed, reason = _validate_model_hypothesis(
+                item, case, evidence_text)
+            if parsed is None:
+                skipped.append({"reason": reason,
+                                "statement": str(item)[:200]})
+                continue
+            key = (parsed.category, parsed.component.lower())
+            if key in known_keys:
+                skipped.append({"reason": "duplicate",
+                                "component": parsed.component})
+                continue
+            known_keys.add(key)
+            parsed.source = "model"
+            created.append(parsed)
+
+        for h in created:
+            if self.db is not None:
+                self.db.save_hypothesis(h)
+        case.updated_at = time.time()
+        if self.db is not None:
+            self.db.save_diagnostic_case(case)
+        if created:
+            self._emit("diagnostic_hypotheses_suggested", {
+                "case_id": case.case_id, "created": len(created),
+                "skipped": len(skipped), "model_id": model_id})
+        return {"case_id": case.case_id, "advisory": True,
+                "model_id": model_id,
+                "created": [h.to_dict() for h in created],
+                "skipped": skipped}
+
     # ================= 诊断实验 =================
     def run_experiment(self, case: DiagnosticCase, hypothesis: Hypothesis,
                        method: str, fault: Optional[str] = None
@@ -449,6 +537,13 @@ class DiagnosisEngine:
             raise KeyError(f"假设不存在: {hypothesis_id}")
         if not hypothesis.supporting_evidence:
             raise ValueError("假设缺少支持证据，不能创建候选（PRD 4.4）")
+        if hypothesis.source == "model":
+            verified = bool(self.db is not None and any(
+                e.hypothesis_id == hypothesis_id
+                for e in self.db.list_experiments(case.case_id)))
+            if not verified:
+                raise ValueError(
+                    "模型辅助假设需先经固定探针验证才能升级候选（Arch 9.4）")
         baseline = (case.version_manifest.get("version")
                     or case.version_manifest.get("release_id") or "unreleased")
         cand = self.evolution.candidate_from_hypothesis(
@@ -507,6 +602,125 @@ class DiagnosisEngine:
         if self.bus is not None:
             self.bus.emit(event_type=event_type, component_id="diagnostics",
                           payload=payload)
+
+
+_MODEL_CONFIDENCE_CAP = 0.5
+_MAX_STATEMENT_CHARS = 400
+_MAX_COMPONENT_CHARS = 120
+_MAX_PROMPT_CHARS = 6000
+
+_ASSIST_SYSTEM_PROMPT = (
+    "你是故障诊断助手。你只能基于用户给出的证据快照提出可能的解释，"
+    "不能声称已确认根因，也不能编造未出现在证据中的事实。"
+    "每条假设必须给出 evidence_refs，数组元素必须逐字来自证据快照。"
+    "只输出 JSON 数组，不要输出其他文字。字段："
+    "category（ENVIRONMENT|TOOL|AGENT|COMPOSITE）、component、statement、"
+    "evidence_refs（字符串数组）、suggested_probes（字符串数组）、confidence（0-1）。"
+)
+
+
+def _assist_prompt(case: DiagnosticCase, existing: List[Hypothesis]) -> str:
+    from .probes import PROBES
+    evidence = json.dumps(case.evidence_snapshot, ensure_ascii=False,
+                          indent=1, default=str)
+    if len(evidence) > _MAX_PROMPT_CHARS:
+        evidence = evidence[:_MAX_PROMPT_CHARS] + "\n...（已截断）"
+    prior = [f"[{h.category.value}] {h.component}: {h.statement}"
+             for h in existing]
+    return (
+        f"症状: {case.symptom}\n"
+        f"证据快照:\n{evidence}\n"
+        f"已有规则假设:\n" + ("\n".join(prior) if prior else "（无）") + "\n"
+        f"可用固定探针: {', '.join(sorted(PROBES))}\n"
+        "请提出最多 3 条有证据支撑的候选解释。"
+    )
+
+
+def _evidence_text(case: DiagnosticCase) -> str:
+    """可被模型引用的证据文本（JSON + 规范化行），全部来自真实快照。"""
+    snap = case.evidence_snapshot or {}
+    parts = [json.dumps(snap, ensure_ascii=False, default=str)]
+    if snap.get("failure_reason"):
+        parts.append(f"failure_reason={snap['failure_reason']}")
+    if snap.get("stop_reason"):
+        parts.append(f"stop_reason={snap['stop_reason']}")
+    for f in snap.get("tool_failures") or []:
+        parts.append(
+            f"tool={f.get('tool')} error_class={f.get('error_class')} "
+            f"error={f.get('error')}")
+    verdict = snap.get("verdict") or {}
+    for check in verdict.get("checks") or []:
+        if isinstance(check, dict):
+            parts.append(f"check={check.get('id')} passed={check.get('passed')}")
+    return "\n".join(parts).lower()
+
+
+def _parse_hypotheses(raw: str):
+    """解析模型输出；返回 (items, error)。"""
+    text = (raw or "").strip()
+    if text.startswith("```"):
+        lines = text.splitlines()
+        if lines and lines[0].strip().startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+    candidates = [text]
+    start, end = text.find("["), text.rfind("]")
+    if start != -1 and end > start:
+        candidates.append(text[start:end + 1])
+    for candidate in candidates:
+        try:
+            parsed = json.loads(candidate)
+        except (TypeError, ValueError):
+            continue
+        if isinstance(parsed, dict):
+            parsed = parsed.get("hypotheses")
+        if isinstance(parsed, list):
+            return parsed, ""
+    return None, "invalid_json"
+
+
+def _validate_model_hypothesis(item: Any, case: DiagnosticCase,
+                               evidence_text: str):
+    """校验单条模型假设；返回 (Hypothesis|None, skip_reason)。"""
+    if not isinstance(item, dict):
+        return None, "invalid_item"
+    try:
+        category = FaultCategory(str(item.get("category", "")).upper())
+    except ValueError:
+        return None, "invalid_category"
+    component = str(item.get("component") or "").strip()
+    statement = str(item.get("statement") or "").strip()
+    if not component or len(component) > _MAX_COMPONENT_CHARS:
+        return None, "invalid_component"
+    if not statement or len(statement) > _MAX_STATEMENT_CHARS:
+        return None, "invalid_statement"
+    refs = item.get("evidence_refs")
+    if not isinstance(refs, list) or not refs:
+        return None, "missing_evidence_refs"
+    bound = [str(r).strip() for r in refs
+             if isinstance(r, (str, int, float))
+             and str(r).strip()
+             and str(r).strip().lower() in evidence_text]
+    if not bound:
+        return None, "evidence_refs_not_in_snapshot"
+    try:
+        confidence = float(item.get("confidence", 0.3))
+    except (TypeError, ValueError):
+        confidence = 0.3
+    confidence = round(max(0.10, min(_MODEL_CONFIDENCE_CAP, confidence)), 2)
+
+    from .probes import PROBES
+    probes = item.get("suggested_probes")
+    probes = [p for p in probes if p in PROBES] if isinstance(probes, list) else []
+
+    return Hypothesis(
+        case_id=case.case_id, category=category, component=component,
+        statement=statement,
+        supporting_evidence=[f"引用证据: {r}" for r in bound[:5]],
+        confidence=confidence, suggested_probes=probes[:4],
+        status=HypothesisStatus.PROPOSED, source="model"), ""
 
 
 def _snapshot(verdict: Optional[Verdict], tool_results: List[ToolResult],

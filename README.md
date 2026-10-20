@@ -28,6 +28,7 @@ python -m evoagent.cli resume <task_id> --force
 # 诊断：失败任务 → 多假设案例 → 固定探针（无外部网络）
 python -m evoagent.cli diagnose <task_id> --probe tool_health
 python -m evoagent.cli diagnose            # 最近诊断案例
+python -m evoagent.cli diagnose-assist <case_id>   # 模型辅助假设（需真实模型，仅 advisory）
 # 工作流资产库 / 预算用量 / 成本报告
 python -m evoagent.cli workflows
 python -m evoagent.cli budget
@@ -53,7 +54,12 @@ python -m evoagent.cli workflow-publish <candidate_id> --args '{"step_1":{"expre
 诊断 REST 端点：`GET /diagnostics`、`GET /diagnostics/{case_id}`、
 `GET /diagnostics/trends`、`POST /diagnostics/scan`、
 `POST /diagnostics/{case_id}/experiments`（可选 `fault: error|timeout|fail` 故障注入）、
+`POST /diagnostics/{case_id}/hypotheses`（模型辅助假设）、
 `POST /diagnostics/{case_id}/candidates`。诊断永不自动发布；候选仍走评测门禁。
+
+模型辅助假设只作解释、不作根因（Arch 9.4）：每条必须引用证据快照中的真实片段，
+置信度封顶 0.5，不改变案例状态；与规则假设重复时跳过；未经固定探针验证的模型假设
+不能升级为候选。未配置真实模型时端点返回 `503`。
 
 模型与记忆端点：`GET /models`、`GET /models/migrations`、
 `POST /models/migrations`、`POST /models/migrations/{id}/regression|release|apply|rollback`；
@@ -171,7 +177,7 @@ Planning/意图分类（复用 Claude 全局配置，已实测）+ 执行内核�
 敏感负载脱敏、不重放副作用）、三库备份与恢复（sha256 + 完整性校验、自动安全备份，管理端可操作）、
 工具替代安全链（仅可重试失败且副作用未发生时切换，禁止副作用/权限升级）、成功任务工作流抽取
 （重复支持门槛、评测与参数绑定门禁、人工批准后发布并注册运行）。
-测试通过：Python 255 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
+测试通过：Python 266 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
 嵌入向量检索、Web 管理端完整编辑、隔离沙箱执行候选代码。
 
 ## 目录
@@ -192,7 +198,7 @@ evoagent/                  Python 服务端核心
   core/replay.py           只读运行回放
   core/backup.py           三库备份/校验/恢复
   cli.py                   命令行
-tests/                     255 项服务端测试
+tests/                     266 项服务端测试
 android-app/               React Native Android 客户端
   src/offline/             本地任务/事件队列、隐私过滤、同步引擎（纯 TS，可单测）
   src/device/              设备操作契约/风险闸门/原生桥接（纯 TS，可单测）

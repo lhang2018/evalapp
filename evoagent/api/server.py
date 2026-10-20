@@ -424,6 +424,9 @@ def make_handler(app: App):
                     and parts[2] == "experiments"):
                 return self._diagnostic_experiment(parts[1], body)
             if (len(parts) == 3 and parts[0] == "diagnostics"
+                    and parts[2] == "hypotheses"):
+                return self._diagnostic_suggest(parts[1], body, auth.role)
+            if (len(parts) == 3 and parts[0] == "diagnostics"
                     and parts[2] == "candidates"):
                 return self._diagnostic_candidate(parts[1], body)
             return self._json(404, {"error": "未知路径"})
@@ -654,6 +657,22 @@ def make_handler(app: App):
                 else:
                     created.append(_case_summary(case))
             return self._json(200, {"cases": created, "skipped": skipped})
+
+        def _diagnostic_suggest(self, case_id: str, body: Dict[str, Any],
+                                actor: str):
+            try:
+                out = app.diagnostics.suggest_hypotheses(
+                    case_id, max_items=body.get("max_items"))
+            except KeyError:
+                return self._json(404, {"error": "诊断案例不存在"})
+            except RuntimeError as e:
+                return self._json(503, {"error": str(e)})
+            app.audit.record(actor, "diagnostics.suggest_hypotheses",
+                             target=case_id,
+                             detail={"created": len(out.get("created") or []),
+                                     "skipped": len(out.get("skipped") or []),
+                                     "model_id": out.get("model_id")})
+            return self._json(200, out)
 
         def _diagnostic_experiment(self, case_id: str, body: Dict[str, Any]):
             case = app.db.get_diagnostic_case(case_id)

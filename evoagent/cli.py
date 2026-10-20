@@ -146,6 +146,24 @@ def cmd_diagnose(task_id: str, probe: str) -> str:
     return json.dumps(out, ensure_ascii=False, indent=1)
 
 
+def cmd_diagnose_assist(case_id: str, limit: int) -> str:
+    app = _app()
+    try:
+        out = app.diagnostics.suggest_hypotheses(case_id, max_items=limit)
+    except KeyError:
+        return _fail("诊断案例不存在")
+    except RuntimeError as e:
+        return _fail(str(e))
+    print(f"模型辅助假设（advisory）case={case_id} "
+          f"created={len(out['created'])} skipped={len(out['skipped'])}")
+    for h in out["created"]:
+        print(f"  [{h['category']}] {h['component']} "
+              f"conf={h['confidence']} source={h['source']}: {h['statement']}")
+    for s in out["skipped"]:
+        print(f"  skipped: {s}")
+    return json.dumps(out, ensure_ascii=False, indent=1)
+
+
 def cmd_pause(task_id: str) -> str:
     app = _app()
     out = app.controller.pause_task(task_id)
@@ -558,6 +576,10 @@ def main() -> None:
     d.add_argument("task_id", nargs="?")
     d.add_argument("--probe", default="",
                    help="运行固定探针: " + ", ".join(PROBE_NAMES))
+    da = sub.add_parser("diagnose-assist")
+    da.add_argument("case_id")
+    da.add_argument("--limit", type=int, default=3,
+                    help="最多生成条数（上限 5）")
     v = sub.add_parser("serve")
     v.add_argument("--host", default="127.0.0.1")
     v.add_argument("--port", type=int, default=8300)
@@ -652,6 +674,8 @@ def main() -> None:
         cmd_resume(args.task_id, args.force)
     elif args.cmd == "diagnose":
         cmd_diagnose(args.task_id, args.probe)
+    elif args.cmd == "diagnose-assist":
+        cmd_diagnose_assist(args.case_id, args.limit)
     elif args.cmd == "candidates":
         cmd_candidates(args.candidate_id)
     elif args.cmd == "propose":

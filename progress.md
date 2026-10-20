@@ -680,3 +680,33 @@
 ### 遗留/待迭代
 - 仅解析 `settings.json` 的 `env` 段；`apiKeyHelper` 等其他凭据来源未支持
 - 真实模型成本估算仍按档案默认价（当前为 0），接入真实单价表待迭代
+
+## Session 16 (2026-10-20)
+
+### 目标
+- 差距审计后补足「LLM 辅助诊断假设」（PRD 41-45 / Arch 9.4），保持模型解释不具根因权威。
+
+### 完成事项
+- [x] `evolution/diagnostics.py`
+  - `Hypothesis.source`（`rules` / `model`），旧记录反序列化默认 `rules`
+  - `DiagnosisEngine.suggest_hypotheses(case_id, max_items)`：模型输出仅作辅助解释
+  - 校验：category/component/statement 边界；`evidence_refs` 至少一条逐字出现在证据快照
+    （JSON 或规范化 `tool=/error_class=/stop_reason=` 行）；无效 JSON、模型异常均降级
+  - 置信度封顶 0.5、状态固定 `proposed`；与规则假设 `(category, component)` 重复跳过
+  - 不改变案例状态、不自动触发探针；模型假设须有对应探针实验才能 `promote_to_candidate`
+- [x] `config.py`：`DiagnosticsConfig.max_assist_hypotheses`（默认 3，运行时限制 1-5）
+- [x] `app.py`：向诊断引擎注入真实模型（Mock 形态下为 None）
+- [x] API：`POST /diagnostics/{case_id}/hypotheses`（404 / 503 / 200 advisory，写审计）
+- [x] CLI：`diagnose-assist <case_id> [--limit N]`
+- [x] 文档：README / IMPLEMENTATION / FEATURES / task_plan 同步
+
+### 测试结果
+- `python -m pytest tests/ -q` → 266 passed
+- 新增 `tests/test_diagnostic_assist.py` 11 项：证据绑定、置信度封顶、去重、无效 JSON、
+  模型异常、上限、无模型、探针验证门禁、REST 200/404/503
+- 真实模型（`deepseek-v4-flash`）在既有案例生成 2 条辅助假设、1 条重复被跳过
+
+### 设计约束（本轮确立）
+- 模型输出不参与规则判定，也不改变案例诊断状态
+- 证据引用必须可回溯到快照；无法绑定证据的模型解释直接丢弃
+- 模型假设没有探针实验记录时禁止升级候选，防止把措辞当根因

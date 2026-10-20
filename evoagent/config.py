@@ -59,6 +59,8 @@ class DiagnosticsConfig:
     max_daily_experiments: int = 50
     # 诊断永远不自动发布；候选生成需显式调用（PRD 45）
     auto_propose: bool = False
+    # 模型辅助假设单次最多条数（Arch 9.4：仅作解释，置信度封顶 0.5）
+    max_assist_hypotheses: int = 3
 
 
 @dataclass
