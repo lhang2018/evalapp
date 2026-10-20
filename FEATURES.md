@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 305 项 + 客户端 29 项全部通过**。
+测试基线（2026-10-20）：**Python 312 项 + 客户端 29 项全部通过**。
 
 ---
 
@@ -195,7 +195,7 @@ Python 服务端（标准库，SQLite）
 | RL-04 | 回滚 | ✅ | `release/manager.py`, `api/server.py`, `cli.py` | `POST /releases/rollback` |
 | RL-05 | L0-L4 风险分级发布规则 | ✅ | `evolution/controller.py` | 核心安全边界改动禁止普通发布 |
 | RL-06 | 发布后监测接指标源 | ✅ | `evolution/monitor.py`, `evolution/controller.py` | 运行时任务/事件自动采集；候选 `MONITORING` → `PROMOTED`/`ROLLED_BACK` |
-| RL-07 | 自动分支/合并 | ⬜ | — | 当前仅 git 基线（main） |
+| RL-07 | 发布分支/标签/合并 | ✅ | `release/git_flow.py`, `cli.py` | 前缀白名单（`stable/adapt/exp/capability/shared`）、工作区干净才切换、仅 `--ff-only` 合入 main、轻量标签；显式 `release-git` CLI + 审计，不自动触发 |
 
 ### 2.12 预算与成本（PRD 55-58 / Arch 12）
 
@@ -350,6 +350,7 @@ Python 服务端（标准库，SQLite）
 | `budget` | 全部预算层级限额 + 运行用量 |
 | `costs` | 成本报告 |
 | `releases` / `release-rollback` | 发布清单/回滚 |
+| `release-git <status|branch|tag|merge> [name] [--base] [--repo]` | 发布分支/轻量标签/`--ff-only` 合入 main；操作写审计 |
 | `logs [--layer] [--task] [--limit] [--purge] [--delete-task]` | 分层日志查看/清理/按任务删除 |
 | `alerts` | 当前告警（含漂移状态） |
 | `migrate <old> <new> [--dataset] [--apply] [--gray N]` | 模型迁移：兼容性 → 回归 → 发布组合 →（可选）启用 |
@@ -514,7 +515,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，305 项）
+### Python（`tests/`，312 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -527,6 +528,7 @@ Python 服务端（标准库，SQLite）
 | `test_task_model.py` | 任务模型全字段往返、旧任务默认值、显式输入不被推断覆盖、计划/工作流补齐、REST 校验与持久化（8 项） |
 | `test_client_centers.py` | 记忆查看/过滤/纠正/删除、权限范围阻断、审计记录；工作流检查版本/运行/产物（5 项） |
 | `test_embeddings.py` | 语义召回、向量持久化与复用、嵌入失败回退、模型切换重算、纠正/删除维护向量、配置优先、OpenAI 请求形状（8 项） |
+| `test_git_flow.py` | 状态/建分支、名称校验、脏工作区阻断、快进合并、分叉失败保留 main、标签与重复拒绝、非仓库拒绝（7 项） |
 | `test_config.py` | Claude 全局配置回退、`/v1` 归一、显式环境变量优先、缺失/损坏配置降级（7 项） |
 | `test_tools.py` | 契约、权限、副作用、幂等 |
 | `test_tool_workflow.py` | 工具超时/重试/输出契约、工作流并行/跳过/续跑 |
@@ -582,7 +584,7 @@ cd android-app && npm run test:offline
 | 后台常驻同步 | PRD 72-76 | ⬜ | 前台 + 手动重试 |
 | 端到端加密、多设备冲突合并 | PRD 72-76/86 | ⬜ | |
 | Web 管理端完整界面 | PRD 90 | ✅ | 90.1-90.7 分区已实现；不含富文本编辑/图表库，以表格与 JSON 展示为主 |
-| 发布自动分支/合并 | PRD 59-63 | ⬜ | 仅 git 基线 |
+| 发布分支自动化（可视化/远端推送） | PRD 59-63 | ⬜ | 已提供本地分支/标签/ff 合并 CLI；不自动 push、不整合同步冲突 |
 
 ---
 
@@ -590,7 +592,7 @@ cd android-app && npm run test:offline
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 305 passed
+python -m pytest tests/ -q                       # 312 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -712,6 +714,18 @@ cd android-app && npm run android
 - 状态变化：新增 MD-10 ✅；迭代待办「真实 LLM 联调」完成。
 - 已知限制：仅复用 Claude 配置中的 OpenAI 兼容端点；不解析 `apiKeyHelper` 或其他凭据来源。
 
+### 2026-10-20 — 发布分支/标签/合并（PRD 59-60 / 62-63）
+
+- 需求：PRD 59-60（隔离发布分支、快进合并、标签）与 62-63（发布可追溯）。
+- 变更：新增 `GitReleaseFlow`，只封装发布最小操作——状态、创建隔离分支、轻量标签、
+  `--ff-only` 合入 main；分支名限定 PRD 60 建议前缀；工作区不干净拒绝切换/合并；
+  分叉或冲突直接失败并保留 main；不读取/写入 git 凭据，运行时不会自动触发。
+- 代码：`release/git_flow.py`、`cli.py`（`release-git`）、`tests/test_git_flow.py`。
+- 接口：`release-git status|branch|tag|merge [name] [--base] [--repo]`；成功/失败均写审计。
+- 测试：新增 `tests/test_git_flow.py`（7 项）；Python 总数 305 → 312，客户端保持 29。
+- 状态变化：RL-07 ⬜ → ✅；未实现清单改为「不自动 push / 不整合同步冲突」。
+- 已知限制：不推送远端、不自动解决冲突、不做发布门禁与合并动作的强制绑定（由调用方顺序保证）。
+
 ### 2026-10-20 — 真实嵌入向量检索（PRD 25）
 
 - 需求：PRD 25（记忆检索应支持语义召回，而非仅词形重叠）。
@@ -823,6 +837,7 @@ cd android-app && npm run android
 | Session 19 | 任务模型全字段（PRD 7.3） | 292 + 29 |
 | Session 20 | 用户端中心页面（PRD 89.3-89.8） | 297 + 29 |
 | Session 21 | 真实嵌入向量检索（PRD 25） | 305 + 29 |
+| Session 22 | 发布分支/标签/快进合并（PRD 59-60 / 62-63） | 312 + 29 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 

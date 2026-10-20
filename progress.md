@@ -893,3 +893,37 @@
 - 嵌入服务是可选的增强项：任何失败都必须回退到确定性检索，不能阻断任务
 - 向量与生成模型绑定：模型标识变化即视为失效，按需重算而非假定兼容
 - 默认配置不引入外部依赖与额外网络调用
+
+## Session 22 (2026-10-20)
+
+### 目标
+- 补齐发布自动化缺口：「发布分支/标签/快进合并」（PRD 59-60 / 62-63，RL-07）。
+
+### 完成事项
+- [x] 新增 `release/git_flow.py`：`GitReleaseFlow`（状态、建分支、轻量标签、`--ff-only` 合入 main）
+      与 `validate_branch_name` / `validate_tag_name`
+- [x] 分支前缀白名单（`stable/ adapt/ exp/ capability/ shared/`）、拒绝 `..`、拒绝覆盖/合并 main
+- [x] 工作区不干净时拒绝建分支与合并；分叉/冲突直接失败并保留 main 与当前分支
+- [x] git 调用统一 `GIT_TERMINAL_PROMPT=0`、超时 30s，不读取/写入凭据或身份配置
+- [x] `cli.py`：`release-git status|branch|tag|merge`，成功/失败均写审计
+- [x] 测试：新增 `tests/test_git_flow.py`（7 项：状态/建分支、名称校验、脏工作区、
+      快进合并、分叉失败、标签与重复、非仓库拒绝）
+- [x] 文档：FEATURES（RL-07 ✅、测试矩阵、CLI 表、变更记录、Session 22）、IMPLEMENTATION
+      （PRD 59-63、覆盖率 181/3、剩余差距）、README、task_plan、progress 同步
+
+### 测试结果
+- `python -m pytest tests/ -q` → 312 passed
+- `cd android-app && npm run test:offline` → 29 passed；`npm run typecheck` 通过
+
+### 盘点更新
+- `FEATURES.md`：181 项 ✅、0 项部分、3 项待迭代（1 项明确不做）。
+- 剩余项：视觉/OCR/语音、后台常驻同步、端到端加密与多设备冲突；远端推送/冲突合并不在范围。
+
+### 已知限制
+- 不自动 `push` 远端、不做发布门禁与合并动作的强制绑定；门禁顺序由调用方保证。
+- 合并仅支持快进；分叉时失败并要求人工处理，不自动 rebase/merge commit。
+
+### 设计约束（本轮确立）
+- Git 操作必须显式调用，运行时不自动触发发布动作
+- 合并方向单一（隔离分支 → main），且只允许快进，避免隐式合并提交
+- 轻量标签不依赖 git 身份，避免为打标签写入或修改用户配置

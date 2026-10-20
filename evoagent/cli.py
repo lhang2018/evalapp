@@ -24,6 +24,7 @@ from typing import Optional
 from .app import App
 from .evolution.controller import PUBLISH_RULES
 from .evolution.probes import PROBES as PROBE_NAMES
+from .release.git_flow import GitFlowError, GitReleaseFlow
 
 
 def _fail(message: str) -> str:
@@ -429,6 +430,42 @@ def cmd_release_rollback(reason: str) -> str:
     return ""
 
 
+def cmd_release_git(action: str, name: str, repo: str, base: str,
+                    message: str) -> str:
+    app = _app()
+    try:
+        flow = GitReleaseFlow(repo)
+        if action == "status":
+            out = flow.status()
+            target = repo
+        elif action == "branch":
+            if not name:
+                return _fail("branch 需要分支名")
+            out = flow.create_branch(name, base)
+            target = name
+        elif action == "tag":
+            if not name:
+                return _fail("tag 需要标签名")
+            out = flow.tag(name, base)
+            target = name
+        elif action == "merge":
+            if not name:
+                return _fail("merge 需要分支名")
+            out = flow.merge_to_main(name)
+            target = name
+        else:
+            return _fail(f"未知 action: {action}")
+    except GitFlowError as exc:
+        app.audit.record("cli", f"release.git.{action}",
+                         target=name or repo, outcome="failed",
+                         detail={"error": str(exc)})
+        return _fail(str(exc))
+    app.audit.record("cli", f"release.git.{action}", target=target,
+                     detail=out)
+    print(json.dumps(out, ensure_ascii=False, indent=1))
+    return ""
+
+
 def cmd_logs(layer: str, task_id: str, limit: int, purge: bool,
              delete_task: str) -> str:
     app = _app()
@@ -678,6 +715,12 @@ def main() -> None:
     sub.add_parser("releases")
     rr = sub.add_parser("release-rollback")
     rr.add_argument("--reason", default="manual rollback")
+    rg = sub.add_parser("release-git")
+    rg.add_argument("action", choices=["status", "branch", "tag", "merge"])
+    rg.add_argument("name", nargs="?", default="")
+    rg.add_argument("--repo", default=".")
+    rg.add_argument("--base", default="HEAD")
+    rg.add_argument("--message", default="")
     # 模型迁移 / 记忆评测 / 漂移检测（PRD 20 / 28 / 44）
     mg = sub.add_parser("migrate")
     mg.add_argument("old_model_id")
@@ -767,6 +810,9 @@ def main() -> None:
         cmd_releases()
     elif args.cmd == "release-rollback":
         cmd_release_rollback(args.reason)
+    elif args.cmd == "release-git":
+        cmd_release_git(args.action, args.name, args.repo, args.base,
+                        args.message)
     elif args.cmd == "migrate":
         cmd_migrate(args.old_model_id, args.new_model_id,
                     args.dataset, args.apply, args.gray)
