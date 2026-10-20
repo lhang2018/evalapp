@@ -72,6 +72,9 @@ function makeState(events: OfflineEvent[]): OfflineState {
       last_seq: 5,
       at: NOW - 120_000,
     }],
+    sync_receipts: [],
+    sync_failures: 0,
+    last_failure_at: null,
   };
 }
 

@@ -5,6 +5,7 @@ import type {
   DeadLetter,
   EventSyncStatus,
   InFlightBatch,
+  LocalSyncReceipt,
   OfflineEvent,
   OfflineState,
   PrivacyLevel,
@@ -48,6 +49,9 @@ export function emptyState(): OfflineState {
     next_sequence: {},
     in_flight: null,
     loss_markers: [],
+    sync_receipts: [],
+    sync_failures: 0,
+    last_failure_at: null,
   };
 }
 
@@ -196,6 +200,32 @@ function normalizeMarkers(raw: unknown): DataLossMarker[] {
   return out;
 }
 
+function normalizeReceipts(raw: unknown): LocalSyncReceipt[] {
+  if (!Array.isArray(raw)) return [];
+  const out: LocalSyncReceipt[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const receipt = item as LocalSyncReceipt;
+    if (typeof receipt.receipt_id !== "string" || !receipt.receipt_id) continue;
+    out.push({
+      receipt_id: receipt.receipt_id,
+      batch_id: typeof receipt.batch_id === "string" ? receipt.batch_id : null,
+      received_at: asNumber(receipt.received_at, 0),
+      recorded_at: asNumber(receipt.recorded_at, 0),
+      accepted: asNumber(receipt.accepted, 0),
+      duplicates: asNumber(receipt.duplicates, 0),
+      rejected: asNumber(receipt.rejected, 0),
+      confirmed: asNumber(receipt.confirmed, 0),
+      replayed: receipt.replayed === true,
+      protocol_version:
+        typeof receipt.protocol_version === "string"
+          ? receipt.protocol_version
+          : null,
+    });
+  }
+  return out.slice(-20);
+}
+
 function normalizeState(
   data: Partial<OfflineState> & Record<string, unknown>,
 ): OfflineState {
@@ -236,6 +266,11 @@ function normalizeState(
   state.next_sequence = sequence;
   state.in_flight = normalizeInFlight(data.in_flight);
   state.loss_markers = normalizeMarkers(data.loss_markers);
+  state.sync_receipts = normalizeReceipts(data.sync_receipts);
+  state.sync_failures = Math.max(0, asNumber(data.sync_failures, 0));
+  state.last_failure_at = typeof data.last_failure_at === "number"
+    ? data.last_failure_at
+    : null;
   return state;
 }
 

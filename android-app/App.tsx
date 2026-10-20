@@ -46,6 +46,8 @@ import { DiagnosticsExporter } from "./src/offline/export.ts";
 import type { ExportPreview, ExportRequest } from "./src/offline/export.ts";
 import { NativeExportSink } from "./src/offline/nativeExport.ts";
 import type { DiagnosticsSaveModule } from "./src/offline/nativeExport.ts";
+import { NativeDiagnosticsPicker } from "./src/offline/nativeImport.ts";
+import type { DiagnosticsPickerModule } from "./src/offline/nativeImport.ts";
 import type {
   DeadLetter,
   LocalTask,
@@ -165,6 +167,9 @@ export default function App(): React.JSX.Element {
   const [exportSensitive, setExportSensitive] = useState(false);
   const [exportMetadataOnly, setExportMetadataOnly] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [adminToken, setAdminToken] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
 
   // 服务器地址：模拟器默认 10.0.2.2；真机可填局域网 IP（或 adb reverse 后用 127.0.0.1）
   const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL);
@@ -184,7 +189,8 @@ export default function App(): React.JSX.Element {
     const sync = new SyncEngine(queue, transport, tasks);
     const deviceModule =
       (NativeModules as Record<string, unknown>).EvoAgentDevice as
-        | (NativeDeviceModuleLike & DiagnosticsSaveModule)
+        | (NativeDeviceModuleLike & DiagnosticsSaveModule &
+          DiagnosticsPickerModule)
         | null;
     const deviceTransport = new NativeDeviceTransport(deviceModule ?? null);
     const broker = new DeviceBroker(deviceTransport, {
@@ -207,6 +213,7 @@ export default function App(): React.JSX.Element {
       update,
       exporter: new DiagnosticsExporter(),
       exportSink: new NativeExportSink(deviceModule ?? null),
+      importPicker: new NativeDiagnosticsPicker(deviceModule ?? null),
     };
   }, [baseUrl]);
 
@@ -624,6 +631,32 @@ export default function App(): React.JSX.Element {
     }
   }, [services, exportRequest]);
 
+  const importDiagnostics = useCallback(async () => {
+    setImporting(true);
+    setError(null);
+    setImportMessage(null);
+    try {
+      const picked = await services.importPicker.pick();
+      const result = await services.client.importDiagnosticsPackage(
+        picked.fileName,
+        picked.bytes,
+        adminToken.trim() || undefined,
+      );
+      const count = result.import?.event_count ?? 0;
+      setImportMessage(
+        result.duplicate
+          ? `该诊断包已导入过（${result.import?.import_id ?? "未知记录"}），未重复入库`
+          : `已导入 ${picked.fileName}：事件 ${count} 条，待人工审查 ${
+            result.needs_review ?? 0
+          } 条`,
+      );
+    } catch (e: unknown) {
+      setError("导入失败：" + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setImporting(false);
+    }
+  }, [services, adminToken]);
+
   return (
     <SafeAreaView style={s.container}>
       <KeyboardAvoidingView
@@ -705,7 +738,24 @@ export default function App(): React.JSX.Element {
                 {stats && (
                   <Text style={s.hint}>
                     待同步事件 {stats.pending} · 仅本地任务 {stats.localOnly} ·
-                    死信 {stats.dead}
+                    死信 {stats.dead} · 本地回执 {stats.receipts}
+                    {stats.lastReceiptAt
+                      ? `（最近 ${formatTime(stats.lastReceiptAt)}）`
+                      : ""}
+                  </Text>
+                )}
+                {stats && stats.consecutiveFailures > 0 && (
+                  <Text style={s.hint}>
+                    连续同步失败 {stats.consecutiveFailures} 次
+                    {stats.lastSuccessAt
+                      ? ` · 上次成功 ${formatTime(stats.lastSuccessAt / 1000)}`
+                      : ""}
+                  </Text>
+                )}
+                {stats?.serverUnavailable && (
+                  <Text style={s.error}>
+                    服务端长时间不可用：事件与任务仍保存在本机，恢复连接后会自动补传；
+                    请检查服务端地址或网络。
                   </Text>
                 )}
                 <Button
@@ -784,6 +834,34 @@ export default function App(): React.JSX.Element {
                   </Text>
                 ))}
                 {exportMessage && <Text style={s.hint}>{exportMessage}</Text>}
+              </View>
+
+              <Text style={s.section}>导入诊断包</Text>
+              <View style={s.card}>
+                <Text style={s.hint}>
+                  从系统文件选择器读取 ZIP 并提交到服务端隔离区（仅证据，不执行）。
+                  服务端启用鉴权时需填写 admin 令牌；令牌只随本次请求发送，不落盘。
+                </Text>
+                <TextInput
+                  style={s.serverInput}
+                  value={adminToken}
+                  onChangeText={setAdminToken}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  placeholder="admin 令牌（未启用鉴权可留空）"
+                />
+                <Button
+                  title={importing ? "导入中…" : "选择诊断包并导入"}
+                  onPress={() => void importDiagnostics()}
+                  disabled={importing || !online}
+                />
+                {!online && (
+                  <Text style={s.hint}>离线时无法导入，请先恢复服务端连接。</Text>
+                )}
+                {importMessage && (
+                  <Text style={s.hint}>{importMessage}</Text>
+                )}
               </View>
             </>
           )}

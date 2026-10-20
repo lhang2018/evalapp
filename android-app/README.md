@@ -30,6 +30,11 @@
   任务运行、同步状态、逐文件 SHA-256/CRC32）；支持范围/时间/能力/失败过滤；导出前可预览，
   敏感事件默认仅元数据、原始负载可关闭，密钥类字段/值强制脱敏；只读不改变同步状态；
   经系统文件选择器（SAF）交付，取消/失败不留下半成品。
+- **诊断包导入**（`src/offline/{packageImport,nativeImport}.ts`）：SAF 选择 ZIP，
+  原生与 TS 双侧校验 20 MiB 上限与空包；以 `X-File-Name` + admin Bearer 原样上传，
+  凭证只驻内存、不持久化；界面展示事件数、待审查数与重复包提示。
+- **同步回执与不可用告警**：本地保存最近 20 条服务端回执（按 `receipt_id` 去重）；
+  连续 5 次同步失败，或队列积压且 30 分钟无成功同步时显示告警，成功同步后清除。
 
 ## 为什么选 React Native
 
@@ -42,7 +47,7 @@
 ## 测试（无需 node_modules）
 
 ```bash
-npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门/界面观测/更新管理器/诊断包导出，共 76 项
+npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门/界面观测/更新管理器/诊断包导出与导入，共 85 项
 npm run typecheck       # 需要先 npm install（tsc）
 ```
 
@@ -76,9 +81,9 @@ npm run android
 无障碍节点点击与启动（返回 `[verified]` 且带前后快照/页面包名证据）、无页面变化降级为
 `[unverified]`、连续未验证安全停止与人工恢复均实测通过。
 
-**未验证**：诊断包导出的原生 SAF 交付（`DeviceModule.saveDiagnosticsPackage` +
-`MainActivity.onActivityResult`）在最近一次构建之后加入，本机没有 Android SDK/模拟器，
-尚未重新编译与真机执行；TS 侧导出逻辑有单元测试覆盖。
+**未验证**：诊断包导出/导入的原生 SAF 路径（`DeviceModule.saveDiagnosticsPackage` /
+`pickDiagnosticsPackage` + `MainActivity.onActivityResult`）在最近一次构建之后加入，
+本机没有 Android SDK/模拟器，尚未重新编译与真机执行；TS 侧导出/解码逻辑有单元测试覆盖。
 
 手动构建：
 
@@ -102,6 +107,9 @@ cd android
 9. 离线状态页「预览导出内容」显示事件/敏感/脱敏计数；「导出诊断包」弹出系统文件选择器，
    保存后得到可解压 ZIP，`checksums.json` 与服务端 `POST /diagnostics/import` 校验一致；
    取消选择后提示「已取消保存」，不残留临时数据。
+10. 「导入诊断包」填入 admin token 后弹出系统文件选择器；选择导出的 ZIP 后提示导入事件数、
+    待审查数与重复标记；再次导入同一包提示「已导入过」，服务端不重复入库；不填 token 时
+    服务端返回 403，界面保留错误消息且不崩溃。
 
 ## OTA（直接推送升级）接入步骤
 
@@ -118,12 +126,12 @@ android-app/
 ├── App.tsx                    # 任务中心 UI（PRD 89.1/89.2）
 ├── index.js                   # RN 入口
 ├── src/api.ts                 # REST 客户端（对应 api/server.py）
-├── src/offline/               # 本地任务/事件队列、隐私过滤、同步引擎、诊断包导出
+├── src/offline/               # 本地任务/事件队列、隐私过滤、同步引擎、诊断包导出/导入
 ├── src/device/                # 设备操作契约、风险闸门、原生桥接
 ├── src/update/                # 安装实例、版本对账、候选阶段、双槽位更新管理
 ├── src/storage/               # AsyncStorage ↔ KeyValueStore 适配
 ├── test/                      # node --test（offline 37 + device 20 + update 19）
-├── android/                   # Kotlin 原生壳 + AccessibilityService + DeviceModule（含 SAF 导出）
+├── android/                   # Kotlin 原生壳 + AccessibilityService + DeviceModule（含 SAF 导出/导入）
 └── package.json
 ```
 

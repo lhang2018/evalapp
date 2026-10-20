@@ -21,10 +21,10 @@ class TestWorkflowApi(unittest.TestCase):
         cls.app = App(data_dir=cls.tmp)
         cls._seed(cls.app, "calculate", "calc_a")
         cls._seed(cls.app, "calculate", "calc_b")
-        cls.srv = ApiServer(cls.app, host="127.0.0.1", port=18301)
+        cls.srv = ApiServer(cls.app, host="127.0.0.1", port=0)
         cls.thread = threading.Thread(target=cls.srv.serve_forever, daemon=True)
         cls.thread.start()
-        cls.base = "http://127.0.0.1:18301"
+        cls.base = f"http://127.0.0.1:{cls.srv.port}"
 
     @classmethod
     def tearDownClass(cls):

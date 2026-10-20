@@ -164,11 +164,11 @@ class TestAssistApi(unittest.TestCase):
                     version_manifest={"version": "v1"})
         cls.case = cls.app.diagnostics.record_failure(
             task, Verdict(passed=False, checks=[]), [_failed(), _ok()])
-        cls.srv = ApiServer(cls.app, host="127.0.0.1", port=18302)
+        cls.srv = ApiServer(cls.app, host="127.0.0.1", port=0)
         cls.thread = threading.Thread(target=cls.srv.serve_forever,
                                       daemon=True)
         cls.thread.start()
-        cls.base = "http://127.0.0.1:18302"
+        cls.base = f"http://127.0.0.1:{cls.srv.port}"
 
     @classmethod
     def tearDownClass(cls):

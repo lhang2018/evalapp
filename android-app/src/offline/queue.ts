@@ -8,6 +8,7 @@ import type {
   DataLossMarker,
   DeadLetter,
   InFlightBatch,
+  LocalSyncReceipt,
   OfflineEvent,
   OfflineState,
   PrivacyLevel,
@@ -22,6 +23,9 @@ import { classifyRetention, isExpired } from "./retention.ts";
 
 export const QUEUE_CAPACITY = 500;
 export const QUEUE_WARNING_RATIO = 0.8;
+export const RECEIPT_HISTORY = 20;
+export const SERVER_UNAVAILABLE_FAILURES = 5;
+export const SERVER_UNAVAILABLE_MS = 30 * 60 * 1000;
 const MAX_LOSS_MARKERS = 50;
 const TIER_RANK: Record<RetentionTier, number> = {
   debug: 0,
@@ -443,7 +447,37 @@ export class EventQueue {
   markSynced(at: number): Promise<void> {
     return this.repo.update((state) => {
       state.last_sync_at = at;
+      state.sync_failures = 0;
     });
+  }
+
+  /** 记录一次可重试的传输失败，用于「服务端长期不可用」告警。 */
+  markSyncFailure(at: number): Promise<void> {
+    return this.repo.update((state) => {
+      state.sync_failures += 1;
+      state.last_failure_at = at;
+    });
+  }
+
+  /** 服务端批次回执本地留证；同 receipt_id 不重复记录，仅保留最近 20 条。 */
+  recordReceipt(receipt: LocalSyncReceipt): Promise<void> {
+    return this.repo.update((state) => {
+      if (state.sync_receipts.some(
+        (item) => item.receipt_id === receipt.receipt_id,
+      )) {
+        return;
+      }
+      state.sync_receipts.push(receipt);
+      if (state.sync_receipts.length > RECEIPT_HISTORY) {
+        state.sync_receipts = state.sync_receipts.slice(-RECEIPT_HISTORY);
+      }
+    });
+  }
+
+  recentReceipts(limit: number = 5): Promise<LocalSyncReceipt[]> {
+    return this.repo.load().then((state) =>
+      state.sync_receipts.slice(-Math.max(1, limit)).reverse(),
+    );
   }
 
   /** 主动清理过期事件；容量压力下由 enqueue 自动触发。 */
@@ -465,8 +499,13 @@ export class EventQueue {
 
   stats(): Promise<QueueStats> {
     return this.repo.load().then((state) => {
+      const now = this.now();
       const usage = state.queue.length;
       const usageRatio = usage / QUEUE_CAPACITY;
+      const lastReceipt =
+        state.sync_receipts[state.sync_receipts.length - 1] ?? null;
+      const staleSuccess = state.last_sync_at !== null &&
+        now - state.last_sync_at >= SERVER_UNAVAILABLE_MS && usage > 0;
       return {
         pending: state.queue.filter(
           (e) => e.uploadable && e.sync_status === "pending",
@@ -485,6 +524,12 @@ export class EventQueue {
         usageRatio,
         warning: usageRatio >= QUEUE_WARNING_RATIO,
         lossMarkers: state.loss_markers.length,
+        receipts: state.sync_receipts.length,
+        lastReceiptAt: lastReceipt?.received_at ?? null,
+        consecutiveFailures: state.sync_failures,
+        lastSuccessAt: state.last_sync_at,
+        serverUnavailable:
+          state.sync_failures >= SERVER_UNAVAILABLE_FAILURES || staleSuccess,
       };
     });
   }

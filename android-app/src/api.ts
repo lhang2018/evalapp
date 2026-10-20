@@ -19,6 +19,7 @@ import type {
   ReconcileRequest,
   ReconcileResponse,
 } from "./update/types.ts";
+import { headerFileName } from "./offline/packageImport.ts";
 
 export interface TaskInfo {
   task_id: string;
@@ -182,6 +183,24 @@ export interface VersionInfo {
   current: string | null;
 }
 
+export interface DiagnosticsImportRecord {
+  import_id: string;
+  file_name: string;
+  size_bytes: number;
+  sha256: string;
+  format_version: string;
+  entry_count: number;
+  event_count: number;
+  status: string;
+  imported_at: number;
+}
+
+export interface DiagnosticsImportResponse {
+  import: DiagnosticsImportRecord;
+  duplicate: boolean;
+  needs_review?: number;
+}
+
 export class EvoAgentClient {
   private base: string;
 
@@ -313,6 +332,34 @@ export class EvoAgentClient {
 
   cancelTask(id: string) {
     return this.req<{ ok: boolean }>(`/tasks/${id}/cancel`, { method: "POST" });
+  }
+
+  /** 诊断包导入需要 admin；令牌只随本次请求发送，不参与其他接口。 */
+  async importDiagnosticsPackage(
+    fileName: string,
+    bytes: Uint8Array,
+    adminToken?: string,
+  ): Promise<DiagnosticsImportResponse> {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/zip",
+      "X-File-Name": headerFileName(fileName),
+    };
+    if (adminToken) headers.Authorization = `Bearer ${adminToken}`;
+    const resp = await fetch(`${this.base}/diagnostics/import`, {
+      method: "POST",
+      headers,
+      body: bytes as unknown as BodyInit,
+    });
+    const body = await resp.json();
+    if (!resp.ok) {
+      const error = new Error(
+        String((body as { error?: unknown })?.error ?? `HTTP ${resp.status}`),
+      ) as Error & { status?: number; body?: unknown };
+      error.status = resp.status;
+      error.body = body;
+      throw error;
+    }
+    return body as DiagnosticsImportResponse;
   }
 
   metrics() {

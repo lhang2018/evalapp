@@ -87,6 +87,20 @@ export interface DeadLetter {
   dead_at: number;
 }
 
+/** 服务端批次回执的本地副本（补充 C §3.2：sync_receipts 独立持久化）。 */
+export interface LocalSyncReceipt {
+  receipt_id: string;
+  batch_id: string | null;
+  received_at: number;
+  recorded_at: number;
+  accepted: number;
+  duplicates: number;
+  rejected: number;
+  confirmed: number;
+  replayed: boolean;
+  protocol_version: string | null;
+}
+
 export interface LocalTask {
   local_task_id: string;
   /** 幂等键：任务生命周期内保持不变 */
@@ -117,6 +131,11 @@ export interface OfflineState {
   in_flight: InFlightBatch | null;
   /** 因过期或容量压力被清理的事件记录；不静默丢数据 */
   loss_markers: DataLossMarker[];
+  /** 最近服务端批次回执（上限 20 条，仅本地证据） */
+  sync_receipts: LocalSyncReceipt[];
+  /** 连续传输失败次数；成功同步后清零 */
+  sync_failures: number;
+  last_failure_at: number | null;
 }
 
 export interface QueueStats {
@@ -131,4 +150,10 @@ export interface QueueStats {
   usageRatio: number;
   warning: boolean;
   lossMarkers: number;
+  receipts: number;
+  lastReceiptAt: number | null;
+  consecutiveFailures: number;
+  lastSuccessAt: number | null;
+  /** 服务端长时间不可用：连续失败或距上次成功过久且仍有待同步事件 */
+  serverUnavailable: boolean;
 }

@@ -2,11 +2,14 @@ package com.evoagent
 
 import android.app.Activity
 import android.content.Intent
+import android.database.Cursor
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.Base64
+import java.io.ByteArrayOutputStream
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -155,6 +158,35 @@ class DeviceModule(
         }
     }
 
+    /** 诊断包导入：系统文件选择器只读取字节，不上传；凭证与目标由 JS 侧决定。 */
+    @ReactMethod
+    fun pickDiagnosticsPackage(promise: Promise) {
+        val activity = currentActivity
+        if (activity == null) {
+            promise.resolve(failure("当前没有可用界面"))
+            return
+        }
+        if (openPromise != null) {
+            promise.resolve(failure("已有导入选择在进行中"))
+            return
+        }
+        openPromise = promise
+        try {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/zip"
+                putExtra(
+                    Intent.EXTRA_MIME_TYPES,
+                    arrayOf("application/zip", "application/octet-stream"),
+                )
+            }
+            activity.startActivityForResult(intent, REQUEST_OPEN_DIAGNOSTICS)
+        } catch (error: Exception) {
+            openPromise = null
+            promise.resolve(failure(error.message ?: "无法打开文件选择器"))
+        }
+    }
+
     private fun capture(
         service: DeviceAccessibilityService?,
     ): com.facebook.react.bridge.WritableMap? = try {
@@ -193,10 +225,13 @@ class DeviceModule(
 
     companion object {
         const val REQUEST_SAVE_DIAGNOSTICS = 4701
+        const val REQUEST_OPEN_DIAGNOSTICS = 4702
         private const val CLICK_SETTLE_MS = 700L
         private const val LAUNCH_SETTLE_MS = 1200L
+        private const val MAX_IMPORT_BYTES = 20 * 1024 * 1024
         private var savePromise: Promise? = null
         private var saveBytes: ByteArray? = null
+        private var openPromise: Promise? = null
 
         /** 由 MainActivity.onActivityResult 调用；返回 true 表示已消费该结果。 */
         fun completeSave(
@@ -230,6 +265,78 @@ class DeviceModule(
                 }
             }.start()
             return true
+        }
+
+        /** 读取系统文件选择器结果；大小上限与空包在此处拦截。 */
+        fun completeOpen(
+            activity: Activity,
+            requestCode: Int,
+            resultCode: Int,
+            data: Intent?,
+        ): Boolean {
+            if (requestCode != REQUEST_OPEN_DIAGNOSTICS) return false
+            val promise = openPromise ?: return true
+            openPromise = null
+            val uri = data?.data
+            if (resultCode != Activity.RESULT_OK || uri == null) {
+                promise.resolve(saveFailure("已取消选择"))
+                return true
+            }
+            Thread {
+                try {
+                    val name = displayName(activity, uri) ?: "diagnostics.zip"
+                    val bytes = activity.contentResolver
+                        .openInputStream(uri)?.use { stream ->
+                            val buffer = ByteArrayOutputStream()
+                            val chunk = ByteArray(64 * 1024)
+                            var total = 0
+                            while (true) {
+                                val read = stream.read(chunk)
+                                if (read <= 0) break
+                                total += read
+                                if (total > MAX_IMPORT_BYTES) {
+                                    throw IllegalStateException("导入包超过 20 MiB")
+                                }
+                                buffer.write(chunk, 0, read)
+                            }
+                            buffer.toByteArray()
+                        } ?: throw IllegalStateException("无法读取选中文件")
+                    if (bytes.isEmpty()) {
+                        throw IllegalStateException("导入包为空")
+                    }
+                    promise.resolve(Arguments.createMap().apply {
+                        putBoolean("ok", true)
+                        putString("file_name", name)
+                        putDouble("size", bytes.size.toDouble())
+                        putString(
+                            "base64",
+                            Base64.encodeToString(bytes, Base64.NO_WRAP),
+                        )
+                        putString("message", "已读取诊断包")
+                    })
+                } catch (error: Exception) {
+                    promise.resolve(saveFailure(error.message ?: "读取失败"))
+                }
+            }.start()
+            return true
+        }
+
+        private fun displayName(activity: Activity, uri: Uri): String? {
+            val cursor: Cursor = activity.contentResolver.query(
+                uri,
+                arrayOf(OpenableColumns.DISPLAY_NAME),
+                null,
+                null,
+                null,
+            ) ?: return null
+            return cursor.use {
+                if (!it.moveToFirst()) {
+                    null
+                } else {
+                    val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (index < 0) null else it.getString(index)
+                }
+            }
         }
 
         private fun saveFailure(message: String) = Arguments.createMap().apply {

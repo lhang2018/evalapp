@@ -19,6 +19,7 @@ class MainActivity : ReactActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (DeviceModule.completeSave(this, requestCode, resultCode, data)) return
+        if (DeviceModule.completeOpen(this, requestCode, resultCode, data)) return
         super.onActivityResult(requestCode, resultCode, data)
     }
 }

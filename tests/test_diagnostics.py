@@ -150,10 +150,10 @@ class TestDiagnosticsApi(unittest.TestCase):
     def setUpClass(cls):
         cls.tmp = tempfile.mkdtemp(prefix="evoagent_diag_api_")
         cls.app = App(data_dir=cls.tmp)
-        cls.srv = ApiServer(cls.app, host="127.0.0.1", port=18301)
+        cls.srv = ApiServer(cls.app, host="127.0.0.1", port=0)
         cls.thread = threading.Thread(target=cls.srv.serve_forever, daemon=True)
         cls.thread.start()
-        cls.base = "http://127.0.0.1:18301"
+        cls.base = f"http://127.0.0.1:{cls.srv.port}"
 
     @classmethod
     def tearDownClass(cls):

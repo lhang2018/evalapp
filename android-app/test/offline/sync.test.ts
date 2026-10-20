@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { MemoryStore, OfflineRepository } from "../../src/offline/storage.ts";
-import { EventQueue } from "../../src/offline/queue.ts";
+import { EventQueue, SERVER_UNAVAILABLE_MS } from "../../src/offline/queue.ts";
 import { SyncEngine } from "../../src/offline/sync.ts";
 import type { EventSyncTransport, SyncResponse } from "../../src/offline/sync.ts";
 import { LocalTaskService } from "../../src/offline/tasks.ts";
@@ -248,4 +248,84 @@ test("event sync runs before task submission on reconnect", async () => {
   const stored = await tasks.get(task.local_task_id);
   assert.equal(stored?.status, "SUBMITTED");
   assert.equal(stored?.server_task_id, "srv_1");
+});
+
+test("server receipts are persisted locally with counts and deduped", async () => {
+  const { queue } = setup();
+  await queue.enqueue({ event_type: "receipted" });
+  const transport: EventSyncTransport = {
+    async syncEvents(events, batchId) {
+      const ids = events.map((event) => event.event_id);
+      return {
+        accepted: ids,
+        duplicates: [],
+        rejected: [],
+        confirmed: ids,
+        protocol_version: "1.0",
+        receipt: {
+          receipt_id: "rcpt_1",
+          batch_id: batchId ?? null,
+          replayed: false,
+          received_at: 123,
+          protocol_version: "1.0",
+        },
+      };
+    },
+  };
+  const sync = new SyncEngine(queue, transport);
+  await sync.flush(true);
+
+  const receipts = await queue.recentReceipts();
+  assert.equal(receipts.length, 1);
+  assert.equal(receipts[0].receipt_id, "rcpt_1");
+  assert.equal(receipts[0].accepted, 1);
+  assert.equal(receipts[0].confirmed, 1);
+  assert.equal(receipts[0].rejected, 0);
+  assert.equal(receipts[0].protocol_version, "1.0");
+  assert.ok(receipts[0].batch_id);
+
+  // 同一回执重放不会产生第二条本地记录
+  await queue.recordReceipt(receipts[0]);
+  const stats = await queue.stats();
+  assert.equal(stats.receipts, 1);
+  assert.equal(stats.lastReceiptAt, 123);
+});
+
+test("repeated failures raise and success clears the unavailable warning", async () => {
+  let now = 1000;
+  const { queue, transport } = setup({ now: () => now });
+  await queue.enqueue({ event_type: "kept" });
+  transport.mode = "fail";
+  const sync = new SyncEngine(queue, transport, null, {
+    now: () => now,
+    jitter: () => 1,
+  });
+
+  for (let i = 0; i < 5; i += 1) {
+    now += 1000;
+    const result = await sync.flush(true);
+    assert.equal(result.ok, false);
+  }
+  let stats = await queue.stats();
+  assert.equal(stats.consecutiveFailures, 5);
+  assert.equal(stats.serverUnavailable, true);
+
+  transport.mode = "accept";
+  now += 1000;
+  await sync.flush(true);
+  stats = await queue.stats();
+  assert.equal(stats.consecutiveFailures, 0);
+  assert.equal(stats.serverUnavailable, false);
+});
+
+test("stale last success with pending events raises the unavailable warning", async () => {
+  const now = 10_000_000;
+  const { repo, queue } = setup({ now: () => now });
+  await queue.enqueue({ event_type: "pending" });
+  await repo.update((state) => {
+    state.last_sync_at = now - SERVER_UNAVAILABLE_MS - 1;
+  });
+  const stats = await queue.stats();
+  assert.equal(stats.lastSuccessAt, now - SERVER_UNAVAILABLE_MS - 1);
+  assert.equal(stats.serverUnavailable, true);
 });

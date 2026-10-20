@@ -1260,7 +1260,7 @@ def _case_detail(app: App, case: Any) -> Dict[str, Any]:
 class ApiServer:
     def __init__(self, app: App, host: str = "127.0.0.1", port: int = 8300):
         self.httpd = ThreadingHTTPServer((host, port), make_handler(app))
-        self.host, self.port = host, port
+        self.host, self.port = self.httpd.server_address[:2]
 
     def serve_forever(self) -> None:
         print(f"EvoAgent API: http://{self.host}:{self.port}  (GET /health)")

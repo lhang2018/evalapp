@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 344 项 + 客户端 76 项全部通过**。
+测试基线（2026-10-20）：**Python 344 项 + 客户端 85 项全部通过**。
 
 ---
 
@@ -229,6 +229,8 @@ Python 服务端（标准库，SQLite）
 | EVT-10 | 设备身份字段 | ✅ | `api/server.py`, `core/controller.py` | `POST /tasks` 接受 `device_id` / `installation_id` / `app_version`，格式校验后写入运行清单 |
 | EVT-11 | 因果顺序与时钟来源 | ✅ | `core/events.py`, `api/events_sync.py` | `run_id` / `sequence_no` / `clock_source` / `runtime_manifest_id` 落库并校验；`query_run()` 按 `sequence_no` 还原，时钟回拨不影响顺序；无序号历史事件退化为时间排序 |
 | EVT-12 | 同步回执协议 | ✅ | `api/server.py` | 回执含 `protocol_version` 1.0、`confirmed` / `unconfirmed` 明确列表与 `confirmed_count`；同 `batch_id` 重放返回原回执 |
+| EVT-13 | 本地回执历史 | ✅ | `android-app/src/offline/{types,storage,queue,sync}.ts` | 回执按 `receipt_id` 去重持久化（最近 20 条），含 accepted/duplicates/rejected/confirmed 计数与 `replayed`；仅回执确认的事件删除 |
+| EVT-14 | 服务端长期不可用告警 | ✅ | `android-app/src/offline/queue.ts`, `App.tsx` | 连续 5 次同步失败，或队列有积压且距上次成功 ≥30 分钟 → `serverUnavailable`；成功同步清零；App 显示待发/失败/死信与告警条 |
 
 ### 2.14 控制面、API 与可观测（PRD 37-40 / 89-90）
 
@@ -277,7 +279,7 @@ Python 服务端（标准库，SQLite）
 | IMP-05 | 关联关系审查 | ✅ | `api/diagnostics_import.py` | 未知任务、有 run 无清单、未知清单、清单与任务/运行不匹配 → `needs_review` 并附原因 |
 | IMP-06 | 隔离区落库与幂等 | ✅ | `core/persistence.py`, `api/server.py` | `diagnostics_imports` + `diagnostics_import_events`；按包 SHA-256 幂等（重复返回原记录）；导入内容不执行、不进入 `runtime_events` |
 | IMP-07 | 权限与审计 | ✅ | `api/auth.py`, `api/server.py` | `POST /diagnostics/import` 需 admin；成功与拒绝均写审计；`GET /diagnostics/imports[/{id}]` 可审查 |
-| IMP-08 | 客户端导入入口 | ⬜ | — | 系统文件选择器与导入结果展示未接线 |
+| IMP-08 | 客户端导入入口 | ✅ | `src/offline/{packageImport,nativeImport}.ts`, `src/api.ts`, `App.tsx`, `DeviceModule.kt` | SAF `ACTION_OPEN_DOCUMENT` 选择 ZIP；原生与 TS 双侧校验 20 MiB/空包/文件名；`POST /diagnostics/import` 原样上传（`X-File-Name` 清洗为 ASCII，admin Bearer 仅驻内存）；展示事件数、待审查数与重复包提示。原生构建未在本机验证 🔹 |
 
 ### 2.17 离线诊断包导出（补充 C §7）
 
@@ -643,18 +645,20 @@ Python 服务端（标准库，SQLite）
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
 
-### 客户端（`android-app/test/`，76 项）
+### 客户端（`android-app/test/`，85 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
 | `test/offline/queue.test.ts` | FIFO、去重、容量、每 run 因果序号、checkpoint 连续性、in-flight 回收、隔离与重新入队、死信、保留等级/过期清理/损失标记、旧快照迁移 |
-| `test/offline/sync.test.ts` | 稳定批次号、退避、不丢事件、部分成功、400 永久拒绝隔离、崩溃后 in-flight 恢复、重复确认 |
+| `test/offline/sync.test.ts` | 稳定批次号、退避、不丢事件、部分成功、400 永久拒绝隔离、崩溃后 in-flight 恢复、重复确认、回执持久化/去重、连续失败与积压告警 |
 | `test/offline/tasks.test.ts` | 离线提交、幂等键稳定、`NEEDS_RECONCILE`、离线 `time_query` |
 | `test/offline/transport.test.ts` | 时间戳单位转换、`run_id`/`sequence_no`/`runtime_manifest_id` 与批次号透传 |
 | `test/device/broker.test.ts` | 风险闸门、确认、五态、不重放、unavailable、快照验证、权限弹窗降级、安全停止与恢复（12 项） |
 | `test/device/observation.test.ts` | 快照归一化、页面变化、预期文本/包名、权限弹窗识别、缺快照不判成功（8 项） |
 | `test/update/manager.test.ts` | 安装 ID、目标校验（摘要/签名/交付方式）、存储空间、双槽位激活、健康检查与自动回滚、回执失败、状态损坏回退、候选阶段同步（19 项） |
 | `test/offline/export.test.ts` | 诊断包导出：SHA-256/CRC32 向量、包结构与校验和、过滤、脱敏、附件取舍、只读确定性、交付失败清理（7 项） |
+| `test/offline/packageImport.test.ts` | 导入包解码、取消/缺失提示、非法/空/超大拒绝、HTTP 头文件名 ASCII 化（4 项） |
+| `test/offline/importApi.test.ts` | admin Bearer 原样上传、`X-File-Name` 清洗、403 保留状态与消息且不带凭证（2 项） |
 
 运行：
 
@@ -678,6 +682,7 @@ cd android-app && npm run test:offline
 | 发布分支自动化（可视化/远端推送） | PRD 59-63 | ⬜ | 已提供本地分支/标签/ff 合并 CLI；不自动 push、不整合同步冲突 |
 | 能力包制品下载与装载 | 补充 A §4/§5 | 🔹 | 清单字段、分发筛选与双槽位引用切换已完成；实际包内容由 OTA（CodePush/Expo Updates）承载，尚未接线 |
 | 候选状态同步（服务端 → App） | 补充 A §2/§8 | ✅ | `GET /sync/candidates` 拉取评测后阶段并展示；仅透明展示，不改变激活路径 |
+| 诊断包附件上传 | 补充 C §6 | ⬜ | 附件 SHA-256、分块/断点续传与附件授权通道未实现；当前仅主包 ZIP 整包导入 |
 
 ---
 
@@ -759,6 +764,23 @@ cd android-app && npm run android
 ---
 
 ## 变更记录
+
+### 2026-10-20 — 客户端导入、本地回执与不可用告警（补充 C §3.2/§8/§11）
+
+- 需求：`EvoAgent_离线日志与可靠同步子系统设计.md` §3.2（本地逻辑表）、§8（人工诊断通道）、§11（验收标准）。
+- 变更：客户端补齐诊断包导入入口。系统文件选择器（SAF `ACTION_OPEN_DOCUMENT`）读取 ZIP，
+  原生侧 64 KiB 分块读取并在 20 MiB/空包处拦截，TS 侧二次校验；文件名清洗为 ASCII 后经
+  `X-File-Name` 上传，admin Bearer 凭证仅在内存中使用、不持久化；界面展示导入事件数、
+  待人工审查数与重复包提示。
+- 本地同步回执独立持久化（最近 20 条，按 `receipt_id` 去重），记录 accepted/duplicates/rejected/
+  confirmed 与重放标记；同步失败计数与最近成功时间驱动「服务端长期不可用」告警
+  （连续 5 次失败，或队列积压且 ≥30 分钟无成功同步），成功即清除。
+- 测试：新增 `packageImport.test.ts`（4）+ `importApi.test.ts`（2），`sync.test.ts` +3；
+  客户端 76 → 85，Python 保持 344。测试服务端改为绑定临时端口（`port=0`），消除
+  全量并发运行时的固定端口冲突。
+- 状态变化：EVT-13/EVT-14、IMP-08 新增/转 ✅；IMPLEMENTATION 补充 C §3.2、§8、§11 转 ✅。
+- 已知限制：原生导入选择器在最近一次构建后加入，真机行为需重新编译验证；
+  附件上传（§6）仍未实现。
 
 ### 2026-10-20 — 离线诊断包导出（补充 C §7）
 
@@ -1025,6 +1047,7 @@ cd android-app && npm run android
 | Session 28 | 保留等级、容量治理与损失标记（补充 C §4） | 335 + 69 |
 | Session 29 | 诊断包受控导入（补充 C §8） | 344 + 69 |
 | Session 30 | 离线诊断包导出（补充 C §7） | 344 + 76 |
+| Session 31 | 客户端导入、本地回执与不可用告警（补充 C §3.2/§8/§11） | 344 + 85 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 

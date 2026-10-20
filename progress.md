@@ -1169,3 +1169,30 @@
 ### 本轮取舍
 - 原生 SAF 交付与真机行为未在本机验证（无 Android SDK/模拟器），README 已标注。
 - 附件上传（§6）与客户端导入选择器（IMP-08）仍未接线；本地 `sync_receipts` 与长期不可用告警仍为 🔹。
+
+## Session 31 (2026-10-20)
+
+### 目标
+- 补齐补充 C §3.2/§8/§11：客户端诊断包导入（IMP-08）、本地同步回执、服务端长期不可用告警。
+
+### 完成内容
+- [x] 新增 `offline/packageImport.ts`：解码 SAF 结果，20 MiB/空包双侧校验，HTTP 头文件名 ASCII 化并去路径
+- [x] 新增 `offline/nativeImport.ts`：`pickDiagnosticsPackage()` 原生桥接，缺失时返回明确错误不崩溃
+- [x] `api.ts` 新增 `importDiagnosticsPackage`：raw ZIP POST、`X-File-Name`、可选 admin Bearer、错误保留 status/body
+- [x] Kotlin：`DeviceModule.pickDiagnosticsPackage` + `completeOpen`（64 KiB 分块读取、20 MiB 上限、空包拒绝、
+      后台线程、`OpenableColumns` 文件名）+ `MainActivity.onActivityResult` 消费
+- [x] App 离线状态页新增「导入诊断包」卡片：admin token 输入（仅内存）、在线才可点、导入结果与重复提示
+- [x] 本地回执：`sync_receipts` 持久化（最近 20 条、按 `receipt_id` 去重、含 accepted/duplicates/rejected/
+      confirmed/replayed），同步成功后记录
+- [x] 不可用告警：连续 5 次失败，或队列积压且 ≥30 分钟无成功同步 → `serverUnavailable`；成功即清零；
+      离线页展示回执数、最近回执、连续失败、最近成功与告警条
+- [x] 测试可靠性：`ApiServer` 记录实际绑定端口；11 个 API 测试模块改用 `port=0`，消除固定端口冲突
+- [x] 测试：新增 `packageImport.test.ts`（4）+ `importApi.test.ts`（2），`sync.test.ts` +3；
+      客户端 76 → 85 全绿，`tsc --noEmit` 通过；Python 344 全绿
+- [x] 文档：IMPLEMENTATION §3.2/§8/§11、FEATURES EVT-13/EVT-14/IMP-08、README/android README、
+      progress、task_plan Phase 49
+
+### 本轮取舍
+- 原生导入选择器与 SAF 路径未在本机重新构建验证（无 Android SDK/模拟器），README 已标注验收项。
+- admin token 不持久化；每次导入需重新输入，避免设备侧留存管理凭证。
+- 剩余：补充 C §6 附件上传（SHA-256/分块恢复/授权通道）；后台常驻同步仍不做。

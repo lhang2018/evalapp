@@ -175,6 +175,7 @@ export class SyncEngine {
           message,
           this.maxAttempts,
         );
+        await this.queue.markSyncFailure(this.now());
         this.failures += 1;
         this.nextAttemptAt = this.now() + this.backoffDelay();
         result.ok = false;
@@ -188,6 +189,22 @@ export class SyncEngine {
       const rejected = response.rejected ?? [];
       // 协议 1.0 的 confirmed 是权威列表；旧服务端回退为 accepted+duplicates
       const confirmed = response.confirmed ?? [...accepted, ...duplicates];
+
+      if (response.receipt) {
+        await this.queue.recordReceipt({
+          receipt_id: response.receipt.receipt_id,
+          batch_id: response.receipt.batch_id ?? claimed.batch_id,
+          received_at: response.receipt.received_at,
+          recorded_at: this.now(),
+          accepted: accepted.length,
+          duplicates: duplicates.length,
+          rejected: rejected.length,
+          confirmed: confirmed.length,
+          replayed: response.receipt.replayed === true,
+          protocol_version: response.receipt.protocol_version ??
+            response.protocol_version ?? null,
+        });
+      }
 
       await this.queue.acknowledgeBatch(claimed.batch_id, confirmed);
       result.accepted += accepted.length;

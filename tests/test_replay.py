@@ -89,11 +89,11 @@ class TestReplayApi(unittest.TestCase):
         cls.app = App(data_dir=cls.tmp)
         cls.task = cls.app.controller.submit_task(
             "现在几点了", intent="time_query", wait=True)
-        cls.srv = ApiServer(cls.app, host="127.0.0.1", port=18306)
+        cls.srv = ApiServer(cls.app, host="127.0.0.1", port=0)
         cls.thread = threading.Thread(target=cls.srv.serve_forever,
                                       daemon=True)
         cls.thread.start()
-        cls.base = "http://127.0.0.1:18306"
+        cls.base = f"http://127.0.0.1:{cls.srv.port}"
 
     @classmethod
     def tearDownClass(cls):
