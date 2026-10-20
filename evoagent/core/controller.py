@@ -43,7 +43,8 @@ class RuntimeController:
                  checkpoints: CheckpointManager,
                  permissions: Any, releases: Optional[ReleaseManager] = None,
                  wf_lookup: Optional[Callable[[str], Optional[WorkflowDef]]] = None,
-                 diagnostics: Any = None, classifier: Any = None):
+                 diagnostics: Any = None, classifier: Any = None,
+                 ledger: Optional[Any] = None):
         self.cfg = config
         self.db = db
         self.bus = bus
@@ -61,10 +62,13 @@ class RuntimeController:
         self.wf_lookup = wf_lookup or (lambda wid: None)
         self.diagnostics = diagnostics
         self.classifier = classifier
+        self.ledger = ledger
         # 并发管理（Arch 3.2 管理并发和取消）
         self._active: Dict[str, threading.Event] = {}
         self._lock = threading.Lock()
         self._results: Dict[str, Any] = {}
+        self._slots = threading.BoundedSemaphore(
+            max(1, int(getattr(config.budget, "max_concurrent_tasks", 2))))
 
     # ================= 任务提交 =================
     def submit_task(self, goal: str, *,
@@ -98,9 +102,25 @@ class RuntimeController:
         started = time.time()
         version_manifest = self._version_manifest()
         task.version_manifest = version_manifest
+        self._slots.acquire()   # 并发上限由控制器执行，不依赖调用方自觉（Arch 3.2）
         try:
             # 单任务硬预算在分类前建立；分类/规划/ReAct 的模型调用统一计量（PRD 55/56）
             budget = self._make_budget(task)
+            # 日预算池：单任务合法但整体失控时仍应拒绝（PRD 55-58）
+            if self.ledger is not None:
+                try:
+                    self.ledger.check(
+                        "runtime",
+                        max_model_calls=self.cfg.budget.runtime_daily_model_calls,
+                        max_cost=self.cfg.budget.runtime_daily_cost)
+                except BudgetExceeded as e:
+                    task = self._move(task, TaskStatus.CLASSIFYING)
+                    task.failure_reason = f"预算耗尽[{e.dimension}]: {e}"
+                    task = self._move(task, TaskStatus.FAILED)
+                    self._emit(task, "task_budget_exhausted",
+                               {"dimension": e.dimension}, severity="warn")
+                    self.db.save_task(task)
+                    return task
             # 1) 分类（CREATED -> CLASSIFYING）
             task = self._classify(task, intent_hint, domain_hint, budget)
             if task.is_terminal() or task.task_status == TaskStatus.WAITING_USER:
@@ -137,6 +157,7 @@ class RuntimeController:
             self.db.save_run(run_id, task.task_id, started, finished,
                              task.task_status.value, version_manifest)
             self._unregister_active(task.task_id)
+            self._slots.release()
         return task
 
     # ---- Phase 1: 分类 ----
@@ -282,9 +303,23 @@ class RuntimeController:
                                                  {"node": node_id})
             return str(decision.value) == "allow"
 
+        # 断点续跑：同一任务存在本版本工作流检查点时复用已完成节点输出
+        completed = None
+        cp = self.cp_mgr.latest(task.task_id)
+        if (cp is not None and cp.workflow_version == wf.version
+                and cp.task_state.get("workflow_outputs")):
+            completed = cp.task_state["workflow_outputs"]
+
         result = self.workflows.run(
             wf, {"goal": task.user_goal}, budget=budget,
-            cancel_flag=self._active.get(task.task_id), confirm=_confirm)
+            cancel_flag=self._active.get(task.task_id), confirm=_confirm,
+            completed=completed)
+        if result.status == WorkflowNodeState.PAUSED:
+            task = self._move(task, TaskStatus.SUSPENDED)
+            self.db.save_task(task)
+            self._emit(task, "task_paused", {
+                "workflow": task.workflow_ref, "reason": result.error})
+            return task
         task = self._move(task, TaskStatus.VERIFYING)
         if result.outputs:
             answer = "工作流完成: " + "; ".join(
@@ -443,6 +478,7 @@ class RuntimeController:
                           force: bool) -> Task:
         self._register_active(task)
         started = time.time()
+        self._slots.acquire()
         try:
             task.task_status = transition(TaskStatus.SUSPENDED,
                                           TaskStatus.RUNNING)
@@ -464,6 +500,7 @@ class RuntimeController:
                              time.time(), task.task_status.value,
                              task.version_manifest)
             self._unregister_active(task.task_id)
+            self._slots.release()
         return task
 
     def _build_retry(self, task: Task) -> Task:
@@ -503,7 +540,8 @@ class RuntimeController:
                      initial_usage: Optional[BudgetUsage] = None
                      ) -> BudgetController:
         return BudgetController(BudgetLimits(), dict(task.budget_policy or {}),
-                                initial_usage=initial_usage)
+                                initial_usage=initial_usage,
+                                ledger=self.ledger, ledger_scope="runtime")
 
     def _apply_expert_budget(self, task: Task,
                              budget: BudgetController) -> None:

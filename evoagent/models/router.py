@@ -4,15 +4,19 @@
 不允许因某模型整体便宜而把所有任务无条件切换过去。
 """
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-from .base import ModelAdapter, ModelRegistry
+from .base import ModelAdapter, ModelProfile, ModelRegistry
+
+# 质量优先：成本/时延只在质量可接受时作为次要因素（Arch 7 / PRD 19）
+DEFAULT_WEIGHTS = {"quality": 0.70, "cost": 0.15, "latency": 0.15}
 
 
 class ModelRouter:
     def __init__(self, registry: ModelRegistry,
                  default_adapter: ModelAdapter,
-                 routes: Optional[Dict[str, str]] = None):
+                 routes: Optional[Dict[str, str]] = None,
+                 weights: Optional[Dict[str, float]] = None):
         """
         routes: intent/domain -> model_id 映射（经注册表解析到 adapter 工厂）。
         adapter_factory: model_id -> ModelAdapter，由宿主注入。
@@ -21,6 +25,9 @@ class ModelRouter:
         self.default_adapter = default_adapter
         self.adapter_factory = None  # 由 setup() 注入
         self._routes: Dict[str, str] = routes or {}
+        self.weights = dict(DEFAULT_WEIGHTS)
+        if weights:
+            self.weights.update(weights)
 
     def setup(self, adapter_factory) -> None:
         self.adapter_factory = adapter_factory
@@ -39,14 +46,47 @@ class ModelRouter:
             if prof and (not require_vision or prof.supports_vision):
                 if self.adapter_factory:
                     return self.adapter_factory(model_id)
-        # 否则按能力过滤 + 成本/质量启发式
-        candidates = [p for p in profiles
-                      if not require_vision or p.supports_vision]
+        # 否则按能力过滤 + 质量/成本/时延评分（Arch 7 / PRD 19）
+        candidates = [p for p in profiles if p.available
+                      and (not require_vision or p.supports_vision)]
         if candidates and prefer_cost:
             best = min(candidates, key=lambda p: p.price_per_1k_input)
             if self.adapter_factory:
                 return self.adapter_factory(best.model_id)
+        if candidates:
+            best = max(candidates, key=lambda p: self.score(p, candidates))
+            if self.adapter_factory:
+                return self.adapter_factory(best.model_id)
         return self.default_adapter
+
+    def score(self, profile: ModelProfile,
+              pool: Optional[List[ModelProfile]] = None) -> float:
+        """归一化质量/成本/时延加权分；可用性在候选过滤阶段处理。"""
+        pool = pool or self.registry.all()
+        prices = [p.price_per_1k_input + p.price_per_1k_output for p in pool]
+        max_price = max(prices) if prices else 0.0
+        price = profile.price_per_1k_input + profile.price_per_1k_output
+        cost_score = 1.0 - (price / max_price) if max_price > 0 else 1.0
+        latency_score = 1.0 / (1.0 + max(0.0, profile.avg_latency_s))
+        return round(
+            self.weights["quality"] * profile.quality_score
+            + self.weights["cost"] * cost_score
+            + self.weights["latency"] * latency_score, 6)
+
+    def rank(self, *, require_vision: bool = False,
+             prefer_cost: bool = False) -> List[Dict[str, Any]]:
+        """路由决策解释：候选模型及评分。"""
+        cands = [p for p in self.registry.all() if p.available
+                 and (not require_vision or p.supports_vision)]
+        rows = [{"model_id": p.model_id, "score": self.score(p, cands),
+                 "price": p.price_per_1k_input + p.price_per_1k_output,
+                 "quality": p.quality_score, "latency_s": p.avg_latency_s}
+                for p in cands]
+        if prefer_cost:
+            rows.sort(key=lambda r: (r["price"], -r["score"]))
+        else:
+            rows.sort(key=lambda r: r["score"], reverse=True)
+        return rows
 
     # ---- 迁移（PRD 20）----
     def plan_migration(self, old_model_id: str, new_model_id: str) -> List[str]:

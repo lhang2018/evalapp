@@ -25,6 +25,7 @@ import {
 } from "react-native";
 
 import { api } from "./src/api.ts";
+import type { CandidateSummary, MetricsSnapshot } from "./src/api.ts";
 import { asyncStorageStore } from "./src/storage/asyncStorage.ts";
 import { OfflineRepository } from "./src/offline/storage.ts";
 import { EventQueue } from "./src/offline/queue.ts";
@@ -80,6 +81,10 @@ export default function App(): React.JSX.Element {
   const [deviceResult, setDeviceResult] = useState<DeviceResult | null>(null);
   const [journal, setJournal] = useState<ActionJournalEntry[]>([]);
   const [clickTarget, setClickTarget] = useState("设置");
+  const [system, setSystem] = useState<{
+    metrics: MetricsSnapshot;
+    candidates: CandidateSummary[];
+  } | null>(null);
 
   // 服务器地址：开发用本机；真机用局域网 IP
   const baseUrl = "http://10.0.2.2:8300";
@@ -109,6 +114,19 @@ export default function App(): React.JSX.Element {
     setJournal(services.broker.listJournal());
   }, [services]);
 
+  // 只读系统状态：失败不影响离线队列与在线判定
+  const loadSystem = useCallback(async () => {
+    try {
+      const [metrics, candidates] = await Promise.all([
+        services.client.metrics(),
+        services.client.candidates(5),
+      ]);
+      setSystem({ metrics, candidates });
+    } catch {
+      // 忽略：下次在线同步再刷新
+    }
+  }, [services]);
+
   const flush = useCallback(
     async (force: boolean = false) => {
       setSyncing(true);
@@ -120,6 +138,7 @@ export default function App(): React.JSX.Element {
         } else if (!result.skipped) {
           setOnline(true);
           setError(null);
+          await loadSystem();
         }
         await services.tasks.refresh();
         await reloadLocal();
@@ -130,7 +149,7 @@ export default function App(): React.JSX.Element {
         setSyncing(false);
       }
     },
-    [services, reloadLocal]
+    [services, reloadLocal, loadSystem]
   );
 
   useEffect(() => {
@@ -168,6 +187,10 @@ export default function App(): React.JSX.Element {
       clearInterval(timer);
     };
   }, [services, reloadLocal]);
+
+  useEffect(() => {
+    if (online) void loadSystem();
+  }, [online, loadSystem]);
 
   const submit = useCallback(async () => {
     const text = goal.trim();
@@ -265,6 +288,41 @@ export default function App(): React.JSX.Element {
             </Text>
           )}
           {error && <Text style={s.error}>{error}</Text>}
+
+          {online && system && (
+            <>
+              <Text style={s.section}>系统状态（只读）</Text>
+              <View style={s.card}>
+                <Text style={s.goal}>
+                  任务 {system.metrics.tasks.total} · 成功率{" "}
+                  {formatRate(system.metrics.tasks.success_rate)} · 平均{" "}
+                  {formatSeconds(system.metrics.tasks.avg_latency_s)}
+                </Text>
+                <Text style={s.hint}>
+                  模型调用 {system.metrics.tasks.model_calls} · 工具调用{" "}
+                  {system.metrics.tasks.tool_calls} · 成本{" "}
+                  {system.metrics.tasks.cost.toFixed(4)}
+                </Text>
+                <Text style={s.hint}>
+                  诊断案例 {system.metrics.diagnostics.cases} · 发布{" "}
+                  {system.metrics.releases.current ?? "-"} · 回滚{" "}
+                  {system.metrics.releases.rollbacks}
+                </Text>
+                <Text style={s.hint}>
+                  运行预算 {budgetLine(system.metrics.budget.runtime_day)} · 进化预算{" "}
+                  {budgetLine(system.metrics.budget.evolution_day)}
+                </Text>
+                <Text style={s.mono}>
+                  进化候选：
+                  {system.candidates.length
+                    ? system.candidates
+                        .map((c) => `${c.status}(${c.risk_level})`)
+                        .join(" · ")
+                    : "无"}
+                </Text>
+              </View>
+            </>
+          )}
 
           <View style={s.inputRow}>
             <TextInput
@@ -397,6 +455,19 @@ export default function App(): React.JSX.Element {
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
+}
+
+function formatRate(rate: number | null): string {
+  return rate === null ? "-" : `${Math.round(rate * 100)}%`;
+}
+
+function formatSeconds(seconds: number | null): string {
+  return seconds === null ? "-" : `${seconds.toFixed(2)}s`;
+}
+
+function budgetLine(usage?: Record<string, number>): string {
+  if (!usage) return "-";
+  return `调用 ${usage.model_calls ?? 0}/成本 ${(usage.cost ?? 0).toFixed(3)}`;
 }
 
 function statusColor(status: string) {

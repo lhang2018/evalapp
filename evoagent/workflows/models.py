@@ -8,6 +8,7 @@ class WorkflowNodeState:
     PENDING = "pending"
     RUNNING = "running"
     SUCCESS = "success"
+    SKIPPED = "skipped"
     FAILED = "failed"
     WAITING_AUTH = "waiting_authorization"
     WAITING_EXTERNAL = "waiting_external"
@@ -28,6 +29,10 @@ class WorkflowNode:
     max_retries: int = 1
     timeout: float = 30.0
     requires_confirmation: bool = False     # 高风险节点等待授权
+    # 条件执行：返回 False 时节点标记 skipped，不阻断下游（PRD 13.2）
+    condition: Optional[Callable[[Dict[str, Any]], bool]] = None
+    # 输出契约：非空时校验节点输出
+    output_schema: Dict[str, Any] = field(default_factory=dict)
     # 运行时状态
     state: str = WorkflowNodeState.PENDING
     attempt: int = 0
@@ -53,6 +58,44 @@ class WorkflowDef:
 
     def node(self, node_id: str) -> Optional[WorkflowNode]:
         return next((n for n in self.nodes if n.node_id == node_id), None)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """可持久化的定义（函数/条件不可序列化，由代码侧重新注册）。"""
+        return {
+            "workflow_id": self.workflow_id, "version": self.version,
+            "name": self.name, "input_schema": self.input_schema,
+            "output_schema": self.output_schema,
+            "preconditions": self.preconditions,
+            "acceptance_criteria": self.acceptance_criteria,
+            "budget": self.budget,
+            "compensation_actions": self.compensation_actions,
+            "status": self.status,
+            "nodes": [{
+                "node_id": n.node_id, "description": n.description,
+                "deps": n.deps, "tool": n.tool, "args": n.args,
+                "max_retries": n.max_retries, "timeout": n.timeout,
+                "requires_confirmation": n.requires_confirmation,
+                "output_schema": n.output_schema,
+            } for n in self.nodes],
+        }
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "WorkflowDef":
+        nodes = [WorkflowNode(**{k: v for k, v in n.items()
+                                 if k in WorkflowNode.__dataclass_fields__
+                                 and k not in ("fn", "condition", "state",
+                                               "attempt", "output", "error")})
+                 for n in d.get("nodes") or []]
+        return cls(
+            workflow_id=d["workflow_id"], version=d.get("version", "1.0.0"),
+            name=d.get("name", ""), input_schema=d.get("input_schema") or {},
+            output_schema=d.get("output_schema") or {},
+            preconditions=list(d.get("preconditions") or []),
+            nodes=nodes,
+            acceptance_criteria=list(d.get("acceptance_criteria") or []),
+            budget=dict(d.get("budget") or {}),
+            compensation_actions=dict(d.get("compensation_actions") or {}),
+            status=d.get("status", "pending"))
 
     def validate(self) -> List[str]:
         problems = []

@@ -129,7 +129,8 @@ class ProbeRunner:
         self.memory = memory
         self.config = config
 
-    def run(self, method: str) -> ProbeResult:
+    def run(self, method: str, fault: Optional[str] = None) -> ProbeResult:
+        """fault: error | timeout | fail — 故障注入只影响本次探针（Arch 9.5）。"""
         fn = PROBES.get(method)
         if fn is None:
             return ProbeResult(None, {"reason": f"未知探针: {method}"})
@@ -138,8 +139,15 @@ class ProbeRunner:
 
         def target() -> None:
             try:
-                box["result"] = fn(tools=self.tools, memory=self.memory,
-                                   config=self.config)
+                if fault == "error":
+                    raise RuntimeError("injected probe fault")
+                if fault == "timeout":
+                    time.sleep(timeout * 2)
+                result = fn(tools=self.tools, memory=self.memory,
+                            config=self.config)
+                if fault == "fail" and isinstance(result, ProbeResult):
+                    result.passed = False
+                box["result"] = result
             except Exception as e:  # noqa: BLE001
                 box["error"] = f"{type(e).__name__}: {e}"
                 box["traceback"] = traceback.format_exc(limit=3)
@@ -150,10 +158,12 @@ class ProbeRunner:
         t.join(timeout)
         if t.is_alive():
             return ProbeResult(None, {"method": method, "reason": "timeout",
+                                      "fault_injected": fault,
                                       "timeout_s": timeout,
                                       "elapsed_s": round(time.time() - started, 3)})
         if "error" in box:
             return ProbeResult(None, {"method": method, "reason": box["error"],
+                                      "fault_injected": fault,
                                       "traceback": box.get("traceback", "")})
         result = box.get("result")
         if not isinstance(result, ProbeResult):
@@ -161,4 +171,6 @@ class ProbeRunner:
                                       "reason": "探针未返回结果"})
         result.evidence.setdefault("method", method)
         result.evidence.setdefault("elapsed_s", round(time.time() - started, 3))
+        if fault:
+            result.evidence["fault_injected"] = fault
         return result

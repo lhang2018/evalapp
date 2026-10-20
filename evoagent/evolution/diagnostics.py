@@ -386,7 +386,8 @@ class DiagnosisEngine:
 
     # ================= 诊断实验 =================
     def run_experiment(self, case: DiagnosticCase, hypothesis: Hypothesis,
-                       method: str) -> DiagnosticExperiment:
+                       method: str, fault: Optional[str] = None
+                       ) -> DiagnosticExperiment:
         if self.probe_runner is None:
             raise RuntimeError("未配置探针执行器")
         limit = getattr(self.config, "max_experiments_per_case", 3)
@@ -401,7 +402,7 @@ class DiagnosisEngine:
                 raise PermissionError(f"每日诊断实验已达上限 {daily_limit}")
 
         started = time.time()
-        probe = self.probe_runner.run(method)
+        probe = self.probe_runner.run(method, fault=fault)
         exp = DiagnosticExperiment(
             case_id=case.case_id, hypothesis_id=hypothesis.hypothesis_id,
             method=method,
@@ -464,6 +465,31 @@ class DiagnosisEngine:
     # ================= 查询辅助 =================
     def get_case(self, case_id: str) -> Optional[DiagnosticCase]:
         return self.db.get_diagnostic_case(case_id) if self.db else None
+
+    def trends(self, limit: int = 200) -> Dict[str, Any]:
+        """失败趋势聚合（PRD 42 / Arch 9.3）：按状态、故障类别与组件统计。"""
+        from collections import Counter
+        cases = self.db.list_diagnostic_cases(limit=limit) if self.db else []
+        by_status: Counter = Counter()
+        by_category: Counter = Counter()
+        by_component: Counter = Counter()
+        by_intent: Counter = Counter()
+        for case in cases:
+            by_status[case.status.value] += 1
+            by_intent[str(case.evidence_snapshot.get("intent") or "unknown")] += 1
+            for h in self._hypotheses_of(case):
+                by_category[h.category.value] += 1
+                by_component[h.component] += 1
+        return {
+            "window": limit,
+            "cases": len(cases),
+            "by_status": dict(by_status),
+            "by_category": dict(by_category),
+            "by_intent": dict(by_intent),
+            "top_components": [
+                {"component": k, "count": v} for k, v in
+                by_component.most_common(10)],
+        }
 
     def _hypotheses_of(self, case: DiagnosticCase) -> List[Hypothesis]:
         return self.db.list_hypotheses(case.case_id) if self.db else []

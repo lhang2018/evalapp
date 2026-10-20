@@ -167,3 +167,49 @@
 - 恢复目前是“从下一步继续”而非精确到迭代内断点；长任务恢复粒度可再细化
 - 真实模型 Key 联调下的暂停时延与取消传播待验证
 - 视觉/OCR、后台常驻同步、Web 管理端等保持原计划
+
+## Session 5 (2026-10-20)
+
+### 背景
+- 差距审计结论：执行内核已真跑，但工具/工作流/预算、记忆/路由/诊断、控制面与客户端观测仍偏浅。
+- 目标：把可本地实现的能力补齐并配测试，环境受限项如实标注。
+
+### 完成事项
+- [x] 控制面：`GET /metrics`（JSON + Prometheus，含 `# TYPE`）、`GET /audit`、`GET /admin`；
+      GET/POST 鉴权（`EVOAGENT_API_TOKEN` / `EVOAGENT_ADMIN_TOKEN`，Bearer）；
+      进化 propose/evaluate/approve/deploy/monitor/rollback 全部写审计
+- [x] 工具补强：工作线程实现真实超时；仅无副作用或带幂等键的工具可重试；输出 schema 校验；
+      幂等执行日志持久化（命中回放标记 `replayed`）；新增只读 `git_read`（固定子命令、参数白名单、禁 shell/网络）
+- [x] 工作流补强：按依赖分层并行、条件跳过（`SKIPPED`）、节点超时、逐批检查点与续跑
+      （复用 `workflow_outputs`）；暂停任务转 `SUSPENDED`；工作流定义可序列化进资产库
+- [x] 预算报表：`BudgetLedger.report()`（runtime/evolution 日/月池）+ `cli budget`
+- [x] 记忆治理：关系（refines 等）持久化与查询、使用计数、按 kind/scope/status 统计；
+      词法 + 哈希向量混合相关性；上下文装配统计并回写使用计数
+- [x] 路由评分：质量 0.70 / 成本 0.15 / 时延 0.15，可用性过滤 + 显式路由优先 + `rank()` 解释
+- [x] 诊断深度：`GET /diagnostics/trends`；探针支持 `error/timeout/fail` 故障注入
+- [x] 工作流资产库：`workflows/library.py` 持久化/加载 + API/CLI `workflows`
+- [x] 客户端只读系统状态面板：任务指标、预算、发布/回滚、进化候选（`src/api.ts` 新增 `metrics()`/`candidates()`）
+- [x] 测试：Python 123 项（新增 31 项：控制面 9、工具/工作流 11、记忆/路由/诊断 11）；客户端 27 项
+
+### 测试结果
+- `python -m pytest tests/ -q` → 123 passed
+- `cd android-app && npm run test:offline` → 27 passed
+- `python -m evoagent.cli demo` / `workflow` 行为不变
+
+### 本轮修复的缺陷
+- `validate_against_schema` 仅在存在 `properties` 时检查 `required` → 两者任一存在即检查
+- `record_use` 更新不存在的列 → 改为写 `extra` JSON；`stats` 同步修正
+- `score()` 成本未归一化导致低价模型压过高质量模型 → 归一化 + 质量权重提高
+- Prometheus 输出缺少 `# TYPE` 行 → 每个指标首次出现时声明一次
+- 非 UTF-8/非对象 JSON 请求体导致处理器抛异常并空响应 → 统一按空对象处理，返回 400 且服务不中断
+
+### 设计约束（本轮确立）
+- 质量优先：成本/时延只在质量可接受时作为次要因素，禁止“因整体便宜而无条件切换”
+- 重试安全：有外部副作用的工具只有在幂等键下才允许重试
+- 工作流续跑只复用上次已完成的节点输出，版本不一致则从头执行
+- 观测面只读；所有变更类接口必须鉴权并写审计
+
+### 遗留/待迭代
+- Android 真机构建与验收；本机无 `node_modules`，`tsc --noEmit` 未能运行（客户端测试走 Node 24 type-stripping）
+- 真实 LLM Key 联调；视觉/OCR/语音、后台常驻同步、端到端加密
+- 嵌入向量检索（当前为词法 + 哈希向量）、Web 管理端、候选代码隔离沙箱

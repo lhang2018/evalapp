@@ -5,15 +5,17 @@
 - 单次成功不构成工作流已经可靠的充分证据（固化需门禁，PRD 13.4）。
 """
 
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ..acceptance.verify import Verifier
 from ..core.budget import BudgetController, BudgetExceeded
 from ..core.checkpoint import Checkpoint, CheckpointManager
 from ..core.events import EventBus
-from ..tools.contract import ToolResult
+from ..tools.contract import ToolResult, validate_against_schema
 from ..tools.registry import ToolRegistry
 from .models import WorkflowDef, WorkflowNode, WorkflowNodeState
 
@@ -24,6 +26,7 @@ class WorkflowRunResult:
     status: str = "pending"
     outputs: Dict[str, Any] = field(default_factory=dict)
     node_stats: List[Dict[str, Any]] = field(default_factory=list)
+    skipped: List[str] = field(default_factory=list)
     error: Optional[str] = None
     retries_used: int = 0
 
@@ -35,15 +38,19 @@ class NodeBudgetSignal(RuntimeError):
 class WorkflowEngine:
     def __init__(self, tools: ToolRegistry,
                  checkpoint_mgr: Optional[CheckpointManager] = None,
-                 event_bus: Optional[EventBus] = None):
+                 event_bus: Optional[EventBus] = None,
+                 max_parallel: int = 4):
         self.tools = tools
         self.cp = checkpoint_mgr
         self.bus = event_bus
+        self.max_parallel = max(1, int(max_parallel))
 
     def run(self, wf: WorkflowDef, ctx_input: Dict[str, Any],
             budget: Optional[BudgetController] = None,
             cancel_flag: Optional[Any] = None,
-            confirm: Optional[Callable[[str], bool]] = None) -> WorkflowRunResult:
+            confirm: Optional[Callable[[str], bool]] = None,
+            completed: Optional[Dict[str, Any]] = None
+            ) -> WorkflowRunResult:
         problems = wf.validate()
         if problems:
             return WorkflowRunResult(ok=False, status=WorkflowNodeState.FAILED,
@@ -52,66 +59,89 @@ class WorkflowEngine:
         result = WorkflowRunResult()
 
         done: Dict[str, Any] = {}
+        for nid, output in (completed or {}).items():
+            node = wf.node(nid)
+            done[nid] = output
+            if node is not None and node.state == WorkflowNodeState.PENDING:
+                node.state = WorkflowNodeState.SUCCESS
+                node.output = output
         retries_used = 0
-        order = _topo(wf)
-        for node_id in order:
-            node = wf.node(node_id)
-            assert node is not None
+
+        for batch in _batches(wf):
             if cancel_flag is not None and getattr(cancel_flag, "cancelled", False):
                 wf.status = WorkflowNodeState.CANCELLED
                 result.status = wf.status
                 return result
-            # 高风险节点 → 等待授权（PRD 13.3 waiting_authorization）
-            if node.requires_confirmation:
-                if not (confirm and confirm(node.node_id)):
-                    node.state = WorkflowNodeState.WAITING_AUTH
-                    result.error = f"节点 {node_id} 等待授权"
-                    wf.status = WorkflowNodeState.WAITING_AUTH
-                    result.status = wf.status
-                    return result
 
-            node.state = WorkflowNodeState.RUNNING
-            attempt = 0
-            while attempt <= node.max_retries:
-                node.attempt = attempt
-                try:
-                    if budget:
-                        budget.check_alive()
-                    output = self._exec_node(node, ctx_input, done, budget)
-                    node.state = WorkflowNodeState.SUCCESS
-                    node.output = output
-                    done[node_id] = output
-                    break
-                except BudgetExceeded as e:
-                    # 预算耗尽：暂停而非失败（PRD 8：根据任务情况停止/降级）
-                    play_result_budget(node, result, str(e))
-                    result.retries_used = retries_used
-                    return result
-                except NodeBudgetSignal as e:
-                    play_result_budget(node, result, str(e))
-                    result.retries_used = retries_used
-                    return result
-                except Exception as e:  # noqa: BLE001
-                    node.error = f"{type(e).__name__}: {e}"
-                    attempt += 1
-                    retries_used += 1
-                    if attempt > node.max_retries:
-                        node.state = WorkflowNodeState.FAILED
-                        # 补偿动作（PRD 13.2 compensation）
-                        comp = wf.compensation_actions.get(node_id)
-                        if comp:
-                            self._try_compensate(comp, ctx_input)
-                        wf.status = WorkflowNodeState.FAILED
-                        result.ok = False
+            runnable: List[WorkflowNode] = []
+            for node_id in batch:
+                node = wf.node(node_id)
+                assert node is not None
+                if node.state != WorkflowNodeState.PENDING:
+                    continue
+                # 高风险节点 → 等待授权（PRD 13.3 waiting_authorization）
+                if node.requires_confirmation:
+                    if not (confirm and confirm(node.node_id)):
+                        node.state = WorkflowNodeState.WAITING_AUTH
+                        result.error = f"节点 {node_id} 等待授权"
+                        wf.status = WorkflowNodeState.WAITING_AUTH
                         result.status = wf.status
-                        result.error = f"节点 {node_id} 失败: {node.error}"
-                        result.retries_used = retries_used
-                        self._snapshot(wf, result)
+                        self._snapshot(wf, result, done, budget)
                         return result
-            result.node_stats.append({
-                "node": node_id, "state": node.state,
-                "attempts": node.attempt + 1, "output": _clip(node.output),
-            })
+                # 条件不满足 → 跳过，不阻断下游
+                if node.condition is not None:
+                    try:
+                        allowed = bool(node.condition(
+                            {"ctx": ctx_input, **done}))
+                    except Exception as e:  # noqa: BLE001
+                        allowed = False
+                        node.error = f"条件求值失败: {e}"
+                    if not allowed:
+                        node.state = WorkflowNodeState.SKIPPED
+                        result.skipped.append(node_id)
+                        result.node_stats.append({
+                            "node": node_id, "state": node.state,
+                            "attempts": 0, "output": None,
+                        })
+                        continue
+                runnable.append(node)
+
+            outcomes = self._run_batch(runnable, ctx_input, dict(done), budget)
+            paused_msg: Optional[str] = None
+            failed: Optional[Tuple[WorkflowNode, str]] = None
+            for node, (state, output, error, retries) in zip(runnable, outcomes):
+                retries_used += retries
+                result.node_stats.append({
+                    "node": node.node_id, "state": state,
+                    "attempts": node.attempt + 1, "output": _clip(output),
+                })
+                if state == WorkflowNodeState.SUCCESS:
+                    done[node.node_id] = output
+                elif state == WorkflowNodeState.PAUSED:
+                    paused_msg = error or "预算耗尽"
+                elif state == WorkflowNodeState.FAILED:
+                    failed = (node, error or "节点失败")
+
+            if paused_msg is not None:
+                wf.status = WorkflowNodeState.PAUSED
+                play_result_budget(None, result, paused_msg)
+                result.retries_used = retries_used
+                self._snapshot(wf, result, done, budget)
+                return result
+            if failed is not None:
+                node, error = failed
+                comp = wf.compensation_actions.get(node.node_id)
+                if comp:
+                    self._try_compensate(comp, ctx_input)
+                wf.status = WorkflowNodeState.FAILED
+                result.ok = False
+                result.status = wf.status
+                result.error = f"节点 {node.node_id} 失败: {error}"
+                result.retries_used = retries_used
+                self._snapshot(wf, result, done, budget)
+                return result
+            self._snapshot(wf, result, done, budget)
+
         # 端到端验收（PRD 13 / 51.3）：基于每个节点的实际执行结果
         verdict = Verifier().check(
             wf.acceptance_criteria,
@@ -124,8 +154,78 @@ class WorkflowEngine:
         result.retries_used = retries_used
         if not verdict.passed:
             result.error = "端到端验收未通过: " + verdict.summary()
-        self._snapshot(wf, result)
+        self._snapshot(wf, result, done, budget)
         return result
+
+    def _run_batch(self, nodes: List[WorkflowNode], ctx_input: Dict,
+                   snapshot: Dict, budget: Optional[BudgetController]
+                   ) -> List[Tuple[str, Any, Optional[str], int]]:
+        if not nodes:
+            return []
+        if len(nodes) == 1 or self.max_parallel == 1:
+            return [self._run_node(n, ctx_input, snapshot, budget)
+                    for n in nodes]
+        workers = min(self.max_parallel, len(nodes))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = [pool.submit(self._run_node, n, ctx_input, snapshot,
+                                   budget) for n in nodes]
+            return [f.result() for f in futures]
+
+    def _run_node(self, node: WorkflowNode, ctx_input: Dict,
+                  done: Dict, budget: Optional[BudgetController]
+                  ) -> Tuple[str, Any, Optional[str], int]:
+        node.state = WorkflowNodeState.RUNNING
+        attempt = 0
+        retries = 0
+        while attempt <= node.max_retries:
+            node.attempt = attempt
+            try:
+                if budget:
+                    budget.check_alive()
+                output = self._exec_node_with_timeout(node, ctx_input, done,
+                                                      budget)
+                if node.output_schema:
+                    problem = validate_against_schema(output, node.output_schema)
+                    if problem:
+                        raise RuntimeError(f"输出契约校验失败: {problem}")
+                node.state = WorkflowNodeState.SUCCESS
+                node.output = output
+                return WorkflowNodeState.SUCCESS, output, None, retries
+            except (BudgetExceeded, NodeBudgetSignal) as e:
+                # 预算耗尽：暂停而非失败（PRD 8：根据任务情况停止/降级）
+                node.state = WorkflowNodeState.PAUSED
+                return WorkflowNodeState.PAUSED, None, str(e), retries
+            except Exception as e:  # noqa: BLE001
+                node.error = f"{type(e).__name__}: {e}"
+                attempt += 1
+                retries += 1
+                if attempt > node.max_retries:
+                    node.state = WorkflowNodeState.FAILED
+                    return WorkflowNodeState.FAILED, None, node.error, retries
+        node.state = WorkflowNodeState.FAILED
+        return WorkflowNodeState.FAILED, None, node.error, retries
+
+    def _exec_node_with_timeout(self, node: WorkflowNode, ctx_input: Dict,
+                                done: Dict, budget) -> Any:
+        timeout = node.timeout
+        if not timeout or timeout <= 0:
+            return self._exec_node(node, ctx_input, done, budget)
+        holder: Dict[str, Any] = {}
+
+        def target() -> None:
+            try:
+                holder["result"] = self._exec_node(node, ctx_input, done, budget)
+            except BaseException as e:  # noqa: BLE001
+                holder["error"] = e
+
+        th = threading.Thread(target=target, daemon=True)
+        th.start()
+        th.join(timeout)
+        if th.is_alive():
+            raise TimeoutError(f"节点 {node.node_id} 超时({timeout}s)")
+        if "error" in holder:
+            raise holder["error"]
+        return holder.get("result")
 
     def _exec_node(self, node: WorkflowNode, ctx_input: Dict, done: Dict,
                    budget: Optional[BudgetController]) -> Any:
@@ -151,21 +251,50 @@ class WorkflowEngine:
         except Exception:
             pass
 
-    def _snapshot(self, wf: WorkflowDef, result: WorkflowRunResult) -> None:
+    def _snapshot(self, wf: WorkflowDef, result: WorkflowRunResult,
+                  done: Optional[Dict[str, Any]] = None,
+                  budget: Optional[BudgetController] = None) -> None:
         if self.cp is None:
             return
-        cp = Checkpoint(current_stage="workflow_done" if wf.status == "success" else "workflow_" + wf.status)
+        cp = Checkpoint(current_stage="workflow_done" if wf.status == "success"
+                        else "workflow_" + wf.status)
         cp.task_id = wf.created_from_task or wf.workflow_id
-        cp.completed_nodes = [n.node_id for n in wf.nodes if n.state == WorkflowNodeState.SUCCESS]
-        cp.pending_nodes = [n.node_id for n in wf.nodes if n.state == WorkflowNodeState.PENDING]
+        cp.completed_nodes = [n.node_id for n in wf.nodes
+                              if n.state == WorkflowNodeState.SUCCESS]
+        cp.pending_nodes = [n.node_id for n in wf.nodes
+                            if n.state == WorkflowNodeState.PENDING]
         cp.workflow_version = wf.version
+        # 已完成节点输出用于断点续跑（避免重复副作用）
+        cp.task_state = {"workflow_outputs": dict(done or {})}
+        if budget is not None:
+            cp.budget_state = budget.snapshot()
         self.cp.save(cp)
 
 
 def play_result_budget(node, result, msg):
-    node.state = WorkflowNodeState.PAUSED
+    if node is not None:
+        node.state = WorkflowNodeState.PAUSED
     result.status = WorkflowNodeState.PAUSED
     result.error = f"预算耗尽: {msg}"
+
+
+def _batches(wf: WorkflowDef) -> List[List[str]]:
+    """按依赖分层：同一层内节点互不依赖，可并行执行。"""
+    idmap = {n.node_id: n for n in wf.nodes}
+    remaining = _topo(wf)
+    satisfied: set = set()
+    batches: List[List[str]] = []
+    while remaining:
+        ready = [nid for nid in remaining
+                 if all(d in satisfied or d not in idmap
+                        for d in idmap[nid].deps)]
+        if not ready:
+            ready = [remaining[0]]
+        batches.append(ready)
+        for nid in ready:
+            remaining.remove(nid)
+            satisfied.add(nid)
+    return batches
 
 
 def _topo(wf: WorkflowDef) -> List[str]:
@@ -205,6 +334,8 @@ def _as_tool_results(wf: WorkflowDef) -> List[ToolResult]:
     """按节点实际执行结果构造验收证据（evidence.tool 记录节点所用工具）。"""
     out: List[ToolResult] = []
     for n in wf.nodes:
+        if n.state == WorkflowNodeState.SKIPPED:
+            continue
         ok = n.state == WorkflowNodeState.SUCCESS
         out.append(ToolResult(ok=ok, data=n.output,
                               submitted=True, executed=ok,

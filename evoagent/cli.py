@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 
 from .app import App
+from .evolution.controller import PUBLISH_RULES
 from .evolution.probes import PROBES as PROBE_NAMES
 
 
@@ -154,6 +155,131 @@ def cmd_resume(task_id: str, force: bool) -> str:
     return json.dumps(t.to_dict(), ensure_ascii=False, indent=1)
 
 
+def cmd_candidates(candidate_id: str) -> str:
+    app = _app()
+    if candidate_id:
+        cand = app.evolution.get_candidate(candidate_id)
+        if cand is None:
+            return json.dumps({"error": "候选不存在"}, ensure_ascii=False)
+        print(json.dumps(cand.to_dict(), ensure_ascii=False, indent=1))
+        return ""
+    out = [{"candidate_id": c.candidate_id, "status": c.status.value,
+            "risk": c.risk_level, "target": c.target_component,
+            "problem": c.target_problem} for c in app.evolution.all_candidates()]
+    print(json.dumps(out, ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_propose(component: str, problem: str, hypothesis: str,
+                risk: str, baseline: str) -> str:
+    app = _app()
+    cand = app.evolution.propose_candidate(
+        baseline_version=baseline, target_component=component,
+        target_problem=problem, hypothesis=hypothesis)
+    cand.risk_level = risk
+    app.db.save_candidate(cand)
+    out = {"candidate_id": cand.candidate_id, "status": cand.status.value,
+           "risk_level": risk,
+           "publish_rule": PUBLISH_RULES.get(risk, "strict_review")}
+    print(json.dumps(out, ensure_ascii=False))
+    return ""
+
+
+def cmd_evaluate(candidate_id: str, dataset_id: str) -> str:
+    app = _app()
+    try:
+        out = app.evolution.evaluate_candidate(candidate_id,
+                                               dataset_id=dataset_id or None)
+    except (KeyError, ValueError, RuntimeError) as e:
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+    print(json.dumps(out, ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_approve(candidate_id: str, approver: str) -> str:
+    app = _app()
+    cand = app.evolution.get_candidate(candidate_id)
+    if cand is None:
+        return json.dumps({"error": "候选不存在"}, ensure_ascii=False)
+    try:
+        out = app.evolution.approve(cand, approver=approver)
+    except Exception as e:  # noqa: BLE001
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+    print(json.dumps(out, ensure_ascii=False))
+    return ""
+
+
+def cmd_deploy(candidate_id: str, actor: str, gray: int) -> str:
+    app = _app()
+    cand = app.evolution.get_candidate(candidate_id)
+    if cand is None:
+        return json.dumps({"error": "候选不存在"}, ensure_ascii=False)
+    out = app.evolution.deploy_candidate(cand, actor=actor,
+                                         gray_percent=gray)
+    print(json.dumps(out, ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_monitor(candidate_id: str, success_rate: float,
+                error_rate: float, cost_ratio: float) -> str:
+    app = _app()
+    cand = app.evolution.get_candidate(candidate_id)
+    if cand is None:
+        return json.dumps({"error": "候选不存在"}, ensure_ascii=False)
+    out = app.evolution.monitor(cand, {
+        "success_rate": success_rate, "error_rate": error_rate,
+        "cost_ratio": cost_ratio})
+    print(json.dumps(out, ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_workflows(workflow_id: str) -> str:
+    app = _app()
+    if workflow_id:
+        data = app.db.get_workflow_def(workflow_id)
+        if data is None:
+            return json.dumps({"error": "工作流不存在"}, ensure_ascii=False)
+        print(json.dumps(data, ensure_ascii=False, indent=1))
+        return ""
+    rows = [{"workflow_id": r["workflow_id"], "version": r["version"],
+             "status": r["status"], "updated_at": r["updated_at"]}
+            for r in app.db.list_workflow_defs()]
+    print(json.dumps(rows, ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_budget() -> str:
+    app = _app()
+    out = {
+        "pools": app.ledger.report(),
+        "limits": {
+            "runtime_daily_cost": app.config.budget.runtime_daily_cost,
+            "runtime_daily_model_calls": app.config.budget.runtime_daily_model_calls,
+            "max_concurrent_tasks": app.config.budget.max_concurrent_tasks,
+        },
+    }
+    print(json.dumps(out, ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_releases() -> str:
+    app = _app()
+    out = {"current": app.releases.current_release_id,
+           "manifests": [m.to_dict() for m in
+                         app.releases.manifests.values()],
+           "deployments": app.releases.deployments,
+           "rollbacks": app.releases.rollback_records}
+    print(json.dumps(out, ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_release_rollback(reason: str) -> str:
+    app = _app()
+    out = app.releases.rollback(reason)
+    print(json.dumps(out, ensure_ascii=False, indent=1))
+    return ""
+
+
 def cmd_serve(host: str, port: int) -> str:
     app = _app()
     from .api.server import ApiServer
@@ -187,6 +313,36 @@ def main() -> None:
     v = sub.add_parser("serve")
     v.add_argument("--host", default="127.0.0.1")
     v.add_argument("--port", type=int, default=8300)
+    # 进化轨（PRD 46-54 / 80-82）
+    cd = sub.add_parser("candidates")
+    cd.add_argument("candidate_id", nargs="?")
+    pr = sub.add_parser("propose")
+    pr.add_argument("--component", required=True)
+    pr.add_argument("--problem", required=True)
+    pr.add_argument("--hypothesis", required=True)
+    pr.add_argument("--risk", default="L2", choices=["L0", "L1", "L2", "L3", "L4"])
+    pr.add_argument("--baseline", default="v0.1.0")
+    ev = sub.add_parser("evaluate")
+    ev.add_argument("candidate_id")
+    ev.add_argument("--dataset", default="")
+    ap = sub.add_parser("approve")
+    ap.add_argument("candidate_id")
+    ap.add_argument("--approver", default="operator")
+    dp = sub.add_parser("deploy")
+    dp.add_argument("candidate_id")
+    dp.add_argument("--actor", default="operator")
+    dp.add_argument("--gray", type=int, default=100)
+    mo = sub.add_parser("monitor")
+    mo.add_argument("candidate_id")
+    mo.add_argument("--success-rate", type=float, default=1.0)
+    mo.add_argument("--error-rate", type=float, default=0.0)
+    mo.add_argument("--cost-ratio", type=float, default=1.0)
+    wfs = sub.add_parser("workflows")
+    wfs.add_argument("workflow_id", nargs="?")
+    sub.add_parser("budget")
+    sub.add_parser("releases")
+    rr = sub.add_parser("release-rollback")
+    rr.add_argument("--reason", default="manual rollback")
     args = p.parse_args()
     if args.cmd == "demo":
         cmd_demo()
@@ -202,6 +358,28 @@ def main() -> None:
         cmd_resume(args.task_id, args.force)
     elif args.cmd == "diagnose":
         cmd_diagnose(args.task_id, args.probe)
+    elif args.cmd == "candidates":
+        cmd_candidates(args.candidate_id)
+    elif args.cmd == "propose":
+        cmd_propose(args.component, args.problem, args.hypothesis,
+                    args.risk, args.baseline)
+    elif args.cmd == "evaluate":
+        cmd_evaluate(args.candidate_id, args.dataset)
+    elif args.cmd == "approve":
+        cmd_approve(args.candidate_id, args.approver)
+    elif args.cmd == "deploy":
+        cmd_deploy(args.candidate_id, args.actor, args.gray)
+    elif args.cmd == "monitor":
+        cmd_monitor(args.candidate_id, args.success_rate,
+                    args.error_rate, args.cost_ratio)
+    elif args.cmd == "workflows":
+        cmd_workflows(args.workflow_id)
+    elif args.cmd == "budget":
+        cmd_budget()
+    elif args.cmd == "releases":
+        cmd_releases()
+    elif args.cmd == "release-rollback":
+        cmd_release_rollback(args.reason)
     elif args.cmd == "serve":
         cmd_serve(args.host, args.port)
     else:

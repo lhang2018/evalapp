@@ -28,8 +28,23 @@ class AssembledContext:
     memories: List[str] = field(default_factory=list)
     domain: str = "general"
     intent: str = "general"
+    # 记忆使用统计（PRD 25 / 32）
+    memory_candidates: int = 0
+    memory_used: int = 0
     # 压缩检查
+    chars_before: int = 0
+    chars_after: int = 0
+    dropped_memories: int = 0
     compression_dropped_constraints: List[str] = field(default_factory=list)
+
+    def stats(self) -> Dict[str, int]:
+        return {
+            "memory_candidates": self.memory_candidates,
+            "memory_used": self.memory_used,
+            "chars_before": self.chars_before,
+            "chars_after": self.chars_after,
+            "dropped_memories": self.dropped_memories,
+        }
 
     def to_messages(self) -> List[ChatMessage]:
         """装配为模型可见信息视图。"""
@@ -76,16 +91,23 @@ class ContextAssembler:
         # 记忆检索（进入上下文预算内）
         if self.memory is not None:
             mems = self.memory.search(goal, domains=[domain], scope_key=scope_key)
+            ctx.memory_candidates = len(mems)
             for m in mems:
                 ctx.memories.append(f"[{m.status.value}] {m.content}")
+                ctx.memory_used += 1
+                self.memory.record_use(m.memory_id)
         # 上下文超限压缩（保留结构化字段，只截断自由文本记忆/结果）
+        ctx.chars_before = _ctx_size(ctx)
         self._apply_budget(ctx)
+        ctx.memory_used = len(ctx.memories)
+        ctx.chars_after = _ctx_size(ctx)
         return ctx
 
     def _apply_budget(self, ctx: AssembledContext) -> None:
         text = _ctx_size(ctx)
         while text > self.budget.max_chars and ctx.memories:
             ctx.memories.pop(0)   # 从最旧记忆开始压缩
+            ctx.dropped_memories += 1
             text = _ctx_size(ctx)
         # 约束永远保留（Arch 8.5）
         if text > self.budget.max_chars and ctx.recent_results:

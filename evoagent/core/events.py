@@ -123,6 +123,19 @@ class EventBus:
             "SELECT 1 FROM runtime_events WHERE event_id=?", (event_id,)).fetchone()
         return row is not None
 
+    def counts(self) -> Dict[str, Dict[str, int]]:
+        """事件计数（PRD 37-40）：按类型与严重级别聚合，供指标端点使用。"""
+        if self._conn is None:
+            return {"by_type": {}, "by_severity": {}, "total": 0}
+        by_type = {r[0]: int(r[1]) for r in self._conn.execute(
+            "SELECT event_type, COUNT(*) FROM runtime_events"
+            " GROUP BY event_type")}
+        by_sev = {r[0]: int(r[1]) for r in self._conn.execute(
+            "SELECT severity, COUNT(*) FROM runtime_events"
+            " GROUP BY severity")}
+        return {"by_type": by_type, "by_severity": by_sev,
+                "total": sum(by_type.values())}
+
     def query(self, task_id: Optional[str] = None, limit: int = 100) -> List[RunEvent]:
         if self._conn is None:
             return []

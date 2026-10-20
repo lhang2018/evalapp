@@ -59,6 +59,41 @@ class Database:
                 finished_at REAL, data TEXT)""")
             c.execute("""CREATE INDEX IF NOT EXISTS idx_diagnostic_experiments_case
                 ON diagnostic_experiments(case_id)""")
+            # 进化轨状态（PRD 46-54 / Arch 10）：候选与发布必须可恢复，不能只存内存
+            c.execute("""CREATE TABLE IF NOT EXISTS evolution_candidates(
+                candidate_id TEXT PRIMARY KEY, status TEXT, risk_level TEXT,
+                created_at REAL, data TEXT)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_evolution_candidates_status
+                ON evolution_candidates(status)""")
+            c.execute("""CREATE TABLE IF NOT EXISTS release_manifests(
+                release_id TEXT PRIMARY KEY, version TEXT, created_at REAL,
+                data TEXT)""")
+            c.execute("""CREATE TABLE IF NOT EXISTS release_events(
+                event_id INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT,
+                release_id TEXT, created_at REAL, data TEXT)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_release_events_release
+                ON release_events(release_id)""")
+            c.execute("""CREATE TABLE IF NOT EXISTS tool_executions(
+                idem_key TEXT PRIMARY KEY, tool_id TEXT, created_at REAL,
+                result TEXT)""")
+            # 日/月预算账本（PRD 55-58）：scope:period 为键
+            c.execute("""CREATE TABLE IF NOT EXISTS budget_ledger(
+                ledger_key TEXT PRIMARY KEY, model_calls INTEGER DEFAULT 0,
+                tool_calls INTEGER DEFAULT 0, cost REAL DEFAULT 0,
+                seconds REAL DEFAULT 0, updated_at REAL)""")
+            # 工作流资产库（PRD 13.4 / Arch 16）
+            c.execute("""CREATE TABLE IF NOT EXISTS workflow_defs(
+                workflow_id TEXT, version TEXT, status TEXT, updated_at REAL,
+                data TEXT, PRIMARY KEY(workflow_id, version))""")
+            c.execute("""CREATE TABLE IF NOT EXISTS eval_reports(
+                report_id TEXT PRIMARY KEY, dataset_id TEXT, candidate_id TEXT,
+                created_at REAL, data TEXT)""")
+            # 安全控制面审计（PRD 84 / Arch 18）
+            c.execute("""CREATE TABLE IF NOT EXISTS audit_log(
+                audit_id TEXT PRIMARY KEY, at REAL, actor TEXT, action TEXT,
+                target TEXT, outcome TEXT, detail TEXT)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_audit_log_at
+                ON audit_log(at)""")
             c.commit()
 
     # ---- tasks ----
@@ -204,6 +239,189 @@ class Database:
             "SELECT COUNT(*) AS n FROM diagnostic_experiments"
             " WHERE started_at >= ?", (since,)).fetchone()
         return int(row["n"]) if row else 0
+
+    # ---- evolution candidates（PRD 46-54）----
+    def save_candidate(self, cand: Any) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO evolution_candidates VALUES (?,?,?,?,?)",
+                (cand.candidate_id, cand.status.value, cand.risk_level,
+                 cand.created_at,
+                 json.dumps(cand.to_dict(), ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def get_candidate(self, candidate_id: str) -> Optional[Any]:
+        from ..evolution.candidates import EvolutionCandidate
+        row = self._conn.execute(
+            "SELECT data FROM evolution_candidates WHERE candidate_id=?",
+            (candidate_id,)).fetchone()
+        return EvolutionCandidate.from_dict(json.loads(row["data"])) if row else None
+
+    def list_candidates(self, limit: int = 100,
+                        status: Optional[str] = None) -> List[Any]:
+        from ..evolution.candidates import EvolutionCandidate
+        if status:
+            rows = self._conn.execute(
+                "SELECT data FROM evolution_candidates WHERE status=?"
+                " ORDER BY created_at DESC LIMIT ?", (status, limit)).fetchall()
+        else:
+            rows = self._conn.execute(
+                "SELECT data FROM evolution_candidates ORDER BY created_at DESC"
+                " LIMIT ?", (limit,)).fetchall()
+        return [EvolutionCandidate.from_dict(json.loads(r["data"])) for r in rows]
+
+    # ---- releases（PRD 59-63）----
+    def save_release_manifest(self, m: Any) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO release_manifests VALUES (?,?,?,?)",
+                (m.release_id, m.version, m.created_at,
+                 json.dumps(m.to_dict(), ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def get_release_manifest(self, release_id: str) -> Optional[Any]:
+        from ..release.manager import ReleaseManifest
+        row = self._conn.execute(
+            "SELECT data FROM release_manifests WHERE release_id=?",
+            (release_id,)).fetchone()
+        return ReleaseManifest.from_dict(json.loads(row["data"])) if row else None
+
+    def list_release_manifests(self, limit: int = 100) -> List[Any]:
+        from ..release.manager import ReleaseManifest
+        rows = self._conn.execute(
+            "SELECT data FROM release_manifests ORDER BY created_at DESC LIMIT ?",
+            (limit,)).fetchall()
+        return [ReleaseManifest.from_dict(json.loads(r["data"])) for r in rows]
+
+    def append_release_event(self, kind: str, release_id: str,
+                             data: Dict[str, Any]) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO release_events(kind, release_id, created_at, data)"
+                " VALUES (?,?,?,?)",
+                (kind, release_id, time.time(),
+                 json.dumps(data, ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def list_release_events(self, limit: int = 100) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT kind, release_id, created_at, data FROM release_events"
+            " ORDER BY event_id DESC LIMIT ?", (limit,)).fetchall()
+        return [{"kind": r["kind"], "release_id": r["release_id"],
+                 "created_at": r["created_at"], "data": json.loads(r["data"])}
+                for r in rows]
+
+    # ---- tool idempotency journal ----
+    def get_tool_execution(self, idem_key: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT result FROM tool_executions WHERE idem_key=?",
+            (idem_key,)).fetchone()
+        return json.loads(row["result"]) if row else None
+
+    def save_tool_execution(self, idem_key: str, tool_id: str,
+                            result: Dict[str, Any]) -> bool:
+        with self._lock:
+            cur = self._conn.execute(
+                "INSERT OR IGNORE INTO tool_executions VALUES (?,?,?,?)",
+                (idem_key, tool_id, time.time(),
+                 json.dumps(result, ensure_ascii=False, default=str)))
+            self._conn.commit()
+            return cur.rowcount > 0
+
+    # ---- budget ledger ----
+    def record_budget(self, ledger_key: str, model_calls: int = 0,
+                      tool_calls: int = 0, cost: float = 0.0,
+                      seconds: float = 0.0) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO budget_ledger VALUES (?,?,?,?,?,?)"
+                " ON CONFLICT(ledger_key) DO UPDATE SET"
+                " model_calls=model_calls+excluded.model_calls,"
+                " tool_calls=tool_calls+excluded.tool_calls,"
+                " cost=cost+excluded.cost,"
+                " seconds=seconds+excluded.seconds,"
+                " updated_at=excluded.updated_at",
+                (ledger_key, model_calls, tool_calls, cost, seconds,
+                 time.time()))
+            self._conn.commit()
+
+    def budget_usage(self, ledger_key: str) -> Dict[str, Any]:
+        row = self._conn.execute(
+            "SELECT model_calls, tool_calls, cost, seconds FROM budget_ledger"
+            " WHERE ledger_key=?", (ledger_key,)).fetchone()
+        if not row:
+            return {"model_calls": 0, "tool_calls": 0, "cost": 0.0,
+                    "seconds": 0.0}
+        return {"model_calls": int(row["model_calls"]),
+                "tool_calls": int(row["tool_calls"]),
+                "cost": float(row["cost"]), "seconds": float(row["seconds"])}
+
+    # ---- workflow asset library ----
+    def save_workflow_def(self, workflow_id: str, version: str,
+                          status: str, data: Dict[str, Any]) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO workflow_defs VALUES (?,?,?,?,?)",
+                (workflow_id, version, status, time.time(),
+                 json.dumps(data, ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def list_workflow_defs(self) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT workflow_id, version, status, updated_at, data"
+            " FROM workflow_defs ORDER BY updated_at DESC").fetchall()
+        return [{"workflow_id": r["workflow_id"], "version": r["version"],
+                 "status": r["status"], "updated_at": r["updated_at"],
+                 "definition": json.loads(r["data"])} for r in rows]
+
+    def get_workflow_def(self, workflow_id: str,
+                         version: Optional[str] = None
+                         ) -> Optional[Dict[str, Any]]:
+        if version:
+            row = self._conn.execute(
+                "SELECT data FROM workflow_defs WHERE workflow_id=? AND version=?",
+                (workflow_id, version)).fetchone()
+        else:
+            row = self._conn.execute(
+                "SELECT data FROM workflow_defs WHERE workflow_id=?"
+                " ORDER BY updated_at DESC LIMIT 1", (workflow_id,)).fetchone()
+        return json.loads(row["data"]) if row else None
+
+    # ---- evaluation reports ----
+    def save_eval_report(self, report_id: str, dataset_id: str,
+                         candidate_id: Optional[str],
+                         data: Dict[str, Any]) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO eval_reports VALUES (?,?,?,?,?)",
+                (report_id, dataset_id, candidate_id, time.time(),
+                 json.dumps(data, ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def list_eval_reports(self, limit: int = 50) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT data FROM eval_reports ORDER BY created_at DESC LIMIT ?",
+            (limit,)).fetchall()
+        return [json.loads(r["data"]) for r in rows]
+
+    # ---- audit ----
+    def save_audit(self, audit_id: str, actor: str, action: str,
+                   target: str, outcome: str, detail: Dict[str, Any]) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO audit_log VALUES (?,?,?,?,?,?,?)",
+                (audit_id, time.time(), actor, action, target, outcome,
+                 json.dumps(detail, ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def list_audit(self, limit: int = 100) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT audit_id, at, actor, action, target, outcome, detail"
+            " FROM audit_log ORDER BY at DESC LIMIT ?", (limit,)).fetchall()
+        return [{"audit_id": r["audit_id"], "at": r["at"],
+                 "actor": r["actor"], "action": r["action"],
+                 "target": r["target"], "outcome": r["outcome"],
+                 "detail": json.loads(r["detail"])} for r in rows]
 
     def close(self) -> None:
         self._conn.close()

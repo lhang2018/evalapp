@@ -10,6 +10,7 @@ import secrets
 import time
 import uuid
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 
@@ -40,9 +41,16 @@ class ReleaseManifest:
     def to_dict(self) -> Dict[str, Any]:
         return self.__dict__.copy()
 
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "ReleaseManifest":
+        return cls(**{k: v for k, v in d.items()
+                      if k in cls.__dataclass_fields__})
+
 
 class ReleaseManager:
-    def __init__(self, signing_secret: Optional[str] = None):
+    def __init__(self, signing_secret: Optional[str] = None,
+                 store: Optional[Any] = None,
+                 artifact_dir: Optional[str] = None):
         self.secret = signing_secret or secrets.token_hex(16)
         self.manifests: Dict[str, ReleaseManifest] = {}
         self.deployments: List[Dict[str, Any]] = []
@@ -50,6 +58,24 @@ class ReleaseManager:
         self.current_release_id: Optional[str] = None
         # 不可逆副作用记录（Arch 13.5：不能假设简单回滚可消除全部影响）
         self.irreversible_actions: List[Dict[str, Any]] = []
+        self.store = store
+        self.artifact_dir = Path(artifact_dir) if artifact_dir else None
+        if self.artifact_dir is not None:
+            self.artifact_dir.mkdir(parents=True, exist_ok=True)
+        if store is not None:
+            self._load()
+
+    def _load(self) -> None:
+        """重启恢复发布状态（Arch 3.3 状态所有权 / 13.3 发布组合）。"""
+        for m in reversed(self.store.list_release_manifests(limit=1000)):
+            self.manifests[m.release_id] = m
+        for ev in reversed(self.store.list_release_events(limit=1000)):
+            if ev["kind"] == "deploy":
+                self.deployments.append(ev["data"])
+                self.current_release_id = ev["release_id"]
+            elif ev["kind"] == "rollback":
+                self.rollback_records.append(ev["data"])
+                self.current_release_id = ev["data"].get("to")
 
     # ---- 发布组合 ----
     def build_manifest(self, **kwargs: Any) -> ReleaseManifest:
@@ -59,11 +85,19 @@ class ReleaseManager:
         m.signed_by = _sign({"digest": m.artifact_digest},
                             self.secret)
         self.manifests[m.release_id] = m
+        if self.store is not None:
+            self.store.save_release_manifest(m)
+        if self.artifact_dir is not None:
+            artifact = self.artifact_dir / f"{m.release_id}.json"
+            artifact.write_text(json.dumps(m.to_dict(), ensure_ascii=False,
+                                           indent=1, default=str),
+                                encoding="utf-8")
         return m
 
     # ---- 门禁之后的部署（PRD 62）----
     def deploy(self, release_id: str, *, gate_passed: bool,
-               scope: str = "normal") -> Dict[str, Any]:
+               scope: str = "normal",
+               gray_percent: int = 100) -> Dict[str, Any]:
         m = self.manifests.get(release_id)
         if not m:
             return {"ok": False, "error": "manifest 不存在"}
@@ -72,11 +106,16 @@ class ReleaseManager:
             return {"ok": False, "error": "核心安全边界的改动不允许普通发布流程"}
         if not gate_passed:
             return {"ok": False, "error": "门禁未通过，拒绝部署"}
-        self.verify(m.release_id)
+        check = self.verify(m.release_id)
+        if not check.get("ok"):
+            return {"ok": False, "error": "制品签名/完整性校验失败", **check}
         self.current_release_id = release_id
         rec = {"release_id": release_id, "at": time.time(),
+               "gray_percent": max(0, min(100, int(gray_percent))),
                "previous": self.deployments[-1]["release_id"] if self.deployments else None}
         self.deployments.append(rec)
+        if self.store is not None:
+            self.store.append_release_event("deploy", release_id, rec)
         return {"ok": True, **rec, "version": m.version}
 
     # ---- 回滚（PRD 63）----
@@ -97,6 +136,8 @@ class ReleaseManager:
         if self.irreversible_actions:
             rec["irreversible_warning"] = (
                 f"存在 {len(self.irreversible_actions)} 项不可逆变化，需单独补偿策略")
+        if self.store is not None:
+            self.store.append_release_event("rollback", target, rec)
         return {"ok": True, **rec}
 
     # ---- 制品验证（Architecture 18.4）----
@@ -106,6 +147,17 @@ class ReleaseManager:
             return {"ok": False, "error": "manifest 不存在"}
         expected_sig = _sign({"digest": m.artifact_digest}, self.secret)
         sig_ok = expected_sig == m.signed_by
+        artifact_ok = True
+        if self.artifact_dir is not None:
+            artifact = self.artifact_dir / f"{release_id}.json"
+            if artifact.exists():
+                try:
+                    data = json.loads(artifact.read_text(encoding="utf-8"))
+                    artifact_ok = data.get("artifact_digest") == m.artifact_digest
+                except Exception:  # noqa: BLE001
+                    artifact_ok = False
         # 签名只证明来源与完整性，制品本身安全仍需测试与门禁（Arch 18.4）
-        return {"ok": sig_ok, "artifact_digest": m.artifact_digest,
+        return {"ok": sig_ok and artifact_ok,
+                "artifact_digest": m.artifact_digest,
+                "artifact_ok": artifact_ok,
                 "note": "签名仅证明来源与完整性，安全结论依赖于评测与门禁"}

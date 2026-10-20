@@ -22,6 +22,10 @@ class ModelProfile:
     rpm_limit: int = 60
     price_per_1k_input: float = 0.0
     price_per_1k_output: float = 0.0
+    # 路由评分维度（Arch 7：质量/成本/时延/可用性）
+    quality_score: float = 0.7
+    avg_latency_s: float = 1.0
+    available: bool = True
     known_limitations: List[str] = field(default_factory=list)
     adapter_config: Dict[str, Any] = field(default_factory=dict)
     compat_tested: bool = False

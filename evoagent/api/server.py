@@ -15,7 +15,10 @@ from urllib.parse import parse_qs, urlparse
 
 from ..app import App
 from ..core.task import RiskLevel, TaskStatus
+from ..evolution.candidates import IllegalCandidateTransition
 from ..evolution.controller import PUBLISH_RULES
+from .admin import ADMIN_HTML
+from .auth import ApiAuth
 from .events_sync import BatchError, validate_batch
 
 CLIENT_REQUEST_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
@@ -33,15 +36,33 @@ def make_handler(app: App):
             self.end_headers()
             self.wfile.write(body)
 
+        def _text(self, code: int, text: str, content_type: str) -> None:
+            body = text.encode("utf-8")
+            self.send_response(code)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def _authorize(self, method: str, path: str):
+            res = ApiAuth(app.config.api_token,
+                          app.config.api_admin_token).check(
+                              self.headers.get("Authorization"), method, path)
+            if not res.ok:
+                self._json(res.status, {"error": res.error})
+                return None
+            return res
+
         def _body(self) -> Dict[str, Any]:
             length = int(self.headers.get("Content-Length") or 0)
             if length <= 0:
                 return {}
             raw = self.rfile.read(length)
             try:
-                return json.loads(raw.decode("utf-8"))
-            except json.JSONDecodeError:
+                data = json.loads(raw.decode("utf-8"))
+            except (json.JSONDecodeError, UnicodeDecodeError):
                 return {}
+            return data if isinstance(data, dict) else {}
 
         def log_message(self, fmt, *args):  # 安静一些
             pass
@@ -54,6 +75,18 @@ def make_handler(app: App):
         def do_GET(self):
             path = urlparse(self.path).path.rstrip("/")
             qs = self._query()
+            if self._authorize("GET", path) is None:
+                return
+            if path in ("/admin", "/"):
+                return self._text(200, ADMIN_HTML, "text/html; charset=utf-8")
+            if path == "/metrics":
+                if (qs.get("format") or "").lower() in ("prometheus", "text"):
+                    return self._text(200, app.metrics.prometheus(),
+                                      "text/plain; version=0.0.4; charset=utf-8")
+                return self._json(200, app.metrics.snapshot())
+            if path == "/audit":
+                limit = int(qs.get("limit") or 100)
+                return self._json(200, {"audit": app.audit.list(limit=limit)})
             if path == "/health":
                 return self._json(200, app.health())
             if path == "/tasks":
@@ -82,6 +115,47 @@ def make_handler(app: App):
                 m = app.release_manifest
                 return self._json(200, {**m.to_dict(),
                                         "current": app.releases.current_release_id})
+            if path == "/evolution/candidates":
+                limit = int(qs.get("limit") or 100)
+                status = qs.get("status")
+                cands = app.db.list_candidates(limit=limit, status=status)
+                return self._json(200, {"candidates": [_candidate_summary(c)
+                                                       for c in cands]})
+            if path.startswith("/evolution/candidates/"):
+                parts = [p for p in path.split("/") if p]
+                cand = app.evolution.get_candidate(parts[2]) if len(parts) > 2 else None
+                if cand is None:
+                    return self._json(404, {"error": "候选不存在"})
+                return self._json(200, cand.to_dict())
+            if path == "/evolution/datasets":
+                data = [{"dataset_id": d.dataset_id, "version": d.version,
+                         "cases": len(d.cases), "source": d.source}
+                        for d in app.datasets.values()]
+                return self._json(200, {"datasets": data})
+            if path == "/workflows":
+                return self._json(200, {"workflows": app.db.list_workflow_defs()})
+            if path.startswith("/workflows/"):
+                wid = path.split("/")[2]
+                data = app.db.get_workflow_def(wid)
+                if data is None:
+                    return self._json(404, {"error": "工作流不存在"})
+                return self._json(200, {"workflow": data})
+            if path == "/memory/stats":
+                return self._json(200, app.memory.stats())
+            if path == "/releases":
+                return self._json(200, {
+                    "current": app.releases.current_release_id,
+                    "manifests": [m.to_dict() for m in
+                                  app.releases.manifests.values()],
+                    "deployments": app.releases.deployments,
+                    "rollbacks": app.releases.rollback_records})
+            if path.startswith("/releases/"):
+                rid = path.split("/")[2]
+                m = app.releases.manifests.get(rid)
+                if m is None:
+                    return self._json(404, {"error": "发布不存在"})
+                return self._json(200, {"manifest": m.to_dict(),
+                                        "verify": app.releases.verify(rid)})
             if path == "/diagnostics":
                 limit = int(qs.get("limit") or 50)
                 status = qs.get("status")
@@ -89,6 +163,9 @@ def make_handler(app: App):
                                                      status=status)
                 return self._json(200, {"cases": [_case_summary(c)
                                                   for c in cases]})
+            if path == "/diagnostics/trends":
+                return self._json(200, app.diagnostics.trends(
+                    limit=int(qs.get("limit") or 200)))
             if path.startswith("/diagnostics/"):
                 case_id = path.split("/")[2]
                 case = app.db.get_diagnostic_case(case_id)
@@ -100,6 +177,9 @@ def make_handler(app: App):
         # ---------- POST ----------
         def do_POST(self):
             path = urlparse(self.path).path.rstrip("/")
+            auth = self._authorize("POST", path)
+            if auth is None:
+                return
             body = self._body()
             if path == "/tasks":
                 goal = body.get("goal", "").strip()
@@ -158,6 +238,20 @@ def make_handler(app: App):
                     return self._json(404, {"error": "任务不存在"})
                 return self._json(202, {"task": t.to_dict(),
                                         "resuming": True})
+            if path == "/evolution/candidates":
+                return self._evolution_propose(body, auth.role)
+            if (len(parts) == 4 and parts[0] == "evolution"
+                    and parts[1] == "candidates"):
+                return self._evolution_action(parts[2], parts[3], body,
+                                              auth.role)
+            if path == "/releases/rollback":
+                reason = (body.get("reason") or "manual rollback").strip()
+                out = app.releases.rollback(reason)
+                app.audit.record(auth.role, "release.rollback",
+                                 target=app.releases.current_release_id or "",
+                                 outcome="ok" if out.get("ok") else "failed",
+                                 detail={"reason": reason})
+                return self._json(200 if out.get("ok") else 409, out)
             if path == "/diagnostics/scan":
                 return self._diagnostic_scan(body)
             if (len(parts) == 3 and parts[0] == "diagnostics"
@@ -185,6 +279,96 @@ def make_handler(app: App):
             if not accepted and not duplicates:
                 return self._json(400, payload)
             return self._json(200, payload)
+
+        # ---------- 进化轨（PRD 46-54 / 80-82）----------
+        def _evolution_propose(self, body: Dict[str, Any], actor: str = "operator"):
+            required = ("baseline_version", "target_component",
+                        "target_problem", "hypothesis")
+            missing = [k for k in required if not (body.get(k) or "").strip()]
+            if missing:
+                return self._json(400, {"error": "缺少字段: " + ", ".join(missing)})
+            cand = app.evolution.propose_candidate(
+                baseline_version=body["baseline_version"],
+                target_component=body["target_component"],
+                target_problem=body["target_problem"],
+                hypothesis=body["hypothesis"],
+                change_scope=body.get("change_scope") or "local",
+                evidence=body.get("evidence") or [])
+            if body.get("risk_level"):
+                if body["risk_level"] not in PUBLISH_RULES:
+                    return self._json(400, {"error": "risk_level 必须为 L0-L4"})
+                cand.risk_level = body["risk_level"]
+                app.db.save_candidate(cand)
+            app.audit.record(actor, "evolution.propose",
+                             target=cand.candidate_id,
+                             detail={"component": cand.target_component,
+                                     "risk_level": cand.risk_level})
+            return self._json(201, {"candidate": cand.to_dict(),
+                                    "publish_rule": PUBLISH_RULES.get(
+                                        cand.risk_level, "strict_review")})
+
+        def _evolution_action(self, candidate_id: str, action: str,
+                              body: Dict[str, Any], actor: str = "operator"):
+            cand = app.evolution.get_candidate(candidate_id)
+            if cand is None:
+                return self._json(404, {"error": "候选不存在"})
+            try:
+                if action == "evaluate":
+                    out = app.evolution.evaluate_candidate(
+                        candidate_id, dataset_id=body.get("dataset_id"),
+                        baseline=bool(body.get("baseline", True)))
+                    app.audit.record(actor, "evolution.evaluate",
+                                     target=candidate_id,
+                                     outcome="ok" if out.get("passed") else "failed",
+                                     detail={"dataset_id": out.get("dataset_id")})
+                    return self._json(200, out)
+                if action == "approve":
+                    out = app.evolution.approve(
+                        cand, approver=body.get("approver") or actor)
+                    app.audit.record(actor, "evolution.approve",
+                                     target=candidate_id,
+                                     detail={"approver": body.get("approver") or actor})
+                    return self._json(200, out)
+                if action == "deploy":
+                    out = app.evolution.deploy_candidate(
+                        cand, actor=body.get("actor") or actor,
+                        gray_percent=int(body.get("gray_percent", 100)),
+                        gate_passed=body.get("gate_passed"))
+                    app.audit.record(actor, "evolution.deploy",
+                                     target=candidate_id,
+                                     outcome="ok" if out.get("ok") else "blocked",
+                                     detail={"gray_percent": body.get("gray_percent", 100),
+                                             "reason": out.get("reason", "")})
+                    return self._json(200 if out.get("ok") else 409, out)
+                if action == "monitor":
+                    metrics = body.get("metrics") or {}
+                    if not isinstance(metrics, dict) or not metrics:
+                        return self._json(400, {"error": "缺少 metrics"})
+                    out = app.evolution.monitor(
+                        cand, metrics, thresholds=body.get("thresholds"))
+                    app.audit.record(actor, "evolution.monitor",
+                                     target=candidate_id,
+                                     outcome=out.get("decision", "ok"),
+                                     detail={"metrics": metrics})
+                    return self._json(200, out)
+                if action == "rollback":
+                    reason = (body.get("reason") or "manual rollback").strip()
+                    app.evolution.rollback(cand, reason)
+                    rel = app.releases.rollback(reason)
+                    app.audit.record(actor, "evolution.rollback",
+                                     target=candidate_id,
+                                     detail={"reason": reason})
+                    return self._json(200, {"candidate": cand.to_dict(),
+                                            "release": rel})
+            except KeyError as e:
+                return self._json(404, {"error": f"不存在: {e}"})
+            except ValueError as e:
+                return self._json(400, {"error": str(e)})
+            except RuntimeError as e:
+                return self._json(409, {"error": str(e)})
+            except IllegalCandidateTransition as e:
+                return self._json(409, {"error": str(e)})
+            return self._json(404, {"error": f"未知动作: {action}"})
 
         # ---------- 诊断辅助 ----------
         def _diagnostic_scan(self, body: Dict[str, Any]):
@@ -219,7 +403,8 @@ def make_handler(app: App):
             if hypothesis is None:
                 return self._json(404, {"error": "假设不存在"})
             try:
-                exp = app.diagnostics.run_experiment(case, hypothesis, method)
+                exp = app.diagnostics.run_experiment(
+                    case, hypothesis, method, fault=body.get("fault"))
             except PermissionError as e:
                 return self._json(429, {"error": str(e)})
             return self._json(200, {"experiment": exp.to_dict(),
@@ -247,6 +432,15 @@ def make_handler(app: App):
                                         cand.risk_level, "strict_review")})
 
     return Handler
+
+
+def _candidate_summary(cand: Any) -> Dict[str, Any]:
+    return {"candidate_id": cand.candidate_id, "status": cand.status.value,
+            "risk_level": cand.risk_level, "target_component": cand.target_component,
+            "target_problem": cand.target_problem,
+            "publish_suggestion": cand.publish_suggestion,
+            "eval_dataset_id": cand.eval_dataset_id,
+            "created_at": cand.created_at}
 
 
 def _case_summary(case: Any) -> Dict[str, Any]:

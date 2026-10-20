@@ -1,20 +1,26 @@
 """系统装配：把所有子系统按 Architecture 组装成一个可运行实例。"""
 
 import os
+import secrets
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 from .config import Config
-from .core.budget import BudgetLimits
+from .core.audit import AuditLog
+from .core.budget import BudgetLedger, BudgetLimits
 from .core.checkpoint import CheckpointManager
 from .core.controller import RuntimeController
 from .core.events import EventBus
+from .core.metrics import MetricsAggregator
 from .core.persistence import Database
 from .core.permissions import (PermissionController, PermissionDecision,
                                 ToolPolicy)
 from .evolution.controller import EvolutionController
+from .evolution.datasets import builtin_datasets
 from .evolution.diagnostics import DiagnosisEngine
+from .evolution.evaluator import Evaluator, ReleaseGate
 from .evolution.probes import PROBES, ProbeRunner
+from .evolution.runner import ControllerTaskRunner
 from .experts.builtin import builtin_experts
 from .memory.context import ContextAssembler
 from .memory.store import MemoryStore
@@ -48,17 +54,26 @@ class App:
         self.db = Database(str(d / "evoagent.db"))
         self.bus = EventBus(str(d / "events.db"))
         self.memory = MemoryStore(str(d / "memory.db"))
-        self.releases = ReleaseManager()
-        self.release_manifest = self.releases.build_manifest(
-            version="v0.1.0", model_adapter_version=self.config.provider.name)
-        self.releases.current_release_id = self.release_manifest.release_id
+        self.ledger = BudgetLedger(self.db)
+        self.audit = AuditLog(self.db, self.bus)
+        secret = self._release_secret(d)
+        self.releases = ReleaseManager(signing_secret=secret, store=self.db,
+                                       artifact_dir=str(d / "artifacts"))
+        if not self.releases.manifests:
+            self.release_manifest = self.releases.build_manifest(
+                version="v0.1.0",
+                model_adapter_version=self.config.provider.name)
+            self.releases.current_release_id = self.release_manifest.release_id
+        else:
+            self.release_manifest = next(
+                iter(self.releases.manifests.values()))
 
         # 权限（高风险默认确认制；confirm_callback 由宿主在获得用户授权后注入）
         self.permissions = PermissionController(high_risk_mode=self.config.high_risk_mode,
                                                 confirm_callback=confirm_callback)
 
         # 工具
-        self.tools = ToolRegistry(self.permissions)
+        self.tools = ToolRegistry(self.permissions, store=self.db)
         self._register_tools()
 
         # 记忆与上下文
@@ -102,7 +117,10 @@ class App:
         self._register_workflows()
 
         # 进化与诊断：诊断只生成案例/假设，候选发布走进化门禁
-        self.evolution = EvolutionController(event_bus=self.bus)
+        self.datasets = builtin_datasets()
+        self.evolution = EvolutionController(
+            event_bus=self.bus, store=self.db, releases=self.releases,
+            datasets=self.datasets, gate=ReleaseGate())
         self.probes = ProbeRunner(self.tools, self.memory,
                                   self.config.diagnostics)
         self.diagnostics = DiagnosisEngine(
@@ -116,9 +134,32 @@ class App:
             self.memory, self.assembler,
             CheckpointManager(self.db), self.permissions, self.releases,
             wf_lookup=self._wf_lookup, diagnostics=self.diagnostics,
-            classifier=self.classifier)
+            classifier=self.classifier, ledger=self.ledger)
+
+        # 评测器依赖运行时执行入口；在控制器之后注入以打破循环依赖
+        self.evaluator = Evaluator(
+            ControllerTaskRunner(self.controller, ledger=self.ledger),
+            self.bus)
+        self.evolution.attach_evaluator(self.evaluator, self.datasets)
+        self.metrics = MetricsAggregator(
+            self.db, self.bus, self.ledger, self.releases,
+            self.evolution, self.tools)
 
     # ---- 装配细节 ----
+    def _release_secret(self, data_dir: Path) -> str:
+        if self.config.release_signing_secret:
+            return self.config.release_signing_secret
+        path = data_dir / "release_secret"
+        if path.exists():
+            return path.read_text(encoding="utf-8").strip()
+        secret = secrets.token_hex(32)
+        path.write_text(secret, encoding="utf-8")
+        try:
+            os.chmod(path, 0o600)
+        except OSError:
+            pass
+        return secret
+
     def _model(self):
         """默认使用真实模型（若配置），否则 Mock；可按意图再路由。"""
         return self._real_adapter
@@ -140,10 +181,13 @@ class App:
         return sorted(intents)
 
     def _register_tools(self) -> None:
-        from .tools.builtin import file_write_tool
+        from .tools.builtin import file_write_tool, git_read_tool
+        workdir = str(self.config.data_dir / "workspace")
         for factory in BUILTIN_FACTORIES.values():
             if factory is file_write_tool:
-                contract, runner = factory(workdir=str(self.config.data_dir / "workspace"))
+                contract, runner = factory(workdir=workdir)
+            elif factory is git_read_tool:
+                contract, runner = factory(workdir=str(Path.cwd()))
             else:
                 contract, runner = factory()
             self.tools.register(contract, runner)
@@ -153,7 +197,22 @@ class App:
             tool_id="file_write", decision=PermissionDecision.CONFIRM))
 
     def _register_workflows(self) -> None:
-        self._workflows["comic_drama_demo"] = comic_drama_workflow(theme="三只小猫的一天")
+        from .workflows.library import load_workflow, save_workflow
+        comic = comic_drama_workflow(theme="三只小猫的一天")
+        self._workflows[comic.workflow_id] = comic
+        if self.db.get_workflow_def(comic.workflow_id) is None:
+            save_workflow(self.db, comic)
+        # 从资产库载入其他已发布工作流（仅工具节点可序列化）
+        for row in self.db.list_workflow_defs():
+            wid = row["workflow_id"]
+            if wid in self._workflows:
+                continue
+            try:
+                wf = load_workflow(self.db, wid, row["version"])
+            except Exception:  # noqa: BLE001
+                continue
+            if wf is not None:
+                self._workflows[wid] = wf
 
     def _wf_lookup(self, wid: str):
         return self._workflows.get(wid)
@@ -174,6 +233,14 @@ class App:
             "tools_health": self.tools.health(),
             "experts": [e.expert_id for e in self.experts.all()],
             "workflows": list(self._workflows.keys()),
+            "datasets": sorted(self.datasets),
+            "candidates": len(self.evolution.all_candidates()),
+            "budget": {
+                "runtime_day": self.ledger.usage("runtime", "day"),
+                "evolution_day": self.ledger.usage("evolution", "day"),
+            },
+            "auth": "enabled" if (self.config.api_token
+                                  or self.config.api_admin_token) else "open",
             "diagnostics": {
                 "cases": len(self.db.list_diagnostic_cases(limit=1000)),
                 "probes": sorted(PROBES),

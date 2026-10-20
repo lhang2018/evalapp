@@ -29,6 +29,40 @@ export interface RunEvent {
   payload: Record<string, unknown>;
 }
 
+export interface MetricsSnapshot {
+  tasks: {
+    total: number;
+    by_status: Record<string, number>;
+    success_rate: number | null;
+    avg_latency_s: number | null;
+    model_calls: number;
+    tool_calls: number;
+    cost: number;
+    failure_by_intent: Record<string, number>;
+  };
+  diagnostics: { cases: number };
+  evolution: { candidates: Record<string, number>; datasets: string[] };
+  budget: Record<string, Record<string, number>>;
+  releases: {
+    current: string | null;
+    count: number;
+    deployments: number;
+    rollbacks: number;
+  };
+  tools_health: Record<string, unknown>;
+}
+
+export interface CandidateSummary {
+  candidate_id: string;
+  status: string;
+  risk_level: string;
+  target_component: string;
+  target_problem: string;
+  publish_suggestion?: string | null;
+  eval_dataset_id?: string | null;
+  created_at: number;
+}
+
 export class EvoAgentClient {
   private base: string;
 
@@ -94,6 +128,16 @@ export class EvoAgentClient {
 
   cancelTask(id: string) {
     return this.req<{ ok: boolean }>(`/tasks/${id}/cancel`, { method: "POST" });
+  }
+
+  metrics() {
+    return this.req<MetricsSnapshot>("/metrics");
+  }
+
+  candidates(limit = 10): Promise<CandidateSummary[]> {
+    return this.req<{ candidates: CandidateSummary[] }>(
+      `/evolution/candidates?limit=${limit}`,
+    ).then((r) => r.candidates);
   }
 }
 

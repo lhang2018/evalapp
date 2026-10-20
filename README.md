@@ -28,11 +28,20 @@ python -m evoagent.cli resume <task_id> --force
 # 诊断：失败任务 → 多假设案例 → 固定探针（无外部网络）
 python -m evoagent.cli diagnose <task_id> --probe tool_health
 python -m evoagent.cli diagnose            # 最近诊断案例
+# 工作流资产库 / 预算用量
+python -m evoagent.cli workflows
+python -m evoagent.cli budget
 ```
 
 诊断 REST 端点：`GET /diagnostics`、`GET /diagnostics/{case_id}`、
-`POST /diagnostics/scan`、`POST /diagnostics/{case_id}/experiments`、
+`GET /diagnostics/trends`、`POST /diagnostics/scan`、
+`POST /diagnostics/{case_id}/experiments`（可选 `fault: error|timeout|fail` 故障注入）、
 `POST /diagnostics/{case_id}/candidates`。诊断永不自动发布；候选仍走评测门禁。
+
+只读观测端点：`GET /metrics`（JSON，`?format=prometheus` 输出文本）、`GET /audit`、
+`GET /workflows`、`GET /memory/stats`、`GET /evolution/candidates`、`GET /admin`。
+设置 `EVOAGENT_API_TOKEN`（普通）或 `EVOAGENT_ADMIN_TOKEN`（管理）后，请求需带
+`Authorization: Bearer <token>`。
 
 ## 接入真实 LLM（OpenAI 兼容：OpenAI/DeepSeek/Moonshot/vLLM…）
 
@@ -99,8 +108,11 @@ Android 客户端 (RN/JS) ──REST──▶ ┌─ 稳定运行轨道 ──�
 
 完整矩阵见 IMPLEMENTATION.md。当前一轮：服务端核心全链路可运行 + 规则诊断/探针 + 真实模型
 Planning/意图分类 + 执行内核接线（计划驱动 ReAct/进度持久化、模型调用硬预算、路由接入运行路径、
-暂停/恢复）+ 离线队列/幂等同步 + 无障碍节点操作 + 测试通过（Python 92 项、客户端 27 项）。
-迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、向量检索、Web 管理端、隔离沙箱执行候选代码。
+暂停/恢复）+ 离线队列/幂等同步 + 无障碍节点操作；并完成控制面补强（API 鉴权/审计/指标、工具超时
+与重试安全规则/输出契约/幂等日志、工作流并行与跳过/节点超时/检查点续跑、预算报表、记忆关系与
+混合检索、质量优先路由评分、诊断趋势与探针故障注入、工作流资产库、只读 Git 适配器）。
+测试通过：Python 123 项、客户端 27 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
+嵌入向量检索、Web 管理端、隔离沙箱执行候选代码。
 
 ## 目录
 
@@ -109,16 +121,16 @@ evoagent/                  Python 服务端核心
   core/                    任务模型/状态机/控制器/预算/权限/检查点/事件/持久化
   planning/  react/        Planning 与 ReAct 引擎
   models/                  Mock + OpenAI 兼容适配器 + 路由 + 模型注册表
-  tools/                   工具契约/注册表/内置工具
-  memory/                  记忆存储与上下文装配
+  tools/                   工具契约/注册表/内置工具（含只读 Git）
+  memory/                  记忆存储（关系/混合检索）与上下文装配
   experts/                 专家注册表（首批 5 个专家）
-  workflows/               工作流 DAG 引擎 + 漫剧示例
+  workflows/               工作流 DAG 引擎 + 资产库 + 漫剧示例
   acceptance/              结果验收
   evolution/               评测集/门禁/候选生命周期/诊断案例与假设/固定探针
   release/                 发布清单/签名/回滚
   api/                     REST API（标准库实现）
   cli.py                   命令行
-tests/                     92 项服务端测试
+tests/                     123 项服务端测试
 android-app/               React Native Android 客户端
   src/offline/             本地任务/事件队列、隐私过滤、同步引擎（纯 TS，可单测）
   src/device/              设备操作契约/风险闸门/原生桥接（纯 TS，可单测）

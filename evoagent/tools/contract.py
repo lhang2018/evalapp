@@ -81,7 +81,8 @@ def validate_against_schema(value: Any, schema: Dict[str, Any]) -> Optional[str]
                 "integer": int, "boolean": bool, "null": type(None)}
     if t and not isinstance(value, type_map.get(t, object)):
         return f"类型不符: 期望 {t}, 实际 {type(value).__name__}"
-    if isinstance(value, dict) and schema.get("properties"):
+    if isinstance(value, dict) and (schema.get("properties")
+                                    or schema.get("required")):
         for req in schema.get("required", []):
             if req not in value:
                 return f"缺少必填字段: {req}"

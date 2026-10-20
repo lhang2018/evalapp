@@ -8,10 +8,12 @@
 """
 
 import json
+import math
 import sqlite3
 import threading
 import time
 import uuid
+import zlib
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -55,6 +57,8 @@ class MemoryItem:
     source_version: str = ""
     applicable_domains: List[str] = field(default_factory=list)
     evidence: Dict[str, Any] = field(default_factory=dict)
+    # 记忆间关系：{"relation": "supports|contradicts|refines|derived_from", "target": id}
+    relations: List[Dict[str, str]] = field(default_factory=list)
     superseded_by: Optional[str] = None
     revoked_reason: Optional[str] = None
     allowed: bool = True                # 访问权限（策略层可再收紧）
@@ -141,6 +145,7 @@ class MemoryStore:
         return {"source_version": item.source_version,
                 "applicable_domains": item.applicable_domains,
                 "evidence": item.evidence,
+                "relations": item.relations,
                 "superseded_by": item.superseded_by,
                 "revoked_reason": item.revoked_reason,
                 "valid_until": item.valid_until, "use_count": item.use_count}
@@ -169,18 +174,22 @@ class MemoryStore:
                         if any(d in m.applicable_domains for d in domains)
                         or m.kind == MemoryKind.USER_PREFERENCE]
             items = matching or [m for m in items if m.scope == Scope.SHARED]
-        # 5) 相关性（词重叠记分）+ 可信度加权排序
+        # 5) 相关性：词重叠（精确）+ 哈希向量余弦（近似语义召回）混合
         q_words = set(_words(query))
+        q_vec = _vector(query)
+        cred_boost = {Credibility.VERIFIED: 2.0, Credibility.RESTRICTED: 0.5,
+                      Credibility.CANDIDATE: 1.0, Credibility.PENDING_REVIEW: 0.8}
         scored = []
         for m in items:
             m_words = set(_words(m.content))
             overlap = len(q_words & m_words)
-            if overlap == 0:
+            cosine = _cosine(q_vec, _vector(m.content))
+            if overlap == 0 and cosine < 0.05:
                 continue
-            cred_boost = {Credibility.VERIFIED: 2.0, Credibility.RESTRICTED: 0.5,
-                          Credibility.CANDIDATE: 1.0, Credibility.PENDING_REVIEW: 0.8}
-            score = overlap * cred_boost.get(m.status, 1.0)
-            scored.append((score, m))
+            lexical = overlap / max(1, len(q_words))
+            relevance = 0.5 * lexical + 0.5 * cosine
+            score = relevance * cred_boost.get(m.status, 1.0)
+            scored.append((round(score, 6), m))
         scored.sort(key=lambda t: t[0], reverse=True)
         return [m for _, m in scored[:limit]]
 
@@ -202,12 +211,76 @@ class MemoryStore:
                 (new_id, time.time(), old_id))
             self._conn.commit()
 
+    def get(self, memory_id: str) -> Optional[MemoryItem]:
+        row = self._conn.execute(
+            "SELECT * FROM memory_items WHERE memory_id=?",
+            (memory_id,)).fetchone()
+        return self._row_to_item(row) if row else None
+
     def record_use(self, memory_id: str) -> None:
+        """使用记录（PRD 25 检索最后一步）：use_count 存于 extra JSON。"""
         with self._lock:
+            row = self._conn.execute(
+                "SELECT extra FROM memory_items WHERE memory_id=?",
+                (memory_id,)).fetchone()
+            if row is None:
+                return
+            try:
+                extra = json.loads(row["extra"] or "{}")
+            except Exception:  # noqa: BLE001
+                extra = {}
+            extra["use_count"] = int(extra.get("use_count", 0)) + 1
             self._conn.execute(
-                "UPDATE memory_items SET use_count=use_count+1 WHERE memory_id=?",
-                (memory_id,))
+                "UPDATE memory_items SET extra=?, updated_at=? WHERE memory_id=?",
+                (json.dumps(extra, ensure_ascii=False), time.time(), memory_id))
             self._conn.commit()
+
+    def link(self, memory_id: str, relation: str, target_id: str) -> None:
+        """建立记忆关系（supports/contradicts/refines/derived_from）。"""
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT extra FROM memory_items WHERE memory_id=?",
+                (memory_id,)).fetchone()
+            if row is None:
+                raise KeyError(memory_id)
+            try:
+                extra = json.loads(row["extra"] or "{}")
+            except Exception:  # noqa: BLE001
+                extra = {}
+            relations = list(extra.get("relations") or [])
+            entry = {"relation": relation, "target": target_id}
+            if entry not in relations:
+                relations.append(entry)
+            extra["relations"] = relations
+            self._conn.execute(
+                "UPDATE memory_items SET extra=?, updated_at=? WHERE memory_id=?",
+                (json.dumps(extra, ensure_ascii=False), time.time(), memory_id))
+            self._conn.commit()
+
+    def related(self, memory_id: str) -> List[MemoryItem]:
+        item = self.get(memory_id)
+        if item is None:
+            return []
+        out = []
+        for rel in item.relations:
+            target = self.get(rel.get("target", ""))
+            if target is not None:
+                out.append(target)
+        return out
+
+    def stats(self) -> Dict[str, Any]:
+        rows = self._conn.execute(
+            "SELECT kind, scope, status, COUNT(*) AS n FROM memory_items"
+            " GROUP BY kind, scope, status").fetchall()
+        out: Dict[str, Any] = {"total": 0, "by_kind": {}, "by_status": {},
+                               "by_scope": {}}
+        for r in rows:
+            n = int(r["n"])
+            out["total"] += n
+            for dim, val in (("by_kind", r["kind"]), ("by_status", r["status"]),
+                             ("by_scope", r["scope"])):
+                out[dim][val] = out[dim].get(val, 0) + n
+        return out
 
     def _row_to_item(self, r: sqlite3.Row) -> MemoryItem:
         extra = {}
@@ -225,6 +298,26 @@ class MemoryStore:
             if hasattr(item, k):
                 setattr(item, k, v)
         return item
+
+
+_VECTOR_DIM = 64
+
+
+def _vector(text: str) -> List[float]:
+    """零依赖哈希词向量：稳定哈希到固定维度并归一化。
+
+    不是语义嵌入，但能在词形不完全一致时提供近似召回；
+    后续可替换为真实 embedding，不影响检索排序接口。
+    """
+    vec = [0.0] * _VECTOR_DIM
+    for token in _words(text):
+        vec[zlib.crc32(token.encode("utf-8")) % _VECTOR_DIM] += 1.0
+    norm = math.sqrt(sum(x * x for x in vec))
+    return [x / norm for x in vec] if norm else vec
+
+
+def _cosine(a: List[float], b: List[float]) -> float:
+    return sum(x * y for x, y in zip(a, b))
 
 
 def _words(text: str) -> List[str]:

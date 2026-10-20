@@ -158,6 +158,75 @@ def file_write_tool(workdir: str = ".") -> ToolContract:
     ), run
 
 
+_GIT_ACTIONS = {"log", "show", "status", "diff", "blame", "branch",
+                "rev-parse"}
+_SAFE_REF = re.compile(r"^[A-Za-z0-9_./~^@{}-]+$")
+
+
+def git_read_tool(workdir: str = ".") -> ToolContract:
+    """只读 Git 适配器（Architecture 17）：固定子命令，禁止写操作与 shell。
+
+    参数经白名单与正则约束，避免选项注入；不访问网络。
+    """
+    import subprocess
+
+    def run(args: Dict) -> ToolResult:
+        action = str(args.get("action") or "")
+        if action not in _GIT_ACTIONS:
+            return ToolResult.error_result(
+                f"不支持的动作: {action}（只读: {', '.join(sorted(_GIT_ACTIONS))}）",
+                "auth_or_permission")
+        ref = str(args.get("ref") or "")
+        path = str(args.get("path") or "")
+        if ref and (ref.startswith("-") or not _SAFE_REF.match(ref)):
+            return ToolResult.error_result("非法 ref", "invalid_arguments")
+        if path and (".." in path or path.startswith(("-", "/", "\\"))):
+            return ToolResult.error_result("非法 path", "invalid_arguments")
+        try:
+            limit = max(1, min(200, int(args.get("limit") or 20)))
+        except (TypeError, ValueError):
+            limit = 20
+
+        cmd = ["git", "-C", str(workdir), action]
+        if action == "log":
+            cmd += ["--oneline", "-n", str(limit)]
+            if ref:
+                cmd.append(ref)
+        elif action == "status":
+            cmd.append("--short")
+        elif action in ("show", "blame"):
+            cmd.append(ref or "HEAD")
+        elif action == "rev-parse":
+            cmd.append(ref or "HEAD")
+        elif action == "diff" and ref:
+            cmd.append(ref)
+        if path and action in ("log", "diff", "blame", "show"):
+            cmd += ["--", path]
+
+        try:
+            proc = subprocess.run(cmd, capture_output=True, text=True,
+                                  timeout=10, check=False)
+        except (OSError, subprocess.SubprocessError) as e:
+            return ToolResult.error_result(str(e), class_error(e))
+        out = (proc.stdout or "")[:4000]
+        err = (proc.stderr or "").strip()[:500]
+        ok = proc.returncode == 0
+        return ToolResult(
+            ok=ok, data=out, error=None if ok else (err or "git failed"),
+            error_class=None if ok else "tool_defect_or_env",
+            submitted=True, executed=True, contract_valid=True,
+            goal_reached=ok, independently_verified=ok,
+            evidence={"action": action, "returncode": proc.returncode})
+    return ToolContract(
+        tool_id="git_read", description="只读 Git 查询（log/show/status/diff/blame/branch/rev-parse）",
+        input_schema={"type": "object", "required": ["action"],
+                      "properties": {"action": {"type": "string"}}},
+        output_schema={"type": "string"},
+        side_effect_level="none", idempotency_policy="none",
+        timeout_policy=12.0,
+    ), run
+
+
 BUILTIN_FACTORIES = {
     "current_time": current_time_tool,
     "calculate": calculate_tool,
@@ -165,4 +234,5 @@ BUILTIN_FACTORIES = {
     "fs_list": fs_list_tool,
     "file_read": file_read_tool,
     "file_write": file_write_tool,
+    "git_read": git_read_tool,
 }

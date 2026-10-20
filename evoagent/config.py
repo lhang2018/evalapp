@@ -26,6 +26,10 @@ class BudgetConfig:
     task_max_seconds: int = 300
     evolution_daily_cost: float = 5.00
     evolution_daily_model_calls: int = 200
+    # 运行时日预算池（PRD 55-58：单任务之外的整体预算）
+    runtime_daily_cost: float = 20.00
+    runtime_daily_model_calls: int = 2000
+    max_concurrent_tasks: int = 2
 
 
 @dataclass
@@ -52,9 +56,13 @@ class Config:
     # ReAct 防循环（PRD 12.3）
     react_max_iterations: int = 20
     react_max_repeat_failures: int = 3
-    # API 服务
+    # API 服务与安全控制面（PRD 83-88 / Arch 18）
     api_host: str = "127.0.0.1"
     api_port: int = 8300
+    api_token: Optional[str] = os.environ.get("EVOAGENT_API_TOKEN")
+    api_admin_token: Optional[str] = os.environ.get("EVOAGENT_ADMIN_TOKEN")
+    release_signing_secret: Optional[str] = os.environ.get(
+        "EVOAGENT_RELEASE_SECRET")
 
     @classmethod
     def load(cls, path: Optional[str] = None) -> "Config":

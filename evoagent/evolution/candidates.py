@@ -85,6 +85,18 @@ class EvolutionCandidate:
         self.status = target
         return self.status
 
+    def to_dict(self) -> Dict[str, Any]:
+        d = self.__dict__.copy()
+        d["status"] = self.status.value
+        return d
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "EvolutionCandidate":
+        d = dict(d)
+        d["status"] = CandidateStatus(d.get("status", "DETECTED"))
+        return cls(**{k: v for k, v in d.items()
+                      if k in cls.__dataclass_fields__})
+
     def benefit_report(self) -> Dict[str, Any]:
         """收益评价（PRD 50）：不只以成功率衡量。"""
         q = self.quality_result or {}
