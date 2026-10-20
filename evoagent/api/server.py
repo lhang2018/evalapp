@@ -418,6 +418,8 @@ def make_handler(app: App):
                                          "safety_backup":
                                              out.get("safety_backup")})
                 return self._json(200, out)
+            if path == "/evolution/sandbox/run":
+                return self._sandbox_run(body, auth.role)
             if path == "/diagnostics/scan":
                 return self._diagnostic_scan(body)
             if (len(parts) == 3 and parts[0] == "diagnostics"
@@ -638,6 +640,31 @@ def make_handler(app: App):
             except IllegalCandidateTransition as e:
                 return self._json(409, {"error": str(e)})
             return self._json(404, {"error": f"未知动作: {action}"})
+
+        # ---------- 候选隔离执行（Arch 18.3）----------
+        def _sandbox_run(self, body: Dict[str, Any], actor: str):
+            code = body.get("code")
+            path = body.get("path")
+            if not code and not path:
+                return self._json(400, {"error": "缺少 code 或 path"})
+            if code is not None and not isinstance(code, str):
+                return self._json(400, {"error": "code 必须是字符串"})
+            timeout = body.get("timeout", 5)
+            try:
+                if path:
+                    result = app.sandbox.run_file(str(path), timeout=timeout)
+                else:
+                    result = app.sandbox.run_code(code, timeout=timeout)
+            except FileNotFoundError as e:
+                return self._json(404, {"error": str(e)})
+            except (OSError, UnicodeDecodeError) as e:
+                return self._json(400, {"error": str(e)})
+            app.audit.record(actor, "evolution.sandbox_run",
+                             target=str(path or "inline"),
+                             detail={"status": result.status,
+                                     "exit_code": result.exit_code,
+                                     "violations": result.violations[:5]})
+            return self._json(200, result.to_dict())
 
         # ---------- 诊断辅助 ----------
         def _diagnostic_scan(self, body: Dict[str, Any]):

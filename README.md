@@ -29,6 +29,8 @@ python -m evoagent.cli resume <task_id> --force
 python -m evoagent.cli diagnose <task_id> --probe tool_health
 python -m evoagent.cli diagnose            # 最近诊断案例
 python -m evoagent.cli diagnose-assist <case_id>   # 模型辅助假设（需真实模型，仅 advisory）
+# 候选代码隔离执行（一次性目录；无网络/子进程/凭据；超时强杀）
+python -m evoagent.cli sandbox-run --code "print('hello')"
 # 工作流资产库 / 预算用量 / 成本报告
 python -m evoagent.cli workflows
 python -m evoagent.cli budget
@@ -133,6 +135,9 @@ Android 客户端 (RN/JS) ──REST──▶ ┌─ 稳定运行轨道 ──�
 - 高风险工具（写文件等有副作用）默认 `confirm`：无确认回调即拒绝；`deny` 模式全拒。
 - 硬预算由 `BudgetController` 程序化执行，模型无法绕过。
 - 更新/发布须通过评测门禁与签名验证；核心安全边界改动禁止普通发布流程。
+- 候选代码在独立子进程沙箱执行：只写一次性目录、网络/子进程/沙箱外读取被审计钩子阻断、
+  生产凭据不继承、超时强杀；`POST /evolution/sandbox/run` 仅 admin。
+  该环境用于降低风险，不宣称是对恶意代码的强安全边界（Arch 18.3）。
 
 ## 离线优先与设备操作（PRD 64–76）
 
@@ -177,7 +182,7 @@ Planning/意图分类（复用 Claude 全局配置，已实测）+ 执行内核�
 敏感负载脱敏、不重放副作用）、三库备份与恢复（sha256 + 完整性校验、自动安全备份，管理端可操作）、
 工具替代安全链（仅可重试失败且副作用未发生时切换，禁止副作用/权限升级）、成功任务工作流抽取
 （重复支持门槛、评测与参数绑定门禁、人工批准后发布并注册运行）。
-测试通过：Python 266 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
+测试通过：Python 282 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
 嵌入向量检索、Web 管理端完整编辑、隔离沙箱执行候选代码。
 
 ## 目录
@@ -192,13 +197,13 @@ evoagent/                  Python 服务端核心
   experts/                 专家注册表（首批 5 个专家）
   workflows/               工作流 DAG 引擎 + 资产库 + 成功任务抽取 + 漫剧示例
   acceptance/              结果验收
-  evolution/               评测集/门禁/候选生命周期/诊断案例与假设/固定探针/漂移检测
+  evolution/               评测集/门禁/候选生命周期/诊断案例与假设/固定探针/漂移检测/隔离沙箱
   release/                 发布清单/签名/回滚
   api/                     REST API（标准库实现）
   core/replay.py           只读运行回放
   core/backup.py           三库备份/校验/恢复
   cli.py                   命令行
-tests/                     266 项服务端测试
+tests/                     282 项服务端测试
 android-app/               React Native Android 客户端
   src/offline/             本地任务/事件队列、隐私过滤、同步引擎（纯 TS，可单测）
   src/device/              设备操作契约/风险闸门/原生桥接（纯 TS，可单测）

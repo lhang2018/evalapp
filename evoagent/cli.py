@@ -161,7 +161,29 @@ def cmd_diagnose_assist(case_id: str, limit: int) -> str:
               f"conf={h['confidence']} source={h['source']}: {h['statement']}")
     for s in out["skipped"]:
         print(f"  skipped: {s}")
-    return json.dumps(out, ensure_ascii=False, indent=1)
+    payload = json.dumps(out, ensure_ascii=False, indent=1)
+    print(payload)
+    return payload
+
+
+def cmd_sandbox_run(code: str, file: str, timeout: float) -> str:
+    app = _app()
+    try:
+        if file:
+            result = app.sandbox.run_file(file, timeout=timeout)
+        elif code:
+            result = app.sandbox.run_code(code, timeout=timeout)
+        else:
+            return _fail("需要 --code 或 --file")
+    except (FileNotFoundError, OSError, UnicodeDecodeError) as e:
+        return _fail(str(e))
+    print(f"沙箱结果: {result.status} exit={result.exit_code} "
+          f"{result.duration_s}s")
+    for v in result.violations:
+        print(f"  违规: {v}")
+    payload = json.dumps(result.to_dict(), ensure_ascii=False, indent=1)
+    print(payload)
+    return payload
 
 
 def cmd_pause(task_id: str) -> str:
@@ -580,6 +602,11 @@ def main() -> None:
     da.add_argument("case_id")
     da.add_argument("--limit", type=int, default=3,
                     help="最多生成条数（上限 5）")
+    sb = sub.add_parser("sandbox-run")
+    sb.add_argument("--code", default="", help="内联候选代码")
+    sb.add_argument("--file", default="", help="候选代码文件")
+    sb.add_argument("--timeout", type=float, default=5.0,
+                    help="超时秒数（上限 30）")
     v = sub.add_parser("serve")
     v.add_argument("--host", default="127.0.0.1")
     v.add_argument("--port", type=int, default=8300)
@@ -676,6 +703,8 @@ def main() -> None:
         cmd_diagnose(args.task_id, args.probe)
     elif args.cmd == "diagnose-assist":
         cmd_diagnose_assist(args.case_id, args.limit)
+    elif args.cmd == "sandbox-run":
+        cmd_sandbox_run(args.code, args.file, args.timeout)
     elif args.cmd == "candidates":
         cmd_candidates(args.candidate_id)
     elif args.cmd == "propose":

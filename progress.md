@@ -710,3 +710,37 @@
 - 模型输出不参与规则判定，也不改变案例诊断状态
 - 证据引用必须可回溯到快照；无法绑定证据的模型解释直接丢弃
 - 模型假设没有探针实验记录时禁止升级候选，防止把措辞当根因
+
+## Session 17 (2026-10-20)
+
+### 目标
+- 系统性盘点 PRD 覆盖差距，并补足「候选代码隔离执行」（PRD 47.4 / Arch 18.3）。
+
+### 盘点结论
+- `FEATURES.md` 功能矩阵：172 项 ✅、1 项部分、8 项待迭代（1 项明确不做）。
+- 服务端主链路 PRD 7-58、80-88、100-113 已闭环；剩余差距集中在客户端交互、
+  外部集成与发布自动化，不影响现有运行与安全边界。
+- 主要剩余项：Web 管理端完整界面、视觉/OCR/语音、后台常驻同步、
+  端到端加密与多设备冲突、发布自动分支/合并、真实嵌入向量、用户端中心页面、
+  任务模型全字段。详见 IMPLEMENTATION.md「PRD 覆盖率盘点」。
+
+### 完成事项
+- [x] `evolution/sandbox.py`
+  - 一次性临时目录 + 独立子进程；环境变量白名单，生产凭据不继承
+  - 审计钩子阻断：socket、subprocess/os.exec/os.spawn/os.fork、ctypes 动态库、
+    沙箱外写入/删除/重命名/链接、沙箱与运行时之外读取与目录枚举
+  - 超时强杀、输出截断；结果 `passed | failed | timeout | violation` + 违规明细
+- [x] API：`POST /evolution/sandbox/run`（admin-only，写审计；400/404 校验）
+- [x] CLI：`sandbox-run --code/--file --timeout`
+- [x] 差距盘点写入 IMPLEMENTATION.md；FEATURES/README/task_plan 同步
+
+### 测试结果
+- `python -m pytest tests/ -q` → 282 passed
+- 新增 `tests/test_sandbox.py` 16 项：正常执行、沙箱内外读写、网络/子进程阻断、
+  凭据不继承、超时、非零退出、输出截断、API 权限与 400/404
+- CLI 实测：`sandbox-run --code "print('hello')"` → passed / exit 0
+
+### 设计约束（本轮确立）
+- 沙箱定位为受控执行环境，不宣称对恶意代码是强安全边界；
+  解释器之外的行为不在审计钩子覆盖范围
+- 沙箱内候选不得继承生产凭据，也不提供坐标注入等绕过系统权限的能力

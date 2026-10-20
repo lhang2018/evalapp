@@ -181,7 +181,7 @@ Python 服务端（标准库，SQLite）
 | EV-08 | 发布门禁 ReleaseGate | ✅ | `evolution/evaluator.py` | 硬难度回归、约束违规、工具失败率、恢复成功率、跨领域回归、安全 fail-closed |
 | EV-09 | 评测报告持久化 | ✅ | `core/persistence.py` | `eval_reports` 含元数据 |
 | EV-10 | 候选实验预算 | ✅ | `evolution/controller.py`, `evolution/runner.py` | 双记账 `candidate:<id>` + `evolution`；耗尽记失败不中断批次 |
-| EV-11 | 候选代码隔离沙箱 | ⬜ | — | PRD 47.4 / L3 |
+| EV-11 | 候选代码隔离沙箱 | ✅ | `evolution/sandbox.py`, `api/server.py`, `cli.py` | 一次性目录 + 环境白名单；审计钩子阻断网络/子进程/动态库/沙箱外读写；超时强杀、输出截断；`POST /evolution/sandbox/run`（admin）、`sandbox-run` CLI；非恶意代码强安全边界，文档已注明 |
 | EV-12 | 发布后监测采集与判定 | ✅ | `evolution/monitor.py`, `evolution/controller.py` | 时间窗采样、上窗对比、评估任务剔除、安全事件即时回滚、warning hold、`auto_rollback` 可关 |
 
 ### 2.11 发布管理（PRD 59-63 / 80-82）
@@ -317,6 +317,7 @@ Python 服务端（标准库，SQLite）
 | `/models/migrations/{id}/rollback` | 回滚迁移（`reason`） |
 | `/diagnostics/{case_id}/experiments` | 运行探针实验（可选 `fault: error|timeout|fail`） |
 | `/diagnostics/{case_id}/hypotheses` | 模型辅助假设（advisory；无模型 `503`；证据未绑定/重复项进 `skipped`） |
+| `/evolution/sandbox/run` | 候选代码隔离执行（admin；`code` 或 `path`；返回 passed/failed/timeout/violation） |
 | `/diagnostics/{case_id}/candidates` | 假设升级候选 |
 | `/admin/backup` | 创建三库备份（admin，写审计，`201`） |
 | `/admin/restore` | 恢复指定备份（admin；未结束任务 `409`、缺失 `404`、非法名称 `400`；恢复前自动安全备份） |
@@ -336,6 +337,7 @@ Python 服务端（标准库，SQLite）
 | `pause <task_id>` / `resume <task_id> [--force]` | 暂停/恢复 |
 | `diagnose [task_id] [--probe ...]` | 诊断案例/探针 |
 | `diagnose-assist <case_id> [--limit N]` | 模型辅助假设（需真实模型；仅 advisory） |
+| `sandbox-run [--code ...] [--file ...] [--timeout N]` | 在隔离目录运行候选代码 |
 | `serve [--port N]` | 启动 REST API（默认 8300） |
 | `candidates` / `propose` / `evaluate` / `approve` / `deploy` / `monitor` | 进化候选操作 |
 | `workflows` | 工作流资产库 |
@@ -505,7 +507,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，266 项）
+### Python（`tests/`，282 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -526,6 +528,7 @@ Python 服务端（标准库，SQLite）
 | `test_workflow.py` | DAG 引擎 |
 | `test_diagnostics.py` | 案例/假设/探针/升级 |
 | `test_diagnostic_assist.py` | 模型辅助假设：证据绑定、置信度封顶、去重、无效 JSON/模型异常降级、探针验证后才可升级、REST 200/404/503（11 项） |
+| `test_sandbox.py` | 沙箱：正常执行、沙箱内外读写、网络/子进程阻断、凭据不继承、超时、非零退出、输出截断、API 权限与 400/404（16 项） |
 | `test_evolution.py` | 候选生命周期、评测、门禁 |
 | `test_evolution_benefit.py` | 十维收益、跨领域回归、发布后监测采集/判定/回滚（21 项） |
 | `test_governance.py` | 上下文治理、评测完整性、fail-closed 门禁（12 项） |
@@ -565,7 +568,7 @@ cd android-app && npm run test:offline
 |---|---|---|---|
 | 真实嵌入向量检索 | PRD 25 | ⬜ | 当前词法 + 哈希向量 |
 | LLM 辅助诊断假设 | PRD 41-45 / Arch 9.4 | ✅ | 模型输出仅作证据绑定的辅助解释；不改案例状态，探针验证前不可升级候选 |
-| 候选代码隔离沙箱 | PRD 47.4 / L3 | ⬜ | 评测执行器运行受控任务，不是任意代码沙箱 |
+| 候选代码隔离沙箱 | PRD 47.4 / L3 | ✅ | 独立子进程 + 审计钩子；非恶意代码强安全边界 |
 | 视觉/OCR/语音操作 | PRD 64/68 | ⬜ | 仅无障碍节点与显式 Intent |
 | 后台常驻同步 | PRD 72-76 | ⬜ | 前台 + 手动重试 |
 | 端到端加密、多设备冲突合并 | PRD 72-76/86 | ⬜ | |
@@ -652,6 +655,20 @@ cd android-app && npm run android
 ---
 
 ## 变更记录
+
+### 2026-10-20 — 候选代码隔离执行（Arch 18.3）
+
+- 需求：PRD 47.4 / Arch 18.3；迭代待办 #5「运行时沙箱」。
+- 变更：新增 `evolution/sandbox.py`。候选代码在一次性临时目录的独立子进程中运行：
+  审计钩子阻断网络（socket）、子进程/进程派生、动态库加载、沙箱外读写/目录枚举；
+  环境变量白名单（不继承 `EVOAGENT_*` 等凭据）；超时强杀、stdout/stderr 截断。
+  结果状态 `passed | failed | timeout | violation`，违规明细可审计。
+- 代码：`evolution/sandbox.py`、`app.py`、`api/server.py`（admin-only
+  `POST /evolution/sandbox/run`）、`api/auth.py`、`cli.py`（`sandbox-run`）。
+- 安全定位：受控执行环境，降低候选实验风险；不宣称对恶意代码是强安全边界
+  （Python 审计钩子无法覆盖解释器之外的行为），模块文档已注明。
+- 测试：新增 `tests/test_sandbox.py`（16 项）；Python 266 → 282。
+- 状态变化：EV-11 ✅；未实现清单移除「候选代码隔离沙箱」。
 
 ### 2026-10-20 — 模型辅助诊断假设（证据绑定 + 探针门禁）
 

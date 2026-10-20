@@ -11,6 +11,7 @@ from typing import Optional, Tuple
 
 HIGH_RISK_POST = (
     "/releases/rollback",
+    "/evolution/sandbox/run",
 )
 
 ADMIN_ONLY_ACTIONS = {"approve", "deploy", "monitor", "rollback"}

@@ -23,6 +23,7 @@ from .core.replay import ReplayService
 from .evolution.controller import EvolutionController
 from .evolution.datasets import builtin_datasets
 from .evolution.diagnostics import DiagnosisEngine
+from .evolution.sandbox import SandboxRunner
 from .evolution.drift import DriftDetector
 from .evolution.evaluator import Evaluator, ReleaseGate
 from .evolution.probes import PROBES, ProbeRunner
@@ -148,6 +149,8 @@ class App:
         self.diagnostics = DiagnosisEngine(
             self.db, self.bus, self.probes, self.config.diagnostics,
             self.evolution, model=self._model())
+        # 候选代码隔离执行（Arch 18.3）：一次性目录、无网络/子进程、凭据不继承
+        self.sandbox = SandboxRunner()
         # 环境漂移检测（PRD 44）：只读窗口分析，默认不制造事件
         self.drift = DriftDetector(self.bus, self.db)
         # 运行回放（Arch 20.3）：只读重建，不执行真实副作用
