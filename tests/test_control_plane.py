@@ -5,7 +5,10 @@
 """
 
 import json
+import os
+import re
 import shutil
+import subprocess
 import tempfile
 import threading
 import unittest
@@ -129,6 +132,36 @@ class TestControlPlaneServer(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn("text/plain", ctype)
         self.assertIn("evoagent_tasks_total", body)
+
+    def test_admin_page_covers_prd90_centers(self):
+        status, _, body = self._get("/admin")
+        self.assertEqual(status, 200)
+        for title in ("运行健康", "问题中心", "诊断详情", "候选实验中心",
+                      "版本中心", "成本中心", "审计与回滚", "隔离沙箱"):
+            self.assertIn(title, body)
+        # 服务端数据一律经 textContent / createElement 写入
+        self.assertIn("textContent", body)
+        self.assertNotIn("innerHTML", body)
+        self.assertNotIn("insertAdjacentHTML", body)
+
+    def test_admin_script_is_valid_javascript(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("node 不可用")
+        _, _, body = self._get("/admin")
+        match = re.search(r"<script>(.*)</script>", body, re.S)
+        self.assertIsNotNone(match)
+        path = os.path.join(tempfile.gettempdir(),
+                            "evoagent_admin_check.js")
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(match.group(1))
+            proc = subprocess.run([node, "--check", path],
+                                  capture_output=True, text=True)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+        finally:
+            if os.path.exists(path):
+                os.remove(path)
 
     def test_malformed_body_returns_400_and_server_stays_up(self):
         for payload in (b'{"goal":"\xcf\xb2\xb7\xa8"}', b"[1, 2]"):

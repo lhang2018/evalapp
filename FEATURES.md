@@ -232,9 +232,9 @@ Python 服务端（标准库，SQLite）
 | CP-02 | Bearer 鉴权（普通/管理双令牌） | ✅ | `api/auth.py` | `EVOAGENT_API_TOKEN` / `EVOAGENT_ADMIN_TOKEN` |
 | CP-03 | 审计日志 | ✅ | `core/audit.py` | 进化/发布变更写审计 |
 | CP-04 | 指标 | ✅ | `core/metrics.py` | JSON + Prometheus（`?format=prometheus`）；无样本指标输出 `NaN` 保持序列稳定 |
-| CP-05 | 管理页数据接口 | ✅ | `api/admin.py` | `GET /admin`（HTML）：只读观测 + 任务回放 + 备份/恢复面板 |
+| CP-05 | 管理页数据接口 | ✅ | `api/admin.py` | `GET /admin`（HTML）：运行健康/问题中心/诊断详情/候选实验/版本/成本/审计回滚/回放/备份/沙箱 |
 | CP-06 | 健康检查 | ✅ | `api/server.py`, `app.py` | 含专家、预算、诊断计数 |
-| CP-07 | Web 管理端完整界面 | ⬜ | — | 观测/回放/备份操作已可用；编辑与可视化浏览待迭代 |
+| CP-07 | Web 管理端完整界面 | ✅ | `api/admin.py` | PRD 90.1-90.7 分区：健康仪表盘与告警、问题中心与趋势/漂移、诊断详情（假设证据/不确定性/探针/模型辅助假设/升级候选）、候选实验动作（评测/批准/灰度发布/监测/回滚）、版本中心（发布/模型/迁移/工作流）、成本中心、审计与发布回滚；全部动态内容 `textContent` 渲染 |
 | CP-08 | 四层日志分层 | ✅ | `core/log_layers.py` | runtime_event / execution_trace / diagnostic_evidence / audit，独立保留期与读取角色 |
 | CP-09 | 执行轨迹 | ✅ | `core/log_layers.py` (`ExecutionTracer`) | 订阅事件总线，按任务连续 `step` 落盘；敏感事件只留脱敏标记 |
 | CP-10 | 诊断证据授权 | ✅ | `core/log_layers.py` (`EvidenceStore`) | 仅 `standard` + `authorized=True` 可导出；`secret` 拒绝入库 |
@@ -283,7 +283,7 @@ Python 服务端（标准库，SQLite）
 | `/logs/layers` | 四层日志策略、计数与当前角色可读性 |
 | `/logs/traces?task_id=&limit=` | 执行轨迹（需 execution_trace 权限） |
 | `/logs/evidence?task_id=&limit=` | 诊断证据（admin；返回 `exportable` 标记） |
-| `/admin` | 只读管理页（含回放与备份/恢复操作，admin 接口需管理令牌） |
+| `/admin` | 管理端单页（PRD 90.1-90.7 分区；含诊断操作、候选动作、版本/成本/审计、回放、备份恢复与沙箱；admin 接口需管理令牌） |
 | `/admin/backups` | 备份列表（admin） |
 
 ### POST
@@ -507,7 +507,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，282 项）
+### Python（`tests/`，284 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -539,7 +539,7 @@ Python 服务端（标准库，SQLite）
 | `test_observability.py` | 分层策略/脱敏、执行轨迹、证据导出授权、保留清理、扩展指标、告警、REST 访问控制（17 项） |
 | `test_replay.py` | 回放重建、敏感负载脱敏、不重放副作用、未知任务、API 200/404（6 项） |
 | `test_backup.py` | 打包/校验/篡改检测、恢复往返、安全备份、路径校验、API 409/404（7 项） |
-| `test_control_plane.py` | 鉴权、审计、指标、管理页（含回放/备份面板） |
+| `test_control_plane.py` | 鉴权、审计、指标、管理页（PRD 90.1-90.7 分区、无 `innerHTML`、脚本语法校验） |
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
 
@@ -572,7 +572,7 @@ cd android-app && npm run test:offline
 | 视觉/OCR/语音操作 | PRD 64/68 | ⬜ | 仅无障碍节点与显式 Intent |
 | 后台常驻同步 | PRD 72-76 | ⬜ | 前台 + 手动重试 |
 | 端到端加密、多设备冲突合并 | PRD 72-76/86 | ⬜ | |
-| Web 管理端完整界面 | PRD 90 | ⬜ | 观测/回放/备份操作已可用，编辑与可视化待迭代 |
+| Web 管理端完整界面 | PRD 90 | ✅ | 90.1-90.7 分区已实现；不含富文本编辑/图表库，以表格与 JSON 展示为主 |
 | 发布自动分支/合并 | PRD 59-63 | ⬜ | 仅 git 基线 |
 | 任务模型全字段 | PRD 7.3 | 🔹 | 核心子集已实现 |
 
@@ -582,7 +582,7 @@ cd android-app && npm run test:offline
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 255 passed
+python -m pytest tests/ -q                       # 284 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -704,6 +704,21 @@ cd android-app && npm run android
 - 状态变化：新增 MD-10 ✅；迭代待办「真实 LLM 联调」完成。
 - 已知限制：仅复用 Claude 配置中的 OpenAI 兼容端点；不解析 `apiKeyHelper` 或其他凭据来源。
 
+### 2026-10-20 — Web 管理端 PRD 90.1-90.7 完整界面
+
+- 需求：PRD 90.1-90.7（健康仪表盘、问题中心、诊断详情、候选实验中心、版本中心、成本中心、审计与回滚中心）。
+- 变更：管理端从单页只读面板扩展为十个分区（另含任务回放、备份恢复、隔离沙箱）：
+  健康/预算/告警/工具状态；问题中心（失败任务扫描、诊断趋势、环境漂移）；
+  诊断详情（证据快照、假设的支持/反对证据与不确定性、运行探针与故障注入、模型辅助假设、升级候选）；
+  候选实验中心（评测/批准/灰度发布/监测/回滚）；版本中心（发布清单、模型、迁移执行链、工作流与抽取候选）；
+  成本中心（总计/按任务/领域/模型/版本/进化实验）；审计与发布回滚中心（审计日志、日志分层、回滚）。
+- 代码：`api/admin.py`（分区导航、动作按钮、确认对话框、错误展示）。
+- 接口：复用既有 GET/POST 端点，无新增服务端接口。
+- 安全：动态内容只用 `textContent` / `createElement`，不使用 `innerHTML`；高风险动作二次确认，服务端鉴权仍是最终闸门。
+- 测试：`tests/test_control_plane.py` 新增 2 项（分区与安全渲染断言、Node `--check` 脚本语法）；Python 总数 282 → 284。
+- 状态变化：CP-05 扩展；CP-07 ⬜ → ✅；未实现清单移除「Web 管理端完整界面」。
+- 已知限制：无图表库，指标/报告以表格与 JSON 展示；未实现可视化编辑器与拖拽式工作流编排。
+
 ### 2026-10-20 — 工具替代安全链 + 成功任务工作流抽取
 
 - 需求：Arch 6.4（工具替代）、Arch 16.2 / PRD 13.4（从成功任务到稳定工作流）。
@@ -755,7 +770,9 @@ cd android-app && npm run android
 | Session 13 | 运行回放 + 三库备份恢复 + 管理端面板 | 225 + 29 |
 | Session 14 | 工具替代安全链 + 成功任务工作流抽取 | 246 + 29 |
 | Session 15 | 真实模型复用 Claude 全局配置 + 分类/领域修正 | 255 + 29 |
-| Session 13 | 任务运行回放 + 备份与恢复 + 管理端操作面板 | 225 + 29 |
+| Session 16 | LLM 辅助诊断假设（证据绑定 + 探针门禁） | 266 + 29 |
+| Session 17 | PRD 差距盘点 + 候选代码隔离执行 | 282 + 29 |
+| Session 18 | Web 管理端 PRD 90.1-90.7 完整界面 | 284 + 29 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 

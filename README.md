@@ -78,7 +78,9 @@ python -m evoagent.cli workflow-publish <candidate_id> --args '{"step_1":{"expre
 时发布返回 `409`）。
 
 只读观测端点：`GET /metrics`（JSON，`?format=prometheus` 输出文本）、`GET /audit`、
-`GET /workflows`、`GET /memory/stats`、`GET /evolution/candidates`、`GET /admin`。
+`GET /workflows`、`GET /memory/stats`、`GET /evolution/candidates`。
+管理端：`GET /admin`（PRD 90.1-90.7 分区：运行健康、问题中心、诊断详情、候选实验、版本、
+成本、审计与回滚，另含任务回放、备份恢复与隔离沙箱）。
 设置 `EVOAGENT_API_TOKEN`（普通）或 `EVOAGENT_ADMIN_TOKEN`（管理）后，请求需带
 `Authorization: Bearer <token>`。
 
@@ -181,9 +183,10 @@ Planning/意图分类（复用 Claude 全局配置，已实测）+ 执行内核�
 环境漂移检测（工具/契约/模型/任务分布/版本变更，含处置建议与告警）、任务运行回放（只读、
 敏感负载脱敏、不重放副作用）、三库备份与恢复（sha256 + 完整性校验、自动安全备份，管理端可操作）、
 工具替代安全链（仅可重试失败且副作用未发生时切换，禁止副作用/权限升级）、成功任务工作流抽取
-（重复支持门槛、评测与参数绑定门禁、人工批准后发布并注册运行）。
-测试通过：Python 282 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
-嵌入向量检索、Web 管理端完整编辑、隔离沙箱执行候选代码。
+（重复支持门槛、评测与参数绑定门禁、人工批准后发布并注册运行）、候选代码隔离执行与
+Web 管理端 90.1-90.7 分区（健康/问题中心/诊断详情/候选实验/版本/成本/审计回滚，含回放、备份恢复与沙箱）。
+测试通过：Python 284 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
+嵌入向量检索。
 
 ## 目录
 
@@ -203,7 +206,7 @@ evoagent/                  Python 服务端核心
   core/replay.py           只读运行回放
   core/backup.py           三库备份/校验/恢复
   cli.py                   命令行
-tests/                     282 项服务端测试
+tests/                     284 项服务端测试
 android-app/               React Native Android 客户端
   src/offline/             本地任务/事件队列、隐私过滤、同步引擎（纯 TS，可单测）
   src/device/              设备操作契约/风险闸门/原生桥接（纯 TS，可单测）
