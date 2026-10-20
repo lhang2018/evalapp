@@ -25,7 +25,17 @@ import {
 } from "react-native";
 
 import { api } from "./src/api.ts";
-import type { CandidateSummary, MetricsSnapshot } from "./src/api.ts";
+import type {
+  CandidateSummary,
+  MemoryEntry,
+  MetricsSnapshot,
+  ModelsInfo,
+  ReleaseVerify,
+  ReleasesInfo,
+  VersionInfo,
+  WorkflowCenterDetail,
+  WorkflowSummary,
+} from "./src/api.ts";
 import { asyncStorageStore } from "./src/storage/asyncStorage.ts";
 import { OfflineRepository } from "./src/offline/storage.ts";
 import { EventQueue } from "./src/offline/queue.ts";
@@ -46,6 +56,25 @@ import type {
 const POLL_MS = 5000;
 const DEFAULT_BASE_URL = "http://10.0.2.2:8300";
 const BASE_URL_KEY = "evoagent_base_url";
+
+type Section =
+  | "tasks"
+  | "offline"
+  | "workflows"
+  | "memory"
+  | "settings"
+  | "permissions"
+  | "updates";
+
+const SECTIONS: { key: Section; label: string }[] = [
+  { key: "tasks", label: "任务" },
+  { key: "offline", label: "离线状态" },
+  { key: "workflows", label: "工作流" },
+  { key: "memory", label: "记忆" },
+  { key: "settings", label: "预算与模型" },
+  { key: "permissions", label: "权限" },
+  { key: "updates", label: "更新" },
+];
 
 function guessIntent(text: string): string {
   if (/(几点|时间|日期|今天|现在)/.test(text)) return "time_query";
@@ -87,6 +116,20 @@ export default function App(): React.JSX.Element {
     metrics: MetricsSnapshot;
     candidates: CandidateSummary[];
   } | null>(null);
+  const [section, setSection] = useState<Section>("tasks");
+  const [workflows, setWorkflows] = useState<WorkflowSummary[]>([]);
+  const [workflowDetail, setWorkflowDetail] =
+    useState<WorkflowCenterDetail | null>(null);
+  const [memories, setMemories] = useState<MemoryEntry[]>([]);
+  const [memoryDrafts, setMemoryDrafts] = useState<Record<string, string>>({});
+  const [models, setModels] = useState<ModelsInfo | null>(null);
+  const [releases, setReleases] = useState<ReleasesInfo | null>(null);
+  const [releaseVerify, setReleaseVerify] = useState<
+    Record<string, ReleaseVerify>
+  >({});
+  const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
+  const [centerBusy, setCenterBusy] = useState(false);
+  const [centerError, setCenterError] = useState<string | null>(null);
 
   // 服务器地址：模拟器默认 10.0.2.2；真机可填局域网 IP（或 adb reverse 后用 127.0.0.1）
   const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL);
@@ -129,6 +172,129 @@ export default function App(): React.JSX.Element {
       // 忽略：下次在线同步再刷新
     }
   }, [services]);
+
+  // 用户端中心数据（PRD 89.3-89.8）：仅在线时加载，失败不阻断任务队列
+  const loadCenter = useCallback(
+    async (name: Section) => {
+      if (!online) return;
+      if (
+        name !== "workflows" &&
+        name !== "memory" &&
+        name !== "settings" &&
+        name !== "updates"
+      ) {
+        return;
+      }
+      setCenterBusy(true);
+      try {
+        if (name === "workflows") {
+          setWorkflows(await services.client.workflows());
+          setWorkflowDetail(null);
+        } else if (name === "memory") {
+          setMemories(await services.client.memory());
+        } else if (name === "settings") {
+          const [modelsInfo, releasesInfo] = await Promise.all([
+            services.client.modelsInfo(),
+            services.client.releases(),
+          ]);
+          setModels(modelsInfo);
+          setReleases(releasesInfo);
+        } else if (name === "updates") {
+          const [version, releasesInfo] = await Promise.all([
+            services.client.version(),
+            services.client.releases(),
+          ]);
+          setVersionInfo(version);
+          setReleases(releasesInfo);
+          const checks = await Promise.all(
+            releasesInfo.manifests.slice(0, 5).map(async (manifest) => {
+              try {
+                const detail = await services.client.releaseVerify(
+                  manifest.release_id
+                );
+                return [manifest.release_id, detail.verify] as const;
+              } catch {
+                return [manifest.release_id, { ok: false }] as const;
+              }
+            })
+          );
+          setReleaseVerify(Object.fromEntries(checks));
+        }
+        setCenterError(null);
+      } catch (e: unknown) {
+        setCenterError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setCenterBusy(false);
+      }
+    },
+    [online, services]
+  );
+
+  useEffect(() => {
+    void loadCenter(section);
+  }, [section, loadCenter]);
+
+  const openWorkflow = useCallback(
+    async (workflowId: string) => {
+      try {
+        setWorkflowDetail(await services.client.workflow(workflowId));
+        setCenterError(null);
+      } catch (e: unknown) {
+        setCenterError(e instanceof Error ? e.message : String(e));
+      }
+    },
+    [services]
+  );
+
+  const reloadMemory = useCallback(async () => {
+    setMemories(await services.client.memory());
+  }, [services]);
+
+  const correctMemory = useCallback(
+    async (item: MemoryEntry) => {
+      const content = (memoryDrafts[item.memory_id] ?? item.content).trim();
+      if (!content) return;
+      try {
+        await services.client.correctMemory(
+          item.memory_id,
+          content,
+          "客户端纠正"
+        );
+        setMemoryDrafts((prev) => {
+          const next = { ...prev };
+          delete next[item.memory_id];
+          return next;
+        });
+        await reloadMemory();
+        setCenterError(null);
+      } catch (e: unknown) {
+        setCenterError(e instanceof Error ? e.message : String(e));
+      }
+    },
+    [memoryDrafts, reloadMemory, services]
+  );
+
+  const removeMemory = useCallback(
+    (item: MemoryEntry) => {
+      Alert.alert("删除记忆", item.content, [
+        { text: "取消", style: "cancel" },
+        {
+          text: "删除",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await services.client.deleteMemory(item.memory_id);
+              await reloadMemory();
+              setCenterError(null);
+            } catch (e: unknown) {
+              setCenterError(e instanceof Error ? e.message : String(e));
+            }
+          },
+        },
+      ]);
+    },
+    [reloadMemory, services]
+  );
 
   const flush = useCallback(
     async (force: boolean = false) => {
@@ -324,6 +490,54 @@ export default function App(): React.JSX.Element {
           )}
           {error && <Text style={s.error}>{error}</Text>}
 
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={s.nav}>
+              {SECTIONS.map((item) => (
+                <View
+                  key={item.key}
+                  style={[
+                    s.navItem,
+                    section === item.key ? s.navActive : null,
+                  ]}>
+                  <Button
+                    title={item.label}
+                    onPress={() => setSection(item.key)}
+                  />
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+
+          {section === "offline" && (
+            <>
+              <Text style={s.section}>离线状态</Text>
+              <View style={s.card}>
+                <Text style={s.goal}>
+                  {online
+                    ? "在线：可同步事件并提交服务器任务"
+                    : "离线：任务保存在本机，联网后自动同步"}
+                </Text>
+                <Text style={s.hint}>
+                  可用能力：本地任务录入、离线 time_query、设备无障碍操作；
+                  受限能力：工作流/记忆/模型设置/更新需要连接服务端。
+                </Text>
+                {stats && (
+                  <Text style={s.hint}>
+                    待同步事件 {stats.pending} · 仅本地任务 {stats.localOnly} ·
+                    死信 {stats.dead}
+                  </Text>
+                )}
+                <Button
+                  title={syncing ? "同步中…" : "立即同步"}
+                  onPress={() => flush(true)}
+                  disabled={syncing || !online}
+                />
+              </View>
+            </>
+          )}
+
+          {section === "tasks" && (
+            <>
           {online && system && (
             <>
               <Text style={s.section}>系统状态（只读）</Text>
@@ -432,6 +646,25 @@ export default function App(): React.JSX.Element {
             </>
           )}
 
+            </>
+          )}
+
+          {section === "permissions" && (
+            <>
+          <Text style={s.section}>权限管理</Text>
+          <View style={s.card}>
+            <Text style={s.goal}>
+              无障碍服务：
+              {deviceAvailable ? "已授权" : "未授权"}
+            </Text>
+            <Text style={s.hint}>
+              仅使用节点级操作（读取界面文本、按文本点击、显式 Intent），
+              不注入坐标，不绕过系统权限。
+            </Text>
+            <Text style={s.hint}>麦克风：未申请（语音入口待迭代）</Text>
+            <Text style={s.hint}>文件/通知：当前版本未使用</Text>
+            <Button title="打开应用权限设置" onPress={() => void Linking.openSettings()} />
+          </View>
           <Text style={s.section}>无障碍设备操作</Text>
           <Text style={s.hint}>
             {deviceAvailable
@@ -486,6 +719,241 @@ export default function App(): React.JSX.Element {
               {entry.kind} · {entry.state} · {entry.risk}
             </Text>
           ))}
+            </>
+          )}
+
+          {section === "workflows" && (
+            <>
+              <Text style={s.section}>工作流中心</Text>
+              {!online && (
+                <Text style={s.hint}>离线：工作流列表需要连接服务端</Text>
+              )}
+              {centerError && <Text style={s.error}>{centerError}</Text>}
+              {centerBusy && <ActivityIndicator />}
+              {online && !centerBusy && workflows.length === 0 && (
+                <Text style={s.hint}>暂无已发布工作流</Text>
+              )}
+              {workflows.map((wf) => (
+                <View key={`${wf.workflow_id}:${wf.version}`} style={s.card}>
+                  <View style={s.row}>
+                    <Text style={s.status}>{wf.workflow_id}</Text>
+                    <View style={s.action}>
+                      <Button
+                        title="详情"
+                        onPress={() => void openWorkflow(wf.workflow_id)}
+                      />
+                    </View>
+                  </View>
+                  <Text style={s.hint}>
+                    版本 {wf.version} · {wf.status}
+                  </Text>
+                  <Text style={s.mono}>更新 {formatTime(wf.updated_at)}</Text>
+                </View>
+              ))}
+              {workflowDetail && (
+                <View style={s.card}>
+                  <Text style={s.goal}>
+                    运行历史（{workflowDetail.runs.length}）
+                  </Text>
+                  {workflowDetail.versions.map((v) => (
+                    <Text key={v.version} style={s.mono}>
+                      版本 {v.version} · {v.status}
+                    </Text>
+                  ))}
+                  {workflowDetail.runs.length === 0 && (
+                    <Text style={s.hint}>暂无运行记录</Text>
+                  )}
+                  {workflowDetail.runs.map((run) => (
+                    <View key={run.task_id} style={s.run}>
+                      <Text style={s.goal}>{run.user_goal}</Text>
+                      <Text style={s.hint}>
+                        {run.status} · 版本 {run.workflow_version ?? "-"}
+                      </Text>
+                      <Text style={s.mono}>
+                        完成节点 {run.completed_nodes.join(", ") || "-"}
+                      </Text>
+                      {Object.keys(run.artifacts).length > 0 && (
+                        <Text style={s.mono}>
+                          产物 {Object.keys(run.artifacts).join(", ")}
+                        </Text>
+                      )}
+                      {run.result ? (
+                        <Text style={s.result}>结果: {run.result}</Text>
+                      ) : null}
+                      {run.failure_reason ? (
+                        <Text style={s.fail}>{run.failure_reason}</Text>
+                      ) : null}
+                    </View>
+                  ))}
+                </View>
+              )}
+            </>
+          )}
+
+          {section === "memory" && (
+            <>
+              <Text style={s.section}>记忆中心</Text>
+              {!online && (
+                <Text style={s.hint}>离线：记忆列表需要连接服务端</Text>
+              )}
+              {centerError && <Text style={s.error}>{centerError}</Text>}
+              {centerBusy && <ActivityIndicator />}
+              {online && !centerBusy && memories.length === 0 && (
+                <Text style={s.hint}>暂无符合权限范围的记忆</Text>
+              )}
+              {memories.map((item) => (
+                <View key={item.memory_id} style={s.card}>
+                  <Text style={s.goal}>{item.content}</Text>
+                  <Text style={s.hint}>
+                    {item.kind} · {item.scope} · {item.status} · 来源{" "}
+                    {item.source}
+                  </Text>
+                  <Text style={s.mono}>
+                    ID {item.memory_id} · 使用 {item.use_count} 次
+                  </Text>
+                  <TextInput
+                    style={[s.input, s.multiline]}
+                    value={memoryDrafts[item.memory_id] ?? item.content}
+                    onChangeText={(text) =>
+                      setMemoryDrafts((prev) => ({
+                        ...prev,
+                        [item.memory_id]: text,
+                      }))
+                    }
+                    multiline
+                  />
+                  <View style={s.row}>
+                    <View style={s.action}>
+                      <Button
+                        title="纠正"
+                        onPress={() => void correctMemory(item)}
+                      />
+                    </View>
+                    <View style={s.action}>
+                      <Button
+                        title="删除"
+                        color="#cf222e"
+                        onPress={() => removeMemory(item)}
+                      />
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </>
+          )}
+
+          {section === "settings" && (
+            <>
+              <Text style={s.section}>预算与模型设置</Text>
+              {!online && (
+                <Text style={s.hint}>离线：预算与模型信息需要连接服务端</Text>
+              )}
+              {centerError && <Text style={s.error}>{centerError}</Text>}
+              {centerBusy && <ActivityIndicator />}
+              {system && (
+                <View style={s.card}>
+                  <Text style={s.goal}>
+                    运行预算 {budgetLine(system.metrics.budget.runtime_day)}
+                  </Text>
+                  <Text style={s.hint}>
+                    进化预算{" "}
+                    {budgetLine(system.metrics.budget.evolution_day)}
+                  </Text>
+                  <Text style={s.hint}>
+                    累计模型调用 {system.metrics.tasks.model_calls} 次 · 成本{" "}
+                    {system.metrics.tasks.cost.toFixed(4)}
+                  </Text>
+                </View>
+              )}
+              {models && (
+                <View style={s.card}>
+                  <Text style={s.goal}>
+                    默认模型 {models.default_model_id || "未配置"}
+                  </Text>
+                  <Text style={s.hint}>
+                    路由条目 {Object.keys(models.routes).length}
+                  </Text>
+                  {models.models.map((model) => (
+                    <View key={model.model_id} style={s.run}>
+                      <Text style={s.hint}>
+                        {model.model_id} · {model.provider} ·{" "}
+                        {model.available ? "可用" : "不可用"}
+                      </Text>
+                      <Text style={s.mono}>
+                        上下文 {model.context_limit} · 质量{" "}
+                        {model.quality_score.toFixed(2)} · 延迟{" "}
+                        {model.avg_latency_s.toFixed(2)}s · 兼容测试{" "}
+                        {model.compat_tested ? "是" : "否"}
+                      </Text>
+                      <Text style={s.mono}>
+                        价格 输入 {model.price_per_1k_input}/1k · 输出{" "}
+                        {model.price_per_1k_output}/1k
+                      </Text>
+                    </View>
+                  ))}
+                  <Text style={s.hint}>
+                    模型选择由服务端路由策略决定，客户端只读展示。
+                  </Text>
+                </View>
+              )}
+            </>
+          )}
+
+          {section === "updates" && (
+            <>
+              <Text style={s.section}>更新管理</Text>
+              {!online && (
+                <Text style={s.hint}>离线：更新信息需要连接服务端</Text>
+              )}
+              {centerError && <Text style={s.error}>{centerError}</Text>}
+              {centerBusy && <ActivityIndicator />}
+              {versionInfo && (
+                <View style={s.card}>
+                  <Text style={s.goal}>
+                    当前版本 {versionInfo.version}
+                  </Text>
+                  <Text style={s.hint}>
+                    发布 {versionInfo.release_id} · 代码{" "}
+                    {versionInfo.code_commit}
+                  </Text>
+                  <Text style={s.hint}>
+                    模型适配器 {versionInfo.model_adapter_version} · 工作流{" "}
+                    {versionInfo.workflow_versions.join(", ") || "-"}
+                  </Text>
+                  <Text style={s.mono}>
+                    创建 {formatTime(versionInfo.created_at)}
+                  </Text>
+                </View>
+              )}
+              {releases?.manifests.map((manifest) => {
+                const check = releaseVerify[manifest.release_id];
+                return (
+                  <View key={manifest.release_id} style={s.card}>
+                    <Text style={s.goal}>
+                      {manifest.version}
+                      {releases.current === manifest.release_id
+                        ? "（当前）"
+                        : ""}
+                    </Text>
+                    <Text style={s.hint}>
+                      兼容性检查{" "}
+                      {check ? (check.ok ? "通过" : "未通过") : "未检查"}
+                    </Text>
+                    <Text style={s.mono}>
+                      回滚目标 {manifest.rollback_target ?? "-"} ·{" "}
+                      {formatTime(manifest.created_at)}
+                    </Text>
+                  </View>
+                );
+              })}
+              {releases && (
+                <Text style={s.hint}>
+                  部署 {releases.deployments.length} 次 · 回滚{" "}
+                  {releases.rollbacks.length} 次；发布说明由管理端维护。
+                </Text>
+              )}
+            </>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -503,6 +971,16 @@ function formatSeconds(seconds: number | null): string {
 function budgetLine(usage?: Record<string, number>): string {
   if (!usage) return "-";
   return `调用 ${usage.model_calls ?? 0}/成本 ${(usage.cost ?? 0).toFixed(3)}`;
+}
+
+function formatTime(seconds: number): string {
+  if (!seconds) return "-";
+  const d = new Date(seconds * 1000);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return (
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ` +
+    `${pad(d.getHours())}:${pad(d.getMinutes())}`
+  );
 }
 
 function statusColor(status: string) {
@@ -573,5 +1051,21 @@ const s = StyleSheet.create({
   result: { marginTop: 4, color: "#1a7f37" },
   fail: { marginTop: 4, color: "#cf222e" },
   mono: { marginTop: 4, fontSize: 11, color: "#57606a" },
+  nav: { flexDirection: "row", gap: 8, marginBottom: 8 },
+  navItem: {
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#d0d7de",
+    backgroundColor: "#fff",
+    paddingHorizontal: 4,
+  },
+  navActive: { backgroundColor: "#ddf4ff", borderColor: "#0969da" },
+  run: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#eaeef2",
+  },
+  multiline: { height: 72, marginTop: 8, textAlignVertical: "top" },
   gap: { height: 8 },
 });

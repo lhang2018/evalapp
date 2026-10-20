@@ -78,6 +78,20 @@ class MemoryItem:
         d["status"] = self.status.value
         return d
 
+    def to_public_dict(self) -> Dict[str, Any]:
+        """用户端展示字段：不含证据快照与内部关系（PRD 89.4）。"""
+        return {
+            "memory_id": self.memory_id, "kind": self.kind.value,
+            "scope": self.scope.value, "scope_key": self.scope_key,
+            "status": self.status.value, "content": self.content,
+            "source": self.source,
+            "applicable_domains": list(self.applicable_domains),
+            "superseded_by": self.superseded_by,
+            "valid_until": self.valid_until,
+            "created_at": self.created_at, "updated_at": self.updated_at,
+            "use_count": self.use_count,
+        }
+
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "MemoryItem":
         d = dict(d)
@@ -216,6 +230,58 @@ class MemoryStore:
             "SELECT * FROM memory_items WHERE memory_id=?",
             (memory_id,)).fetchone()
         return self._row_to_item(row) if row else None
+
+    # ---- 用户端管理（PRD 89.4：查看 / 纠正 / 删除）----
+    def list_items(self, *, kind: Optional[MemoryKind] = None,
+                   scope: Optional[Scope] = None,
+                   status: Optional[Credibility] = None,
+                   allowed_only: bool = True,
+                   limit: int = 200) -> List[MemoryItem]:
+        rows = self._conn.execute(
+            "SELECT * FROM memory_items ORDER BY created_at DESC").fetchall()
+        items = [self._row_to_item(r) for r in rows]
+        if allowed_only:
+            items = [m for m in items if m.allowed]
+        if kind is not None:
+            items = [m for m in items if m.kind == kind]
+        if scope is not None:
+            items = [m for m in items if m.scope == scope]
+        if status is not None:
+            items = [m for m in items if m.status == status]
+        else:
+            items = [m for m in items if m.status != Credibility.REVOKED]
+        return items[:limit]
+
+    def correct(self, memory_id: str, content: str, *,
+                reason: str = "") -> Optional[MemoryItem]:
+        """用户纠正记忆内容：来源改为 user，状态置 verified（PRD 89.4）。"""
+        item = self.get(memory_id)
+        if item is None:
+            return None
+        item.content = content
+        item.source = "user"
+        item.status = Credibility.VERIFIED
+        item.updated_at = time.time()
+        item.evidence = dict(item.evidence or {})
+        item.evidence["user_correction"] = {"reason": reason,
+                                            "at": item.updated_at}
+        with self._lock:
+            self._conn.execute(
+                "UPDATE memory_items SET content=?, source=?, status=?,"
+                " updated_at=?, extra=? WHERE memory_id=?",
+                (item.content, item.source, item.status.value,
+                 item.updated_at,
+                 json.dumps(self._extra(item), ensure_ascii=False),
+                 memory_id))
+            self._conn.commit()
+        return item
+
+    def delete(self, memory_id: str) -> bool:
+        with self._lock:
+            cur = self._conn.execute(
+                "DELETE FROM memory_items WHERE memory_id=?", (memory_id,))
+            self._conn.commit()
+            return cur.rowcount > 0
 
     def record_use(self, memory_id: str) -> None:
         """使用记录（PRD 25 检索最后一步）：use_count 存于 extra JSON。"""

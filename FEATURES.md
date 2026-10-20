@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 255 项 + 客户端 29 项全部通过**。
+测试基线（2026-10-20）：**Python 297 项 + 客户端 29 项全部通过**。
 
 ---
 
@@ -386,6 +386,11 @@ Python 服务端（标准库，SQLite）
 | UI-15 | 视觉/OCR 操作 | ⬜ | |
 | UI-16 | 语音入口 | ⬜ | |
 | UI-17 | 后台常驻同步 | ⬜ | 当前仅前台 + 手动 |
+| UI-18 | 工作流中心 | ✅ | 定义列表、版本、历史运行、完成节点与产物（PRD 89.3） |
+| UI-19 | 记忆中心 | ✅ | 按类型/范围/状态过滤；纠正（来源转 user、置 verified）；删除需确认并审计（PRD 89.4） |
+| UI-20 | 预算与模型只读展示 | ✅ | 运行/进化预算、累计调用与成本、默认模型、路由数、模型能力与价格（PRD 89.6） |
+| UI-21 | 权限管理 | ✅ | 无障碍状态、麦克风/文件/通知使用说明、跳转系统设置（PRD 89.5/89.7） |
+| UI-22 | 更新管理 | ✅ | 当前版本、发布清单、兼容性检查结果、回滚目标与部署/回滚计数（PRD 89.8） |
 
 ### 5.2 离线核心（`android-app/src/offline/`，纯 TS 可单测）
 
@@ -508,7 +513,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，292 项）
+### Python（`tests/`，297 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -519,6 +524,7 @@ Python 服务端（标准库，SQLite）
 | `test_control.py` | 计量、限额、计划持久化、路由、暂停恢复、重跑、副作用闸门（9 项） |
 | `test_planning.py` | 计划校验/回退、意图分类（具体领域提示、`time_query` 注册） |
 | `test_task_model.py` | 任务模型全字段往返、旧任务默认值、显式输入不被推断覆盖、计划/工作流补齐、REST 校验与持久化（8 项） |
+| `test_client_centers.py` | 记忆查看/过滤/纠正/删除、权限范围阻断、审计记录；工作流检查版本/运行/产物（5 项） |
 | `test_config.py` | Claude 全局配置回退、`/v1` 归一、显式环境变量优先、缺失/损坏配置降级（7 项） |
 | `test_tools.py` | 契约、权限、副作用、幂等 |
 | `test_tool_workflow.py` | 工具超时/重试/输出契约、工作流并行/跳过/续跑 |
@@ -583,7 +589,7 @@ cd android-app && npm run test:offline
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 292 passed
+python -m pytest tests/ -q                       # 297 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -705,6 +711,21 @@ cd android-app && npm run android
 - 状态变化：新增 MD-10 ✅；迭代待办「真实 LLM 联调」完成。
 - 已知限制：仅复用 Claude 配置中的 OpenAI 兼容端点；不解析 `apiKeyHelper` 或其他凭据来源。
 
+### 2026-10-20 — 用户端中心页面（PRD 89.3-89.8）
+
+- 需求：PRD 89.3-89.8（工作流中心、记忆中心、离线状态、预算与模型设置、权限管理、更新管理）。
+- 变更：客户端新增七个分区导航；工作流中心展示定义/版本/历史运行/完成节点/产物；
+  记忆中心按类型/范围/状态过滤，支持纠正与删除（权限范围外返回 403，操作写审计）；
+  预算与模型、更新管理复用 `/metrics`、`/models`、`/releases`、`/releases/{id}`、`/version` 只读展示；
+  权限页展示无障碍授权状态并引导系统设置，不伪造未使用权限。
+- 代码：`api/server.py`（`GET /memory`、`POST /memory/{id}/correct`、`DELETE /memory/{id}`、
+  `_workflow_center_detail`）、`memory/store.py`（`to_public_dict`/`list_items`/`correct`/`delete`）、
+  `android-app/src/api.ts`、`android-app/App.tsx`。
+- 接口：`GET /workflows/{id}` 返回 `{workflow, versions, runs}`；记忆接口不返回证据与内部关系。
+- 测试：新增 `tests/test_client_centers.py`（5 项）；Python 总数 292 → 297，客户端保持 29。
+- 状态变化：新增 UI-18…UI-22 ✅；未实现清单移除「用户端中心页面」。
+- 已知限制：工作流中心只读；记忆更正不触发重新评测；更新管理不提供客户端自升级。
+
 ### 2026-10-20 — 任务模型全字段（PRD 7.3）
 
 - 需求：PRD 7.3（任务解析结果：目标对象、预期输出、复杂度、所需工具/权限、网络依赖、工作流适用性、尚未确定的关键信息）。
@@ -785,6 +806,7 @@ cd android-app && npm run android
 | Session 17 | PRD 差距盘点 + 候选代码隔离执行 | 282 + 29 |
 | Session 18 | Web 管理端 PRD 90.1-90.7 完整界面 | 284 + 29 |
 | Session 19 | 任务模型全字段（PRD 7.3） | 292 + 29 |
+| Session 20 | 用户端中心页面（PRD 89.3-89.8） | 297 + 29 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 

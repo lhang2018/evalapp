@@ -63,6 +63,113 @@ export interface CandidateSummary {
   created_at: number;
 }
 
+// ---- PRD 89.3 工作流中心 ----
+export interface WorkflowSummary {
+  workflow_id: string;
+  version: string;
+  status: string;
+  updated_at: number;
+  definition: Record<string, unknown>;
+}
+
+export interface WorkflowVersion {
+  version: string;
+  status: string;
+  updated_at: number;
+}
+
+export interface WorkflowRun {
+  task_id: string;
+  status: string;
+  user_goal: string;
+  created_at: number;
+  updated_at: number;
+  result?: string | null;
+  failure_reason?: string | null;
+  workflow_version?: string | null;
+  completed_nodes: string[];
+  pending_nodes: string[];
+  artifacts: Record<string, unknown>;
+}
+
+export interface WorkflowCenterDetail {
+  workflow: Record<string, unknown>;
+  versions: WorkflowVersion[];
+  runs: WorkflowRun[];
+}
+
+// ---- PRD 89.4 记忆中心 ----
+export interface MemoryEntry {
+  memory_id: string;
+  kind: string;
+  scope: string;
+  scope_key: string;
+  status: string;
+  content: string;
+  source: string;
+  applicable_domains: string[];
+  superseded_by?: string | null;
+  valid_until?: number | null;
+  created_at: number;
+  updated_at: number;
+  use_count: number;
+}
+
+// ---- PRD 89.6 / 89.8 设置与更新 ----
+export interface ModelInfo {
+  model_id: string;
+  provider: string;
+  context_limit: number;
+  supports_tool_call: boolean;
+  supports_vision: boolean;
+  price_per_1k_input: number;
+  price_per_1k_output: number;
+  quality_score: number;
+  avg_latency_s: number;
+  available: boolean;
+  compat_tested: boolean;
+  last_verified_at: number;
+  known_limitations: string[];
+}
+
+export interface ModelsInfo {
+  default_model_id: string;
+  routes: Record<string, unknown>;
+  models: ModelInfo[];
+}
+
+export interface ReleaseManifest {
+  release_id: string;
+  version: string;
+  code_commit: string;
+  model_adapter_version: string;
+  workflow_versions: string[];
+  rollback_target?: string | null;
+  created_at: number;
+}
+
+export interface ReleasesInfo {
+  current: string | null;
+  manifests: ReleaseManifest[];
+  deployments: Record<string, unknown>[];
+  rollbacks: Record<string, unknown>[];
+}
+
+export interface ReleaseVerify {
+  ok: boolean;
+  [key: string]: unknown;
+}
+
+export interface VersionInfo {
+  release_id: string;
+  version: string;
+  code_commit: string;
+  model_adapter_version: string;
+  workflow_versions: string[];
+  created_at: number;
+  current: string | null;
+}
+
 export class EvoAgentClient {
   private base: string;
 
@@ -138,6 +245,70 @@ export class EvoAgentClient {
     return this.req<{ candidates: CandidateSummary[] }>(
       `/evolution/candidates?limit=${limit}`,
     ).then((r) => r.candidates);
+  }
+
+  // ---- PRD 89.3 工作流中心 ----
+  workflows(): Promise<WorkflowSummary[]> {
+    return this.req<{ workflows: WorkflowSummary[] }>("/workflows")
+      .then((r) => r.workflows);
+  }
+
+  workflow(id: string): Promise<WorkflowCenterDetail> {
+    return this.req<WorkflowCenterDetail>(
+      `/workflows/${encodeURIComponent(id)}`,
+    );
+  }
+
+  // ---- PRD 89.4 记忆中心 ----
+  async memory(filter: {
+    kind?: string;
+    scope?: string;
+    status?: string;
+    limit?: number;
+  } = {}): Promise<MemoryEntry[]> {
+    // RN 的 URLSearchParams.set 未实现，手动拼接查询串
+    const params: string[] = [];
+    if (filter.kind) params.push(`kind=${encodeURIComponent(filter.kind)}`);
+    if (filter.scope) params.push(`scope=${encodeURIComponent(filter.scope)}`);
+    if (filter.status) params.push(`status=${encodeURIComponent(filter.status)}`);
+    params.push(`limit=${filter.limit ?? 100}`);
+    const out = await this.req<{ items: MemoryEntry[] }>(
+      `/memory?${params.join("&")}`,
+    );
+    return out.items;
+  }
+
+  correctMemory(memoryId: string, content: string, reason = "") {
+    return this.req<{ item: MemoryEntry }>(
+      `/memory/${encodeURIComponent(memoryId)}/correct`,
+      { method: "POST", body: JSON.stringify({ content, reason }) },
+    );
+  }
+
+  deleteMemory(memoryId: string) {
+    return this.req<{ ok: boolean; memory_id: string }>(
+      `/memory/${encodeURIComponent(memoryId)}`,
+      { method: "DELETE" },
+    );
+  }
+
+  // ---- PRD 89.6 / 89.8 设置与更新 ----
+  modelsInfo() {
+    return this.req<ModelsInfo>("/models");
+  }
+
+  releases() {
+    return this.req<ReleasesInfo>("/releases");
+  }
+
+  releaseVerify(releaseId: string) {
+    return this.req<{ manifest: ReleaseManifest; verify: ReleaseVerify }>(
+      `/releases/${encodeURIComponent(releaseId)}`,
+    );
+  }
+
+  version() {
+    return this.req<VersionInfo>("/version");
   }
 }
 

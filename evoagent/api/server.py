@@ -18,6 +18,7 @@ from ..core.budget import CostReporter
 from ..core.log_layers import role_can_read
 from ..core.task import RiskLevel, TaskStatus
 from ..evolution.candidates import IllegalCandidateTransition
+from ..memory.store import Credibility, MemoryKind, Scope
 from ..evolution.controller import PUBLISH_RULES
 from .admin import ADMIN_HTML
 from .auth import ApiAuth
@@ -208,7 +209,23 @@ def make_handler(app: App):
                 data = app.db.get_workflow_def(wid)
                 if data is None:
                     return self._json(404, {"error": "工作流不存在"})
-                return self._json(200, {"workflow": data})
+                limit = max(1, min(100, int(qs.get("runs") or 20)))
+                return self._json(200, _workflow_center_detail(app, wid, data,
+                                                               limit))
+            if path == "/memory":
+                try:
+                    kind = MemoryKind(qs["kind"]) if qs.get("kind") else None
+                    scope = Scope(qs["scope"]) if qs.get("scope") else None
+                    status = (Credibility(qs["status"])
+                              if qs.get("status") else None)
+                    limit = max(1, min(500, int(qs.get("limit") or 100)))
+                except ValueError:
+                    return self._json(400, {"error": "非法的记忆过滤参数"})
+                items = app.memory.list_items(kind=kind, scope=scope,
+                                              status=status, limit=limit)
+                return self._json(200, {
+                    "items": [m.to_public_dict() for m in items],
+                    "stats": app.memory.stats()})
             if path == "/memory/stats":
                 return self._json(200, app.memory.stats())
             if path == "/memory/evaluations":
@@ -435,7 +452,48 @@ def make_handler(app: App):
             if (len(parts) == 3 and parts[0] == "diagnostics"
                     and parts[2] == "candidates"):
                 return self._diagnostic_candidate(parts[1], body)
+            if (len(parts) == 3 and parts[0] == "memory"
+                    and parts[2] == "correct"):
+                return self._memory_correct(parts[1], body, auth.role)
             return self._json(404, {"error": "未知路径"})
+
+        def do_DELETE(self):
+            path = urlparse(self.path).path.rstrip("/")
+            auth = self._authorize("DELETE", path)
+            if auth is None:
+                return
+            parts = [p for p in path.split("/") if p]
+            if len(parts) == 2 and parts[0] == "memory":
+                item = app.memory.get(parts[1])
+                if item is None:
+                    return self._json(404, {"error": "记忆不存在"})
+                if not item.allowed:
+                    return self._json(403, {"error": "无权删除该记忆"})
+                app.memory.delete(parts[1])
+                app.audit.record(auth.role, "memory.delete",
+                                 target=parts[1])
+                return self._json(200, {"ok": True,
+                                        "memory_id": parts[1]})
+            return self._json(404, {"error": "未知路径"})
+
+        def _memory_correct(self, memory_id: str, body: Dict[str, Any],
+                            actor: str):
+            item = app.memory.get(memory_id)
+            if item is None:
+                return self._json(404, {"error": "记忆不存在"})
+            if not item.allowed:
+                return self._json(403, {"error": "无权修改该记忆"})
+            content = body.get("content")
+            if not isinstance(content, str) or not content.strip():
+                return self._json(400, {"error": "content 必须为非空字符串"})
+            content = content.strip()
+            if len(content) > 4000:
+                return self._json(400, {"error": "content 超过 4000 字符"})
+            reason = str(body.get("reason") or "")[:500]
+            updated = app.memory.correct(memory_id, content, reason=reason)
+            app.audit.record(actor, "memory.correct", target=memory_id,
+                             detail={"reason": reason})
+            return self._json(200, {"item": updated.to_public_dict()})
 
         # ---------- 成功任务 → 工作流候选（Arch 16.2）----------
         def _workflow_extract(self, body: Dict[str, Any], actor: str):
@@ -811,6 +869,37 @@ def _parse_task_model_fields(body: Dict[str, Any]):
         return parsed, ""
     except ValueError as e:
         return {}, str(e)
+
+
+def _workflow_center_detail(app: App, workflow_id: str,
+                            data: Dict[str, Any],
+                            run_limit: int) -> Dict[str, Any]:
+    """PRD 89.3：工作流定义 + 版本列表 + 历史运行与产物。"""
+    versions = [
+        {"version": w["version"], "status": w["status"],
+         "updated_at": w["updated_at"]}
+        for w in app.db.list_workflow_defs()
+        if w["workflow_id"] == workflow_id
+    ]
+    runs: List[Dict[str, Any]] = []
+    for task in app.db.list_tasks(limit=1000):
+        if task.workflow_ref != workflow_id:
+            continue
+        cp = app.db.get_latest_checkpoint(task.task_id) or {}
+        state = cp.get("task_state") or {}
+        runs.append({
+            "task_id": task.task_id, "status": task.task_status.value,
+            "user_goal": task.user_goal, "created_at": task.created_at,
+            "updated_at": task.updated_at, "result": task.result,
+            "failure_reason": task.failure_reason,
+            "workflow_version": cp.get("workflow_version"),
+            "completed_nodes": list(cp.get("completed_nodes") or []),
+            "pending_nodes": list(cp.get("pending_nodes") or []),
+            "artifacts": state.get("workflow_outputs") or {},
+        })
+        if len(runs) >= run_limit:
+            break
+    return {"workflow": data, "versions": versions, "runs": runs}
 
 
 def _model_summary(profile: Any) -> Dict[str, Any]:
