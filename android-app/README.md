@@ -8,9 +8,9 @@
 - **离线优先**（`src/offline/`）：任务与事件写入同一本地快照；联网后事件批量幂等上传，
   `LOCAL_ONLY` 任务以稳定 `client_request_id` 补交；连续 checkpoint、死信、指数退避；
   隐私过滤（sensitive 不上传，secret/private 拒绝入队）。
-- **设备操作**（`src/device/` + `android/` Kotlin）：无障碍服务按文本/描述点击节点、
-  拉起显式 Intent；低/中/高风险分级，高风险需独立确认；执行结果五态并要求证据；
-  已下发未验证的动作不自动重放。
+- **设备操作**（`src/device/` + `android/` Kotlin）：无障碍服务按文本/描述点击节点
+  （精确匹配优先、子串仅作回退）、拉起显式 Intent；低/中/高风险分级，高风险需独立确认；
+  执行结果五态并要求证据；已下发未验证的动作不自动重放。
 - **无坐标/手势注入**：`canPerformGestures=false`，不绕过系统权限。
 
 ## 为什么选 React Native
@@ -24,7 +24,7 @@
 ## 测试（无需 node_modules）
 
 ```bash
-npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门，共 27 项
+npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门，共 29 项
 npm run typecheck       # 需要先 npm install（tsc）
 ```
 
@@ -45,12 +45,17 @@ npm run android
 ```
 
 - 模拟器默认连 `http://10.0.2.2:8300`（宿主机）。
-- 真机调试改 `App.tsx` 中的 `baseUrl` 为局域网 IP；发布版本建议走 `usesCleartextTraffic=false` + HTTPS。
+- 真机可直接用 `adb reverse tcp:8300 tcp:8300` 后在 App 顶部把服务端地址设为
+  `http://127.0.0.1:8300`；地址会持久化到 AsyncStorage，重启后保留。
+- 发布版本建议走 `usesCleartextTraffic=false` + HTTPS。
+- 已配置 `metro.config.js` 与 `babel.config.js`；`app/build.gradle` 的 `react {}` 中调用
+  `autolinkLibrariesWithApp()`（AsyncStorage 等原生包依赖 autolinking）。
 
-## ⚠️ 构建验证状态
+## 构建验证状态
 
-**本仓库开发环境没有 Android SDK、模拟器或 `node_modules`，Gradle 构建、无障碍服务与真机
-行为均未实际验证。** 原生壳已按 RN 0.75.4 标准模板对齐，仍需在真机/模拟器上确认。
+**已验证**（2026-10-20）：`./gradlew assembleDebug` 构建通过；在模拟器（API 37）与真机
+（HyperOS，Android API 36）安装运行；在线任务、真实模型回复、离线队列与事件同步、
+无障碍节点点击（返回 `[verified]` 且带 `clicked_text`/`package_name` 证据）均实测通过。
 
 手动构建：
 
@@ -59,7 +64,7 @@ cd android
 ./gradlew assembleDebug        # 或：npx react-native run-android
 ```
 
-真机验收清单：
+验收清单（已在真机走通 1–4 与 7；5–6 由单元测试覆盖）：
 
 1. `adb shell settings get secure enabled_accessibility_services` 能看到 `com.evoagent/.DeviceAccessibilityService`。
 2. 未授权时客户端显示「服务未启用」，点击「点击页面文本」返回 `unavailable`，不崩溃。
@@ -88,7 +93,7 @@ android-app/
 ├── src/offline/               # 本地任务/事件队列、隐私过滤、同步引擎
 ├── src/device/                # 设备操作契约、风险闸门、原生桥接
 ├── src/storage/               # AsyncStorage ↔ KeyValueStore 适配
-├── test/                      # node --test（offline 19 + device 8）
+├── test/                      # node --test（offline 21 + device 8）
 ├── android/                   # Kotlin 原生壳 + AccessibilityService + DeviceModule
 └── package.json
 ```

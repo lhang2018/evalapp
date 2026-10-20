@@ -6,6 +6,7 @@
 
 import json
 import time
+import uuid
 from typing import Any, Dict, List
 
 from ..tools.contract import ToolContract, ToolResult
@@ -25,6 +26,8 @@ class OpenAICompatAdapter:
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout_seconds
+        # 网关（如 OpenCode Zen Go）用会话头做路由与缓存；普通 OpenAI 端点忽略未知头
+        self._session_id = f"sess-{uuid.uuid4().hex}"
         self._profile = ModelProfile(
             model_id=model_id, provider="openai-compat",
         )
@@ -87,7 +90,11 @@ class OpenAICompatAdapter:
     def _chat(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         import requests  # 本地环境已有；缺失时给出明确错误
         url = f"{self.base_url}/chat/completions"
-        headers = {"Authorization": f"Bearer {self.api_key}"}
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "User-Agent": "evoagent/0.1",
+            "x-opencode-session": self._session_id,
+        }
         last_err: Exception | None = None
         for attempt in range(_MAX_RETRIES):
             try:
@@ -112,13 +119,21 @@ class OpenAICompatAdapter:
         raise RuntimeError(f"LLM 调用重试 {_MAX_RETRIES} 次仍失败: {last_err}")
 
 
-def _openai_tool(t: ToolContract) -> Dict[str, Any]:
-    """ToolContract -> OpenAI function 描述。"""
+def _openai_tool(t: ToolContract | Dict[str, Any]) -> Dict[str, Any]:
+    """工具描述（契约对象或引擎传入的 schema dict）-> OpenAI function。"""
+    if isinstance(t, dict):
+        name = t.get("tool_id")
+        description = t.get("description", "")
+        parameters = t.get("input_schema", {})
+    else:
+        name = t.tool_id
+        description = t.description
+        parameters = t.input_schema
     return {
         "type": "function",
         "function": {
-            "name": t.tool_id,
-            "description": t.description,
-            "parameters": t.input_schema,
+            "name": name,
+            "description": description,
+            "parameters": parameters,
         },
     }

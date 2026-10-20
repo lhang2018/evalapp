@@ -35,7 +35,9 @@ export class ClientTransport implements EventSyncTransport, TaskTransport {
         event_id: event.event_id,
         event_type: event.event_type,
         task_id: event.task_id ?? undefined,
-        timestamp: event.timestamp,
+        // 本地用毫秒（Date.now）；服务端事件时间统一为秒
+        timestamp:
+          event.timestamp > 1e12 ? event.timestamp / 1000 : event.timestamp,
         severity: event.severity,
         payload: event.payload,
         privacy_classification: event.privacy_classification,

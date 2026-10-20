@@ -44,6 +44,8 @@ import type {
 } from "./src/device/types.ts";
 
 const POLL_MS = 5000;
+const DEFAULT_BASE_URL = "http://10.0.2.2:8300";
+const BASE_URL_KEY = "evoagent_base_url";
 
 function guessIntent(text: string): string {
   if (/(几点|时间|日期|今天|现在)/.test(text)) return "time_query";
@@ -86,8 +88,9 @@ export default function App(): React.JSX.Element {
     candidates: CandidateSummary[];
   } | null>(null);
 
-  // 服务器地址：开发用本机；真机用局域网 IP
-  const baseUrl = "http://10.0.2.2:8300";
+  // 服务器地址：模拟器默认 10.0.2.2；真机可填局域网 IP（或 adb reverse 后用 127.0.0.1）
+  const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL);
+  const [baseUrlDraft, setBaseUrlDraft] = useState(DEFAULT_BASE_URL);
 
   const services = useMemo(() => {
     const client = api(baseUrl);
@@ -153,6 +156,26 @@ export default function App(): React.JSX.Element {
   );
 
   useEffect(() => {
+    (async () => {
+      const saved = await asyncStorageStore.getItem(BASE_URL_KEY);
+      if (saved) {
+        setBaseUrl(saved);
+        setBaseUrlDraft(saved);
+      }
+    })();
+  }, []);
+
+  const applyBaseUrl = useCallback(async () => {
+    const url = baseUrlDraft.trim().replace(/\/+$/, "");
+    if (!/^https?:\/\//.test(url)) {
+      setError("服务端地址需以 http:// 或 https:// 开头");
+      return;
+    }
+    await asyncStorageStore.setItem(BASE_URL_KEY, url);
+    setBaseUrl(url);
+  }, [baseUrlDraft]);
+
+  useEffect(() => {
     let mounted = true;
     (async () => {
       await services.tasks.recoverInterrupted();
@@ -203,8 +226,7 @@ export default function App(): React.JSX.Element {
       await reloadLocal();
       if (online) {
         await flush(true);
-      }
-      if (task.status === "LOCAL_ONLY") {
+      } else if (task.status === "LOCAL_ONLY") {
         setError("已离线保存；联网后自动以幂等键提交");
       }
     } catch (e: unknown) {
@@ -248,6 +270,7 @@ export default function App(): React.JSX.Element {
     async (action: DeviceAction) => {
       const result = await services.broker.execute(action);
       setDeviceResult(result);
+      setDeviceAvailable(await services.deviceTransport.isAvailable());
       setJournal(services.broker.listJournal());
     },
     [services]
@@ -279,6 +302,18 @@ export default function App(): React.JSX.Element {
               onPress={() => flush(true)}
               disabled={syncing}
             />
+          </View>
+          <View style={s.serverRow}>
+            <TextInput
+              style={s.serverInput}
+              value={baseUrlDraft}
+              onChangeText={setBaseUrlDraft}
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholder={DEFAULT_BASE_URL}
+              onSubmitEditing={() => void applyBaseUrl()}
+            />
+            <Button title="应用" onPress={() => void applyBaseUrl()} />
           </View>
           <Text style={s.hint}>服务端: {baseUrl}</Text>
           {stats && (
@@ -484,6 +519,21 @@ const s = StyleSheet.create({
   inner: { flex: 1, padding: 16 },
   title: { fontSize: 22, fontWeight: "700", marginBottom: 8 },
   hint: { fontSize: 12, color: "#57606a", marginBottom: 8 },
+  serverRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
+  },
+  serverInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#d0d7de",
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    height: 40,
+    backgroundColor: "#fff",
+  },
   error: { color: "#cf222e", marginBottom: 8 },
   banner: {
     flexDirection: "row",

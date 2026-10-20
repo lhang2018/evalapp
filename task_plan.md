@@ -34,8 +34,8 @@
 | 20 | 诊断闭环 | 诊断案例/多假设规则/固定探针/持久化/失败钩子/候选升级/API/CLI（PRD 41-45） | complete |
 | 21 | 真实模型规划 | Planning JSON 校验与回退 + 意图分类器（PRD 7-8/11） | complete |
 | 22a | 离线队列与幂等同步 | 客户端本地任务/事件队列、隐私过滤、退避重试、死信；服务端事件摄取与任务幂等（PRD 72-76） | complete |
-| 22b | Android 无障碍 | Manifest/原生壳修复、AccessibilityService 节点操作、DeviceModule、风险闸门与五态结果（PRD 64-71） | complete（本机未构建验证） |
-| 22c | 迭代优化其余 | 真实 Key 联调、Android 真机构建验收、视觉/语音、候选代码沙箱、Web 管理端 | pending |
+| 22b | Android 无障碍 | Manifest/原生壳修复、AccessibilityService 节点操作、DeviceModule、风险闸门与五态结果（PRD 64-71） | complete（构建 + 模拟器/真机验证） |
+| 22c | 迭代优化其余 | 真实 Key 联调、Android 真机构建验收已完成；视觉/语音、候选代码沙箱、Web 管理端仍待迭代 | partial |
 | 23 | 执行内核接线 | 计划驱动 ReAct + 进度持久化、模型调用计量与硬限额、路由接入运行路径、暂停/恢复（累计预算 + 副作用闸门）、API/CLI（PRD 11-12/19/34-36/55-56） | complete（92 项 Python 测试） |
 | 24 | 全面补强 | 控制面（API 鉴权/审计/指标/管理页）、工具超时+重试安全规则+输出契约+幂等日志+只读 Git、工作流并行/跳过/超时/续跑+资产库、预算报表、记忆关系/混合检索/使用统计、质量优先路由评分、诊断趋势/故障注入、客户端系统状态面板（PRD 14-20/21-28/37-45/55-58/89-90） | complete（123 项 Python + 27 项客户端） |
 

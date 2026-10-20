@@ -9,6 +9,7 @@ def hermesEnabled = (findProperty('hermesEnabled') ?: 'true').toString() == 'tru
  * 这里无需额外配置，保留空块以便后续按需覆盖。
  */
 react {
+    autolinkLibrariesWithApp()
 }
 
 android {

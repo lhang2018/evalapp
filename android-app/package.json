@@ -11,14 +11,15 @@
     "ota:publish": "appcenter codepush release-react -a <owner>/EvoAgent-Android -d Production"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "react": "18.3.1",
-    "react-native": "0.75.4",
-    "@react-native-async-storage/async-storage": "^1.24.0"
+    "react-native": "0.75.4"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
     "@react-native/babel-preset": "0.75.4",
     "@react-native/metro-config": "0.75.4",
+    "@types/react": "^18.3.12",
     "typescript": "^5.5.0"
   }
 }

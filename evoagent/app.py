@@ -82,7 +82,6 @@ class App:
         # 模型
         self.model_registry = ModelRegistry()
         self.mock_model = MockModel()
-        self.model_registry.register(self.mock_model.profile())
         self._real_adapter: Optional[OpenAICompatAdapter] = None
         if self.config.provider.api_key:
             self._real_adapter = OpenAICompatAdapter(
@@ -92,6 +91,9 @@ class App:
                 timeout_seconds=self.config.provider.timeout_seconds,
             )
             self.model_registry.register(self._real_adapter.profile())
+        else:
+            # 配了真实模型时 Mock 只作回退，不参与路由候选
+            self.model_registry.register(self.mock_model.profile())
         self.router = ModelRouter(self.model_registry, self.mock_model)
         # 路由按 model_id 解析到真实适配器；未命中时回退 Mock
         self.router.setup(self._adapter_for_model_id)

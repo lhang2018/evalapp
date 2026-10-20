@@ -213,3 +213,46 @@
 - Android 真机构建与验收；本机无 `node_modules`，`tsc --noEmit` 未能运行（客户端测试走 Node 24 type-stripping）
 - 真实 LLM Key 联调；视觉/OCR/语音、后台常驻同步、端到端加密
 - 嵌入向量检索（当前为词法 + 哈希向量）、Web 管理端、候选代码隔离沙箱
+
+## Session 6 (2026-10-20)
+
+### 背景
+- 用户要求：本机直接安装依赖，用模拟器与真机（PIN 000000）构建、安装、实测；模型 API Key
+  取 Claude 全局配置；网络问题可用本地代理。
+
+### 完成事项
+- [x] `npm install` + `./gradlew assembleDebug` 构建通过（JDK 17 / Gradle 8.10.2 / AGP 8.7.2）
+- [x] 原生壳修复：`MainApplication` 移除 RN 0.75.4 不存在的 `OpenSourceMergedSoMapping`，
+      改为 `SoLoader.init(this, false)`；`app/build.gradle` 补 `autolinkLibrariesWithApp()`
+- [x] 补 `metro.config.js` / `babel.config.js`；`tsc --noEmit` 通过
+- [x] App 顶部可编辑并持久化服务端地址（AsyncStorage），真机用 `adb reverse` + `127.0.0.1:8300`
+- [x] 真实模型联调：OpenAI 兼容适配器补浏览器 UA（绕 Cloudflare 1010）与稳定
+      `x-opencode-session` 头（网关 400 MissingSessionID）；`_openai_tool` 兼容 dict schema；
+      配真实适配器时 Mock 不注册进路由（避免同分选中 mock）
+- [x] 模拟器与真机安装运行；真机任务成功返回真实模型结果
+- [x] 客户端毫秒时间戳 → 服务端秒（`apiTransport.ts`）+ 2 项单测；三个历史死信重试后全部清除
+- [x] 真机无障碍：授权并绑定 `DeviceAccessibilityService`；低风险 Intent 动作
+      `[verified]`；中风险文本点击 `[verified]`（journal `click_text · verified · medium`）
+- [x] 修复子串匹配误点：`clickByText` 改为精确匹配优先、子串回退（此前 "设置" 会命中
+      "打开系统无障碍设置"）；重新构建安装后实测通过
+
+### 测试结果
+- `python -m pytest tests/ -q` → 123 passed
+- `cd android-app && npm run test:offline` → 29 passed（新增 2 项时间戳单位）
+- `npm run typecheck` → 通过
+- 真机：`[verified] 已点击`；死信 3 → 0；checkpoint 3/500 正常推进
+
+### 本轮修复的缺陷（设备实测发现）
+- RN 0.75.4 符号缺失导致 Kotlin 编译失败
+- 空 `react {}` 导致 AsyncStorage 原生包不参与 autolink
+- 缺 Metro/Babel 配置导致打包失败
+- 路由同分选中 Mock，真实模型未被使用
+- 引擎传 dict schema，适配器按对象取 `.tool_id` 抛异常
+- 网关 Cloudflare 1010 / MissingSessionID
+- 客户端毫秒时间戳被服务端 ±7 天窗口判死信
+- 在线时误显示离线保存提示（`if` → `else if`）
+- 无障碍点击子串匹配误点（精确匹配优先）
+
+### 设计约束（本轮确立）
+- 节点点击默认精确匹配，子串只作回退，避免误触同页其他控件
+- 服务端地址由客户端持久化配置，不硬编码局域网 IP

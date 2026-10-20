@@ -26,24 +26,29 @@ class DeviceAccessibilityService : AccessibilityService() {
     }
 
     fun clickByText(text: String): Boolean {
-        if (text.isBlank()) return false
-        val roots = listOfNotNull(rootInActiveWindow)
-        for (root in roots) {
-            val matches = mutableListOf<AccessibilityNodeInfo>()
-            collectMatches(root, text, matches)
-            for (node in matches) {
-                if (node.isClickable && node.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+        val target = text.trim()
+        if (target.isBlank()) return false
+        val root = rootInActiveWindow ?: return false
+        val exact = mutableListOf<AccessibilityNodeInfo>()
+        val partial = mutableListOf<AccessibilityNodeInfo>()
+        collectMatches(root, target, exact, partial)
+        // 精确匹配优先："设置" 不应命中 "打开系统无障碍设置"
+        return clickFirst(exact) || clickFirst(partial)
+    }
+
+    private fun clickFirst(matches: List<AccessibilityNodeInfo>): Boolean {
+        for (node in matches) {
+            if (node.isClickable && node.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+                return true
+            }
+            var parent = node.parent
+            while (parent != null) {
+                if (parent.isClickable &&
+                    parent.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                ) {
                     return true
                 }
-                var parent = node.parent
-                while (parent != null) {
-                    if (parent.isClickable &&
-                        parent.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                    ) {
-                        return true
-                    }
-                    parent = parent.parent
-                }
+                parent = parent.parent
             }
         }
         return false
@@ -55,18 +60,21 @@ class DeviceAccessibilityService : AccessibilityService() {
     private fun collectMatches(
         node: AccessibilityNodeInfo?,
         text: String,
-        out: MutableList<AccessibilityNodeInfo>,
+        exact: MutableList<AccessibilityNodeInfo>,
+        partial: MutableList<AccessibilityNodeInfo>,
     ) {
         if (node == null) return
         val label = node.text?.toString()
         val description = node.contentDescription?.toString()
-        if ((label != null && label.contains(text)) ||
+        if (label == text || description == text) {
+            exact.add(node)
+        } else if ((label != null && label.contains(text)) ||
             (description != null && description.contains(text))
         ) {
-            out.add(node)
+            partial.add(node)
         }
         for (index in 0 until node.childCount) {
-            collectMatches(node.getChild(index), text, out)
+            collectMatches(node.getChild(index), text, exact, partial)
         }
     }
 
