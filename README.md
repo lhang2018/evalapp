@@ -223,8 +223,9 @@ Web 管理端 90.1-90.7 分区（健康/问题中心/诊断详情/候选实验/�
 向量持久化与失败回退）、发布分支流程（前缀白名单、隔离分支、轻量标签、`--ff-only` 合入 main，
 显式 CLI 与审计）、无障碍界面观测（操作前后节点快照、页面变化与权限弹窗识别、连续未验证安全停止）、
 双端版本对账与运行清单（安装实例/设备身份、批次回执、`/sync/reconcile`、`/sync/apply-result`、
-`/sync/candidates` 候选阶段同步）、客户端更新管理器（双槽位原子切换、健康检查与自动回滚）。
-测试通过：Python 331 项、客户端 60 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、能力包制品装载。
+`/sync/candidates` 候选阶段同步）、客户端更新管理器（双槽位原子切换、健康检查与自动回滚）、
+离线诊断包受控导入（解压防护/摘要校验/关系审查/按 SHA-256 幂等入隔离区，仅证据不执行）。
+测试通过：Python 344 项、客户端 69 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、能力包制品装载。
 
 ## 目录
 
@@ -244,11 +245,11 @@ evoagent/                  Python 服务端核心
   core/replay.py           只读运行回放
   core/backup.py           三库备份/校验/恢复
   cli.py                   命令行
-tests/                     331 项服务端测试
+tests/                     344 项服务端测试
 android-app/               React Native Android 客户端
   src/offline/             本地任务/事件队列、隐私过滤、同步引擎（纯 TS，可单测）
   src/device/              设备操作契约/风险闸门/界面观测与结果验证/原生桥接（纯 TS，可单测）
   src/update/              安装实例/版本对账/双槽位更新管理（纯 TS，可单测）
   android/                 Kotlin 原生壳：AccessibilityService + DeviceModule
-  test/                    60 项客户端测试（node --test）
+  test/                    69 项客户端测试（node --test）
 ```

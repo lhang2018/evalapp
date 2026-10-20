@@ -154,6 +154,23 @@ class Database:
             c.execute("""CREATE TABLE IF NOT EXISTS memory_eval_reports(
                 report_id TEXT PRIMARY KEY, dataset_id TEXT, version TEXT,
                 created_at REAL, data TEXT)""")
+            # 离线诊断包受控导入（补充 C §8）：隔离区，不与线上事件混用
+            c.execute("""CREATE TABLE IF NOT EXISTS diagnostics_imports(
+                import_id TEXT PRIMARY KEY, source TEXT, status TEXT,
+                file_name TEXT, size_bytes INTEGER, sha256 TEXT UNIQUE,
+                format_version TEXT, exported_at REAL, entry_count INTEGER,
+                event_count INTEGER, warnings TEXT, actor TEXT,
+                imported_at REAL)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_diagnostics_imports_at
+                ON diagnostics_imports(imported_at)""")
+            c.execute("""CREATE TABLE IF NOT EXISTS diagnostics_import_events(
+                import_id TEXT, event_id TEXT, task_id TEXT, run_id TEXT,
+                runtime_manifest_id TEXT, event_type TEXT, timestamp REAL,
+                sequence_no INTEGER, severity TEXT, payload TEXT,
+                review_status TEXT, conflict_reason TEXT,
+                PRIMARY KEY(import_id, event_id))""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_import_events_task
+                ON diagnostics_import_events(task_id)""")
             c.commit()
 
     # ---- tasks ----
@@ -432,6 +449,77 @@ class Database:
             " ORDER BY created_at DESC LIMIT ?",
             (task_id, limit)).fetchall()
         return [self.get_runtime_manifest(r["manifest_id"]) for r in rows]
+
+    # ---- offline diagnostics import（补充 C §8）----
+    def get_diagnostics_import(self,
+                               import_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT * FROM diagnostics_imports WHERE import_id=?",
+            (import_id,)).fetchone()
+        return dict(row) if row else None
+
+    def get_diagnostics_import_by_sha(
+            self, sha256: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT * FROM diagnostics_imports WHERE sha256=?",
+            (sha256,)).fetchone()
+        return dict(row) if row else None
+
+    def list_diagnostics_imports(
+            self, limit: int = 50) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT * FROM diagnostics_imports"
+            " ORDER BY imported_at DESC LIMIT ?", (limit,)).fetchall()
+        return [dict(r) for r in rows]
+
+    def save_diagnostics_import(self, import_id: str, file_name: str,
+                                size_bytes: int, sha256: str,
+                                format_version: str, exported_at: float,
+                                entry_count: int, event_count: int,
+                                warnings: List[str], actor: str,
+                                source: str = "offline_import",
+                                status: str = "quarantined") -> bool:
+        with self._lock:
+            cur = self._conn.execute(
+                "INSERT OR IGNORE INTO diagnostics_imports VALUES"
+                " (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (import_id, source, status, file_name, size_bytes, sha256,
+                 format_version, exported_at, entry_count, event_count,
+                 json.dumps(warnings, ensure_ascii=False), actor, time.time()))
+            self._conn.commit()
+            return cur.rowcount > 0
+
+    def save_diagnostics_import_event(
+            self, import_id: str, event: Dict[str, Any]) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO diagnostics_import_events VALUES"
+                " (?,?,?,?,?,?,?,?,?,?,?,?)",
+                (import_id, event["event_id"], event.get("task_id"),
+                 event.get("run_id"), event.get("runtime_manifest_id"),
+                 event["event_type"], event["timestamp"],
+                 event.get("sequence_no"), event.get("severity", "info"),
+                 json.dumps(event.get("payload") or {}, ensure_ascii=False,
+                            default=str),
+                 event.get("review_status", "accepted"),
+                 event.get("conflict_reason") or ""))
+            self._conn.commit()
+
+    def list_diagnostics_import_events(
+            self, import_id: str, limit: int = 5000) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT * FROM diagnostics_import_events WHERE import_id=?"
+            " ORDER BY sequence_no IS NULL, sequence_no ASC, timestamp ASC"
+            " LIMIT ?", (import_id, limit)).fetchall()
+        out = []
+        for row in rows:
+            item = dict(row)
+            try:
+                item["payload"] = json.loads(item.get("payload") or "{}")
+            except Exception:  # noqa: BLE001
+                item["payload"] = {}
+            out.append(item)
+        return out
 
     # ---- diagnostics（PRD 41-45）----
     def save_diagnostic_case(self, case: Any) -> None:

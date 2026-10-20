@@ -1115,3 +1115,27 @@
 ### 本轮取舍
 - 附件上限与附件保留随 §6 附件体系一并实现。
 - 损失标记暂只在本地展示，不自动上传（属于诊断包导出内容）。
+
+## Session 29 (2026-10-20)
+
+### 目标
+- 落地补充 C §8：服务端离线诊断包受控导入（校验 → 隔离区 → 人工审查），包内容只作证据。
+
+### 完成内容
+- [x] 新增 `api/diagnostics_import.py`：ZIP 解析与全量校验，任何内容都不执行、不进入 `runtime_events`
+- [x] 解压防护：包 ≤20 MiB、≤200 条目、解压总量 ≤100 MiB、单文件 ≤20 MiB、事件 ≤5000 条；
+      实际读取字节数计数（不信任头部声明）；>1 MiB 条目压缩比 >200 拒绝；符号链接拒绝
+- [x] 路径防护：拒绝绝对路径、`..`、反斜杠、盘符与空段；文件白名单 + `attachments/*` 后缀白名单
+- [x] 完整性：逐文件 SHA-256，缺摘要/重复摘要/引用不存在/实际不匹配均拒绝；`format_version` 必须 1.0
+- [x] 事件校验：event_id/event_type/timestamp/sequence_no/manifest 引用/payload 大小逐行检查
+- [x] 关联审查：未知任务、有 run 无 manifest、未知 manifest、manifest 与任务/运行不匹配 →
+      `needs_review` + 原因；其余 `accepted`
+- [x] 持久化：`diagnostics_imports`（按包 SHA-256 唯一）与 `diagnostics_import_events`；
+      `save_diagnostics_import` 使用 `INSERT OR IGNORE`，重复导入返回原记录
+- [x] API：`POST /diagnostics/import`（admin、ZIP/octet-stream、`X-File-Name` 清洗）、
+      `GET /diagnostics/imports`、`GET /diagnostics/imports/{id}`；成功与拒绝均写审计
+- [x] 测试：新增 `tests/test_diagnostics_import.py`（9 项）；Python 335 → 344 全绿
+
+### 本轮取舍
+- 客户端文件选择器导入入口未接线（IMP-08 ⬜）。
+- 附件上传（§6）与离线诊断包导出（§7）仍未实现；导入包内附件当前只校验与记录，不单独提供下载。

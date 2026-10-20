@@ -24,6 +24,11 @@ from ..memory.store import Credibility, MemoryKind, Scope
 from ..evolution.controller import PUBLISH_RULES
 from .admin import ADMIN_HTML
 from .auth import ApiAuth
+from .diagnostics_import import (
+    MAX_PACKAGE_BYTES,
+    PackageError,
+    inspect_package,
+)
 from .events_sync import BatchError, SYNC_PROTOCOL_VERSION, validate_batch
 
 CLIENT_REQUEST_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
@@ -327,6 +332,26 @@ def make_handler(app: App):
                     limit=int(qs.get("limit") or 200)))
             if path == "/diagnostics/drift":
                 return self._json(200, app.drift.detect())
+            if path == "/diagnostics/imports":
+                if auth.role != "admin":
+                    return self._json(403, {"error": "该操作需要 admin 权限"})
+                try:
+                    limit = max(1, min(int(qs.get("limit") or 50), 200))
+                except ValueError:
+                    limit = 50
+                return self._json(200, {"imports": [
+                    _import_record(item)
+                    for item in app.db.list_diagnostics_imports(limit)]})
+            if path.startswith("/diagnostics/imports/"):
+                if auth.role != "admin":
+                    return self._json(403, {"error": "该操作需要 admin 权限"})
+                import_id = path.split("/")[3]
+                record = app.db.get_diagnostics_import(import_id)
+                if record is None:
+                    return self._json(404, {"error": "导入记录不存在"})
+                return self._json(200, {
+                    "import": _import_record(record),
+                    "events": app.db.list_diagnostics_import_events(import_id)})
             if path.startswith("/diagnostics/"):
                 case_id = path.split("/")[2]
                 case = app.db.get_diagnostic_case(case_id)
@@ -341,6 +366,8 @@ def make_handler(app: App):
             auth = self._authorize("POST", path)
             if auth is None:
                 return
+            if path == "/diagnostics/import":
+                return self._diagnostics_import(auth.role)
             body = self._body()
             if path == "/tasks":
                 goal = body.get("goal", "").strip()
@@ -613,6 +640,69 @@ def make_handler(app: App):
             except ValueError as e:
                 return self._json(409, {"error": str(e)})
             return self._json(200, out)
+
+        # ---------- 离线诊断包受控导入 ----------
+        def _diagnostics_import(self, actor: str):
+            if actor != "admin":
+                return self._json(403, {"error": "该操作需要 admin 权限"})
+            content_type = (self.headers.get("Content-Type") or "")
+            content_type = content_type.split(";")[0].strip().lower()
+            if content_type not in ("application/zip",
+                                    "application/octet-stream"):
+                return self._json(
+                    415, {"error": "Content-Type 必须为 application/zip"})
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                return self._json(400, {"error": "非法 Content-Length"})
+            if length <= 0:
+                return self._json(400, {"error": "导入包为空"})
+            if length > MAX_PACKAGE_BYTES:
+                return self._json(413, {"error": "导入包超过 20 MiB"})
+            data = self.rfile.read(length)
+            raw_name = (self.headers.get("X-File-Name") or "").strip()
+            file_name = raw_name.replace("\\", "/").split("/")[-1][:128] or \
+                "diagnostics.zip"
+            try:
+                parsed = inspect_package(data, app.db)
+            except PackageError as exc:
+                app.audit.record(actor, "diagnostics.offline_import",
+                                 target=file_name, outcome="rejected",
+                                 detail={"error": str(exc),
+                                         "size_bytes": len(data)})
+                return self._json(exc.status, {"error": str(exc)})
+
+            existing = app.db.get_diagnostics_import_by_sha(parsed["sha256"])
+            if existing:
+                return self._json(200, {"import": _import_record(existing),
+                                        "duplicate": True})
+            import_id = "imp_" + uuid.uuid4().hex[:12]
+            created = app.db.save_diagnostics_import(
+                import_id, file_name, parsed["size_bytes"], parsed["sha256"],
+                parsed["format_version"], parsed["exported_at"],
+                len(parsed["files"]), len(parsed["events"]),
+                parsed["warnings"], actor)
+            if not created:
+                existing = app.db.get_diagnostics_import_by_sha(
+                    parsed["sha256"])
+                return self._json(200, {
+                    "import": _import_record(existing), "duplicate": True})
+            for event in parsed["events"]:
+                app.db.save_diagnostics_import_event(import_id, event)
+            needs_review = sum(
+                1 for event in parsed["events"]
+                if event["review_status"] == "needs_review")
+            app.audit.record(actor, "diagnostics.offline_import",
+                             target=import_id,
+                             detail={"file_name": file_name,
+                                     "sha256": parsed["sha256"],
+                                     "events": len(parsed["events"]),
+                                     "needs_review": needs_review,
+                                     "warnings": len(parsed["warnings"])})
+            record = app.db.get_diagnostics_import(import_id)
+            return self._json(201, {"import": _import_record(record),
+                                    "duplicate": False,
+                                    "needs_review": needs_review})
 
         # ---------- 客户端事件同步 ----------
         def _events_sync(self, body: Dict[str, Any]):
@@ -1000,6 +1090,17 @@ def make_handler(app: App):
                                         cand.risk_level, "strict_review")})
 
     return Handler
+
+
+def _import_record(record: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    if record is None:
+        return None
+    out = dict(record)
+    try:
+        out["warnings"] = json.loads(out.get("warnings") or "[]")
+    except (TypeError, json.JSONDecodeError):
+        out["warnings"] = []
+    return out
 
 
 def _receipt_response(stored: Dict[str, Any], replayed: bool):

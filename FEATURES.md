@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 331 项 + 客户端 60 项全部通过**。
+测试基线（2026-10-20）：**Python 344 项 + 客户端 69 项全部通过**。
 
 ---
 
@@ -266,6 +266,19 @@ Python 服务端（标准库，SQLite）
 | VS-07 | 下载/校验/激活/回滚回执 | ✅ | `api/server.py` | 动作白名单 + 部署记录 + 非重复回执写审计（`sync.apply_result`） |
 | VS-08 | 候选阶段同步 | ✅ | `release/delivery.py`, `api/server.py`, `core/persistence.py` | `GET /sync/candidates`：只下发评测后的候选阶段（批准/就绪/部署/监测/晋级/回滚），不含假设与证据；记录每个安装实例已见状态（`device_candidate_states`） |
 
+### 2.16 诊断包受控导入（补充 C §8）
+
+| ID | 功能 | 状态 | 代码位置 | 说明 / 限制 |
+|---|---|---|---|---|
+| IMP-01 | 包级限额 | ✅ | `api/diagnostics_import.py` | 包 ≤20 MiB、≤200 条目、解压总量 ≤100 MiB、单文件 ≤20 MiB、事件 ≤5000 条；超限 413 |
+| IMP-02 | 解压防护 | ✅ | `api/diagnostics_import.py` | 路径穿越/绝对路径/反斜杠/盘符拒绝；符号链接拒绝；压缩比 >200（>1 MiB 条目）判为疑似炸弹 |
+| IMP-03 | 文件白名单与摘要 | ✅ | `api/diagnostics_import.py` | 仅允许固定包文件与 `attachments/*` 常见后缀；逐文件 SHA-256 校验，缺摘要/重复摘要/摘要引用不存在均拒绝 |
+| IMP-04 | 格式版本与事件校验 | ✅ | `api/diagnostics_import.py` | `format_version` 必须为 1.0；事件 ID/类型/时间戳/序号/清单引用/payload 大小逐行校验 |
+| IMP-05 | 关联关系审查 | ✅ | `api/diagnostics_import.py` | 未知任务、有 run 无清单、未知清单、清单与任务/运行不匹配 → `needs_review` 并附原因 |
+| IMP-06 | 隔离区落库与幂等 | ✅ | `core/persistence.py`, `api/server.py` | `diagnostics_imports` + `diagnostics_import_events`；按包 SHA-256 幂等（重复返回原记录）；导入内容不执行、不进入 `runtime_events` |
+| IMP-07 | 权限与审计 | ✅ | `api/auth.py`, `api/server.py` | `POST /diagnostics/import` 需 admin；成功与拒绝均写审计；`GET /diagnostics/imports[/{id}]` 可审查 |
+| IMP-08 | 客户端导入入口 | ⬜ | — | 系统文件选择器与导入结果展示未接线 |
+
 ---
 
 ## 3. REST API 清单
@@ -298,6 +311,8 @@ Python 服务端（标准库，SQLite）
 | `/models/migrations`、`/models/migrations/{id}` | 模型迁移列表/详情 |
 | `/diagnostics`、`/diagnostics/{case_id}`、`/diagnostics/trends` | 诊断案例/详情/趋势 |
 | `/diagnostics/drift` | 环境漂移检测报告（只读，不产生事件） |
+| `/diagnostics/imports?limit=N` | 离线诊断包导入记录（admin） |
+| `/diagnostics/imports/{import_id}` | 导入详情与逐事件审查状态（admin） |
 | `/evolution/candidates`、`/evolution/candidates/{id}`、`/evolution/datasets` | 进化候选与数据集 |
 | `/releases`、`/releases/{id}` | 发布清单 |
 | `/alerts` | 当前告警（按 `AlertPolicy` 评估） |
@@ -345,6 +360,7 @@ Python 服务端（标准库，SQLite）
 | `/diagnostics/{case_id}/hypotheses` | 模型辅助假设（advisory；无模型 `503`；证据未绑定/重复项进 `skipped`） |
 | `/evolution/sandbox/run` | 候选代码隔离执行（admin；`code` 或 `path`；返回 passed/failed/timeout/violation） |
 | `/diagnostics/{case_id}/candidates` | 假设升级候选 |
+| `/diagnostics/import` | 上传离线诊断包（admin；ZIP，`201` 入隔离区，重复包 `200 duplicate`；校验失败 `400/413`） |
 | `/admin/backup` | 创建三库备份（admin，写审计，`201`） |
 | `/admin/restore` | 恢复指定备份（admin；未结束任务 `409`、缺失 `404`、非法名称 `400`；恢复前自动安全备份） |
 
@@ -574,7 +590,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，312 项）
+### Python（`tests/`，344 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -604,6 +620,7 @@ Python 服务端（标准库，SQLite）
 | `test_evolution_benefit.py` | 十维收益、跨领域回归、发布后监测采集/判定/回滚（21 项） |
 | `test_governance.py` | 上下文治理、评测完整性、fail-closed 门禁（12 项） |
 | `test_event_sync.py` | 事件同步、旧库迁移、幂等提交（8 项） |
+| `test_diagnostics_import.py` | 诊断包受控导入：隔离入区、包幂等、路径穿越、解压炸弹、文件白名单、摘要缺失/不匹配、格式版本、关联审查、内容类型与 admin 权限（9 项） |
 | `test_version_sync.py` | 版本对账/兼容阻断/灰度、应用回执幂等与回滚、批次回执重放、运行清单设备字段（15 项） |
 | `test_model_migration.py` | 九步迁移、回归对比、受控启用/回滚、固定模型覆盖、迁移 API（10 项） |
 | `test_memory_evaluation.py` | 记忆评测指标、过期/冲突用例、运行反馈、报告 API/指标（6 项） |
@@ -656,7 +673,7 @@ cd android-app && npm run test:offline
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 331 passed
+python -m pytest tests/ -q                       # 344 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -684,6 +701,7 @@ python -m evoagent.cli workflow-publish <candidate_id> --args '{"step_1":{"expre
 python -m evoagent.cli serve --port 8300
 #   - 两次相同 client_request_id 的 POST /tasks → 同一 task_id
 #   - 重复 POST /events/sync → duplicates
+#   - POST /diagnostics/import（admin）→ 201 隔离；同包重传 → 200 duplicate
 #   - GET /costs /metrics /admin /alerts /logs/layers /logs/traces
 #   - GET /models /models/migrations /memory/evaluations /diagnostics/drift
 #   - POST /models/migrations → regression → release → apply → rollback
@@ -729,6 +747,20 @@ cd android-app && npm run android
 ---
 
 ## 变更记录
+
+### 2026-10-20 — 诊断包受控导入（补充 C §8）
+
+- 需求：`EvoAgent_离线日志与可靠同步子系统设计.md` §8（人工诊断通道）与 §11 验收标准。
+- 变更：服务端新增受控导入。ZIP 仅被解析与校验，包内内容永不执行、不进入 `runtime_events`；
+  校验通过后按包 SHA-256 幂等写入隔离区，逐事件标记 `accepted` / `needs_review` 与冲突原因
+  （未知任务、有 run 无 manifest、未知 manifest、清单与任务/运行不匹配），供人工审查。
+- 代码：`api/diagnostics_import.py`（新增）、`api/server.py`、`api/auth.py`、`core/persistence.py`。
+- 接口/表：`POST /diagnostics/import`（admin，ZIP）、`GET /diagnostics/imports`、
+  `GET /diagnostics/imports/{id}`；新表 `diagnostics_imports` / `diagnostics_import_events`。
+- 测试：新增 `tests/test_diagnostics_import.py`（9 项）；Python 335 → 344，客户端保持 69。
+- 状态变化：新增 IMP-01…IMP-07 ✅、IMP-08 ⬜（客户端导入入口）；
+  IMPLEMENTATION 补充 C §8 ⬜ → ✅，§9/§11 相应更新。
+- 已知限制：仅服务端入口与审查接口；客户端文件选择器导入未接线；附件上传（§6）与离线导出（§7）仍未实现。
 
 ### 2026-10-20 — 候选阶段同步（补充 A §2/§8）
 
@@ -960,6 +992,10 @@ cd android-app && npm run android
 | Session 23 | 无障碍界面观测与执行校验（PRD 68） | 312 + 41 |
 | Session 24 | 版本对账、运行清单与客户端更新管理器（补充 A） | 327 + 57 |
 | Session 25 | 候选阶段同步（服务端 → App） | 331 + 60 |
+| Session 26 | 补充设计 C 映射与迭代待办 | 331 + 60 |
+| Session 27 | 同步状态机、因果顺序与回执协议（补充 C §3/§5） | 335 + 66 |
+| Session 28 | 保留等级、容量治理与损失标记（补充 C §4） | 335 + 69 |
+| Session 29 | 诊断包受控导入（补充 C §8） | 344 + 69 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 
