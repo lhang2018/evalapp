@@ -30,6 +30,7 @@ from .evolution.probes import PROBES, ProbeRunner
 from .evolution.runner import ControllerTaskRunner
 from .experts.builtin import builtin_experts
 from .memory.context import ContextAssembler
+from .memory.embeddings import build_embedder
 from .memory.evaluation import MemoryEvaluator
 from .memory.store import MemoryStore
 from .models.base import ModelRegistry
@@ -65,7 +66,8 @@ class App:
         # 基础设施
         self.db = Database(str(d / "evoagent.db"))
         self.bus = EventBus(str(d / "events.db"))
-        self.memory = MemoryStore(str(d / "memory.db"))
+        self.memory = MemoryStore(str(d / "memory.db"),
+                                  embedder=build_embedder(self.config))
         self.ledger = BudgetLedger(self.db)
         self.audit = AuditLog(self.db, self.bus)
         # 日志分层：执行轨迹 + 诊断证据 + 保留策略（PRD 38-39 / Arch 9.2）

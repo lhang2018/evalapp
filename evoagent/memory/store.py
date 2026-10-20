@@ -8,15 +8,16 @@
 """
 
 import json
-import math
 import sqlite3
 import threading
 import time
 import uuid
-import zlib
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
+from .embeddings import (EmbeddingProvider, HashEmbeddingProvider, hash_vector,
+                         normalize, words)
 
 
 class MemoryKind(str, Enum):
@@ -113,15 +114,22 @@ class MemoryStore:
         status TEXT, content TEXT, source TEXT, allowed INTEGER,
         created_at REAL, updated_at REAL, superseded_by TEXT, extra TEXT)"""
 
-    def __init__(self, path: str = ".evoagent/memory.db"):
+    _VECTOR_SCHEMA = """CREATE TABLE IF NOT EXISTS memory_vectors(
+        memory_id TEXT PRIMARY KEY, model TEXT NOT NULL, dim INTEGER NOT NULL,
+        vector TEXT NOT NULL, updated_at REAL)"""
+
+    def __init__(self, path: str = ".evoagent/memory.db",
+                 embedder: Optional[EmbeddingProvider] = None):
         import pathlib
         pathlib.Path(path).parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.Lock()
+        self._embedder = embedder or HashEmbeddingProvider()
         self._conn = sqlite3.connect(path, check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
         with self._lock:
             self._migrate_if_needed()
             self._conn.execute(self._SCHEMA)
+            self._conn.execute(self._VECTOR_SCHEMA)
             self._conn.commit()
 
     def _migrate_if_needed(self) -> None:
@@ -152,6 +160,7 @@ class MemoryStore:
                  item.superseded_by,
                  json.dumps(self._extra(item), ensure_ascii=False)))
             self._conn.commit()
+        self._store_vector(item)
         return item
 
     @staticmethod
@@ -163,6 +172,61 @@ class MemoryStore:
                 "superseded_by": item.superseded_by,
                 "revoked_reason": item.revoked_reason,
                 "valid_until": item.valid_until, "use_count": item.use_count}
+
+    # ---- 向量化（PRD 25）----
+    def _embed_texts(self, texts: List[str]):
+        """返回 (模型标识, 归一化向量)；外部嵌入失败时回退哈希向量。"""
+        try:
+            vectors = self._embedder.embed(list(texts))
+            model = getattr(self._embedder, "model_id", "unknown")
+            if len(vectors) == len(texts) and all(
+                    len(v) > 0 for v in vectors):
+                return model, [normalize(v) for v in vectors]
+        except Exception:  # noqa: BLE001  嵌入服务不可用不能阻断检索
+            pass
+        return "hash-64", [hash_vector(t) for t in texts]
+
+    def _store_vector(self, item: MemoryItem) -> None:
+        model, vectors = self._embed_texts([item.content])
+        self._write_vector(item.memory_id, model, vectors[0])
+
+    def _write_vector(self, memory_id: str, model: str,
+                      vector: List[float]) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO memory_vectors VALUES (?,?,?,?,?)",
+                (memory_id, model, len(vector), json.dumps(vector),
+                 time.time()))
+            self._conn.commit()
+
+    def _vectors_for(self, items: List[MemoryItem],
+                     model: str) -> Dict[str, List[float]]:
+        """取与查询同模型的向量；缺失或换模型时批量重算并落盘。"""
+        ids = [m.memory_id for m in items]
+        if not ids:
+            return {}
+        placeholders = ",".join("?" * len(ids))
+        rows = self._conn.execute(
+            "SELECT memory_id, vector FROM memory_vectors"
+            f" WHERE model=? AND memory_id IN ({placeholders})",
+            [model, *ids]).fetchall()
+        out = {r["memory_id"]: json.loads(r["vector"]) for r in rows}
+        missing = [m for m in items if m.memory_id not in out]
+        if missing:
+            fresh_model, vectors = self._embed_texts(
+                [m.content for m in missing])
+            if fresh_model != model:
+                return out
+            with self._lock:
+                for m, vec in zip(missing, vectors):
+                    self._conn.execute(
+                        "INSERT OR REPLACE INTO memory_vectors"
+                        " VALUES (?,?,?,?,?)",
+                        (m.memory_id, model, len(vec), json.dumps(vec),
+                         time.time()))
+                    out[m.memory_id] = vec
+                self._conn.commit()
+        return out
 
     # ---- 检索（PRD 25）----
     def search(self, query: str, *, scope: Optional[Scope] = None,
@@ -188,16 +252,19 @@ class MemoryStore:
                         if any(d in m.applicable_domains for d in domains)
                         or m.kind == MemoryKind.USER_PREFERENCE]
             items = matching or [m for m in items if m.scope == Scope.SHARED]
-        # 5) 相关性：词重叠（精确）+ 哈希向量余弦（近似语义召回）混合
+        # 5) 相关性：词重叠（精确）+ 向量余弦（真实嵌入或哈希回退）混合
         q_words = set(_words(query))
-        q_vec = _vector(query)
+        model, q_vectors = self._embed_texts([query])
+        q_vec = q_vectors[0]
+        vectors = self._vectors_for(items, model)
         cred_boost = {Credibility.VERIFIED: 2.0, Credibility.RESTRICTED: 0.5,
                       Credibility.CANDIDATE: 1.0, Credibility.PENDING_REVIEW: 0.8}
         scored = []
         for m in items:
             m_words = set(_words(m.content))
             overlap = len(q_words & m_words)
-            cosine = _cosine(q_vec, _vector(m.content))
+            m_vec = vectors.get(m.memory_id)
+            cosine = _cosine(q_vec, m_vec) if m_vec else 0.0
             if overlap == 0 and cosine < 0.05:
                 continue
             lexical = overlap / max(1, len(q_words))
@@ -274,12 +341,15 @@ class MemoryStore:
                  json.dumps(self._extra(item), ensure_ascii=False),
                  memory_id))
             self._conn.commit()
+        self._store_vector(item)
         return item
 
     def delete(self, memory_id: str) -> bool:
         with self._lock:
             cur = self._conn.execute(
                 "DELETE FROM memory_items WHERE memory_id=?", (memory_id,))
+            self._conn.execute(
+                "DELETE FROM memory_vectors WHERE memory_id=?", (memory_id,))
             self._conn.commit()
             return cur.rowcount > 0
 
@@ -373,20 +443,9 @@ class MemoryStore:
         return item
 
 
-_VECTOR_DIM = 64
-
-
 def _vector(text: str) -> List[float]:
-    """零依赖哈希词向量：稳定哈希到固定维度并归一化。
-
-    不是语义嵌入，但能在词形不完全一致时提供近似召回；
-    后续可替换为真实 embedding，不影响检索排序接口。
-    """
-    vec = [0.0] * _VECTOR_DIM
-    for token in _words(text):
-        vec[zlib.crc32(token.encode("utf-8")) % _VECTOR_DIM] += 1.0
-    norm = math.sqrt(sum(x * x for x in vec))
-    return [x / norm for x in vec] if norm else vec
+    """哈希向量（回退实现）；保留名称供旧调用点使用。"""
+    return hash_vector(text)
 
 
 def _cosine(a: List[float], b: List[float]) -> float:
@@ -395,14 +454,4 @@ def _cosine(a: List[float], b: List[float]) -> float:
 
 def _words(text: str) -> List[str]:
     """混合分词：拉丁按词；中文用 bigram（朴素但够用于重叠记分）。"""
-    import re
-    raw = re.findall(r"[A-Za-z0-9]{2,}|[\u4e00-\u9fff]+", text.lower())
-    out: List[str] = []
-    for t in raw:
-        if t.isascii():
-            out.append(t)
-        elif len(t) <= 2:
-            out.append(t)
-        else:
-            out.extend(t[i:i + 2] for i in range(len(t) - 1))
-    return out
+    return words(text)

@@ -113,6 +113,19 @@ python -m evoagent.cli task "查询现在几点了"
 `EVOAGENT_API_KEY / BASE_URL / MODEL` 优先级最高。Mock 与真实模型共用同一适配器契约；
 路由/档案/注册表逻辑一致（PRD 4.5 能力与模型解耦）。
 
+### 记忆嵌入（可选）
+
+默认使用零依赖哈希向量；需要语义召回时配置兼容 `/embeddings` 的端点：
+
+```powershell
+$env:EVOAGENT_EMBEDDING_PROVIDER="openai"
+$env:EVOAGENT_EMBEDDING_MODEL="text-embedding-3-small"
+# 缺省复用 EVOAGENT_API_KEY / EVOAGENT_BASE_URL（或 Claude 全局配置）
+```
+
+嵌入失败（网络/权限/模型不支持）时自动回退哈希向量，检索不会中断。向量随记忆持久化，
+切换模型后按需重算。
+
 ## 架构总览（对应 Architecture 2.x 双轨）
 
 ```
@@ -187,9 +200,9 @@ Planning/意图分类（复用 Claude 全局配置，已实测）+ 执行内核�
 Web 管理端 90.1-90.7 分区（健康/问题中心/诊断详情/候选实验/版本/成本/审计回滚，含回放、备份恢复与沙箱）、
 任务模型全字段（目标对象/预期输出/复杂度/所需工具与权限/网络依赖/工作流适用性/待确认问题，显式输入优先）、
 用户端七个中心页面（任务/离线状态/工作流/记忆/预算与模型/权限/更新；记忆支持纠正与删除并审计，
-工作流展示版本/运行/产物，预算模型与更新只读展示）。
-测试通过：Python 297 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
-嵌入向量检索。
+工作流展示版本/运行/产物，预算模型与更新只读展示）、可插拔记忆嵌入（默认哈希，OpenAI 兼容端点，
+向量持久化与失败回退）。
+测试通过：Python 305 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配。
 
 ## 目录
 
@@ -209,7 +222,7 @@ evoagent/                  Python 服务端核心
   core/replay.py           只读运行回放
   core/backup.py           三库备份/校验/恢复
   cli.py                   命令行
-tests/                     297 项服务端测试
+tests/                     305 项服务端测试
 android-app/               React Native Android 客户端
   src/offline/             本地任务/事件队列、隐私过滤、同步引擎（纯 TS，可单测）
   src/device/              设备操作契约/风险闸门/原生桥接（纯 TS，可单测）

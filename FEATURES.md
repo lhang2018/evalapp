@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 297 项 + 客户端 29 项全部通过**。
+测试基线（2026-10-20）：**Python 305 项 + 客户端 29 项全部通过**。
 
 ---
 
@@ -110,13 +110,13 @@ Python 服务端（标准库，SQLite）
 | MM-01 | 记忆类型/归属/可信状态/过期 | ✅ | `memory/store.py` | SQLite 持久化 |
 | MM-02 | 冲突替代（superseded） | ✅ | `memory/store.py` | 保留替代链 |
 | MM-03 | 记忆关系（refines 等） | ✅ | `memory/store.py` | 持久化与查询 |
-| MM-04 | 混合相关性检索 | ✅ | `memory/store.py` | 词法 + 局部敏感哈希向量；中文 bigram |
+| MM-04 | 混合相关性检索 | ✅ | `memory/store.py` | 词法 + 向量余弦；中文 bigram |
 | MM-05 | 使用计数与统计 | ✅ | `memory/store.py` | 按 kind/scope/status |
 | MM-06 | 上下文装配优先级 | ✅ | `memory/context.py` | 约束/状态/验收永不裁剪 |
 | MM-07 | 动态预算 | ✅ | `memory/context.py` | `context_max_chars` + 模型 `context_limit`；记忆 35% / 结果 30% 份额 |
 | MM-08 | 结构化压缩 + 摘要 | ✅ | `memory/context.py` | 约束保留率在裁剪前采集 |
 | MM-09 | 上下文质量检查 | ✅ | `memory/context.py` | 约束保留/跨域污染/不可信指令/溢出/状态缺失；异常写事件 |
-| MM-10 | 真实嵌入向量检索 | ⬜ | — | 当前为词法 + 哈希向量 |
+| MM-10 | 真实嵌入向量检索 | ✅ | `memory/embeddings.py`, `memory/store.py` | 可插拔嵌入（默认哈希；`openai` 兼容端点）；向量持久化并按模型失效重算；服务不可用自动回退哈希；真实网关未验证（403） |
 | MM-11 | 记忆质量评测 | ✅ | `memory/evaluation.py` | 写入准确率/召回/精确率/MRR/过期误用/冲突正确性；内置用例 + 报告持久化 |
 | MM-12 | 运行反馈与记忆收益 | ✅ | `memory/evaluation.py`, `app.py` | 有/无记忆任务成功率对比、有害/误导反馈率；缺样本标 `insufficient_evidence` |
 
@@ -454,6 +454,7 @@ Python 服务端（标准库，SQLite）
 | `execution_traces` | 执行轨迹（任务 `step` 连续、隐私分级、按 `at` 索引） |
 | `diagnostic_evidence` | 诊断证据（引用、授权标记、保留 7 天） |
 | `memory_items` | 记忆、关系、使用计数 |
+| `memory_vectors` | 记忆向量（模型标识、维度、向量、更新时间） |
 | `tool_executions` | 幂等执行日志 |
 | `budget_ledger` | 预算账本（scope + 日/月键） |
 | `diagnostic_cases` / `diagnostic_hypotheses` / `diagnostic_experiments` | 诊断 |
@@ -513,7 +514,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，297 项）
+### Python（`tests/`，305 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -525,6 +526,7 @@ Python 服务端（标准库，SQLite）
 | `test_planning.py` | 计划校验/回退、意图分类（具体领域提示、`time_query` 注册） |
 | `test_task_model.py` | 任务模型全字段往返、旧任务默认值、显式输入不被推断覆盖、计划/工作流补齐、REST 校验与持久化（8 项） |
 | `test_client_centers.py` | 记忆查看/过滤/纠正/删除、权限范围阻断、审计记录；工作流检查版本/运行/产物（5 项） |
+| `test_embeddings.py` | 语义召回、向量持久化与复用、嵌入失败回退、模型切换重算、纠正/删除维护向量、配置优先、OpenAI 请求形状（8 项） |
 | `test_config.py` | Claude 全局配置回退、`/v1` 归一、显式环境变量优先、缺失/损坏配置降级（7 项） |
 | `test_tools.py` | 契约、权限、副作用、幂等 |
 | `test_tool_workflow.py` | 工具超时/重试/输出契约、工作流并行/跳过/续跑 |
@@ -574,7 +576,6 @@ cd android-app && npm run test:offline
 
 | 项 | PRD / Arch | 状态 | 说明 |
 |---|---|---|---|
-| 真实嵌入向量检索 | PRD 25 | ⬜ | 当前词法 + 哈希向量 |
 | LLM 辅助诊断假设 | PRD 41-45 / Arch 9.4 | ✅ | 模型输出仅作证据绑定的辅助解释；不改案例状态，探针验证前不可升级候选 |
 | 候选代码隔离沙箱 | PRD 47.4 / L3 | ✅ | 独立子进程 + 审计钩子；非恶意代码强安全边界 |
 | 视觉/OCR/语音操作 | PRD 64/68 | ⬜ | 仅无障碍节点与显式 Intent |
@@ -589,7 +590,7 @@ cd android-app && npm run test:offline
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 297 passed
+python -m pytest tests/ -q                       # 305 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -711,6 +712,20 @@ cd android-app && npm run android
 - 状态变化：新增 MD-10 ✅；迭代待办「真实 LLM 联调」完成。
 - 已知限制：仅复用 Claude 配置中的 OpenAI 兼容端点；不解析 `apiKeyHelper` 或其他凭据来源。
 
+### 2026-10-20 — 真实嵌入向量检索（PRD 25）
+
+- 需求：PRD 25（记忆检索应支持语义召回，而非仅词形重叠）。
+- 变更：新增可插拔嵌入提供方（默认零依赖哈希；`openai` 调用兼容 `/embeddings`）；
+  向量持久化到 `memory_vectors`，按模型标识复用，模型切换时逐条重算；
+  嵌入服务异常自动回退哈希向量，检索不中断；纠正后重算、删除时清理向量。
+- 代码：`memory/embeddings.py`、`memory/store.py`、`config.py`（`EmbeddingConfig`）、`app.py`。
+- 配置：`EVOAGENT_EMBEDDING_PROVIDER=openai|hash`、`EVOAGENT_EMBEDDING_MODEL`、
+  `EVOAGENT_EMBEDDING_BASE_URL`、`EVOAGENT_EMBEDDING_API_KEY`；缺省复用模型提供方凭据。
+- 测试：新增 `tests/test_embeddings.py`（8 项）；Python 总数 297 → 305，客户端保持 29。
+- 状态变化：MM-10 ⬜ → ✅；未实现清单移除「真实嵌入向量检索」。
+- 已知限制：现有网关对 `text-embedding-3-small` 返回 403，真实嵌入未完成端到端验证；
+  运行时自动回退哈希。嵌入调用未计入九级模型预算。
+
 ### 2026-10-20 — 用户端中心页面（PRD 89.3-89.8）
 
 - 需求：PRD 89.3-89.8（工作流中心、记忆中心、离线状态、预算与模型设置、权限管理、更新管理）。
@@ -807,6 +822,7 @@ cd android-app && npm run android
 | Session 18 | Web 管理端 PRD 90.1-90.7 完整界面 | 284 + 29 |
 | Session 19 | 任务模型全字段（PRD 7.3） | 292 + 29 |
 | Session 20 | 用户端中心页面（PRD 89.3-89.8） | 297 + 29 |
+| Session 21 | 真实嵌入向量检索（PRD 25） | 305 + 29 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 

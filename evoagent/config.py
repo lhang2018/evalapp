@@ -18,6 +18,16 @@ class ModelProviderConfig:
 
 
 @dataclass
+class EmbeddingConfig:
+    # PRD 25：默认哈希向量；openai 使用兼容 /embeddings 端点
+    provider: str = "hash"                   # hash | openai
+    model_id: str = "text-embedding-3-small"
+    base_url: Optional[str] = None           # 缺省复用 provider.base_url
+    api_key: Optional[str] = None            # 缺省复用 provider.api_key
+    timeout_seconds: int = 15
+
+
+@dataclass
 class BudgetConfig:
     # 默认单任务硬预算（Architecture 12.1）
     task_max_model_calls: int = 25
@@ -67,6 +77,7 @@ class DiagnosticsConfig:
 class Config:
     data_dir: Path = field(default_factory=lambda: Path(os.environ.get("EVOAGENT_DATA", ".evoagent")))
     provider: ModelProviderConfig = field(default_factory=ModelProviderConfig)
+    embedding: EmbeddingConfig = field(default_factory=EmbeddingConfig)
     budget: BudgetConfig = field(default_factory=BudgetConfig)
     diagnostics: DiagnosticsConfig = field(default_factory=DiagnosticsConfig)
 
@@ -96,6 +107,10 @@ class Config:
                 for k, v in data["provider"].items():
                     if hasattr(cfg.provider, k):
                         setattr(cfg.provider, k, v)
+            if "embedding" in data:
+                for k, v in data["embedding"].items():
+                    if hasattr(cfg.embedding, k):
+                        setattr(cfg.embedding, k, v)
             if "budget" in data:
                 for k, v in data["budget"].items():
                     if hasattr(cfg.budget, k):
@@ -116,6 +131,14 @@ class Config:
             cfg.provider.base_url = os.environ["EVOAGENT_BASE_URL"]
         if os.environ.get("EVOAGENT_MODEL"):
             cfg.provider.model_id = os.environ["EVOAGENT_MODEL"]
+        if os.environ.get("EVOAGENT_EMBEDDING_PROVIDER"):
+            cfg.embedding.provider = os.environ["EVOAGENT_EMBEDDING_PROVIDER"]
+        if os.environ.get("EVOAGENT_EMBEDDING_MODEL"):
+            cfg.embedding.model_id = os.environ["EVOAGENT_EMBEDDING_MODEL"]
+        if os.environ.get("EVOAGENT_EMBEDDING_BASE_URL"):
+            cfg.embedding.base_url = os.environ["EVOAGENT_EMBEDDING_BASE_URL"]
+        if os.environ.get("EVOAGENT_EMBEDDING_API_KEY"):
+            cfg.embedding.api_key = os.environ["EVOAGENT_EMBEDDING_API_KEY"]
         cfg.data_dir.mkdir(parents=True, exist_ok=True)
         return cfg
 

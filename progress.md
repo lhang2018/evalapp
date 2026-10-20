@@ -855,3 +855,41 @@
 - 记忆中心只展示用户可管理字段；证据快照与内部关系不下发客户端
 - 记忆变更必须过服务端权限范围判定并落审计，客户端确认只防误触
 - 未使用的系统权限如实标注“未使用”，不伪造授权状态
+
+## Session 21 (2026-10-20)
+
+### 目标
+- 补齐剩余差距中的服务端项：「真实嵌入向量检索」（PRD 25）。
+
+### 完成事项
+- [x] 新增 `memory/embeddings.py`：`EmbeddingProvider` 协议、零依赖 `HashEmbeddingProvider`
+      （64 维、中文 bigram）、`OpenAIEmbeddingProvider`（兼容 `/embeddings`，严格校验
+      返回数量与维度）、`build_embedder` 配置装配
+- [x] `memory/store.py`：新增 `memory_vectors` 表；写入/纠正时向量化，删除时清理；
+      检索使用查询向量与已存向量余弦，缺失或模型变化时批量重算；嵌入异常回退哈希
+- [x] `config.py`：`EmbeddingConfig`（provider/model/base_url/api_key/timeout）与
+      `EVOAGENT_EMBEDDING_*` 环境变量、配置文件 `embedding` 段
+- [x] `app.py`：按配置注入嵌入提供方；缺省哈希，无凭据时自动降级
+- [x] 测试：新增 `tests/test_embeddings.py`（8 项：语义召回、持久化复用、失败回退、
+      模型切换重算、纠正/删除向量维护、配置优先级、OpenAI 请求形状）
+- [x] 文档：FEATURES（MM-10 ✅、`memory_vectors` 表）、IMPLEMENTATION、README
+      （嵌入配置说明与占位清单）、task_plan、progress 同步
+
+### 测试结果
+- `python -m pytest tests/ -q` → 305 passed
+- `cd android-app && npm run test:offline` → 29 passed（未改动客户端）
+- `python -m evoagent.cli demo` / `workflow` 正常
+
+### 盘点更新
+- `FEATURES.md`：180 项 ✅、0 项部分、4 项待迭代（1 项明确不做）。
+- 剩余项：视觉/OCR/语音、后台常驻同步、端到端加密与多设备冲突、发布自动分支/合并。
+
+### 已知限制
+- 现有网关对 `text-embedding-3-small` 返回 403，真实嵌入仅完成适配器与单测验证；
+  实测失败时自动回退哈希。
+- 嵌入调用未计入九级模型预算；向量存储随记忆规模线性增长，暂未做清理策略。
+
+### 设计约束（本轮确立）
+- 嵌入服务是可选的增强项：任何失败都必须回退到确定性检索，不能阻断任务
+- 向量与生成模型绑定：模型标识变化即视为失效，按需重算而非假定兼容
+- 默认配置不引入外部依赖与额外网络调用
