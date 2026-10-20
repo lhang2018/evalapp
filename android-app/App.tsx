@@ -42,6 +42,10 @@ import { EventQueue } from "./src/offline/queue.ts";
 import { LocalTaskService } from "./src/offline/tasks.ts";
 import { ClientTransport } from "./src/offline/apiTransport.ts";
 import { SyncEngine } from "./src/offline/sync.ts";
+import { DiagnosticsExporter } from "./src/offline/export.ts";
+import type { ExportPreview, ExportRequest } from "./src/offline/export.ts";
+import { NativeExportSink } from "./src/offline/nativeExport.ts";
+import type { DiagnosticsSaveModule } from "./src/offline/nativeExport.ts";
 import type {
   DeadLetter,
   LocalTask,
@@ -156,6 +160,11 @@ export default function App(): React.JSX.Element {
   const [centerError, setCenterError] = useState<string | null>(null);
   const [updateState, setUpdateState] = useState<UpdateState | null>(null);
   const [updateBusy, setUpdateBusy] = useState(false);
+  const [exportPreview, setExportPreview] = useState<ExportPreview | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportSensitive, setExportSensitive] = useState(false);
+  const [exportMetadataOnly, setExportMetadataOnly] = useState(false);
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
 
   // 服务器地址：模拟器默认 10.0.2.2；真机可填局域网 IP（或 adb reverse 后用 127.0.0.1）
   const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL);
@@ -175,7 +184,7 @@ export default function App(): React.JSX.Element {
     const sync = new SyncEngine(queue, transport, tasks);
     const deviceModule =
       (NativeModules as Record<string, unknown>).EvoAgentDevice as
-        | NativeDeviceModuleLike
+        | (NativeDeviceModuleLike & DiagnosticsSaveModule)
         | null;
     const deviceTransport = new NativeDeviceTransport(deviceModule ?? null);
     const broker = new DeviceBroker(deviceTransport, {
@@ -196,6 +205,8 @@ export default function App(): React.JSX.Element {
       deviceTransport,
       broker,
       update,
+      exporter: new DiagnosticsExporter(),
+      exportSink: new NativeExportSink(deviceModule ?? null),
     };
   }, [baseUrl]);
 
@@ -574,6 +585,45 @@ export default function App(): React.JSX.Element {
     }
   }, []);
 
+  const exportRequest = useCallback((): ExportRequest => ({
+    device: { app_version: APP_VERSION, platform: Platform.OS },
+    include_sensitive_payloads: exportSensitive,
+    include_raw_payloads: !exportMetadataOnly,
+    include_attachments: false,
+  }), [exportSensitive, exportMetadataOnly]);
+
+  const previewExport = useCallback(async () => {
+    setExportMessage(null);
+    try {
+      const state = await services.repo.load();
+      setExportPreview(services.exporter.preview(state, exportRequest()));
+    } catch (e: unknown) {
+      setError("生成预览失败：" + (e instanceof Error ? e.message : String(e)));
+    }
+  }, [services, exportRequest]);
+
+  const runExport = useCallback(async () => {
+    setExporting(true);
+    setError(null);
+    setExportMessage(null);
+    try {
+      const state = await services.repo.load();
+      const result = await services.exporter.exportTo(
+        services.exportSink,
+        state,
+        exportRequest(),
+      );
+      setExportPreview(result.preview);
+      setExportMessage(
+        `已保存 ${result.file_name}（事件 ${result.preview.events} 条）`,
+      );
+    } catch (e: unknown) {
+      setError("导出失败：" + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setExporting(false);
+    }
+  }, [services, exportRequest]);
+
   return (
     <SafeAreaView style={s.container}>
       <KeyboardAvoidingView
@@ -663,6 +713,77 @@ export default function App(): React.JSX.Element {
                   onPress={() => flush(true)}
                   disabled={syncing || !online}
                 />
+              </View>
+
+              <Text style={s.section}>诊断包导出</Text>
+              <View style={s.card}>
+                <Text style={s.hint}>
+                  离线生成 ZIP（清单 + 校验和 + 运行时清单），不上传数据，也不改动同步状态；导出前可先预览内容。
+                </Text>
+                <View style={s.row}>
+                  <Button
+                    title={
+                      exportSensitive
+                        ? "敏感事件：包含原文"
+                        : "敏感事件：仅元数据"
+                    }
+                    onPress={() => {
+                      setExportSensitive((v) => !v);
+                      setExportPreview(null);
+                      setExportMessage(null);
+                    }}
+                  />
+                </View>
+                <View style={s.row}>
+                  <Button
+                    title={
+                      exportMetadataOnly
+                        ? "原始负载：仅字段名"
+                        : "原始负载：包含（密钥脱敏）"
+                    }
+                    onPress={() => {
+                      setExportMetadataOnly((v) => !v);
+                      setExportPreview(null);
+                      setExportMessage(null);
+                    }}
+                  />
+                </View>
+                <View style={s.row}>
+                  <Button
+                    title="预览导出内容"
+                    onPress={() => void previewExport()}
+                  />
+                  <Button
+                    title={exporting ? "导出中…" : "导出诊断包"}
+                    onPress={() => void runExport()}
+                    disabled={exporting}
+                  />
+                </View>
+                {exportPreview && (
+                  <Text style={s.hint}>
+                    事件 {exportPreview.events} · 敏感{" "}
+                    {exportPreview.sensitive_events} · 失败{" "}
+                    {exportPreview.failed_events} · 附件 含{" "}
+                    {exportPreview.attachments_included}/排除{" "}
+                    {exportPreview.attachments_excluded} · 拒绝{" "}
+                    {exportPreview.attachments_rejected} · 脱敏字段{" "}
+                    {exportPreview.redacted_fields}
+                    {exportPreview.loss_markers > 0
+                      ? ` · 损失标记 ${exportPreview.loss_markers}`
+                      : ""}
+                  </Text>
+                )}
+                {exportPreview?.categories.length ? (
+                  <Text style={s.mono}>
+                    敏感类别：{exportPreview.categories.join(" / ")}
+                  </Text>
+                ) : null}
+                {exportPreview?.warnings.map((warning) => (
+                  <Text key={warning} style={s.error}>
+                    {warning}
+                  </Text>
+                ))}
+                {exportMessage && <Text style={s.hint}>{exportMessage}</Text>}
               </View>
             </>
           )}

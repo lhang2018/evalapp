@@ -1,5 +1,6 @@
 package com.evoagent
 
+import android.content.Intent
 import android.os.Bundle
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -15,4 +16,9 @@ class MainActivity : ReactActivity() {
 
     override fun createReactActivityDelegate(): ReactActivityDelegate =
         DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (DeviceModule.completeSave(this, requestCode, resultCode, data)) return
+        super.onActivityResult(requestCode, resultCode, data)
+    }
 }

@@ -26,6 +26,10 @@
   健康检查失败自动回滚、应用回执上报。原生 APK 只标记为需二进制更新，必须走平台应用商店。
 - **候选阶段同步**：`/sync/candidates` 拉取评测后的候选状态（批准/就绪/部署/监测/晋级/回滚），
   在更新分区只读展示；候选阶段不触发激活，实际更新仍走对账与签名校验。
+- **离线诊断包导出**（`src/offline/export.ts`）：完全本地生成 ZIP（清单、事件、运行时清单、
+  任务运行、同步状态、逐文件 SHA-256/CRC32）；支持范围/时间/能力/失败过滤；导出前可预览，
+  敏感事件默认仅元数据、原始负载可关闭，密钥类字段/值强制脱敏；只读不改变同步状态；
+  经系统文件选择器（SAF）交付，取消/失败不留下半成品。
 
 ## 为什么选 React Native
 
@@ -38,7 +42,7 @@
 ## 测试（无需 node_modules）
 
 ```bash
-npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门/界面观测/更新管理器，共 69 项
+npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门/界面观测/更新管理器/诊断包导出，共 76 项
 npm run typecheck       # 需要先 npm install（tsc）
 ```
 
@@ -72,6 +76,10 @@ npm run android
 无障碍节点点击与启动（返回 `[verified]` 且带前后快照/页面包名证据）、无页面变化降级为
 `[unverified]`、连续未验证安全停止与人工恢复均实测通过。
 
+**未验证**：诊断包导出的原生 SAF 交付（`DeviceModule.saveDiagnosticsPackage` +
+`MainActivity.onActivityResult`）在最近一次构建之后加入，本机没有 Android SDK/模拟器，
+尚未重新编译与真机执行；TS 侧导出逻辑有单元测试覆盖。
+
 手动构建：
 
 ```bash
@@ -91,6 +99,9 @@ cd android
 7. 服务端重复接收同一 `event_id` 返回 `duplicates`，客户端 checkpoint 正常推进。
 8. 更新分区「检查更新」返回候选后依次执行校验/激活/健康检查；点击「健康检查失败」后
    自动回到上一版本并上报 `rolled_back`（回执含 `to_release_id`）。
+9. 离线状态页「预览导出内容」显示事件/敏感/脱敏计数；「导出诊断包」弹出系统文件选择器，
+   保存后得到可解压 ZIP，`checksums.json` 与服务端 `POST /diagnostics/import` 校验一致；
+   取消选择后提示「已取消保存」，不残留临时数据。
 
 ## OTA（直接推送升级）接入步骤
 
@@ -107,12 +118,12 @@ android-app/
 ├── App.tsx                    # 任务中心 UI（PRD 89.1/89.2）
 ├── index.js                   # RN 入口
 ├── src/api.ts                 # REST 客户端（对应 api/server.py）
-├── src/offline/               # 本地任务/事件队列、隐私过滤、同步引擎
+├── src/offline/               # 本地任务/事件队列、隐私过滤、同步引擎、诊断包导出
 ├── src/device/                # 设备操作契约、风险闸门、原生桥接
 ├── src/update/                # 安装实例、版本对账、候选阶段、双槽位更新管理
 ├── src/storage/               # AsyncStorage ↔ KeyValueStore 适配
-├── test/                      # node --test（offline 21 + device 20 + update 19）
-├── android/                   # Kotlin 原生壳 + AccessibilityService + DeviceModule
+├── test/                      # node --test（offline 37 + device 20 + update 19）
+├── android/                   # Kotlin 原生壳 + AccessibilityService + DeviceModule（含 SAF 导出）
 └── package.json
 ```
 

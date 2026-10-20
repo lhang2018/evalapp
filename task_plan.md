@@ -61,6 +61,7 @@
 | 45 | 离线日志可靠同步实现 | 补充 C §3/§5：服务端 `sequence_no`/`runtime_manifest_id`/`clock_source` 落库与 `query_run` 因果排序、回执协议 1.0（confirmed/unconfirmed/confirmed_count）；客户端 per-run 序号、pending/in_flight/quarantined 状态机、崩溃后 stale in-flight 回收、稳定 batch_id、部分成功精确 ack、永久错误隔离与人工重入、App 隔离区面板 | complete（335 项 Python + 66 项客户端；typecheck 通过） |
 | 46 | 离线容量治理 | 补充 C §4：critical/normal/debug 保留等级（7 天/1 天，critical 永不自动清理）、过期清理、容量腾位（debug→normal，critical 只增不减）、`DataLossMarker` 持久化（原因/事件清单/等级计数/seq 范围）、80% 预警与界面提示 | complete（335 项 Python + 69 项客户端；typecheck 通过） |
 | 47 | 诊断包受控导入 | 补充 C §8：ZIP 仅解析不执行；包/条目/解压总量/压缩比限制、路径穿越与符号链接拒绝、文件与附件白名单、逐文件 SHA-256、`format_version` 与事件字段校验、关联关系审查；按包 SHA-256 幂等写入 `diagnostics_imports`/`diagnostics_import_events`，admin-only，成功与拒绝均审计；GET 审查接口 | complete（344 项 Python + 69 项客户端） |
+| 48 | 离线诊断包导出 | 补充 C §7：纯 TS SHA-256/CRC32 + STORE ZIP；清单/事件 JSONL/运行时清单/任务运行/同步状态/校验和；范围/时间/能力/失败过滤；预览敏感类别与警告；密钥类字段/值强制脱敏，敏感原文与原始负载默认关闭；只读且字节确定；Android SAF 文件选择器交付、临时数据清理 | complete（344 项 Python + 76 项客户端；原生 SAF 待真机验证） |
 
 ## 关键决策（Decisions）
 | 决策 | 理由 |
@@ -112,6 +113,8 @@
 | 双槽位引用切换与 last known good | 原子切换槽位引用，健康检查失败自动回滚；原生 APK 不允许槽位激活，必须走平台应用更新（补充 A §5.3） |
 | 候选阶段只同步评测后状态且不参与激活 | 评测前的假设与证据属服务端内部；客户端看到候选阶段仅作透明展示，避免把候选误当可执行更新（补充 A §2/§8） |
 | 诊断包只作证据、不执行、不改运行时 | 导入包来自不受控设备，包内文件/脚本不可信；只解析并隔离审查，不写入 `runtime_events`，避免日志通道被当作命令或注入源（补充 C §1 原则 6 / §8） |
+| 诊断包导出纯本地生成且只读 | 导出场景可能正是断网排障；不依赖服务端，且不改变/删除待同步证据；逐文件校验和让导入端可验证完整性（补充 C §7/§11） |
+| 导出默认最小化（敏感原文/原始负载关闭） | 诊断包会离开设备；默认只带元数据，用户显式开启才含敏感原文，密钥类字段/值始终脱敏（补充 C §9） |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |

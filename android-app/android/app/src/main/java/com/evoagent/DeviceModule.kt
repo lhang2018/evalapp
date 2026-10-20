@@ -1,10 +1,12 @@
 package com.evoagent
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.util.Base64
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -109,6 +111,50 @@ class DeviceModule(
         }
     }
 
+    /** 诊断包通过系统文件选择器保存；写入在后台线程完成，取消不算异常。 */
+    @ReactMethod
+    fun saveDiagnosticsPackage(fileName: String, base64: String, promise: Promise) {
+        val activity = currentActivity
+        if (activity == null) {
+            promise.resolve(failure("当前没有可用界面"))
+            return
+        }
+        val name = fileName.substringAfterLast('/').substringAfterLast('\\')
+        if (!name.lowercase().endsWith(".zip") || name.length > 128 ||
+            !name.matches(Regex("^[A-Za-z0-9._-]+$"))
+        ) {
+            promise.resolve(failure("文件名不合法"))
+            return
+        }
+        if (savePromise != null) {
+            promise.resolve(failure("已有导出任务在进行中"))
+            return
+        }
+        val bytes = try {
+            Base64.decode(base64, Base64.DEFAULT)
+        } catch (error: Exception) {
+            null
+        }
+        if (bytes == null || bytes.isEmpty()) {
+            promise.resolve(failure("导出内容为空"))
+            return
+        }
+        savePromise = promise
+        saveBytes = bytes
+        try {
+            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/zip"
+                putExtra(Intent.EXTRA_TITLE, name)
+            }
+            activity.startActivityForResult(intent, REQUEST_SAVE_DIAGNOSTICS)
+        } catch (error: Exception) {
+            savePromise = null
+            saveBytes = null
+            promise.resolve(failure(error.message ?: "无法打开文件选择器"))
+        }
+    }
+
     private fun capture(
         service: DeviceAccessibilityService?,
     ): com.facebook.react.bridge.WritableMap? = try {
@@ -146,7 +192,49 @@ class DeviceModule(
     }
 
     companion object {
+        const val REQUEST_SAVE_DIAGNOSTICS = 4701
         private const val CLICK_SETTLE_MS = 700L
         private const val LAUNCH_SETTLE_MS = 1200L
+        private var savePromise: Promise? = null
+        private var saveBytes: ByteArray? = null
+
+        /** 由 MainActivity.onActivityResult 调用；返回 true 表示已消费该结果。 */
+        fun completeSave(
+            activity: Activity,
+            requestCode: Int,
+            resultCode: Int,
+            data: Intent?,
+        ): Boolean {
+            if (requestCode != REQUEST_SAVE_DIAGNOSTICS) return false
+            val promise = savePromise ?: return true
+            val bytes = saveBytes
+            savePromise = null
+            saveBytes = null
+            val uri = data?.data
+            if (resultCode != Activity.RESULT_OK || uri == null || bytes == null) {
+                promise.resolve(saveFailure("已取消保存"))
+                return true
+            }
+            Thread {
+                try {
+                    val stream = activity.contentResolver.openOutputStream(uri, "wt")
+                        ?: throw IllegalStateException("无法打开目标文件")
+                    stream.use { it.write(bytes) }
+                    promise.resolve(Arguments.createMap().apply {
+                        putBoolean("ok", true)
+                        putString("message", "已保存诊断包")
+                        putString("uri", uri.toString())
+                    })
+                } catch (error: Exception) {
+                    promise.resolve(saveFailure(error.message ?: "写入失败"))
+                }
+            }.start()
+            return true
+        }
+
+        private fun saveFailure(message: String) = Arguments.createMap().apply {
+            putBoolean("ok", false)
+            putString("message", message)
+        }
     }
 }

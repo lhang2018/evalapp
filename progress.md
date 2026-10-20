@@ -1139,3 +1139,33 @@
 ### 本轮取舍
 - 客户端文件选择器导入入口未接线（IMP-08 ⬜）。
 - 附件上传（§6）与离线诊断包导出（§7）仍未实现；导入包内附件当前只校验与记录，不单独提供下载。
+
+## Session 30 (2026-10-20)
+
+### 目标
+- 落地补充 C §7：离线诊断包导出（Export Manager + 包结构 + 校验和 + 脱敏 + 系统文件选择器）。
+
+### 完成内容
+- [x] 新增 `offline/bytes.ts`：UTF-8 编解码、hex、base64（兼容 data URI/空白/URL-safe，非法返回 null），
+      不依赖 `TextEncoder`/`atob`
+- [x] 新增 `offline/sha256.ts`：纯 TS SHA-256（含 64 位长度填充），Node/RN 均可运行
+- [x] 新增 `offline/zip.ts`：STORE-only ZIP writer（本地头 + 中央目录 + EOCD、CRC32、UTF-8 标志），
+      无第三方依赖
+- [x] 新增 `offline/export.ts`：清单（format_version 1.0 / exported_at / filters / files / redaction /
+      counts / source）、事件 JSONL、运行时清单、任务运行、同步状态、`checksums.json`
+- [x] 过滤：全部/按任务、时间窗、能力、仅失败；队列与死信合并去重并计入损失标记
+- [x] 脱敏：密钥键名/值模式（token/password/authorization/cookie/api_key/身份证/密码/令牌/密钥、
+      `sk-`/`ghp_`/`xox*`/bearer）替换为 `[REDACTED]`；原始负载可仅字段名；敏感事件默认仅元数据
+- [x] 附件：默认不含；显式开启后按数量/大小/名称白名单过滤，拒绝路径穿越，按文件名去重
+- [x] 预览：事件/敏感/失败/附件/拒绝/脱敏字段/损失标记、敏感类别、警告；导出只读且同输入字节确定
+- [x] 新增 `offline/nativeExport.ts`：字节驻内存 → SAF 交付成功后清理；失败清理临时数据
+- [x] Kotlin：`DeviceModule.saveDiagnosticsPackage` + `MainActivity.onActivityResult`，
+      `ACTION_CREATE_DOCUMENT`（application/zip），后台线程写入，取消返回「已取消保存」
+- [x] App：离线状态页新增「诊断包导出」卡片（敏感原文/原始负载开关、预览、导出、结果与警告）
+- [x] 测试：新增 `test/offline/export.test.ts`（7 项）；客户端 69 → 76 全绿，`tsc --noEmit` 通过；
+      Python 保持 344 全绿
+- [x] 交叉验证：Node 生成 ZIP → Python `inspect_package` 摘要全过、事件 accepted、token 已脱敏
+
+### 本轮取舍
+- 原生 SAF 交付与真机行为未在本机验证（无 Android SDK/模拟器），README 已标注。
+- 附件上传（§6）与客户端导入选择器（IMP-08）仍未接线；本地 `sync_receipts` 与长期不可用告警仍为 🔹。

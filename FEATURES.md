@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 344 项 + 客户端 69 项全部通过**。
+测试基线（2026-10-20）：**Python 344 项 + 客户端 76 项全部通过**。
 
 ---
 
@@ -278,6 +278,17 @@ Python 服务端（标准库，SQLite）
 | IMP-06 | 隔离区落库与幂等 | ✅ | `core/persistence.py`, `api/server.py` | `diagnostics_imports` + `diagnostics_import_events`；按包 SHA-256 幂等（重复返回原记录）；导入内容不执行、不进入 `runtime_events` |
 | IMP-07 | 权限与审计 | ✅ | `api/auth.py`, `api/server.py` | `POST /diagnostics/import` 需 admin；成功与拒绝均写审计；`GET /diagnostics/imports[/{id}]` 可审查 |
 | IMP-08 | 客户端导入入口 | ⬜ | — | 系统文件选择器与导入结果展示未接线 |
+
+### 2.17 离线诊断包导出（补充 C §7）
+
+| ID | 功能 | 状态 | 代码位置 | 说明 / 限制 |
+|---|---|---|---|---|
+| EXP-01 | 包结构与校验和 | ✅ | `src/offline/export.ts`, `src/offline/zip.ts`, `src/offline/sha256.ts` | 纯 TS 生成 STORE ZIP：`manifest.json`、`events.jsonl`、`runtime-manifests.json`、`task-runs.json`、`sync-status.json`、`checksums.json`；`format_version` 1.0；逐文件 SHA-256 与 CRC32，无本地依赖 |
+| EXP-02 | 导出过滤 | ✅ | `src/offline/export.ts` | 按范围（全部/任务）、时间窗、能力、仅失败筛选；队列与死信合并去重，损失标记计入清单 |
+| EXP-03 | 导出前脱敏 | ✅ | `src/offline/export.ts` | 密钥键名/值模式（token、password、authorization、cookie、`sk-`、`ghp_`、`xox*`、bearer 等）替换为 `[REDACTED]`；原始负载可选仅导出字段名；敏感事件默认仅元数据，显式开启才含原文 |
+| EXP-04 | 附件导出 | ✅ | `src/offline/export.ts` | 默认不含附件；显式开启后过滤大小/数量/名称（拒绝路径穿越、非白名单后缀）并按文件名去重，敏感附件跳过并计数 |
+| EXP-05 | 预览与只读保证 | ✅ | `src/offline/export.ts` | 导出前预览事件/敏感/失败/附件/脱敏字段/损失标记、敏感类别与警告；导出不修改同步状态、不删除任何数据；同输入字节确定 |
+| EXP-06 | 系统文件选择器交付 | ✅/🔹 | `src/offline/nativeExport.ts`, `DeviceModule.kt` | 字节先留在内存，用户经 SAF（`ACTION_CREATE_DOCUMENT`）选定目标后后台写入；取消/失败不留下半成品并清理临时数据；原生构建未在本机验证 |
 
 ---
 
@@ -632,7 +643,7 @@ Python 服务端（标准库，SQLite）
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
 
-### 客户端（`android-app/test/`，69 项）
+### 客户端（`android-app/test/`，76 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -643,6 +654,7 @@ Python 服务端（标准库，SQLite）
 | `test/device/broker.test.ts` | 风险闸门、确认、五态、不重放、unavailable、快照验证、权限弹窗降级、安全停止与恢复（12 项） |
 | `test/device/observation.test.ts` | 快照归一化、页面变化、预期文本/包名、权限弹窗识别、缺快照不判成功（8 项） |
 | `test/update/manager.test.ts` | 安装 ID、目标校验（摘要/签名/交付方式）、存储空间、双槽位激活、健康检查与自动回滚、回执失败、状态损坏回退、候选阶段同步（19 项） |
+| `test/offline/export.test.ts` | 诊断包导出：SHA-256/CRC32 向量、包结构与校验和、过滤、脱敏、附件取舍、只读确定性、交付失败清理（7 项） |
 
 运行：
 
@@ -747,6 +759,22 @@ cd android-app && npm run android
 ---
 
 ## 变更记录
+
+### 2026-10-20 — 离线诊断包导出（补充 C §7）
+
+- 需求：`EvoAgent_离线日志与可靠同步子系统设计.md` §7（离线诊断包导出）与 §11 验收标准。
+- 变更：客户端新增离线导出管理器。完全本地生成 STORE ZIP（清单、事件、运行时清单、任务运行、
+  同步状态、校验和），支持范围/时间/能力/失败过滤；导出前可预览事件与敏感类别，
+  默认敏感事件仅元数据、原始负载可关闭；密钥类字段与值强制脱敏。
+  导出只读，不修改同步状态、不删除数据；同输入字节确定。
+  交付经 Android SAF 文件选择器，字节先驻内存，写盘在后台线程完成，取消/失败清理临时数据。
+- 代码：`android-app/src/offline/{export,zip,sha256,bytes,nativeExport}.ts`（新增）、
+  `android-app/android/app/src/main/java/com/evoagent/{DeviceModule,MainActivity}.kt`、`App.tsx`。
+- 测试：新增 `android-app/test/offline/export.test.ts`（7 项）；客户端 69 → 76，Python 保持 344。
+- 状态变化：新增 EXP-01…EXP-06；IMPLEMENTATION 补充 C §7 ⬜ → ✅/🔹，
+  §1 原则 7、§9、§11 导出相关项转为 ✅。
+- 已知限制：原生 SAF 交付与真机行为未在本机验证（无 Android SDK/模拟器）；
+  附件上传（§6）与客户端导入选择器（IMP-08）仍未接线。
 
 ### 2026-10-20 — 诊断包受控导入（补充 C §8）
 
@@ -996,6 +1024,7 @@ cd android-app && npm run android
 | Session 27 | 同步状态机、因果顺序与回执协议（补充 C §3/§5） | 335 + 66 |
 | Session 28 | 保留等级、容量治理与损失标记（补充 C §4） | 335 + 69 |
 | Session 29 | 诊断包受控导入（补充 C §8） | 344 + 69 |
+| Session 30 | 离线诊断包导出（补充 C §7） | 344 + 76 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 

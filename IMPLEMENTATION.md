@@ -126,7 +126,7 @@
 | §1 原则 4 回执持久化语义 | `api/events_sync.py`, `api/server.py` | ✅ | 服务端入库后才返回逐事件 accepted；客户端仅 ack 回执确认的事件（§5.2 第 6 条部分成功明确列出 ✅） |
 | §1 原则 5 历史版本不可覆盖 | `task.runtime_manifest` + `runtime_manifests` 表 | ✅ | 服务端每次运行另存独立清单（`GET /tasks/{id}/manifests` 可查）；客户端事件已随批次携带 `runtime_manifest_id` 引用并落库 |
 | §1 原则 6 日志是证据不是命令 | `core/privacy.py`, 工具层信任边界 | ✅ | 外部内容不可执行已在工具/导入/回放层承接 |
-| §1 原则 7 隐私最小化 | `offline/privacy.ts`, `policy.ts` | ✅ | sensitive 事件仅本地保留，仅 standard 上传；导出前脱敏待实现 🔹 |
+| §1 原则 7 隐私最小化 | `offline/privacy.ts`, `policy.ts`, `offline/export.ts` | ✅ | sensitive 事件仅本地保留，仅 standard 上传；导出前强制脱敏密钥类字段/值，敏感原文默认不导出 |
 | §1 原则 8 日志≠任务恢复 | `core/checkpoint.py` 分离实现 | ✅ | 检查点/副作用账本/恢复策略独立于事件日志（§10 边界表全行 ✅） |
 | §3.1 事件字段十项 | `offline/types.ts` OfflineEvent + `api/events_sync.py` | ✅/🔹 | 客户端携带 `event_id`/`task_id`/`run_id`/`sequence_no`/`timestamp`/`clock_source=device`/`severity`/`payload`/`privacy_classification`/`runtime_manifest_id`；服务端校验并落库；`attachment_refs` ⬜（随 §6） |
 | §3.2 本地逻辑表 7 张 | `offline/storage.ts` 单一持久化状态 | 🔹 | 运行证据/同步状态/任务状态/隔离区在数据上可区分（state 版本化结构 + `in_flight` 批次），但未按表拆分；`sync_receipts` 未独立持久化 |
@@ -135,16 +135,18 @@
 | §5.2 批次与回执协议 8 条 | `offline/apiTransport.ts`, `sync.ts` + `events_sync.py` | ✅ | 稳定 batch_id、事件 ID 不变、部分成功明确、退避抖动、`protocol_version` 1.0、`confirmed`/`unconfirmed` 显式列表、QUARANTINED 隔离均已实现 |
 | §5.3 版本关联与版本对账 | `runtime_manifests` + 对账流程 | ✅ | manifests 独立落表可解析（不做最新版覆盖）；对账已在补充 A §7 完成（`installation_id` + 灰度/兼容服务端判定） |
 | §6 附件上传与完整性校验 | — | ⬜ | attachment_id/SHA-256/分块恢复上传/附件授权通道全未实现（当前无附件体系） |
-| §7 离线诊断包导出 | — | ⬜ | Export Manager、包结构（7.1）、checksums、系统文件选择器导出未实现；当前仅服务端 `GET /admin` 日志视图可查 |
+| §7 离线诊断包导出 | `offline/export.ts`, `offline/zip.ts`, `offline/sha256.ts`, `offline/nativeExport.ts` | ✅/🔹 | Export Manager 完全离线生成 ZIP：manifest/events/runtime-manifests/task-runs/sync-status/checksums（逐文件 SHA-256 + CRC32，format_version 1.0）；范围/时间/能力/失败过滤；预览敏感类别与警告；密钥类字段/值强制脱敏，敏感原文与原始负载默认关闭；只读不改变同步状态。交付经 Android SAF 文件选择器（`ACTION_CREATE_DOCUMENT`），取消/失败清理半成品；原生构建未在本机验证 🔹 |
+| §7.1 包结构 | `offline/export.ts` | ✅ | 必含清单、事件（JSONL）、运行时清单、任务运行、同步状态与校验和；附件默认不带，按白名单/大小/数量过滤 |
 | §8 诊断包受控导入 | `api/diagnostics_import.py`, `api/server.py`, `core/persistence.py` | ✅ | 仅解析不执行：包/条目/解压总量上限、压缩比与符号链接拒绝、路径穿越/绝对路径/盘符拒绝、文件与附件后缀白名单、逐文件 SHA-256、`format_version` 校验；事件关系审查（unknown_task / missing_manifest / unknown_manifest / 任务运行不匹配）；按 SHA-256 幂等入隔离区（`diagnostics_imports` + `diagnostics_import_events`），admin-only 且成功/拒绝均审计。客户端选择器导入 UI ⬜ |
-| §9 隐私安全完整性 | `core/privacy.py` + `api/diagnostics_import.py` | ✅/🔹 | 默认结构化事件、传输控制（API 鉴权）、删除/审计、导入不执行包内内容 ✅；导出前二次扫描随 §7 缺失 🔹 |
-| §11 验收标准 11 项 | `android-app/test/offline/` + `tests/test_diagnostics_import.py` | ✅/🔹 | 断网记录/续传/幂等/回执一致/乱序(seq)/版本追溯/恢复隔离/永久错误隔离/容量预警与损失标记/恶意导入拒绝 ✅；导出完整性/脱敏导出 ⬜；服务端长期不可用告警 🔹 |
+| §9 隐私安全完整性 | `core/privacy.py` + `api/diagnostics_import.py` + `offline/export.ts` | ✅ | 默认结构化事件、传输控制（API 鉴权）、删除/审计、导入不执行包内内容；导出前二次扫描脱敏密钥类字段/值，敏感原文默认关闭 |
+| §11 验收标准 11 项 | `android-app/test/offline/` + `tests/test_diagnostics_import.py` | ✅/🔹 | 断网记录/续传/幂等/回执一致/乱序(seq)/版本追溯/恢复隔离/永久错误隔离/容量预警与损失标记/恶意导入拒绝/导出完整性与脱敏 ✅；服务端长期不可用告警 🔹 |
 | §12 与总体架构关系 | 补充 B 已映射的群组 | ✅ | 定位一致：同步观测服务 ≠ 门禁 ≠ 版本分发，互不阻塞 |
 
-**说明**：本轮补齐服务端诊断包受控导入（§8）：导入只作证据进入隔离区，不触发事件摄取或任何执行；
-按包 SHA-256 幂等，重复导入返回原记录。⬜ 剩余两项（附件上传 §6 / 离线诊断包导出 §7）
-与客户端导入选择器仍属「人工诊断通道」子系统，与 PRD 72-76 的自动同步互补；
-另有 🔹 两项（`sync_receipts` 独立持久化 / 长期不可用告警）。验收标准 §11 可直接作为该子系统的测试用例来源。
+**说明**：人工诊断通道已形成「离线导出 ↗ 人工传递 ↗ 服务端受控导入」闭环：
+导出在客户端完全离线生成带校验和的 ZIP，不改变同步状态；导入只作证据进入隔离区，
+不触发事件摄取或任何执行，并按包 SHA-256 幂等。⬜ 剩余一项附件上传（§6）与
+客户端导入选择器（IMP-08）；另有 🔹 两项（`sync_receipts` 独立持久化 / 长期不可用告警）。
+原生 SAF 交付需真机构建验证。验收标准 §11 可直接作为该子系统的测试用例来源。
 
 ## 服务重启恢复记录
 
@@ -174,6 +176,8 @@
 | 漂移检测只读且默认不发事件 | 每次检测都发事件 | 指标抓取会频繁调用；只有显式 `scan` 才产生 `drift_detected`，避免事件风暴 |
 | 漂移报告短缓存（60s） | 每次抓取全量扫描事件窗口 | 观测面高频拉取不应触发重复 SQLite 窗口扫描 |
 | 回放只重建、不重执行 | 按事件重放工具调用 | 副作用不可逆；回放用于审计与排障，非状态恢复（Arch 20.3），非 `standard` 负载一律脱敏 |
+| 诊断包导出完全本地生成且只读 | 由服务端导出后再下载 | 导出场景本身可能就是断网排障；只读保证不改变/删除待同步证据，逐文件校验和让服务端导入可验证完整性 |
+| 导出默认关闭敏感原文与原始负载 | 全量导出更省事 | 诊断包会离开设备；默认最小化，用户显式开启才含敏感原文，密钥类字段/值始终脱敏 |
 | 备份用在线备份 API 而非直接拷文件 | 停服复制 `.db` | WAL/并发写入下直接拷贝可能得到不一致快照；恢复同样写入活动连接，减少停服窗口 |
 | 恢复前强制安全备份且检查未结束任务 | 直接覆盖 | 误恢复代价高；保留可回退点，避免覆盖运行中任务状态（Arch 20.4） |
 | 工具替代只在副作用未发生时可切换 | 失败即换工具 | 已执行/不确定的副作用可能重复发生；同时限制替代工具不得提高副作用等级或权限集合（Arch 6.4） |
@@ -195,5 +199,5 @@
 9. **补充 A §4/§5.1**：策略包/能力包制品下载与装载（清单字段、分发筛选已完成；实际包内容由 OTA 承载）
 10. ~~**补充 A §7**：恢复后版本对账~~（已完成：`installation_id` 对账，灰度与兼容检查在服务端判定）
 11. ~~**补充 A §8**：候选状态同步（服务端→App）~~（已完成：`GET /sync/candidates` + `device_candidate_states` + 客户端透明展示；安装实例、部署记录、批次回执此前已落表）
-12. **补充 C §6/§7**：人工诊断通道剩余部分——附件上传（SHA-256/分块恢复）、离线诊断包导出（Export Manager + checksums + 系统文件选择器）与客户端导入选择器；服务端受控导入已完成（§8）
+12. ~~**补充 C §7**：离线诊断包导出~~（已完成：纯 TS ZIP + 校验和 + 脱敏 + 预览 + SAF 文件选择器；原生交付待真机验证）。剩余：§6 附件上传（SHA-256/分块恢复）与客户端导入选择器（IMP-08）
 13. **补充 C §3.2/§11**：本地 `sync_receipts` 独立持久化（当前回执只保留在服务端 `sync_batches`）与「服务端长期不可用」用户告警；其余四态状态机、in-flight 回收、隔离区与回执协议已在本轮完成
