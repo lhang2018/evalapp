@@ -59,6 +59,7 @@
 | 43 | 候选阶段同步 | 补充 A §2/§8：`GET /sync/candidates` 只下发评测后的候选阶段（不含假设/证据），`device_candidate_states` 记录每个安装实例已见状态；客户端更新管理器 `refreshCandidates()` 持久化快照，更新分区只读展示，不参与激活路径 | complete（331 项 Python + 60 项客户端） |
 | 44 | 离线日志与可靠同步文档映射 | 补充 C 转规范 md（含三处 ASCII 围栏）；IMPLEMENTATION 新增「补充设计 C 映射」18 条逐项核对（✅/🔹/⬜），覆盖率与迭代待办更新（12/13 项） | complete |
 | 45 | 离线日志可靠同步实现 | 补充 C §3/§5：服务端 `sequence_no`/`runtime_manifest_id`/`clock_source` 落库与 `query_run` 因果排序、回执协议 1.0（confirmed/unconfirmed/confirmed_count）；客户端 per-run 序号、pending/in_flight/quarantined 状态机、崩溃后 stale in-flight 回收、稳定 batch_id、部分成功精确 ack、永久错误隔离与人工重入、App 隔离区面板 | complete（335 项 Python + 66 项客户端；typecheck 通过） |
+| 46 | 离线容量治理 | 补充 C §4：critical/normal/debug 保留等级（7 天/1 天，critical 永不自动清理）、过期清理、容量腾位（debug→normal，critical 只增不减）、`DataLossMarker` 持久化（原因/事件清单/等级计数/seq 范围）、80% 预警与界面提示 | complete（335 项 Python + 69 项客户端；typecheck 通过） |
 
 ## 关键决策（Decisions）
 | 决策 | 理由 |

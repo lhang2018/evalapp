@@ -1094,3 +1094,24 @@
 ### 本轮取舍
 - 未实现（仍待补充 C §6/§7/§8）：附件分块上传与 SHA-256、离线诊断包导出、诊断包受控导入。
 - 本地 `sync_receipts` 未独立持久化；回执权威记录仍在服务端 `sync_batches`。
+
+## Session 28 (2026-10-20)
+
+### 目标
+- 落地补充 C §4 容量治理：按事件类别保留、过期清理、容量腾位、数据损失标记与用户提示。
+
+### 完成内容
+- [x] 新增 `offline/retention.ts`：`critical`（故障/验收/安全，永不自动清理）、`normal`（7 天）、
+      `debug`（trace/heartbeat/poll/metric，1 天）分级与过期判定
+- [x] `OfflineEvent.retention` 持久化；旧快照按 event_type/severity 自动补默认等级
+- [x] 队列 enqueue 前自动清理过期 pending 事件；容量不足时按等级腾位（debug 先于 normal，
+      且只清理等级低于新事件者，critical 不会被挤掉），仍不足则拒绝入队
+- [x] `DataLossMarker`（原因 expired/capacity、事件 ID/类型、等级计数、seq 范围、时间）持久化，
+      最多保留 50 条；`cleanup()`/`lossMarkers()` 可供界面与诊断包使用
+- [x] 统计新增 `usage`/`usageRatio`/`warning`/`lossMarkers`；App 展示容量百分比、损失标记数与
+      80% 预警提示
+- [x] 测试新增 3 项：过期清理与 critical 保留、容量腾位与预警、critical 挤占 normal；共 69 项全绿，typecheck 通过
+
+### 本轮取舍
+- 附件上限与附件保留随 §6 附件体系一并实现。
+- 损失标记暂只在本地展示，不自动上传（属于诊断包导出内容）。

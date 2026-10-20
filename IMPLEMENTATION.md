@@ -130,7 +130,7 @@
 | §1 原则 8 日志≠任务恢复 | `core/checkpoint.py` 分离实现 | ✅ | 检查点/副作用账本/恢复策略独立于事件日志（§10 边界表全行 ✅） |
 | §3.1 事件字段十项 | `offline/types.ts` OfflineEvent + `api/events_sync.py` | ✅/🔹 | 客户端携带 `event_id`/`task_id`/`run_id`/`sequence_no`/`timestamp`/`clock_source=device`/`severity`/`payload`/`privacy_classification`/`runtime_manifest_id`；服务端校验并落库；`attachment_refs` ⬜（随 §6） |
 | §3.2 本地逻辑表 7 张 | `offline/storage.ts` 单一持久化状态 | 🔹 | 运行证据/同步状态/任务状态/隔离区在数据上可区分（state 版本化结构 + `in_flight` 批次），但未按表拆分；`sync_receipts` 未独立持久化 |
-| §4 容量治理 | `offline/queue.ts` | ✅/🔹 | 队列容量上限 + 连续 checkpoint 语义 ✅；按事件类别的保留等级 / 数据损失标记 / 用户提示未实现 🔹 |
+| §4 容量治理 | `offline/queue.ts`, `offline/retention.ts` | ✅ | critical/normal/debug 分级保留（critical 永不自动清理；normal 7 天、debug 1 天）；空间不足按等级腾位并记录损失标记；80% 预警与用户提示；连续 checkpoint 语义保留 |
 | §5.1 同步状态机四态 | `offline/queue.ts`, `offline/sync.ts` | ✅ | `pending → in_flight → acknowledged`（确认后删除）；永久拒绝转 `quarantined` 持久保留，可人工重新入队；in-flight 批次持久化，重启后回收 stale 批次；未按独立 `sync_batches` 表拆分 🔹 |
 | §5.2 批次与回执协议 8 条 | `offline/apiTransport.ts`, `sync.ts` + `events_sync.py` | ✅ | 稳定 batch_id、事件 ID 不变、部分成功明确、退避抖动、`protocol_version` 1.0、`confirmed`/`unconfirmed` 显式列表、QUARANTINED 隔离均已实现 |
 | §5.3 版本关联与版本对账 | `runtime_manifests` + 对账流程 | ✅ | manifests 独立落表可解析（不做最新版覆盖）；对账已在补充 A §7 完成（`installation_id` + 灰度/兼容服务端判定） |
@@ -138,7 +138,7 @@
 | §7 离线诊断包导出 | — | ⬜ | Export Manager、包结构（7.1）、checksums、系统文件选择器导出未实现；当前仅服务端 `GET /admin` 日志视图可查 |
 | §8 诊断包受控导入 | — | ⬜ | ZIP 路径穿越/解压炸弹防护、隔离区 `offline_import` 来源标记、导入审计全未实现 |
 | §9 隐私安全完整性 | `core/privacy.py` + 导入（缺） | ✅/🔹 | 默认结构化事件、传输控制（API 鉴权）、删除/审计 ✅；导出前二次扫描随 §7 缺失 🔹 |
-| §11 验收标准 11 项 | `android-app/test/offline/` | ✅/🔹 | 断网记录/续传/幂等/回执一致/乱序(seq)/版本追溯/恢复隔离/永久错误隔离 ✅；导出完整性/脱敏导出/恶意导入 ⬜；服务端长期不可用告警 🔹 |
+| §11 验收标准 11 项 | `android-app/test/offline/` | ✅/🔹 | 断网记录/续传/幂等/回执一致/乱序(seq)/版本追溯/恢复隔离/永久错误隔离/容量预警与损失标记 ✅；导出完整性/脱敏导出/恶意导入 ⬜；服务端长期不可用告警 🔹 |
 | §12 与总体架构关系 | 补充 B 已映射的群组 | ✅ | 定位一致：同步观测服务 ≠ 门禁 ≠ 版本分发，互不阻塞 |
 
 **说明**：本轮已补齐显式同步状态机、客户端 `sequence_no`/`runtime_manifest_id`/`clock_source` 引用

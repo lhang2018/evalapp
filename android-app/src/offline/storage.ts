@@ -1,13 +1,16 @@
 /** 可注入的键值存储与整文档快照（RN 侧用 AsyncStorage 适配）。 */
 
 import type {
+  DataLossMarker,
   DeadLetter,
   EventSyncStatus,
   InFlightBatch,
   OfflineEvent,
   OfflineState,
   PrivacyLevel,
+  RetentionTier,
 } from "./types.ts";
+import { classifyRetention } from "./retention.ts";
 
 export interface KeyValueStore {
   getItem(key: string): Promise<string | null>;
@@ -44,6 +47,7 @@ export function emptyState(): OfflineState {
     last_sync_at: null,
     next_sequence: {},
     in_flight: null,
+    loss_markers: [],
   };
 }
 
@@ -88,6 +92,18 @@ function normalizeEvent(
 
   const severity = event.severity;
   const privacy = event.privacy_classification;
+  const normalizedSeverity =
+    severity === "warn" || severity === "error" || severity === "critical"
+      ? severity
+      : "info";
+  const retention: RetentionTier =
+    event.retention === "critical" || event.retention === "normal" ||
+      event.retention === "debug"
+      ? event.retention
+      : classifyRetention(
+        typeof event.event_type === "string" ? event.event_type : "",
+        normalizedSeverity,
+      );
   return {
     event_id: event.event_id,
     event_type: typeof event.event_type === "string" && event.event_type
@@ -101,10 +117,7 @@ function normalizeEvent(
         : null,
     timestamp: asNumber(event.timestamp, 0),
     clock_source: "device",
-    severity:
-      severity === "warn" || severity === "error" || severity === "critical"
-        ? severity
-        : "info",
+    severity: normalizedSeverity,
     payload:
       event.payload && typeof event.payload === "object" ? event.payload : {},
     privacy_classification:
@@ -112,6 +125,7 @@ function normalizeEvent(
     uploadable: typeof event.uploadable === "boolean"
       ? event.uploadable
       : true,
+    retention,
     sync_status: SYNC_STATES.includes(syncStatus) ? syncStatus : "pending",
     sequence_no: sequenceNo,
     seq: asNumber(event.seq, nextSeq()),
@@ -143,6 +157,43 @@ function normalizeInFlight(raw: unknown): InFlightBatch | null {
     claimed_at: asNumber(batch.claimed_at, 0),
     attempts: asNumber(batch.attempts, 1),
   };
+}
+
+function normalizeMarkers(raw: unknown): DataLossMarker[] {
+  if (!Array.isArray(raw)) return [];
+  const out: DataLossMarker[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const marker = item as DataLossMarker;
+    if (typeof marker.marker_id !== "string" || !marker.marker_id) continue;
+    const tiers = marker.tiers && typeof marker.tiers === "object"
+      ? marker.tiers
+      : { critical: 0, normal: 0, debug: 0 };
+    out.push({
+      marker_id: marker.marker_id,
+      reason: marker.reason === "capacity" ? "capacity" : "expired",
+      dropped: asNumber(marker.dropped, 0),
+      event_ids: Array.isArray(marker.event_ids)
+        ? marker.event_ids.filter((id): id is string => typeof id === "string")
+        : [],
+      event_types: Array.isArray(marker.event_types)
+        ? marker.event_types.filter(
+          (name): name is string => typeof name === "string",
+        )
+        : [],
+      tiers: {
+        critical: asNumber(tiers.critical, 0),
+        normal: asNumber(tiers.normal, 0),
+        debug: asNumber(tiers.debug, 0),
+      },
+      first_seq: typeof marker.first_seq === "number"
+        ? marker.first_seq
+        : null,
+      last_seq: typeof marker.last_seq === "number" ? marker.last_seq : null,
+      at: asNumber(marker.at, 0),
+    });
+  }
+  return out;
 }
 
 function normalizeState(
@@ -184,6 +235,7 @@ function normalizeState(
     .filter((letter): letter is DeadLetter => letter !== null);
   state.next_sequence = sequence;
   state.in_flight = normalizeInFlight(data.in_flight);
+  state.loss_markers = normalizeMarkers(data.loss_markers);
   return state;
 }
 

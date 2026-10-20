@@ -20,6 +20,24 @@ export type EventSyncStatus = "pending" | "in_flight" | "quarantined";
 /** 事件时间来自设备时钟；可能存在偏差，因果顺序以 sequence_no 为准。 */
 export type ClockSource = "device";
 
+/**
+ * 保留等级：critical 永不自动清理；normal 保留 7 天；debug 保留 1 天。
+ * 空间紧张时先清理 debug，再清理最旧的 normal，并记录数据损失标记。
+ */
+export type RetentionTier = "critical" | "normal" | "debug";
+
+export interface DataLossMarker {
+  marker_id: string;
+  reason: "expired" | "capacity";
+  dropped: number;
+  event_ids: string[];
+  event_types: string[];
+  tiers: Record<RetentionTier, number>;
+  first_seq: number | null;
+  last_seq: number | null;
+  at: number;
+}
+
 export interface OfflineEvent {
   event_id: string;
   event_type: string;
@@ -36,6 +54,8 @@ export interface OfflineEvent {
   privacy_classification: PrivacyLevel;
   /** 只有 standard 事件允许上传；sensitive 仅本地保留 */
   uploadable: boolean;
+  /** 容量治理保留等级（补充 C §4） */
+  retention: RetentionTier;
   sync_status: EventSyncStatus;
   /** 同一 run 内单调递增，用于还原因果顺序 */
   sequence_no: number;
@@ -95,6 +115,8 @@ export interface OfflineState {
   next_sequence: Record<string, number>;
   /** 进程被杀后遗留的在传批次，由下次 claim 回收 */
   in_flight: InFlightBatch | null;
+  /** 因过期或容量压力被清理的事件记录；不静默丢数据 */
+  loss_markers: DataLossMarker[];
 }
 
 export interface QueueStats {
@@ -105,4 +127,8 @@ export interface QueueStats {
   dead: number;
   checkpoint: number;
   capacity: number;
+  usage: number;
+  usageRatio: number;
+  warning: boolean;
+  lossMarkers: number;
 }

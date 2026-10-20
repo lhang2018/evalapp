@@ -5,19 +5,29 @@
  */
 
 import type {
+  DataLossMarker,
   DeadLetter,
   InFlightBatch,
   OfflineEvent,
   OfflineState,
   PrivacyLevel,
   QueueStats,
+  RetentionTier,
   SyncRejection,
 } from "./types.ts";
 import type { OfflineRepository } from "./storage.ts";
 import { createEventId, createId } from "./ids.ts";
 import { classifyPrivacy, isUploadable } from "./privacy.ts";
+import { classifyRetention, isExpired } from "./retention.ts";
 
 export const QUEUE_CAPACITY = 500;
+export const QUEUE_WARNING_RATIO = 0.8;
+const MAX_LOSS_MARKERS = 50;
+const TIER_RANK: Record<RetentionTier, number> = {
+  debug: 0,
+  normal: 1,
+  critical: 2,
+};
 
 export interface NewEvent {
   event_id?: string;
@@ -61,6 +71,76 @@ function pruneInFlight(state: OfflineState, batchId: string): void {
     : null;
 }
 
+/** 清理过期事件并保留可审计的损失标记（补充 C §4）。 */
+function recordLoss(
+  state: OfflineState,
+  reason: DataLossMarker["reason"],
+  dropped: OfflineEvent[],
+  now: number,
+): void {
+  if (dropped.length === 0) return;
+  const tiers: Record<RetentionTier, number> = {
+    critical: 0, normal: 0, debug: 0,
+  };
+  for (const event of dropped) tiers[event.retention] += 1;
+  const seqs = dropped.map((event) => event.seq);
+  const marker: DataLossMarker = {
+    marker_id: createId("loss"),
+    reason,
+    dropped: dropped.length,
+    event_ids: dropped.map((event) => event.event_id),
+    event_types: [...new Set(dropped.map((event) => event.event_type))],
+    tiers,
+    first_seq: seqs.length ? Math.min(...seqs) : null,
+    last_seq: seqs.length ? Math.max(...seqs) : null,
+    at: now,
+  };
+  state.loss_markers.push(marker);
+  if (state.loss_markers.length > MAX_LOSS_MARKERS) {
+    state.loss_markers = state.loss_markers.slice(-MAX_LOSS_MARKERS);
+  }
+}
+
+function cleanupExpiredInto(
+  state: OfflineState,
+  now: number,
+): OfflineEvent[] {
+  const dropped: OfflineEvent[] = [];
+  state.queue = state.queue.filter((event) => {
+    if (event.sync_status !== "pending") return true;
+    if (event.retention === "critical") return true;
+    if (!isExpired(event.retention, event.timestamp, now)) return true;
+    dropped.push(event);
+    return false;
+  });
+  recordLoss(state, "expired", dropped, now);
+  return dropped;
+}
+
+/**
+ * 空间不足时按保留等级腾位：只清理等级低于新事件的 pending 事件，
+ * debug 先于 normal；critical 永不自动清理。清理结果写入损失标记。
+ */
+function evictForCapacityInto(
+  state: OfflineState,
+  now: number,
+  incomingRank: number,
+): OfflineEvent[] {
+  const need = state.queue.length - QUEUE_CAPACITY + 1;
+  if (need <= 0) return [];
+  const candidates = state.queue
+    .filter((event) => event.sync_status === "pending" &&
+      TIER_RANK[event.retention] < incomingRank)
+    .sort((a, b) =>
+      TIER_RANK[a.retention] - TIER_RANK[b.retention] || a.seq - b.seq);
+  const dropped = candidates.slice(0, need);
+  if (dropped.length === 0) return [];
+  const ids = new Set(dropped.map((event) => event.event_id));
+  state.queue = state.queue.filter((event) => !ids.has(event.event_id));
+  recordLoss(state, "capacity", dropped, now);
+  return dropped;
+}
+
 function nextSequence(
   state: OfflineState,
   runKey: string,
@@ -97,6 +177,13 @@ export function enqueueInto(
   if (privacy === "secret" || privacy === "private") {
     throw new Error("事件包含敏感信息，禁止入队");
   }
+
+  const severity = input.severity ?? "info";
+  const retention = classifyRetention(input.event_type, severity);
+  cleanupExpiredInto(state, now);
+  if (state.queue.length >= QUEUE_CAPACITY) {
+    evictForCapacityInto(state, now, TIER_RANK[retention]);
+  }
   if (state.queue.length >= QUEUE_CAPACITY) {
     throw new Error("本地事件队列已满，请先同步或清理死信");
   }
@@ -112,10 +199,11 @@ export function enqueueInto(
     runtime_manifest_id: input.runtime_manifest_id ?? null,
     timestamp: input.timestamp ?? now,
     clock_source: "device",
-    severity: input.severity ?? "info",
+    severity,
     payload: input.payload ?? {},
     privacy_classification: privacy,
     uploadable: isUploadable(privacy),
+    retention,
     sync_status: "pending",
     sequence_no: nextSequence(state, runKey, input.sequence_no),
     seq: state.next_seq,
@@ -323,6 +411,7 @@ export class EventQueue {
         (d) => d.event.event_id === eventId,
       );
       if (index < 0) return false;
+      cleanupExpiredInto(state, this.now());
       if (state.queue.length >= QUEUE_CAPACITY) {
         throw new Error("本地事件队列已满，请先同步");
       }
@@ -357,21 +446,46 @@ export class EventQueue {
     });
   }
 
+  /** 主动清理过期事件；容量压力下由 enqueue 自动触发。 */
+  cleanup(): Promise<{ dropped: number; markers: number }> {
+    return this.repo.update((state) => {
+      const before = state.loss_markers.length;
+      const dropped = cleanupExpiredInto(state, this.now());
+      if (dropped.length) state.last_acked_seq = checkpointOf(state);
+      return {
+        dropped: dropped.length,
+        markers: state.loss_markers.length - before,
+      };
+    });
+  }
+
+  lossMarkers(): Promise<DataLossMarker[]> {
+    return this.repo.load().then((state) => [...state.loss_markers]);
+  }
+
   stats(): Promise<QueueStats> {
-    return this.repo.load().then((state) => ({
-      pending: state.queue.filter(
-        (e) => e.uploadable && e.sync_status === "pending",
-      ).length,
-      inFlight: state.queue.filter(
-        (e) => e.uploadable && e.sync_status === "in_flight",
-      ).length,
-      quarantined: state.queue.filter(
-        (e) => e.uploadable && e.sync_status === "quarantined",
-      ).length,
-      localOnly: state.queue.filter((e) => !e.uploadable).length,
-      dead: state.dead_letters.length,
-      checkpoint: checkpointOf(state),
-      capacity: QUEUE_CAPACITY,
-    }));
+    return this.repo.load().then((state) => {
+      const usage = state.queue.length;
+      const usageRatio = usage / QUEUE_CAPACITY;
+      return {
+        pending: state.queue.filter(
+          (e) => e.uploadable && e.sync_status === "pending",
+        ).length,
+        inFlight: state.queue.filter(
+          (e) => e.uploadable && e.sync_status === "in_flight",
+        ).length,
+        quarantined: state.queue.filter(
+          (e) => e.uploadable && e.sync_status === "quarantined",
+        ).length,
+        localOnly: state.queue.filter((e) => !e.uploadable).length,
+        dead: state.dead_letters.length,
+        checkpoint: checkpointOf(state),
+        capacity: QUEUE_CAPACITY,
+        usage,
+        usageRatio,
+        warning: usageRatio >= QUEUE_WARNING_RATIO,
+        lossMarkers: state.loss_markers.length,
+      };
+    });
   }
 }

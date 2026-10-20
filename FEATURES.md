@@ -445,6 +445,8 @@ Python 服务端（标准库，SQLite）
 | OF-18 | 回执驱动的 ack | ✅ | `sync.ts` | 仅删除服务端 `confirmed`（或 accepted+duplicates）的事件；部分成功保留未确认项，不误删 |
 | OF-19 | 隔离区人工恢复 | ✅ | `queue.ts`, `App.tsx` | 永久错误事件保留在隔离区，展示类型/run/序号，可手动重新入队 |
 | OF-20 | 事件版本与时钟留痕 | ✅ | `tasks.ts`, `apiTransport.ts` | 事件携带 `runtime_manifest_id` 与 `clock_source=device`，服务端校验后落库 |
+| OF-21 | 保留等级与期限 | ✅ | `retention.ts`, `queue.ts` | critical 永不自动清理；normal 7 天、debug 1 天；过期 pending 事件清理并记录损失标记 |
+| OF-22 | 容量预警与损失可见性 | ✅ | `queue.ts`, `App.tsx` | 80% 预警；容量压力按 debug→normal 腾位（critical 只增不减），损失标记含原因/事件 ID/等级计数，界面显式提示 |
 
 ### 5.3 设备操作（`android-app/src/device/` + Kotlin）
 
@@ -613,11 +615,11 @@ Python 服务端（标准库，SQLite）
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
 
-### 客户端（`android-app/test/`，66 项）
+### 客户端（`android-app/test/`，69 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
-| `test/offline/queue.test.ts` | FIFO、去重、容量、每 run 因果序号、checkpoint 连续性、in-flight 回收、隔离与重新入队、死信、旧快照迁移 |
+| `test/offline/queue.test.ts` | FIFO、去重、容量、每 run 因果序号、checkpoint 连续性、in-flight 回收、隔离与重新入队、死信、保留等级/过期清理/损失标记、旧快照迁移 |
 | `test/offline/sync.test.ts` | 稳定批次号、退避、不丢事件、部分成功、400 永久拒绝隔离、崩溃后 in-flight 恢复、重复确认 |
 | `test/offline/tasks.test.ts` | 离线提交、幂等键稳定、`NEEDS_RECONCILE`、离线 `time_query` |
 | `test/offline/transport.test.ts` | 时间戳单位转换、`run_id`/`sequence_no`/`runtime_manifest_id` 与批次号透传 |

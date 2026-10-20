@@ -17,6 +17,7 @@ function event(timestamp: number): OfflineEvent {
     payload: {},
     privacy_classification: "standard",
     uploadable: true,
+    retention: "normal",
     sync_status: "pending",
     sequence_no: 7,
     seq: 1,

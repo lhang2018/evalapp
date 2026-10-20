@@ -12,6 +12,38 @@ function setup(now = () => 1_700_000_000_000) {
   return { kv, repo, queue };
 }
 
+function seed(
+  repo: OfflineRepository,
+  count: number,
+  retention: OfflineEvent["retention"],
+  now: number,
+  eventType = "seed",
+) {
+  return repo.update((state) => {
+    for (let i = 0; i < count; i += 1) {
+      state.next_seq += 1;
+      state.queue.push({
+        event_id: `evt_seed_${retention}_${String(i).padStart(10, "0")}`,
+        event_type: eventType,
+        task_id: null,
+        run_id: null,
+        runtime_manifest_id: null,
+        timestamp: now,
+        clock_source: "device",
+        severity: "info",
+        payload: {},
+        privacy_classification: "standard",
+        uploadable: true,
+        retention,
+        sync_status: "pending",
+        sequence_no: i + 1,
+        seq: state.next_seq,
+        attempts: 0,
+      });
+    }
+  });
+}
+
 test("queue keeps FIFO order, dedupes, and numbers events per run", async () => {
   const { queue } = setup();
   const first = await queue.enqueue({
@@ -62,12 +94,13 @@ test("queue rejects new events when capacity reached", async () => {
         task_id: null,
         run_id: null,
         runtime_manifest_id: null,
-        timestamp: 1,
+        timestamp: 1_700_000_000_000,
         clock_source: "device",
         severity: "info",
         payload: {},
         privacy_classification: "standard",
         uploadable: true,
+        retention: "normal",
         sync_status: "pending",
         sequence_no: i + 1,
         seq: state.next_seq,
@@ -80,6 +113,90 @@ test("queue rejects new events when capacity reached", async () => {
     () => queue.enqueue({ event_type: "overflow" }),
     /队列已满/,
   );
+  await assert.rejects(
+    () => queue.enqueue({ event_type: "debug_trace" }),
+    /队列已满/,
+  );
+});
+
+const DAY_MS = 24 * 3600 * 1000;
+
+test("expired non-critical events are dropped with loss markers", async () => {
+  let now = 1_700_000_000_000;
+  const { queue } = setup(() => now);
+  const critical = await queue.enqueue({
+    event_type: "diagnosis_failure",
+    severity: "error",
+    timestamp: now - 30 * DAY_MS,
+  });
+  const normal = await queue.enqueue({
+    event_type: "task_queued",
+    timestamp: now - 2 * DAY_MS,
+  });
+  const debug = await queue.enqueue({
+    event_type: "debug_trace",
+    timestamp: now - 2 * DAY_MS,
+  });
+
+  const out = await queue.cleanup();
+  assert.equal(out.dropped, 1);
+  assert.equal(out.markers, 1);
+  assert.deepEqual(
+    (await queue.list()).map((event) => event.event_id),
+    [critical.event_id, normal.event_id],
+  );
+
+  const [marker] = await queue.lossMarkers();
+  assert.equal(marker.reason, "expired");
+  assert.deepEqual(marker.event_ids, [debug.event_id]);
+  assert.equal(marker.tiers.debug, 1);
+  assert.equal(marker.dropped, 1);
+  assert.equal((await queue.stats()).lossMarkers, 1);
+});
+
+test("capacity evicts lower tiers for critical events and warns", async () => {
+  const now = 1_700_000_000_000;
+  const { repo, queue } = setup(() => now);
+  await seed(repo, QUEUE_CAPACITY, "debug", now, "debug_heartbeat");
+
+  const critical = await queue.enqueue({
+    event_type: "diagnosis_failure",
+    severity: "error",
+  });
+  const list = await queue.list();
+  assert.equal(list.length, QUEUE_CAPACITY);
+  assert.ok(list.some((event) => event.event_id === critical.event_id));
+  assert.equal(
+    list.filter((event) => event.retention === "debug").length,
+    QUEUE_CAPACITY - 1,
+  );
+
+  const [marker] = await queue.lossMarkers();
+  assert.equal(marker.reason, "capacity");
+  assert.equal(marker.tiers.debug, 1);
+  assert.equal(marker.event_ids.length, 1);
+
+  const stats = await queue.stats();
+  assert.equal(stats.usage, QUEUE_CAPACITY);
+  assert.equal(stats.warning, true);
+  assert.equal(stats.usageRatio, 1);
+});
+
+test("critical events can displace normal ones under capacity pressure", async () => {
+  const now = 1_700_000_000_000;
+  const { repo, queue } = setup(() => now);
+  await seed(repo, QUEUE_CAPACITY, "normal", now);
+
+  const critical = await queue.enqueue({
+    event_type: "diagnosis_failure",
+    severity: "error",
+  });
+  const list = await queue.list();
+  assert.equal(list.length, QUEUE_CAPACITY);
+  assert.ok(list.some((event) => event.event_id === critical.event_id));
+  const [marker] = await queue.lossMarkers();
+  assert.equal(marker.reason, "capacity");
+  assert.equal(marker.tiers.normal, 1);
 });
 
 test("claim marks events in flight and stale batches are recovered", async () => {
@@ -255,8 +372,10 @@ test("legacy snapshots migrate to the sync state machine", async () => {
   assert.equal(event.sequence_no, 1);
   assert.equal(event.run_id, null);
   assert.equal(event.clock_source, "device");
+  assert.equal(event.retention, "normal");
   assert.deepEqual(state.next_sequence, { client: 1 });
   assert.equal(state.in_flight, null);
+  assert.deepEqual(state.loss_markers, []);
 });
 
 test("corrupted snapshots fall back to an empty state", async () => {

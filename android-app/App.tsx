@@ -608,7 +608,15 @@ export default function App(): React.JSX.Element {
             <Text style={s.hint}>
               待上传 {stats.pending} · 在传 {stats.inFlight} · 隔离{" "}
               {stats.quarantined} · 仅本地 {stats.localOnly} · 死信{" "}
-              {stats.dead} · checkpoint {stats.checkpoint}/{stats.capacity}
+              {stats.dead} · 容量 {stats.usage}/{stats.capacity}（
+              {Math.round(stats.usageRatio * 100)}%） · checkpoint{" "}
+              {stats.checkpoint}/{stats.capacity}
+              {stats.lossMarkers > 0 ? ` · 损失标记 ${stats.lossMarkers}` : ""}
+            </Text>
+          )}
+          {stats?.warning && (
+            <Text style={s.error}>
+              本地队列接近容量上限：关键事件会优先保留，可重新生成的调试事件可能被清理并记录损失标记，请尽快同步。
             </Text>
           )}
           {error && <Text style={s.error}>{error}</Text>}
