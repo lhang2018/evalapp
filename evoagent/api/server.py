@@ -10,7 +10,7 @@ import re
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from urllib.parse import parse_qs, urlparse
 
 from ..app import App
@@ -278,6 +278,9 @@ def make_handler(app: App):
                         or not CLIENT_REQUEST_RE.match(request_id)):
                     return self._json(
                         400, {"error": "非法 client_request_id"})
+                parsed, error = _parse_task_model_fields(body)
+                if error:
+                    return self._json(400, {"error": error})
                 with _submit_lock:
                     if request_id:
                         existing = app.db.get_request_task_id(request_id)
@@ -294,7 +297,8 @@ def make_handler(app: App):
                         acceptance=body.get("acceptance_criteria") or [],
                         risk_level=rl,
                         budget_overrides=body.get("budget_policy"),
-                        wait=False)
+                        wait=False,
+                        **parsed)
                     if request_id:
                         app.db.save_request(request_id, t.task_id)
                 return self._json(202, {"task_id": t.task_id, "status": "CREATED"})
@@ -744,6 +748,69 @@ def make_handler(app: App):
                                         cand.risk_level, "strict_review")})
 
     return Handler
+
+
+_TASK_COMPLEXITIES = {"", "simple", "moderate", "complex"}
+
+
+def _string_field(body: Dict[str, Any], name: str, max_len: int) -> str:
+    value = body.get(name)
+    if value is None:
+        return ""
+    if not isinstance(value, str):
+        raise ValueError(f"{name} 必须是字符串")
+    value = value.strip()
+    if len(value) > max_len:
+        raise ValueError(f"{name} 超过 {max_len} 字符")
+    return value
+
+
+def _string_list_field(body: Dict[str, Any], name: str,
+                       max_items: int, max_len: int) -> List[str]:
+    value = body.get(name)
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise ValueError(f"{name} 必须是数组")
+    if len(value) > max_items:
+        raise ValueError(f"{name} 最多 {max_items} 项")
+    out: List[str] = []
+    for item in value:
+        if not isinstance(item, str):
+            raise ValueError(f"{name} 的每一项必须是字符串")
+        item = item.strip()
+        if not item:
+            continue
+        if len(item) > max_len:
+            raise ValueError(f"{name} 单项超过 {max_len} 字符")
+        out.append(item)
+    return out
+
+
+def _parse_task_model_fields(body: Dict[str, Any]):
+    """校验 PRD 7.3 任务解析结果的可选输入；返回 (kwargs, error)。"""
+    try:
+        complexity = _string_field(body, "complexity", 20)
+        if complexity not in _TASK_COMPLEXITIES:
+            raise ValueError("complexity 必须是 simple/moderate/complex")
+        parsed: Dict[str, Any] = {
+            "target_object": _string_field(body, "target_object", 1000),
+            "expected_output": _string_field(body, "expected_output", 2000),
+            "complexity": complexity,
+            "required_tools": _string_list_field(body, "required_tools", 32, 120),
+            "required_permissions": _string_list_field(
+                body, "required_permissions", 32, 120),
+            "open_questions": _string_list_field(
+                body, "open_questions", 20, 500),
+        }
+        for name in ("requires_network", "workflow_suitable"):
+            value = body.get(name)
+            if value is not None and not isinstance(value, bool):
+                raise ValueError(f"{name} 必须是布尔值")
+            parsed[name] = value
+        return parsed, ""
+    except ValueError as e:
+        return {}, str(e)
 
 
 def _model_summary(profile: Any) -> Dict[str, Any]:

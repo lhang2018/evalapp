@@ -67,11 +67,17 @@ def cmd_demo() -> str:
     return json.dumps(out, ensure_ascii=False, indent=1)
 
 
-def cmd_task(goal: str, intent: str, risk: str, wait: bool) -> str:
+def cmd_task(goal: str, intent: str, risk: str, wait: bool,
+             target_object: str = "", expected_output: str = "",
+             complexity: str = "", requires_network=None,
+             open_questions=None) -> str:
     from .core.task import RiskLevel
     app = _app()
-    t = app.controller.submit_task(goal, intent=intent,
-                                   risk_level=RiskLevel(risk), wait=wait)
+    t = app.controller.submit_task(
+        goal, intent=intent, risk_level=RiskLevel(risk), wait=wait,
+        target_object=target_object, expected_output=expected_output,
+        complexity=complexity, requires_network=requires_network,
+        open_questions=open_questions)
     if not wait:
         print(f"已后台提交: {t.task_id}；用 status 查询进度")
         return t.task_id
@@ -586,6 +592,14 @@ def main() -> None:
     t.add_argument("--intent", default="general")
     t.add_argument("--risk", default="low")
     t.add_argument("--no-wait", action="store_true")
+    t.add_argument("--target-object", default="", help="目标对象（PRD 7.3）")
+    t.add_argument("--expected-output", default="", help="预期输出/目标状态")
+    t.add_argument("--complexity", default="",
+                   choices=["", "simple", "moderate", "complex"])
+    t.add_argument("--requires-network", default=None,
+                   action=argparse.BooleanOptionalAction)
+    t.add_argument("--open-question", action="append", default=[],
+                   help="尚未确定的关键信息（可重复）")
     sub.add_parser("workflow")
     s = sub.add_parser("status")
     s.add_argument("task_id", nargs="?")
@@ -690,7 +704,12 @@ def main() -> None:
     if args.cmd == "demo":
         cmd_demo()
     elif args.cmd == "task":
-        cmd_task(args.goal, args.intent, args.risk, not args.no_wait)
+        cmd_task(args.goal, args.intent, args.risk, not args.no_wait,
+                 target_object=args.target_object,
+                 expected_output=args.expected_output,
+                 complexity=args.complexity,
+                 requires_network=args.requires_network,
+                 open_questions=args.open_question or [])
     elif args.cmd == "workflow":
         cmd_workflow()
     elif args.cmd == "status":

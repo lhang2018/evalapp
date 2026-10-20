@@ -15,6 +15,14 @@ from ..core.budget import BudgetController, BudgetExceeded
 from ..models.base import ChatMessage
 
 
+INTENT_TOOL_HINTS: Dict[str, str] = {
+    "time_query": "current_time",
+    "computation": "calculate",
+    "weather": "http_get",
+    "note_taking": "file_write",
+}
+
+
 @dataclass
 class PlanStep:
     step_id: str
@@ -220,9 +228,12 @@ class PlanningEngine:
         return steps
 
     def _default_steps(self, goal: str, intent: str) -> List[PlanStep]:
+        # 已知意图给核心步骤一个工具提示，让回退计划也能声明所需工具（PRD 7.3）
+        hint = INTENT_TOOL_HINTS.get(intent)
         base = [
             PlanStep(step_id="s1", description=f"解析目标并收集上下文: {goal}"),
-            PlanStep(step_id="s2", description="执行核心动作", deps=["s1"]),
+            PlanStep(step_id="s2", description="执行核心动作", deps=["s1"],
+                     tool_hint=hint),
             PlanStep(step_id="s3", description="验证结果并总结", deps=["s2"]),
         ]
         return base

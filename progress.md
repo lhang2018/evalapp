@@ -779,4 +779,41 @@
 
 ### 设计约束（本轮确立）
 - 管理端不复制业务规则：动作直接调用既有 REST 端点，权限与门禁只在服务端判定
-- 服务端数据一律当不可信文本渲染；禁止把症状、证据或模型输出拼进 HTML
+- 服务端数据一律当作不可信文本渲染；禁止把症状、证据或模型输出拼进 HTML
+
+## Session 19 (2026-10-20)
+
+### 目标
+- 补足差距盘点中的最后一项服务端能力：「任务模型全字段」（PRD 7.3）。
+
+### 完成事项
+- [x] `core/task.py`：新增 `target_object` / `expected_output` / `complexity` /
+      `required_tools` / `required_permissions` / `requires_network` /
+      `workflow_suitable` / `open_questions`，并纳入 `to_dict()`；
+      旧任务从 JSON 反序列化时自动取默认值，无需迁移
+- [x] `core/controller.py`：`_enrich_task_model` 在规划后按工具提示与工具契约补齐空字段；
+      已注册工作流按节点工具补齐；`_NETWORK_TOOLS` 推断网络依赖；
+      复杂度按计划步数（≤2 / ≤5 / 更多）；工作流适用性按专家 `workflow_ids`
+- [x] `planning/planner.py`：回退计划对已知意图（`time_query` / `computation` /
+      `weather` / `note_taking`）在核心步骤附带工具提示
+- [x] `api/server.py`：`POST /tasks` 校验并持久化这些可选字段，非法枚举/类型/超长返回 400
+- [x] `cli.py`：`task` 新增 `--target-object` / `--expected-output` / `--complexity` /
+      `--requires-network`（含 `--no-` 形式）/ `--open-question`（可重复）
+- [x] 测试：新增 `tests/test_task_model.py`（8 项：字段往返、旧任务默认值、
+      显式输入优先、计划/工作流补齐、网络与复杂度推断、REST 校验与持久化）
+- [x] 文档：FEATURES / IMPLEMENTATION / README / task_plan 同步，覆盖率 173→174 ✅
+
+### 测试结果
+- `python -m pytest tests/ -q` → 292 passed
+- `cd android-app && npm run test:offline` → 29 passed
+- `python -m evoagent.cli demo` / `workflow` 输出与通过数不变
+
+### 盘点更新
+- `FEATURES.md`：174 项 ✅、0 项部分、6 项待迭代（1 项明确不做）。
+- 剩余项：视觉/OCR/语音、后台常驻同步、端到端加密与多设备冲突、发布自动分支/合并、
+  真实嵌入向量、用户端中心页面。
+
+### 设计约束（本轮确立）
+- 解析字段只补空值：API/CLI 显式输入永远优先，推断不得覆盖用户声明
+- 推断必须可解释：复杂度按步数、网络依赖按工具契约，不引入隐藏模型判断
+- 回退计划也要声明工具：否则 ReAct 实际使用的工具不会进入任务解析结果

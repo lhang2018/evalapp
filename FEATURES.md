@@ -54,6 +54,7 @@ Python 服务端（标准库，SQLite）
 | RT-08 | 未知副作用恢复需显式 force | ✅ | `core/controller.py` | 存在 `pending_side_effects(state=unknown)` 时抛 `PermissionError` |
 | RT-09 | 并发上限 | ✅ | `config.py`（`max_concurrent_tasks`） | API 层线程承载 |
 | RT-10 | 结果证据与预算快照 | ✅ | `core/task.py`, `core/controller.py` | `result_evidence[-1].budget.usage` 是成本归因权威来源 |
+| RT-11 | 任务解析全字段（PRD 7.3） | ✅ | `core/task.py`, `core/controller.py`, `api/server.py`, `cli.py` | 目标对象/预期输出/复杂度/所需工具与权限/网络依赖/工作流适用性/待确认问题；显式输入优先，规划与工具契约只补空值 |
 
 ### 2.2 意图识别与规划（PRD 8 / 11-12）
 
@@ -507,7 +508,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，284 项）
+### Python（`tests/`，292 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -517,6 +518,7 @@ Python 服务端（标准库，SQLite）
 | `test_runtime.py` | 端到端运行时 |
 | `test_control.py` | 计量、限额、计划持久化、路由、暂停恢复、重跑、副作用闸门（9 项） |
 | `test_planning.py` | 计划校验/回退、意图分类（具体领域提示、`time_query` 注册） |
+| `test_task_model.py` | 任务模型全字段往返、旧任务默认值、显式输入不被推断覆盖、计划/工作流补齐、REST 校验与持久化（8 项） |
 | `test_config.py` | Claude 全局配置回退、`/v1` 归一、显式环境变量优先、缺失/损坏配置降级（7 项） |
 | `test_tools.py` | 契约、权限、副作用、幂等 |
 | `test_tool_workflow.py` | 工具超时/重试/输出契约、工作流并行/跳过/续跑 |
@@ -574,7 +576,6 @@ cd android-app && npm run test:offline
 | 端到端加密、多设备冲突合并 | PRD 72-76/86 | ⬜ | |
 | Web 管理端完整界面 | PRD 90 | ✅ | 90.1-90.7 分区已实现；不含富文本编辑/图表库，以表格与 JSON 展示为主 |
 | 发布自动分支/合并 | PRD 59-63 | ⬜ | 仅 git 基线 |
-| 任务模型全字段 | PRD 7.3 | 🔹 | 核心子集已实现 |
 
 ---
 
@@ -582,7 +583,7 @@ cd android-app && npm run test:offline
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 284 passed
+python -m pytest tests/ -q                       # 292 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -704,6 +705,16 @@ cd android-app && npm run android
 - 状态变化：新增 MD-10 ✅；迭代待办「真实 LLM 联调」完成。
 - 已知限制：仅复用 Claude 配置中的 OpenAI 兼容端点；不解析 `apiKeyHelper` 或其他凭据来源。
 
+### 2026-10-20 — 任务模型全字段（PRD 7.3）
+
+- 需求：PRD 7.3（任务解析结果：目标对象、预期输出、复杂度、所需工具/权限、网络依赖、工作流适用性、尚未确定的关键信息）。
+- 变更：任务实体新增 8 个字段并纳入持久化；控制器在规划后按计划工具提示与工具契约补齐空字段，已注册工作流按节点工具补齐；回退计划对已知意图附带工具提示；显式输入（API/CLI）始终优先，不被推断覆盖。
+- 代码：`core/task.py`、`core/controller.py`（`_NETWORK_TOOLS`、`_enrich_task_model`）、`planning/planner.py`（`INTENT_TOOL_HINTS`）、`api/server.py`（`_parse_task_model_fields` 校验）、`cli.py`（`--target-object`/`--expected-output`/`--complexity`/`--requires-network`/`--open-question`）。
+- 接口/配置：`POST /tasks` 接受上述可选字段，非法枚举/类型返回 400；任务 JSON 全量回传。旧库任务无需迁移，缺失字段取默认值。
+- 测试：新增 `tests/test_task_model.py`（8 项）；Python 总数 284 → 292，客户端保持 29。
+- 状态变化：新增 RT-11 ✅；未实现清单移除「任务模型全字段」。
+- 已知限制：复杂度按计划步数推断（≤2 简单 / ≤5 中等 / 更多复杂），网络依赖按工具契约与 `http_get` 推断；未实现单独的字段置信度。
+
 ### 2026-10-20 — Web 管理端 PRD 90.1-90.7 完整界面
 
 - 需求：PRD 90.1-90.7（健康仪表盘、问题中心、诊断详情、候选实验中心、版本中心、成本中心、审计与回滚中心）。
@@ -773,6 +784,7 @@ cd android-app && npm run android
 | Session 16 | LLM 辅助诊断假设（证据绑定 + 探针门禁） | 266 + 29 |
 | Session 17 | PRD 差距盘点 + 候选代码隔离执行 | 282 + 29 |
 | Session 18 | Web 管理端 PRD 90.1-90.7 完整界面 | 284 + 29 |
+| Session 19 | 任务模型全字段（PRD 7.3） | 292 + 29 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 

@@ -45,6 +45,16 @@ class Task:
     user_goal: str = ""
     intent: str = "general"
     domain: str = "general"
+    # PRD 7.3 任务解析结果：目标对象、预期输出、复杂度、所需工具/权限、
+    # 网络依赖、工作流适用性、尚未确定的关键信息
+    target_object: str = ""
+    expected_output: str = ""
+    complexity: str = ""                  # simple | moderate | complex
+    required_tools: List[str] = field(default_factory=list)
+    required_permissions: List[str] = field(default_factory=list)
+    requires_network: Optional[bool] = None
+    workflow_suitable: Optional[bool] = None
+    open_questions: List[str] = field(default_factory=list)
     constraints: List[str] = field(default_factory=list)
     risk_level: RiskLevel = RiskLevel.LOW
     acceptance_criteria: List[Dict[str, Any]] = field(default_factory=list)
@@ -73,6 +83,14 @@ class Task:
             "user_goal": self.user_goal,
             "intent": self.intent,
             "domain": self.domain,
+            "target_object": self.target_object,
+            "expected_output": self.expected_output,
+            "complexity": self.complexity,
+            "required_tools": self.required_tools,
+            "required_permissions": self.required_permissions,
+            "requires_network": self.requires_network,
+            "workflow_suitable": self.workflow_suitable,
+            "open_questions": self.open_questions,
             "constraints": self.constraints,
             "risk_level": self.risk_level.value,
             "acceptance_criteria": self.acceptance_criteria,

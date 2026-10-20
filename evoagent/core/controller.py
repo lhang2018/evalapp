@@ -32,6 +32,9 @@ from .persistence import Database
 from .state_machine import IllegalTransition, transition
 from .task import RiskLevel, Task, TaskStatus
 
+# 依赖网络的工具：未在契约里声明网络权限时用它推断 PRD 7.3 的 requires_network
+_NETWORK_TOOLS = {"http_get"}
+
 
 class RuntimeController:
     def __init__(self, config: Config,
@@ -80,8 +83,24 @@ class RuntimeController:
                     budget_overrides: Optional[Dict[str, Any]] = None,
                     wait: bool = True,
                     source: str = "user",
-                    model_override: Optional[str] = None) -> Task:
+                    model_override: Optional[str] = None,
+                    target_object: str = "",
+                    expected_output: str = "",
+                    complexity: str = "",
+                    required_tools: Optional[List[str]] = None,
+                    required_permissions: Optional[List[str]] = None,
+                    requires_network: Optional[bool] = None,
+                    workflow_suitable: Optional[bool] = None,
+                    open_questions: Optional[List[str]] = None) -> Task:
         task = Task(user_goal=goal,
+                    target_object=target_object,
+                    expected_output=expected_output,
+                    complexity=complexity,
+                    required_tools=list(required_tools or []),
+                    required_permissions=list(required_permissions or []),
+                    requires_network=requires_network,
+                    workflow_suitable=workflow_suitable,
+                    open_questions=list(open_questions or []),
                     constraints=list(constraints or []),
                     acceptance_criteria=list(acceptance or []),
                     risk_level=risk_level,
@@ -219,6 +238,10 @@ class RuntimeController:
                 and task.intent in expert.applicable_intents:
             task.workflow_ref = expert.workflow_ids[0]
         if task.workflow_ref:
+            wf = self.wf_lookup(task.workflow_ref)
+            hints = [n.tool for n in wf.nodes] if wf is not None else []
+            self._enrich_task_model(task, hints, len(hints),
+                                    has_workflow=True)
             task = self._move(task, TaskStatus.READY)
             return task
         task = self._move(task, TaskStatus.PLANNING)
@@ -242,8 +265,42 @@ class RuntimeController:
             return task
         task.execution_plan_ref = plan.plan_id
         task.runtime_manifest["execution_plan"] = plan.to_dict()
+        self._enrich_task_model(task, [s.tool_hint for s in plan.steps],
+                                len(plan.steps))
         task = self._move(task, TaskStatus.READY)
         return task
+
+    def _enrich_task_model(self, task: Task, tool_hints: List[str],
+                           step_count: int, *, has_workflow: bool = False) -> None:
+        """补齐 PRD 7.3 解析结果中可从计划/工具契约确定的字段。
+
+        只填空值：显式输入（API/CLI）优先，不被推断覆盖。
+        """
+        hints = [h for h in tool_hints if h]
+        if not task.required_tools:
+            task.required_tools = sorted(set(hints))
+        perms: List[str] = []
+        network = False
+        for tid in (task.required_tools or hints):
+            contract = self.tools.contract(tid)
+            if contract is None:
+                continue
+            required = list(contract.permission_requirements or [])
+            perms.extend(required)
+            if tid in _NETWORK_TOOLS or "network" in required:
+                network = True
+        if not task.required_permissions:
+            task.required_permissions = sorted(set(perms))
+        if task.requires_network is None:
+            task.requires_network = network
+        if not task.complexity:
+            task.complexity = ("simple" if step_count <= 2 else
+                               "moderate" if step_count <= 5 else "complex")
+        if task.workflow_suitable is None:
+            expert = (self.experts.get(task.domain)
+                      or self.experts.route(task.intent))
+            task.workflow_suitable = bool(
+                has_workflow or (expert and expert.workflow_ids))
 
     # ---- Phase 3: 执行 ----
     def _run(self, task: Task, budget: BudgetController,
