@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 212 项 + 客户端 29 项全部通过**。
+测试基线（2026-10-20）：**Python 225 项 + 客户端 29 项全部通过**。
 
 ---
 
@@ -226,9 +226,9 @@ Python 服务端（标准库，SQLite）
 | CP-02 | Bearer 鉴权（普通/管理双令牌） | ✅ | `api/auth.py` | `EVOAGENT_API_TOKEN` / `EVOAGENT_ADMIN_TOKEN` |
 | CP-03 | 审计日志 | ✅ | `core/audit.py` | 进化/发布变更写审计 |
 | CP-04 | 指标 | ✅ | `core/metrics.py` | JSON + Prometheus（`?format=prometheus`）；无样本指标输出 `NaN` 保持序列稳定 |
-| CP-05 | 管理页数据接口 | ✅ | `api/admin.py` | `GET /admin`（HTML） |
+| CP-05 | 管理页数据接口 | ✅ | `api/admin.py` | `GET /admin`（HTML）：只读观测 + 任务回放 + 备份/恢复面板 |
 | CP-06 | 健康检查 | ✅ | `api/server.py`, `app.py` | 含专家、预算、诊断计数 |
-| CP-07 | Web 管理端完整界面 | ⬜ | — | 数据层已备 |
+| CP-07 | Web 管理端完整界面 | ⬜ | — | 观测/回放/备份操作已可用；编辑与可视化浏览待迭代 |
 | CP-08 | 四层日志分层 | ✅ | `core/log_layers.py` | runtime_event / execution_trace / diagnostic_evidence / audit，独立保留期与读取角色 |
 | CP-09 | 执行轨迹 | ✅ | `core/log_layers.py` (`ExecutionTracer`) | 订阅事件总线，按任务连续 `step` 落盘；敏感事件只留脱敏标记 |
 | CP-10 | 诊断证据授权 | ✅ | `core/log_layers.py` (`EvidenceStore`) | 仅 `standard` + `authorized=True` 可导出；`secret` 拒绝入库 |
@@ -237,6 +237,9 @@ Python 服务端（标准库，SQLite）
 | CP-13 | 扩展指标 | ✅ | `core/metrics.py` | 模型调用成功率、工具契约错误率、ReAct 异常率、恢复、上下文、记忆、进化/回滚、意图维度 |
 | CP-14 | 分级告警 | ✅ | `core/alerts.py` | 8 条规则（成功率/连续失败/模型/契约/成本/回滚/ReAct/安全），`GET /alerts` |
 | CP-15 | 模型调用计量 | ✅ | `models/metering.py` (`MeteredModel`) | 包装适配器，记录 `model_id/op/ok/error_class/latency_s` 不影响原行为 |
+| CP-16 | 任务运行回放（Arch 20.3） | ✅ | `core/replay.py`, `api/server.py`, `cli.py` | 从事件/轨迹/检查点/运行记录重建时间线；`read_only=True`、`reexecute_side_effects=False`；非 `standard` 负载脱敏 |
+| CP-17 | 备份与恢复（Arch 20.4） | ✅ | `core/backup.py`, `api/server.py`, `cli.py` | 三库在线备份打包 + `manifest.json`（sha256/行数/版本）；校验与完整性检查；恢复前自动安全备份；存在未结束任务拒绝恢复 |
+| CP-18 | 管理端回放/备份面板 | ✅ | `api/admin.py` | 只读回放展示版本/统计/时间线；备份创建、列表与二次确认恢复；动态内容 `textContent` 渲染 |
 
 ---
 
@@ -254,6 +257,7 @@ Python 服务端（标准库，SQLite）
 | `/tasks` | 任务列表 |
 | `/tasks/{id}` | 任务详情 |
 | `/tasks/{id}/events` | 任务事件 |
+| `/tasks/{id}/replay?limit=N` | 只读运行回放（需 `execution_trace` 读权限；不重放副作用；敏感负载脱敏） |
 | `/experts` | 专家与能力图 |
 | `/metrics` | 指标（JSON；`?format=prometheus`） |
 | `/audit` | 审计日志 |
@@ -271,7 +275,8 @@ Python 服务端（标准库，SQLite）
 | `/logs/layers` | 四层日志策略、计数与当前角色可读性 |
 | `/logs/traces?task_id=&limit=` | 执行轨迹（需 execution_trace 权限） |
 | `/logs/evidence?task_id=&limit=` | 诊断证据（admin；返回 `exportable` 标记） |
-| `/admin` | 只读管理页 |
+| `/admin` | 只读管理页（含回放与备份/恢复操作，admin 接口需管理令牌） |
+| `/admin/backups` | 备份列表（admin） |
 
 ### POST
 
@@ -300,6 +305,8 @@ Python 服务端（标准库，SQLite）
 | `/models/migrations/{id}/rollback` | 回滚迁移（`reason`） |
 | `/diagnostics/{case_id}/experiments` | 运行探针实验（可选 `fault: error|timeout|fail`） |
 | `/diagnostics/{case_id}/candidates` | 假设升级候选 |
+| `/admin/backup` | 创建三库备份（admin，写审计，`201`） |
+| `/admin/restore` | 恢复指定备份（admin；未结束任务 `409`、缺失 `404`、非法名称 `400`；恢复前自动安全备份） |
 
 ---
 
@@ -327,6 +334,8 @@ Python 服务端（标准库，SQLite）
 | `migrations [migration_id]` | 迁移列表/详情 |
 | `memory-eval [--no-persist]` | 记忆质量评测与运行反馈 |
 | `drift [--window N] [--emit]` | 环境漂移检测 |
+| `replay <task_id> [--limit N]` | 只读运行回放（时间线/统计/脱敏标记） |
+| `backup [create|verify|restore|list] [ref] [--name]` | 备份创建/校验/恢复/列表（恢复前检查未结束任务） |
 
 ---
 
@@ -429,6 +438,8 @@ Python 服务端（标准库，SQLite）
 
 兼容策略：旧库启动时按 `PRAGMA table_info` 自动补列（如 `runtime_events`）；结构不兼容时重建对应表。
 
+备份目录：`<data_dir>/backups/`，每个 zip 含三库与 `manifest.json`（格式版本、文件 sha256/字节数、表行数、发布 ID）。恢复前自动生成 `pre_restore_<时间戳>_<随机>.zip`，恢复后建议重启进程（内存缓存不自动刷新）。
+
 ---
 
 ## 7. 配置项
@@ -466,7 +477,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，212 项）
+### Python（`tests/`，225 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -490,7 +501,9 @@ Python 服务端（标准库，SQLite）
 | `test_memory_evaluation.py` | 记忆评测指标、过期/冲突用例、运行反馈、报告 API/指标（6 项） |
 | `test_drift.py` | 漂移信号与处置建议、版本变更、事件发射、指标/告警/API（9 项） |
 | `test_observability.py` | 分层策略/脱敏、执行轨迹、证据导出授权、保留清理、扩展指标、告警、REST 访问控制（17 项） |
-| `test_control_plane.py` | 鉴权、审计、指标、管理页 |
+| `test_replay.py` | 回放重建、敏感负载脱敏、不重放副作用、未知任务、API 200/404（6 项） |
+| `test_backup.py` | 打包/校验/篡改检测、恢复往返、安全备份、路径校验、API 409/404（7 项） |
+| `test_control_plane.py` | 鉴权、审计、指标、管理页（含回放/备份面板） |
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
 
@@ -523,7 +536,7 @@ cd android-app && npm run test:offline
 | 视觉/OCR/语音操作 | PRD 64/68 | ⬜ | 仅无障碍节点与显式 Intent |
 | 后台常驻同步 | PRD 72-76 | ⬜ | 前台 + 手动重试 |
 | 端到端加密、多设备冲突合并 | PRD 72-76/86 | ⬜ | |
-| Web 管理端完整界面 | PRD 90 | ⬜ | `GET /admin` 只读页与数据接口已备 |
+| Web 管理端完整界面 | PRD 90 | ⬜ | 观测/回放/备份操作已可用，编辑与可视化待迭代 |
 | 发布自动分支/合并 | PRD 59-63 | ⬜ | 仅 git 基线 |
 | 任务模型全字段 | PRD 7.3 | 🔹 | 核心子集已实现 |
 
@@ -533,7 +546,7 @@ cd android-app && npm run test:offline
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 212 passed
+python -m pytest tests/ -q                       # 225 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -549,6 +562,8 @@ python -m evoagent.cli migrate mock-1 mock-2      # 兼容性 → 回归 → 发
 python -m evoagent.cli migrations
 python -m evoagent.cli memory-eval --no-persist
 python -m evoagent.cli drift
+python -m evoagent.cli replay <task_id>          # 只读回放
+python -m evoagent.cli backup create             # 备份 → verify → list
 
 # 4. API 冒烟
 python -m evoagent.cli serve --port 8300
@@ -558,6 +573,8 @@ python -m evoagent.cli serve --port 8300
 #   - GET /models /models/migrations /memory/evaluations /diagnostics/drift
 #   - POST /models/migrations → regression → release → apply → rollback
 #   - POST /memory/evaluate、/diagnostics/drift/scan
+#   - GET /tasks/{id}/replay、GET /admin/backups
+#   - POST /admin/backup → /admin/restore（未结束任务返回 409）
 
 # 5. Android（真机/模拟器）
 adb reverse tcp:8300 tcp:8300
@@ -596,6 +613,16 @@ cd android-app && npm run android
 
 ## 变更记录
 
+### 2026-10-20 — 任务运行回放 + 备份与恢复 + 管理端操作面板
+
+- 需求：Arch 20.3 / 20.4；PRD 90。
+- 变更：新增只读运行回放（任务/版本/计划/检查点/运行记录/事件与轨迹时间线，敏感负载脱敏，不执行副作用）；新增三库在线备份、校验（sha256 + `PRAGMA integrity_check` + 必需表）与恢复（自动安全备份、未结束任务拒绝恢复）；管理端增加回放与备份/恢复面板。
+- 代码：`core/replay.py`（`ReplayService`）、`core/backup.py`（`BackupManager`）、`core/persistence.py`（`list_runs`）、`api/server.py`、`api/admin.py`、`cli.py`、`app.py`。
+- 接口/配置：`GET /tasks/{id}/replay`、`GET /admin/backups`；`POST /admin/backup`、`/admin/restore`；CLI `replay`、`backup`；数据目录新增 `backups/`。
+- 测试：新增 `tests/test_replay.py`（6 项）、`tests/test_backup.py`（7 项）；Python 总数 212 → 225，客户端保持 29。
+- 状态变化：新增 CP-16、CP-17、CP-18 ✅。
+- 已知限制：恢复后建议重启进程以刷新内存缓存；回放为事件级重建，非逐 token/屏幕录制回放；备份不含工具产物等外部文件。
+
 ### 2026-10-20 — 模型迁移执行链 + 记忆评测 + 环境漂移检测
 
 - 需求：PRD 20 / 28 / 44 / 104 / 111；Arch 7.4 / 8.2 / 9.3 / 9.5。
@@ -624,6 +651,7 @@ cd android-app && npm run android
 | Session 10 | 十维收益 + 发布后监测与自动回滚判定 | 170 + 29 |
 | Session 11 | 日志四层分层 + 扩展指标 + 分级告警 | 187 + 29 |
 | Session 12 | 模型迁移执行链 + 记忆评测 + 环境漂移检测 | 212 + 29 |
+| Session 13 | 任务运行回放 + 备份与恢复 + 管理端操作面板 | 225 + 29 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 

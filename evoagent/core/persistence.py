@@ -155,6 +155,24 @@ class Database:
                  json.dumps(version_manifest, ensure_ascii=False)))
             self._conn.commit()
 
+    def list_runs(self, task_id: str, limit: int = 100) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT run_id, task_id, started_at, finished_at, outcome,"
+            " version_manifest FROM task_runs WHERE task_id=?"
+            " ORDER BY started_at ASC LIMIT ?", (task_id, limit)).fetchall()
+        out = []
+        for r in rows:
+            try:
+                manifest = json.loads(r["version_manifest"])
+            except (TypeError, ValueError):
+                manifest = {}
+            out.append({"run_id": r["run_id"], "task_id": r["task_id"],
+                        "started_at": r["started_at"],
+                        "finished_at": r["finished_at"],
+                        "outcome": r["outcome"],
+                        "version_manifest": manifest})
+        return out
+
     # ---- checkpoints ----
     def save_checkpoint(self, checkpoint_id: str, task_id: str,
                         created_at: float, snapshot: Dict[str, Any]) -> None:

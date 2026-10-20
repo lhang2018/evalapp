@@ -117,6 +117,8 @@ class TestControlPlaneServer(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn("text/html", ctype)
         self.assertIn("EvoAgent", body)
+        self.assertIn("任务回放", body)
+        self.assertIn("备份与恢复", body)
 
         status, ctype, body = self._get("/metrics")
         self.assertEqual(status, 200)

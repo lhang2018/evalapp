@@ -527,3 +527,54 @@
 - 固定模型覆盖失败必须回退并留事件，不得静默使用未知模型
 - 漂移检测是只读分析面；指标抓取不得制造事件，显式扫描才发 `drift_detected`
 - 记忆收益缺样本只能标 `insufficient_evidence`，不能当作正收益
+
+## Session 13 (2026-10-20)
+
+### 背景
+- 用户要求：提交上一轮并继续审计 PRD/Architecture 差距后补足。
+- 本轮选择 Arch 20.3（运行回放）与 Arch 20.4（备份与恢复），并把两者接入 PRD 90 管理端。
+  此前只有事件/轨迹的原始查询，无法按任务重建完整时间线；数据只有单库文件，没有可校验、
+  可回滚的备份机制。
+
+### 完成事项
+- [x] 新增 `core/replay.py`
+  - `ReplayService.build()` 汇总任务实体、`runtime_events`、`execution_traces`、
+    `task_checkpoints`、`task_runs` 与 `runtime_manifest`（计划/进度/模型路由）
+  - 输出显式 `read_only=True`、`reexecute_side_effects=False`；非 `standard` 负载只给
+    `{"redacted": true}`；事件与轨迹合并为按时间排序的 `timeline`
+- [x] 新增 `core/backup.py`
+  - SQLite 在线备份 API 将 `evoagent.db` / `events.db` / `memory.db` 打入 zip，
+    `manifest.json` 记录格式版本、sha256、字节数、表行数与发布 ID
+  - `verify()`：名称/路径校验、manifest、逐文件 sha256、`PRAGMA integrity_check`、必需表
+  - `restore()`：先校验，自动创建 `pre_restore_*.zip`，再以 `Connection.backup` 写回活动连接，
+    返回 `restart_recommended=True`
+- [x] `core/persistence.py` 增加 `list_runs()` 供回放读取版本清单
+- [x] API
+  - `GET /tasks/{id}/replay`（需 `execution_trace` 读权限；未知任务 404）
+  - `GET /admin/backups`、`POST /admin/backup`（201，写审计）
+  - `POST /admin/restore`：未结束任务 409、缺失 404、非法参数 400，写审计
+- [x] 管理端 `api/admin.py`
+  - 新增「任务回放（只读）」与「备份与恢复」面板；恢复用二次确认；所有动态内容 `textContent`
+- [x] CLI
+  - `replay <task_id> [--limit]`、`backup [create|verify|restore|list] [ref] [--name]`
+  - 修复 `status` / `task --wait` 缺少输出、多个错误分支静默返回的问题（统一 `_fail()`）
+- [x] 测试：`tests/test_replay.py`（6）、`tests/test_backup.py`（7）；
+  `test_control_plane.py` 管理页断言补充新面板
+- [x] 文档同步：FEATURES / README / IMPLEMENTATION / task_plan
+
+### 测试结果
+- `python -m pytest tests/ -q` → 225 passed
+- `cd android-app && npm run test:offline` → 29 passed（未改动客户端）
+- `python -m evoagent.cli task ...` → `status` / `replay` 输出正常（时间线 20 项）
+- `python -m evoagent.cli backup create/verify/list` → 通过（manifest 校验 ok）
+
+### 本轮修复的缺陷
+- CLI `status`、`task --wait` 与多个错误分支返回 JSON 但 `main()` 不打印 → 改为命令内打印
+- 恢复往返测试用相对名查找备份，落在第二个 App 自己的目录 → 改用绝对路径
+- 备份 API 409 用例遗留未结束任务，影响后续 404 用例 → `finally` 清理
+- 管理页 JS 校验脚本在 Windows 下使用 `/tmp` 失败 → 改用 `tempfile.gettempdir()`
+
+### 设计约束（本轮确立）
+- 回放只重建、不重执行；非 `standard` 负载一律脱敏，避免回放成为隐私旁路
+- 备份必须用在线备份 API 生成一致性快照；恢复前自动安全备份，存在未结束任务时拒绝
+- 回放接口沿用 `execution_trace` 读权限；备份/恢复接口仅 admin

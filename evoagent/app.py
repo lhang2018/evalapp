@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 
 from .config import Config
 from .core.audit import AuditLog
+from .core.backup import BackupManager
 from .core.budget import BudgetLedger, BudgetLimits
 from .core.checkpoint import CheckpointManager
 from .core.controller import RuntimeController
@@ -18,6 +19,7 @@ from .core.metrics import MetricsAggregator
 from .core.persistence import Database
 from .core.permissions import (PermissionController, PermissionDecision,
                                 ToolPolicy)
+from .core.replay import ReplayService
 from .evolution.controller import EvolutionController
 from .evolution.datasets import builtin_datasets
 from .evolution.diagnostics import DiagnosisEngine
@@ -147,6 +149,12 @@ class App:
             self.evolution)
         # 环境漂移检测（PRD 44）：只读窗口分析，默认不制造事件
         self.drift = DriftDetector(self.bus, self.db)
+        # 运行回放（Arch 20.3）：只读重建，不执行真实副作用
+        self.replay = ReplayService(self.db, self.bus, self.releases)
+        # 备份与恢复（Arch 20.4）：SQLite 在线备份 + 校验 + 恢复
+        self.backups = BackupManager(
+            str(d), db=self.db, bus=self.bus, memory=self.memory,
+            releases=self.releases)
 
         # 控制器
         self.controller = RuntimeController(

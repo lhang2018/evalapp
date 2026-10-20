@@ -37,6 +37,12 @@ python -m evoagent.cli migrate mock-1 mock-2
 # 记忆质量评测 / 环境漂移检测
 python -m evoagent.cli memory-eval --no-persist
 python -m evoagent.cli drift
+# 只读运行回放 / 备份与恢复
+python -m evoagent.cli replay <task_id>
+python -m evoagent.cli backup create
+python -m evoagent.cli backup verify <name.zip>
+python -m evoagent.cli backup restore <name.zip>
+python -m evoagent.cli backup list
 ```
 
 诊断 REST 端点：`GET /diagnostics`、`GET /diagnostics/{case_id}`、
@@ -48,6 +54,10 @@ python -m evoagent.cli drift
 `POST /models/migrations`、`POST /models/migrations/{id}/regression|release|apply|rollback`；
 `POST /memory/evaluate`、`GET /memory/evaluations`；`GET /diagnostics/drift`、
 `POST /diagnostics/drift/scan`（显式发出 `drift_detected` 事件）。
+
+回放与备份端点：`GET /tasks/{id}/replay`（只读重建，需 `execution_trace` 读权限）、
+`GET /admin/backups`、`POST /admin/backup`、`POST /admin/restore`（admin；有未结束任务时
+`409`，恢复前自动创建安全备份）。
 
 只读观测端点：`GET /metrics`（JSON，`?format=prometheus` 输出文本）、`GET /audit`、
 `GET /workflows`、`GET /memory/stats`、`GET /evolution/candidates`、`GET /admin`。
@@ -130,9 +140,10 @@ Planning/意图分类 + 执行内核接线（计划驱动 ReAct/进度持久化�
 （时间窗采样、上窗对比、自动回滚判定）、四层日志（运行事件/执行轨迹/诊断证据/审计，独立保留期与
 访问角色）、扩展可观测指标（模型/工具/ReAct/恢复/上下文/记忆/进化/回滚/意图维度）与分级告警、
 模型迁移执行链（资产继承/兼容性/同数据集回归对比/灰度启用/回滚）、记忆质量评测与运行反馈、
-环境漂移检测（工具/契约/模型/任务分布/版本变更，含处置建议与告警）。
-测试通过：Python 212 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
-嵌入向量检索、Web 管理端、隔离沙箱执行候选代码。
+环境漂移检测（工具/契约/模型/任务分布/版本变更，含处置建议与告警）、任务运行回放（只读、
+敏感负载脱敏、不重放副作用）、三库备份与恢复（sha256 + 完整性校验、自动安全备份，管理端可操作）。
+测试通过：Python 225 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
+嵌入向量检索、Web 管理端完整编辑、隔离沙箱执行候选代码。
 
 ## 目录
 
@@ -149,8 +160,10 @@ evoagent/                  Python 服务端核心
   evolution/               评测集/门禁/候选生命周期/诊断案例与假设/固定探针/漂移检测
   release/                 发布清单/签名/回滚
   api/                     REST API（标准库实现）
+  core/replay.py           只读运行回放
+  core/backup.py           三库备份/校验/恢复
   cli.py                   命令行
-tests/                     212 项服务端测试
+tests/                     225 项服务端测试
 android-app/               React Native Android 客户端
   src/offline/             本地任务/事件队列、隐私过滤、同步引擎（纯 TS，可单测）
   src/device/              设备操作契约/风险闸门/原生桥接（纯 TS，可单测）

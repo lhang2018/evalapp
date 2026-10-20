@@ -1,6 +1,7 @@
 """Web 管理端（PRD 90 的最小可用子集）。
 
-只读观测面板：健康、指标、任务、诊断、进化候选、发布与审计。
+观测面板：健康、指标、任务、诊断、进化候选、发布与审计；
+操作面板：任务回放（只读）与备份创建/恢复（恢复需二次确认）。
 所有动态内容用 textContent 写入，避免把服务端数据当 HTML 注入。
 """
 
@@ -29,6 +30,7 @@ ADMIN_HTML = """<!doctype html>
   input, button { font: inherit; padding: 4px 8px; }
   .muted { opacity: .7; }
   .err { color: #d33; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -46,6 +48,22 @@ ADMIN_HTML = """<!doctype html>
   <section><h2>进化候选</h2><div id="candidates"></div></section>
   <section><h2>诊断案例</h2><div id="diagnostics"></div></section>
   <section><h2>发布与审计</h2><pre id="releases">-</pre><div id="audit"></div></section>
+  <section><h2>任务回放（只读）</h2>
+    <div class="row">
+      <input id="replayTask" placeholder="task_id" size="24">
+      <button id="replayBtn">回放</button>
+    </div>
+    <pre id="replayOut">-</pre>
+  </section>
+  <section><h2>备份与恢复</h2>
+    <div class="row">
+      <button id="backupCreate">创建备份</button>
+      <input id="restoreName" placeholder="备份文件名" size="30">
+      <button id="restoreBtn">恢复</button>
+    </div>
+    <div id="backups"></div>
+    <pre id="backupOut">-</pre>
+  </section>
 </main>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -79,6 +97,32 @@ async function get(path) {
   const r = await fetch(path, {headers: headers()});
   if (!r.ok) throw new Error(path + " -> HTTP " + r.status);
   return r.json();
+}
+async function post(path, payload) {
+  const r = await fetch(path, {
+    method: "POST",
+    headers: headers({"Content-Type": "application/json"}),
+    body: JSON.stringify(payload || {})
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || (path + " -> HTTP " + r.status));
+  return data;
+}
+async function loadBackups() {
+  try {
+    const out = await get("/admin/backups");
+    $("backups").className = "";
+    $("backups").replaceChildren(table(out.backups.map(b => ({
+      name: b.name,
+      created: new Date(b.created_at * 1000).toLocaleString(),
+      bytes: b.bytes,
+      tasks: (b.counts || {}).tasks,
+      events: (b.counts || {}).events
+    })), ["name", "created", "bytes", "tasks", "events"]));
+  } catch (e) {
+    $("backups").className = "err";
+    $("backups").textContent = String(e.message || e);
+  }
 }
 async function refresh() {
   $("status").textContent = "加载中…";
@@ -118,10 +162,55 @@ async function refresh() {
     $("status").className = "err";
   }
 }
+$("replayBtn").addEventListener("click", async () => {
+  const id = $("replayTask").value.trim();
+  if (!id) return;
+  $("replayOut").textContent = "加载中…";
+  try {
+    const out = await get("/tasks/" + encodeURIComponent(id) + "/replay");
+    $("replayOut").textContent = JSON.stringify({
+      task: out.task_id, status: out.task_status,
+      read_only: out.read_only,
+      reexecute_side_effects: out.reexecute_side_effects,
+      versions: out.versions, stats: out.stats,
+      timeline: out.timeline.map(e => ({
+        at: new Date(e.at * 1000).toLocaleString(), source: e.source,
+        kind: e.kind, step: e.step, privacy: e.privacy_classification,
+        payload: e.payload
+      }))
+    }, null, 1);
+  } catch (e) {
+    $("replayOut").textContent = String(e.message || e);
+  }
+});
+$("backupCreate").addEventListener("click", async () => {
+  $("backupOut").textContent = "创建中…";
+  try {
+    const out = await post("/admin/backup", {});
+    $("backupOut").textContent = JSON.stringify(out, null, 1);
+    loadBackups();
+  } catch (e) {
+    $("backupOut").textContent = String(e.message || e);
+  }
+});
+$("restoreBtn").addEventListener("click", async () => {
+  const name = $("restoreName").value.trim();
+  if (!name) return;
+  if (!window.confirm("恢复会覆盖当前数据（先自动创建安全备份），确认继续？")) return;
+  $("backupOut").textContent = "恢复中…";
+  try {
+    const out = await post("/admin/restore", {name});
+    $("backupOut").textContent = JSON.stringify(out, null, 1);
+    loadBackups();
+  } catch (e) {
+    $("backupOut").textContent = String(e.message || e);
+  }
+});
 $("refresh").addEventListener("click", refresh);
 $("token").addEventListener("change", () => sessionStorage.setItem("evo_token", token()));
 $("token").value = sessionStorage.getItem("evo_token") || "";
 refresh();
+loadBackups();
 </script>
 </body>
 </html>

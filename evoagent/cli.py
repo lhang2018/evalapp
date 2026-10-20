@@ -24,6 +24,11 @@ from .evolution.controller import PUBLISH_RULES
 from .evolution.probes import PROBES as PROBE_NAMES
 
 
+def _fail(message: str) -> str:
+    print(json.dumps({"error": message}, ensure_ascii=False))
+    return ""
+
+
 def _app(demo_confirm: bool = False) -> App:
     if demo_confirm:
         # 演示专用：本地写文件等低危操作由“模拟用户”确认；删除/支付等仍默认拒绝
@@ -68,7 +73,8 @@ def cmd_task(goal: str, intent: str, risk: str, wait: bool) -> str:
     if not wait:
         print(f"已后台提交: {t.task_id}；用 status 查询进度")
         return t.task_id
-    return json.dumps(t.to_dict(), ensure_ascii=False, indent=1)
+    print(json.dumps(t.to_dict(), ensure_ascii=False, indent=1))
+    return ""
 
 
 def cmd_workflow() -> str:
@@ -92,16 +98,17 @@ def cmd_status(task_id: str) -> str:
     if task_id:
         t = app.get_task(task_id)
         if not t:
-            return json.dumps({"error": "任务不存在"}, ensure_ascii=False)
+            return _fail("任务不存在")
         events = app.bus.query(task_id=task_id, limit=20)
-        return json.dumps({"task": t.to_dict(),
-                           "events": [e.to_dict() for e in events]},
-                          ensure_ascii=False, indent=1)
-    app2 = _app()
-    tasks = app2.db.list_tasks(limit=10)
-    return json.dumps([{"id": t.task_id, "goal": t.user_goal[:40],
-                        "status": t.task_status.value} for t in tasks],
-                      ensure_ascii=False, indent=1)
+        print(json.dumps({"task": t.to_dict(),
+                          "events": [e.to_dict() for e in events]},
+                         ensure_ascii=False, indent=1))
+        return ""
+    tasks = app.db.list_tasks(limit=10)
+    print(json.dumps([{"id": t.task_id, "goal": t.user_goal[:40],
+                       "status": t.task_status.value} for t in tasks],
+                     ensure_ascii=False, indent=1))
+    return ""
 
 
 def cmd_diagnose(task_id: str, probe: str) -> str:
@@ -115,15 +122,14 @@ def cmd_diagnose(task_id: str, probe: str) -> str:
         return ""
     case = app.diagnostics.diagnose_task(task_id)
     if case is None:
-        return json.dumps({"error": "任务不存在或非失败状态"}, ensure_ascii=False)
+        return _fail("任务不存在或非失败状态")
     hypotheses = app.db.list_hypotheses(case.case_id)
     experiments = app.db.list_experiments(case.case_id)
     if probe:
         hypothesis = next((h for h in hypotheses if probe in h.suggested_probes),
                           hypotheses[0] if hypotheses else None)
         if hypothesis is None:
-            return json.dumps({"error": "案例没有可探查的假设"},
-                              ensure_ascii=False)
+            return _fail("案例没有可探查的假设")
         exp = app.diagnostics.run_experiment(case, hypothesis, probe)
         experiments = app.db.list_experiments(case.case_id)
         hypotheses = app.db.list_hypotheses(case.case_id)
@@ -164,7 +170,7 @@ def cmd_candidates(candidate_id: str) -> str:
     if candidate_id:
         cand = app.evolution.get_candidate(candidate_id)
         if cand is None:
-            return json.dumps({"error": "候选不存在"}, ensure_ascii=False)
+            return _fail("候选不存在")
         print(json.dumps(cand.to_dict(), ensure_ascii=False, indent=1))
         return ""
     out = [{"candidate_id": c.candidate_id, "status": c.status.value,
@@ -195,7 +201,7 @@ def cmd_evaluate(candidate_id: str, dataset_id: str) -> str:
         out = app.evolution.evaluate_candidate(candidate_id,
                                                dataset_id=dataset_id or None)
     except (KeyError, ValueError, RuntimeError) as e:
-        return json.dumps({"error": str(e)}, ensure_ascii=False)
+        return _fail(str(e))
     print(json.dumps(out, ensure_ascii=False, indent=1))
     return ""
 
@@ -204,11 +210,11 @@ def cmd_approve(candidate_id: str, approver: str) -> str:
     app = _app()
     cand = app.evolution.get_candidate(candidate_id)
     if cand is None:
-        return json.dumps({"error": "候选不存在"}, ensure_ascii=False)
+        return _fail("候选不存在")
     try:
         out = app.evolution.approve(cand, approver=approver)
     except Exception as e:  # noqa: BLE001
-        return json.dumps({"error": str(e)}, ensure_ascii=False)
+        return _fail(str(e))
     print(json.dumps(out, ensure_ascii=False))
     return ""
 
@@ -217,7 +223,7 @@ def cmd_deploy(candidate_id: str, actor: str, gray: int) -> str:
     app = _app()
     cand = app.evolution.get_candidate(candidate_id)
     if cand is None:
-        return json.dumps({"error": "候选不存在"}, ensure_ascii=False)
+        return _fail("候选不存在")
     out = app.evolution.deploy_candidate(cand, actor=actor,
                                          gray_percent=gray)
     print(json.dumps(out, ensure_ascii=False, indent=1))
@@ -230,7 +236,7 @@ def cmd_monitor(candidate_id: str, success_rate: Optional[float] = None,
     app = _app()
     cand = app.evolution.get_candidate(candidate_id)
     if cand is None:
-        return json.dumps({"error": "候选不存在"}, ensure_ascii=False)
+        return _fail("候选不存在")
     metrics = None
     if any(v is not None for v in (success_rate, error_rate, cost_ratio)):
         metrics = {}
@@ -250,7 +256,7 @@ def cmd_workflows(workflow_id: str) -> str:
     if workflow_id:
         data = app.db.get_workflow_def(workflow_id)
         if data is None:
-            return json.dumps({"error": "工作流不存在"}, ensure_ascii=False)
+            return _fail("工作流不存在")
         print(json.dumps(data, ensure_ascii=False, indent=1))
         return ""
     rows = [{"workflow_id": r["workflow_id"], "version": r["version"],
@@ -433,6 +439,41 @@ def cmd_drift(window: float, emit: bool) -> str:
     return ""
 
 
+def cmd_replay(task_id: str, limit: int) -> str:
+    app = _app()
+    try:
+        out = app.replay.build(task_id, max_items=limit)
+    except KeyError:
+        return _fail("任务不存在")
+    print(json.dumps(out, ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
+def cmd_backup(action: str, ref: str, name: str) -> str:
+    app = _app()
+    try:
+        if action == "create":
+            out = app.backups.create(name or ref or None)
+        elif action == "verify":
+            out = app.backups.verify(ref)
+        elif action == "restore":
+            active = [t.task_id for t in app.db.list_tasks(limit=1000)
+                      if not t.is_terminal()]
+            if active:
+                print(json.dumps({"error": "存在未结束任务，拒绝恢复",
+                                  "active_tasks": active[:20]},
+                                 ensure_ascii=False))
+                return ""
+            out = app.backups.restore(ref)
+        else:
+            out = {"backups": app.backups.list(),
+                   "directory": str(app.backups.backup_dir)}
+    except (FileNotFoundError, ValueError) as e:
+        return _fail(str(e))
+    print(json.dumps(out, ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
 def cmd_serve(host: str, port: int) -> str:
     app = _app()
     from .api.server import ApiServer
@@ -518,6 +559,14 @@ def main() -> None:
     dr = sub.add_parser("drift")
     dr.add_argument("--window", type=float, default=0)
     dr.add_argument("--emit", action="store_true")
+    rp = sub.add_parser("replay")
+    rp.add_argument("task_id")
+    rp.add_argument("--limit", type=int, default=2000)
+    bk = sub.add_parser("backup")
+    bk.add_argument("action", nargs="?", default="create",
+                    choices=["create", "verify", "restore", "list"])
+    bk.add_argument("ref", nargs="?", default="")
+    bk.add_argument("--name", default="")
     args = p.parse_args()
     if args.cmd == "demo":
         cmd_demo()
@@ -571,6 +620,10 @@ def main() -> None:
         cmd_memory_eval(not args.no_persist)
     elif args.cmd == "drift":
         cmd_drift(args.window, args.emit)
+    elif args.cmd == "replay":
+        cmd_replay(args.task_id, args.limit)
+    elif args.cmd == "backup":
+        cmd_backup(args.action, args.ref, args.name)
     elif args.cmd == "serve":
         cmd_serve(args.host, args.port)
     else:

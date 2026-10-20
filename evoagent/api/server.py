@@ -129,6 +129,16 @@ def make_handler(app: App):
                 if len(parts) >= 3 and parts[2] == "events":
                     events = app.bus.query(task_id=tid, limit=100)
                     return self._json(200, {"events": [e.to_dict() for e in events]})
+                if len(parts) >= 3 and parts[2] == "replay":
+                    if not role_can_read("execution_trace", auth.role):
+                        return self._json(
+                            403, {"error": "需要 execution_trace 读取权限"})
+                    limit = min(5000, int(qs.get("limit") or 2000))
+                    try:
+                        out = app.replay.build(tid, max_items=limit)
+                    except KeyError:
+                        return self._json(404, {"error": "任务不存在"})
+                    return self._json(200, out)
                 t = app.get_task(tid)
                 if not t:
                     return self._json(404, {"error": "任务不存在"})
@@ -195,6 +205,12 @@ def make_handler(app: App):
                 return self._json(200, {
                     "evaluations": app.db.list_memory_eval_reports(
                         limit=limit)})
+            if path == "/admin/backups":
+                if auth.role != "admin":
+                    return self._json(403, {"error": "该操作需要 admin 权限"})
+                return self._json(200, {"backups": app.backups.list(),
+                                        "directory": str(
+                                            app.backups.backup_dir)})
             if path == "/releases":
                 return self._json(200, {
                     "current": app.releases.current_release_id,
@@ -348,6 +364,43 @@ def make_handler(app: App):
                                  outcome="ok" if out.get("ok") else "failed",
                                  detail={"reason": reason})
                 return self._json(200 if out.get("ok") else 409, out)
+            if path == "/admin/backup":
+                if auth.role != "admin":
+                    return self._json(403, {"error": "该操作需要 admin 权限"})
+                try:
+                    out = app.backups.create(body.get("name") or None)
+                except ValueError as e:
+                    return self._json(400, {"error": str(e)})
+                app.audit.record(auth.role, "admin.backup_create",
+                                 target=out["name"],
+                                 detail={"counts": out.get("counts"),
+                                         "files": sorted(
+                                             (out.get("files") or {}).keys())})
+                return self._json(201, out)
+            if path == "/admin/restore":
+                if auth.role != "admin":
+                    return self._json(403, {"error": "该操作需要 admin 权限"})
+                ref = (body.get("name") or "").strip()
+                if not ref:
+                    return self._json(400, {"error": "缺少备份文件 name"})
+                active = [t.task_id for t in app.db.list_tasks(limit=1000)
+                          if not t.is_terminal()]
+                if active:
+                    return self._json(
+                        409, {"error": "存在未结束任务，拒绝在线恢复",
+                              "active_tasks": active[:20]})
+                try:
+                    out = app.backups.restore(ref)
+                except FileNotFoundError as e:
+                    return self._json(404, {"error": str(e)})
+                except ValueError as e:
+                    return self._json(400, {"error": str(e)})
+                app.audit.record(auth.role, "admin.restore",
+                                 target=out.get("name") or ref,
+                                 detail={"restored": out.get("restored"),
+                                         "safety_backup":
+                                             out.get("safety_backup")})
+                return self._json(200, out)
             if path == "/diagnostics/scan":
                 return self._diagnostic_scan(body)
             if (len(parts) == 3 and parts[0] == "diagnostics"
