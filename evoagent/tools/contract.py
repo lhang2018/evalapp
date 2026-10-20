@@ -22,6 +22,8 @@ class ToolContract:
     idempotency_policy: str = "none"         # none | key | state-check
     error_mapping: Dict[str, str] = field(default_factory=dict)
     health_check: Optional[Callable[[], bool]] = None
+    # 备用工具（Arch 6.4）：仅在主工具可重试失败且副作用未发生时尝试
+    substitutes: list = field(default_factory=list)
 
 
 @dataclass

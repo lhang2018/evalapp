@@ -45,6 +45,7 @@ from .tools.builtin import BUILTIN_FACTORIES
 from .tools.registry import ToolRegistry
 from .workflows.builtin import comic_drama_workflow, register_comic_drama_tools
 from .workflows.engine import WorkflowEngine
+from .workflows.extraction import WorkflowExtractor
 
 
 class App:
@@ -155,6 +156,12 @@ class App:
         self.backups = BackupManager(
             str(d), db=self.db, bus=self.bus, memory=self.memory,
             releases=self.releases)
+
+        # 成功任务 → 工作流候选（Arch 16.2）：需重复支持 + 人工批准 + 参数绑定
+        self.workflow_extractor = WorkflowExtractor(
+            self.db, self.bus, self.tools, audit=self.audit,
+            on_publish=lambda wf: self._workflows.__setitem__(
+                wf.workflow_id, wf))
 
         # 控制器
         self.controller = RuntimeController(

@@ -192,6 +192,17 @@ def make_handler(app: App):
                 return self._json(200, {"datasets": data})
             if path == "/workflows":
                 return self._json(200, {"workflows": app.db.list_workflow_defs()})
+            # 抽取候选（Arch 16.2）：需排在 /workflows/{id} 之前
+            if path == "/workflows/candidates":
+                limit = min(500, int(qs.get("limit") or 50))
+                return self._json(200, {"candidates": app.workflow_extractor.list(
+                    status=qs.get("status") or None, limit=limit)})
+            if path.startswith("/workflows/candidates/"):
+                cid = path.split("/")[3]
+                cand = app.workflow_extractor.get(cid)
+                if cand is None:
+                    return self._json(404, {"error": "工作流候选不存在"})
+                return self._json(200, cand)
             if path.startswith("/workflows/"):
                 wid = path.split("/")[2]
                 data = app.db.get_workflow_def(wid)
@@ -289,6 +300,8 @@ def make_handler(app: App):
                 return self._json(202, {"task_id": t.task_id, "status": "CREATED"})
             if path == "/events/sync":
                 return self._events_sync(body)
+            if path == "/workflows/extract":
+                return self._workflow_extract(body, auth.role)
             if path == "/memory/evaluate":
                 report = app.run_memory_eval()
                 app.audit.record(auth.role, "memory.evaluate",
@@ -314,6 +327,10 @@ def make_handler(app: App):
                     and parts[1] == "migrations"):
                 return self._migration_action(parts[2], parts[3], body,
                                               auth.role)
+            if (len(parts) == 4 and parts[0] == "workflows"
+                    and parts[1] == "candidates"):
+                return self._workflow_candidate_action(parts[2], parts[3],
+                                                       body, auth.role)
             if len(parts) == 3 and parts[0] == "tasks" and parts[2] == "cancel":
                 out = app.controller.cancel_task(parts[1])
                 return self._json(200 if out.get("ok") else 409, out)
@@ -410,6 +427,45 @@ def make_handler(app: App):
                     and parts[2] == "candidates"):
                 return self._diagnostic_candidate(parts[1], body)
             return self._json(404, {"error": "未知路径"})
+
+        # ---------- 成功任务 → 工作流候选（Arch 16.2）----------
+        def _workflow_extract(self, body: Dict[str, Any], actor: str):
+            raw_min = body.get("min_support")
+            try:
+                min_support = int(raw_min) if raw_min is not None else None
+                out = app.workflow_extractor.extract(
+                    min_support=min_support,
+                    limit=int(body.get("limit") or 200), actor=actor)
+            except (TypeError, ValueError) as e:
+                return self._json(400, {"error": f"非法参数: {e}"})
+            return self._json(200, out)
+
+        def _workflow_candidate_action(self, candidate_id: str, action: str,
+                                       body: Dict[str, Any], actor: str):
+            if action not in ("approve", "reject", "publish"):
+                return self._json(404, {"error": f"未知动作: {action}"})
+            if actor != "admin":
+                return self._json(403, {"error": "该操作需要 admin 权限"})
+            extractor = app.workflow_extractor
+            reason = (body.get("reason") or "").strip()
+            try:
+                if action == "approve":
+                    out = extractor.approve(candidate_id, actor=actor,
+                                            reason=reason)
+                elif action == "reject":
+                    out = extractor.reject(candidate_id, actor=actor,
+                                           reason=reason)
+                else:
+                    args = body.get("args_by_step")
+                    if args is not None and not isinstance(args, dict):
+                        return self._json(400, {"error": "args_by_step 必须为对象"})
+                    out = extractor.publish(candidate_id, actor=actor,
+                                            reason=reason, args_by_step=args)
+            except KeyError:
+                return self._json(404, {"error": "工作流候选不存在"})
+            except ValueError as e:
+                return self._json(409, {"error": str(e)})
+            return self._json(200, out)
 
         # ---------- 客户端事件同步 ----------
         def _events_sync(self, body: Dict[str, Any]):

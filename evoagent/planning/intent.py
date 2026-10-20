@@ -9,6 +9,18 @@ from typing import Iterable, List, Optional, Tuple
 from ..models.base import ChatMessage
 from .planner import _parse_json
 
+_DESCRIPTIONS = {
+    "general": "通用问答/闲聊/无法归入其他领域",
+    "time_query": "查询当前时间、日期或星期",
+    "computation": "数学计算与数值运算",
+    "coding": "代码生成、调试、测试与依赖分析",
+    "travel": "行程规划、交通与目的地信息",
+    "weather": "天气查询",
+    "comic_drama": "AI 漫剧：剧本、分镜、配音与合成",
+    "mobile_operation": "Android 设备与 App 操作",
+    "note_taking": "写笔记、记录待办",
+}
+
 _KEYWORDS: List[Tuple[str, Tuple[str, ...]]] = [
     ("time_query", ("几点", "时间", "日期", "星期", "time", "date")),
     ("computation", ("计算", "算出", "等于", "加", "减", "乘", "除", "calculate")),
@@ -51,11 +63,14 @@ class IntentClassifier:
     # ---- 模型分类 ----
     def _model_classify(self, goal: str, domain_hint: Optional[str]
                         ) -> Tuple[str, str, float]:
-        options = ", ".join(self.known)
+        options = "\n".join(
+            f"- {name}: {_DESCRIPTIONS.get(name, name)}" for name in self.known)
         system = ChatMessage(role="system", content=(
             "你是意图分类器。只输出 JSON："
             '{"intent":"...","domain":"...","confidence":0.0}。'
-            f"intent 必须属于: {options}。confidence 是 0-1 的小数。"))
+            "优先选择具体领域；只有确实不属于任何具体领域时才选 general。\n"
+            f"intent 必须属于以下之一:\n{options}\n"
+            "confidence 是 0-1 的小数。"))
         user = ChatMessage(role="user",
                            content=f"goal:{goal}\ndomain_hint:{domain_hint or ''}")
         data = _parse_json(self.model.generate([system, user]))

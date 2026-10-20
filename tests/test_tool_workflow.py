@@ -2,6 +2,7 @@
 
 import shutil
 import tempfile
+import threading
 import time
 import unittest
 
@@ -108,17 +109,21 @@ class TestWorkflowEnhancements(unittest.TestCase):
         self.engine = WorkflowEngine(ToolRegistry(), max_parallel=2)
 
     def test_independent_nodes_run_in_parallel(self):
+        # 两个节点必须同时到达屏障；串行执行会因等待超时而失败
+        barrier = threading.Barrier(2)
+
+        def wait_together(name):
+            barrier.wait(timeout=2)
+            return name
+
         wf = WorkflowDef(workflow_id="parallel")
         wf.nodes = [
-            WorkflowNode(node_id="a", fn=lambda _c: _sleep(0.3, "a")),
-            WorkflowNode(node_id="b", fn=lambda _c: _sleep(0.3, "b")),
+            WorkflowNode(node_id="a", fn=lambda _c: wait_together("a")),
+            WorkflowNode(node_id="b", fn=lambda _c: wait_together("b")),
         ]
-        started = time.time()
         res = self.engine.run(wf, {})
-        elapsed = time.time() - started
         self.assertTrue(res.ok, res.error)
         self.assertEqual(res.outputs, {"a": "a", "b": "b"})
-        self.assertLess(elapsed, 0.5)
 
     def test_conditional_skip_does_not_block(self):
         wf = WorkflowDef(workflow_id="cond")
@@ -136,13 +141,14 @@ class TestWorkflowEnhancements(unittest.TestCase):
 
     def test_node_timeout_fails_node(self):
         wf = WorkflowDef(workflow_id="slow")
+        # 若超时未生效，运行会阻塞到 1.5s；阈值只要求明显早于节点自然结束
         wf.nodes = [WorkflowNode(node_id="a", timeout=0.05,
-                                 fn=lambda _c: _sleep(0.4, "late"))]
+                                 fn=lambda _c: _sleep(1.5, "late"))]
         started = time.time()
         res = self.engine.run(wf, {})
         self.assertFalse(res.ok)
         self.assertIn("超时", res.error)
-        self.assertLess(time.time() - started, 0.3)
+        self.assertLess(time.time() - started, 1.0)
 
     def test_checkpoint_resume_reuses_completed_outputs(self):
         tmp = tempfile.mkdtemp(prefix="evoagent_wfcp_")

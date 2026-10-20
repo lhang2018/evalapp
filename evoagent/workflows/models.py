@@ -70,6 +70,7 @@ class WorkflowDef:
             "budget": self.budget,
             "compensation_actions": self.compensation_actions,
             "status": self.status,
+            "created_from_task": self.created_from_task,
             "nodes": [{
                 "node_id": n.node_id, "description": n.description,
                 "deps": n.deps, "tool": n.tool, "args": n.args,
@@ -95,7 +96,8 @@ class WorkflowDef:
             acceptance_criteria=list(d.get("acceptance_criteria") or []),
             budget=dict(d.get("budget") or {}),
             compensation_actions=dict(d.get("compensation_actions") or {}),
-            status=d.get("status", "pending"))
+            status=d.get("status", "pending"),
+            created_from_task=d.get("created_from_task"))
 
     def validate(self) -> List[str]:
         problems = []

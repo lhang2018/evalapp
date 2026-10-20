@@ -24,6 +24,7 @@ class FakeAdapter:
 
     def generate(self, messages):
         self.calls += 1
+        self.last_messages = messages
         if self.exc:
             raise self.exc
         return self.output
@@ -102,6 +103,24 @@ class TestIntentClassifier(unittest.TestCase):
         intent, domain, conf, method = clf.classify("12*34")
         self.assertEqual((intent, domain, conf, method),
                          ("computation", "programming", 0.82, "model"))
+
+    def test_prompt_prefers_specific_intents(self):
+        fake = FakeAdapter('{"intent":"time_query","domain":"general",'
+                           '"confidence":0.9}')
+        clf = IntentClassifier(fake, known_intents=["general", "time_query"])
+        intent, _, _, method = clf.classify("现在几点了")
+        self.assertEqual((intent, method), ("time_query", "model"))
+        prompt = "\n".join(m.content for m in fake.last_messages)
+        self.assertIn("查询当前时间", prompt)
+        self.assertIn("优先选择具体领域", prompt)
+
+    def test_time_query_is_registered_intent(self):
+        from evoagent.experts.builtin import builtin_experts
+        known = set()
+        for expert in builtin_experts().all():
+            known.add(expert.expert_id)
+            known.update(expert.applicable_intents)
+        self.assertIn("time_query", known)
 
     def test_unknown_intent_falls_back(self):
         fake = FakeAdapter('{"intent":"teleport","confidence":0.99}')

@@ -45,6 +45,8 @@
 | 29 | 日志分层与可观测 | 四层日志独立存储/保留/访问（runtime_event 30d、execution_trace 14d、diagnostic_evidence 7d、audit 365d）；证据导出授权；扩展指标（模型/工具/ReAct/恢复/上下文/记忆/进化/回滚/意图维度）；8 条分级告警；`/logs/*`、`/alerts` 与 CLI（PRD 37-40 / 86, Arch 9.2 / 20.1-20.2） | complete（187 项 Python + 29 项客户端） |
 | 30 | 模型迁移 + 记忆评测 + 漂移检测 | 模型迁移九步执行链（资产继承/兼容性/同数据集回归/发布组合/灰度启用/回滚）与固定模型覆盖路由；记忆质量评测与运行反馈；环境漂移检测（工具/契约/模型/任务分布/版本变更）接入指标、`environment_drift` 告警、API 与 CLI（PRD 20/28/44/104/111, Arch 7.4/8.2/9.3/9.5） | complete（212 项 Python + 29 项客户端） |
 | 31 | 运行回放 + 备份恢复 | 只读任务回放（事件/轨迹/检查点/运行记录重建时间线，敏感负载脱敏，不执行副作用）；三库在线备份打包 + sha256/完整性校验 + 恢复（自动安全备份、拒绝未结束任务）；管理端回放与备份面板；API/CLI（Arch 20.3-20.4, PRD 90） | complete（225 项 Python + 29 项客户端） |
+| 32 | 工具替代 + 工作流抽取 | 工具契约 `substitutes` 与安全替代链（仅可重试失败、副作用未发生、禁止副作用/权限/输入升级）；成功任务按意图与工具序列聚合，最小支持度、结构/工具/参数绑定评测、批准/拒绝/发布门禁与审计，发布注册运行时；REST/CLI（Arch 6.4 / 16.2, PRD 13.4） | complete（246 项 Python + 29 项客户端） |
+| 33 | 真实模型联调 | `EVOAGENT_PROVIDER=openai` 时从 Claude 全局 `settings.json` 读取 Key/端点/模型（显式环境变量优先、Key 不落盘）；意图分类补充领域描述并注册 `time_query`；非专家 domain 归一化；真实端点完成 Planning/分类/ReAct 实测（PRD 17-20/4.5） | complete（255 项 Python + 29 项客户端） |
 
 ## 关键决策（Decisions）
 | 决策 | 理由 |
@@ -52,6 +54,7 @@
 | Python 同步执行模型（非 asyncio） | 可靠、易测试；架构文档不强制并发模型，控制器统一管理并发限制 |
 | SQLite 持久化（标准库 sqlite3） | 零依赖、满足任务/检查点/事件/记忆持久化需求 |
 | Mock 与 OpenAI 适配器同层 | 适配器契约统一（PRD 4.5 能力与模型解耦） |
+| 真实模型凭据复用 Claude 全局配置 | 避免 Key 落仓库/日志；`EVOAGENT_*` 优先，显式 Key 不混用 Claude 端点 |
 | 影子执行的高风险工具 | PRD“计划完成≠实际完成”，file_write 等高风险工具需 confirm 回调 |
 | Android 选用 React Native | 用户要求 React/JS + 后续 OTA 直接推送（Expo Updates/CodePush 路线） |
 | 诊断规则优先、模型不判根因 | Arch 9.4：模型解释不可当真实根因；假设由确定性证据规则生成，置信度是评分 |
@@ -82,6 +85,8 @@
 | 回放只重建、不重执行 | 副作用不可逆；回放用于审计/排障，非状态恢复（Arch 20.3）；非 `standard` 负载脱敏 |
 | 备份用 SQLite 在线备份 API | WAL/并发写入下直接复制文件可能得到不一致快照；恢复写入活动连接以减少停服窗口 |
 | 恢复前强制安全备份并检查未结束任务 | 误恢复代价高；保留可回退点，避免覆盖运行中任务状态（Arch 20.4） |
+| 工具替代只在副作用未发生且错误可重试时启用 | 已执行/不确定的副作用重放会造成重复写；替代工具不得提高副作用等级或权限集合（Arch 6.4） |
+| 工作流抽取要求重复支持 + 人工批准 + 参数绑定 | 单次成功可能是偶然；候选需结构/工具/绑定评测通过，发布后必须可直接执行（PRD 13.4 / Arch 16.2） |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -106,7 +111,10 @@
 | 备份 API 测试顺序干扰 | 1 | 409 用例遗留 pending 任务影响后续 404 用例；`finally` 中按 task_id 删除 |
 | Windows 临时脚本路径失败 | 1 | `/tmp` 不存在；改用 `tempfile.gettempdir()` 校验管理页 JS |
 | 冲突用例假通过 | 1 | PDF/CSV 同时被检索时仍判正确；增加 `expect_absent` 强制冲突失败 |
+| 真实模型把“现在几点了”判为 general | 1 | 分类提示只有意图名且 `time_query` 未注册；补充领域描述、注册 `time_query`，复测置信度 0.99 |
+| 模型给出未注册 domain（time_query） | 1 | 预算池/记忆作用域按不存在的专家分裂；路由后把 domain 归一化为专家 ID |
 
 ## 备注
 - 无 LLM Key 时运行 `python -m evoagent.cli demo` 走 Mock 模型全链路。
-- 有 Key 时设 `EVOAGENT_PROVIDER=openai` 与 `EVOAGENT_API_KEY`。
+- 真实模型：设 `EVOAGENT_PROVIDER=openai` 即可复用 Claude 全局配置（Key/端点/模型）；
+  也可用 `EVOAGENT_API_KEY` / `EVOAGENT_BASE_URL` / `EVOAGENT_MODEL` 显式覆盖。

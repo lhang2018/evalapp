@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 225 项 + 客户端 29 项全部通过**。
+测试基线（2026-10-20）：**Python 255 项 + 客户端 29 项全部通过**。
 
 ---
 
@@ -81,6 +81,7 @@ Python 服务端（标准库，SQLite）
 | MD-07 | 路由结果落盘 | ✅ | `core/controller.py` | `runtime_manifest.model_route` |
 | MD-08 | 模型迁移执行链 | ✅ | `models/migration.py`, `app.py` | 九步：档案/资产继承 → 兼容性 → 同数据集回归对比 → 发布组合 → 受控启用 → 回滚；状态 `planned/compatible/evaluated/ready/applied/blocked/rolled_back` |
 | MD-09 | 固定模型覆盖路由 | ✅ | `models/router.py`, `core/controller.py` | `model_override` 解析失败回退默认路由并写 `model_override_unavailable` 事件 |
+| MD-10 | Claude 全局配置回退 | ✅ | `config.py` | `EVOAGENT_PROVIDER=openai` 且未显式给 Key 时，读取 `~/.claude/settings.json` 的 Key/端点/模型；端点自动补 `/v1`；显式环境变量优先；Key 不落仓库/日志 |
 
 ### 2.4 工具系统（PRD 14-16）
 
@@ -99,6 +100,7 @@ Python 服务端（标准库，SQLite）
 | TL-11 | `file_write` 写文件 | ✅ | `tools/builtin.py` | 高风险需确认；路径穿越防护；回读校验 + sha256 |
 | TL-12 | `git_read` 只读 Git | ✅ | `tools/builtin.py` | 子命令白名单，禁 shell/网络；ref/path 校验 |
 | TL-13 | 高风险工具 confirm / deny | ✅ | `core/permissions.py`, `tools/registry.py` | 默认 `confirm`，无确认回调即拒绝 |
+| TL-14 | 工具替代链（Arch 6.4） | ✅ | `tools/registry.py`, `tools/contract.py` | 仅可重试错误（timeout/network/tool_defect）且副作用未发生时切备用工具；禁止副作用等级/权限扩大与输入不兼容；主工具或备用工具已执行/副作用不确定时立即停止；过程写入 `substitution_attempts` |
 
 ### 2.5 记忆与上下文（PRD 21-33 / Arch 8）
 
@@ -138,6 +140,10 @@ Python 服务端（标准库，SQLite）
 | WF-06 | 资产库持久化/加载 | ✅ | `workflows/library.py` | `workflow_defs` 表 |
 | WF-07 | AI 漫剧示例 DAG | ✅ | `workflows/builtin.py` | 服务适配器可替换 |
 | WF-08 | 暂停任务转 SUSPENDED | ✅ | `workflows/engine.py` | |
+| WF-09 | 成功任务抽取候选（Arch 16.2） | ✅ | `workflows/extraction.py` | 按 `(intent, 成功工具序列)` 聚合；排除评测来源与已有 `workflow_ref` 任务；默认 `min_support=2`，单次成功不构成候选 |
+| WF-10 | 候选评测与动态输入识别 | ✅ | `workflows/extraction.py` | 结构校验、工具可用性、必填参数绑定（`runnable`）、计划/实际工具调用成本对照 |
+| WF-11 | 批准/拒绝/发布门禁 | ✅ | `workflows/extraction.py` | 只能 `candidate → approved → published`；未批准不可发布；必填参数未绑定拒绝发布；状态与决策写审计 |
+| WF-12 | 发布后注册可执行 | ✅ | `workflows/extraction.py`, `app.py` | 发布写入 `workflow_defs` 并注册到运行时 `_workflows`，可被 `workflow_ref` 直接调度 |
 
 ### 2.8 验收（PRD 12-13 / 36）
 
@@ -263,6 +269,8 @@ Python 服务端（标准库，SQLite）
 | `/audit` | 审计日志 |
 | `/costs?limit=N` | 成本报告（totals/by_task/by_domain/by_model/evolution） |
 | `/workflows`、`/workflows/{id}` | 工作流资产库 |
+| `/workflows/candidates?status=&limit=` | 抽取候选列表（可按状态过滤） |
+| `/workflows/candidates/{id}` | 候选详情（签名/支持数/定义/评测/决策） |
 | `/memory/stats` | 记忆统计 |
 | `/memory/evaluations?limit=N` | 记忆评测报告列表 |
 | `/models` | 模型档案、默认路由与显式路由 |
@@ -286,6 +294,10 @@ Python 服务端（标准库，SQLite）
 | `/tasks/{id}/cancel` | 取消 |
 | `/tasks/{id}/pause` / `/tasks/{id}/resume` | 暂停/恢复（`409 requires_force` 表示需显式 force） |
 | `/events/sync` | 批量事件摄取 → `accepted` / `duplicates` / `rejected` |
+| `/workflows/extract` | 从成功任务抽取候选（可选 `min_support` / `limit`；参数非法 `400`） |
+| `/workflows/candidates/{id}/approve` | 批准候选（admin；评测未通过 `409`） |
+| `/workflows/candidates/{id}/reject` | 拒绝候选（admin；非法状态 `409`） |
+| `/workflows/candidates/{id}/publish` | 发布候选（admin；未批准/未绑定必填参数 `409`） |
 | `/logs/purge` | 按保留期清理各层（admin，写审计） |
 | `/logs/delete-task` | 删除单任务日志与证据（admin，保留任务行，写审计） |
 | `/evolution/candidates` | 候选提案 |
@@ -325,6 +337,11 @@ Python 服务端（标准库，SQLite）
 | `serve [--port N]` | 启动 REST API（默认 8300） |
 | `candidates` / `propose` / `evaluate` / `approve` / `deploy` / `monitor` | 进化候选操作 |
 | `workflows` | 工作流资产库 |
+| `workflow-extract [--min-support N] [--limit N]` | 从成功任务抽取候选 |
+| `workflow-candidates [--status] [--limit]` | 候选列表 |
+| `workflow-evaluate <id> [--args JSON]` | 查看结构/工具/绑定/成本评测 |
+| `workflow-approve <id> [--reason]` / `workflow-reject <id> [--reason]` | 批准/拒绝 |
+| `workflow-publish <id> [--args JSON] [--reason]` | 发布（必填参数经 `args_by_step` 绑定） |
 | `budget` | 全部预算层级限额 + 运行用量 |
 | `costs` | 成本报告 |
 | `releases` / `release-rollback` | 发布清单/回滚 |
@@ -421,6 +438,7 @@ Python 服务端（标准库，SQLite）
 | `task_runs` | 每次执行/重跑记录 |
 | `task_checkpoints` | 检查点 |
 | `workflow_runs` / `workflow_defs` | 工作流运行与资产库 |
+| `workflow_candidates` | 成功任务抽取候选（签名/支持数/定义/评测/决策） |
 | `client_requests` | 任务幂等键 → task_id |
 | `runtime_events` | 运行事件（含隐私/关联/同步字段） |
 | `execution_traces` | 执行轨迹（任务 `step` 连续、隐私分级、按 `at` 索引） |
@@ -450,13 +468,18 @@ Python 服务端（标准库，SQLite）
 |---|---|
 | `EVOAGENT_DATA` | 数据目录 |
 | `EVOAGENT_PROVIDER` | `mock`（默认）/ `openai` |
-| `EVOAGENT_API_KEY` | 模型 Key（不得写入仓库或文档） |
-| `EVOAGENT_BASE_URL` | OpenAI 兼容端点（如 DeepSeek） |
+| `EVOAGENT_API_KEY` | 模型 Key（不得写入仓库或文档）；设置后不再复用 Claude 端点 |
+| `EVOAGENT_BASE_URL` | OpenAI 兼容端点（如 DeepSeek）；`/v1` 需显式包含 |
 | `EVOAGENT_MODEL` | 模型名 |
+| `EVOAGENT_CLAUDE_SETTINGS` | Claude 全局配置文件路径，默认 `~/.claude/settings.json` |
 | `EVOAGENT_HIGH_RISK` | 高风险策略：confirm（默认）/ deny |
 | `EVOAGENT_API_TOKEN` | 普通接口 Bearer |
 | `EVOAGENT_ADMIN_TOKEN` | 管理接口 Bearer |
 | `EVOAGENT_RELEASE_SECRET` | 发布签名密钥 |
+
+`EVOAGENT_PROVIDER=openai` 且未设置 `EVOAGENT_API_KEY` 时，从 Claude 全局配置读取
+`ANTHROPIC_API_KEY` / `ANTHROPIC_BASE_URL` / `ANTHROPIC_MODEL`，端点自动补 `/v1`；
+`EVOAGENT_*` 环境变量始终优先。读取失败时保留默认值，不影响 Mock 演示。
 
 预算默认值（`BudgetConfig`）：
 
@@ -477,7 +500,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，225 项）
+### Python（`tests/`，255 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -486,9 +509,13 @@ Python 服务端（标准库，SQLite）
 | `test_budget_hierarchy.py` | 九级预算、池、候选双记账、成本报告（13 项） |
 | `test_runtime.py` | 端到端运行时 |
 | `test_control.py` | 计量、限额、计划持久化、路由、暂停恢复、重跑、副作用闸门（9 项） |
-| `test_planning.py` | 计划校验/回退、意图分类 |
+| `test_planning.py` | 计划校验/回退、意图分类（具体领域提示、`time_query` 注册） |
+| `test_config.py` | Claude 全局配置回退、`/v1` 归一、显式环境变量优先、缺失/损坏配置降级（7 项） |
 | `test_tools.py` | 契约、权限、副作用、幂等 |
 | `test_tool_workflow.py` | 工具超时/重试/输出契约、工作流并行/跳过/续跑 |
+| `test_tool_substitution.py` | 工具替代安全链：可重试失败切换、副作用/权限/输入兼容校验、不确定副作用阻断、已执行失败停止链（8 项） |
+| `test_workflow_extraction.py` | 支持度门槛、去重、评测排除、批准/发布门禁、参数绑定与注册（11 项） |
+| `test_workflow_api.py` | 候选 REST 生命周期、admin 动作、404/409（2 项） |
 | `test_memory.py` | 记忆存储、替代、检索 |
 | `test_memory_router_diag.py` | 记忆关系、路由评分、诊断趋势/故障注入 |
 | `test_workflow.py` | DAG 引擎 |
@@ -546,7 +573,7 @@ cd android-app && npm run test:offline
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 225 passed
+python -m pytest tests/ -q                       # 255 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -564,6 +591,11 @@ python -m evoagent.cli memory-eval --no-persist
 python -m evoagent.cli drift
 python -m evoagent.cli replay <task_id>          # 只读回放
 python -m evoagent.cli backup create             # 备份 → verify → list
+# 同一意图重复成功 ≥2 次后：
+python -m evoagent.cli workflow-extract
+python -m evoagent.cli workflow-evaluate <candidate_id>
+python -m evoagent.cli workflow-approve <candidate_id> --reason "抽检通过"
+python -m evoagent.cli workflow-publish <candidate_id> --args '{"step_1":{"expression":"3+4"}}'
 
 # 4. API 冒烟
 python -m evoagent.cli serve --port 8300
@@ -575,6 +607,8 @@ python -m evoagent.cli serve --port 8300
 #   - POST /memory/evaluate、/diagnostics/drift/scan
 #   - GET /tasks/{id}/replay、GET /admin/backups
 #   - POST /admin/backup → /admin/restore（未结束任务返回 409）
+#   - POST /workflows/extract → GET /workflows/candidates
+#   - POST /workflows/candidates/{id}/approve → /publish（缺参数返回 409）
 
 # 5. Android（真机/模拟器）
 adb reverse tcp:8300 tcp:8300
@@ -612,6 +646,33 @@ cd android-app && npm run android
 ---
 
 ## 变更记录
+
+### 2026-10-20 — 真实模型复用 Claude 全局配置
+
+- 需求：PRD 17-20 / 4.5；真实模型联调（迭代待办 #1）。
+- 变更：`EVOAGENT_PROVIDER=openai` 且未显式提供 Key 时，`Config.load()` 从 Claude 全局
+  `settings.json` 读取 `ANTHROPIC_API_KEY` / `ANTHROPIC_BASE_URL` / `ANTHROPIC_MODEL`；
+  Anthropic 端点自动补 `/v1`；显式 `EVOAGENT_*` 环境变量始终优先；显式 Key 不复用 Claude 端点。
+  意图分类提示补充各具体领域描述，`time_query` 注册为已知意图；模型给出的非专家 domain
+  归一化为路由后的专家 ID。
+- 代码：`config.py`（`_apply_claude_global` / `_openai_base_url`）、`planning/intent.py`、
+  `experts/builtin.py`、`core/controller.py`。
+- 接口/配置：`EVOAGENT_CLAUDE_SETTINGS`（可选路径）；不改 CLI/API 形态。
+- 验证：真实端点 `deepseek-v4-flash` 完成计算与时间任务；意图分类 `time_query` 0.99、
+  计划驱动 `current_time` 工具、4 次模型调用/1 次工具调用；Key 未输出或落盘。
+- 测试：新增 `tests/test_config.py`（7 项）与 `test_planning.py` 2 项；Python 246 → 255，客户端保持 29。
+- 状态变化：新增 MD-10 ✅；迭代待办「真实 LLM 联调」完成。
+- 已知限制：仅复用 Claude 配置中的 OpenAI 兼容端点；不解析 `apiKeyHelper` 或其他凭据来源。
+
+### 2026-10-20 — 工具替代安全链 + 成功任务工作流抽取
+
+- 需求：Arch 6.4（工具替代）、Arch 16.2 / PRD 13.4（从成功任务到稳定工作流）。
+- 变更：工具契约新增 `substitutes`；注册表在主工具可重试失败且副作用未发生时按序尝试备用工具，拒绝副作用升级/权限扩大/输入不兼容，副作用不确定立即停止。新增工作流抽取器：按意图与成功工具序列聚合、最小支持度、结构/工具/参数绑定评测、批准/拒绝/发布状态机与审计，发布后写入资产库并注册运行时。
+- 代码：`tools/contract.py`、`tools/registry.py`（`_substitute_safe`）、`workflows/extraction.py`（`WorkflowExtractor`）、`workflows/models.py`、`core/persistence.py`（`workflow_candidates` 表）、`api/server.py`、`cli.py`、`app.py`。
+- 接口/配置：`GET /workflows/candidates`、`/workflows/candidates/{id}`；`POST /workflows/extract`、`/workflows/candidates/{id}/{approve|reject|publish}`（admin）；CLI `workflow-extract`、`workflow-candidates`、`workflow-evaluate`、`workflow-approve`、`workflow-reject`、`workflow-publish`；新表 `workflow_candidates`。
+- 测试：新增 `tests/test_tool_substitution.py`（8 项）、`tests/test_workflow_extraction.py`（11 项）、`tests/test_workflow_api.py`（2 项）；Python 总数 225 → 246，客户端保持 29。
+- 状态变化：新增 TL-14、WF-09~WF-12 ✅。
+- 已知限制：抽取仅覆盖工具节点线性序列（不含条件/自定义函数）；参数绑定需人工提供，未做参数值建议；候选只从成功任务与事件推导，不重放工具。
 
 ### 2026-10-20 — 任务运行回放 + 备份与恢复 + 管理端操作面板
 
@@ -651,6 +712,9 @@ cd android-app && npm run android
 | Session 10 | 十维收益 + 发布后监测与自动回滚判定 | 170 + 29 |
 | Session 11 | 日志四层分层 + 扩展指标 + 分级告警 | 187 + 29 |
 | Session 12 | 模型迁移执行链 + 记忆评测 + 环境漂移检测 | 212 + 29 |
+| Session 13 | 运行回放 + 三库备份恢复 + 管理端面板 | 225 + 29 |
+| Session 14 | 工具替代安全链 + 成功任务工作流抽取 | 246 + 29 |
+| Session 15 | 真实模型复用 Claude 全局配置 + 分类/领域修正 | 255 + 29 |
 | Session 13 | 任务运行回放 + 备份与恢复 + 管理端操作面板 | 225 + 29 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。

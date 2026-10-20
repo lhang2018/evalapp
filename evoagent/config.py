@@ -102,9 +102,12 @@ class Config:
                 for k, v in data["diagnostics"].items():
                     if hasattr(cfg.diagnostics, k):
                         setattr(cfg.diagnostics, k, v)
-        # 环境变量覆盖
         if os.environ.get("EVOAGENT_PROVIDER"):
             cfg.provider.name = os.environ["EVOAGENT_PROVIDER"]
+        # 显式 provider 选择真实模型时，复用 Claude 全局配置中的凭据与端点
+        if cfg.provider.name == "openai":
+            _apply_claude_global(cfg.provider)
+        # 环境变量覆盖（优先级最高）
         if os.environ.get("EVOAGENT_API_KEY"):
             cfg.provider.api_key = os.environ["EVOAGENT_API_KEY"]
         if os.environ.get("EVOAGENT_BASE_URL"):
@@ -113,3 +116,42 @@ class Config:
             cfg.provider.model_id = os.environ["EVOAGENT_MODEL"]
         cfg.data_dir.mkdir(parents=True, exist_ok=True)
         return cfg
+
+
+_DEFAULT_OPENAI_BASE = "https://api.openai.com/v1"
+_DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
+
+
+def _apply_claude_global(provider: ModelProviderConfig) -> None:
+    """从 Claude 全局 settings.json 补充缺失的真实模型配置。
+
+    Claude 的网关同时提供 OpenAI 兼容端点；base 自动补 `/v1`。
+    仅填充未显式配置的字段，且任何失败都静默忽略（不阻断 Mock 演示）。
+    """
+    if provider.api_key or os.environ.get("EVOAGENT_API_KEY"):
+        return
+    path = os.environ.get("EVOAGENT_CLAUDE_SETTINGS") or str(
+        Path.home() / ".claude" / "settings.json")
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        env = data.get("env") or {}
+    except (OSError, ValueError, AttributeError):
+        return
+    if not isinstance(env, dict):
+        return
+    key = env.get("ANTHROPIC_API_KEY") or env.get("ANTHROPIC_AUTH_TOKEN")
+    if not key:
+        return
+    provider.api_key = key
+    base = env.get("ANTHROPIC_BASE_URL")
+    if base and provider.base_url == _DEFAULT_OPENAI_BASE:
+        provider.base_url = _openai_base_url(base)
+    model = (env.get("ANTHROPIC_MODEL")
+             or env.get("ANTHROPIC_DEFAULT_SONNET_MODEL"))
+    if model and provider.model_id == _DEFAULT_OPENAI_MODEL:
+        provider.model_id = model
+
+
+def _openai_base_url(anthropic_base: str) -> str:
+    base = anthropic_base.rstrip("/")
+    return base if base.endswith("/v1") else base + "/v1"

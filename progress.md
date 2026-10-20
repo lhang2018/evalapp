@@ -578,3 +578,105 @@
 - 回放只重建、不重执行；非 `standard` 负载一律脱敏，避免回放成为隐私旁路
 - 备份必须用在线备份 API 生成一致性快照；恢复前自动安全备份，存在未结束任务时拒绝
 - 回放接口沿用 `execution_trace` 读权限；备份/恢复接口仅 admin
+
+## Session 14 (2026-10-20)
+
+### 背景
+- 差距审计下一轮：Arch 6.4（工具替代）与 Arch 16.2 / PRD 13.4（从成功任务到稳定工作流）。
+- 目标：失败恢复不只靠重试；把重复成功经验变成可审查、可执行的工作流资产，而非单次成功即固化。
+
+### 完成事项
+- [x] 工具替代（Arch 6.4）
+  - `ToolContract.substitutes`：声明有序备用工具
+  - `ToolRegistry.execute` 包装 `_execute_direct`：仅 `timeout / network_or_unavailable / tool_defect_or_env`
+    且 `not executed and not side_effect_uncertain` 时尝试替代
+  - `_substitute_safe`：拒绝更高副作用等级、更多权限、缺失/类型不兼容的必填输入
+  - 替代成功写入 `substituted_from / substitution_attempts / original_error`；全部失败返回主工具原始失败
+  - 副作用不确定立即停止，不继续尝试
+- [x] 工作流抽取（Arch 16.2）
+  - `WorkflowExtractor.extract`：按 `(intent, 成功工具序列)` 聚合 SUCCEEDED 任务；
+    排除 `runtime_manifest.source == "evaluation"` 与已有 `workflow_ref`；默认 `min_support=2`
+  - 候选含 `signature / support / sample_tasks / definition / dynamic_inputs`；重复签名跳过，已拒绝可再抽取
+  - `evaluate`：结构校验、工具可用性、必填参数绑定（`runnable`）、计划 vs 实际工具调用成本
+  - `approve / reject / publish` 状态机：未批准不可发布；必填参数未绑定拒绝发布；决策与动作写审计
+  - 发布：`args_by_step` 绑定节点参数 → `save_workflow` → `on_publish` 注册到运行时 `_workflows`
+  - `workflow_candidates` 表 + 持久化 CRUD
+- [x] API
+  - `GET /workflows/candidates`、`GET /workflows/candidates/{id}`
+  - `POST /workflows/extract`；`POST /workflows/candidates/{id}/approve|reject|publish`（admin）
+  - 错误映射：缺参/非法动作 400/404、状态或评测门禁失败 409
+- [x] CLI
+  - `workflow-extract / workflow-candidates / workflow-evaluate / workflow-approve / workflow-reject / workflow-publish`
+  - `--args` 解析为 JSON 对象；非法 JSON 返回错误而非崩溃
+- [x] 测试
+  - `tests/test_tool_substitution.py`（8 项）
+  - `tests/test_workflow_extraction.py`（11 项）
+  - `tests/test_workflow_api.py`（2 项）
+- [x] 文档同步：FEATURES / README / IMPLEMENTATION / task_plan
+
+### 测试结果
+- `python -m pytest tests/ -q` → 246 passed
+- `python -m evoagent.cli demo` / `workflow` → 输出与行为不变
+- CLI 抽取冒烟：两个 `calculation` 成功任务 → 候选 `support=2`、`signature=["calculate"]`；
+  `evaluate` 报 `runnable=false`（缺 `expression`）；未批准发布被拒；批准后无参数发布被拒；
+  `--args '{"step_1":{"expression":"3+4"}}'` 发布成功并出现在 `workflows` 资产库
+
+### 本轮修复的缺陷
+- `_build_definition` 将 `_descriptions()` 返回的列表当字典调用 `.get` → 改为按索引取并做边界检查
+- 抽取器重复定义静态 `_avg_tool_calls` 桩 → 删除，仅保留实例方法
+
+### 设计约束（本轮确立）
+- 替代不是权限升级通道：副作用等级与权限集合只能持平或降低
+- 已执行或副作用不确定的调用绝不换工具重放；备用工具返回失败但已 `executed` 时同样立即停止后续替代
+- 单次成功不构成工作流证据；候选必须重复支持、通过结构/工具/参数绑定评测并人工批准
+- 发布必须给出必填参数绑定，否则工作流不可直接执行，不得进入资产库
+
+### 遗留/待迭代
+- 抽取仅支持工具节点线性序列；条件、自定义函数与并行分支未纳入
+- 参数绑定靠人工提供，未从样本事件中推导默认值或做参数建议
+- 发布回滚未覆盖抽取工作流（沿用版本覆盖语义）
+
+## Session 15 (2026-10-20)
+
+### 背景
+- 用户要求：正式 LLM 直接使用当前 Claude 全局配置，完成真实模型联调。
+- 目标：不再手工复制 Key；切换到真实模型时复用 `~/.claude/settings.json` 中的凭据与端点，
+  同时保持 Mock 演示零配置、Key 不落仓库/日志。
+
+### 完成事项
+- [x] `config.py`
+  - `EVOAGENT_PROVIDER=openai` 且未显式给 Key 时，从 Claude 全局 settings 读取
+    `ANTHROPIC_API_KEY` / `ANTHROPIC_BASE_URL` / `ANTHROPIC_MODEL`
+  - Anthropic 端点自动补 `/v1`（`https://opencode.ai/zen/go` → `/zen/go/v1`）
+  - `EVOAGENT_*` 环境变量优先级最高；显式 `EVOAGENT_API_KEY` 时不借用 Claude 端点，
+    避免 Key 与网关错配
+  - 支持 `EVOAGENT_CLAUDE_SETTINGS` 指向其他配置文件；缺失/损坏时静默回退
+- [x] 意图分类
+  - 提示词加入各具体领域描述，并明确“优先具体领域，否则 general”
+  - `time_query` 注册到 general 专家的 `applicable_intents`
+  - 模型返回的未注册 domain 在路由后归一化为专家 ID，保持预算池/记忆作用域一致
+- [x] 真实端点联调（`deepseek-v4-flash`，Claude 全局网关）
+  - 计算任务：SUCCEEDED，计划 s1-s3，`calculate` 2 次，模型调用 4 次
+  - 时间任务：分类 `time_query` 0.99，计划驱动 `current_time`，4 次模型调用/1 次工具调用
+  - Key 全程未打印、未写入仓库或数据目录
+- [x] 测试与文档：新增 `tests/test_config.py`（7 项）与 2 项分类测试；README / IMPLEMENTATION /
+  FEATURES / task_plan 同步
+
+### 测试结果
+- `python -m pytest tests/ -q` → 255 passed
+- 真实模型计算任务 → `SUCCEEDED`，结果 4524，工具调用 2 次
+- 真实模型时间任务 → `SUCCEEDED`，意图 `time_query` 0.99，工具 `current_time` 1 次
+
+### 本轮修复的缺陷
+- 真实模型将“现在几点了”判为 general（0.95）：分类提示仅有意图名且 `time_query` 未注册
+  → 补充领域描述 + 注册意图，复测为 `time_query` 0.99
+- 模型返回 domain=`time_query` 但无同名专家 → 路由后 domain 归一化为 `general`
+
+### 设计约束（本轮确立）
+- 凭据只从 Claude 全局配置读取，禁止复制到仓库、示例或日志
+- 显式 `EVOAGENT_API_KEY` 视为独立端点配置，不隐式混用 Claude base/model
+- 真实模型失败不得影响 Mock 演示；配置读取失败静默回退默认值
+
+### 遗留/待迭代
+- 仅解析 `settings.json` 的 `env` 段；`apiKeyHelper` 等其他凭据来源未支持
+- 真实模型成本估算仍按档案默认价（当前为 0），接入真实单价表待迭代

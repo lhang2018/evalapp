@@ -43,6 +43,11 @@ python -m evoagent.cli backup create
 python -m evoagent.cli backup verify <name.zip>
 python -m evoagent.cli backup restore <name.zip>
 python -m evoagent.cli backup list
+# 成功任务 → 工作流候选（同一意图+工具序列至少重复 2 次才生成）
+python -m evoagent.cli workflow-extract
+python -m evoagent.cli workflow-candidates
+python -m evoagent.cli workflow-approve <candidate_id> --reason "抽检通过"
+python -m evoagent.cli workflow-publish <candidate_id> --args '{"step_1":{"expression":"3+4"}}'
 ```
 
 诊断 REST 端点：`GET /diagnostics`、`GET /diagnostics/{case_id}`、
@@ -59,6 +64,11 @@ python -m evoagent.cli backup list
 `GET /admin/backups`、`POST /admin/backup`、`POST /admin/restore`（admin；有未结束任务时
 `409`，恢复前自动创建安全备份）。
 
+工作流抽取端点：`POST /workflows/extract`（可选 `min_support`/`limit`）、
+`GET /workflows/candidates?status=`、`GET /workflows/candidates/{id}`、
+`POST /workflows/candidates/{id}/approve|reject|publish`（admin；未批准或必填参数未绑定
+时发布返回 `409`）。
+
 只读观测端点：`GET /metrics`（JSON，`?format=prometheus` 输出文本）、`GET /audit`、
 `GET /workflows`、`GET /memory/stats`、`GET /evolution/candidates`、`GET /admin`。
 设置 `EVOAGENT_API_TOKEN`（普通）或 `EVOAGENT_ADMIN_TOKEN`（管理）后，请求需带
@@ -66,15 +76,32 @@ python -m evoagent.cli backup list
 
 ## 接入真实 LLM（OpenAI 兼容：OpenAI/DeepSeek/Moonshot/vLLM…）
 
+### 复用 Claude 全局配置（推荐）
+
+`~/.claude/settings.json` 已配置 `ANTHROPIC_API_KEY` / `ANTHROPIC_BASE_URL` /
+`ANTHROPIC_MODEL` 时，只需切换到真实模型：
+
 ```powershell
 $env:EVOAGENT_PROVIDER="openai"
-$env:EVOAGENT_API_KEY="sk-..."           # 对应 config.provider
-$env:EVOAGENT_BASE_URL="https://api.deepseek.com/v1"   # 可选，自定义兼容端点
-$env:EVOAGENT_MODEL="deepseek-chat"
-python -m evoagent.cli task "查询现在几点了" --intent time_query
+python -m evoagent.cli task "查询现在几点了"
 ```
 
-Mock 与真实模型共用同一适配器契约；路由/档案/注册表逻辑一致（PRD 4.5 能力与模型解耦）。
+缺省的 Key、端点与模型会从 Claude 全局配置读取；`ANTHROPIC_BASE_URL` 自动补 `/v1`
+（如 `https://opencode.ai/zen/go` → `https://opencode.ai/zen/go/v1`）。Key 不落仓库、
+不写入日志。可用 `EVOAGENT_CLAUDE_SETTINGS` 指向其他 settings 文件。
+
+### 显式配置任意兼容端点
+
+```powershell
+$env:EVOAGENT_PROVIDER="openai"
+$env:EVOAGENT_API_KEY="sk-..."           # 显式 Key 时不复用 Claude 端点
+$env:EVOAGENT_BASE_URL="https://api.deepseek.com/v1"   # 可选，自定义兼容端点
+$env:EVOAGENT_MODEL="deepseek-chat"
+python -m evoagent.cli task "查询现在几点了"
+```
+
+`EVOAGENT_API_KEY / BASE_URL / MODEL` 优先级最高。Mock 与真实模型共用同一适配器契约；
+路由/档案/注册表逻辑一致（PRD 4.5 能力与模型解耦）。
 
 ## 架构总览（对应 Architecture 2.x 双轨）
 
@@ -129,7 +156,7 @@ Android 客户端 (RN/JS) ──REST──▶ ┌─ 稳定运行轨道 ──�
 ## 已实现 / 迭代占位
 
 完整矩阵见 IMPLEMENTATION.md。当前一轮：服务端核心全链路可运行 + 规则诊断/探针 + 真实模型
-Planning/意图分类 + 执行内核接线（计划驱动 ReAct/进度持久化、模型调用硬预算、路由接入运行路径、
+Planning/意图分类（复用 Claude 全局配置，已实测）+ 执行内核接线（计划驱动 ReAct/进度持久化、模型调用硬预算、路由接入运行路径、
 暂停/恢复）+ 离线队列/幂等同步 + 无障碍节点操作；并完成控制面补强（API 鉴权/审计/指标、工具超时
 与重试安全规则/输出契约/幂等日志、工作流并行与跳过/节点超时/检查点续跑、预算报表、记忆关系与
 混合检索、质量优先路由评分、诊断趋势与探针故障注入、工作流资产库、只读 Git 适配器）；
@@ -141,8 +168,10 @@ Planning/意图分类 + 执行内核接线（计划驱动 ReAct/进度持久化�
 访问角色）、扩展可观测指标（模型/工具/ReAct/恢复/上下文/记忆/进化/回滚/意图维度）与分级告警、
 模型迁移执行链（资产继承/兼容性/同数据集回归对比/灰度启用/回滚）、记忆质量评测与运行反馈、
 环境漂移检测（工具/契约/模型/任务分布/版本变更，含处置建议与告警）、任务运行回放（只读、
-敏感负载脱敏、不重放副作用）、三库备份与恢复（sha256 + 完整性校验、自动安全备份，管理端可操作）。
-测试通过：Python 225 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
+敏感负载脱敏、不重放副作用）、三库备份与恢复（sha256 + 完整性校验、自动安全备份，管理端可操作）、
+工具替代安全链（仅可重试失败且副作用未发生时切换，禁止副作用/权限升级）、成功任务工作流抽取
+（重复支持门槛、评测与参数绑定门禁、人工批准后发布并注册运行）。
+测试通过：Python 255 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
 嵌入向量检索、Web 管理端完整编辑、隔离沙箱执行候选代码。
 
 ## 目录
@@ -155,7 +184,7 @@ evoagent/                  Python 服务端核心
   tools/                   工具契约/注册表/内置工具（含只读 Git）
   memory/                  记忆存储（关系/混合检索）、上下文装配与质量评测
   experts/                 专家注册表（首批 5 个专家）
-  workflows/               工作流 DAG 引擎 + 资产库 + 漫剧示例
+  workflows/               工作流 DAG 引擎 + 资产库 + 成功任务抽取 + 漫剧示例
   acceptance/              结果验收
   evolution/               评测集/门禁/候选生命周期/诊断案例与假设/固定探针/漂移检测
   release/                 发布清单/签名/回滚
@@ -163,7 +192,7 @@ evoagent/                  Python 服务端核心
   core/replay.py           只读运行回放
   core/backup.py           三库备份/校验/恢复
   cli.py                   命令行
-tests/                     225 项服务端测试
+tests/                     255 项服务端测试
 android-app/               React Native Android 客户端
   src/offline/             本地任务/事件队列、隐私过滤、同步引擎（纯 TS，可单测）
   src/device/              设备操作契约/风险闸门/原生桥接（纯 TS，可单测）

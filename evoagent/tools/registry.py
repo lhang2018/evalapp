@@ -17,6 +17,9 @@ from ..core.task import RiskLevel
 from .contract import ToolContract, ToolResult, class_error, validate_against_schema
 
 RETRYABLE_ERRORS = {"timeout", "network_or_unavailable", "tool_defect_or_env"}
+# 主工具失败后可尝试备用工具的错误类别（Arch 6.4）
+SUBSTITUTABLE_ERRORS = {"timeout", "network_or_unavailable", "tool_defect_or_env"}
+_SIDE_EFFECT_RANK = {"none": 0, "local": 1, "external": 2, "destructive": 3}
 
 
 @dataclass
@@ -72,6 +75,51 @@ class ToolRegistry:
     def execute(self, tool_id: str, args: Dict,
                 budget: Optional[BudgetController] = None,
                 idempotency_key: Optional[str] = None) -> ToolResult:
+        result = self._execute_direct(tool_id, args, budget, idempotency_key)
+        if result.ok or result.executed or result.side_effect_uncertain:
+            return result
+        if result.error_class not in SUBSTITUTABLE_ERRORS:
+            return result
+        primary = self.contract(tool_id)
+        if primary is None or not primary.substitutes:
+            return result
+
+        attempts: List[Dict[str, Any]] = []
+        for sub_id in primary.substitutes:
+            sub = self.contract(sub_id)
+            if sub is None:
+                attempts.append({"tool": sub_id, "status": "not_registered"})
+                continue
+            safe, reason = _substitute_safe(primary, sub)
+            if not safe:
+                # 不允许因主工具失败而升级权限/副作用（Arch 6.4）
+                attempts.append({"tool": sub_id, "status": "rejected",
+                                 "reason": reason})
+                continue
+            sub_result = self._execute_direct(sub_id, args, budget)
+            attempts.append({
+                "tool": sub_id,
+                "status": "ok" if sub_result.ok else "failed",
+                "error_class": sub_result.error_class})
+            if sub_result.ok:
+                sub_result.evidence["substituted_from"] = tool_id
+                sub_result.evidence["substitution_attempts"] = attempts
+                sub_result.evidence["original_error"] = {
+                    "error": result.error,
+                    "error_class": result.error_class}
+                return sub_result
+            # 备用工具已产生副作用（含状态不确定）时不得继续换下一个
+            if sub_result.executed or sub_result.side_effect_uncertain:
+                attempts[-1]["reason"] = (
+                    "side_effect_uncertain" if sub_result.side_effect_uncertain
+                    else "executed")
+                break
+        result.evidence["substitution_attempts"] = attempts
+        return result
+
+    def _execute_direct(self, tool_id: str, args: Dict,
+                        budget: Optional[BudgetController] = None,
+                        idempotency_key: Optional[str] = None) -> ToolResult:
         rt = self._tools.get(tool_id)
         if rt is None:
             return ToolResult.error_result(f"工具未注册: {tool_id}", "tool_not_found")
@@ -189,6 +237,27 @@ class ToolRegistry:
             hc = rt.contract.health_check
             out[tid] = bool(hc()) if hc else True
         return out
+
+
+def _substitute_safe(primary: ToolContract,
+                     sub: ToolContract) -> Tuple[bool, str]:
+    """备用工具不得扩大权限或副作用，且必须接受主工具的必填参数（Arch 6.4）。"""
+    if _SIDE_EFFECT_RANK.get(sub.side_effect_level, 3) > \
+            _SIDE_EFFECT_RANK.get(primary.side_effect_level, 3):
+        return False, "higher_side_effect"
+    if set(sub.permission_requirements) - set(primary.permission_requirements):
+        return False, "more_permissions"
+    p_props = (primary.input_schema or {}).get("properties", {})
+    s_props = (sub.input_schema or {}).get("properties", {})
+    for field in (primary.input_schema or {}).get("required", []):
+        expected = p_props.get(field, {})
+        offered = s_props.get(field, {})
+        if not offered:
+            return False, f"missing_input:{field}"
+        if expected.get("type") and offered.get("type") \
+                and expected["type"] != offered["type"]:
+            return False, f"incompatible_input:{field}"
+    return True, ""
 
 
 def _retry_safe(contract: ToolContract) -> bool:

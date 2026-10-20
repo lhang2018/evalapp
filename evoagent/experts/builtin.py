@@ -12,7 +12,7 @@ def builtin_experts() -> ExpertRegistry:
     reg.register_expert(Expert(
         expert_id="general", domain_description="通用问答、简单规划、跨领域任务分发",
         capabilities=["qa", "planning_basic", "dispatch"],
-        applicable_intents=["general"],
+        applicable_intents=["general", "time_query"],
         system_prompt="你是 EvoAgent 通用专家，负责理解目标并安全完成通用任务。",
         budget_class="standard",
         quality_metrics=["answer_relevance", "safety_compliance"],

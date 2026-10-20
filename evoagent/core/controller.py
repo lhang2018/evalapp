@@ -194,7 +194,9 @@ class RuntimeController:
                 task.confidence, "route"
         expert: Expert = self.experts.route(intent or "general", domain or "")
         task.intent = intent or expert.expert_id
-        task.domain = domain or domain_hint or expert.expert_id
+        # 模型给出的 domain 可能不是已注册专家；归一化以保持预算池/记忆作用域一致
+        task.domain = (domain if domain and self.experts.get(domain)
+                       else expert.expert_id)
         # 领域专家预算池（PRD 55）：任务按领域累计，超限由账本拒绝
         budget.bind_pool(
             f"expert:{task.domain}",

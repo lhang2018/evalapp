@@ -11,6 +11,8 @@
   python -m evoagent.cli migrate <old> <new> [--apply]  # 模型迁移执行链
   python -m evoagent.cli memory-eval       # 记忆质量评测
   python -m evoagent.cli drift             # 环境漂移检测
+  python -m evoagent.cli workflow-extract  # 成功任务 → 工作流候选
+  python -m evoagent.cli workflow-publish <candidate_id> --args '{...}'
 """
 
 import argparse
@@ -263,6 +265,58 @@ def cmd_workflows(workflow_id: str) -> str:
              "status": r["status"], "updated_at": r["updated_at"]}
             for r in app.db.list_workflow_defs()]
     print(json.dumps(rows, ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_workflow_extract(min_support: Optional[int], limit: int) -> str:
+    app = _app()
+    out = app.workflow_extractor.extract(min_support=min_support, limit=limit)
+    print(json.dumps(out, ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
+def cmd_workflow_candidates(status: str, limit: int) -> str:
+    app = _app()
+    rows = app.workflow_extractor.list(status=status or None, limit=limit)
+    print(json.dumps(rows, ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
+def _load_step_args(raw: str):
+    """解析 --args；空串表示不绑定，返回 (None, "")。"""
+    if not raw.strip():
+        return None, ""
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as e:
+        return None, f"--args 不是合法 JSON: {e}"
+    if not isinstance(data, dict):
+        return None, "--args 必须是 JSON 对象"
+    return data, ""
+
+
+def cmd_workflow_action(action: str, candidate_id: str, reason: str,
+                        args_json: str = "") -> str:
+    app = _app()
+    bindings, error = _load_step_args(args_json)
+    if error:
+        return _fail(error)
+    extractor = app.workflow_extractor
+    try:
+        if action == "evaluate":
+            out = extractor.evaluate(candidate_id, bindings)
+        elif action == "approve":
+            out = extractor.approve(candidate_id, reason=reason)
+        elif action == "reject":
+            out = extractor.reject(candidate_id, reason=reason)
+        else:
+            out = extractor.publish(candidate_id, reason=reason,
+                                    args_by_step=bindings)
+    except KeyError:
+        return _fail("工作流候选不存在")
+    except ValueError as e:
+        return _fail(str(e))
+    print(json.dumps(out, ensure_ascii=False, indent=1, default=str))
     return ""
 
 
@@ -533,6 +587,22 @@ def main() -> None:
     mo.add_argument("--cost-ratio", type=float, default=None)
     wfs = sub.add_parser("workflows")
     wfs.add_argument("workflow_id", nargs="?")
+    # 成功任务 → 工作流候选（Arch 16.2）
+    wex = sub.add_parser("workflow-extract")
+    wex.add_argument("--min-support", type=int, default=None)
+    wex.add_argument("--limit", type=int, default=200)
+    wcl = sub.add_parser("workflow-candidates")
+    wcl.add_argument("--status", default="")
+    wcl.add_argument("--limit", type=int, default=50)
+    for name in ("workflow-evaluate", "workflow-approve",
+                 "workflow-reject", "workflow-publish"):
+        wp = sub.add_parser(name)
+        wp.add_argument("candidate_id")
+        wp.add_argument("--reason", default="")
+        if name in ("workflow-evaluate", "workflow-publish"):
+            wp.add_argument("--args", default="",
+                            help="节点参数绑定 JSON，如 "
+                                 "'{\"step_1\":{\"expression\":\"3+4\"}}'")
     sub.add_parser("budget")
     sub.add_parser("costs")
     lg = sub.add_parser("logs")
@@ -598,6 +668,20 @@ def main() -> None:
                     args.error_rate, args.cost_ratio)
     elif args.cmd == "workflows":
         cmd_workflows(args.workflow_id)
+    elif args.cmd == "workflow-extract":
+        cmd_workflow_extract(args.min_support, args.limit)
+    elif args.cmd == "workflow-candidates":
+        cmd_workflow_candidates(args.status, args.limit)
+    elif args.cmd == "workflow-evaluate":
+        cmd_workflow_action("evaluate", args.candidate_id, args.reason,
+                            args.args)
+    elif args.cmd == "workflow-approve":
+        cmd_workflow_action("approve", args.candidate_id, args.reason)
+    elif args.cmd == "workflow-reject":
+        cmd_workflow_action("reject", args.candidate_id, args.reason)
+    elif args.cmd == "workflow-publish":
+        cmd_workflow_action("publish", args.candidate_id, args.reason,
+                            args.args)
     elif args.cmd == "budget":
         cmd_budget()
     elif args.cmd == "costs":

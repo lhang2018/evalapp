@@ -85,6 +85,13 @@ class Database:
             c.execute("""CREATE TABLE IF NOT EXISTS workflow_defs(
                 workflow_id TEXT, version TEXT, status TEXT, updated_at REAL,
                 data TEXT, PRIMARY KEY(workflow_id, version))""")
+            # 从成功任务抽取的工作流候选（Arch 16.2）：单次成功不足以固化
+            c.execute("""CREATE TABLE IF NOT EXISTS workflow_candidates(
+                candidate_id TEXT PRIMARY KEY, intent TEXT, signature TEXT,
+                status TEXT, support INTEGER, sample_count INTEGER,
+                created_at REAL, updated_at REAL, data TEXT)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_workflow_candidates_status
+                ON workflow_candidates(status)""")
             c.execute("""CREATE TABLE IF NOT EXISTS eval_reports(
                 report_id TEXT PRIMARY KEY, dataset_id TEXT, candidate_id TEXT,
                 created_at REAL, data TEXT)""")
@@ -429,6 +436,40 @@ class Database:
             row = self._conn.execute(
                 "SELECT data FROM workflow_defs WHERE workflow_id=?"
                 " ORDER BY updated_at DESC LIMIT 1", (workflow_id,)).fetchone()
+        return json.loads(row["data"]) if row else None
+
+    # ---- workflow extraction candidates (Arch 16.2) ----
+    def save_workflow_candidate(self, data: Dict[str, Any]) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO workflow_candidates VALUES"
+                " (?,?,?,?,?,?,?,?,?)",
+                (data["candidate_id"], data.get("intent", ""),
+                 json.dumps(data.get("signature") or [], ensure_ascii=False),
+                 data.get("status", "candidate"), int(data.get("support", 0)),
+                 int(data.get("sample_count", 0)),
+                 float(data.get("created_at") or time.time()),
+                 float(data.get("updated_at") or time.time()),
+                 json.dumps(data, ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def list_workflow_candidates(self, status: Optional[str] = None,
+                                 limit: int = 50) -> List[Dict[str, Any]]:
+        if status:
+            rows = self._conn.execute(
+                "SELECT data FROM workflow_candidates WHERE status=?"
+                " ORDER BY created_at DESC LIMIT ?", (status, limit)).fetchall()
+        else:
+            rows = self._conn.execute(
+                "SELECT data FROM workflow_candidates"
+                " ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
+        return [json.loads(r["data"]) for r in rows]
+
+    def get_workflow_candidate(self,
+                               candidate_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT data FROM workflow_candidates WHERE candidate_id=?",
+            (candidate_id,)).fetchone()
         return json.loads(row["data"]) if row else None
 
     # ---- evaluation reports ----
