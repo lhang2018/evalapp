@@ -9,9 +9,12 @@
   `LOCAL_ONLY` 任务以稳定 `client_request_id` 补交；连续 checkpoint、死信、指数退避；
   隐私过滤（sensitive 不上传，secret/private 拒绝入队）。
 - **设备操作**（`src/device/` + `android/` Kotlin）：无障碍服务按文本/描述点击节点
-  （精确匹配优先、子串仅作回退）、拉起显式 Intent；低/中/高风险分级，高风险需独立确认；
-  执行结果五态并要求证据；已下发未验证的动作不自动重放。
-- **无坐标/手势注入**：`canPerformGestures=false`，不绕过系统权限。
+  （精确匹配优先、子串仅作回退）、拉起显式 Intent、读取当前窗口节点快照；点击/启动返回
+  操作前后快照，由 JS 判定页面变化或前台包名；权限弹窗识别；低/中/高风险分级，高风险需
+  独立确认；执行结果五态并要求证据；已下发未验证的动作不自动重放；连续 3 次未验证安全停止，
+  需人工恢复。
+- **无坐标/手势注入**：`canPerformGestures=false`，不绕过系统权限；快照仅回传前台 JS，
+  不落盘、不上传。
 
 ## 为什么选 React Native
 
@@ -24,7 +27,7 @@
 ## 测试（无需 node_modules）
 
 ```bash
-npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门，共 29 项
+npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门/界面观测，共 41 项
 npm run typecheck       # 需要先 npm install（tsc）
 ```
 
@@ -54,8 +57,9 @@ npm run android
 ## 构建验证状态
 
 **已验证**（2026-10-20）：`./gradlew assembleDebug` 构建通过；在模拟器（API 37）与真机
-（HyperOS，Android API 36）安装运行；在线任务、真实模型回复、离线队列与事件同步、
-无障碍节点点击（返回 `[verified]` 且带 `clicked_text`/`package_name` 证据）均实测通过。
+（HyperOS，Android 16 / API 36）安装运行；在线任务、真实模型回复、离线队列与事件同步、
+无障碍节点点击与启动（返回 `[verified]` 且带前后快照/页面包名证据）、无页面变化降级为
+`[unverified]`、连续未验证安全停止与人工恢复均实测通过。
 
 手动构建：
 

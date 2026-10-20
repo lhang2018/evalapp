@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 312 项 + 客户端 29 项全部通过**。
+测试基线（2026-10-20）：**Python 312 项 + 客户端 41 项全部通过**。
 
 ---
 
@@ -392,6 +392,7 @@ Python 服务端（标准库，SQLite）
 | UI-20 | 预算与模型只读展示 | ✅ | 运行/进化预算、累计调用与成本、默认模型、路由数、模型能力与价格（PRD 89.6） |
 | UI-21 | 权限管理 | ✅ | 无障碍状态、麦克风/文件/通知使用说明、跳转系统设置（PRD 89.5/89.7） |
 | UI-22 | 更新管理 | ✅ | 当前版本、发布清单、兼容性检查结果、回滚目标与部署/回滚计数（PRD 89.8） |
+| UI-23 | 无障碍观测面板与快捷操作 | ✅ | 只读读取当前界面（包名/节点数/文本摘要）、权限弹窗提示、安全停止状态与人工恢复、固定目标快捷点击 |
 
 ### 5.2 离线核心（`android-app/src/offline/`，纯 TS 可单测）
 
@@ -422,10 +423,14 @@ Python 服务端（标准库，SQLite）
 | DV-05 | 已下发未验证禁止自动重放 | ✅ | `broker.ts` | |
 | DV-06 | 无 NativeModule → `unavailable` | ✅ | `nativeTransport.ts` | 不崩溃 |
 | DV-07 | AccessibilityService 节点点击 | ✅ | `DeviceAccessibilityService.kt` | 按文本/描述，精确优先；无手势注入 |
-| DV-08 | DeviceModule 原生桥 | ✅ | `DeviceModule.kt`, `DevicePackage.kt` | `isServiceEnabled` / `launchIntent` / `performClick` |
+| DV-08 | DeviceModule 原生桥 | ✅ | `DeviceModule.kt`, `DevicePackage.kt` | `isServiceEnabled` / `launchIntent` / `performClick` / `snapshot` |
 | DV-09 | 原生壳修复 | ✅ | `MainActivity.kt`, `MainApplication.kt`, `AndroidManifest.xml` | 合法权限、Service 注册、RN 0.75.4 兼容 |
 | DV-10 | 无障碍配置 | ✅ | `res/xml/accessibility_service_config.xml` | `canRetrieveWindowContent=true`，不做手势 |
 | DV-11 | 坐标注入 / 截屏模拟 | ⬜ | — | 明确不做，不绕过系统权限 |
+| DV-12 | 界面快照与页面变化检测 | ✅ | `observation.ts`, `DeviceAccessibilityService.kt` | 节点树限 300 节点/12 层；包名与文本多重集差异；只回前台、不落盘 |
+| DV-13 | 操作结果验证 | ✅ | `broker.ts`, `observation.ts`, `DeviceModule.kt` | 点击/启动携带前后快照；未观察到变化判 `unverified`，不假设成功 |
+| DV-14 | 权限弹窗识别 | ✅ | `observation.ts` | 系统权限包名或「允许/拒绝 + 权限」关键词；弹窗出现即不判成功 |
+| DV-15 | 安全停止与人工恢复 | ✅ | `broker.ts` | 连续 3 次失败/未验证停止下发；需显式 `resume()` |
 
 ### 5.4 客户端脚本
 
@@ -555,7 +560,7 @@ Python 服务端（标准库，SQLite）
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
 
-### 客户端（`android-app/test/`，29 项）
+### 客户端（`android-app/test/`，41 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -563,7 +568,8 @@ Python 服务端（标准库，SQLite）
 | `test/offline/sync.test.ts` | 退避、不丢事件、隐私过滤、部分成功 |
 | `test/offline/tasks.test.ts` | 离线提交、幂等键稳定、`NEEDS_RECONCILE`、离线 `time_query` |
 | `test/offline/transport.test.ts` | 时间戳单位转换 |
-| `test/device/broker.test.ts` | 风险闸门、确认、五态、不重放、unavailable |
+| `test/device/broker.test.ts` | 风险闸门、确认、五态、不重放、unavailable、快照验证、权限弹窗降级、安全停止与恢复（12 项） |
+| `test/device/observation.test.ts` | 快照归一化、页面变化、预期文本/包名、权限弹窗识别、缺快照不判成功（8 项） |
 
 运行：
 
@@ -580,7 +586,7 @@ cd android-app && npm run test:offline
 |---|---|---|---|
 | LLM 辅助诊断假设 | PRD 41-45 / Arch 9.4 | ✅ | 模型输出仅作证据绑定的辅助解释；不改案例状态，探针验证前不可升级候选 |
 | 候选代码隔离沙箱 | PRD 47.4 / L3 | ✅ | 独立子进程 + 审计钩子；非恶意代码强安全边界 |
-| 视觉/OCR/语音操作 | PRD 64/68 | ⬜ | 仅无障碍节点与显式 Intent |
+| 视觉/OCR/语音操作 | PRD 64/68 | ⬜ | 仅无障碍节点与显式 Intent；节点结果验证已实现，不做截屏/OCR/坐标点击 |
 | 后台常驻同步 | PRD 72-76 | ⬜ | 前台 + 手动重试 |
 | 端到端加密、多设备冲突合并 | PRD 72-76/86 | ⬜ | |
 | Web 管理端完整界面 | PRD 90 | ✅ | 90.1-90.7 分区已实现；不含富文本编辑/图表库，以表格与 JSON 展示为主 |
@@ -714,6 +720,24 @@ cd android-app && npm run android
 - 状态变化：新增 MD-10 ✅；迭代待办「真实 LLM 联调」完成。
 - 已知限制：仅复用 Claude 配置中的 OpenAI 兼容端点；不解析 `apiKeyHelper` 或其他凭据来源。
 
+### 2026-10-20 — 无障碍界面观测与执行校验（PRD 68）
+
+- 需求：PRD 68 要求页面变化检测、操作结果检查、权限弹窗识别、异常恢复与安全停止，
+  且不得仅凭调用成功认定操作生效。
+- 变更：新增界面快照（节点树限 300 节点/12 层）与前后对比；点击/启动携带前后快照，
+  由 JS 侧判定页面变化、包名切换或预期文本；权限弹窗（系统权限包名或
+  「允许/拒绝 + 权限」关键词）出现即不判成功；连续 3 次失败/未验证触发安全停止，
+  后续动作不调用系统接口，需人工恢复；客户端新增只读观测面板与固定目标快捷动作。
+- 代码：`android-app/src/device/observation.ts`、`broker.ts`、`nativeTransport.ts`、
+  `DeviceAccessibilityService.kt`、`DeviceModule.kt`、`App.tsx`。
+- 测试：新增 `test/device/observation.test.ts`（8 项）与 broker 4 项；客户端 29 → 41，Python 保持 312。
+- 状态变化：新增 UI-23、DV-12…DV-15 ✅；DV-08 增加 `snapshot`。
+- 真机验证（24018RPACC / Android 16 API 36）：读取快照（包名/节点数/文本）；点击切换页签后
+  `[verified] 已确认界面发生变化`；启动设置后 `[verified] 已确认前台为 com.android.settings`；
+  点击输入框无页面变化判 `unverified`；连续 3 次后安全停止，后续动作 `[denied]` 且未下发；
+  人工恢复后再次执行成功。
+- 已知限制：只观测活动窗口；快照仅存内存、不上传；仍不做截屏/OCR/坐标注入。
+
 ### 2026-10-20 — 发布分支/标签/合并（PRD 59-60 / 62-63）
 
 - 需求：PRD 59-60（隔离发布分支、快进合并、标签）与 62-63（发布可追溯）。
@@ -838,6 +862,7 @@ cd android-app && npm run android
 | Session 20 | 用户端中心页面（PRD 89.3-89.8） | 297 + 29 |
 | Session 21 | 真实嵌入向量检索（PRD 25） | 305 + 29 |
 | Session 22 | 发布分支/标签/快进合并（PRD 59-60 / 62-63） | 312 + 29 |
+| Session 23 | 无障碍界面观测与执行校验（PRD 68） | 312 + 41 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 

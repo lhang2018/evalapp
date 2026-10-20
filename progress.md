@@ -927,3 +927,46 @@
 - Git 操作必须显式调用，运行时不自动触发发布动作
 - 合并方向单一（隔离分支 → main），且只允许快进，避免隐式合并提交
 - 轻量标签不依赖 git 身份，避免为打标签写入或修改用户配置
+
+## Session 23 (2026-10-20)
+
+### 目标
+- 补齐 PRD 68 无障碍缺口：页面变化检测、操作结果检查、权限弹窗识别、异常恢复与安全停止。
+
+### 完成事项
+- [x] 新增 `src/device/observation.ts`：快照归一化（节点上限）、文本多重集差异、
+      包名切换、预期文本/包名校验、权限弹窗识别（系统权限包名或允许/拒绝+权限关键词）
+- [x] `broker.ts`：点击/启动携带前后快照时必须通过页面变化校验；无变化/权限弹窗/缺快照
+      一律降级 `unverified`；连续 3 次失败或未验证进入安全停止，后续动作 `denied` 且不下发；
+      `resume()` 需显式调用
+- [x] `nativeTransport.ts`：新增只读 `observe()`，模块缺失/失败返回 null
+- [x] Kotlin：AccessibilityService `captureSnapshot()`（300 节点/12 层/文本截断）；
+      DeviceModule 新增 `snapshot()`，点击/启动在 700ms/1200ms 后回传前后快照；
+      `isServiceEnabled` 优先判断已连接实例，兼容 ROM 设置格式
+- [x] App：只读快照面板（包名/节点数/文本摘要）、权限弹窗提示、安全停止状态与人工恢复、
+      “离线状态/更新”固定目标快捷动作
+- [x] 测试：新增 `test/device/observation.test.ts`（8 项）与 broker 4 项；客户端 29 → 41
+- [x] 真机（24018RPACC / Android 16 API 36）验证：快照读取、点击切换页签 `[verified]`、
+      启动设置 `[verified] 前台为 com.android.settings`、点击输入框无变化 `[unverified]`、
+      连续 3 次后安全停止且动作未下发、人工恢复后再次成功
+- [x] 文档：FEATURES（UI-23、DV-12…DV-15、矩阵/变更记录/Session 23）、IMPLEMENTATION、
+      README、android-app/README、task_plan、progress 同步
+
+### 测试结果
+- `python -m pytest tests/ -q` → 312 passed（未改动服务端）
+- `cd android-app && npm run test:offline` → 41 passed；`npm run typecheck` 通过
+- `./gradlew assembleDebug` 构建通过；真机安装运行验证通过
+
+### 盘点更新
+- `FEATURES.md`：186 项 ✅、0 项部分、3 项待迭代（1 项明确不做）。
+- 剩余项：视觉/OCR/语音、后台常驻同步、端到端加密与多设备冲突。
+
+### 已知限制
+- 仅观测活动窗口；快照保留在内存并发往前台 JS，不落盘、不上传。
+- 页面变化以包名与文本差异为准，纯视觉变化（仅图形/颜色）无法识别；不提供坐标点击。
+- 安全停止计数为进程内状态，重启 App 后清零；journal 未持久化。
+
+### 设计约束（本轮确立）
+- 系统调用成功不等于操作生效：必须由前后快照证明页面变化，否则 `unverified`
+- 权限弹窗是阻断信号：出现即不判成功，交还用户处理
+- 安全停止在 JS 闸门完成，不通过关闭系统服务实现，恢复必须显式授权

@@ -46,6 +46,14 @@ import type { DeadLetter, LocalTask, QueueStats } from "./src/offline/types.ts";
 import { DeviceBroker } from "./src/device/broker.ts";
 import { NativeDeviceTransport } from "./src/device/nativeTransport.ts";
 import type { NativeDeviceModuleLike } from "./src/device/nativeTransport.ts";
+import {
+  detectPermissionDialog,
+  snapshotTexts,
+} from "./src/device/observation.ts";
+import type {
+  DeviceSnapshot,
+  PermissionDialogInfo,
+} from "./src/device/observation.ts";
 import type {
   ActionJournalEntry,
   DeviceAction,
@@ -111,6 +119,12 @@ export default function App(): React.JSX.Element {
   const [deviceAvailable, setDeviceAvailable] = useState(false);
   const [deviceResult, setDeviceResult] = useState<DeviceResult | null>(null);
   const [journal, setJournal] = useState<ActionJournalEntry[]>([]);
+  const [deviceSnapshot, setDeviceSnapshot] = useState<DeviceSnapshot | null>(
+    null
+  );
+  const [deviceDialog, setDeviceDialog] =
+    useState<PermissionDialogInfo | null>(null);
+  const [safetyStopped, setSafetyStopped] = useState(false);
   const [clickTarget, setClickTarget] = useState("设置");
   const [system, setSystem] = useState<{
     metrics: MetricsSnapshot;
@@ -432,15 +446,29 @@ export default function App(): React.JSX.Element {
     [services, reloadLocal, flush]
   );
 
+  const refreshSnapshot = useCallback(async () => {
+    setDeviceAvailable(await services.deviceTransport.isAvailable());
+    const snapshot = await services.deviceTransport.observe();
+    setDeviceSnapshot(snapshot);
+    setDeviceDialog(snapshot ? detectPermissionDialog(snapshot) : null);
+  }, [services]);
+
   const runDevice = useCallback(
     async (action: DeviceAction) => {
       const result = await services.broker.execute(action);
       setDeviceResult(result);
       setDeviceAvailable(await services.deviceTransport.isAvailable());
+      setSafetyStopped(services.broker.isStopped());
       setJournal(services.broker.listJournal());
+      await refreshSnapshot();
     },
-    [services]
+    [services, refreshSnapshot]
   );
+
+  const resumeDevice = useCallback(() => {
+    services.broker.resume();
+    setSafetyStopped(false);
+  }, [services]);
 
   const openAccessibilitySettings = useCallback(async () => {
     try {
@@ -659,7 +687,7 @@ export default function App(): React.JSX.Element {
             </Text>
             <Text style={s.hint}>
               仅使用节点级操作（读取界面文本、按文本点击、显式 Intent），
-              不注入坐标，不绕过系统权限。
+              不注入坐标，不绕过系统权限；操作后对比界面节点验证结果。
             </Text>
             <Text style={s.hint}>麦克风：未申请（语音入口待迭代）</Text>
             <Text style={s.hint}>文件/通知：当前版本未使用</Text>
@@ -705,6 +733,56 @@ export default function App(): React.JSX.Element {
             }
             disabled={!clickTarget.trim()}
           />
+          <View style={s.row}>
+            <Button
+              title="快捷：离线状态"
+              onPress={() =>
+                runDevice({
+                  action_id: `click-${Date.now()}`,
+                  kind: "click_text",
+                  target: "离线状态",
+                })
+              }
+            />
+            <Button
+              title="快捷：更新"
+              onPress={() =>
+                runDevice({
+                  action_id: `click-${Date.now()}`,
+                  kind: "click_text",
+                  target: "更新",
+                })
+              }
+            />
+          </View>
+          <Text style={s.hint}>
+            执行状态：{safetyStopped ? "已安全停止（连续未验证）" : "正常"}
+          </Text>
+          {safetyStopped && (
+            <Button title="人工恢复设备操作" onPress={resumeDevice} />
+          )}
+          <Button
+            title="读取当前界面（只读）"
+            onPress={() => void refreshSnapshot()}
+          />
+          {deviceSnapshot && (
+            <Text style={s.mono}>
+              当前界面 {deviceSnapshot.package_name ?? "未知"} ·{" "}
+              {deviceSnapshot.node_count} 节点
+              {deviceSnapshot.truncated ? " · 已截断" : ""}
+            </Text>
+          )}
+          {deviceDialog?.detected && (
+            <Text style={s.fail}>
+              检测到权限弹窗：
+              {deviceDialog.buttons.join(" / ") || "需用户处理"}
+            </Text>
+          )}
+          {deviceSnapshot && (
+            <Text style={s.hint}>
+              {snapshotTexts(deviceSnapshot).slice(0, 8).join(" · ")}
+            </Text>
+          )}
           {deviceResult && (
             <Text
               style={[

@@ -1,5 +1,7 @@
 /** 原生无障碍模块适配；模块缺失或不支持时返回 unavailable，不尝试绕过系统权限。 */
 
+import { normalizeSnapshot } from "./observation.ts";
+import type { DeviceSnapshot } from "./observation.ts";
 import type { DeviceTransport } from "./transport.ts";
 import type { DeviceAction, DeviceResult } from "./types.ts";
 
@@ -11,6 +13,11 @@ export interface NativeDeviceModuleLike {
     message?: string;
   }>;
   performClick(text: string): Promise<{
+    ok: boolean;
+    evidence?: Record<string, unknown>;
+    message?: string;
+  }>;
+  snapshot?(): Promise<{
     ok: boolean;
     evidence?: Record<string, unknown>;
     message?: string;
@@ -30,6 +37,18 @@ export class NativeDeviceTransport implements DeviceTransport {
       return await this.module.isServiceEnabled();
     } catch {
       return false;
+    }
+  }
+
+  /** 只读观测：不执行任何设备动作；模块或服务不可用时返回 null。 */
+  async observe(): Promise<DeviceSnapshot | null> {
+    if (!this.module?.snapshot) return null;
+    try {
+      const response = await this.module.snapshot();
+      if (!response?.ok) return null;
+      return normalizeSnapshot(response.evidence);
+    } catch {
+      return null;
     }
   }
 

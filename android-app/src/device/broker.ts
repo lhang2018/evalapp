@@ -1,5 +1,10 @@
 /** 设备执行闸门：风险分级、独立确认、动作审计日志、禁止重放未知副作用。 */
 
+import {
+  isPackageName,
+  normalizeSnapshot,
+  verifyAction,
+} from "./observation.ts";
 import type { DeviceTransport } from "./transport.ts";
 import type {
   ActionJournalEntry,
@@ -17,6 +22,7 @@ export type ConfirmFn = (
 export interface DeviceBrokerOptions {
   confirm?: ConfirmFn;
   now?: () => number;
+  maxConsecutiveUnverified?: number;
 }
 
 const HIGH_RISK_KINDS = new Set([
@@ -43,12 +49,26 @@ export class DeviceBroker {
   private readonly transport: DeviceTransport;
   private readonly confirm: ConfirmFn | null;
   private readonly now: () => number;
+  private readonly maxConsecutiveUnverified: number;
   private readonly entries = new Map<string, ActionJournalEntry>();
+  private consecutiveUnverified = 0;
+  private stopped = false;
 
   constructor(transport: DeviceTransport, options: DeviceBrokerOptions = {}) {
     this.transport = transport;
     this.confirm = options.confirm ?? null;
     this.now = options.now ?? (() => Date.now());
+    this.maxConsecutiveUnverified = options.maxConsecutiveUnverified ?? 3;
+  }
+
+  isStopped(): boolean {
+    return this.stopped;
+  }
+
+  /** 人工恢复：仅在用户确认后调用，会清零连续失败计数。 */
+  resume(): void {
+    this.stopped = false;
+    this.consecutiveUnverified = 0;
   }
 
   riskOf(action: DeviceAction): DeviceRisk {
@@ -62,6 +82,13 @@ export class DeviceBroker {
     const risk = this.riskOf(action);
     const prior = this.entries.get(action.action_id);
     if (prior) return this.replayResult(prior);
+
+    if (this.stopped) {
+      const message =
+        `安全停止：连续 ${this.consecutiveUnverified} 次设备操作未通过验证，需人工恢复`;
+      this.record(action, risk, "denied", message);
+      return { status: "denied", message };
+    }
 
     let available = false;
     try {
@@ -102,11 +129,16 @@ export class DeviceBroker {
       result = { status: "failed", message };
     }
 
-    if (result.status === "verified" && !hasEvidence(result.evidence)) {
-      result = {
-        status: "unverified",
-        message: result.message ?? "执行结果缺少可验证证据",
-      };
+    if (result.status === "verified") {
+      result = this.verifyResult(action, result);
+    }
+    if (result.status === "failed" || result.status === "unverified") {
+      this.consecutiveUnverified += 1;
+      if (this.consecutiveUnverified >= this.maxConsecutiveUnverified) {
+        this.stopped = true;
+      }
+    } else if (result.status === "verified") {
+      this.consecutiveUnverified = 0;
     }
     this.record(
       action,
@@ -116,6 +148,42 @@ export class DeviceBroker {
       result.evidence,
     );
     return result;
+  }
+
+  private verifyResult(action: DeviceAction, result: DeviceResult): DeviceResult {
+    if (!hasEvidence(result.evidence)) {
+      return {
+        status: "unverified",
+        message: result.message ?? "执行结果缺少可验证证据",
+      };
+    }
+    const evidence = result.evidence as Record<string, unknown>;
+    const before = normalizeSnapshot(evidence.before);
+    const after = normalizeSnapshot(evidence.after);
+    if (!before || !after) return result;
+
+    const expectation: { expect_text?: string; expect_package?: string } = {};
+    const expectText = action.args?.expect_text;
+    if (typeof expectText === "string" && expectText.trim()) {
+      expectation.expect_text = expectText.trim();
+    }
+    if (action.kind === "launch_intent" && isPackageName(action.target)) {
+      expectation.expect_package = action.target;
+    }
+    const verification = verifyAction(before, after, expectation);
+    const merged = { ...evidence, page_change: verification.evidence };
+    if (verification.status === "verified") {
+      return {
+        status: "verified",
+        message: verification.message,
+        evidence: merged,
+      };
+    }
+    return {
+      status: "unverified",
+      message: verification.message,
+      evidence: merged,
+    };
   }
 
   listJournal(): ActionJournalEntry[] {

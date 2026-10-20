@@ -122,6 +122,107 @@ test("missing native module reports unavailable without crashing", async () => {
   assert.equal(broker.getJournal("act-0001")?.state, "unavailable");
 });
 
+const snap = (texts: string[], packageName = "com.example.app") => ({
+  package_name: packageName,
+  node_count: texts.length,
+  truncated: false,
+  nodes: texts.map((text) => ({ text })),
+});
+
+test("click results are verified only when the UI actually changed", async () => {
+  const changed = new FakeTransport();
+  changed.result = {
+    status: "verified",
+    evidence: {
+      clicked_text: "保存",
+      before: snap(["设置"]),
+      after: snap(["设置", "已保存"]),
+    },
+  };
+  const broker = new DeviceBroker(changed);
+  const result = await broker.execute(
+    action({ kind: "click_text", target: "保存" }),
+  );
+  assert.equal(result.status, "verified");
+  const evidence = result.evidence as Record<string, unknown>;
+  assert.equal((evidence.page_change as Record<string, unknown>).changed, true);
+
+  const unchanged = new FakeTransport();
+  unchanged.result = {
+    status: "verified",
+    evidence: {
+      clicked_text: "保存",
+      before: snap(["设置"]),
+      after: snap(["设置"]),
+    },
+  };
+  const strict = new DeviceBroker(unchanged);
+  const second = await strict.execute(
+    action({ action_id: "act-0002", kind: "click_text", target: "保存" }),
+  );
+  assert.equal(second.status, "unverified");
+  assert.match(second.message ?? "", /未发生可观察变化/);
+});
+
+test("permission dialogs downgrade otherwise successful clicks", async () => {
+  const transport = new FakeTransport();
+  transport.result = {
+    status: "verified",
+    evidence: {
+      before: snap(["设置"]),
+      after: snap(["允许访问相机", "允许", "拒绝"], "com.android.permissioncontroller"),
+    },
+  };
+  const broker = new DeviceBroker(transport);
+  const result = await broker.execute(
+    action({ kind: "click_text", target: "相机" }),
+  );
+  assert.equal(result.status, "unverified");
+  assert.match(result.message ?? "", /权限弹窗/);
+});
+
+test("consecutive unverified actions trigger a safety stop until resumed", async () => {
+  const transport = new FakeTransport();
+  transport.result = { status: "unverified", message: "界面未变化" };
+  const broker = new DeviceBroker(transport, { maxConsecutiveUnverified: 3 });
+
+  for (let index = 0; index < 3; index += 1) {
+    const result = await broker.execute(
+      action({ action_id: `act-${index}`, kind: "click_text", target: "确定" }),
+    );
+    assert.equal(result.status, "unverified");
+  }
+  assert.equal(broker.isStopped(), true);
+
+  const blocked = await broker.execute(
+    action({ action_id: "act-blocked", kind: "click_text", target: "确定" }),
+  );
+  assert.equal(blocked.status, "denied");
+  assert.match(blocked.message ?? "", /安全停止/);
+  assert.equal(transport.calls, 3);
+
+  broker.resume();
+  assert.equal(broker.isStopped(), false);
+  const retried = await broker.execute(
+    action({ action_id: "act-resumed", kind: "click_text", target: "确定" }),
+  );
+  assert.equal(retried.status, "unverified");
+  assert.equal(transport.calls, 4);
+});
+
+test("verified actions reset the consecutive failure counter", async () => {
+  const transport = new FakeTransport();
+  const broker = new DeviceBroker(transport, { maxConsecutiveUnverified: 2 });
+
+  transport.result = { status: "unverified", message: "未变化" };
+  await broker.execute(action({ action_id: "a1", kind: "click_text" }));
+  transport.result = { status: "verified", evidence: { node_text: "ok" } };
+  await broker.execute(action({ action_id: "a2" }));
+  transport.result = { status: "unverified", message: "未变化" };
+  await broker.execute(action({ action_id: "a3", kind: "click_text" }));
+  assert.equal(broker.isStopped(), false);
+});
+
 test("native transport passes through evidence and failure messages", async () => {
   const module: NativeDeviceModuleLike = {
     isServiceEnabled: async () => true,
