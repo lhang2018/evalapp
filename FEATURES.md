@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 344 项 + 客户端 85 项全部通过**。
+测试基线（2026-10-20）：**Python 352 项 + 客户端 98 项全部通过**。
 
 ---
 
@@ -231,6 +231,7 @@ Python 服务端（标准库，SQLite）
 | EVT-12 | 同步回执协议 | ✅ | `api/server.py` | 回执含 `protocol_version` 1.0、`confirmed` / `unconfirmed` 明确列表与 `confirmed_count`；同 `batch_id` 重放返回原回执 |
 | EVT-13 | 本地回执历史 | ✅ | `android-app/src/offline/{types,storage,queue,sync}.ts` | 回执按 `receipt_id` 去重持久化（最近 20 条），含 accepted/duplicates/rejected/confirmed 计数与 `replayed`；仅回执确认的事件删除 |
 | EVT-14 | 服务端长期不可用告警 | ✅ | `android-app/src/offline/queue.ts`, `App.tsx` | 连续 5 次同步失败，或队列有积压且距上次成功 ≥30 分钟 → `serverUnavailable`；成功同步清零；App 显示待发/失败/死信与告警条 |
+| EVT-15 | 事件附件引用 | ✅ | `core/events.py`, `api/events_sync.py`, `src/offline/{types,storage,queue,apiTransport}.ts`, `src/offline/export.ts` | 事件可携带最多 8 个 `attachment_refs`；ID 规则与附件一致（16-64 位），入队前校验去重；随批次写入 `runtime_events` 并可按 run 还原；导出 JSONL 保留引用 |
 
 ### 2.14 控制面、API 与可观测（PRD 37-40 / 89-90）
 
@@ -292,6 +293,15 @@ Python 服务端（标准库，SQLite）
 | EXP-05 | 预览与只读保证 | ✅ | `src/offline/export.ts` | 导出前预览事件/敏感/失败/附件/脱敏字段/损失标记、敏感类别与警告；导出不修改同步状态、不删除任何数据；同输入字节确定 |
 | EXP-06 | 系统文件选择器交付 | ✅/🔹 | `src/offline/nativeExport.ts`, `DeviceModule.kt` | 字节先留在内存，用户经 SAF（`ACTION_CREATE_DOCUMENT`）选定目标后后台写入；取消/失败不留下半成品并清理临时数据；原生构建未在本机验证 |
 
+### 2.18 诊断附件分块上传（补充 C §6）
+
+| ID | 功能 | 状态 | 代码位置 | 说明 / 限制 |
+|---|---|---|---|---|
+| ATT-01 | 附件初始化与授权 | ✅ | `api/attachments.py`, `api/server.py`, `core/persistence.py` | `POST /attachments`：`consent` 必须为 true（否则 403）；大小 1 B–50 MiB（超限 413）、`sha256` 64 位小写十六进制、分块 16 KiB–4 MiB、最多 4096 块；同 ID 同摘要幂等返回进度，不同内容 409；初始化/完成/读取均写审计 |
+| ATT-02 | 分块断点续传与完整性 | ✅ | `api/server.py`, `core/persistence.py` | `PUT /attachments/{id}/chunks/{n}` 原样写入并幂等覆盖，返回已收分块与块摘要；`POST .../complete` 拼装全文校验 SHA-256 与声明大小，不一致清空分块并返回 422，要求整体重传；完成前读取正文 409 |
+| ATT-03 | 客户端上传服务 | ✅/🔹 | `src/offline/attachments.ts`, `src/api.ts`, `App.tsx` | `AttachmentService`：显式授权入参、纯 TS SHA-256、256 KiB 分块、逐块持久化进度、续传跳过已收分块、块摘要不符立即失败、完成后才可用于事件引用；App 经 SAF 选择文件并二次确认授权。原始字节仅内存驻留，进程重启后需重新选择文件（🔹） |
+| ATT-04 | 附件正文受控读取 | ✅ | `api/server.py` | `GET /attachments/{id}` 返回元数据与进度；`GET /attachments/{id}/content` 仅 admin 且完成态可读，返回 `Content-Disposition` 与 `X-Attachment-SHA256`，读取写审计 |
+
 ---
 
 ## 3. REST API 清单
@@ -326,6 +336,8 @@ Python 服务端（标准库，SQLite）
 | `/diagnostics/drift` | 环境漂移检测报告（只读，不产生事件） |
 | `/diagnostics/imports?limit=N` | 离线诊断包导入记录（admin） |
 | `/diagnostics/imports/{import_id}` | 导入详情与逐事件审查状态（admin） |
+| `/attachments/{id}` | 附件元数据与分块进度 |
+| `/attachments/{id}/content` | 附件正文（admin；仅完成态，返回摘要响应头并写审计） |
 | `/evolution/candidates`、`/evolution/candidates/{id}`、`/evolution/datasets` | 进化候选与数据集 |
 | `/releases`、`/releases/{id}` | 发布清单 |
 | `/alerts` | 当前告警（按 `AlertPolicy` 评估） |
@@ -374,8 +386,16 @@ Python 服务端（标准库，SQLite）
 | `/evolution/sandbox/run` | 候选代码隔离执行（admin；`code` 或 `path`；返回 passed/failed/timeout/violation） |
 | `/diagnostics/{case_id}/candidates` | 假设升级候选 |
 | `/diagnostics/import` | 上传离线诊断包（admin；ZIP，`201` 入隔离区，重复包 `200 duplicate`；校验失败 `400/413`） |
+| `/attachments` | 附件初始化（显式 `consent`；`201` 新建 / `200` 幂等 / `409` 同 ID 不同内容） |
+| `/attachments/{id}/complete` | 拼装并校验 SHA-256（`200` 完成、`409` 分块不全、`422` 摘要不一致并清空分块） |
 | `/admin/backup` | 创建三库备份（admin，写审计，`201`） |
 | `/admin/restore` | 恢复指定备份（admin；未结束任务 `409`、缺失 `404`、非法名称 `400`；恢复前自动安全备份） |
+
+### PUT
+
+| 路径 | 说明 |
+|---|---|
+| `/attachments/{id}/chunks/{index}` | 原始分块写入（`application/octet-stream`；幂等覆盖；越界 `400`、超块 `413`、缺失 `404`、已完成 `409`） |
 
 ---
 
@@ -603,7 +623,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，344 项）
+### Python（`tests/`，352 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -634,6 +654,7 @@ Python 服务端（标准库，SQLite）
 | `test_governance.py` | 上下文治理、评测完整性、fail-closed 门禁（12 项） |
 | `test_event_sync.py` | 事件同步、旧库迁移、幂等提交（8 项） |
 | `test_diagnostics_import.py` | 诊断包受控导入：隔离入区、包幂等、路径穿越、解压炸弹、文件白名单、摘要缺失/不匹配、格式版本、关联审查、内容类型与 admin 权限（9 项） |
+| `test_attachments.py` | 附件授权/元数据校验、初始化幂等与冲突、分块进度与大小/序号校验、完成前 409、摘要不一致清空重传、事件 `attachment_refs` 往返与非法引用、admin-only 正文读取（8 项） |
 | `test_version_sync.py` | 版本对账/兼容阻断/灰度、应用回执幂等与回滚、批次回执重放、运行清单设备字段（15 项） |
 | `test_model_migration.py` | 九步迁移、回归对比、受控启用/回滚、固定模型覆盖、迁移 API（10 项） |
 | `test_memory_evaluation.py` | 记忆评测指标、过期/冲突用例、运行反馈、报告 API/指标（6 项） |
@@ -645,7 +666,7 @@ Python 服务端（标准库，SQLite）
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
 
-### 客户端（`android-app/test/`，85 项）
+### 客户端（`android-app/test/`，98 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -659,6 +680,7 @@ Python 服务端（标准库，SQLite）
 | `test/offline/export.test.ts` | 诊断包导出：SHA-256/CRC32 向量、包结构与校验和、过滤、脱敏、附件取舍、只读确定性、交付失败清理（7 项） |
 | `test/offline/packageImport.test.ts` | 导入包解码、取消/缺失提示、非法/空/超大拒绝、HTTP 头文件名 ASCII 化（4 项） |
 | `test/offline/importApi.test.ts` | admin Bearer 原样上传、`X-File-Name` 清洗、403 保留状态与消息且不带凭证（2 项） |
+| `test/offline/attachments.test.ts` | 附件显式授权、摘要与分块计划、逐块上传与完成校验、服务端进度续传、网络失败重试、块摘要不符、全文摘要不符清空重传、422 清空重传、重启后字节丢失提示、相同内容重新选择复用记录与进度、已完成不重传、不同内容独立记录、事件引用校验（13 项） |
 
 运行：
 
@@ -682,7 +704,7 @@ cd android-app && npm run test:offline
 | 发布分支自动化（可视化/远端推送） | PRD 59-63 | ⬜ | 已提供本地分支/标签/ff 合并 CLI；不自动 push、不整合同步冲突 |
 | 能力包制品下载与装载 | 补充 A §4/§5 | 🔹 | 清单字段、分发筛选与双槽位引用切换已完成；实际包内容由 OTA（CodePush/Expo Updates）承载，尚未接线 |
 | 候选状态同步（服务端 → App） | 补充 A §2/§8 | ✅ | `GET /sync/candidates` 拉取评测后阶段并展示；仅透明展示，不改变激活路径 |
-| 诊断包附件上传 | 补充 C §6 | ⬜ | 附件 SHA-256、分块/断点续传与附件授权通道未实现；当前仅主包 ZIP 整包导入 |
+| 诊断包附件上传 | 补充 C §6 | ✅/🔹 | 显式授权、SHA-256、分块/断点续传、事件 `attachment_refs` 与 admin 受控读取已实现；客户端原始字节仅内存驻留，重启后需重新选择同一文件（按摘要复用原记录与分块进度） |
 
 ---
 
@@ -690,7 +712,7 @@ cd android-app && npm run test:offline
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 344 passed
+python -m pytest tests/ -q                       # 352 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -719,6 +741,7 @@ python -m evoagent.cli serve --port 8300
 #   - 两次相同 client_request_id 的 POST /tasks → 同一 task_id
 #   - 重复 POST /events/sync → duplicates
 #   - POST /diagnostics/import（admin）→ 201 隔离；同包重传 → 200 duplicate
+#   - POST /attachments（consent=true）→ PUT 分块 → complete 校验 SHA-256
 #   - GET /costs /metrics /admin /alerts /logs/layers /logs/traces
 #   - GET /models /models/migrations /memory/evaluations /diagnostics/drift
 #   - POST /models/migrations → regression → release → apply → rollback
@@ -764,6 +787,24 @@ cd android-app && npm run android
 ---
 
 ## 变更记录
+
+### 2026-10-20 — 诊断附件分块上传（补充 C §6）
+
+- 需求：`EvoAgent_离线日志与可靠同步子系统设计.md` §6（附件上传与完整性校验）与 §3.1 事件附件引用。
+- 变更：服务端新增附件通道。附件属高敏感材料，初始化必须显式 `consent=true`；元数据与分块 BLOB
+  写入 SQLite，支持 16 KiB–4 MiB 分块、50 MiB 总量与 4096 块上限。分块 PUT 幂等覆盖并返回进度；
+  完成时拼装全文校验 SHA-256，失败清空全部分块并返回 422，要求整体重传。正文仅 admin 可读且写审计。
+- 客户端新增 `AttachmentService`：纯 TS SHA-256、256 KiB 分块、逐块持久化进度、续传跳过已收分块、
+  块摘要不符立即失败、完成后才可用于事件引用；App 经 SAF 选择文件并二次确认授权。
+  事件新增 `attachment_refs`（最多 8 项），随批次落库并进入导出 JSONL。
+- 代码：`evoagent/api/attachments.py`（新增）、`api/server.py`、`api/events_sync.py`、
+  `core/{events,persistence}.py`；`android-app/src/offline/attachments.ts`（新增）、
+  `{types,storage,queue,apiTransport,export}.ts`、`src/api.ts`、`App.tsx`。
+- 测试：新增 `tests/test_attachments.py`（8 项）、`test/offline/attachments.test.ts`（13 项）；
+  Python 344 → 352，客户端 85 → 98。
+- 状态变化：新增 ATT-01…ATT-04、EVT-15；IMPLEMENTATION 补充 C §3.1、§6 ⬜ → ✅。
+- 已知限制：客户端原始字节仅内存驻留，进程重启后需重新选择同一文件（按 SHA-256/大小复用
+  原记录与分块进度）；原生 SAF 附件选择需真机验证。
 
 ### 2026-10-20 — 客户端导入、本地回执与不可用告警（补充 C §3.2/§8/§11）
 
@@ -1048,6 +1089,7 @@ cd android-app && npm run android
 | Session 29 | 诊断包受控导入（补充 C §8） | 344 + 69 |
 | Session 30 | 离线诊断包导出（补充 C §7） | 344 + 76 |
 | Session 31 | 客户端导入、本地回执与不可用告警（补充 C §3.2/§8/§11） | 344 + 85 |
+| Session 32 | 诊断附件分块上传与事件引用（补充 C §6/§3.1） | 352 + 98 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
 

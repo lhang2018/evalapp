@@ -48,8 +48,10 @@ import { NativeExportSink } from "./src/offline/nativeExport.ts";
 import type { DiagnosticsSaveModule } from "./src/offline/nativeExport.ts";
 import { NativeDiagnosticsPicker } from "./src/offline/nativeImport.ts";
 import type { DiagnosticsPickerModule } from "./src/offline/nativeImport.ts";
+import { AttachmentService } from "./src/offline/attachments.ts";
 import type {
   DeadLetter,
+  LocalAttachment,
   LocalTask,
   OfflineEvent,
   QueueStats,
@@ -170,6 +172,13 @@ export default function App(): React.JSX.Element {
   const [adminToken, setAdminToken] = useState("");
   const [importing, setImporting] = useState(false);
   const [importMessage, setImportMessage] = useState<string | null>(null);
+  const [localAttachments, setLocalAttachments] = useState<LocalAttachment[]>(
+    [],
+  );
+  const [attachmentBusy, setAttachmentBusy] = useState(false);
+  const [attachmentMessage, setAttachmentMessage] = useState<string | null>(
+    null,
+  );
 
   // 服务器地址：模拟器默认 10.0.2.2；真机可填局域网 IP（或 adb reverse 后用 127.0.0.1）
   const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL);
@@ -214,6 +223,7 @@ export default function App(): React.JSX.Element {
       exporter: new DiagnosticsExporter(),
       exportSink: new NativeExportSink(deviceModule ?? null),
       importPicker: new NativeDiagnosticsPicker(deviceModule ?? null),
+      attachments: new AttachmentService(repo, client),
     };
   }, [baseUrl]);
 
@@ -222,6 +232,7 @@ export default function App(): React.JSX.Element {
     setStats(await services.queue.stats());
     setDeadLetters(await services.queue.deadLetters());
     setQuarantined(await services.queue.quarantined());
+    setLocalAttachments(await services.attachments.list());
     setJournal(services.broker.listJournal());
   }, [services]);
 
@@ -657,6 +668,50 @@ export default function App(): React.JSX.Element {
     }
   }, [services, adminToken]);
 
+  const runAttachmentUpload = useCallback(async () => {
+    setAttachmentBusy(true);
+    setError(null);
+    setAttachmentMessage(null);
+    try {
+      const picked = await services.importPicker.pick();
+      const item = await services.attachments.add(
+        picked.fileName,
+        "application/octet-stream",
+        picked.bytes,
+        true,
+      );
+      await services.attachments.flush();
+      const latest = (await services.attachments.list()).find(
+        (entry) => entry.attachment_id === item.attachment_id,
+      );
+      setAttachmentMessage(
+        latest?.status === "complete"
+          ? `已上传 ${item.file_name}（${item.size_bytes} 字节，SHA-256 校验通过）`
+          : `附件已登记但未完成上传：${latest?.last_error ?? "未知原因"}`,
+      );
+      setLocalAttachments(await services.attachments.list());
+    } catch (e: unknown) {
+      setError("附件上传失败：" + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setAttachmentBusy(false);
+    }
+  }, [services]);
+
+  const uploadDiagnosticAttachment = useCallback(() => {
+    if (!online) {
+      setError("离线时无法上传附件，请先恢复服务端连接。");
+      return;
+    }
+    Alert.alert(
+      "上传诊断附件",
+      "附件可能包含高敏感信息。确认授权后将分块上传，服务端会校验完整 SHA-256；分块进度仅保存在本机，进程重启后需重新选择文件。",
+      [
+        { text: "取消", style: "cancel" },
+        { text: "授权并上传", onPress: () => void runAttachmentUpload() },
+      ],
+    );
+  }, [online, runAttachmentUpload]);
+
   return (
     <SafeAreaView style={s.container}>
       <KeyboardAvoidingView
@@ -861,6 +916,41 @@ export default function App(): React.JSX.Element {
                 )}
                 {importMessage && (
                   <Text style={s.hint}>{importMessage}</Text>
+                )}
+              </View>
+
+              <Text style={s.section}>诊断附件（分块上传）</Text>
+              <View style={s.card}>
+                <Text style={s.hint}>
+                  附件属于高敏感材料，必须显式授权后才会上传；服务端按
+                  SHA-256 校验全文，分块进度保存在本机。原始字节仅在本次
+                  会话内保留，重启后需重新选择文件。
+                </Text>
+                <Button
+                  title={attachmentBusy ? "上传中…" : "选择附件并授权上传"}
+                  onPress={uploadDiagnosticAttachment}
+                  disabled={attachmentBusy || !online}
+                />
+                {attachmentMessage && (
+                  <Text style={s.hint}>{attachmentMessage}</Text>
+                )}
+                {localAttachments.length === 0 ? (
+                  <Text style={s.hint}>暂无本地附件记录。</Text>
+                ) : (
+                  localAttachments.slice(-5).map((item) => (
+                    <Text key={item.attachment_id} style={s.mono}>
+                      {item.file_name} · {item.size_bytes} 字节 ·{" "}
+                      {item.status === "complete"
+                        ? "已校验"
+                        : item.status === "failed"
+                        ? "失败"
+                        : item.status === "uploading"
+                        ? "上传中"
+                        : "待上传"}{" "}
+                      · {item.uploaded_chunks.length}/{item.chunk_count} 块
+                      {item.last_error ? ` · ${item.last_error}` : ""}
+                    </Text>
+                  ))
                 )}
               </View>
             </>

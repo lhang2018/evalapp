@@ -5,6 +5,7 @@ import type {
   DeadLetter,
   EventSyncStatus,
   InFlightBatch,
+  LocalAttachment,
   LocalSyncReceipt,
   OfflineEvent,
   OfflineState,
@@ -52,6 +53,7 @@ export function emptyState(): OfflineState {
     sync_receipts: [],
     sync_failures: 0,
     last_failure_at: null,
+    attachments: [],
   };
 }
 
@@ -130,6 +132,11 @@ function normalizeEvent(
       ? event.uploadable
       : true,
     retention,
+    attachment_refs: Array.isArray(event.attachment_refs)
+      ? event.attachment_refs.filter(
+        (ref): ref is string => typeof ref === "string" && Boolean(ref),
+      ).slice(0, 8)
+      : [],
     sync_status: SYNC_STATES.includes(syncStatus) ? syncStatus : "pending",
     sequence_no: sequenceNo,
     seq: asNumber(event.seq, nextSeq()),
@@ -226,6 +233,61 @@ function normalizeReceipts(raw: unknown): LocalSyncReceipt[] {
   return out.slice(-20);
 }
 
+function normalizeAttachments(raw: unknown): LocalAttachment[] {
+  if (!Array.isArray(raw)) return [];
+  const out: LocalAttachment[] = [];
+  const statuses: LocalAttachment["status"][] = [
+    "pending", "uploading", "complete", "failed",
+  ];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const attachment = item as LocalAttachment;
+    if (typeof attachment.attachment_id !== "string" ||
+      !attachment.attachment_id ||
+      typeof attachment.sha256 !== "string" ||
+      !Number.isFinite(attachment.size_bytes) ||
+      !Number.isFinite(attachment.chunk_size) ||
+      !Number.isFinite(attachment.chunk_count)
+    ) {
+      continue;
+    }
+    const uploaded = Array.isArray(attachment.uploaded_chunks)
+      ? [...new Set(attachment.uploaded_chunks.filter(
+        (index): index is number =>
+          Number.isInteger(index) && index >= 0 &&
+          index < (attachment.chunk_count as number),
+      ))].sort((a, b) => a - b)
+      : [];
+    out.push({
+      attachment_id: attachment.attachment_id,
+      file_name: typeof attachment.file_name === "string"
+        ? attachment.file_name
+        : "attachment.bin",
+      content_type: typeof attachment.content_type === "string"
+        ? attachment.content_type
+        : "application/octet-stream",
+      size_bytes: attachment.size_bytes,
+      sha256: attachment.sha256,
+      chunk_size: attachment.chunk_size,
+      chunk_count: attachment.chunk_count,
+      uploaded_chunks: uploaded,
+      status: statuses.includes(attachment.status)
+        ? attachment.status
+        : "pending",
+      consent: attachment.consent === true,
+      created_at: asNumber(attachment.created_at, 0),
+      updated_at: asNumber(attachment.updated_at, 0),
+      completed_at: typeof attachment.completed_at === "number"
+        ? attachment.completed_at
+        : null,
+      last_error: typeof attachment.last_error === "string"
+        ? attachment.last_error
+        : null,
+    });
+  }
+  return out.slice(-20);
+}
+
 function normalizeState(
   data: Partial<OfflineState> & Record<string, unknown>,
 ): OfflineState {
@@ -271,6 +333,7 @@ function normalizeState(
   state.last_failure_at = typeof data.last_failure_at === "number"
     ? data.last_failure_at
     : null;
+  state.attachments = normalizeAttachments(data.attachments);
   return state;
 }
 

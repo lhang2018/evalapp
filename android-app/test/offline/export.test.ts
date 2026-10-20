@@ -31,6 +31,7 @@ function makeEvent(overrides: Partial<OfflineEvent> = {}): OfflineEvent {
     privacy_classification: "standard",
     uploadable: true,
     retention: "normal",
+    attachment_refs: [],
     sync_status: "pending",
     sequence_no: 1,
     seq: 1,
@@ -75,6 +76,7 @@ function makeState(events: OfflineEvent[]): OfflineState {
     sync_receipts: [],
     sync_failures: 0,
     last_failure_at: null,
+    attachments: [],
   };
 }
 

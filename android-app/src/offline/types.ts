@@ -56,6 +56,8 @@ export interface OfflineEvent {
   uploadable: boolean;
   /** 容量治理保留等级（补充 C §4） */
   retention: RetentionTier;
+  /** 诊断附件引用（补充 C §6）；附件可稍后补传 */
+  attachment_refs: string[];
   sync_status: EventSyncStatus;
   /** 同一 run 内单调递增，用于还原因果顺序 */
   sequence_no: number;
@@ -101,6 +103,28 @@ export interface LocalSyncReceipt {
   protocol_version: string | null;
 }
 
+export type AttachmentStatus = "pending" | "uploading" | "complete" | "failed";
+
+/** 诊断附件的本地上传任务（补充 C §6）：只持久化元数据与分块进度。 */
+export interface LocalAttachment {
+  attachment_id: string;
+  file_name: string;
+  content_type: string;
+  size_bytes: number;
+  sha256: string;
+  chunk_size: number;
+  chunk_count: number;
+  /** 服务端已确认接收的分块序号 */
+  uploaded_chunks: number[];
+  status: AttachmentStatus;
+  /** 高敏感材料必须显式授权后才允许上传 */
+  consent: boolean;
+  created_at: number;
+  updated_at: number;
+  completed_at: number | null;
+  last_error: string | null;
+}
+
 export interface LocalTask {
   local_task_id: string;
   /** 幂等键：任务生命周期内保持不变 */
@@ -136,6 +160,8 @@ export interface OfflineState {
   /** 连续传输失败次数；成功同步后清零 */
   sync_failures: number;
   last_failure_at: number | null;
+  /** 诊断附件上传任务（补充 C §6） */
+  attachments: LocalAttachment[];
 }
 
 export interface QueueStats {

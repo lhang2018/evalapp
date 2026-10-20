@@ -37,7 +37,7 @@
 | PRD 89-90 界面 | `api/server.py`, `api/admin.py` + `android-app/App.tsx` | ✅ | 客户端七分区：任务（在线状态/同步统计/本地任务/死信/设备操作/系统状态）、离线状态、工作流中心（版本/运行/产物）、记忆中心（过滤/纠正/删除，权限范围 403 与审计）、预算与模型（只读）、权限（无障碍状态与系统设置引导）、更新（版本/清单/兼容性/回滚）；Web 管理端覆盖 90.1-90.7：健康与告警、问题中心与诊断详情（假设/证据/不确定性/探针/模型辅助假设）、候选实验中心、版本中心（发布/模型/迁移/工作流）、成本中心、审计与发布回滚，另有回放/备份/沙箱分区 |
 | PRD 91 数据实体 | `core/persistence.py`, `memory/store.py` | ✅ | 逻辑实体的核心子集 |
 | PRD 92-99 非功能需求 | 各模块内 | ✅/🔹 | 稳定性→检查点；性能/成本计量在列 |
-| PRD 106-113 验收标准 | `tests/`, `android-app/test/` | ✅ | Python 344 项：任务执行/预算/安全/回滚/验收/诊断闭环与趋势/模型辅助假设证据绑定与探针门禁/候选代码隔离执行/规划与意图分类/事件同步幂等与批次回执/版本对账与应用回执/候选阶段同步/运行清单/计划与预算接线/暂停恢复/鉴权与审计/指标/工具超时重试幂等/工具替代安全链/工作流并行跳过续跑/成功任务抽取与发布门禁/上下文治理与质量检查/评测完整性与 fail-closed 门禁/九级预算与成本报告/十维收益与发布后监测/路由评分/资产库/日志分层与告警/模型迁移执行链/记忆评测/嵌入向量检索/环境漂移/运行回放/备份恢复/管理端分区与安全渲染/发布分支与快进合并/Claude 全局模型配置/任务模型全字段/用户端中心接口/诊断包受控导入；客户端 85 项：离线队列/同步/任务状态/保留等级与损失标记/本地回执与不可用告警/设备闸门/界面观测与结果验证/更新管理器与候选阶段同步/诊断包导出与导入 |
+| PRD 106-113 验收标准 | `tests/`, `android-app/test/` | ✅ | Python 352 项：任务执行/预算/安全/回滚/验收/诊断闭环与趋势/模型辅助假设证据绑定与探针门禁/候选代码隔离执行/规划与意图分类/事件同步幂等与批次回执/诊断附件分块上传与摘要校验/版本对账与应用回执/候选阶段同步/运行清单/计划与预算接线/暂停恢复/鉴权与审计/指标/工具超时重试幂等/工具替代安全链/工作流并行跳过续跑/成功任务抽取与发布门禁/上下文治理与质量检查/评测完整性与 fail-closed 门禁/九级预算与成本报告/十维收益与发布后监测/路由评分/资产库/日志分层与告警/模型迁移执行链/记忆评测/嵌入向量检索/环境漂移/运行回放/备份恢复/管理端分区与安全渲染/发布分支与快进合并/Claude 全局模型配置/任务模型全字段/用户端中心接口/诊断包受控导入；客户端 98 项：离线队列/同步/任务状态/保留等级与损失标记/本地回执与不可用告警/附件分块上传与续传/同内容重新选择复用记录/设备闸门/界面观测与结果验证/更新管理器与候选阶段同步/诊断包导出与导入 |
 | PRD 115 实施顺序 | Phase 1-2 全部 | ✅ | 阶段三（进化闭环）部分完成 |
 
 ## PRD 覆盖率盘点（2026-10-20）
@@ -48,7 +48,7 @@
 剩余差距集中在客户端交互与外部集成，不影响现有运行与安全边界。
 三份补充设计引入的目标约束（能力包下发、App 侧安全激活、版本对账、离线可信同步等）映射见下文
 「补充设计 A/B/C 映射」三节；版本对账、运行清单、双槽位更新管理器、回执与候选阶段同步已完成；
-人工诊断通道（离线导出/双端受控导入）已闭环，剩余为制品装载与附件上传（补充 C §6）。
+人工诊断通道（离线导出/双端受控导入/附件分块上传）已闭环，剩余为能力制品装载。
 
 | 剩余缺口 | PRD / Arch | 规模 | 当前状态 | 备注 |
 |---|---|---|---|---|
@@ -57,8 +57,8 @@
 | 端到端加密、多设备冲突合并 | PRD 72-76/86 | L | 无 | 涉及密钥管理与冲突模型 |
 | 远端推送、冲突自动合并 | PRD 59-63 | M | 仅本地分支/标签/ff 合并 | 不自动 push；分叉即失败，需人工处理 |
 
-**实现规模参考**：服务端约 16.2k 行 Python（含 CLI），Android 客户端约 4.4k 行 TS/Kotlin，
-测试约 7.4k 行；Python 344 项 + 客户端 85 项。
+**实现规模参考**：服务端约 16.6k 行 Python（含 CLI），Android 客户端约 4.8k 行 TS/Kotlin，
+测试约 7.9k 行；Python 352 项 + 客户端 98 项。
 
 ## 补充设计 A 映射：《双端协同进化与版本分发架构补充设计》
 
@@ -129,13 +129,13 @@
 | §1 原则 6 日志是证据不是命令 | `core/privacy.py`, 工具层信任边界 | ✅ | 外部内容不可执行已在工具/导入/回放层承接 |
 | §1 原则 7 隐私最小化 | `offline/privacy.ts`, `policy.ts`, `offline/export.ts` | ✅ | sensitive 事件仅本地保留，仅 standard 上传；导出前强制脱敏密钥类字段/值，敏感原文默认不导出 |
 | §1 原则 8 日志≠任务恢复 | `core/checkpoint.py` 分离实现 | ✅ | 检查点/副作用账本/恢复策略独立于事件日志（§10 边界表全行 ✅） |
-| §3.1 事件字段十项 | `offline/types.ts` OfflineEvent + `api/events_sync.py` | ✅/🔹 | 客户端携带 `event_id`/`task_id`/`run_id`/`sequence_no`/`timestamp`/`clock_source=device`/`severity`/`payload`/`privacy_classification`/`runtime_manifest_id`；服务端校验并落库；`attachment_refs` ⬜（随 §6） |
+| §3.1 事件字段十项 | `offline/types.ts` OfflineEvent + `api/events_sync.py` | ✅ | 客户端携带 `event_id`/`task_id`/`run_id`/`sequence_no`/`timestamp`/`clock_source=device`/`severity`/`payload`/`privacy_classification`/`runtime_manifest_id`；服务端校验并落库；`attachment_refs` 随事件同步并在 `runtime_events` 持久化（最多 8 项，ID 规则与附件一致） |
 | §3.2 本地逻辑表 7 张 | `offline/storage.ts` 单一持久化状态 | ✅ | 运行证据/同步状态/任务状态/隔离区/回执在版本化状态中各自独立结构与生命周期；`sync_receipts` 独立持久化（最近 20 条，按 `receipt_id` 去重，含服务端计数与重放标记）；物理上仍为单文档快照，未按物理表拆分 |
 | §4 容量治理 | `offline/queue.ts`, `offline/retention.ts` | ✅ | critical/normal/debug 分级保留（critical 永不自动清理；normal 7 天、debug 1 天）；空间不足按等级腾位并记录损失标记；80% 预警与用户提示；连续 checkpoint 语义保留 |
 | §5.1 同步状态机四态 | `offline/queue.ts`, `offline/sync.ts` | ✅ | `pending → in_flight → acknowledged`（确认后删除）；永久拒绝转 `quarantined` 持久保留，可人工重新入队；in-flight 批次持久化，重启后回收 stale 批次；未按独立 `sync_batches` 表拆分 🔹 |
 | §5.2 批次与回执协议 8 条 | `offline/apiTransport.ts`, `sync.ts` + `events_sync.py` | ✅ | 稳定 batch_id、事件 ID 不变、部分成功明确、退避抖动、`protocol_version` 1.0、`confirmed`/`unconfirmed` 显式列表、QUARANTINED 隔离均已实现 |
 | §5.3 版本关联与版本对账 | `runtime_manifests` + 对账流程 | ✅ | manifests 独立落表可解析（不做最新版覆盖）；对账已在补充 A §7 完成（`installation_id` + 灰度/兼容服务端判定） |
-| §6 附件上传与完整性校验 | — | ⬜ | attachment_id/SHA-256/分块恢复上传/附件授权通道全未实现（当前无附件体系） |
+| §6 附件上传与完整性校验 | `api/attachments.py`, `api/server.py`, `core/persistence.py`, `offline/attachments.ts` | ✅/🔹 | 显式授权（`consent` 非 true 直接 403）；元数据+分块 BLOB 落 SQLite，分块 16 KiB–4 MiB、总量 50 MiB、最多 4096 块；`PUT /attachments/{id}/chunks/{n}` 幂等覆盖、`POST .../complete` 拼装全文校验 SHA-256（不一致清空分块并返回 422），完成后才可读；`GET .../content` admin-only 且审计；客户端 `AttachmentService` 计算摘要、256 KiB 分块、持久化进度、续传跳过已收分块，摘要冲突清空进度整体重传。原始字节仅内存驻留，进程重启后需重新选择同一文件（按 SHA-256/大小复用原记录，🔹 非持久化字节） |
 | §7 离线诊断包导出 | `offline/export.ts`, `offline/zip.ts`, `offline/sha256.ts`, `offline/nativeExport.ts` | ✅/🔹 | Export Manager 完全离线生成 ZIP：manifest/events/runtime-manifests/task-runs/sync-status/checksums（逐文件 SHA-256 + CRC32，format_version 1.0）；范围/时间/能力/失败过滤；预览敏感类别与警告；密钥类字段/值强制脱敏，敏感原文与原始负载默认关闭；只读不改变同步状态。交付经 Android SAF 文件选择器（`ACTION_CREATE_DOCUMENT`），取消/失败清理半成品；原生构建未在本机验证 🔹 |
 | §7.1 包结构 | `offline/export.ts` | ✅ | 必含清单、事件（JSONL）、运行时清单、任务运行、同步状态与校验和；附件默认不带，按白名单/大小/数量过滤 |
 | §8 诊断包受控导入 | `api/diagnostics_import.py`, `api/server.py`, `core/persistence.py`, `offline/packageImport.ts`, `offline/nativeImport.ts` | ✅ | 仅解析不执行：包/条目/解压总量上限、压缩比与符号链接拒绝、路径穿越/绝对路径/盘符拒绝、文件与附件后缀白名单、逐文件 SHA-256、`format_version` 校验；事件关系审查（unknown_task / missing_manifest / unknown_manifest / 任务运行不匹配）；按 SHA-256 幂等入隔离区（`diagnostics_imports` + `diagnostics_import_events`），admin-only 且成功/拒绝均审计。客户端经 SAF（`ACTION_OPEN_DOCUMENT`）选择 ZIP，20 MiB 上限与空包在原生/TS 两侧拦截，以 `X-File-Name` + admin Bearer 原样上传；admin token 只在内存使用、不持久化 |
@@ -147,7 +147,9 @@
 导出在客户端完全离线生成带校验和的 ZIP，不改变同步状态；导入既支持服务端 API，也支持客户端
 系统文件选择器（admin 凭证仅驻内存），导入只作证据进入隔离区，不触发事件摄取或任何执行，
 并按包 SHA-256 幂等。本地回执历史与「服务端长期不可用」告警补齐 §3.2/§11。
-⬜ 剩余一项附件上传（§6）。原生 SAF 交付需真机构建验证。验收标准 §11 可直接作为该子系统的测试用例来源。
+补充 C 功能项已全部落地。原生 SAF 交付（导出/导入/附件选择）需真机构建验证；
+客户端附件原始字节不落盘，重启后续传需要重新选择同一文件（内容摘要一致时复用原记录与分块进度）。
+验收标准 §11 可直接作为该子系统的测试用例来源。
 
 ## 服务重启恢复记录
 
@@ -200,5 +202,6 @@
 9. **补充 A §4/§5.1**：策略包/能力包制品下载与装载（清单字段、分发筛选已完成；实际包内容由 OTA 承载）
 10. ~~**补充 A §7**：恢复后版本对账~~（已完成：`installation_id` 对账，灰度与兼容检查在服务端判定）
 11. ~~**补充 A §8**：候选状态同步（服务端→App）~~（已完成：`GET /sync/candidates` + `device_candidate_states` + 客户端透明展示；安装实例、部署记录、批次回执此前已落表）
-12. ~~**补充 C §7**：离线诊断包导出~~（已完成：纯 TS ZIP + 校验和 + 脱敏 + 预览 + SAF 文件选择器；原生交付待真机验证）。剩余：§6 附件上传（SHA-256/分块恢复）
+12. ~~**补充 C §7**：离线诊断包导出~~（已完成：纯 TS ZIP + 校验和 + 脱敏 + 预览 + SAF 文件选择器；原生交付待真机验证）
 13. ~~**补充 C §3.2/§11**：本地 `sync_receipts` 独立持久化与「服务端长期不可用」用户告警~~（已完成：回执历史最近 20 条按 `receipt_id` 去重；连续失败 5 次或积压 ≥30 分钟告警）；~~客户端导入选择器（IMP-08）~~（已完成：SAF 选择 + admin Bearer 原样上传）
+14. ~~**补充 C §6**：诊断附件分块上传~~（已完成：显式授权 + SHA-256 + 分块续传 + 服务端摘要校验 + `attachment_refs` 全链路；原始字节不落盘，重启后需重新选择文件）

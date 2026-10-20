@@ -23,6 +23,14 @@ from ..evolution.candidates import IllegalCandidateTransition
 from ..memory.store import Credibility, MemoryKind, Scope
 from ..evolution.controller import PUBLISH_RULES
 from .admin import ADMIN_HTML
+from .attachments import (
+    AttachmentError,
+    MAX_CHUNK_BYTES,
+    digest,
+    sanitize_file_name,
+    validate_chunk,
+    validate_init,
+)
 from .auth import ApiAuth
 from .diagnostics_import import (
     MAX_PACKAGE_BYTES,
@@ -65,6 +73,16 @@ def make_handler(app: App):
             self.send_response(code)
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def _bytes(self, code: int, body: bytes, content_type: str,
+                   headers: Optional[Dict[str, str]] = None) -> None:
+            self.send_response(code)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(body)))
+            for key, value in (headers or {}).items():
+                self.send_header(key, value)
             self.end_headers()
             self.wfile.write(body)
 
@@ -358,6 +376,13 @@ def make_handler(app: App):
                 if case is None:
                     return self._json(404, {"error": "诊断案例不存在"})
                 return self._json(200, _case_detail(app, case))
+            if path.startswith("/attachments/"):
+                parts = [p for p in path.split("/") if p]
+                if len(parts) == 2:
+                    return self._attachment_status(parts[1])
+                if len(parts) == 3 and parts[2] == "content":
+                    return self._attachment_content(parts[1], auth.role)
+                return self._json(404, {"error": "未知路径"})
             return self._json(404, {"error": "未知路径"})
 
         # ---------- POST ----------
@@ -369,6 +394,12 @@ def make_handler(app: App):
             if path == "/diagnostics/import":
                 return self._diagnostics_import(auth.role)
             body = self._body()
+            if path == "/attachments":
+                return self._attachment_init(body, auth.role)
+            parts = [p for p in path.split("/") if p]
+            if (len(parts) == 3 and parts[0] == "attachments"
+                    and parts[2] == "complete"):
+                return self._attachment_complete(parts[1], auth.role)
             if path == "/tasks":
                 goal = body.get("goal", "").strip()
                 if not goal:
@@ -564,6 +595,21 @@ def make_handler(app: App):
                 return self._memory_correct(parts[1], body, auth.role)
             return self._json(404, {"error": "未知路径"})
 
+        def do_PUT(self):
+            path = urlparse(self.path).path.rstrip("/")
+            auth = self._authorize("PUT", path)
+            if auth is None:
+                return
+            parts = [p for p in path.split("/") if p]
+            if (len(parts) == 4 and parts[0] == "attachments"
+                    and parts[2] == "chunks"):
+                try:
+                    index = int(parts[3])
+                except ValueError:
+                    return self._json(400, {"error": "分块序号必须是整数"})
+                return self._attachment_chunk(parts[1], index, auth.role)
+            return self._json(404, {"error": "未知路径"})
+
         def do_DELETE(self):
             path = urlparse(self.path).path.rstrip("/")
             auth = self._authorize("DELETE", path)
@@ -703,6 +749,144 @@ def make_handler(app: App):
             return self._json(201, {"import": _import_record(record),
                                     "duplicate": False,
                                     "needs_review": needs_review})
+
+        # ---------- 诊断附件（补充 C §6）----------
+        def _attachment_status(self, attachment_id: str):
+            meta = app.db.get_attachment(attachment_id)
+            if meta is None:
+                return self._json(404, {"error": "附件不存在"})
+            chunks = app.db.list_attachment_chunks(attachment_id)
+            return self._json(200, _attachment_record(meta, chunks))
+
+        def _attachment_init(self, body: Dict[str, Any], actor: str):
+            try:
+                parsed = validate_init(body)
+            except AttachmentError as exc:
+                app.audit.record(actor, "attachment.init",
+                                 target=str(body.get("attachment_id"))[:64],
+                                 outcome="rejected",
+                                 detail={"error": str(exc)})
+                return self._json(exc.status, {"error": str(exc)})
+            existing = app.db.get_attachment(parsed.attachment_id)
+            if existing:
+                if (existing["sha256"] != parsed.sha256 or
+                        int(existing["size_bytes"]) != parsed.size_bytes or
+                        int(existing["chunk_size"]) != parsed.chunk_size):
+                    return self._json(
+                        409, {"error": "attachment_id 已被不同内容占用"})
+                chunks = app.db.list_attachment_chunks(parsed.attachment_id)
+                return self._json(
+                    200, _attachment_record(existing, chunks))
+            app.db.create_attachment(
+                parsed.attachment_id, parsed.file_name, parsed.content_type,
+                parsed.size_bytes, parsed.sha256, parsed.chunk_size,
+                parsed.chunk_count, parsed.consent, actor)
+            app.audit.record(actor, "attachment.init",
+                             target=parsed.attachment_id,
+                             detail={"file_name": parsed.file_name,
+                                     "size_bytes": parsed.size_bytes,
+                                     "sha256": parsed.sha256,
+                                     "chunk_count": parsed.chunk_count})
+            meta = app.db.get_attachment(parsed.attachment_id)
+            return self._json(201, _attachment_record(meta, []))
+
+        def _attachment_chunk(self, attachment_id: str, index: int,
+                              actor: str):
+            meta = app.db.get_attachment(attachment_id)
+            if meta is None:
+                return self._json(404, {"error": "附件不存在"})
+            if meta["status"] == "complete":
+                return self._json(409, {"error": "附件已上传完成"})
+            if not 0 <= index < int(meta["chunk_count"]):
+                return self._json(
+                    400, {"error": f"分块序号越界: {index}"})
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                return self._json(400, {"error": "非法 Content-Length"})
+            if length <= 0:
+                return self._json(400, {"error": "分块为空"})
+            if length > MAX_CHUNK_BYTES:
+                return self._json(413, {"error": "分块超过 4 MiB"})
+            data = self.rfile.read(length)
+            try:
+                validate_chunk(meta, index, data)
+            except AttachmentError as exc:
+                return self._json(exc.status, {"error": str(exc)})
+            progress = app.db.save_attachment_chunk(
+                attachment_id, index, data, digest(data))
+            meta = app.db.get_attachment(attachment_id)
+            return self._json(200, {
+                "attachment": _attachment_record(meta, []),
+                "received_bytes": progress["received_bytes"],
+                "received_chunks": progress["received_chunks"],
+                "chunk_sha256": digest(data),
+            })
+
+        def _attachment_complete(self, attachment_id: str, actor: str):
+            meta = app.db.get_attachment(attachment_id)
+            if meta is None:
+                return self._json(404, {"error": "附件不存在"})
+            chunks = app.db.list_attachment_chunks(attachment_id)
+            if meta["status"] == "complete":
+                return self._json(200, {
+                    "attachment": _attachment_record(meta, chunks),
+                    "verified": True, "duplicate": True})
+            indexes = [int(c["chunk_index"]) for c in chunks]
+            expected = list(range(int(meta["chunk_count"])))
+            if indexes != expected:
+                return self._json(409, {
+                    "error": "分块不完整",
+                    "received_chunks": indexes})
+            data = app.db.assemble_attachment(attachment_id)
+            actual = digest(data)
+            if len(data) != int(meta["size_bytes"]) or \
+                    actual != meta["sha256"]:
+                # 无法定位损坏分块，整批丢弃；客户端应重传全部得分块
+                app.db.delete_attachment_chunks(attachment_id)
+                app.db.mark_attachment(attachment_id, "uploading",
+                                       "摘要不一致")
+                app.audit.record(actor, "attachment.complete",
+                                 target=attachment_id, outcome="rejected",
+                                 detail={"expected": meta["sha256"],
+                                         "actual": actual,
+                                         "size_bytes": len(data)})
+                return self._json(422, {
+                    "error": "附件摘要不一致",
+                    "expected_sha256": meta["sha256"],
+                    "actual_sha256": actual,
+                    "size_bytes": len(data)})
+            app.db.mark_attachment(attachment_id, "complete", None,
+                                   completed_at=time.time())
+            meta = app.db.get_attachment(attachment_id)
+            app.audit.record(actor, "attachment.complete",
+                             target=attachment_id,
+                             detail={"size_bytes": len(data),
+                                     "sha256": actual})
+            return self._json(200, {
+                "attachment": _attachment_record(meta, chunks),
+                "verified": True, "duplicate": False})
+
+        def _attachment_content(self, attachment_id: str, actor: str):
+            if actor != "admin":
+                return self._json(403, {"error": "该操作需要 admin 权限"})
+            meta = app.db.get_attachment(attachment_id)
+            if meta is None:
+                return self._json(404, {"error": "附件不存在"})
+            if meta["status"] != "complete":
+                return self._json(409, {"error": "附件尚未上传完成"})
+            data = app.db.assemble_attachment(attachment_id)
+            app.audit.record(actor, "attachment.content_read",
+                             target=attachment_id,
+                             detail={"size_bytes": len(data),
+                                     "sha256": meta["sha256"]})
+            ascii_name = re.sub(
+                r"[^A-Za-z0-9._-]", "_",
+                sanitize_file_name(meta["file_name"])) or "attachment.bin"
+            return self._bytes(
+                200, data, meta["content_type"] or "application/octet-stream",
+                {"Content-Disposition": f'attachment; filename="{ascii_name}"',
+                 "X-Attachment-SHA256": meta["sha256"]})
 
         # ---------- 客户端事件同步 ----------
         def _events_sync(self, body: Dict[str, Any]):
@@ -1090,6 +1274,27 @@ def make_handler(app: App):
                                         cand.risk_level, "strict_review")})
 
     return Handler
+
+
+def _attachment_record(meta: Dict[str, Any],
+                       chunks: List[Dict[str, Any]]) -> Dict[str, Any]:
+    return {
+        "attachment_id": meta["attachment_id"],
+        "file_name": meta["file_name"],
+        "content_type": meta["content_type"],
+        "size_bytes": int(meta["size_bytes"]),
+        "sha256": meta["sha256"],
+        "chunk_size": int(meta["chunk_size"]),
+        "chunk_count": int(meta["chunk_count"]),
+        "consent": bool(meta["consent"]),
+        "status": meta["status"],
+        "received_bytes": int(meta["received_bytes"] or 0),
+        "received_chunks": [int(c["chunk_index"]) for c in chunks],
+        "created_at": meta["created_at"],
+        "updated_at": meta["updated_at"],
+        "completed_at": meta["completed_at"],
+        "last_error": meta["last_error"],
+    }
 
 
 def _import_record(record: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:

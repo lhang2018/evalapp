@@ -16,6 +16,8 @@ MAX_BATCH = 200
 MAX_PAYLOAD_BYTES = 16 * 1024
 MAX_CLOCK_SKEW_SECONDS = 7 * 24 * 3600
 EVENT_ID_RE = re.compile(r"^[A-Za-z0-9_-]{16,64}$")
+ATTACHMENT_ID_RE = re.compile(r"^[A-Za-z0-9_-]{16,64}$")
+MAX_ATTACHMENT_REFS = 8
 MANIFEST_ID_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
 SEVERITIES = {"info", "warn", "error", "critical"}
 CLOCK_SOURCES = {"device", "server"}
@@ -96,6 +98,20 @@ def _one(raw: Any, now: float) -> RunEvent:
     if clock_source not in CLOCK_SOURCES:
         raise ValueError(f"未知 clock_source: {clock_source}")
 
+    refs_raw = raw.get("attachment_refs", [])
+    if refs_raw is None:
+        refs_raw = []
+    if not isinstance(refs_raw, list):
+        raise ValueError("attachment_refs 必须是数组")
+    if len(refs_raw) > MAX_ATTACHMENT_REFS:
+        raise ValueError(f"attachment_refs 最多 {MAX_ATTACHMENT_REFS} 项")
+    refs: List[str] = []
+    for ref in refs_raw:
+        if not isinstance(ref, str) or not ATTACHMENT_ID_RE.match(ref):
+            raise ValueError("attachment_refs 含非法 ID")
+        if ref not in refs:
+            refs.append(ref)
+
     return RunEvent(
         event_id=event_id,
         event_type=event_type.strip(),
@@ -113,6 +129,7 @@ def _one(raw: Any, now: float) -> RunEvent:
         sequence_no=sequence_no,
         runtime_manifest_id=runtime_manifest_id,
         clock_source=clock_source,
+        attachment_refs=refs,
     )
 
 

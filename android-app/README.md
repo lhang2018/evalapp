@@ -35,6 +35,10 @@
   凭证只驻内存、不持久化；界面展示事件数、待审查数与重复包提示。
 - **同步回执与不可用告警**：本地保存最近 20 条服务端回执（按 `receipt_id` 去重）；
   连续 5 次同步失败，或队列积压且 30 分钟无成功同步时显示告警，成功同步后清除。
+- **诊断附件上传**（`src/offline/attachments.ts`）：显式授权后才允许上传；纯 TS SHA-256、
+  256 KiB 分块、逐块持久化进度并跳过服务端已收分块续传；块摘要不符立即失败，全文摘要由
+  服务端校验，失败后清空进度整体重传。事件通过 `attachment_refs` 引用附件。原始字节只驻留
+  内存，进程重启后需重新选择同一文件（摘要一致时复用原记录与已收分块，已完成的不重传）。
 
 ## 为什么选 React Native
 
@@ -47,7 +51,7 @@
 ## 测试（无需 node_modules）
 
 ```bash
-npm run test:offline    # node --test：离线队列/同步/任务状态/设备闸门/界面观测/更新管理器/诊断包导出与导入，共 85 项
+npm run test:offline    # node --test：离线队列/同步/任务状态/附件上传/设备闸门/界面观测/更新管理器/诊断包导出与导入，共 98 项
 npm run typecheck       # 需要先 npm install（tsc）
 ```
 
@@ -110,6 +114,10 @@ cd android
 10. 「导入诊断包」填入 admin token 后弹出系统文件选择器；选择导出的 ZIP 后提示导入事件数、
     待审查数与重复标记；再次导入同一包提示「已导入过」，服务端不重复入库；不填 token 时
     服务端返回 403，界面保留错误消息且不崩溃。
+11. 「诊断附件」点击后在系统确认框选择「授权并上传」，选择一个文件；完成后列表显示
+    「已校验」与块进度，服务端 `GET /attachments/{id}` 为 `complete` 且 SHA-256 一致；
+    杀进程后重新选择同一文件（SHA-256 与大小一致）会复用原 `attachment_id` 与既有分块
+    进度继续续传，已完成的附件直接显示「已校验」且不重复上传。
 
 ## OTA（直接推送升级）接入步骤
 
@@ -126,11 +134,11 @@ android-app/
 ├── App.tsx                    # 任务中心 UI（PRD 89.1/89.2）
 ├── index.js                   # RN 入口
 ├── src/api.ts                 # REST 客户端（对应 api/server.py）
-├── src/offline/               # 本地任务/事件队列、隐私过滤、同步引擎、诊断包导出/导入
+├── src/offline/               # 本地任务/事件队列、隐私过滤、同步引擎、诊断包导出/导入、附件上传
 ├── src/device/                # 设备操作契约、风险闸门、原生桥接
 ├── src/update/                # 安装实例、版本对账、候选阶段、双槽位更新管理
 ├── src/storage/               # AsyncStorage ↔ KeyValueStore 适配
-├── test/                      # node --test（offline 37 + device 20 + update 19）
+├── test/                      # node --test（offline 59 + device 20 + update 19）
 ├── android/                   # Kotlin 原生壳 + AccessibilityService + DeviceModule（含 SAF 导出/导入）
 └── package.json
 ```

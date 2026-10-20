@@ -43,6 +43,8 @@ export interface NewEvent {
   severity?: OfflineEvent["severity"];
   payload?: Record<string, unknown>;
   privacy_classification?: PrivacyLevel;
+  /** 诊断附件引用（补充 C §6）；最多 8 个，附件可稍后补传 */
+  attachment_refs?: string[];
   /** 通常由队列自动分配；仅导入/重建场景显式指定 */
   sequence_no?: number;
 }
@@ -145,6 +147,25 @@ function evictForCapacityInto(
   return dropped;
 }
 
+const ATTACHMENT_REF_RE = /^[A-Za-z0-9_-]{16,64}$/;
+export const MAX_ATTACHMENT_REFS = 8;
+
+/** 附件引用入队前即按服务端规则收敛：非法 ID 直接拒绝，重复项去重。 */
+function normalizeRefs(raw: string[] | undefined): string[] {
+  if (!raw || raw.length === 0) return [];
+  const out: string[] = [];
+  for (const ref of raw) {
+    if (typeof ref !== "string" || !ATTACHMENT_REF_RE.test(ref)) {
+      throw new Error("附件引用 ID 非法（16-64 位字母数字/下划线/短横线）");
+    }
+    if (!out.includes(ref)) out.push(ref);
+  }
+  if (out.length > MAX_ATTACHMENT_REFS) {
+    throw new Error(`附件引用最多 ${MAX_ATTACHMENT_REFS} 项`);
+  }
+  return out;
+}
+
 function nextSequence(
   state: OfflineState,
   runKey: string,
@@ -208,6 +229,7 @@ export function enqueueInto(
     privacy_classification: privacy,
     uploadable: isUploadable(privacy),
     retention,
+    attachment_refs: normalizeRefs(input.attachment_refs),
     sync_status: "pending",
     sequence_no: nextSequence(state, runKey, input.sequence_no),
     seq: state.next_seq,

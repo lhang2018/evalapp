@@ -7,6 +7,10 @@
  *  GET  /tasks/{id}/events → {events: RunEvent[]}
  *  POST /tasks/{id}/cancel
  *  POST /events/sync
+ *  POST /attachments                          {attachment_id, ..., consent}
+ *  PUT  /attachments/{id}/chunks/{index}      raw bytes
+ *  POST /attachments/{id}/complete
+ *  GET  /attachments/{id}
  *  POST /sync/reconcile
  *  GET  /sync/candidates
  *  POST /sync/apply-result
@@ -183,6 +187,49 @@ export interface VersionInfo {
   current: string | null;
 }
 
+/** 诊断附件的服务端元数据（补充 C §6：只含元数据与进度，正文按需读取）。 */
+export interface AttachmentInfo {
+  attachment_id: string;
+  file_name: string;
+  content_type: string;
+  size_bytes: number;
+  sha256: string;
+  chunk_size: number;
+  chunk_count: number;
+  consent: boolean;
+  status: string;
+  received_bytes: number;
+  received_chunks: number[];
+  created_at: number;
+  updated_at: number;
+  completed_at: number | null;
+  last_error: string | null;
+}
+
+export interface AttachmentInitRequest {
+  attachment_id: string;
+  file_name: string;
+  content_type: string;
+  size_bytes: number;
+  sha256: string;
+  chunk_size: number;
+  chunk_count: number;
+  consent: boolean;
+}
+
+export interface AttachmentChunkResponse {
+  attachment: AttachmentInfo;
+  received_bytes: number;
+  received_chunks: number[];
+  chunk_sha256: string;
+}
+
+export interface AttachmentCompleteResponse {
+  attachment: AttachmentInfo;
+  verified: boolean;
+  duplicate: boolean;
+}
+
 export interface DiagnosticsImportRecord {
   import_id: string;
   file_name: string;
@@ -301,6 +348,50 @@ export class EvoAgentClient {
       method: "POST",
       body: JSON.stringify(body),
     });
+  }
+
+  /** 附件初始化幂等：同 attachment_id + 同摘要返回已有进度。 */
+  initAttachment(info: AttachmentInitRequest): Promise<AttachmentInfo> {
+    return this.req<AttachmentInfo>("/attachments", {
+      method: "POST",
+      body: JSON.stringify(info),
+    });
+  }
+
+  /** 原始分块写入；服务端按 index 幂等覆盖，重传安全。 */
+  async uploadAttachmentChunk(
+    attachmentId: string,
+    index: number,
+    bytes: Uint8Array,
+  ): Promise<AttachmentChunkResponse> {
+    const resp = await fetch(
+      `${this.base}/attachments/${encodeURIComponent(attachmentId)}` +
+        `/chunks/${index}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/octet-stream" },
+        body: bytes as unknown as BodyInit,
+      },
+    );
+    const body = await resp.json();
+    if (!resp.ok) throw httpError(resp.status, body);
+    return body as AttachmentChunkResponse;
+  }
+
+  /** 完成上传：服务端拼装全文并校验 SHA-256，不一致返回 422。 */
+  completeAttachment(
+    attachmentId: string,
+  ): Promise<AttachmentCompleteResponse> {
+    return this.req<AttachmentCompleteResponse>(
+      `/attachments/${encodeURIComponent(attachmentId)}/complete`,
+      { method: "POST", body: JSON.stringify({}) },
+    );
+  }
+
+  attachmentStatus(attachmentId: string): Promise<AttachmentInfo> {
+    return this.req<AttachmentInfo>(
+      `/attachments/${encodeURIComponent(attachmentId)}`,
+    );
   }
 
   /** 版本对账（双端协同 §5.2）：服务端返回目标版本与兼容性检查明细。 */
@@ -435,6 +526,16 @@ export class EvoAgentClient {
   version() {
     return this.req<VersionInfo>("/version");
   }
+}
+
+function httpError(status: number, body: unknown): Error {
+  const message = String(
+    (body as { error?: unknown })?.error ?? `HTTP ${status}`,
+  );
+  const error = new Error(message) as Error & { status: number; body: unknown };
+  error.status = status;
+  error.body = body;
+  return error;
 }
 
 export function api(baseUrl: string) {

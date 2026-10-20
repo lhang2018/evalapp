@@ -171,6 +171,18 @@ class Database:
                 PRIMARY KEY(import_id, event_id))""")
             c.execute("""CREATE INDEX IF NOT EXISTS idx_import_events_task
                 ON diagnostics_import_events(task_id)""")
+            # 诊断附件（补充 C §6）：独立上传任务，数据库只存引用/摘要/分块
+            c.execute("""CREATE TABLE IF NOT EXISTS attachments(
+                attachment_id TEXT PRIMARY KEY, file_name TEXT,
+                content_type TEXT, size_bytes INTEGER, sha256 TEXT,
+                chunk_size INTEGER, chunk_count INTEGER, consent INTEGER,
+                status TEXT, received_bytes INTEGER DEFAULT 0, actor TEXT,
+                created_at REAL, updated_at REAL, completed_at REAL,
+                last_error TEXT)""")
+            c.execute("""CREATE TABLE IF NOT EXISTS attachment_chunks(
+                attachment_id TEXT, chunk_index INTEGER, size_bytes INTEGER,
+                sha256 TEXT, data BLOB, created_at REAL,
+                PRIMARY KEY(attachment_id, chunk_index))""")
             c.commit()
 
     # ---- tasks ----
@@ -520,6 +532,88 @@ class Database:
                 item["payload"] = {}
             out.append(item)
         return out
+
+    # ---- attachments（补充 C §6）----
+    def get_attachment(self,
+                       attachment_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT * FROM attachments WHERE attachment_id=?",
+            (attachment_id,)).fetchone()
+        return dict(row) if row else None
+
+    def create_attachment(self, attachment_id: str, file_name: str,
+                          content_type: str, size_bytes: int, sha256: str,
+                          chunk_size: int, chunk_count: int, consent: bool,
+                          actor: str) -> bool:
+        now = time.time()
+        with self._lock:
+            cur = self._conn.execute(
+                "INSERT OR IGNORE INTO attachments VALUES"
+                " (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (attachment_id, file_name, content_type, size_bytes, sha256,
+                 chunk_size, chunk_count, 1 if consent else 0, "uploading", 0,
+                 actor, now, now, None, None))
+            self._conn.commit()
+            return cur.rowcount > 0
+
+    def save_attachment_chunk(self, attachment_id: str, index: int,
+                              data: bytes, sha256: str) -> Dict[str, Any]:
+        """写入/覆盖一个分块；返回最新接收字节与分块进度。"""
+        now = time.time()
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO attachment_chunks VALUES"
+                " (?,?,?,?,?,?)",
+                (attachment_id, index, len(data), sha256, data, now))
+            total = self._conn.execute(
+                "SELECT COALESCE(SUM(size_bytes), 0) FROM attachment_chunks"
+                " WHERE attachment_id=?", (attachment_id,)).fetchone()[0]
+            self._conn.execute(
+                "UPDATE attachments SET received_bytes=?, updated_at=?"
+                " WHERE attachment_id=?", (int(total), now, attachment_id))
+            self._conn.commit()
+            rows = self._conn.execute(
+                "SELECT chunk_index FROM attachment_chunks"
+                " WHERE attachment_id=? ORDER BY chunk_index",
+                (attachment_id,)).fetchall()
+        return {"received_bytes": int(total),
+                "received_chunks": [int(r[0]) for r in rows]}
+
+    def list_attachment_chunks(self,
+                               attachment_id: str) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT chunk_index, size_bytes FROM attachment_chunks"
+            " WHERE attachment_id=? ORDER BY chunk_index",
+            (attachment_id,)).fetchall()
+        return [dict(r) for r in rows]
+
+    def delete_attachment_chunks(self, attachment_id: str) -> int:
+        """摘要校验失败后丢弃已收分块，客户端必须整体重传。"""
+        with self._lock:
+            cur = self._conn.execute(
+                "DELETE FROM attachment_chunks WHERE attachment_id=?",
+                (attachment_id,))
+            self._conn.execute(
+                "UPDATE attachments SET received_bytes=0, updated_at=?"
+                " WHERE attachment_id=?", (time.time(), attachment_id))
+            self._conn.commit()
+            return int(cur.rowcount)
+
+    def assemble_attachment(self, attachment_id: str) -> bytes:
+        rows = self._conn.execute(
+            "SELECT data FROM attachment_chunks WHERE attachment_id=?"
+            " ORDER BY chunk_index", (attachment_id,)).fetchall()
+        return b"".join(bytes(r[0]) for r in rows)
+
+    def mark_attachment(self, attachment_id: str, status: str,
+                        error: Optional[str] = None,
+                        completed_at: Optional[float] = None) -> None:
+        with self._lock:
+            self._conn.execute(
+                "UPDATE attachments SET status=?, last_error=?,"
+                " completed_at=?, updated_at=? WHERE attachment_id=?",
+                (status, error, completed_at, time.time(), attachment_id))
+            self._conn.commit()
 
     # ---- diagnostics（PRD 41-45）----
     def save_diagnostic_case(self, case: Any) -> None:

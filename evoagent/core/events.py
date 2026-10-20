@@ -33,6 +33,8 @@ class RunEvent:
     sequence_no: Optional[int] = None
     # 产生事件时的不可变运行版本清单引用
     runtime_manifest_id: Optional[str] = None
+    # 诊断附件引用（补充 C §6）；附件可先于事件完成或稍后补传
+    attachment_refs: List[str] = field(default_factory=list)
 
     def json_payload(self) -> str:
         return json.dumps(self.payload, ensure_ascii=False, default=str)
@@ -50,6 +52,7 @@ class RunEvent:
             "sequence_no": self.sequence_no,
             "runtime_manifest_id": self.runtime_manifest_id,
             "clock_source": self.clock_source,
+            "attachment_refs": self.attachment_refs,
         }
 
 
@@ -62,13 +65,14 @@ _EXTRA_COLUMNS = {
     "sequence_no": "INTEGER",
     "runtime_manifest_id": "TEXT",
     "clock_source": "TEXT DEFAULT 'server'",
+    "attachment_refs": "TEXT",
 }
 
 _EVENT_COLUMNS = (
     "event_id, task_id, run_id, severity, event_type, component_id, timestamp,"
     " payload, component_version, correlation_id, causation_id,"
     " privacy_classification, sync_status, sequence_no, runtime_manifest_id,"
-    " clock_source")
+    " clock_source, attachment_refs")
 
 
 def _row_to_event(row) -> RunEvent:
@@ -85,6 +89,11 @@ def _row_to_event(row) -> RunEvent:
         evt.payload = json.loads(row[7])
     except Exception:
         pass
+    try:
+        refs = json.loads(row[16]) if row[16] else []
+        evt.attachment_refs = [str(r) for r in refs if isinstance(r, str)]
+    except Exception:
+        evt.attachment_refs = []
     return evt
 
 
@@ -122,14 +131,14 @@ class EventBus:
         with self._lock:
             cur = self._conn.execute(
                 f"INSERT {mode} INTO runtime_events ({_EVENT_COLUMNS})"
-                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (evt.event_id, evt.task_id, evt.run_id, evt.severity,
                  evt.event_type, evt.component_id, evt.timestamp,
                  evt.json_payload(), evt.component_version,
                  evt.correlation_id, evt.causation_id,
                  evt.privacy_classification, evt.sync_status,
                  evt.sequence_no, evt.runtime_manifest_id,
-                 evt.clock_source))
+                 evt.clock_source, json.dumps(evt.attachment_refs)))
             self._conn.commit()
             return cur.rowcount > 0
 

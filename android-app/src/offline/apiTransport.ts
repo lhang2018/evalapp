@@ -87,6 +87,8 @@ export class ClientTransport implements EventSyncTransport, TaskTransport {
         privacy_classification: event.privacy_classification,
         // 时间来源随事件留痕（设计字段表要求创建时间带时钟来源）
         clock_source: event.clock_source,
+        // 附件可先于事件完成或稍后补传；这里只传引用
+        attachment_refs: event.attachment_refs,
       })),
       {
         // 批次号由队列持久化并在重试间保持不变；event_id 才是权威去重键

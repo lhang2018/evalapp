@@ -439,6 +439,7 @@ function eventRecord(
     retention: event.retention,
     payload: prepared.payload,
     payload_redacted: prepared.redacted,
+    attachment_refs: event.attachment_refs,
     last_error: event.last_error ?? null,
   };
 }
