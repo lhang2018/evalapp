@@ -63,6 +63,12 @@ class EvolutionCandidate:
     quality_result: Optional[Dict[str, Any]] = None
     holdout_result: Optional[Dict[str, Any]] = None
     safety_result: Optional[Dict[str, Any]] = None
+    # PRD 50：十维收益评价（evaluate_benefit 产出）
+    benefit_result: Optional[Dict[str, Any]] = None
+    # PRD 82：发布后监测结论
+    monitor_result: Optional[Dict[str, Any]] = None
+    deployed_at: Optional[float] = None
+    target_domain: str = ""
     cost_delta: Optional[float] = None
     latency_delta: Optional[float] = None
     risk_level: str = "L2"           # PRD 80 风险分级
@@ -100,13 +106,5 @@ class EvolutionCandidate:
                       if k in cls.__dataclass_fields__})
 
     def benefit_report(self) -> Dict[str, Any]:
-        """收益评价（PRD 50）：不只以成功率衡量。"""
-        q = self.quality_result or {}
-        return {
-            "quality": q.get("success_rate"),
-            "stability": q.get("regression_ok"),
-            "cost_delta": self.cost_delta,
-            "latency_delta": self.latency_delta,
-            "safety": self.risk_level,
-            "long_term": "需持续观察发布后监测（PRD 82）",
-        }
+        """收益评价（PRD 50）：十维向量由 evaluate_benefit 产出。"""
+        return self.benefit_result or {"status": "not_evaluated"}

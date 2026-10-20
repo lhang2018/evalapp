@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 149 项 + 客户端 29 项全部通过**。
+测试基线（2026-10-20）：**Python 170 项 + 客户端 29 项全部通过**。
 
 ---
 
@@ -162,15 +162,16 @@ Python 服务端（标准库，SQLite）
 |---|---|---|---|---|
 | EV-01 | 候选生命周期状态机 | ✅ | `evolution/candidates.py`, `evolution/controller.py` | 与 Arch 10.4 一致 |
 | EV-02 | 候选提案/升级 | ✅ | `evolution/controller.py` | API/CLI 全通 |
-| EV-03 | 十维收益（当前质量/成本/时延） | ✅ | `evolution/candidates.py` | 其余维度占位 🔹 |
+| EV-03 | 十维收益评价 | ✅ | `evolution/benefit.py` | 质量（难度加权）/成功率/稳定性/恢复/成本/时延/安全/维护复杂度/跨领域/长期；缺证据标 `insufficient_evidence` |
 | EV-04 | 评测集元数据/版本/适用范围 | ✅ | `evolution/datasets.py` | |
 | EV-05 | 独立保留集 | ✅ | `evolution/datasets.py`, `evolution/controller.py` | 只用于门禁决策 |
 | EV-06 | 基线与候选对照 | ✅ | `evolution/controller.py`, `evolution/evaluator.py` | 基线数据/版本不等价直接拒绝 |
 | EV-07 | 确定性安全套件 | ✅ | `evolution/safety.py` | 风险拒绝/确认权威/硬预算/隐私四类检查 |
-| EV-08 | 发布门禁 ReleaseGate | ✅ | `evolution/evaluator.py` | 硬难度回归、约束违规、工具失败率、恢复成功率、安全 fail-closed |
+| EV-08 | 发布门禁 ReleaseGate | ✅ | `evolution/evaluator.py` | 硬难度回归、约束违规、工具失败率、恢复成功率、跨领域回归、安全 fail-closed |
 | EV-09 | 评测报告持久化 | ✅ | `core/persistence.py` | `eval_reports` 含元数据 |
 | EV-10 | 候选实验预算 | ✅ | `evolution/controller.py`, `evolution/runner.py` | 双记账 `candidate:<id>` + `evolution`；耗尽记失败不中断批次 |
 | EV-11 | 候选代码隔离沙箱 | ⬜ | — | PRD 47.4 / L3 |
+| EV-12 | 发布后监测采集与判定 | ✅ | `evolution/monitor.py`, `evolution/controller.py` | 时间窗采样、上窗对比、评估任务剔除、安全事件即时回滚、warning hold、`auto_rollback` 可关 |
 
 ### 2.11 发布管理（PRD 59-63 / 80-82）
 
@@ -181,7 +182,7 @@ Python 服务端（标准库，SQLite）
 | RL-03 | 灰度接口 | ✅ | `release/manager.py` | |
 | RL-04 | 回滚 | ✅ | `release/manager.py`, `api/server.py`, `cli.py` | `POST /releases/rollback` |
 | RL-05 | L0-L4 风险分级发布规则 | ✅ | `evolution/controller.py` | 核心安全边界改动禁止普通发布 |
-| RL-06 | 发布后监测接指标源 | 🔹 | `release/manager.py` | 接口已留 |
+| RL-06 | 发布后监测接指标源 | ✅ | `evolution/monitor.py`, `evolution/controller.py` | 运行时任务/事件自动采集；候选 `MONITORING` → `PROMOTED`/`ROLLED_BACK` |
 | RL-07 | 自动分支/合并 | ⬜ | — | 当前仅 git 基线（main） |
 
 ### 2.12 预算与成本（PRD 55-58 / Arch 12）
@@ -264,7 +265,7 @@ Python 服务端（标准库，SQLite）
 | `/evolution/candidates/{id}/evaluate` | 评测 |
 | `/evolution/candidates/{id}/approve` | 批准 |
 | `/evolution/candidates/{id}/deploy` | 发布 |
-| `/evolution/candidates/{id}/monitor` | 监测 |
+| `/evolution/candidates/{id}/monitor` | 监测（无指标时自动采集；无数据源返回 `409`） |
 | `/evolution/candidates/{id}/rollback` | 回滚 |
 | `/releases/rollback` | 发布回滚 |
 | `/diagnostics/scan` | 扫描失败任务生成案例 |
@@ -426,7 +427,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，149 项）
+### Python（`tests/`，170 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -443,6 +444,7 @@ Python 服务端（标准库，SQLite）
 | `test_workflow.py` | DAG 引擎 |
 | `test_diagnostics.py` | 案例/假设/探针/升级 |
 | `test_evolution.py` | 候选生命周期、评测、门禁 |
+| `test_evolution_benefit.py` | 十维收益、跨领域回归、发布后监测采集/判定/回滚（21 项） |
 | `test_governance.py` | 上下文治理、评测完整性、fail-closed 门禁（12 项） |
 | `test_event_sync.py` | 事件同步、旧库迁移、幂等提交（8 项） |
 | `test_control_plane.py` | 鉴权、审计、指标、管理页 |
@@ -480,8 +482,6 @@ cd android-app && npm run test:offline
 | 端到端加密、多设备冲突合并 | PRD 72-76/86 | ⬜ | |
 | Web 管理端完整界面 | PRD 90 | ⬜ | `GET /admin` 只读页与数据接口已备 |
 | 发布自动分支/合并 | PRD 59-63 | ⬜ | 仅 git 基线 |
-| 十维收益中其余维度 | PRD 50 | 🔹 | 质量/成本/时延已可用 |
-| 发布后监测接指标源 | PRD 80-82 | 🔹 | 接口已留 |
 | 日志分层细化 | PRD 37-40 | 🔹 | 统一事件模型 |
 | 任务模型全字段 | PRD 7.3 | 🔹 | 核心子集已实现 |
 | 意图级指标 | PRD 37-40 | 🔹 | 现有任务/领域/模型维度 |
@@ -492,7 +492,7 @@ cd android-app && npm run test:offline
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 149 passed
+python -m pytest tests/ -q                       # 170 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -560,8 +560,20 @@ cd android-app && npm run android
 | Session 6 | 真机/模拟器实测、真实模型联调、无障碍实测修复 | 123 + 29 |
 | Session 7 | 上下文治理 + 评测完整性（保留集/安全套件/fail-closed 门禁） | 135 + 29 |
 | Session 8 | 九级预算 + 成本报告 | 149 + 29 |
+| Session 9 | 全量功能记录文档（`FEATURES.md`） | 149 + 29 |
+| Session 10 | 十维收益 + 发布后监测与自动回滚判定 | 170 + 29 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
+
+### 2026-10-20 — 十维收益评价 + 发布后监测
+
+- 需求：PRD 50 / 82；Arch 11.5 / 12.3。
+- 变更：新增十维收益向量与跨领域回归判定；新增发布后监测（时间窗采样、上窗对比、自动回滚）并接入候选生命周期。
+- 代码：`evolution/benefit.py`（`evaluate_benefit`）、`evolution/monitor.py`（`MonitorPolicy`、`collect_metrics`、`PostReleaseMonitor`）、`evolution/evaluator.py`（门禁跨领域检查）、`evolution/controller.py`（`run_evaluation` / `monitor`）、`core/controller.py`（任务 `source` 标记）、`evolution/runner.py`、`api/server.py`、`cli.py`。
+- 接口/配置：`monitor` 无指标时自动采集；`MonitorPolicy` 阈值可覆盖；候选新增 `benefit_result` / `monitor_result` / `deployed_at` / `target_domain`。
+- 测试：`tests/test_evolution_benefit.py`（21 项），Python 总数 149 → 170，客户端保持 29。
+- 状态变化：EV-03、EV-08、RL-06 🔹 → ✅；新增 EV-12 ✅。
+- 已知限制：长期收益需 ≥20 条发布后样本；稳定性为失败证据代理；跨领域需至少两个领域数据。
 
 ### 2026-10-20 — 建立全量功能记录
 

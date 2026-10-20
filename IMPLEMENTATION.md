@@ -19,19 +19,19 @@
 | PRD 34-36 检查点/恢复/取消 | `core/checkpoint.py`, `core/controller.py` | ✅ | 恢复先验证副作用状态（35），未知副作用需显式 force；暂停/恢复共享累计预算；FAILED 恢复生成带 `parent_task_id` 的新任务；取消阻止后续动作 |
 | PRD 37-40 运行日志/可观测 | `core/events.py`, `core/metrics.py`, `api/server.py` | ✅ | 事件模型字段与 Arch 9.1 对齐；旧库自动补列；客户端事件批量幂等摄取（`POST /events/sync`）；`GET /metrics`（JSON + Prometheus）、`GET /audit`、`GET /admin`；进化/发布变更写审计。日志分层待细化 🔹 |
 | PRD 41-45 诊断/故障分类 | `evolution/diagnostics.py`, `evolution/probes.py` | ✅ | 失败自动沉淀持久化案例；规则从证据生成 A/B/C/D 多假设（支持/反对证据+不确定性）；6 个固定探针有界无外网，支持 `error/timeout/fail` 故障注入；趋势聚合（按状态/意图/类别/组件）；假设显式升级候选。LLM 辅助假设生成待迭代 🔹 |
-| PRD 46-50 自进化引擎 | `evolution/` | ✅ | 候选生命周期状态机与 Arch 10.4 完全一致；收益十维（50）中质量/成本/时延可用 |
+| PRD 46-50 自进化引擎 | `evolution/` | ✅ | 候选生命周期状态机与 Arch 10.4 完全一致；十维收益向量（50）：质量（难度加权）/成功率/稳定性代理/恢复/成本/时延/安全/维护复杂度/跨领域/长期，缺证据标 `insufficient_evidence` |
 | PRD 51-54 评测体系/门禁 | `evolution/evaluator.py`, `evolution/safety.py` | ✅ | 五层架构中第 3/4 层实现；数据集元数据/版本/适用范围与独立保留集（PRD 52）；基线数据集/版本不等价直接拒绝；安全证据由确定性套件产出，缺失时门禁 fail-closed（Arch 11.5）；覆盖硬难度回归、约束违规、工具失败率、恢复成功率、成本/时延 |
 | PRD 55-58 成本控制 | `core/budget.py` | ✅ | 九级硬预算：单任务（模型/工具/成本/时长/并发）、单次模型调用成本、单工具（次数/成本，可覆盖）、工作流作用域、候选实验、进化日/月池、模型提供方池、领域专家池；规划与 ReAct 共用同一预算并逐次计量，超限 FAILED；成本报告按任务/领域/模型/版本/候选实验（成本增量、质量增益、失败浪费），经 `GET /costs` 与 `cli costs` 暴露 |
 | PRD 59-63 Git/版本/发布 | `release/manager.py`; git 基线 | ✅ | 清单、签名、验证、灰度接口、回滚；已建立 git 基线（main），自动分支/合并操作 ⬜ |
 | PRD 64-71 Android | `android-app/` + `android/` | ✅/🔹 | RN 壳 + REST；无障碍节点操作（按文本点击、显式 Intent）经 AccessibilityService + DeviceModule，五态结果与风险闸门；视觉/OCR/语音操作待迭代 ⬜ |
 | PRD 72-76 离线与双端 | `android-app/src/offline/`; `api/events_sync.py` | ✅ | 本地任务/事件队列（容量、去重、连续 checkpoint、死信）、隐私过滤、指数退避、断点续传；事件与任务两端幂等；`SUBMITTING` 崩溃恢复需用户对账 |
 | PRD 77-79 能力包/AI 漫剧 | `workflows/builtin.py` | ✅ | 漫剧 DAG 示例 + 服务适配器可替换（78.4） |
-| PRD 80-82 风险分级与发布 | `evolution/controller.py` | ✅ | L0-L4 规则表（81）；发布后监测待接指标源 🔹 |
+| PRD 80-82 风险分级与发布 | `evolution/controller.py`, `evolution/monitor.py` | ✅ | L0-L4 规则表（81）；发布后监测（82）：时间窗采样、上窗对比、评估任务剔除、安全事件即时回滚、warning hold、`auto_rollback` 可关闭 |
 | PRD 83-88 权限/安全/隐私 | `core/permissions.py` | ✅ | 最小权限、高风险确认、外部内容信任边界原则落实在工具层 |
 | PRD 89-90 界面 | `api/server.py` + `android-app/App.tsx` | 🔹 | 客户端任务中心：在线状态/同步统计/本地任务/死信/设备操作面板/只读系统状态（任务指标、预算、发布、进化候选）；管理端（90.1-90.7）⬜ |
 | PRD 91 数据实体 | `core/persistence.py`, `memory/store.py` | ✅ | 逻辑实体的核心子集 |
 | PRD 92-99 非功能需求 | 各模块内 | ✅/🔹 | 稳定性→检查点；性能/成本计量在列 |
-| PRD 106-113 验收标准 | `tests/`, `android-app/test/` | ✅ | Python 149 项：任务执行/预算/安全/回滚/验收/诊断闭环与趋势/规划与意图分类/事件同步幂等/计划与预算接线/暂停恢复/鉴权与审计/指标/工具超时重试幂等/工作流并行跳过续跑/上下文治理与质量检查/评测完整性与 fail-closed 门禁/九级预算与成本报告/路由评分/资产库；客户端 29 项：离线队列/同步/任务状态/设备闸门 |
+| PRD 106-113 验收标准 | `tests/`, `android-app/test/` | ✅ | Python 170 项：任务执行/预算/安全/回滚/验收/诊断闭环与趋势/规划与意图分类/事件同步幂等/计划与预算接线/暂停恢复/鉴权与审计/指标/工具超时重试幂等/工作流并行跳过续跑/上下文治理与质量检查/评测完整性与 fail-closed 门禁/九级预算与成本报告/十维收益与发布后监测/路由评分/资产库；客户端 29 项：离线队列/同步/任务状态/设备闸门 |
 | PRD 115 实施顺序 | Phase 1-2 全部 | ✅ | 阶段三（进化闭环）部分完成 |
 
 ## 服务重启恢复记录

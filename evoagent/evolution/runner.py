@@ -36,7 +36,7 @@ class ControllerTaskRunner(TaskRunner):
         try:
             task = self.controller.submit_task(
                 case.input_goal, intent=case.intent, domain=case.domain,
-                acceptance=acceptance, wait=True)
+                acceptance=acceptance, wait=True, source="evaluation")
         except Exception as e:  # noqa: BLE001 —— 评测失败不能中断整批
             return False, time.time() - started, {
                 "error": f"{type(e).__name__}: {e}", "cost": 0.0}

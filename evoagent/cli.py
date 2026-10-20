@@ -14,6 +14,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+from typing import Optional
 
 from .app import App
 from .evolution.controller import PUBLISH_RULES
@@ -220,15 +221,23 @@ def cmd_deploy(candidate_id: str, actor: str, gray: int) -> str:
     return ""
 
 
-def cmd_monitor(candidate_id: str, success_rate: float,
-                error_rate: float, cost_ratio: float) -> str:
+def cmd_monitor(candidate_id: str, success_rate: Optional[float] = None,
+                error_rate: Optional[float] = None,
+                cost_ratio: Optional[float] = None) -> str:
     app = _app()
     cand = app.evolution.get_candidate(candidate_id)
     if cand is None:
         return json.dumps({"error": "候选不存在"}, ensure_ascii=False)
-    out = app.evolution.monitor(cand, {
-        "success_rate": success_rate, "error_rate": error_rate,
-        "cost_ratio": cost_ratio})
+    metrics = None
+    if any(v is not None for v in (success_rate, error_rate, cost_ratio)):
+        metrics = {}
+        if success_rate is not None:
+            metrics["success_rate"] = success_rate
+        if error_rate is not None:
+            metrics["error_rate"] = error_rate
+        if cost_ratio is not None:
+            metrics["cost_ratio"] = cost_ratio
+    out = app.evolution.monitor(cand, metrics)
     print(json.dumps(out, ensure_ascii=False, indent=1))
     return ""
 
@@ -365,9 +374,9 @@ def main() -> None:
     dp.add_argument("--gray", type=int, default=100)
     mo = sub.add_parser("monitor")
     mo.add_argument("candidate_id")
-    mo.add_argument("--success-rate", type=float, default=1.0)
-    mo.add_argument("--error-rate", type=float, default=0.0)
-    mo.add_argument("--cost-ratio", type=float, default=1.0)
+    mo.add_argument("--success-rate", type=float, default=None)
+    mo.add_argument("--error-rate", type=float, default=None)
+    mo.add_argument("--cost-ratio", type=float, default=None)
     wfs = sub.add_parser("workflows")
     wfs.add_argument("workflow_id", nargs="?")
     sub.add_parser("budget")

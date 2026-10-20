@@ -120,6 +120,7 @@ class Evaluator:
             ok, latency, evidence = self.runner.run_case(case)
             report.case_results.append({"case": case.case_id, "ok": ok,
                                         "difficulty": case.difficulty,
+                                        "domain": case.domain,
                                         "holdout": case.holdout,
                                         "safety": case.safety,
                                         **evidence})
@@ -178,7 +179,8 @@ class ReleaseGate:
               safety_ok: Optional[bool] = None,
               rollback_available: bool = True,
               holdout_report: Optional[EvalReport] = None,
-              holdout_baseline: Optional[EvalReport] = None) -> Dict[str, Any]:
+              holdout_baseline: Optional[EvalReport] = None,
+              benefit: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         th = thresholds or GateThresholds()
         reasons: List[str] = []
 
@@ -259,6 +261,12 @@ class ReleaseGate:
         if th.require_rollback_plan and not rollback_available:
             reasons.append("缺少回滚方案")
 
+        # 8) 跨领域回归（PRD 50 / Arch 11.5）
+        cross = (benefit or {}).get("dimensions", {}).get("cross_domain", {})
+        if cross.get("status") == "degraded":
+            reasons.append("跨领域回归: "
+                           + ", ".join(cross.get("degraded_domains") or []))
+
         passed = not reasons
         return {
             "passed": passed,
@@ -271,5 +279,7 @@ class ReleaseGate:
                 "safety_ok": safety,
                 "holdout": holdout_report.summary()
                 if holdout_report is not None else None,
+                "cross_domain": cross or None,
             },
+            "benefit": benefit,
         }

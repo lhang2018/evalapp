@@ -41,7 +41,7 @@ class TestCandidateLifecycle(unittest.TestCase):
         c.transition(CandidateStatus.MONITORING, "r9")
         c.transition(CandidateStatus.PROMOTED, "r10")
         self.assertEqual(len(c.transition_log), 10)
-        self.assertEqual(c.benefit_report()["long_term"], c.benefit_report()["long_term"])
+        self.assertEqual(c.benefit_report(), {"status": "not_evaluated"})
 
     def test_illegal_transition_rejected(self):
         c = self._cand()

@@ -78,12 +78,15 @@ class RuntimeController:
                     acceptance: Optional[List[Dict[str, Any]]] = None,
                     risk_level: RiskLevel = RiskLevel.LOW,
                     budget_overrides: Optional[Dict[str, Any]] = None,
-                    wait: bool = True) -> Task:
+                    wait: bool = True,
+                    source: str = "user") -> Task:
         task = Task(user_goal=goal,
                     constraints=list(constraints or []),
                     acceptance_criteria=list(acceptance or []),
                     risk_level=risk_level,
                     budget_policy=dict(budget_overrides or {}))
+        # 评测任务与真实运行分离：发布后监测不得把评测样本计入（PRD 82）
+        task.runtime_manifest["source"] = source
         self._emit(task, "task_created", {"goal": goal})
         if wait:
             self.execute(task, intent_hint=intent, domain_hint=domain)

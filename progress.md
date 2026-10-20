@@ -359,3 +359,54 @@
 - `FEATURES.md` 是功能状态的单一入口；功能表 ID 不复用，已完成功能必须能定位到代码与测试
 - 仅在有自动化测试或端到端实测时标记 ✅；接口就位但未验证标 🔹
 - 后续开发完成后同步更新功能表、接口/配置/数据/测试章节，并追加变更记录
+
+## Session 10 (2026-10-20)
+
+### 背景
+- 用户要求：提交后继续按 PRD 梳理差距，按架构文档继续开发；架构缺细节则补设计再实现。
+- 本轮选择 PRD 50（十维收益）+ PRD 82 / Arch 11.5 / 12.3（发布后监测与自动回滚）：
+  此前收益只覆盖质量/成本/时延，发布后监测仅有接口占位。
+
+### 完成事项
+- [x] 新增 `evolution/benefit.py`（`evaluate_benefit`）
+  - 十维：质量（难度加权 1/1.5/2）、成功率、稳定性（失败证据代理）、恢复、成本、时延、
+    安全、维护复杂度（按变更范围映射）、跨领域、长期收益
+  - 每维输出 `value`/`status`/`evidence`；缺证据标 `insufficient_evidence`，不做虚假通过
+  - 跨领域回归：非目标领域成功率相对基线下降 > 0.10 判 `degraded`
+  - 长期收益需 ≥20 条发布后监测样本
+- [x] 新增 `evolution/monitor.py`
+  - `collect_metrics`：时间窗内运行时任务聚合（成功/失败/取消、成本、时延、工具失败、
+    约束违规、跨领域、安全事件），剔除 `runtime_manifest.source == "evaluation"` 的评测任务
+  - `MonitorPolicy`：窗口/最小样本/成功率/错误率/取消率/成本比/时延比/工具失败率/
+    约束违规/跨领域跌幅/警告余量/`auto_rollback`，支持覆盖与 legacy 指标别名
+  - `PostReleaseMonitor`：当前窗 + 上一等长窗对比，产出
+    `insufficient_data | hold | promote | rollback | rollback_recommended`
+  - 安全事件（critical 且类型含 safety/security/permission/privacy）即使无样本也立即回滚
+- [x] 接入
+  - `evaluator.py`：门禁消费收益结果，跨领域 `degraded` 直接拒绝
+  - `candidates.py`：新增 `benefit_result` / `monitor_result` / `deployed_at` / `target_domain`
+  - `controller.py`：`run_evaluation` 记录收益并传给门禁；`monitor` 无指标时自动采集，
+    promote/rollback 驱动候选状态并写事件
+  - `core/controller.py` + `evolution/runner.py`：任务标记 `source`，评测任务可被监测排除
+  - API `POST /evolution/candidates/{id}/monitor` 支持自动采集，无数据源返回 409
+  - CLI `monitor` 指标参数改为可选
+- [x] 新增 `tests/test_evolution_benefit.py`（21 项）
+- [x] 文档同步：README / IMPLEMENTATION / FEATURES / task_plan（Phase 28）
+
+### 测试结果
+- `python -m pytest tests/ -q` → 170 passed
+- `cd android-app && npm run test:offline` → 29 passed
+- `python -m evoagent.cli demo` / `workflow` → 通过
+
+### 本轮修复的缺陷
+- 测试辅助 `to_monitoring` 从 `TRIAGED` 重放，与 `propose_candidate` 已到达的
+  `CANDIDATE_CREATED` 冲突 → 改为从 `TESTING` 开始
+- warning-hold 用例 4 成功 + 1 失败使错误率 0.20 越过 0.15 阈值，触发回滚而非 hold →
+  改用手工指标（成功率 0.90、错误率 0.05、成本比 1.35）
+- `test_evolution.py` 仍断言 `benefit_report()["long_term"]` → 改为断言未评测状态
+
+### 设计约束（本轮确立）
+- 收益维度缺证据只能标 `insufficient_evidence`，不能当作通过；安全失败一票否决
+- 发布后监测只统计真实用户任务，评测任务必须排除，避免自我验证
+- 安全事件优先于样本量门槛：即使样本不足也立即回滚
+- 自动回滚可配置关闭，但关闭后仍输出 `rollback_recommended` 供人工决策

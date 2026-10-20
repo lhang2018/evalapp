@@ -13,10 +13,12 @@ from typing import Any, Callable, Dict, List, Optional
 from ..core.budget import BudgetController, BudgetExceeded, BudgetLimits
 from ..core.events import EventBus
 from ..tools.registry import ToolRegistry
+from .benefit import evaluate_benefit
 from .candidates import (ALLOWED, CandidateStatus, EvolutionCandidate,
                          IllegalCandidateTransition)
 from .evaluator import (EvalDataset, Evaluator, EvalReport, GateThresholds,
                         ReleaseGate)
+from .monitor import MonitorPolicy, PostReleaseMonitor
 from .safety import SafetySuite
 
 # PRD 80 风险分级 L0-L4
@@ -150,7 +152,8 @@ class EvolutionController:
     def propose_candidate(self, baseline_version: str, target_component: str,
                           target_problem: str, hypothesis: str,
                           change_scope: str = "local",
-                          evidence: Optional[List[str]] = None) -> EvolutionCandidate:
+                          evidence: Optional[List[str]] = None,
+                          target_domain: str = "") -> EvolutionCandidate:
         cand = EvolutionCandidate(
             candidate_id=self._next_candidate_id(),
             baseline_version=baseline_version,
@@ -159,6 +162,7 @@ class EvolutionController:
             hypothesis=hypothesis,
             change_scope=change_scope,
             root_cause_evidence=list(evidence or []),
+            target_domain=target_domain,
             # PRD 50：候选必须有明确回滚版本
             rollback_version=baseline_version,
         )
@@ -292,6 +296,12 @@ class EvolutionController:
                         if baseline_report is not None else 0.0)
         cand.cost_delta = report.cost - base_cost
         cand.latency_delta = report.avg_latency - base_latency
+        benefit = evaluate_benefit(
+            baseline_report, report,
+            change_scope=cand.change_scope, risk_level=cand.risk_level,
+            safety=safety, monitor=cand.monitor_result,
+            target_domain=cand.target_domain)
+        cand.benefit_result = benefit
         if self.store is not None:
             self.store.save_eval_report(
                 f"eval_{cand.candidate_id}_{int(time.time())}",
@@ -301,6 +311,7 @@ class EvolutionController:
                  "holdout": holdout_report.summary()
                  if holdout_report is not None else None,
                  "safety": safety,
+                 "benefit": benefit,
                  "experiment_budget": experiment_budget})
         if baseline_report is not None:
             gate = self.gate.judge(
@@ -309,7 +320,8 @@ class EvolutionController:
                 safety_ok=safety["passed"],
                 rollback_available=bool(cand.rollback_version),
                 holdout_report=holdout_report,
-                holdout_baseline=holdout_baseline)
+                holdout_baseline=holdout_baseline,
+                benefit=benefit)
             if budget_problem:
                 gate["passed"] = False
                 gate["reasons"] = list(gate.get("reasons") or []) + [
@@ -333,10 +345,11 @@ class EvolutionController:
             return {**gate, "report": report.summary(),
                     "holdout": holdout_report.summary()
                     if holdout_report is not None else None,
-                    "safety": safety,
+                    "safety": safety, "benefit": benefit,
                     "experiment_budget": experiment_budget}
         self._persist(cand)
         return {"passed": None, "report": report.summary(), "safety": safety,
+                "benefit": benefit,
                 "experiment_budget": experiment_budget}
 
     def approve(self, cand: EvolutionCandidate, approver: str = "auto") -> Dict[str, Any]:
@@ -381,6 +394,7 @@ class EvolutionController:
                                    gray_percent=gray_percent)
         if not out.get("ok"):
             return out
+        cand.deployed_at = time.time()
         cand.transition(CandidateStatus.DEPLOYING,
                         "签名制品生成，受控开始部署",
                         {"release_id": manifest.release_id,
@@ -398,30 +412,57 @@ class EvolutionController:
                 "release_id": manifest.release_id,
                 "status": cand.status.value, "gray_percent": gray_percent}
 
-    def monitor(self, cand: EvolutionCandidate, metrics: Dict[str, Any],
-                thresholds: Optional[Dict[str, float]] = None) -> Dict[str, Any]:
-        """发布后监测：达标晋级，越界回滚（PRD 82）。"""
-        th = {"min_success_rate": 0.8, "max_error_rate": 0.15,
-              "max_cost_ratio": 1.5}
-        th.update(thresholds or {})
-        reasons: List[str] = []
-        if metrics.get("safety_incident"):
-            reasons.append("安全事件")
-        if float(metrics.get("success_rate", 1.0)) < th["min_success_rate"]:
-            reasons.append(f"成功率过低: {metrics.get('success_rate')}")
-        if float(metrics.get("error_rate", 0.0)) > th["max_error_rate"]:
-            reasons.append(f"错误率过高: {metrics.get('error_rate')}")
-        if float(metrics.get("cost_ratio", 1.0)) > th["max_cost_ratio"]:
-            reasons.append(f"成本增幅过大: {metrics.get('cost_ratio')}")
-        if reasons:
-            reason = "; ".join(reasons)
+    def monitor(self, cand: EvolutionCandidate,
+                metrics: Optional[Dict[str, Any]] = None,
+                thresholds: Optional[Dict[str, float]] = None,
+                policy: Optional[MonitorPolicy] = None) -> Dict[str, Any]:
+        """发布后监测（PRD 82）：自动采集或接受手工指标，按窗口判定。"""
+        if cand.status != CandidateStatus.MONITORING:
+            return {"decision": "not_monitoring",
+                    "status": cand.status.value,
+                    "candidate_id": cand.candidate_id}
+        pol = (policy or MonitorPolicy()).merged(thresholds)
+        monitor = PostReleaseMonitor(self.store, self.bus, pol)
+        if metrics:
+            metrics = dict(metrics)
+            # 手工聚合指标视为单次人工观测，不参与样本量门槛
+            metrics.setdefault("source", "manual")
+        else:
+            if self.store is None:
+                return {"decision": "no_data_source",
+                        "reasons": ["缺少 metrics 且无历史任务数据源"],
+                        "candidate_id": cand.candidate_id}
+            since = cand.deployed_at or (time.time() - pol.window_seconds)
+            metrics = monitor.collect(since,
+                                      target_domain=cand.target_domain,
+                                      policy=pol)
+
+        result = monitor.assess(metrics, pol)
+        result["candidate_id"] = cand.candidate_id
+        cand.monitor_result = result
+        decision = result["decision"]
+
+        if decision == "rollback":
+            reason = "; ".join(result["reasons"])
             self.rollback(cand, reason)
-            out = self.releases.rollback(reason) if self.releases else {"ok": False}
-            return {"decision": "rollback", "reasons": reasons,
-                    "candidate": cand.to_dict(), "release": out}
-        self.promote(cand, metrics)
-        return {"decision": "promoted", "reasons": [],
-                "candidate": cand.to_dict()}
+            result["release"] = (self.releases.rollback(reason)
+                                 if self.releases else {"ok": False})
+        elif decision == "promote":
+            self.promote(cand, metrics)
+        else:
+            # 样本不足 / 观望 / 建议回滚：保持 MONITORING，不晋级
+            self._persist(cand)
+        result["status"] = cand.status.value
+
+        if self.bus:
+            self.bus.emit(event_type="evolution_monitored",
+                          component_id="evolution",
+                          payload={"candidate_id": cand.candidate_id,
+                                   "decision": decision,
+                                   "reasons": result["reasons"],
+                                   "warnings": result.get("warnings", []),
+                                   "samples": (metrics or {}).get("samples")})
+        return result
 
     def mark_deploying(self, cand: EvolutionCandidate) -> None:
         cand.transition(CandidateStatus.DEPLOYING, "签名制品生成，受控开始部署")

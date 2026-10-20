@@ -298,7 +298,8 @@ def make_handler(app: App):
                 target_problem=body["target_problem"],
                 hypothesis=body["hypothesis"],
                 change_scope=body.get("change_scope") or "local",
-                evidence=body.get("evidence") or [])
+                evidence=body.get("evidence") or [],
+                target_domain=body.get("target_domain") or "")
             if body.get("risk_level"):
                 if body["risk_level"] not in PUBLISH_RULES:
                     return self._json(400, {"error": "risk_level 必须为 L0-L4"})
@@ -346,15 +347,20 @@ def make_handler(app: App):
                                              "reason": out.get("reason", "")})
                     return self._json(200 if out.get("ok") else 409, out)
                 if action == "monitor":
-                    metrics = body.get("metrics") or {}
-                    if not isinstance(metrics, dict) or not metrics:
-                        return self._json(400, {"error": "缺少 metrics"})
+                    metrics = body.get("metrics")
+                    if metrics is not None and not isinstance(metrics, dict):
+                        return self._json(400, {"error": "metrics 必须为对象"})
+                    # 未提供 metrics 时从真实运行任务自动采集（PRD 82）
                     out = app.evolution.monitor(
-                        cand, metrics, thresholds=body.get("thresholds"))
+                        cand, metrics or None,
+                        thresholds=body.get("thresholds"))
+                    if out.get("decision") == "no_data_source":
+                        return self._json(409, out)
                     app.audit.record(actor, "evolution.monitor",
                                      target=candidate_id,
                                      outcome=out.get("decision", "ok"),
-                                     detail={"metrics": metrics})
+                                     detail={"metrics": metrics,
+                                             "reasons": out.get("reasons", [])})
                     return self._json(200, out)
                 if action == "rollback":
                     reason = (body.get("reason") or "manual rollback").strip()

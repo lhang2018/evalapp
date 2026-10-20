@@ -41,6 +41,7 @@
 | 25 | 上下文治理与评测完整性 | 装配优先级/动态预算/结构化压缩/质量检查（Arch 8.5-8.7）；独立保留集/基线等价/确定性安全套件/安全证据 fail-closed 门禁（PRD 51-54, Arch 11） | complete（135 项 Python + 29 项客户端） |
 | 26 | 九级预算与成本报告 | 单任务/单次模型调用/单工具/工作流作用域/候选实验/进化日与月/提供方/专家池 + 并发上限；按任务/领域/模型/版本/实验的成本报告（PRD 55-58, Arch 12）；`GET /costs` + `cli costs` | complete（149 项 Python + 29 项客户端） |
 | 27 | 全量功能记录文档 | `FEATURES.md`：按领域记录已实现/部分/未实现功能、代码位置、API/CLI/配置/数据表/测试矩阵与维护流程；README/IMPLEMENTATION 增加入口 | complete |
+| 28 | 十维收益与发布后监测 | 十维收益向量（质量/成功率/稳定性/恢复/成本/时延/安全/维护复杂度/跨领域/长期）；跨领域回归门禁；发布后时间窗采样、上窗对比、评估任务剔除、安全即时回滚、promote/hold/rollback 判定（PRD 50 / 82, Arch 11.5 / 12.3） | complete（170 项 Python + 29 项客户端） |
 
 ## 关键决策（Decisions）
 | 决策 | 理由 |
@@ -61,6 +62,10 @@
 | 候选实验预算双记账 | 用量同时记入 `candidate:<id>` 与 `evolution`，既限制单次实验又不绕过日/月池 |
 | 评测成本取任务自身快照 | 并发下全局账本差值会混入其他任务；任务 `result_evidence.budget.usage` 才是准确归因 |
 | 候选预算耗尽按用例失败处理 | 剩余用例记失败并让门禁拒绝，而不是抛异常中断整批评测 |
+| 收益维度缺证据标 `insufficient_evidence` | 没有数据不等于改善；长期收益需 ≥20 条发布后样本，稳定性用失败证据代理 |
+| 发布后监测排除评测任务 | `source=evaluation` 的任务是自我验证，计入监测会虚增成功率 |
+| 安全事件优先于样本门槛 | 安全事件即使样本不足也立即回滚，不被 `min_samples` 延迟 |
+| 自动回滚可关闭但保留建议 | 高风险场景允许人工决策；关闭时输出 `rollback_recommended` 而非静默放行 |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -73,6 +78,8 @@
 | 动态预算测试两条上下文长度相同 | 1 | 800 字符记忆超出 35% 记忆份额，宽/窄预算都被整体丢弃；改用可落入宽预算的记忆验证动态差异 |
 | 评测成本差值恒为 0 | 1 | 执行器用 evolution scope 的前后差值统计，而任务用量记在 runtime scope；改为读取任务自身预算快照 |
 | 成本报告缺少候选元数据 | 1 | `list_eval_reports` 只返回 data；改为返回 report_id/dataset_id/candidate_id/created_at/data |
+| 监测测试辅助重放已过的状态 | 1 | `to_monitoring` 从 `TRIAGED` 开始与 `CANDIDATE_CREATED` 冲突；改为从 `TESTING` 开始 |
+| warning-hold 用例触发回滚 | 1 | 错误率 0.20 超过 0.15 阈值；改用手工指标（成功率 0.90、错误率 0.05、成本比 1.35） |
 
 ## 备注
 - 无 LLM Key 时运行 `python -m evoagent.cli demo` 走 Mock 模型全链路。
