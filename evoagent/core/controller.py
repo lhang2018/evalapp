@@ -41,7 +41,8 @@ class RuntimeController:
                  memory: MemoryStore, assembler: ContextAssembler,
                  checkpoints: CheckpointManager,
                  permissions: Any, releases: Optional[ReleaseManager] = None,
-                 wf_lookup: Optional[Callable[[str], Optional[WorkflowDef]]] = None):
+                 wf_lookup: Optional[Callable[[str], Optional[WorkflowDef]]] = None,
+                 diagnostics: Any = None, classifier: Any = None):
         self.cfg = config
         self.db = db
         self.bus = bus
@@ -57,6 +58,8 @@ class RuntimeController:
         self.permissions = permissions
         self.releases = releases
         self.wf_lookup = wf_lookup or (lambda wid: None)
+        self.diagnostics = diagnostics
+        self.classifier = classifier
         # 并发管理（Arch 3.2 管理并发和取消）
         self._active: Dict[str, threading.Event] = {}
         self._lock = threading.Lock()
@@ -103,6 +106,8 @@ class RuntimeController:
             # 2) 规划（CLASSIFYING -> PLANNING 或 READY）
             task = self._plan(task)
             if task.is_terminal():
+                if task.task_status == TaskStatus.FAILED:
+                    self._record_diagnostic(task, Verdict(passed=False), [], "")
                 self._emit(task, "task_finalized", {"status": task.task_status.value})
                 return task
             # 3) 执行（READY -> RUNNING -> VERIFYING）
@@ -113,12 +118,14 @@ class RuntimeController:
             task.task_status = TaskStatus.FAILED
             task.failure_reason = f"状态机冲突: {e}"
             self.db.save_task(task)
+            self._record_diagnostic(task, Verdict(passed=False), [], "controller_error")
             self._emit(task, "task_failed", {"reason": task.failure_reason},
                        severity="error")
         except Exception as e:  # noqa: BLE001
             task.task_status = TaskStatus.FAILED
             task.failure_reason = f"控制器异常: {type(e).__name__}: {e}"
             self.db.save_task(task)
+            self._record_diagnostic(task, Verdict(passed=False), [], "controller_error")
             self._emit(task, "task_failed", {"reason": task.failure_reason},
                        severity="error")
         finally:
@@ -132,10 +139,18 @@ class RuntimeController:
     def _classify(self, task: Task, intent_hint: Optional[str],
                   domain_hint: Optional[str]) -> Task:
         task = self._move(task, TaskStatus.CLASSIFYING)
-        expert: Expert = self.experts.route(intent_hint or "general",
-                                            domain_hint or "")
-        task.intent = intent_hint or expert.expert_id
-        task.domain = domain_hint or expert.expert_id
+        if self.classifier is not None:
+            intent, domain, conf, method = self.classifier.classify(
+                task.user_goal, hint=intent_hint, domain_hint=domain_hint)
+            task.confidence = conf
+            task.runtime_manifest["intent_classification"] = {
+                "method": method, "confidence": conf}
+        else:
+            intent, domain, conf, method = intent_hint or "", domain_hint or "", \
+                task.confidence, "route"
+        expert: Expert = self.experts.route(intent or "general", domain or "")
+        task.intent = intent or expert.expert_id
+        task.domain = domain or domain_hint or expert.expert_id
         # PRD 12.3: 意图不明确时按风险采取不同策略
         risk = task.risk_level.value
         conf = task.confidence
@@ -204,7 +219,9 @@ class RuntimeController:
         verdict = self._verify(task, outcome, tool_results)
         return self._finalize(task, verdict, outcome.answer, budget=budget,
                               failure_override=(f"预算耗尽: {budget_err}"
-                                                if budget_err and not verdict.passed else None))
+                                                if budget_err and not verdict.passed else None),
+                              tool_results=tool_results,
+                              stop_reason=outcome.stop_reason)
 
     def _run_workflow(self, task: Task, budget: BudgetController) -> Task:
         wf = self.wf_lookup(task.workflow_ref or "")
@@ -256,11 +273,13 @@ class RuntimeController:
 
     def _finalize(self, task: Task, verdict: Verdict, answer: Optional[str],
                   *, budget: BudgetController,
-                  failure_override: Optional[str] = None) -> Task:
+                  failure_override: Optional[str] = None,
+                  tool_results: Optional[List[ToolResult]] = None,
+                  stop_reason: str = "") -> Task:
         task.result = answer
         task.result_evidence = [{
-            "verdict": verdict.summary(), "checks": verdict.checks,
-            "budget": budget.snapshot()}]
+            "verdict": verdict.summary(), "passed": verdict.passed,
+            "checks": verdict.checks, "budget": budget.snapshot()}]
         if verdict.passed:
             task = self._move(task, TaskStatus.SUCCEEDED)
             self._remember(task, verified=True)
@@ -273,10 +292,28 @@ class RuntimeController:
             # 故障处理：区分运行时恢复 vs 长期修复（PRD 45）
             task = self._move(task, TaskStatus.FAILED)
             self._remember(task, verified=False)
+            self._record_diagnostic(task, verdict, tool_results or [], stop_reason)
         self.db.save_task(task)
         self._emit(task, "task_finalized", {
-            "status": task.task_status.value, "verdict": verdict.summary()})
+            "status": task.task_status.value, "verdict": verdict.summary(),
+            "diagnostic_case_id": task.runtime_manifest.get("diagnostic_case_id")})
         return task
+
+    def _record_diagnostic(self, task: Task, verdict: Verdict,
+                           tool_results: List[ToolResult],
+                           stop_reason: str) -> None:
+        """失败任务自动沉淀为诊断案例（PRD 41-45）。诊断故障不得影响主流程。"""
+        if self.diagnostics is None:
+            return
+        try:
+            case = self.diagnostics.record_failure(
+                task, verdict, tool_results, stop_reason=stop_reason)
+        except Exception as e:  # noqa: BLE001
+            self._emit(task, "diagnostic_failed",
+                       {"error": f"{type(e).__name__}: {e}"}, severity="warn")
+            return
+        task.runtime_manifest["diagnostic_case_id"] = case.case_id
+        self.db.save_task(task)
 
     # ================= 检查点 / 恢复 / 取消 =================
     def checkpoint(self, task: Task, stage: str,

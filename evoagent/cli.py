@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 
 from .app import App
+from .evolution.probes import PROBES as PROBE_NAMES
 
 
 def _app(demo_confirm: bool = False) -> App:
@@ -96,6 +97,40 @@ def cmd_status(task_id: str) -> str:
                       ensure_ascii=False, indent=1)
 
 
+def cmd_diagnose(task_id: str, probe: str) -> str:
+    app = _app()
+    if not task_id:
+        cases = app.db.list_diagnostic_cases(limit=20)
+        out = [{"case_id": c.case_id, "task_id": c.task_id,
+                "status": c.status.value, "symptom": c.symptom}
+               for c in cases]
+        print(json.dumps(out, ensure_ascii=False, indent=1))
+        return ""
+    case = app.diagnostics.diagnose_task(task_id)
+    if case is None:
+        return json.dumps({"error": "任务不存在或非失败状态"}, ensure_ascii=False)
+    hypotheses = app.db.list_hypotheses(case.case_id)
+    experiments = app.db.list_experiments(case.case_id)
+    if probe:
+        hypothesis = next((h for h in hypotheses if probe in h.suggested_probes),
+                          hypotheses[0] if hypotheses else None)
+        if hypothesis is None:
+            return json.dumps({"error": "案例没有可探查的假设"},
+                              ensure_ascii=False)
+        exp = app.diagnostics.run_experiment(case, hypothesis, probe)
+        experiments = app.db.list_experiments(case.case_id)
+        hypotheses = app.db.list_hypotheses(case.case_id)
+        print(f"探针 {probe}: {exp.result}")
+    out = {"case": case.to_dict(),
+           "hypotheses": [h.to_dict() for h in hypotheses],
+           "experiments": [e.to_dict() for e in experiments]}
+    print(f"诊断案例 {case.case_id} [{case.status.value}] 假设 {len(hypotheses)} 条")
+    for h in hypotheses:
+        print(f"  [{h.category.value}] {h.component} "
+              f"conf={h.confidence} {h.status.value}: {h.statement}")
+    return json.dumps(out, ensure_ascii=False, indent=1)
+
+
 def cmd_serve(host: str, port: int) -> str:
     app = _app()
     from .api.server import ApiServer
@@ -117,6 +152,10 @@ def main() -> None:
     sub.add_parser("workflow")
     s = sub.add_parser("status")
     s.add_argument("task_id", nargs="?")
+    d = sub.add_parser("diagnose")
+    d.add_argument("task_id", nargs="?")
+    d.add_argument("--probe", default="",
+                   help="运行固定探针: " + ", ".join(PROBE_NAMES))
     v = sub.add_parser("serve")
     v.add_argument("--host", default="127.0.0.1")
     v.add_argument("--port", type=int, default=8300)
@@ -129,6 +168,8 @@ def main() -> None:
         cmd_workflow()
     elif args.cmd == "status":
         cmd_status(args.task_id)
+    elif args.cmd == "diagnose":
+        cmd_diagnose(args.task_id, args.probe)
     elif args.cmd == "serve":
         cmd_serve(args.host, args.port)
     else:

@@ -12,6 +12,9 @@ from .core.events import EventBus
 from .core.persistence import Database
 from .core.permissions import (PermissionController, PermissionDecision,
                                 ToolPolicy)
+from .evolution.controller import EvolutionController
+from .evolution.diagnostics import DiagnosisEngine
+from .evolution.probes import PROBES, ProbeRunner
 from .experts.builtin import builtin_experts
 from .memory.context import ContextAssembler
 from .memory.store import MemoryStore
@@ -19,6 +22,7 @@ from .models.base import ModelRegistry
 from .models.mock import MockModel
 from .models.openai_compat import OpenAICompatAdapter
 from .models.router import ModelRouter
+from .planning.intent import IntentClassifier
 from .planning.planner import PlanningEngine
 from .react.engine import ReactEngine
 from .release.manager import ReleaseManager
@@ -78,9 +82,14 @@ class App:
         # 专家
         self.experts = builtin_experts()
 
-        # 执行组件
-        self.planner = PlanningEngine(self.mock_model)
-        self.react = ReactEngine(self.mock_model if self._model() is None else self._model(),
+        # 执行组件：真实模型可用时，规划/分类/ReAct 共用（Mock 时自然回退）
+        planning_model = self._model() or self.mock_model
+        self.planner = PlanningEngine(planning_model)
+        self.classifier = IntentClassifier(
+            planning_model,
+            known_intents=self._known_intents(),
+            threshold=self.config.clarify_threshold)
+        self.react = ReactEngine(planning_model,
                                  self.tools, self.bus,
                                  max_iterations=self.config.react_max_iterations,
                                  max_repeat_failures=self.config.react_max_repeat_failures)
@@ -90,18 +99,34 @@ class App:
         self._workflows: Dict[str, Any] = {}
         self._register_workflows()
 
+        # 进化与诊断：诊断只生成案例/假设，候选发布走进化门禁
+        self.evolution = EvolutionController(event_bus=self.bus)
+        self.probes = ProbeRunner(self.tools, self.memory,
+                                  self.config.diagnostics)
+        self.diagnostics = DiagnosisEngine(
+            self.db, self.bus, self.probes, self.config.diagnostics,
+            self.evolution)
+
         # 控制器
         self.controller = RuntimeController(
             self.config, self.db, self.bus, self.tools, self.experts,
             self.planner, self.react, self.workflow_engine, self.router,
             self.memory, self.assembler,
             CheckpointManager(self.db), self.permissions, self.releases,
-            wf_lookup=self._wf_lookup)
+            wf_lookup=self._wf_lookup, diagnostics=self.diagnostics,
+            classifier=self.classifier)
 
     # ---- 装配细节 ----
     def _model(self):
         """默认使用真实模型（若配置），否则 Mock；可按意图再路由。"""
         return self._real_adapter
+
+    def _known_intents(self) -> list:
+        intents = {"general"}
+        for e in self.experts.all():
+            intents.add(e.expert_id)
+            intents.update(e.applicable_intents)
+        return sorted(intents)
 
     def _register_tools(self) -> None:
         from .tools.builtin import file_write_tool
@@ -138,4 +163,8 @@ class App:
             "tools_health": self.tools.health(),
             "experts": [e.expert_id for e in self.experts.all()],
             "workflows": list(self._workflows.keys()),
+            "diagnostics": {
+                "cases": len(self.db.list_diagnostic_cases(limit=1000)),
+                "probes": sorted(PROBES),
+            },
         }

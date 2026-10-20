@@ -37,6 +37,23 @@ class Database:
             c.execute("""CREATE TABLE IF NOT EXISTS workflow_runs(
                 workflow_run_id TEXT PRIMARY KEY, workflow_id TEXT, task_id TEXT,
                 status TEXT, node_states TEXT, updated_at REAL)""")
+            # 诊断案例（PRD 41-45 / Architecture 9.2-9.3）
+            c.execute("""CREATE TABLE IF NOT EXISTS diagnostic_cases(
+                case_id TEXT PRIMARY KEY, task_id TEXT, run_id TEXT, status TEXT,
+                created_at REAL, data TEXT)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_diagnostic_cases_task
+                ON diagnostic_cases(task_id)""")
+            c.execute("""CREATE TABLE IF NOT EXISTS diagnostic_hypotheses(
+                hypothesis_id TEXT PRIMARY KEY, case_id TEXT, category TEXT,
+                confidence REAL, status TEXT, data TEXT)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_diagnostic_hypotheses_case
+                ON diagnostic_hypotheses(case_id)""")
+            c.execute("""CREATE TABLE IF NOT EXISTS diagnostic_experiments(
+                experiment_id TEXT PRIMARY KEY, case_id TEXT, hypothesis_id TEXT,
+                method TEXT, result TEXT, cost REAL, started_at REAL,
+                finished_at REAL, data TEXT)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_diagnostic_experiments_case
+                ON diagnostic_experiments(case_id)""")
             c.commit()
 
     # ---- tasks ----
@@ -89,6 +106,83 @@ class Database:
         if not row:
             return None
         return json.loads(row["snapshot"])
+
+    # ---- diagnostics（PRD 41-45）----
+    def save_diagnostic_case(self, case: Any) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO diagnostic_cases VALUES (?,?,?,?,?,?)",
+                (case.case_id, case.task_id, case.run_id, case.status.value,
+                 case.created_at,
+                 json.dumps(case.to_dict(), ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def get_diagnostic_case(self, case_id: str) -> Optional[Any]:
+        from ..evolution.diagnostics import DiagnosticCase
+        row = self._conn.execute(
+            "SELECT data FROM diagnostic_cases WHERE case_id=?",
+            (case_id,)).fetchone()
+        return DiagnosticCase.from_dict(json.loads(row["data"])) if row else None
+
+    def get_case_by_task(self, task_id: str) -> Optional[Any]:
+        from ..evolution.diagnostics import DiagnosticCase
+        row = self._conn.execute(
+            "SELECT data FROM diagnostic_cases WHERE task_id=?"
+            " ORDER BY created_at DESC LIMIT 1", (task_id,)).fetchone()
+        return DiagnosticCase.from_dict(json.loads(row["data"])) if row else None
+
+    def list_diagnostic_cases(self, limit: int = 50,
+                              status: Optional[str] = None) -> List[Any]:
+        from ..evolution.diagnostics import DiagnosticCase
+        if status:
+            rows = self._conn.execute(
+                "SELECT data FROM diagnostic_cases WHERE status=?"
+                " ORDER BY created_at DESC LIMIT ?", (status, limit)).fetchall()
+        else:
+            rows = self._conn.execute(
+                "SELECT data FROM diagnostic_cases ORDER BY created_at DESC"
+                " LIMIT ?", (limit,)).fetchall()
+        return [DiagnosticCase.from_dict(json.loads(r["data"])) for r in rows]
+
+    def save_hypothesis(self, h: Any) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO diagnostic_hypotheses VALUES (?,?,?,?,?,?)",
+                (h.hypothesis_id, h.case_id, h.category.value, h.confidence,
+                 h.status.value,
+                 json.dumps(h.to_dict(), ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def list_hypotheses(self, case_id: str) -> List[Any]:
+        from ..evolution.diagnostics import Hypothesis
+        rows = self._conn.execute(
+            "SELECT data FROM diagnostic_hypotheses WHERE case_id=?"
+            " ORDER BY confidence DESC, rowid ASC", (case_id,)).fetchall()
+        return [Hypothesis.from_dict(json.loads(r["data"])) for r in rows]
+
+    def save_experiment(self, exp: Any) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO diagnostic_experiments VALUES"
+                " (?,?,?,?,?,?,?,?,?)",
+                (exp.experiment_id, exp.case_id, exp.hypothesis_id, exp.method,
+                 exp.result, exp.cost, exp.started_at, exp.finished_at,
+                 json.dumps(exp.to_dict(), ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def list_experiments(self, case_id: str) -> List[Any]:
+        from ..evolution.diagnostics import DiagnosticExperiment
+        rows = self._conn.execute(
+            "SELECT data FROM diagnostic_experiments WHERE case_id=?"
+            " ORDER BY started_at ASC", (case_id,)).fetchall()
+        return [DiagnosticExperiment.from_dict(json.loads(r["data"]))
+                for r in rows]
+
+    def count_experiments_since(self, since: float) -> int:
+        row = self._conn.execute(
+            "SELECT COUNT(*) AS n FROM diagnostic_experiments"
+            " WHERE started_at >= ?", (since,)).fetchone()
+        return int(row["n"]) if row else 0
 
     def close(self) -> None:
         self._conn.close()

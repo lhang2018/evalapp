@@ -20,7 +20,14 @@ python -m pytest tests/ -q
 python -m evoagent.cli serve --port 8300
 # 直接提交任务
 python -m evoagent.cli task "计算 2024+2000+500" --intent computation
+# 诊断：失败任务 → 多假设案例 → 固定探针（无外部网络）
+python -m evoagent.cli diagnose <task_id> --probe tool_health
+python -m evoagent.cli diagnose            # 最近诊断案例
 ```
+
+诊断 REST 端点：`GET /diagnostics`、`GET /diagnostics/{case_id}`、
+`POST /diagnostics/scan`、`POST /diagnostics/{case_id}/experiments`、
+`POST /diagnostics/{case_id}/candidates`。诊断永不自动发布；候选仍走评测门禁。
 
 ## 接入真实 LLM（OpenAI 兼容：OpenAI/DeepSeek/Moonshot/vLLM…）
 
@@ -61,8 +68,9 @@ Android 客户端 (RN/JS) ──REST──▶ ┌─ 稳定运行轨道 ──�
 
 ## 已实现 / 迭代占位
 
-完整矩阵见 IMPLEMENTATION.md。当前一轮：服务端核心全链路可运行 + 测试通过（51 项）+
-Android 骨架。迭代占位：无障碍操作、真实生成服务适配、向量检索、Web 管理端、隔离沙箱执行候选代码。
+完整矩阵见 IMPLEMENTATION.md。当前一轮：服务端核心全链路可运行 + 规则诊断/探针 + 真实模型
+Planning/意图分类 + 测试通过（75 项）+ Android 骨架。迭代占位：无障碍操作、真实生成服务适配、
+向量检索、Web 管理端、隔离沙箱执行候选代码。
 
 ## 目录
 
@@ -76,10 +84,10 @@ evoagent/                  Python 服务端核心
   experts/                 专家注册表（首批 5 个专家）
   workflows/               工作流 DAG 引擎 + 漫剧示例
   acceptance/              结果验收
-  evolution/               评测集/门禁/进化候选生命周期/进化控制器
+  evolution/               评测集/门禁/候选生命周期/诊断案例与假设/固定探针
   release/                 发布清单/签名/回滚
   api/                     REST API（标准库实现）
   cli.py                   命令行
-tests/                     51 项测试
+tests/                     75 项测试
 android-app/               React Native Android 骨架
 ```

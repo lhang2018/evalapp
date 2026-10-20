@@ -47,3 +47,36 @@
 - 进化系统的候选生成目前是启发式 + 评测门禁，真实"隔离环境跑代码"需沙箱轮
 - Web/管理端（PRD 90）未做，API 已留好界面数据接口
 - 无障碍/语音/本地任务队列（PRD 64/68/72-76）待 Android 迭代轮
+
+## Session 2 (2026-10-20)
+
+### 完成事项
+- [x] Git 基线（`.gitignore` + `main` 分支基线提交）
+- [x] 诊断模型：`FaultCategory` A/B/C/D、案例/假设/实验数据结构、证据→多假设规则表
+- [x] 失败自动诊断钩子：`_finalize` / 规划失败 / 控制器异常都会沉淀案例，`task.runtime_manifest` 记录 case_id
+- [x] 固定探针 6 个（tool_health / calc_roundtrip / file_write_sandbox / state_machine_selfcheck / memory_roundtrip / context_constraint_retention），超时转不确定、无外部网络
+- [x] 诊断持久化：SQLite 三表 + CRUD（案例/假设/实验）
+- [x] 有界实验：每案 3 次、每日 50 次、单探针 10s；探针只调分不宣布根因
+- [x] 假设→候选显式升级（`candidate_from_hypothesis`），风险 L1-L4 映射，候选仍需门禁/发布流程
+- [x] REST 五个诊断端点 + CLI `diagnose [task_id] [--probe]`
+- [x] 真实模型 Planning（JSON 计划校验、坏计划可追溯回退模板）
+- [x] 新增意图分类器（hint 短路 / 模型 JSON / 启发式回退 / 低置信标记）
+- [x] 测试 75 项全部通过（新增 24 项：诊断 13 + 规划/意图 11）
+
+### 测试结果
+- `python -m pytest tests/ -q` → 75 passed
+- `python -m evoagent.cli demo` / `workflow` 行为不变
+- CLI 诊断冒烟：失败任务 → 案例 2 条假设 → `--probe tool_health` 通过并降低环境假设分数
+
+### 设计约束（本轮确立）
+- 规则优先：假设由确定性规则从证据生成，模型不参与根因判定（Arch 9.4）
+- 永远多假设：不允许单条"就是提示词问题"结论；保留支持/反对证据与不确定性
+- 置信度是评分不是校准概率；上限 0.90
+- 诊断不发布：候选需显式升级，发布仍走评测门禁与 L0-L4 规则
+- 探针隔离：临时目录本地副作用，禁止外部网络
+
+### 遗留/待迭代（更新）
+- LLM 辅助诊断假设生成与实验建议（当前规则+探针闭环）
+- 真实 Key 联调验证 Planning/意图分类 JSON 输出
+- Android 真机构建、无障碍/语音/本地队列
+- 候选代码隔离沙箱、Web 管理端、向量检索

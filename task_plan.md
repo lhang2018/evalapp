@@ -30,7 +30,10 @@
 | 16 | 测试 | pytest：状态机/预算/ReAct/检查点恢复/工具契约/记忆/工作流/门禁/API | complete（51 passed） |
 | 17 | Android 工程 | React Native 骨架 + API 客户端 + 构建说明 | complete |
 | 18 | 可追溯性文档 | README + IMPLEMENTATION.md（PRD 条目↔代码映射） | complete |
-| 19 | 迭代优化轮 | 真实模型联调、Android 真机构建、进化真实实验 | pending |
+| 19 | Git 基线 | `.gitignore` + `main` 基线提交 | complete |
+| 20 | 诊断闭环 | 诊断案例/多假设规则/固定探针/持久化/失败钩子/候选升级/API/CLI（PRD 41-45） | complete |
+| 21 | 真实模型规划 | Planning JSON 校验与回退 + 意图分类器（PRD 7-8/11） | complete |
+| 22 | 迭代优化轮 | 真实 Key 联调、Android 真机构建、候选代码沙箱 | pending |
 
 ## 关键决策（Decisions）
 | 决策 | 理由 |
@@ -40,6 +43,9 @@
 | Mock 与 OpenAI 适配器同层 | 适配器契约统一（PRD 4.5 能力与模型解耦） |
 | 影子执行的高风险工具 | PRD“计划完成≠实际完成”，file_write 等高风险工具需 confirm 回调 |
 | Android 选用 React Native | 用户要求 React/JS + 后续 OTA 直接推送（Expo Updates/CodePush 路线） |
+| 诊断规则优先、模型不判根因 | Arch 9.4：模型解释不可当真实根因；假设由确定性证据规则生成，置信度是评分 |
+| 诊断实验固定探针 + 硬限额 | 与生产隔离、无外部网络、每案/每日受限（PRD 43/44） |
+| 诊断不发布改动 | 假设只能显式升级为候选，发布仍走评测门禁与 L0-L4 规则（PRD 45/81） |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |

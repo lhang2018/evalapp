@@ -29,10 +29,21 @@ class BudgetConfig:
 
 
 @dataclass
+class DiagnosticsConfig:
+    # PRD 43/44：诊断实验有界、可预算
+    max_experiments_per_case: int = 3
+    max_probe_seconds: float = 10.0
+    max_daily_experiments: int = 50
+    # 诊断永远不自动发布；候选生成需显式调用（PRD 45）
+    auto_propose: bool = False
+
+
+@dataclass
 class Config:
     data_dir: Path = field(default_factory=lambda: Path(os.environ.get("EVOAGENT_DATA", ".evoagent")))
     provider: ModelProviderConfig = field(default_factory=ModelProviderConfig)
     budget: BudgetConfig = field(default_factory=BudgetConfig)
+    diagnostics: DiagnosticsConfig = field(default_factory=DiagnosticsConfig)
 
     # 高风险操作默认策略：deny / confirm / allow（仅测试使用 allow）
     high_risk_mode: str = os.environ.get("EVOAGENT_HIGH_RISK", "confirm")
@@ -58,6 +69,10 @@ class Config:
                 for k, v in data["budget"].items():
                     if hasattr(cfg.budget, k):
                         setattr(cfg.budget, k, v)
+            if "diagnostics" in data:
+                for k, v in data["diagnostics"].items():
+                    if hasattr(cfg.diagnostics, k):
+                        setattr(cfg.diagnostics, k, v)
         # 环境变量覆盖
         if os.environ.get("EVOAGENT_PROVIDER"):
             cfg.provider.name = os.environ["EVOAGENT_PROVIDER"]

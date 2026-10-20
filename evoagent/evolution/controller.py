@@ -89,6 +89,34 @@ class EvolutionController:
                                    "target": target_component})
         return cand
 
+    def candidate_from_hypothesis(self, hypothesis: Any, baseline_version: str,
+                                  change_scope: Optional[str] = None,
+                                  risk_level: Optional[str] = None
+                                  ) -> EvolutionCandidate:
+        """诊断假设升级为进化候选（PRD 45）。
+
+        诊断本身不发布；候选仍需走实验、门禁与发布规则。
+        """
+        scope = change_scope or "local"
+        risk = risk_level or risk_for_component(hypothesis.component)
+        evidence = [f"hypothesis:{hypothesis.hypothesis_id}"]
+        evidence.extend(hypothesis.supporting_evidence)
+        cand = self.propose_candidate(
+            baseline_version=baseline_version,
+            target_component=hypothesis.component,
+            target_problem=hypothesis.statement,
+            hypothesis=f"[{hypothesis.category.value}] {hypothesis.statement}",
+            change_scope=scope,
+            evidence=evidence)
+        cand.risk_level = risk
+        if self.bus:
+            self.bus.emit(event_type="evolution_candidate_risk",
+                          component_id="evolution",
+                          payload={"candidate_id": cand.candidate_id,
+                                   "risk_level": risk,
+                                   "publish_rule": cand.publish_suggestion})
+        return cand
+
     def run_evaluation(self, cand: EvolutionCandidate,
                        dataset: EvalDataset,
                        baseline_report: Optional[EvalReport] = None) -> Dict[str, Any]:
@@ -143,3 +171,17 @@ class EvolutionController:
     def status_of(self, candidate_id: str) -> Optional[CandidateStatus]:
         c = self.candidates.get(candidate_id)
         return c.status if c else None
+
+
+def risk_for_component(component: str) -> str:
+    """PRD 81：改动范围 → 风险等级。核心/安全域只能人工发布。"""
+    c = (component or "").lower()
+    if (c.startswith("core/") or "safety" in c or "state_machine" in c
+            or "state-machine" in c or c in ("permissions/system",
+                                             "harness/budget")):
+        return "L4"
+    if c.startswith("shared/"):
+        return "L3"
+    if c.startswith(("expert/", "workflow/", "tool/")):
+        return "L2"
+    return "L1"
