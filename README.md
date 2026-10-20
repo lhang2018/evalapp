@@ -32,12 +32,22 @@ python -m evoagent.cli diagnose            # 最近诊断案例
 python -m evoagent.cli workflows
 python -m evoagent.cli budget
 python -m evoagent.cli costs
+# 模型迁移执行链（兼容性 → 同数据集回归 → 发布组合；--apply 灰度启用）
+python -m evoagent.cli migrate mock-1 mock-2
+# 记忆质量评测 / 环境漂移检测
+python -m evoagent.cli memory-eval --no-persist
+python -m evoagent.cli drift
 ```
 
 诊断 REST 端点：`GET /diagnostics`、`GET /diagnostics/{case_id}`、
 `GET /diagnostics/trends`、`POST /diagnostics/scan`、
 `POST /diagnostics/{case_id}/experiments`（可选 `fault: error|timeout|fail` 故障注入）、
 `POST /diagnostics/{case_id}/candidates`。诊断永不自动发布；候选仍走评测门禁。
+
+模型与记忆端点：`GET /models`、`GET /models/migrations`、
+`POST /models/migrations`、`POST /models/migrations/{id}/regression|release|apply|rollback`；
+`POST /memory/evaluate`、`GET /memory/evaluations`；`GET /diagnostics/drift`、
+`POST /diagnostics/drift/scan`（显式发出 `drift_detected` 事件）。
 
 只读观测端点：`GET /metrics`（JSON，`?format=prometheus` 输出文本）、`GET /audit`、
 `GET /workflows`、`GET /memory/stats`、`GET /evolution/candidates`、`GET /admin`。
@@ -116,9 +126,12 @@ Planning/意图分类 + 执行内核接线（计划驱动 ReAct/进度持久化�
 并补齐上下文治理（装配优先级、动态预算、结构化压缩与质量检查）、评测完整性（独立保留集、
 基线等价、确定性安全套件、安全证据缺失时门禁 fail-closed）、九级硬预算（单任务/单次模型调用/
 单工具/工作流/候选实验/进化日与月/提供方/专家，含并发上限）、按任务/领域/模型/版本/实验的成本报告、
-十维收益评价（质量/成功率/稳定性/恢复/成本/时延/安全/维护复杂度/跨领域/长期）与发布后监测
-（时间窗采样、上窗对比、自动回滚判定）。
-测试通过：Python 170 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
+十维收益评价（质量/成功率/稳定性/恢复/成本/时延/安全/维护复杂度/跨领域/长期）、发布后监测
+（时间窗采样、上窗对比、自动回滚判定）、四层日志（运行事件/执行轨迹/诊断证据/审计，独立保留期与
+访问角色）、扩展可观测指标（模型/工具/ReAct/恢复/上下文/记忆/进化/回滚/意图维度）与分级告警、
+模型迁移执行链（资产继承/兼容性/同数据集回归对比/灰度启用/回滚）、记忆质量评测与运行反馈、
+环境漂移检测（工具/契约/模型/任务分布/版本变更，含处置建议与告警）。
+测试通过：Python 212 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
 嵌入向量检索、Web 管理端、隔离沙箱执行候选代码。
 
 ## 目录
@@ -127,17 +140,17 @@ Planning/意图分类 + 执行内核接线（计划驱动 ReAct/进度持久化�
 evoagent/                  Python 服务端核心
   core/                    任务模型/状态机/控制器/预算/权限/检查点/事件/持久化
   planning/  react/        Planning 与 ReAct 引擎
-  models/                  Mock + OpenAI 兼容适配器 + 路由 + 模型注册表
+  models/                  Mock + OpenAI 兼容适配器 + 路由 + 模型注册表 + 迁移执行链
   tools/                   工具契约/注册表/内置工具（含只读 Git）
-  memory/                  记忆存储（关系/混合检索）与上下文装配
+  memory/                  记忆存储（关系/混合检索）、上下文装配与质量评测
   experts/                 专家注册表（首批 5 个专家）
   workflows/               工作流 DAG 引擎 + 资产库 + 漫剧示例
   acceptance/              结果验收
-  evolution/               评测集/门禁/候选生命周期/诊断案例与假设/固定探针
+  evolution/               评测集/门禁/候选生命周期/诊断案例与假设/固定探针/漂移检测
   release/                 发布清单/签名/回滚
   api/                     REST API（标准库实现）
   cli.py                   命令行
-tests/                     170 项服务端测试
+tests/                     212 项服务端测试
 android-app/               React Native Android 客户端
   src/offline/             本地任务/事件队列、隐私过滤、同步引擎（纯 TS，可单测）
   src/device/              设备操作契约/风险闸门/原生桥接（纯 TS，可单测）

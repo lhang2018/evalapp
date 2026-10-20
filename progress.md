@@ -410,3 +410,120 @@
 - 发布后监测只统计真实用户任务，评测任务必须排除，避免自我验证
 - 安全事件优先于样本量门槛：即使样本不足也立即回滚
 - 自动回滚可配置关闭，但关闭后仍输出 `rollback_recommended` 供人工决策
+
+## Session 11 (2026-10-20)
+
+### 背景
+- 用户要求：提交后继续按 PRD / 架构梳理差距并开发。
+- 本轮选择 PRD 37-40 / 86 / Arch 9.2 / 20.1-20.2：此前只有统一事件表与基础指标，
+  四层日志只在架构中命名，指标缺模型/工具/ReAct/恢复/上下文/记忆维度，且无告警规则。
+
+### 完成事项
+- [x] 新增 `core/log_layers.py`
+  - `LAYER_POLICIES`：runtime_event 30d(operator/admin)、execution_trace 14d(operator/admin)、
+    diagnostic_evidence 7d(admin)、audit 365d(admin)
+  - `ExecutionTracer`：订阅事件总线，按任务连续 `step` 落盘；非 standard 只留空摘要 + 脱敏标记
+  - `EvidenceStore`：standard/sensitive 可入库，导出需 standard + `authorized=True`，secret 拒绝
+  - `LayerManager`：分层计数/角色可读性、按保留期清理、按任务级联删除（保留任务行与审计）
+- [x] 扩展存储 `core/persistence.py`
+  - 新表 `execution_traces`（任务/step 索引、at 索引）、`diagnostic_evidence`（task 索引）
+  - 方法：`save_trace`/`max_trace_step`/`list_traces`/`count_traces`/`delete_traces`、
+    证据 save/list/count/delete、`delete_diagnostics_for_task`、`count_audit`/`purge_audit_before`
+- [x] 扩展事件 `core/events.py`
+  - `aggregate()`：工具调用（成功/失败/契约错误率/错误类别）、模型调用（成功率/按模型）、
+    ReAct（运行数/异常数/异常率）、上下文警告、安全事件
+  - `count`/`delete_task_events`/`purge_before`；`counts()` 增加 `by_sync_status`
+- [x] 新增 `core/alerts.py`
+  - `AlertPolicy` + `evaluate_alerts`：任务成功率、连续失败、模型成功率、工具契约错误率、
+    日成本占比、回滚率、ReAct 异常率、安全事件；无状态纯函数，样本不足不误报
+- [x] 扩展 `core/metrics.py`
+  - 快照新增 environment/model_calls/tools/react/recovery/context/memory/logs/alerts，
+    任务增加 avg_cost/连续失败/按意图成功·成本·时延
+  - Prometheus 增加对应系列；无样本指标输出 `NaN` 保持序列稳定
+- [x] 新增 `models/metering.py`：`MeteredModel` 包装适配器，`finally` 记录
+  `model_id/op/ok/error_class/latency_s`，不改变原行为；App 装配处统一包 Mock/真实模型
+- [x] 接入：控制器 `react_finished` 事件、ReAct `tool_call` 带 task_id、App 装配 tracer/logs/指标
+- [x] API：`GET /alerts`、`/logs/layers`、`/logs/traces`、`/logs/evidence`；
+  `POST /logs/purge`、`/logs/delete-task`（admin，写审计）
+- [x] CLI：`logs [--layer --task --limit --purge --delete-task]`、`alerts`
+- [x] 新增 `tests/test_observability.py`（17 项）
+- [x] 文档同步：FEATURES / IMPLEMENTATION / README / task_plan
+
+### 测试结果
+- `python -m pytest tests/ -q` → 187 passed
+- `cd android-app && npm run test:offline` → 29 passed
+- `python -m evoagent.cli demo` / `workflow` / `logs` / `alerts` → 通过
+
+### 本轮修复的缺陷
+- 保留期用例直接 emit `task_created`，tracer 额外写入轨迹导致清理计数为 2 → 改用非轨迹事件
+- Prometheus 对 `None` 指标直接跳过，序列缺失 → 改为输出 `NaN`，保持告警规则可引用
+
+### 设计约束（本轮确立）
+- 敏感日志可落盘但不可默认导出；导出需同时满足 standard + 授权
+- 日志删除与保留清理必须写审计；按任务删除保留任务实体，避免历史指标凭空消失
+- 告警评估无状态、可重放，不在指标与告警之间维护第二套状态
+- 模型调用计量必须包在适配器外层，不能侵入各模型实现
+
+## Session 12 (2026-10-20)
+
+### 背景
+- 用户要求：对标 PRD 审计后继续开发。
+- 本轮选择 PRD 20/28/44/104/111 与 Arch 7.4/8.2/9.3/9.5：模型层只有档案与「迁移步骤表」，
+  没有可执行的迁移链；记忆只有存储与检索，没有质量评测与运行反馈；诊断有案例/探针/趋势，
+  但没有环境漂移检测。
+
+### 完成事项
+- [x] 新增 `models/migration.py`
+  - `ModelMigration` + `MIGRATION_STEPS`（九步：档案/资产继承 → 组件 → 兼容性 → 回归 →
+    对比 → 发布组合 → 启用 → 回滚）
+  - `ModelMigrationManager.create/run_regression/prepare_release/apply/rollback/get/list`
+  - 回归通过 `model_override` 固定新旧模型跑同一数据集；兼容性失败即 `blocked`，
+    后续阶段拒绝执行；`apply` 记录灰度比例与审计事件
+- [x] 路由支持固定模型覆盖
+  - 严格 `resolve()`：适配器存在且 `profile().model_id` 匹配才可用
+  - 控制器写 `runtime_manifest.model_route`（`source=override|router`）；覆盖不可用时回退
+    默认路由并发 `model_override_unavailable` 事件
+- [x] 新增 `memory/evaluation.py`
+  - 指标：write_accuracy / recall / precision / MRR / expired_misuse_rate /
+    conflict_correctness；内置 6 个用例，每个用例独立临时 MemoryStore
+  - `runtime_feedback`：有/无记忆任务成功率对比、反馈有害/误导率；样本不足标
+    `insufficient_evidence`
+  - `App.run_memory_eval()`：评测 + 运行反馈 + 报告持久化 + `memory_eval_completed` 事件
+- [x] 新增 `evolution/drift.py`
+  - `DriftPolicy`（当前窗/基线窗）；信号：工具成功率、契约错误、模型行为（成功率/时延）、
+    任务分布、组件版本、依赖版本
+  - 处置建议优先级 stop > health_check > compatible_path > evolution；默认只读，
+    `emit=True` 才发 `drift_detected`
+- [x] 观测接线
+  - `MetricsAggregator` 注入 drift，快照新增 `drift`，Prometheus 新增
+    `evoagent_drift_detected/signals/_by_kind/recommended_action`；60s 短缓存避免重复扫描
+  - `AlertPolicy` 新增 `environment_drift`（有 critical 信号则 critical）
+- [x] 存储：新表 `model_migrations`、`memory_eval_reports` 及读写方法
+- [x] API：`GET /models`、`/models/migrations`、`/models/migrations/{id}`、
+  `/memory/evaluations`、`/diagnostics/drift`；`POST /models/migrations`、
+  `/models/migrations/{id}/{regression|release|apply|rollback}`、`/memory/evaluate`、
+  `/diagnostics/drift/scan`；错误码 404/400/409 区分未知/非法/状态不允许
+- [x] CLI：`migrate`、`migrations`、`memory-eval`、`drift`；`alerts` 输出漂移状态
+- [x] 测试：`tests/test_model_migration.py`（10）、`tests/test_memory_evaluation.py`（6）、
+  `tests/test_drift.py`（9）
+- [x] 文档同步：FEATURES / IMPLEMENTATION / README / task_plan
+
+### 测试结果
+- `python -m pytest tests/ -q` → 212 passed
+- `cd android-app && npm run test:offline` → 29 passed（未改动客户端）
+- `python -m evoagent.cli demo` / `workflow` / `drift` / `memory-eval --no-persist` /
+  `migrations` → 通过
+
+### 本轮修复的缺陷
+- `ModelRouter.resolve()` 收紧为要求适配器实现 `profile()` 后，旧测试的字典假适配器
+  触发 `'object' object is not subscriptable` → 测试改用 `_FakeAdapter` 实现 `profile()`
+- CLI `migrate` 把 `mig.steps` 当字典取回滚步骤 → 改为列表遍历查找
+- 记忆评测用例的收益期望值算错（0.25 vs 实测 0.75）→ 按实际样本修正断言
+- 冲突用例中 PDF/CSV 均被检索会假通过 → 增加 `expect_absent` 强制冲突判定失败
+
+### 设计约束（本轮确立）
+- 迁移回归必须固定模型跑同一数据集；兼容性通过不等于行为等价
+- 迁移启用与默认模型切换分离；回滚恢复到启用前状态
+- 固定模型覆盖失败必须回退并留事件，不得静默使用未知模型
+- 漂移检测是只读分析面；指标抓取不得制造事件，显式扫描才发 `drift_detected`
+- 记忆收益缺样本只能标 `insufficient_evidence`，不能当作正收益

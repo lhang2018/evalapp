@@ -94,6 +94,32 @@ class Database:
                 target TEXT, outcome TEXT, detail TEXT)""")
             c.execute("""CREATE INDEX IF NOT EXISTS idx_audit_log_at
                 ON audit_log(at)""")
+            # 日志分层（PRD 38-39 / Arch 9.2）：执行轨迹与诊断证据
+            c.execute("""CREATE TABLE IF NOT EXISTS execution_traces(
+                trace_id TEXT PRIMARY KEY, task_id TEXT, run_id TEXT, step INTEGER,
+                at REAL, kind TEXT, summary TEXT, payload TEXT,
+                privacy_classification TEXT)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_execution_traces_task
+                ON execution_traces(task_id, step)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_execution_traces_at
+                ON execution_traces(at)""")
+            c.execute("""CREATE TABLE IF NOT EXISTS diagnostic_evidence(
+                evidence_id TEXT PRIMARY KEY, task_id TEXT, kind TEXT, ref TEXT,
+                summary TEXT, privacy_classification TEXT, authorized INTEGER,
+                created_at REAL)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_diagnostic_evidence_task
+                ON diagnostic_evidence(task_id)""")
+            # 模型迁移记录（PRD 20 / Arch 7.4）：兼容性、回归、发布与启用状态
+            c.execute("""CREATE TABLE IF NOT EXISTS model_migrations(
+                migration_id TEXT PRIMARY KEY, old_model_id TEXT,
+                new_model_id TEXT, status TEXT, created_at REAL,
+                updated_at REAL, data TEXT)""")
+            c.execute("""CREATE INDEX IF NOT EXISTS idx_model_migrations_status
+                ON model_migrations(status)""")
+            # 记忆质量评测报告（PRD 28）
+            c.execute("""CREATE TABLE IF NOT EXISTS memory_eval_reports(
+                report_id TEXT PRIMARY KEY, dataset_id TEXT, version TEXT,
+                created_at REAL, data TEXT)""")
             c.commit()
 
     # ---- tasks ----
@@ -408,6 +434,50 @@ class Database:
                  "created_at": r["created_at"],
                  "data": json.loads(r["data"])} for r in rows]
 
+    # ---- 模型迁移（PRD 20）----
+    def save_model_migration(self, migration_id: str, old_model_id: str,
+                             new_model_id: str, status: str,
+                             data: Dict[str, Any]) -> None:
+        with self._lock:
+            now = time.time()
+            self._conn.execute(
+                "INSERT OR REPLACE INTO model_migrations VALUES (?,?,?,?,?,?,?)",
+                (migration_id, old_model_id, new_model_id, status,
+                 float(data.get("created_at") or now), now,
+                 json.dumps(data, ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def get_model_migration(self, migration_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT data FROM model_migrations WHERE migration_id=?",
+            (migration_id,)).fetchone()
+        return json.loads(row["data"]) if row else None
+
+    def list_model_migrations(self, limit: int = 50) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT data FROM model_migrations"
+            " ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
+        return [json.loads(r["data"]) for r in rows]
+
+    # ---- 记忆评测报告（PRD 28）----
+    def save_memory_eval_report(self, report_id: str, dataset_id: str,
+                                version: str, data: Dict[str, Any]) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO memory_eval_reports VALUES (?,?,?,?,?)",
+                (report_id, dataset_id, version, time.time(),
+                 json.dumps(data, ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def list_memory_eval_reports(self, limit: int = 50) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT report_id, dataset_id, version, created_at, data"
+            " FROM memory_eval_reports ORDER BY created_at DESC LIMIT ?",
+            (limit,)).fetchall()
+        return [{"report_id": r["report_id"], "dataset_id": r["dataset_id"],
+                 "version": r["version"], "created_at": r["created_at"],
+                 "data": json.loads(r["data"])} for r in rows]
+
     # ---- audit ----
     def save_audit(self, audit_id: str, actor: str, action: str,
                    target: str, outcome: str, detail: Dict[str, Any]) -> None:
@@ -426,6 +496,155 @@ class Database:
                  "actor": r["actor"], "action": r["action"],
                  "target": r["target"], "outcome": r["outcome"],
                  "detail": json.loads(r["detail"])} for r in rows]
+
+    # ---- 日志分层：执行轨迹 ----
+    def save_trace(self, trace_id: str, task_id: Optional[str],
+                   run_id: Optional[str], step: int, at: float, kind: str,
+                   summary: str, payload: str, privacy: str) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO execution_traces VALUES"
+                " (?,?,?,?,?,?,?,?,?)",
+                (trace_id, task_id, run_id, step, at, kind, summary,
+                 payload, privacy))
+            self._conn.commit()
+
+    def max_trace_step(self, task_id: str) -> int:
+        row = self._conn.execute(
+            "SELECT COALESCE(MAX(step), 0) FROM execution_traces"
+            " WHERE task_id=?", (task_id,)).fetchone()
+        return int(row[0]) if row else 0
+
+    def list_traces(self, task_id: Optional[str] = None, limit: int = 200,
+                    ascending: bool = True) -> List[Dict[str, Any]]:
+        sql = ("SELECT trace_id, task_id, run_id, step, at, kind, summary,"
+               " payload, privacy_classification FROM execution_traces")
+        args: list = []
+        if task_id:
+            sql += " WHERE task_id=?"
+            args.append(task_id)
+        sql += " ORDER BY at " + ("ASC" if ascending else "DESC") + " LIMIT ?"
+        args.append(limit)
+        rows = self._conn.execute(sql, args).fetchall()
+        out = []
+        for r in rows:
+            try:
+                payload = json.loads(r["payload"]) if r["payload"] else {}
+            except Exception:  # noqa: BLE001
+                payload = {}
+            out.append({"trace_id": r["trace_id"], "task_id": r["task_id"],
+                        "run_id": r["run_id"], "step": r["step"],
+                        "at": r["at"], "kind": r["kind"],
+                        "summary": r["summary"], "payload": payload,
+                        "privacy_classification":
+                            r["privacy_classification"]})
+        return out
+
+    def count_traces(self) -> int:
+        return int(self._conn.execute(
+            "SELECT COUNT(*) FROM execution_traces").fetchone()[0])
+
+    def delete_traces(self, task_id: Optional[str] = None,
+                      before: Optional[float] = None) -> int:
+        sql, args = "DELETE FROM execution_traces", []
+        clauses = []
+        if task_id:
+            clauses.append("task_id=?")
+            args.append(task_id)
+        if before is not None:
+            clauses.append("at<?")
+            args.append(before)
+        if clauses:
+            sql += " WHERE " + " AND ".join(clauses)
+        with self._lock:
+            cur = self._conn.execute(sql, args)
+            self._conn.commit()
+            return int(cur.rowcount)
+
+    # ---- 日志分层：诊断证据 ----
+    def save_evidence(self, evidence_id: str, task_id: Optional[str],
+                      kind: str, ref: str, summary: str,
+                      privacy: str = "standard", authorized: bool = False,
+                      created_at: Optional[float] = None) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO diagnostic_evidence VALUES"
+                " (?,?,?,?,?,?,?,?)",
+                (evidence_id, task_id, kind, ref, summary, privacy,
+                 1 if authorized else 0,
+                 time.time() if created_at is None else created_at))
+            self._conn.commit()
+
+    def list_evidence(self, task_id: Optional[str] = None,
+                      limit: int = 200) -> List[Dict[str, Any]]:
+        sql = ("SELECT evidence_id, task_id, kind, ref, summary,"
+               " privacy_classification, authorized, created_at"
+               " FROM diagnostic_evidence")
+        args: list = []
+        if task_id:
+            sql += " WHERE task_id=?"
+            args.append(task_id)
+        sql += " ORDER BY created_at DESC LIMIT ?"
+        args.append(limit)
+        rows = self._conn.execute(sql, args).fetchall()
+        return [{"evidence_id": r["evidence_id"], "task_id": r["task_id"],
+                 "kind": r["kind"], "ref": r["ref"],
+                 "summary": r["summary"],
+                 "privacy_classification": r["privacy_classification"],
+                 "authorized": bool(r["authorized"]),
+                 "created_at": r["created_at"]} for r in rows]
+
+    def count_evidence(self) -> int:
+        return int(self._conn.execute(
+            "SELECT COUNT(*) FROM diagnostic_evidence").fetchone()[0])
+
+    def delete_evidence(self, task_id: Optional[str] = None,
+                        before: Optional[float] = None) -> int:
+        sql, args = "DELETE FROM diagnostic_evidence", []
+        clauses = []
+        if task_id:
+            clauses.append("task_id=?")
+            args.append(task_id)
+        if before is not None:
+            clauses.append("created_at<?")
+            args.append(before)
+        if clauses:
+            sql += " WHERE " + " AND ".join(clauses)
+        with self._lock:
+            cur = self._conn.execute(sql, args)
+            self._conn.commit()
+            return int(cur.rowcount)
+
+    def delete_diagnostics_for_task(self, task_id: str) -> Dict[str, int]:
+        """删除任务关联的诊断案例/假设/实验（隐私删除，PRD 39）。"""
+        with self._lock:
+            case_ids = [r[0] for r in self._conn.execute(
+                "SELECT case_id FROM diagnostic_cases WHERE task_id=?",
+                (task_id,))]
+            counts = {"cases": 0, "hypotheses": 0, "experiments": 0}
+            for cid in case_ids:
+                counts["hypotheses"] += int(self._conn.execute(
+                    "DELETE FROM diagnostic_hypotheses WHERE case_id=?",
+                    (cid,)).rowcount)
+                counts["experiments"] += int(self._conn.execute(
+                    "DELETE FROM diagnostic_experiments WHERE case_id=?",
+                    (cid,)).rowcount)
+            counts["cases"] = int(self._conn.execute(
+                "DELETE FROM diagnostic_cases WHERE task_id=?",
+                (task_id,)).rowcount)
+            self._conn.commit()
+            return counts
+
+    def count_audit(self) -> int:
+        return int(self._conn.execute(
+            "SELECT COUNT(*) FROM audit_log").fetchone()[0])
+
+    def purge_audit_before(self, before: float) -> int:
+        with self._lock:
+            cur = self._conn.execute(
+                "DELETE FROM audit_log WHERE at<?", (before,))
+            self._conn.commit()
+            return int(cur.rowcount)
 
     def close(self) -> None:
         self._conn.close()

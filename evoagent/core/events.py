@@ -124,17 +124,176 @@ class EventBus:
         return row is not None
 
     def counts(self) -> Dict[str, Dict[str, int]]:
-        """事件计数（PRD 37-40）：按类型与严重级别聚合，供指标端点使用。"""
+        """事件计数（PRD 37-40）：按类型/级别/同步状态聚合。"""
         if self._conn is None:
-            return {"by_type": {}, "by_severity": {}, "total": 0}
+            return {"by_type": {}, "by_severity": {},
+                    "by_sync_status": {}, "total": 0}
         by_type = {r[0]: int(r[1]) for r in self._conn.execute(
             "SELECT event_type, COUNT(*) FROM runtime_events"
             " GROUP BY event_type")}
         by_sev = {r[0]: int(r[1]) for r in self._conn.execute(
             "SELECT severity, COUNT(*) FROM runtime_events"
             " GROUP BY severity")}
+        by_sync = {r[0]: int(r[1]) for r in self._conn.execute(
+            "SELECT sync_status, COUNT(*) FROM runtime_events"
+            " GROUP BY sync_status")}
         return {"by_type": by_type, "by_severity": by_sev,
+                "by_sync_status": by_sync,
                 "total": sum(by_type.values())}
+
+    def count(self, task_id: Optional[str] = None) -> int:
+        if self._conn is None:
+            return 0
+        if task_id:
+            row = self._conn.execute(
+                "SELECT COUNT(*) FROM runtime_events WHERE task_id=?",
+                (task_id,)).fetchone()
+        else:
+            row = self._conn.execute(
+                "SELECT COUNT(*) FROM runtime_events").fetchone()
+        return int(row[0]) if row else 0
+
+    def delete_task_events(self, task_id: str) -> int:
+        if self._conn is None:
+            return 0
+        with self._lock:
+            cur = self._conn.execute(
+                "DELETE FROM runtime_events WHERE task_id=?", (task_id,))
+            self._conn.commit()
+            return int(cur.rowcount)
+
+    def purge_before(self, timestamp: float) -> int:
+        if self._conn is None:
+            return 0
+        with self._lock:
+            cur = self._conn.execute(
+                "DELETE FROM runtime_events WHERE timestamp<?", (timestamp,))
+            self._conn.commit()
+            return int(cur.rowcount)
+
+    def aggregate(self, limit: int = 10000) -> Dict[str, Any]:
+        """可观测指标聚合（PRD 40 / Arch 20.1）。
+
+        从结构化事件计算模型/工具/ReAct/安全指标；不把原始日志当结论。
+        """
+        out: Dict[str, Any] = {
+            "tool_calls": {"total": 0, "ok": 0, "failed": 0,
+                           "error_classes": {}, "contract_errors": 0,
+                           "contract_error_rate": None, "by_tool": {}},
+            "model_calls": {"total": 0, "ok": 0, "failed": 0,
+                            "success_rate": None, "by_model": {}},
+            "react": {"runs": 0, "anomalies": 0, "anomaly_rate": None},
+            "context_warnings": 0,
+            "security_incidents": 0,
+        }
+        if self._conn is None:
+            return out
+        rows = self._conn.execute(
+            "SELECT event_type, severity, payload FROM runtime_events"
+            " ORDER BY timestamp DESC LIMIT ?", (limit,)).fetchall()
+        anomaly_reasons = {"repeated_failure", "max_iter", "max_iterations",
+                           "no_progress", "no_action"}
+        for event_type, severity, raw in rows:
+            try:
+                payload = json.loads(raw) if raw else {}
+            except Exception:  # noqa: BLE001
+                payload = {}
+            if event_type == "tool_call":
+                tc = out["tool_calls"]
+                tc["total"] += 1
+                ok = bool(payload.get("ok"))
+                tool = str(payload.get("tool") or payload.get("tool_id")
+                           or "unknown")
+                bucket = tc["by_tool"].setdefault(
+                    tool, {"total": 0, "ok": 0, "failed": 0,
+                           "contract_errors": 0})
+                bucket["total"] += 1
+                if ok:
+                    tc["ok"] += 1
+                    bucket["ok"] += 1
+                else:
+                    tc["failed"] += 1
+                    bucket["failed"] += 1
+                    err = payload.get("error_class") or "unknown"
+                    tc["error_classes"][err] = \
+                        tc["error_classes"].get(err, 0) + 1
+                    if "contract" in str(err) or "invalid" in str(err):
+                        tc["contract_errors"] += 1
+                        bucket["contract_errors"] += 1
+            elif event_type == "model_call":
+                mc = out["model_calls"]
+                mc["total"] += 1
+                ok = bool(payload.get("ok"))
+                mc["ok" if ok else "failed"] += 1
+                model = str(payload.get("model_id") or "unknown")
+                bucket = mc["by_model"].setdefault(
+                    model, {"total": 0, "ok": 0, "failed": 0,
+                            "latency_s": 0.0})
+                bucket["total"] += 1
+                bucket["ok" if ok else "failed"] += 1
+                try:
+                    bucket["latency_s"] += float(
+                        payload.get("latency_s") or 0.0)
+                except (TypeError, ValueError):
+                    pass
+            elif event_type == "react_finished":
+                rc = out["react"]
+                rc["runs"] += 1
+                if str(payload.get("stop_reason")) in anomaly_reasons:
+                    rc["anomalies"] += 1
+            elif event_type == "context_quality_warning":
+                out["context_warnings"] += 1
+            if severity == "critical" and any(
+                    k in event_type for k in
+                    ("safety", "security", "permission", "privacy")):
+                out["security_incidents"] += 1
+
+        tc = out["tool_calls"]
+        if tc["total"]:
+            tc["contract_error_rate"] = round(
+                tc["contract_errors"] / tc["total"], 4)
+        for bucket in tc["by_tool"].values():
+            bucket["success_rate"] = round(
+                bucket["ok"] / bucket["total"], 4) if bucket["total"] else None
+        mc = out["model_calls"]
+        if mc["total"]:
+            mc["success_rate"] = round(mc["ok"] / mc["total"], 4)
+        rc = out["react"]
+        if rc["runs"]:
+            rc["anomaly_rate"] = round(rc["anomalies"] / rc["runs"], 4)
+        return out
+
+    def query_range(self, start: Optional[float] = None,
+                    end: Optional[float] = None,
+                    limit: int = 20000) -> List[RunEvent]:
+        """按时间窗升序读取事件，供漂移检测等窗口对比使用。"""
+        if self._conn is None:
+            return []
+        sql = f"SELECT {_EVENT_COLUMNS} FROM runtime_events WHERE 1=1"
+        args: list = []
+        if start is not None:
+            sql += " AND timestamp>=?"
+            args.append(start)
+        if end is not None:
+            sql += " AND timestamp<?"
+            args.append(end)
+        sql += " ORDER BY timestamp ASC LIMIT ?"
+        args.append(limit)
+        rows = self._conn.execute(sql, args).fetchall()
+        out = []
+        for r in rows:
+            e = RunEvent(event_id=r[0], task_id=r[1], run_id=r[2], severity=r[3],
+                         event_type=r[4], component_id=r[5], timestamp=r[6],
+                         component_version=r[8] or "0.1.0",
+                         correlation_id=r[9], causation_id=r[10],
+                         privacy_classification=r[11] or "standard",
+                         sync_status=r[12] or "local")
+            try:
+                e.payload = json.loads(r[7])
+            except Exception:
+                pass
+            out.append(e)
+        return out
 
     def query(self, task_id: Optional[str] = None, limit: int = 100) -> List[RunEvent]:
         if self._conn is None:

@@ -79,7 +79,8 @@ class RuntimeController:
                     risk_level: RiskLevel = RiskLevel.LOW,
                     budget_overrides: Optional[Dict[str, Any]] = None,
                     wait: bool = True,
-                    source: str = "user") -> Task:
+                    source: str = "user",
+                    model_override: Optional[str] = None) -> Task:
         task = Task(user_goal=goal,
                     constraints=list(constraints or []),
                     acceptance_criteria=list(acceptance or []),
@@ -87,6 +88,9 @@ class RuntimeController:
                     budget_policy=dict(budget_overrides or {}))
         # 评测任务与真实运行分离：发布后监测不得把评测样本计入（PRD 82）
         task.runtime_manifest["source"] = source
+        # 迁移回归需固定目标模型执行，不能用常规路由结果代替（PRD 20）
+        if model_override:
+            task.runtime_manifest["model_override"] = model_override
         self._emit(task, "task_created", {"goal": goal})
         if wait:
             self.execute(task, intent_hint=intent, domain_hint=domain)
@@ -280,6 +284,12 @@ class RuntimeController:
         if plan is not None:
             task.runtime_manifest["execution_plan"] = plan.to_dict()
             task.runtime_manifest["plan_progress"] = _plan_progress(plan)
+        self._emit(task, "react_finished", {
+            "stop_reason": outcome.stop_reason,
+            "steps": len(outcome.steps),
+            "repeated_failures": outcome.repeated_failures,
+        }, severity="warn" if outcome.stop_reason in (
+            "repeated_failure", "max_iter", "no_progress") else "info")
         if outcome.stop_reason == "cancel":
             if task.task_status != TaskStatus.CANCELLED:
                 task = self._move(task, TaskStatus.CANCELLED)
@@ -594,12 +604,29 @@ class RuntimeController:
             budget.limits.max_cost *= 2
 
     def _route_model(self, task: Task) -> Any:
-        """按意图/领域选择模型并记录路由结果（PRD 19）。"""
+        """按意图/领域选择模型并记录路由结果（PRD 19）。
+
+        显式 model_override 优先（迁移回归/受控验证）；解析失败时明确告警并
+        回退常规路由，绝不静默把未知模型当成默认模型执行。
+        """
+        override = (task.runtime_manifest or {}).get("model_override")
+        if override:
+            resolved = self.router.resolve(override)
+            if resolved is not None:
+                self._record_route(task, resolved, source="override")
+                return resolved
+            self._emit(task, "model_override_unavailable",
+                       {"model_id": override}, severity="warn")
         try:
             model = self.router.route(task.intent or "general",
                                       task.domain or "general")
         except Exception:  # noqa: BLE001 —— 路由失败回退默认适配器
             model = self.react.model
+        self._record_route(task, model, source="router")
+        return model
+
+    @staticmethod
+    def _record_route(task: Task, model: Any, *, source: str) -> None:
         try:
             profile = model.profile()
         except Exception:  # noqa: BLE001
@@ -607,8 +634,8 @@ class RuntimeController:
         task.runtime_manifest["model_route"] = {
             "model_id": getattr(profile, "model_id", None),
             "provider": getattr(profile, "provider", None),
-            "intent": task.intent, "domain": task.domain}
-        return model
+            "intent": task.intent, "domain": task.domain,
+            "source": source}
 
     def _bind_model_pool(self, budget: BudgetController, model: Any) -> None:
         """模型提供方预算池（PRD 55）：同一提供方跨任务累计。"""

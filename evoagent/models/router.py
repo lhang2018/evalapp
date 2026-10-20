@@ -25,6 +25,8 @@ class ModelRouter:
         self.default_adapter = default_adapter
         self.adapter_factory = None  # 由 setup() 注入
         self._routes: Dict[str, str] = routes or {}
+        # 迁移启用后的默认模型（受控启用，优先于评分但仍让显式路由优先）
+        self.default_model_id: Optional[str] = None
         self.weights = dict(DEFAULT_WEIGHTS)
         if weights:
             self.weights.update(weights)
@@ -35,6 +37,31 @@ class ModelRouter:
     def bind_route(self, key: str, model_id: str) -> None:
         self._routes[key] = model_id
 
+    def routes(self) -> Dict[str, str]:
+        return dict(self._routes)
+
+    def resolve(self, model_id: Optional[str]) -> Optional[ModelAdapter]:
+        """按 model_id 解析适配器；未知/不可用模型返回 None（不静默回退）。
+
+        迁移执行链依赖该语义区分「模型真实可用」与「回退到默认模型」。
+        """
+        if not model_id or self.adapter_factory is None:
+            return None
+        if self.registry.get(model_id) is None:
+            return None
+        try:
+            adapter = self.adapter_factory(model_id)
+            if adapter is None:
+                return None
+            if adapter.profile().model_id != model_id:
+                return None
+            return adapter
+        except Exception:  # noqa: BLE001 —— 解析失败视为不可用
+            return None
+
+    def set_default_model(self, model_id: Optional[str]) -> None:
+        self.default_model_id = model_id
+
     def route(self, intent: str, domain: str,
               require_vision: bool = False,
               prefer_cost: bool = False) -> ModelAdapter:
@@ -44,19 +71,29 @@ class ModelRouter:
         if model_id:
             prof = self.registry.get(model_id)
             if prof and (not require_vision or prof.supports_vision):
-                if self.adapter_factory:
-                    return self.adapter_factory(model_id)
+                adapter = self.resolve(model_id)
+                if adapter is not None:
+                    return adapter
+        # 迁移受控启用：默认模型优先于评分；解析失败则继续评分
+        if self.default_model_id:
+            adapter = self.resolve(self.default_model_id)
+            if adapter is not None and (
+                    not require_vision
+                    or self.registry.get(self.default_model_id).supports_vision):
+                return adapter
         # 否则按能力过滤 + 质量/成本/时延评分（Arch 7 / PRD 19）
         candidates = [p for p in profiles if p.available
                       and (not require_vision or p.supports_vision)]
         if candidates and prefer_cost:
             best = min(candidates, key=lambda p: p.price_per_1k_input)
-            if self.adapter_factory:
-                return self.adapter_factory(best.model_id)
+            adapter = self.resolve(best.model_id)
+            if adapter is not None:
+                return adapter
         if candidates:
             best = max(candidates, key=lambda p: self.score(p, candidates))
-            if self.adapter_factory:
-                return self.adapter_factory(best.model_id)
+            adapter = self.resolve(best.model_id)
+            if adapter is not None:
+                return adapter
         return self.default_adapter
 
     def score(self, profile: ModelProfile,

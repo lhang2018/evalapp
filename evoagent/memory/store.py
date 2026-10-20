@@ -268,6 +268,13 @@ class MemoryStore:
                 out.append(target)
         return out
 
+    def close(self) -> None:
+        with self._lock:
+            try:
+                self._conn.close()
+            except Exception:  # noqa: BLE001
+                pass
+
     def stats(self) -> Dict[str, Any]:
         rows = self._conn.execute(
             "SELECT kind, scope, status, COUNT(*) AS n FROM memory_items"

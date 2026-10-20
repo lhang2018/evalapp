@@ -8,6 +8,9 @@
   python -m evoagent.cli status [task_id]
   python -m evoagent.cli pause <task_id>   # 暂停运行中的任务
   python -m evoagent.cli resume <task_id> [--force]  # 恢复/重跑
+  python -m evoagent.cli migrate <old> <new> [--apply]  # 模型迁移执行链
+  python -m evoagent.cli memory-eval       # 记忆质量评测
+  python -m evoagent.cli drift             # 环境漂移检测
 """
 
 import argparse
@@ -320,6 +323,116 @@ def cmd_release_rollback(reason: str) -> str:
     return ""
 
 
+def cmd_logs(layer: str, task_id: str, limit: int, purge: bool,
+             delete_task: str) -> str:
+    app = _app()
+    if purge:
+        out = app.logs.purge()
+        app.audit.record("operator", "logs.purge", target="logs",
+                         detail=out)
+        print(json.dumps({"deleted": out}, ensure_ascii=False, indent=1))
+        return ""
+    if delete_task:
+        out = app.logs.delete_task(delete_task)
+        app.audit.record("operator", "logs.delete_task",
+                         target=delete_task, detail=out)
+        print(json.dumps({"task_id": delete_task, "deleted": out},
+                         ensure_ascii=False, indent=1))
+        return ""
+    if layer == "execution_trace":
+        rows = app.db.list_traces(task_id=task_id or None, limit=limit)
+        print(json.dumps(rows, ensure_ascii=False, indent=1, default=str))
+        return ""
+    if layer == "diagnostic_evidence":
+        rows = app.evidence.list(task_id=task_id or None, limit=limit)
+        for row in rows:
+            row["exportable"] = app.evidence.exportable(row)
+        print(json.dumps(rows, ensure_ascii=False, indent=1, default=str))
+        return ""
+    print(json.dumps({"layers": app.logs.stats("admin")["layers"],
+                      "counts": app.logs.counts()},
+                     ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_alerts() -> str:
+    app = _app()
+    snap = app.metrics.snapshot()
+    print(json.dumps({"alerts": snap.get("alerts", []),
+                      "drift": (snap.get("drift") or {}).get("status")},
+                     ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_migrate(old: str, new: str, dataset_id: str, apply_now: bool,
+                gray: int) -> str:
+    """模型迁移执行链：兼容性 → 回归对比 → 发布组合 →（可选）受控启用。"""
+    app = _app()
+    try:
+        mig = app.migrations.create(old, new, dataset_id=dataset_id or None)
+        print(f"迁移 {mig.migration_id}: {mig.status}")
+        if mig.status == "blocked":
+            print(json.dumps(mig.to_dict(), ensure_ascii=False, indent=1))
+            return ""
+        mig = app.migrations.run_regression(
+            mig.migration_id, dataset_id=dataset_id or None)
+        comparison = mig.regression.get("comparison", {})
+        print(f"回归对比: passed={comparison.get('passed')} status={mig.status}")
+        if mig.status == "blocked":
+            print(json.dumps(mig.to_dict(), ensure_ascii=False, indent=1))
+            return ""
+        mig = app.migrations.prepare_release(mig.migration_id)
+        rollback = next((s for s in mig.steps
+                         if s.get("step") == "rollback"), {})
+        print(f"发布组合: {mig.release_id}（回滚目标 "
+              f"{rollback.get('detail', {}).get('target')}）")
+        if apply_now:
+            out = app.migrations.apply(mig.migration_id, actor="cli",
+                                       gray_percent=gray)
+            print(json.dumps(out, ensure_ascii=False, indent=1))
+            return ""
+        print(json.dumps(mig.to_dict(), ensure_ascii=False, indent=1))
+    except (KeyError, ValueError, RuntimeError) as e:
+        print(json.dumps({"error": str(e)}, ensure_ascii=False))
+    return ""
+
+
+def cmd_migrations(migration_id: str) -> str:
+    app = _app()
+    if migration_id:
+        mig = app.migrations.get(migration_id)
+        if mig is None:
+            print(json.dumps({"error": "迁移记录不存在"},
+                             ensure_ascii=False))
+            return ""
+        print(json.dumps(mig.to_dict(), ensure_ascii=False, indent=1))
+        return ""
+    rows = [{"migration_id": m.migration_id, "status": m.status,
+             "old_model_id": m.old_model_id,
+             "new_model_id": m.new_model_id,
+             "release_id": m.release_id,
+             "blocked_reasons": m.blocked_reasons,
+             "created_at": m.created_at} for m in app.migrations.list()]
+    print(json.dumps(rows, ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_memory_eval(persist: bool) -> str:
+    app = _app()
+    report = app.run_memory_eval(persist=persist)
+    print(json.dumps(report, ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
+def cmd_drift(window: float, emit: bool) -> str:
+    app = _app()
+    if window:
+        app.drift.policy.window_seconds = window
+    report = app.drift.detect(emit=emit)
+    print(json.dumps(report, ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
 def cmd_serve(host: str, port: int) -> str:
     app = _app()
     from .api.server import ApiServer
@@ -381,9 +494,30 @@ def main() -> None:
     wfs.add_argument("workflow_id", nargs="?")
     sub.add_parser("budget")
     sub.add_parser("costs")
+    lg = sub.add_parser("logs")
+    lg.add_argument("--layer", default="")
+    lg.add_argument("--task", default="")
+    lg.add_argument("--limit", type=int, default=50)
+    lg.add_argument("--purge", action="store_true")
+    lg.add_argument("--delete-task", default="")
+    sub.add_parser("alerts")
     sub.add_parser("releases")
     rr = sub.add_parser("release-rollback")
     rr.add_argument("--reason", default="manual rollback")
+    # 模型迁移 / 记忆评测 / 漂移检测（PRD 20 / 28 / 44）
+    mg = sub.add_parser("migrate")
+    mg.add_argument("old_model_id")
+    mg.add_argument("new_model_id")
+    mg.add_argument("--dataset", default="")
+    mg.add_argument("--apply", action="store_true")
+    mg.add_argument("--gray", type=int, default=100)
+    mgs = sub.add_parser("migrations")
+    mgs.add_argument("migration_id", nargs="?")
+    me = sub.add_parser("memory-eval")
+    me.add_argument("--no-persist", action="store_true")
+    dr = sub.add_parser("drift")
+    dr.add_argument("--window", type=float, default=0)
+    dr.add_argument("--emit", action="store_true")
     args = p.parse_args()
     if args.cmd == "demo":
         cmd_demo()
@@ -419,10 +553,24 @@ def main() -> None:
         cmd_budget()
     elif args.cmd == "costs":
         cmd_costs()
+    elif args.cmd == "logs":
+        cmd_logs(args.layer, args.task, args.limit, args.purge,
+                 args.delete_task)
+    elif args.cmd == "alerts":
+        cmd_alerts()
     elif args.cmd == "releases":
         cmd_releases()
     elif args.cmd == "release-rollback":
         cmd_release_rollback(args.reason)
+    elif args.cmd == "migrate":
+        cmd_migrate(args.old_model_id, args.new_model_id,
+                    args.dataset, args.apply, args.gray)
+    elif args.cmd == "migrations":
+        cmd_migrations(args.migration_id)
+    elif args.cmd == "memory-eval":
+        cmd_memory_eval(not args.no_persist)
+    elif args.cmd == "drift":
+        cmd_drift(args.window, args.emit)
     elif args.cmd == "serve":
         cmd_serve(args.host, args.port)
     else:

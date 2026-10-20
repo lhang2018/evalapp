@@ -67,6 +67,16 @@ class TestMemoryGovernance(Base):
         self.assertEqual(self.app.memory.get(item.memory_id).use_count, 1)
 
 
+class _FakeAdapter:
+    """路由解析要求适配器实现 profile()（与 ModelAdapter 契约一致）。"""
+
+    def __init__(self, model_id):
+        self.model_id = model_id
+
+    def profile(self):
+        return ModelProfile(model_id=self.model_id)
+
+
 class TestRouterScoring(unittest.TestCase):
     def _router(self):
         reg = ModelRegistry()
@@ -79,18 +89,20 @@ class TestRouterScoring(unittest.TestCase):
                                   price_per_1k_output=0.0002,
                                   avg_latency_s=0.3))
         router = ModelRouter(reg, object())
-        router.setup(lambda mid: {"model_id": mid})
+        router.setup(lambda mid: _FakeAdapter(mid))
         return router
 
     def test_default_route_prefers_quality(self):
         router = self._router()
-        self.assertEqual(router.route("general", "general")["model_id"],
-                         "strong")
+        self.assertEqual(
+            router.route("general", "general").profile().model_id,
+            "strong")
 
     def test_prefer_cost_route(self):
         router = self._router()
         self.assertEqual(
-            router.route("general", "general", prefer_cost=True)["model_id"],
+            router.route("general", "general",
+                         prefer_cost=True).profile().model_id,
             "cheap")
 
     def test_rank_is_sorted_by_score(self):

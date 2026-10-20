@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 170 项 + 客户端 29 项全部通过**。
+测试基线（2026-10-20）：**Python 212 项 + 客户端 29 项全部通过**。
 
 ---
 
@@ -79,6 +79,8 @@ Python 服务端（标准库，SQLite）
 | MD-05 | 质量优先评分 | ✅ | `models/router.py` | 质量 0.70 / 成本 0.15 / 时延 0.15，附 `rank()` 解释 |
 | MD-06 | 模型档案 / 迁移步骤表 | ✅ | `models/` | 真实 Key 联调已验证（DeepSeek 兼容端点） |
 | MD-07 | 路由结果落盘 | ✅ | `core/controller.py` | `runtime_manifest.model_route` |
+| MD-08 | 模型迁移执行链 | ✅ | `models/migration.py`, `app.py` | 九步：档案/资产继承 → 兼容性 → 同数据集回归对比 → 发布组合 → 受控启用 → 回滚；状态 `planned/compatible/evaluated/ready/applied/blocked/rolled_back` |
+| MD-09 | 固定模型覆盖路由 | ✅ | `models/router.py`, `core/controller.py` | `model_override` 解析失败回退默认路由并写 `model_override_unavailable` 事件 |
 
 ### 2.4 工具系统（PRD 14-16）
 
@@ -112,6 +114,8 @@ Python 服务端（标准库，SQLite）
 | MM-08 | 结构化压缩 + 摘要 | ✅ | `memory/context.py` | 约束保留率在裁剪前采集 |
 | MM-09 | 上下文质量检查 | ✅ | `memory/context.py` | 约束保留/跨域污染/不可信指令/溢出/状态缺失；异常写事件 |
 | MM-10 | 真实嵌入向量检索 | ⬜ | — | 当前为词法 + 哈希向量 |
+| MM-11 | 记忆质量评测 | ✅ | `memory/evaluation.py` | 写入准确率/召回/精确率/MRR/过期误用/冲突正确性；内置用例 + 报告持久化 |
+| MM-12 | 运行反馈与记忆收益 | ✅ | `memory/evaluation.py`, `app.py` | 有/无记忆任务成功率对比、有害/误导反馈率；缺样本标 `insufficient_evidence` |
 
 ### 2.6 专家体系（PRD 9-10）
 
@@ -155,6 +159,7 @@ Python 服务端（标准库，SQLite）
 | DG-07 | 假设显式升级候选 | ✅ | `evolution/controller.py` | 风险 L1-L4 映射；仍需门禁 |
 | DG-08 | 诊断不自动发布 | ✅ | `evolution/controller.py` | 硬约束 |
 | DG-09 | LLM 辅助假设生成 | ⬜ | — | 按 Arch 9.4 模型不判根因 |
+| DG-10 | 环境漂移检测 | ✅ | `evolution/drift.py`, `core/metrics.py`, `core/alerts.py` | 工具成功率/契约错误/模型行为/任务分布/组件与依赖版本；当前窗 vs 基线窗；处置建议 stop/health_check/compatible_path/evolution |
 
 ### 2.10 进化与评测（PRD 46-54 / Arch 10-11）
 
@@ -220,11 +225,18 @@ Python 服务端（标准库，SQLite）
 | CP-01 | REST API（stdlib ThreadingHTTPServer） | ✅ | `api/server.py` | 见 §3 |
 | CP-02 | Bearer 鉴权（普通/管理双令牌） | ✅ | `api/auth.py` | `EVOAGENT_API_TOKEN` / `EVOAGENT_ADMIN_TOKEN` |
 | CP-03 | 审计日志 | ✅ | `core/audit.py` | 进化/发布变更写审计 |
-| CP-04 | 指标 | ✅ | `core/metrics.py` | JSON + Prometheus（`?format=prometheus`） |
+| CP-04 | 指标 | ✅ | `core/metrics.py` | JSON + Prometheus（`?format=prometheus`）；无样本指标输出 `NaN` 保持序列稳定 |
 | CP-05 | 管理页数据接口 | ✅ | `api/admin.py` | `GET /admin`（HTML） |
 | CP-06 | 健康检查 | ✅ | `api/server.py`, `app.py` | 含专家、预算、诊断计数 |
 | CP-07 | Web 管理端完整界面 | ⬜ | — | 数据层已备 |
-| CP-08 | 日志分层细化 | 🔹 | `core/events.py` | 当前统一事件模型 |
+| CP-08 | 四层日志分层 | ✅ | `core/log_layers.py` | runtime_event / execution_trace / diagnostic_evidence / audit，独立保留期与读取角色 |
+| CP-09 | 执行轨迹 | ✅ | `core/log_layers.py` (`ExecutionTracer`) | 订阅事件总线，按任务连续 `step` 落盘；敏感事件只留脱敏标记 |
+| CP-10 | 诊断证据授权 | ✅ | `core/log_layers.py` (`EvidenceStore`) | 仅 `standard` + `authorized=True` 可导出；`secret` 拒绝入库 |
+| CP-11 | 保留期清理与按任务删除 | ✅ | `core/log_layers.py` (`LayerManager`) | 30/14/7/365 天；删日志保留任务行与审计 |
+| CP-12 | 分层访问控制 | ✅ | `api/server.py` | `/logs/evidence` 与清理操作仅 admin；轨迹需 execution_trace 读权限 |
+| CP-13 | 扩展指标 | ✅ | `core/metrics.py` | 模型调用成功率、工具契约错误率、ReAct 异常率、恢复、上下文、记忆、进化/回滚、意图维度 |
+| CP-14 | 分级告警 | ✅ | `core/alerts.py` | 8 条规则（成功率/连续失败/模型/契约/成本/回滚/ReAct/安全），`GET /alerts` |
+| CP-15 | 模型调用计量 | ✅ | `models/metering.py` (`MeteredModel`) | 包装适配器，记录 `model_id/op/ok/error_class/latency_s` 不影响原行为 |
 
 ---
 
@@ -248,9 +260,17 @@ Python 服务端（标准库，SQLite）
 | `/costs?limit=N` | 成本报告（totals/by_task/by_domain/by_model/evolution） |
 | `/workflows`、`/workflows/{id}` | 工作流资产库 |
 | `/memory/stats` | 记忆统计 |
+| `/memory/evaluations?limit=N` | 记忆评测报告列表 |
+| `/models` | 模型档案、默认路由与显式路由 |
+| `/models/migrations`、`/models/migrations/{id}` | 模型迁移列表/详情 |
 | `/diagnostics`、`/diagnostics/{case_id}`、`/diagnostics/trends` | 诊断案例/详情/趋势 |
+| `/diagnostics/drift` | 环境漂移检测报告（只读，不产生事件） |
 | `/evolution/candidates`、`/evolution/candidates/{id}`、`/evolution/datasets` | 进化候选与数据集 |
 | `/releases`、`/releases/{id}` | 发布清单 |
+| `/alerts` | 当前告警（按 `AlertPolicy` 评估） |
+| `/logs/layers` | 四层日志策略、计数与当前角色可读性 |
+| `/logs/traces?task_id=&limit=` | 执行轨迹（需 execution_trace 权限） |
+| `/logs/evidence?task_id=&limit=` | 诊断证据（admin；返回 `exportable` 标记） |
 | `/admin` | 只读管理页 |
 
 ### POST
@@ -261,6 +281,8 @@ Python 服务端（标准库，SQLite）
 | `/tasks/{id}/cancel` | 取消 |
 | `/tasks/{id}/pause` / `/tasks/{id}/resume` | 暂停/恢复（`409 requires_force` 表示需显式 force） |
 | `/events/sync` | 批量事件摄取 → `accepted` / `duplicates` / `rejected` |
+| `/logs/purge` | 按保留期清理各层（admin，写审计） |
+| `/logs/delete-task` | 删除单任务日志与证据（admin，保留任务行，写审计） |
 | `/evolution/candidates` | 候选提案 |
 | `/evolution/candidates/{id}/evaluate` | 评测 |
 | `/evolution/candidates/{id}/approve` | 批准 |
@@ -269,6 +291,13 @@ Python 服务端（标准库，SQLite）
 | `/evolution/candidates/{id}/rollback` | 回滚 |
 | `/releases/rollback` | 发布回滚 |
 | `/diagnostics/scan` | 扫描失败任务生成案例 |
+| `/diagnostics/drift/scan` | 检测并显式发出 `drift_detected` 事件 |
+| `/memory/evaluate` | 运行记忆质量评测并持久化报告 |
+| `/models/migrations` | 创建迁移（未知模型 `404`，同模型 `400`，不兼容 `409`） |
+| `/models/migrations/{id}/regression` | 同数据集回归对比 |
+| `/models/migrations/{id}/release` | 生成发布组合 |
+| `/models/migrations/{id}/apply` | 受控启用（`gray_percent`、`actor`） |
+| `/models/migrations/{id}/rollback` | 回滚迁移（`reason`） |
 | `/diagnostics/{case_id}/experiments` | 运行探针实验（可选 `fault: error|timeout|fail`） |
 | `/diagnostics/{case_id}/candidates` | 假设升级候选 |
 
@@ -292,6 +321,12 @@ Python 服务端（标准库，SQLite）
 | `budget` | 全部预算层级限额 + 运行用量 |
 | `costs` | 成本报告 |
 | `releases` / `release-rollback` | 发布清单/回滚 |
+| `logs [--layer] [--task] [--limit] [--purge] [--delete-task]` | 分层日志查看/清理/按任务删除 |
+| `alerts` | 当前告警（含漂移状态） |
+| `migrate <old> <new> [--dataset] [--apply] [--gray N]` | 模型迁移：兼容性 → 回归 → 发布组合 →（可选）启用 |
+| `migrations [migration_id]` | 迁移列表/详情 |
+| `memory-eval [--no-persist]` | 记忆质量评测与运行反馈 |
+| `drift [--window N] [--emit]` | 环境漂移检测 |
 
 ---
 
@@ -379,11 +414,15 @@ Python 服务端（标准库，SQLite）
 | `workflow_runs` / `workflow_defs` | 工作流运行与资产库 |
 | `client_requests` | 任务幂等键 → task_id |
 | `runtime_events` | 运行事件（含隐私/关联/同步字段） |
+| `execution_traces` | 执行轨迹（任务 `step` 连续、隐私分级、按 `at` 索引） |
+| `diagnostic_evidence` | 诊断证据（引用、授权标记、保留 7 天） |
 | `memory_items` | 记忆、关系、使用计数 |
 | `tool_executions` | 幂等执行日志 |
 | `budget_ledger` | 预算账本（scope + 日/月键） |
 | `diagnostic_cases` / `diagnostic_hypotheses` / `diagnostic_experiments` | 诊断 |
 | `evolution_candidates` | 候选生命周期 |
+| `model_migrations` | 模型迁移执行链（步骤、兼容性、回归对比、状态） |
+| `memory_eval_reports` | 记忆评测报告（指标、用例明细、运行反馈） |
 | `eval_reports` | 评测报告（含元数据） |
 | `release_manifests` / `release_events` | 发布清单与事件 |
 | `audit_log` | 审计 |
@@ -427,7 +466,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，170 项）
+### Python（`tests/`，212 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -447,6 +486,10 @@ Python 服务端（标准库，SQLite）
 | `test_evolution_benefit.py` | 十维收益、跨领域回归、发布后监测采集/判定/回滚（21 项） |
 | `test_governance.py` | 上下文治理、评测完整性、fail-closed 门禁（12 项） |
 | `test_event_sync.py` | 事件同步、旧库迁移、幂等提交（8 项） |
+| `test_model_migration.py` | 九步迁移、回归对比、受控启用/回滚、固定模型覆盖、迁移 API（10 项） |
+| `test_memory_evaluation.py` | 记忆评测指标、过期/冲突用例、运行反馈、报告 API/指标（6 项） |
+| `test_drift.py` | 漂移信号与处置建议、版本变更、事件发射、指标/告警/API（9 项） |
+| `test_observability.py` | 分层策略/脱敏、执行轨迹、证据导出授权、保留清理、扩展指标、告警、REST 访问控制（17 项） |
 | `test_control_plane.py` | 鉴权、审计、指标、管理页 |
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
@@ -482,9 +525,7 @@ cd android-app && npm run test:offline
 | 端到端加密、多设备冲突合并 | PRD 72-76/86 | ⬜ | |
 | Web 管理端完整界面 | PRD 90 | ⬜ | `GET /admin` 只读页与数据接口已备 |
 | 发布自动分支/合并 | PRD 59-63 | ⬜ | 仅 git 基线 |
-| 日志分层细化 | PRD 37-40 | 🔹 | 统一事件模型 |
 | 任务模型全字段 | PRD 7.3 | 🔹 | 核心子集已实现 |
-| 意图级指标 | PRD 37-40 | 🔹 | 现有任务/领域/模型维度 |
 
 ---
 
@@ -492,7 +533,7 @@ cd android-app && npm run test:offline
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 170 passed
+python -m pytest tests/ -q                       # 212 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -502,12 +543,21 @@ python -m evoagent.cli demo
 python -m evoagent.cli workflow
 python -m evoagent.cli budget
 python -m evoagent.cli costs
+python -m evoagent.cli logs
+python -m evoagent.cli alerts
+python -m evoagent.cli migrate mock-1 mock-2      # 兼容性 → 回归 → 发布组合
+python -m evoagent.cli migrations
+python -m evoagent.cli memory-eval --no-persist
+python -m evoagent.cli drift
 
 # 4. API 冒烟
 python -m evoagent.cli serve --port 8300
 #   - 两次相同 client_request_id 的 POST /tasks → 同一 task_id
 #   - 重复 POST /events/sync → duplicates
-#   - GET /costs /metrics /admin
+#   - GET /costs /metrics /admin /alerts /logs/layers /logs/traces
+#   - GET /models /models/migrations /memory/evaluations /diagnostics/drift
+#   - POST /models/migrations → regression → release → apply → rollback
+#   - POST /memory/evaluate、/diagnostics/drift/scan
 
 # 5. Android（真机/模拟器）
 adb reverse tcp:8300 tcp:8300
@@ -546,6 +596,16 @@ cd android-app && npm run android
 
 ## 变更记录
 
+### 2026-10-20 — 模型迁移执行链 + 记忆评测 + 环境漂移检测
+
+- 需求：PRD 20 / 28 / 44 / 104 / 111；Arch 7.4 / 8.2 / 9.3 / 9.5。
+- 变更：新增模型迁移九步执行链（档案/资产继承、兼容性、同数据集回归对比、发布组合、灰度启用、回滚）与固定模型覆盖路由；新增记忆质量评测（写入准确率/召回/精确率/MRR/过期误用/冲突正确性）与运行反馈（记忆收益、有害/误导率）；新增环境漂移检测（工具成功率、契约错误、模型行为、任务分布、组件与依赖版本）并接入指标、告警、API 与 CLI。
+- 代码：`models/migration.py`（`ModelMigrationManager`）、`memory/evaluation.py`（`MemoryEvaluator`、`builtin_memory_cases`）、`evolution/drift.py`（`DriftDetector`、`DriftPolicy`）、`models/router.py`（严格 `resolve()`）、`core/controller.py`（`model_route` / 覆盖回退）、`core/metrics.py`（漂移缓存与 Prometheus 序列）、`core/alerts.py`（`environment_drift`）、`core/persistence.py`（两张新表）、`api/server.py`、`cli.py`、`app.py`。
+- 接口/配置：`GET /models`、`/models/migrations`、`/models/migrations/{id}`、`/memory/evaluations`、`/diagnostics/drift`；`POST /models/migrations`、`/models/migrations/{id}/{action}`、`/memory/evaluate`、`/diagnostics/drift/scan`；CLI `migrate`、`migrations`、`memory-eval`、`drift`；新表 `model_migrations`、`memory_eval_reports`。
+- 测试：新增 `tests/test_model_migration.py`（10 项）、`tests/test_memory_evaluation.py`（6 项）、`tests/test_drift.py`（9 项）；Python 总数 187 → 212，客户端保持 29。
+- 状态变化：新增 MD-08、MD-09、MM-11、MM-12、DG-10 ✅。
+- 已知限制：迁移回归使用内置样本集，未接入外部评测平台；漂移检测基于事件窗口与任务分布，不读取主机指标；记忆评测内置用例规模有限。
+
 ### 2026-10-20 — 项目初始交付 + 八轮迭代汇总
 
 按 `progress.md` Session 1–8 汇总的当前状态：
@@ -562,8 +622,20 @@ cd android-app && npm run android
 | Session 8 | 九级预算 + 成本报告 | 149 + 29 |
 | Session 9 | 全量功能记录文档（`FEATURES.md`） | 149 + 29 |
 | Session 10 | 十维收益 + 发布后监测与自动回滚判定 | 170 + 29 |
+| Session 11 | 日志四层分层 + 扩展指标 + 分级告警 | 187 + 29 |
+| Session 12 | 模型迁移执行链 + 记忆评测 + 环境漂移检测 | 212 + 29 |
 
 功能状态以本文件 §2–§9 为准；每轮细节与缺陷修复见 `progress.md`。
+
+### 2026-10-20 — 日志分层 + 可观测指标与告警
+
+- 需求：PRD 37-40 / 86；Arch 9.2 / 20.1-20.2。
+- 变更：四层日志（运行事件/执行轨迹/诊断证据/审计）独立存储与保留期；执行轨迹按任务连续 `step` 记录；证据导出需 `standard` + 授权；扩展模型/工具/ReAct/恢复/上下文/记忆/进化/回滚/意图维度指标；8 条分级告警规则；管理接口与 CLI。
+- 代码：`core/log_layers.py`（`LayerPolicy`、`ExecutionTracer`、`EvidenceStore`、`LayerManager`）、`core/alerts.py`（`AlertPolicy`、`evaluate_alerts`）、`models/metering.py`（`MeteredModel`）、`core/metrics.py`（扩展快照/Prometheus）、`core/events.py`（`aggregate`/`count`/`purge_before`/`delete_task_events`）、`core/persistence.py`（两张新表及方法）、`api/server.py`、`cli.py`、`app.py`、`core/controller.py`、`react/engine.py`。
+- 接口/配置：`GET /alerts`、`/logs/layers`、`/logs/traces`、`/logs/evidence`；`POST /logs/purge`、`/logs/delete-task`；CLI `logs`、`alerts`；新表 `execution_traces`、`diagnostic_evidence`。
+- 测试：`tests/test_observability.py`（17 项），Python 总数 170 → 187，客户端保持 29。
+- 状态变化：CP-04 扩展；CP-08 🔹 → ✅；新增 CP-09…CP-15 ✅；未实现清单移除「日志分层细化」「意图级指标」。
+- 已知限制：执行轨迹为事件级，不含逐 token/屏幕录制；证据引用需外部存储配合；清理仅按保留期，不做容量上限。
 
 ### 2026-10-20 — 十维收益评价 + 发布后监测
 

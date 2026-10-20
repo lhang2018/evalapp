@@ -137,7 +137,8 @@ class ReactEngine:
             messages.append(ChatMessage(
                 role="tool", content=f"{tool}::{_json_compact(payload)}"))
             if self.bus:
-                self.bus.emit(event_type="tool_call", run_id=run_id,
+                self.bus.emit(event_type="tool_call", task_id=run_id,
+                              run_id=run_id,
                               payload={"tool": tool, "ok": result.ok,
                                        "error_class": result.error_class})
 

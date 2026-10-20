@@ -14,15 +14,21 @@ from .evaluator import EvalCase, TaskRunner
 
 
 class ControllerTaskRunner(TaskRunner):
-    def __init__(self, controller, ledger=None, scope: str = "evolution"):
+    def __init__(self, controller, ledger=None, scope: str = "evolution",
+                 model_id: Optional[str] = None):
         self.controller = controller
         self.ledger = ledger
         self.scope = scope
         self.budget: Optional[BudgetController] = None
+        # 迁移回归：固定目标模型执行，与常规路由隔离（PRD 20）
+        self.model_id = model_id
 
     def set_budget(self, budget: Optional[BudgetController]) -> None:
         """注入/清除单候选实验预算（由进化控制器在评测期间设置）。"""
         self.budget = budget
+
+    def set_model(self, model_id: Optional[str]) -> None:
+        self.model_id = model_id
 
     def run_case(self, case: EvalCase) -> Tuple[bool, float, Dict]:
         acceptance = case.expected or [{"type": "result_nonempty"}]
@@ -36,7 +42,8 @@ class ControllerTaskRunner(TaskRunner):
         try:
             task = self.controller.submit_task(
                 case.input_goal, intent=case.intent, domain=case.domain,
-                acceptance=acceptance, wait=True, source="evaluation")
+                acceptance=acceptance, wait=True, source="evaluation",
+                model_override=self.model_id)
         except Exception as e:  # noqa: BLE001 —— 评测失败不能中断整批
             return False, time.time() - started, {
                 "error": f"{type(e).__name__}: {e}", "cost": 0.0}

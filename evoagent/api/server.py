@@ -15,6 +15,7 @@ from urllib.parse import parse_qs, urlparse
 
 from ..app import App
 from ..core.budget import CostReporter
+from ..core.log_layers import role_can_read
 from ..core.task import RiskLevel, TaskStatus
 from ..evolution.candidates import IllegalCandidateTransition
 from ..evolution.controller import PUBLISH_RULES
@@ -76,7 +77,8 @@ def make_handler(app: App):
         def do_GET(self):
             path = urlparse(self.path).path.rstrip("/")
             qs = self._query()
-            if self._authorize("GET", path) is None:
+            auth = self._authorize("GET", path)
+            if auth is None:
                 return
             if path in ("/admin", "/"):
                 return self._text(200, ADMIN_HTML, "text/html; charset=utf-8")
@@ -85,6 +87,30 @@ def make_handler(app: App):
                     return self._text(200, app.metrics.prometheus(),
                                       "text/plain; version=0.0.4; charset=utf-8")
                 return self._json(200, app.metrics.snapshot())
+            if path == "/alerts":
+                snap = app.metrics.snapshot()
+                policy = app.metrics.alert_policy
+                return self._json(200, {
+                    "alerts": snap.get("alerts", []),
+                    "policy": {k: getattr(policy, k)
+                               for k in policy.__dataclass_fields__}})
+            if path == "/logs/layers":
+                return self._json(200, app.logs.stats(auth.role))
+            if path == "/logs/traces":
+                if not role_can_read("execution_trace", auth.role):
+                    return self._json(403, {"error": "需要 execution_trace 读取权限"})
+                limit = min(1000, int(qs.get("limit") or 100))
+                return self._json(200, {"traces": app.db.list_traces(
+                    task_id=qs.get("task_id") or None, limit=limit)})
+            if path == "/logs/evidence":
+                if not role_can_read("diagnostic_evidence", auth.role):
+                    return self._json(403, {"error": "需要 admin 权限"})
+                limit = min(1000, int(qs.get("limit") or 100))
+                rows = app.evidence.list(task_id=qs.get("task_id") or None,
+                                         limit=limit)
+                for row in rows:
+                    row["exportable"] = app.evidence.exportable(row)
+                return self._json(200, {"evidence": rows})
             if path == "/audit":
                 limit = int(qs.get("limit") or 100)
                 return self._json(200, {"audit": app.audit.list(limit=limit)})
@@ -120,6 +146,23 @@ def make_handler(app: App):
                 m = app.release_manifest
                 return self._json(200, {**m.to_dict(),
                                         "current": app.releases.current_release_id})
+            if path == "/models":
+                return self._json(200, {
+                    "default_model_id": app.router.default_model_id,
+                    "routes": app.router.routes(),
+                    "models": [_model_summary(p) for p in
+                               app.model_registry.all()]})
+            if path == "/models/migrations":
+                limit = min(200, int(qs.get("limit") or 50))
+                return self._json(200, {
+                    "migrations": [m.to_dict() for m in
+                                   app.migrations.list(limit=limit)]})
+            if path.startswith("/models/migrations/"):
+                mid = path.split("/")[3]
+                mig = app.migrations.get(mid)
+                if mig is None:
+                    return self._json(404, {"error": "迁移记录不存在"})
+                return self._json(200, mig.to_dict())
             if path == "/evolution/candidates":
                 limit = int(qs.get("limit") or 100)
                 status = qs.get("status")
@@ -147,6 +190,11 @@ def make_handler(app: App):
                 return self._json(200, {"workflow": data})
             if path == "/memory/stats":
                 return self._json(200, app.memory.stats())
+            if path == "/memory/evaluations":
+                limit = min(100, int(qs.get("limit") or 20))
+                return self._json(200, {
+                    "evaluations": app.db.list_memory_eval_reports(
+                        limit=limit)})
             if path == "/releases":
                 return self._json(200, {
                     "current": app.releases.current_release_id,
@@ -171,6 +219,8 @@ def make_handler(app: App):
             if path == "/diagnostics/trends":
                 return self._json(200, app.diagnostics.trends(
                     limit=int(qs.get("limit") or 200)))
+            if path == "/diagnostics/drift":
+                return self._json(200, app.drift.detect())
             if path.startswith("/diagnostics/"):
                 case_id = path.split("/")[2]
                 case = app.db.get_diagnostic_case(case_id)
@@ -223,7 +273,31 @@ def make_handler(app: App):
                 return self._json(202, {"task_id": t.task_id, "status": "CREATED"})
             if path == "/events/sync":
                 return self._events_sync(body)
+            if path == "/memory/evaluate":
+                report = app.run_memory_eval()
+                app.audit.record(auth.role, "memory.evaluate",
+                                 target=report["report_id"],
+                                 detail={"recall": report.get("recall"),
+                                         "precision": report.get("precision"),
+                                         "case_count": report.get("case_count")})
+                return self._json(200, report)
+            if path == "/diagnostics/drift/scan":
+                report = app.drift.detect(emit=True)
+                app.audit.record(auth.role, "diagnostics.drift_scan",
+                                 target="drift",
+                                 outcome=report.get("status"),
+                                 detail={"signal_count":
+                                         report.get("signal_count"),
+                                         "actions":
+                                         report.get("recommended_actions")})
+                return self._json(200, report)
+            if path == "/models/migrations":
+                return self._migration_create(body, auth.role)
             parts = path.lstrip("/").split("/")
+            if (len(parts) == 4 and parts[0] == "models"
+                    and parts[1] == "migrations"):
+                return self._migration_action(parts[2], parts[3], body,
+                                              auth.role)
             if len(parts) == 3 and parts[0] == "tasks" and parts[2] == "cancel":
                 out = app.controller.cancel_task(parts[1])
                 return self._json(200 if out.get("ok") else 409, out)
@@ -249,6 +323,23 @@ def make_handler(app: App):
                     and parts[1] == "candidates"):
                 return self._evolution_action(parts[2], parts[3], body,
                                               auth.role)
+            if path == "/logs/purge":
+                if auth.role != "admin":
+                    return self._json(403, {"error": "该操作需要 admin 权限"})
+                out = app.logs.purge()
+                app.audit.record(auth.role, "logs.purge",
+                                 target="logs", detail=out)
+                return self._json(200, {"deleted": out})
+            if path == "/logs/delete-task":
+                if auth.role != "admin":
+                    return self._json(403, {"error": "该操作需要 admin 权限"})
+                task_id = (body.get("task_id") or "").strip()
+                if not task_id:
+                    return self._json(400, {"error": "缺少 task_id"})
+                out = app.logs.delete_task(task_id)
+                app.audit.record(auth.role, "logs.delete_task",
+                                 target=task_id, detail=out)
+                return self._json(200, {"task_id": task_id, "deleted": out})
             if path == "/releases/rollback":
                 reason = (body.get("reason") or "manual rollback").strip()
                 out = app.releases.rollback(reason)
@@ -284,6 +375,61 @@ def make_handler(app: App):
             if not accepted and not duplicates:
                 return self._json(400, payload)
             return self._json(200, payload)
+
+        # ---------- 模型迁移（PRD 20 / 104 / 111）----------
+        def _migration_create(self, body: Dict[str, Any], actor: str):
+            old = (body.get("old_model_id") or "").strip()
+            new = (body.get("new_model_id") or "").strip()
+            if not old or not new:
+                return self._json(400, {"error": "缺少 old_model_id 或 new_model_id"})
+            try:
+                mig = app.migrations.create(
+                    old, new, dataset_id=body.get("dataset_id"))
+            except KeyError as e:
+                return self._json(404, {"error": str(e)})
+            except ValueError as e:
+                return self._json(400, {"error": str(e)})
+            app.audit.record(actor, "model.migration_create",
+                             target=mig.migration_id,
+                             outcome=mig.status,
+                             detail={"old": old, "new": new})
+            return self._json(201 if mig.status != "blocked" else 409,
+                              mig.to_dict())
+
+        def _migration_action(self, migration_id: str, action: str,
+                              body: Dict[str, Any], actor: str):
+            gray = body.get("gray_percent", 100)
+            try:
+                if action == "regression":
+                    out = app.migrations.run_regression(
+                        migration_id,
+                        dataset_id=body.get("dataset_id")).to_dict()
+                elif action == "release":
+                    out = app.migrations.prepare_release(migration_id).to_dict()
+                elif action == "apply":
+                    out = app.migrations.apply(
+                        migration_id, actor=body.get("actor") or actor,
+                        gray_percent=int(gray),
+                        activate_default=body.get("activate_default"))
+                elif action == "rollback":
+                    out = app.migrations.rollback(
+                        migration_id,
+                        reason=(body.get("reason") or "").strip())
+                else:
+                    return self._json(404, {"error": f"未知动作: {action}"})
+            except KeyError as e:
+                return self._json(404, {"error": str(e)})
+            except (TypeError, ValueError) as e:
+                return self._json(400, {"error": str(e)})
+            except RuntimeError as e:
+                return self._json(409, {"error": str(e)})
+            status = out.get("status")
+            if isinstance(out.get("migration"), dict):
+                status = out["migration"].get("status")
+            app.audit.record(actor, f"model.migration_{action}",
+                             target=migration_id, outcome=status or "ok",
+                             detail={"action": action})
+            return self._json(200, out)
 
         # ---------- 进化轨（PRD 46-54 / 80-82）----------
         def _evolution_propose(self, body: Dict[str, Any], actor: str = "operator"):
@@ -443,6 +589,26 @@ def make_handler(app: App):
                                         cand.risk_level, "strict_review")})
 
     return Handler
+
+
+def _model_summary(profile: Any) -> Dict[str, Any]:
+    return {
+        "model_id": profile.model_id, "provider": profile.provider,
+        "api_version": profile.api_version,
+        "context_limit": profile.context_limit,
+        "supports_tool_call": profile.supports_tool_call,
+        "supports_structured_output": profile.supports_structured_output,
+        "supports_vision": profile.supports_vision,
+        "rpm_limit": profile.rpm_limit,
+        "price_per_1k_input": profile.price_per_1k_input,
+        "price_per_1k_output": profile.price_per_1k_output,
+        "quality_score": profile.quality_score,
+        "avg_latency_s": profile.avg_latency_s,
+        "available": profile.available,
+        "compat_tested": profile.compat_tested,
+        "last_verified_at": profile.last_verified_at,
+        "known_limitations": profile.known_limitations,
+    }
 
 
 def _candidate_summary(cand: Any) -> Dict[str, Any]:
