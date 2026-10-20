@@ -188,6 +188,11 @@ class RuntimeController:
         expert: Expert = self.experts.route(intent or "general", domain or "")
         task.intent = intent or expert.expert_id
         task.domain = domain or domain_hint or expert.expert_id
+        # 领域专家预算池（PRD 55）：任务按领域累计，超限由账本拒绝
+        budget.bind_pool(
+            f"expert:{task.domain}",
+            max_model_calls=self.cfg.budget.expert_daily_model_calls,
+            max_cost=self.cfg.budget.expert_daily_cost)
         # PRD 12.3: 意图不明确时按风险采取不同策略
         risk = task.risk_level.value
         conf = task.confidence
@@ -209,6 +214,7 @@ class RuntimeController:
             return task
         task = self._move(task, TaskStatus.PLANNING)
         model = self._route_model(task)
+        self._bind_model_pool(budget, model)
         try:
             plan = self.planner.make_plan(
                 task.user_goal, intent=task.intent,
@@ -242,6 +248,7 @@ class RuntimeController:
     def _run_react(self, task: Task, budget: BudgetController) -> Task:
         expert = self.experts.get(task.domain) or self.experts.route(task.intent)
         model = self._route_model(task)
+        self._bind_model_pool(budget, model)
         whitelist = expert.tool_whitelist if expert else None
         ctx = self.assembler.assemble(
             task.user_goal, intent=task.intent, domain=task.domain,
@@ -320,10 +327,21 @@ class RuntimeController:
                 and cp.task_state.get("workflow_outputs")):
             completed = cp.task_state["workflow_outputs"]
 
+        cfg = self.cfg.budget
+        wf_budget = budget.for_scope(
+            f"workflow:{wf.workflow_id}",
+            BudgetLimits(
+                max_model_calls=cfg.workflow_max_model_calls,
+                max_tool_calls=cfg.workflow_max_tool_calls,
+                max_cost=cfg.workflow_max_cost,
+                max_seconds=cfg.workflow_max_seconds,
+                max_cost_per_model_call=cfg.task_max_cost_per_model_call,
+                max_tool_calls_per_tool=cfg.task_max_tool_calls_per_tool))
         result = self.workflows.run(
-            wf, {"goal": task.user_goal}, budget=budget,
+            wf, {"goal": task.user_goal}, budget=wf_budget,
             cancel_flag=self._active.get(task.task_id), confirm=_confirm,
             completed=completed)
+        task.runtime_manifest["workflow_budget"] = wf_budget.snapshot()
         if result.status == WorkflowNodeState.PAUSED:
             task = self._move(task, TaskStatus.SUSPENDED)
             self.db.save_task(task)
@@ -365,6 +383,14 @@ class RuntimeController:
                   failure_override: Optional[str] = None,
                   tool_results: Optional[List[ToolResult]] = None,
                   stop_reason: str = "") -> Task:
+        # 预算在最后一次调用后才越界时，不能把任务记为成功（PRD 56）
+        try:
+            budget.check_alive()
+        except BudgetExceeded as e:
+            if verdict.passed:
+                verdict = Verdict(passed=False, checks=[
+                    {"type": "budget", "passed": False, "error": str(e)}])
+            failure_override = failure_override or f"预算耗尽: {e}"
         task.result = answer
         task.result_evidence = [{
             "verdict": verdict.summary(), "passed": verdict.passed,
@@ -454,12 +480,7 @@ class RuntimeController:
             usage = None
             state = (cp.budget_state if cp else {}) or {}
             if state.get("usage"):
-                u = state["usage"]
-                usage = BudgetUsage(
-                    model_calls=int(u.get("model_calls", 0)),
-                    tool_calls=int(u.get("tool_calls", 0)),
-                    cost=float(u.get("cost", 0.0)),
-                    seconds=float(u.get("seconds", 0.0)))
+                usage = BudgetUsage.from_dict(state["usage"])
             budget = self._make_budget(task, initial_usage=usage)
             self._apply_expert_budget(task, budget)
             if wait:
@@ -549,7 +570,16 @@ class RuntimeController:
     def _make_budget(self, task: Task,
                      initial_usage: Optional[BudgetUsage] = None
                      ) -> BudgetController:
-        return BudgetController(BudgetLimits(), dict(task.budget_policy or {}),
+        cfg = self.cfg.budget
+        limits = BudgetLimits(
+            max_model_calls=cfg.task_max_model_calls,
+            max_tool_calls=cfg.task_max_tool_calls,
+            max_cost=cfg.task_max_cost,
+            max_seconds=cfg.task_max_seconds,
+            max_concurrent=cfg.max_concurrent_tasks,
+            max_cost_per_model_call=cfg.task_max_cost_per_model_call,
+            max_tool_calls_per_tool=cfg.task_max_tool_calls_per_tool)
+        return BudgetController(limits, dict(task.budget_policy or {}),
                                 initial_usage=initial_usage,
                                 ledger=self.ledger, ledger_scope="runtime")
 
@@ -573,8 +603,20 @@ class RuntimeController:
             profile = None
         task.runtime_manifest["model_route"] = {
             "model_id": getattr(profile, "model_id", None),
+            "provider": getattr(profile, "provider", None),
             "intent": task.intent, "domain": task.domain}
         return model
+
+    def _bind_model_pool(self, budget: BudgetController, model: Any) -> None:
+        """模型提供方预算池（PRD 55）：同一提供方跨任务累计。"""
+        try:
+            provider = model.profile().provider or "unknown"
+        except Exception:  # noqa: BLE001
+            provider = "unknown"
+        budget.bind_pool(
+            f"provider:{provider}",
+            max_model_calls=self.cfg.budget.provider_daily_model_calls,
+            max_cost=self.cfg.budget.provider_daily_cost)
 
     def _context_limit_chars(self, model: Any) -> int:
         """上下文预算同时受配置与模型窗口约束（Arch 8.5）。"""

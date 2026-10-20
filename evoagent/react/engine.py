@@ -86,7 +86,12 @@ class ReactEngine:
             except BudgetExceeded as e:
                 outcome.stop_reason = f"budget:{e.dimension}"
                 return outcome
-            budget.record_model_call(_estimate_cost(adapter, messages, suggestion))
+            try:
+                model_id = adapter.profile().model_id
+            except Exception:  # noqa: BLE001
+                model_id = None
+            budget.record_model_call(
+                _estimate_cost(adapter, messages, suggestion), model_id)
 
             # 暂停在模型返回后生效：不执行新的工具调用，避免暂停后仍有副作用
             if _flag(cancel_flag, "paused"):
@@ -116,7 +121,7 @@ class ReactEngine:
             outcome.steps.append(step)
 
             try:
-                budget.check_tool_call()
+                budget.check_tool_call(tool)
                 result = self.tools.execute(tool or "", suggestion.args,
                                             budget=budget)
             except BudgetExceeded as e:

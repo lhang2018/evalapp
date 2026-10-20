@@ -400,9 +400,13 @@ class Database:
 
     def list_eval_reports(self, limit: int = 50) -> List[Dict[str, Any]]:
         rows = self._conn.execute(
-            "SELECT data FROM eval_reports ORDER BY created_at DESC LIMIT ?",
+            "SELECT report_id, dataset_id, candidate_id, created_at, data"
+            " FROM eval_reports ORDER BY created_at DESC LIMIT ?",
             (limit,)).fetchall()
-        return [json.loads(r["data"]) for r in rows]
+        return [{"report_id": r["report_id"], "dataset_id": r["dataset_id"],
+                 "candidate_id": r["candidate_id"],
+                 "created_at": r["created_at"],
+                 "data": json.loads(r["data"])} for r in rows]
 
     # ---- audit ----
     def save_audit(self, audit_id: str, actor: str, action: str,

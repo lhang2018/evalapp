@@ -10,6 +10,7 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
+from ..core.budget import BudgetController, BudgetExceeded, BudgetLimits
 from ..core.events import EventBus
 from ..tools.registry import ToolRegistry
 from .candidates import (ALLOWED, CandidateStatus, EvolutionCandidate,
@@ -48,7 +49,8 @@ class EvolutionController:
                  event_bus: Optional[EventBus] = None,
                  store: Optional[Any] = None,
                  releases: Optional[Any] = None,
-                 datasets: Optional[Dict[str, EvalDataset]] = None):
+                 datasets: Optional[Dict[str, EvalDataset]] = None,
+                 budget_config: Optional[Any] = None):
         self.evaluator = evaluator
         self.gate = gate or ReleaseGate()
         # 生产路径要求安全证据与独立保留集（Arch 11.2 / 11.5）
@@ -56,6 +58,7 @@ class EvolutionController:
                                               require_holdout=True)
         self.safety = SafetySuite()
         self.budget = budget
+        self.budget_config = budget_config
         self.bus = event_bus
         self.store = store
         self.releases = releases
@@ -85,6 +88,43 @@ class EvolutionController:
     def _find_holdout(self) -> Optional[EvalDataset]:
         return next((ds for ds in self.datasets.values() if ds.is_holdout()),
                     None)
+
+    # ---- 进化预算池（PRD 55-56 / Arch 12.4）----
+    def _evolution_pool_problem(self) -> Optional[str]:
+        """日/月进化预算池与正式任务隔离；返回耗尽原因或 None。"""
+        if self.budget is None or self.budget_config is None:
+            return None
+        cfg = self.budget_config
+        try:
+            self.budget.check(
+                "evolution",
+                max_model_calls=cfg.evolution_daily_model_calls,
+                max_cost=cfg.evolution_daily_cost, period="day")
+            self.budget.check(
+                "evolution",
+                max_model_calls=cfg.evolution_monthly_model_calls,
+                max_cost=cfg.evolution_monthly_cost, period="month")
+        except BudgetExceeded as e:
+            return str(e)
+        return None
+
+    def _make_candidate_budget(self, cand: EvolutionCandidate
+                               ) -> Optional[BudgetController]:
+        """单候选实验预算；用量同时计入进化日/月池。"""
+        if self.budget is None:
+            return None
+        cfg = self.budget_config
+        limits = BudgetLimits()
+        if cfg is not None:
+            limits = BudgetLimits(
+                max_model_calls=cfg.candidate_max_model_calls,
+                max_tool_calls=cfg.candidate_max_tool_calls,
+                max_cost=cfg.candidate_max_cost,
+                max_seconds=cfg.candidate_max_seconds)
+        return BudgetController(
+            limits, ledger=self.budget,
+            ledger_scope=f"candidate:{cand.candidate_id}",
+            extra_scopes=["evolution"])
 
     def _persist(self, cand: EvolutionCandidate) -> None:
         self.candidates[cand.candidate_id] = cand
@@ -194,33 +234,64 @@ class EvolutionController:
                         {"dataset": dataset.dataset_id})
         cand.transition(CandidateStatus.EVALUATING, "对比基线与候选")
 
-        # 安全证据由确定性套件给出，缺失时门禁 fail-closed（Arch 11.5）
-        safety = self.safety.run()
-        cand.safety_result = safety
+        # 进化预算池与正式任务隔离（PRD 55-56 / Arch 12.4）
+        pool_problem = self._evolution_pool_problem()
+        if pool_problem:
+            reason = f"进化预算耗尽: {pool_problem}"
+            cand.transition(CandidateStatus.REJECTED, reason)
+            self._persist(cand)
+            if self.bus:
+                self.bus.emit(event_type="evolution_evaluated",
+                              component_id="evolution",
+                              payload={"candidate_id": cand.candidate_id,
+                                       "passed": False,
+                                       "reasons": [reason]})
+            return {"passed": False, "reasons": [reason],
+                    "budget_exhausted": pool_problem, "safety": {}}
 
-        report = self.evaluator.run(
-            dataset, baseline=False,
-            metadata={"candidate": cand.candidate_id,
-                      "dataset_version": dataset.version})
-        holdout_report: Optional[EvalReport] = None
-        holdout_baseline: Optional[EvalReport] = None
-        if dataset.is_holdout():
-            holdout_report, holdout_baseline = report, baseline_report
-        elif self.holdout_dataset is not None:
-            # 独立保留集只用于门禁，不参与调优（PRD 52 / Arch 11.2）
-            if baseline_report is not None:
-                holdout_baseline = self.evaluator.run(
-                    self.holdout_dataset, baseline=True,
-                    metadata={"kind": "holdout_baseline"})
-            holdout_report = self.evaluator.run(
-                self.holdout_dataset, baseline=False,
+        runner = getattr(self.evaluator, "runner", None)
+        candidate_budget = self._make_candidate_budget(cand)
+        if candidate_budget is not None and hasattr(runner, "set_budget"):
+            runner.set_budget(candidate_budget)
+        try:
+            # 安全证据由确定性套件给出，缺失时门禁 fail-closed（Arch 11.5）
+            safety = self.safety.run()
+            cand.safety_result = safety
+
+            report = self.evaluator.run(
+                dataset, baseline=False,
                 metadata={"candidate": cand.candidate_id,
-                          "kind": "holdout"})
-            cand.holdout_result = holdout_report.summary()
+                          "dataset_version": dataset.version})
+            holdout_report: Optional[EvalReport] = None
+            holdout_baseline: Optional[EvalReport] = None
+            if dataset.is_holdout():
+                holdout_report, holdout_baseline = report, baseline_report
+            elif self.holdout_dataset is not None:
+                # 独立保留集只用于门禁，不参与调优（PRD 52 / Arch 11.2）
+                if baseline_report is not None:
+                    holdout_baseline = self.evaluator.run(
+                        self.holdout_dataset, baseline=True,
+                        metadata={"kind": "holdout_baseline"})
+                holdout_report = self.evaluator.run(
+                    self.holdout_dataset, baseline=False,
+                    metadata={"candidate": cand.candidate_id,
+                              "kind": "holdout"})
+                cand.holdout_result = holdout_report.summary()
+        finally:
+            if candidate_budget is not None and hasattr(runner, "set_budget"):
+                runner.set_budget(None)
 
+        budget_problem = (candidate_budget.exceeded()
+                          if candidate_budget is not None else None)
+        experiment_budget = (candidate_budget.snapshot()
+                             if candidate_budget is not None else None)
         cand.quality_result = report.summary()
-        cand.cost_delta = report.cost
-        cand.latency_delta = report.avg_latency
+        # PRD 50：收益按相对基线的增量记录，而不是候选绝对值
+        base_cost = baseline_report.cost if baseline_report is not None else 0.0
+        base_latency = (baseline_report.avg_latency
+                        if baseline_report is not None else 0.0)
+        cand.cost_delta = report.cost - base_cost
+        cand.latency_delta = report.avg_latency - base_latency
         if self.store is not None:
             self.store.save_eval_report(
                 f"eval_{cand.candidate_id}_{int(time.time())}",
@@ -229,7 +300,8 @@ class EvolutionController:
                  "candidate": report.summary(),
                  "holdout": holdout_report.summary()
                  if holdout_report is not None else None,
-                 "safety": safety})
+                 "safety": safety,
+                 "experiment_budget": experiment_budget})
         if baseline_report is not None:
             gate = self.gate.judge(
                 baseline_report, report,
@@ -238,6 +310,10 @@ class EvolutionController:
                 rollback_available=bool(cand.rollback_version),
                 holdout_report=holdout_report,
                 holdout_baseline=holdout_baseline)
+            if budget_problem:
+                gate["passed"] = False
+                gate["reasons"] = list(gate.get("reasons") or []) + [
+                    f"候选实验预算耗尽: {budget_problem}"]
             cand.publish_suggestion = "release_ready" if gate["passed"] else "rejected"
             if not gate["passed"]:
                 cand.transition(CandidateStatus.REJECTED,
@@ -257,9 +333,11 @@ class EvolutionController:
             return {**gate, "report": report.summary(),
                     "holdout": holdout_report.summary()
                     if holdout_report is not None else None,
-                    "safety": safety}
+                    "safety": safety,
+                    "experiment_budget": experiment_budget}
         self._persist(cand)
-        return {"passed": None, "report": report.summary(), "safety": safety}
+        return {"passed": None, "report": report.summary(), "safety": safety,
+                "experiment_budget": experiment_budget}
 
     def approve(self, cand: EvolutionCandidate, approver: str = "auto") -> Dict[str, Any]:
         rule = PUBLISH_RULES.get(cand.risk_level, "strict_review")

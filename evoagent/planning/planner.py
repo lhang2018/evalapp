@@ -185,8 +185,13 @@ class PlanningEngine:
             budget.check_model_call()
         raw = adapter.generate([system, user])
         if budget is not None:
+            try:
+                model_id = adapter.profile().model_id
+            except Exception:  # noqa: BLE001
+                model_id = None
             budget.record_model_call(_estimate_cost(
-                adapter, len(system.content) + len(user.content), len(raw)))
+                adapter, len(system.content) + len(user.content), len(raw)),
+                model_id)
         data = _parse_json(raw)
         steps_raw = data.get("steps")
         if not isinstance(steps_raw, list) or not steps_raw:

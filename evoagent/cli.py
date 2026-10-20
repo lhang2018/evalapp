@@ -250,15 +250,46 @@ def cmd_workflows(workflow_id: str) -> str:
 
 def cmd_budget() -> str:
     app = _app()
+    cfg = app.config.budget
     out = {
         "pools": app.ledger.report(),
         "limits": {
-            "runtime_daily_cost": app.config.budget.runtime_daily_cost,
-            "runtime_daily_model_calls": app.config.budget.runtime_daily_model_calls,
-            "max_concurrent_tasks": app.config.budget.max_concurrent_tasks,
+            "task_max_model_calls": cfg.task_max_model_calls,
+            "task_max_tool_calls": cfg.task_max_tool_calls,
+            "task_max_cost": cfg.task_max_cost,
+            "task_max_seconds": cfg.task_max_seconds,
+            "task_max_cost_per_model_call": cfg.task_max_cost_per_model_call,
+            "task_max_tool_calls_per_tool": cfg.task_max_tool_calls_per_tool,
+            "workflow_max_model_calls": cfg.workflow_max_model_calls,
+            "workflow_max_tool_calls": cfg.workflow_max_tool_calls,
+            "workflow_max_cost": cfg.workflow_max_cost,
+            "workflow_max_seconds": cfg.workflow_max_seconds,
+            "candidate_max_model_calls": cfg.candidate_max_model_calls,
+            "candidate_max_tool_calls": cfg.candidate_max_tool_calls,
+            "candidate_max_cost": cfg.candidate_max_cost,
+            "candidate_max_seconds": cfg.candidate_max_seconds,
+            "evolution_daily_cost": cfg.evolution_daily_cost,
+            "evolution_daily_model_calls": cfg.evolution_daily_model_calls,
+            "evolution_monthly_cost": cfg.evolution_monthly_cost,
+            "evolution_monthly_model_calls": cfg.evolution_monthly_model_calls,
+            "runtime_daily_cost": cfg.runtime_daily_cost,
+            "runtime_daily_model_calls": cfg.runtime_daily_model_calls,
+            "provider_daily_cost": cfg.provider_daily_cost,
+            "provider_daily_model_calls": cfg.provider_daily_model_calls,
+            "expert_daily_cost": cfg.expert_daily_cost,
+            "expert_daily_model_calls": cfg.expert_daily_model_calls,
+            "max_concurrent_tasks": cfg.max_concurrent_tasks,
         },
     }
     print(json.dumps(out, ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_costs() -> str:
+    app = _app()
+    from .core.budget import CostReporter
+    print(json.dumps(CostReporter(app.db, app.evolution).report(),
+                     ensure_ascii=False, indent=1, default=str))
     return ""
 
 
@@ -340,6 +371,7 @@ def main() -> None:
     wfs = sub.add_parser("workflows")
     wfs.add_argument("workflow_id", nargs="?")
     sub.add_parser("budget")
+    sub.add_parser("costs")
     sub.add_parser("releases")
     rr = sub.add_parser("release-rollback")
     rr.add_argument("--reason", default="manual rollback")
@@ -376,6 +408,8 @@ def main() -> None:
         cmd_workflows(args.workflow_id)
     elif args.cmd == "budget":
         cmd_budget()
+    elif args.cmd == "costs":
+        cmd_costs()
     elif args.cmd == "releases":
         cmd_releases()
     elif args.cmd == "release-rollback":

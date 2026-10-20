@@ -14,6 +14,7 @@ from typing import Any, Dict, Optional
 from urllib.parse import parse_qs, urlparse
 
 from ..app import App
+from ..core.budget import CostReporter
 from ..core.task import RiskLevel, TaskStatus
 from ..evolution.candidates import IllegalCandidateTransition
 from ..evolution.controller import PUBLISH_RULES
@@ -87,6 +88,10 @@ def make_handler(app: App):
             if path == "/audit":
                 limit = int(qs.get("limit") or 100)
                 return self._json(200, {"audit": app.audit.list(limit=limit)})
+            if path == "/costs":
+                limit = int(qs.get("limit") or 500)
+                return self._json(200, CostReporter(
+                    app.db, app.evolution).report(limit=limit))
             if path == "/health":
                 return self._json(200, app.health())
             if path == "/tasks":

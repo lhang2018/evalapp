@@ -296,3 +296,66 @@
 - 安全证据缺失不等于通过：门禁必须 fail-closed，安全套件独立于被测候选
 - 保留集只用于门禁决策，不参与候选调优
 - 不可信记忆直接排除，不可信外部结果保留但显式标记为数据；结构化状态永不因压缩丢失
+
+## Session 8 (2026-10-20)
+
+### 背景
+- 用户要求：继续按 PRD 与架构文档梳理差距，缺设计就补设计、补代码、补功能。
+- 本轮选择 PRD 55-58 / Arch 12（九级预算层级与成本报告）：此前只有单任务与运行时/进化
+  日池字段，缺少单次调用/单工具/工作流/候选实验/提供方/专家池，以及按维度的成本报告。
+
+### 完成事项
+- [x] `core/budget.py` 扩展为九级硬预算
+  - 单次模型调用成本（越界后下一次调用前抛出，且任务收尾判失败）
+  - 单工具调用次数/成本，支持 `tool_limits` 按工具覆盖
+  - `ScopedBudget` 工作流作用域：同时受父预算与本地限制，用量双记账
+  - `PoolLimit` + `BudgetLedger.check()`：提供方/专家/进化日与月池，跨任务累计
+  - `record_usage()` 归因外部已发生用量；`violations()`/`exceeded()`/快照完整暴露
+- [x] `config.py` 补齐任务/工作流/候选/进化日与月/提供方/专家/并发配置项
+- [x] 运行时接线：任务预算改为配置驱动；专家域与提供方池在分类/规划时绑定；
+  恢复沿用累计用量；工作流作用域预算与快照写回 manifest；`_finalize` 收尾复检预算
+- [x] 进化接线
+  - 评测前检查进化日/月池，耗尽直接拒绝候选且不进入执行
+  - 候选实验预算注入 `ControllerTaskRunner`；评测执行器按任务自身预算快照归因，
+    预算耗尽后剩余用例记为失败而非异常中断整批
+  - 门禁额外检查候选实验是否越界；`cost_delta`/`latency_delta` 改为相对基线
+- [x] 成本报告（PRD 58）
+  - `CostReporter`：按任务/领域/模型/版本聚合，含成功/失败成本、每次成功成本、
+    含浪费成本；进化报告含实验成本、候选成本增量与质量增益
+  - `GET /costs`、`cli costs`；`cli budget` 输出全部层级限额
+  - `Database.list_eval_reports` 返回报告元数据（report_id/dataset/candidate/时间）
+- [x] 新增 `tests/test_budget_hierarchy.py`（13 项）与 `/costs` API 测试
+- [x] 文档同步：README / IMPLEMENTATION / task_plan（Phase 26）
+
+### 测试结果
+- `python -m pytest tests/ -q` → 149 passed
+- `cd android-app && npm run test:offline` → 29 passed
+- `python -m evoagent.cli demo` / `workflow` / `budget` / `costs` → 通过
+
+### 本轮修复的缺陷
+- 评测执行器用账本 evolution scope 前后差值统计成本，实际任务用量记在 runtime scope，
+  差值恒为 0 且并发时会误计 → 改为读取任务自身 `result_evidence.budget.usage`
+- `list_eval_reports` 只返回 `data`，成本报告无法关联候选/数据集 → 返回完整元数据
+- 候选 `cost_delta`/`latency_delta` 记录的是绝对值而非相对基线增量 → 按 PRD 50 修正
+
+### 设计约束（本轮确立）
+- 预算只由程序化控制器执行；模型提示词不参与预算判定
+- 候选实验用量同时记入 `candidate:<id>` 与 `evolution` 两个 scope，日/月池跨实验累计
+- 并发环境下禁止用全局账本前后差值归因单个任务；以任务自身预算快照为准
+
+## Session 9 (2026-10-20)
+
+### 背景
+- 用户要求：先补充全量功能记录文档；后续开发在文档里补齐，便于了解进度与功能维护。
+
+### 完成事项
+- [x] 新增 `FEATURES.md`：状态标记、系统概览、按领域的功能总账（任务/规划/模型/工具/记忆/专家/工作流/
+      验收/诊断/进化/发布/预算/事件同步/控制面/Android）、REST API 与 CLI 清单、数据表、配置项、
+      测试矩阵、未实现清单、验证步骤、维护流程与变更记录模板
+- [x] `README.md` 与 `IMPLEMENTATION.md` 增加 FEATURES.md 入口
+- [x] `task_plan.md` 增加 Phase 27
+
+### 设计约束（本轮确立）
+- `FEATURES.md` 是功能状态的单一入口；功能表 ID 不复用，已完成功能必须能定位到代码与测试
+- 仅在有自动化测试或端到端实测时标记 ✅；接口就位但未验证标 🔹
+- 后续开发完成后同步更新功能表、接口/配置/数据/测试章节，并追加变更记录

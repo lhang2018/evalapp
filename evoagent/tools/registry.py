@@ -96,7 +96,7 @@ class ToolRegistry:
         # 预算检查
         if budget:
             try:
-                budget.check_tool_call()
+                budget.check_tool_call(tool_id)
             except Exception as e:
                 return ToolResult.error_result(str(e), "budget_exceeded")
 
@@ -122,7 +122,7 @@ class ToolRegistry:
                 break
             except Exception as e:  # noqa: BLE001
                 if budget:
-                    budget.record_tool_call()
+                    budget.record_tool_call(tool_id)
                 err_class = class_error(e)
                 failed = ToolResult.error_result(
                     f"{type(e).__name__}: {e}", err_class)
@@ -137,7 +137,7 @@ class ToolRegistry:
                 time.sleep(min(0.05 * attempts, 0.5))
         elapsed = time.time() - started
         if budget:
-            budget.record_tool_call()
+            budget.record_tool_call(tool_id)
 
         # 输出契约校验（Arch 6.2）：返回成功不等于符合契约
         if c.output_schema and result.ok:

@@ -24,11 +24,30 @@ class BudgetConfig:
     task_max_tool_calls: int = 50
     task_max_cost: float = 1.00              # 计量单位（美元或等值）
     task_max_seconds: int = 300
+    task_max_cost_per_model_call: float = 0.25
+    task_max_tool_calls_per_tool: int = 10
+    # 单工作流预算（PRD 55 / Arch 12.2）
+    workflow_max_model_calls: int = 15
+    workflow_max_tool_calls: int = 40
+    workflow_max_cost: float = 0.60
+    workflow_max_seconds: int = 180
+    # 单候选实验预算（PRD 55）
+    candidate_max_model_calls: int = 40
+    candidate_max_tool_calls: int = 100
+    candidate_max_cost: float = 2.00
+    candidate_max_seconds: int = 600
     evolution_daily_cost: float = 5.00
     evolution_daily_model_calls: int = 200
+    evolution_monthly_cost: float = 50.00
+    evolution_monthly_model_calls: int = 2000
     # 运行时日预算池（PRD 55-58：单任务之外的整体预算）
     runtime_daily_cost: float = 20.00
     runtime_daily_model_calls: int = 2000
+    # 模型提供方 / 领域专家预算池（PRD 55）
+    provider_daily_cost: float = 10.00
+    provider_daily_model_calls: int = 1000
+    expert_daily_cost: float = 5.00
+    expert_daily_model_calls: int = 500
     max_concurrent_tasks: int = 2
 
 

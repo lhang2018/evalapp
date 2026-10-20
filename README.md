@@ -5,7 +5,7 @@
 - `EvoAgent自进化智能体产.md` — 产品需求文档（PRD 1.0，28 部分）
 - `EvoAgent自进化智能体系.md` — 架构设计文档（Architecture 1.0，23 章）
 
-条目级代码映射见 [IMPLEMENTATION.md](./IMPLEMENTATION.md)。Android 客户端见 [android-app/](./android-app/)。
+条目级代码映射见 [IMPLEMENTATION.md](./IMPLEMENTATION.md)；全量功能状态（后续开发在此追加）见 [FEATURES.md](./FEATURES.md)。Android 客户端见 [android-app/](./android-app/)。
 
 ## 快速开始（无需 LLM Key）
 
@@ -28,9 +28,10 @@ python -m evoagent.cli resume <task_id> --force
 # 诊断：失败任务 → 多假设案例 → 固定探针（无外部网络）
 python -m evoagent.cli diagnose <task_id> --probe tool_health
 python -m evoagent.cli diagnose            # 最近诊断案例
-# 工作流资产库 / 预算用量
+# 工作流资产库 / 预算用量 / 成本报告
 python -m evoagent.cli workflows
 python -m evoagent.cli budget
+python -m evoagent.cli costs
 ```
 
 诊断 REST 端点：`GET /diagnostics`、`GET /diagnostics/{case_id}`、
@@ -112,9 +113,10 @@ Planning/意图分类 + 执行内核接线（计划驱动 ReAct/进度持久化�
 暂停/恢复）+ 离线队列/幂等同步 + 无障碍节点操作；并完成控制面补强（API 鉴权/审计/指标、工具超时
 与重试安全规则/输出契约/幂等日志、工作流并行与跳过/节点超时/检查点续跑、预算报表、记忆关系与
 混合检索、质量优先路由评分、诊断趋势与探针故障注入、工作流资产库、只读 Git 适配器）；
-并补齐上下文治理（装配优先级、动态预算、结构化压缩与质量检查）与评测完整性（独立保留集、
-基线等价、确定性安全套件、安全证据缺失时门禁 fail-closed）。
-测试通过：Python 135 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
+并补齐上下文治理（装配优先级、动态预算、结构化压缩与质量检查）、评测完整性（独立保留集、
+基线等价、确定性安全套件、安全证据缺失时门禁 fail-closed）与九级硬预算（单任务/单次模型调用/
+单工具/工作流/候选实验/进化日与月/提供方/专家，含并发上限）及按任务/领域/模型/版本/实验的成本报告。
+测试通过：Python 149 项、客户端 29 项。迭代占位：视觉/OCR 操作、后台常驻同步、真实生成服务适配、
 嵌入向量检索、Web 管理端、隔离沙箱执行候选代码。
 
 ## 目录
@@ -133,7 +135,7 @@ evoagent/                  Python 服务端核心
   release/                 发布清单/签名/回滚
   api/                     REST API（标准库实现）
   cli.py                   命令行
-tests/                     135 项服务端测试
+tests/                     149 项服务端测试
 android-app/               React Native Android 客户端
   src/offline/             本地任务/事件队列、隐私过滤、同步引擎（纯 TS，可单测）
   src/device/              设备操作契约/风险闸门/原生桥接（纯 TS，可单测）

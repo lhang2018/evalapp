@@ -122,7 +122,8 @@ class App:
         self.datasets = builtin_datasets()
         self.evolution = EvolutionController(
             event_bus=self.bus, store=self.db, releases=self.releases,
-            datasets=self.datasets, gate=ReleaseGate())
+            datasets=self.datasets, gate=ReleaseGate(),
+            budget=self.ledger, budget_config=self.config.budget)
         self.probes = ProbeRunner(self.tools, self.memory,
                                   self.config.diagnostics)
         self.diagnostics = DiagnosisEngine(

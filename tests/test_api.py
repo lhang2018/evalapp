@@ -63,6 +63,15 @@ class TestApi(unittest.TestCase):
         tasks = self._get("/tasks")["tasks"]
         self.assertTrue(any(t["task_id"] == tid for t in tasks))
 
+    def test_costs_endpoint(self):
+        out = self._get("/costs?limit=10")
+        self.assertIn("totals", out)
+        self.assertIn("by_task", out)
+        self.assertIn("by_domain", out)
+        self.assertIn("by_model", out)
+        self.assertIn("evolution", out)
+        self.assertIn("cost_per_success_including_waste", out["totals"])
+
     def test_invalid_risk_rejected(self):
         try:
             self._post("/tasks", {"goal": "x", "risk_level": "boom"})
