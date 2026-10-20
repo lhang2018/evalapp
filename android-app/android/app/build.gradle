@@ -1,21 +1,33 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "com.facebook.react"
 
+def hermesEnabled = (findProperty('hermesEnabled') ?: 'true').toString() == 'true'
+
+/**
+ * React Native Gradle Plugin 负责 autolinking 与 JS bundle；
+ * 这里无需额外配置，保留空块以便后续按需覆盖。
+ */
 react {
 }
 
-def reactNativeDir = file(["node", "-e", "console.log(require.resolve('react-native/package.json'))"].execute(null, rootDir).text.trim().parent)
-
 android {
     namespace "com.evoagent"
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdk rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
     defaultConfig {
         applicationId "com.evoagent"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "0.1.0"
     }
+
+    buildFeatures {
+        buildConfig true
+    }
+
     // JS 打包默认走 metro bundle；OTA 演示可用 CodePush 直接替换 JS bundle（见 README）
     buildTypes {
         release {
@@ -28,6 +40,9 @@ android {
 dependencies {
     implementation("com.facebook.react:react-android")
     implementation("androidx.appcompat:appcompat:1.7.0")
+    if (hermesEnabled) {
+        implementation("com.facebook.react:hermes-android")
+    } else {
+        implementation("org.webkit:android-jsc:+")
+    }
 }
-
-apply from: file("../../node_modules/@react-native/community-cli-plugin/cli.js")

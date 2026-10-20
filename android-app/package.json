@@ -6,6 +6,8 @@
   "scripts": {
     "android": "react-native run-android",
     "start": "react-native start",
+    "test:offline": "node --test \"test/offline/*.test.ts\" \"test/device/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
     "ota:publish": "appcenter codepush release-react -a <owner>/EvoAgent-Android -d Production"
   },
   "dependencies": {

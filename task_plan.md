@@ -33,7 +33,10 @@
 | 19 | Git 基线 | `.gitignore` + `main` 基线提交 | complete |
 | 20 | 诊断闭环 | 诊断案例/多假设规则/固定探针/持久化/失败钩子/候选升级/API/CLI（PRD 41-45） | complete |
 | 21 | 真实模型规划 | Planning JSON 校验与回退 + 意图分类器（PRD 7-8/11） | complete |
-| 22 | 迭代优化轮 | 真实 Key 联调、Android 真机构建、候选代码沙箱 | pending |
+| 22a | 离线队列与幂等同步 | 客户端本地任务/事件队列、隐私过滤、退避重试、死信；服务端事件摄取与任务幂等（PRD 72-76） | complete |
+| 22b | Android 无障碍 | Manifest/原生壳修复、AccessibilityService 节点操作、DeviceModule、风险闸门与五态结果（PRD 64-71） | complete（本机未构建验证） |
+| 22c | 迭代优化其余 | 真实 Key 联调、Android 真机构建验收、视觉/语音、候选代码沙箱、Web 管理端 | pending |
+| 23 | 执行内核接线 | 计划驱动 ReAct + 进度持久化、模型调用计量与硬限额、路由接入运行路径、暂停/恢复（累计预算 + 副作用闸门）、API/CLI（PRD 11-12/19/34-36/55-56） | complete（92 项 Python 测试） |
 
 ## 关键决策（Decisions）
 | 决策 | 理由 |
@@ -46,11 +49,18 @@
 | 诊断规则优先、模型不判根因 | Arch 9.4：模型解释不可当真实根因；假设由确定性证据规则生成，置信度是评分 |
 | 诊断实验固定探针 + 硬限额 | 与生产隔离、无外部网络、每案/每日受限（PRD 43/44） |
 | 诊断不发布改动 | 假设只能显式升级为候选，发布仍走评测门禁与 L0-L4 规则（PRD 45/81） |
+| 幂等由服务端权威判定 | 客户端状态可能丢失或多设备并发；事件 `INSERT OR IGNORE` + `client_requests` 表保证重试安全 |
+| 离线队列 ack 前不删除 | 断点续传不丢事件；checkpoint 只推进连续前缀，避免空洞被跳过（PRD 72-74） |
+| 设备操作仅无障碍节点 + 显式 Intent | 不绕过系统权限边界；无证据不判 verified，高风险需独立确认（PRD 68/84） |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
 |-------|---------|------------|
 | pytest 未安装 | 1 | 保留 tests/，用 unittest 编写，pytest 兼容运行也可用 |
+| 测试间端口冲突/挂起 | 1 | `ApiServer.shutdown()` 未关闭监听套接字，Windows SO_REUSEADDR 让新实例 bind 成功但不服务；shutdown 与 finally 都调用 `server_close()` |
+| Node 24 无法解析参数属性 | 1 | type-stripping 不支持 constructor parameter properties；所有 TS 类改为显式字段 + 赋值 |
+| 队列 checkpoint 全确认后少 1 | 1 | 无待传事件时 checkpoint 取 `next_seq`，而非 `next_seq - 1` |
+| 被拒事件同一轮重复重试 | 1 | 处理含 rejected 的批次后立即结束本轮 flush |
 
 ## 备注
 - 无 LLM Key 时运行 `python -m evoagent.cli demo` 走 Mock 模型全链路。

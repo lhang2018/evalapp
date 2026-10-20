@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">EvoAgent</string>
+    <string name="accessibility_service_label">EvoAgent 设备操作</string>
+    <string name="accessibility_service_description">按用户授权执行节点级操作（点击指定文本、打开应用）。不注入坐标手势，不上传界面内容。</string>
 </resources>

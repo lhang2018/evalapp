@@ -80,3 +80,90 @@
 - 真实 Key 联调验证 Planning/意图分类 JSON 输出
 - Android 真机构建、无障碍/语音/本地队列
 - 候选代码隔离沙箱、Web 管理端、向量检索
+
+## Session 3 (2026-10-20)
+
+### 完成事项
+- [x] 服务端事件同步：`runtime_events` 旧库自动补 5 列；`EventBus.ingest()` 以 `event_id` 为主键
+      `INSERT OR IGNORE`；`POST /events/sync` 批量摄取，返回 accepted/duplicates/rejected
+- [x] 批次校验 `api/events_sync.py`：1–200 条、event_id 格式、±7 天时钟窗、payload ≤16 KiB、
+      severity 白名单；非 `standard` 隐私级别一律拒绝
+- [x] 任务幂等提交：`client_requests` 表 + 提交锁；同 `client_request_id` 二次提交返回原 task_id
+      （`202 deduplicated`），并发两次也只产生一个任务
+- [x] 客户端离线核心（`src/offline/`）：注入式 KeyValueStore、整快照原子写、事件队列（FIFO/去重/
+      容量 500/死信）、连续 checkpoint、隐私分类过滤、指数退避 2s→5min（带抖动）
+- [x] 本地任务库：离线提交 `LOCAL_ONLY`；上线以稳定 `client_request_id` 转 `SUBMITTING`；
+      `SUBMITTING` 崩溃恢复转 `NEEDS_RECONCILE` 需用户确认；状态轮询映射
+- [x] 离线可执行策略：`time_query` 直接用设备本地时间完成，不上传
+- [x] 设备操作（`src/device/`）：风险分级、高风险独立确认、journal `prepared→dispatched→…`、
+      已下发未验证禁止重放、结果五态、无 NativeModule 返回 `unavailable`
+- [x] Android 原生壳修复：manifest 合法权限、`MainApplication`/`MainActivity`、Gradle 与 RN 0.75
+      模板对齐；`DeviceAccessibilityService`（按文本/描述点击，无手势注入）+ `DeviceModule`
+- [x] `App.tsx` 集成：在线/离线状态条与手动同步、队列统计、本地任务、死信重试、设备操作面板
+- [x] 测试 83 项 Python（新增 8 项事件同步/幂等）+ 27 项客户端（离线 19 + 设备 8）
+
+### 测试结果
+- `python -m pytest tests/ -q` → 83 passed
+- `cd android-app && npm run test:offline` → 27 passed
+- `python -m evoagent.cli demo` / `workflow` 行为不变
+- API 冒烟：同 `client_request_id` 两次提交返回同一 task_id；重复事件批次返回 duplicates；
+  sensitive 事件 400 且带逐条原因
+
+### 本轮修复的缺陷
+- `ApiServer.shutdown()` 未 `server_close()`：Windows 上 SO_REUSEADDR 导致端口被占用后新实例
+  bind 成功但不服务（测试间互相干扰）→ shutdown 与 serve_forever 退出路径都关闭套接字
+- Node 24 type-stripping 不支持参数属性 → 所有类改为显式字段赋值
+- checkpoint 在全部确认后少 1 → 无待传事件时取 `next_seq`
+- 一批含被拒事件时同轮二次重试 → 处理后立即结束本轮 flush
+
+### 设计约束（本轮确立）
+- 幂等以服务端为准：客户端重试永远安全，不依赖客户端状态完整
+- ack 前不删、checkpoint 不跳空洞、失败进死信不静默丢弃
+- 敏感事件不出设备；secret/private 载荷入队前拒绝
+- 高风险设备操作必须独立确认；结果无证据只能 `unverified`，且不得自动重放
+- 无障碍通道不做坐标/手势注入，不绕过系统权限
+
+### 遗留/待迭代（更新）
+- Android 真机构建与验收（本机无 SDK/模拟器，Gradle 构建与无障碍行为均未验证）
+- 视觉/OCR、语音、后台常驻同步；端到端加密与多设备冲突合并
+- LLM 辅助诊断假设、真实 Key 联调
+- 候选代码隔离沙箱、Web 管理端、向量检索
+
+## Session 4 (2026-10-20)
+
+### 背景
+- 差距审计后的 P0：执行内核补真——规划真正驱动执行、预算真正计量、路由真正生效、
+  暂停/恢复可用（PRD 11-12、19、34-36、55-56）。
+
+### 完成事项
+- [x] Planning 驱动 ReAct：计划以消息注入首轮；每个成功工具步推进 `plan_progress`；
+      持久化到 `runtime_manifest.execution_plan` / `plan_progress`（done/failed/pending/change_reasons）
+- [x] 失败步回退：追加恢复步骤并通过 `plan.adjust()` 记录变更原因，原目标与硬约束不变（PRD 11.2）
+- [x] 预算计量：规划与 ReAct 共用同一 `BudgetController`；每次模型调用先 `check_model_call()`
+      再 `record_model_call(估算成本)`；`max_model_calls=1` 时任务以预算原因 FAILED
+- [x] 路由接入运行路径：控制器按 intent/domain 调用 `ModelRouter.route()`，选择结果记录到
+      `runtime_manifest.model_route`；适配器按 `model_id` 解析，未命中回退 Mock
+- [x] 暂停/恢复：`pause_task` 置标志，ReAct 在模型调用前/建议后检查，暂停后不再执行工具；
+      SUSPENDED 检查点保存累计预算；恢复时从检查点还原 usage
+- [x] 副作用闸门：存在 `pending_side_effects(state=unknown)` 时恢复必须显式 `force`（PermissionError）
+- [x] FAILED 重跑：生成新任务（新 task_id + `parent_task_id` + `resumed_from`），终态不可变
+- [x] API：`POST /tasks/{id}/pause`、`POST /tasks/{id}/resume`（409 带 `requires_force`）
+- [x] CLI：`pause <task_id>`、`resume <task_id> [--force]`
+- [x] 新增 `tests/test_control.py` 9 项：计量、限额、计划持久化、路由、暂停恢复、重跑、闸门
+
+### 测试结果
+- `python -m pytest tests/ -q` → 92 passed
+- `cd android-app && npm run test:offline` → 27 passed
+- API 冒烟：任务 SUCCEEDED；`execution_plan` 已持久化；`model_route.model_id=mock-1`；
+  同 `client_request_id` 返回 deduplicated；终态任务 pause/resume 均 409
+
+### 设计约束（本轮确立）
+- 一个任务一个预算对象：规划、React、恢复后都计入同一累计用量
+- 暂停语义是“不再发起新的模型调用与工具执行”，已开始的单步执行完再落检查点
+- 恢复不盲重放：未知副作用需用户显式 force；FAILED 只重跑为新任务，不改写历史
+- 计划进度只由成功工具步推进，失败步显式标记并追加恢复步骤
+
+### 遗留/待迭代
+- 恢复目前是“从下一步继续”而非精确到迭代内断点；长任务恢复粒度可再细化
+- 真实模型 Key 联调下的暂停时延与取消传播待验证
+- 视觉/OCR、后台常驻同步、Web 管理端等保持原计划

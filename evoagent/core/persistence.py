@@ -3,6 +3,7 @@
 import json
 import sqlite3
 import threading
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -37,6 +38,10 @@ class Database:
             c.execute("""CREATE TABLE IF NOT EXISTS workflow_runs(
                 workflow_run_id TEXT PRIMARY KEY, workflow_id TEXT, task_id TEXT,
                 status TEXT, node_states TEXT, updated_at REAL)""")
+            # 客户端幂等提交（PRD 74）：同一 client_request_id 只创建一个任务
+            c.execute("""CREATE TABLE IF NOT EXISTS client_requests(
+                client_request_id TEXT PRIMARY KEY, task_id TEXT NOT NULL,
+                created_at REAL)""")
             # 诊断案例（PRD 41-45 / Architecture 9.2-9.3）
             c.execute("""CREATE TABLE IF NOT EXISTS diagnostic_cases(
                 case_id TEXT PRIMARY KEY, task_id TEXT, run_id TEXT, status TEXT,
@@ -106,6 +111,22 @@ class Database:
         if not row:
             return None
         return json.loads(row["snapshot"])
+
+    # ---- client idempotency ----
+    def get_request_task_id(self, client_request_id: str) -> Optional[str]:
+        row = self._conn.execute(
+            "SELECT task_id FROM client_requests WHERE client_request_id=?",
+            (client_request_id,)).fetchone()
+        return row["task_id"] if row else None
+
+    def save_request(self, client_request_id: str, task_id: str) -> bool:
+        """INSERT OR IGNORE；返回是否首次登记。"""
+        with self._lock:
+            cur = self._conn.execute(
+                "INSERT OR IGNORE INTO client_requests VALUES (?,?,?)",
+                (client_request_id, task_id, time.time()))
+            self._conn.commit()
+            return cur.rowcount > 0
 
     # ---- diagnostics（PRD 41-45）----
     def save_diagnostic_case(self, case: Any) -> None:

@@ -6,6 +6,8 @@
   python -m evoagent.cli workflow          # 漫剧工作流演示
   python -m evoagent.cli serve             # 启动 REST API（供 Android 用）
   python -m evoagent.cli status [task_id]
+  python -m evoagent.cli pause <task_id>   # 暂停运行中的任务
+  python -m evoagent.cli resume <task_id> [--force]  # 恢复/重跑
 """
 
 import argparse
@@ -131,6 +133,27 @@ def cmd_diagnose(task_id: str, probe: str) -> str:
     return json.dumps(out, ensure_ascii=False, indent=1)
 
 
+def cmd_pause(task_id: str) -> str:
+    app = _app()
+    out = app.controller.pause_task(task_id)
+    print(json.dumps(out, ensure_ascii=False))
+    return ""
+
+
+def cmd_resume(task_id: str, force: bool) -> str:
+    app = _app()
+    try:
+        t = app.controller.resume_task(task_id, force=force)
+    except (PermissionError, ValueError) as e:
+        print(json.dumps({"error": str(e)}, ensure_ascii=False))
+        return ""
+    if t is None:
+        print(json.dumps({"error": "任务不存在"}, ensure_ascii=False))
+        return ""
+    print(f"恢复结果: [{t.task_status.value}] {t.task_id}")
+    return json.dumps(t.to_dict(), ensure_ascii=False, indent=1)
+
+
 def cmd_serve(host: str, port: int) -> str:
     app = _app()
     from .api.server import ApiServer
@@ -152,6 +175,11 @@ def main() -> None:
     sub.add_parser("workflow")
     s = sub.add_parser("status")
     s.add_argument("task_id", nargs="?")
+    pz = sub.add_parser("pause")
+    pz.add_argument("task_id")
+    rs = sub.add_parser("resume")
+    rs.add_argument("task_id")
+    rs.add_argument("--force", action="store_true")
     d = sub.add_parser("diagnose")
     d.add_argument("task_id", nargs="?")
     d.add_argument("--probe", default="",
@@ -168,6 +196,10 @@ def main() -> None:
         cmd_workflow()
     elif args.cmd == "status":
         cmd_status(args.task_id)
+    elif args.cmd == "pause":
+        cmd_pause(args.task_id)
+    elif args.cmd == "resume":
+        cmd_resume(args.task_id, args.force)
     elif args.cmd == "diagnose":
         cmd_diagnose(args.task_id, args.probe)
     elif args.cmd == "serve":

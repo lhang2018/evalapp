@@ -78,6 +78,8 @@ class App:
             )
             self.model_registry.register(self._real_adapter.profile())
         self.router = ModelRouter(self.model_registry, self.mock_model)
+        # 路由按 model_id 解析到真实适配器；未命中时回退 Mock
+        self.router.setup(self._adapter_for_model_id)
 
         # 专家
         self.experts = builtin_experts()
@@ -120,6 +122,15 @@ class App:
     def _model(self):
         """默认使用真实模型（若配置），否则 Mock；可按意图再路由。"""
         return self._real_adapter
+
+    def _adapter_for_model_id(self, model_id: str):
+        if self._real_adapter is not None:
+            try:
+                if self._real_adapter.profile().model_id == model_id:
+                    return self._real_adapter
+            except Exception:  # noqa: BLE001
+                pass
+        return self.mock_model
 
     def _known_intents(self) -> list:
         intents = {"general"}

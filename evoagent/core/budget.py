@@ -35,13 +35,18 @@ class BudgetLimits:
 class BudgetController:
     """单任务作用域的硬预算。多任务/进化预算池在 EvolutionController 中按天再计。"""
 
-    def __init__(self, limits: Optional[BudgetLimits] = None, overrides: Optional[Dict] = None):
+    def __init__(self, limits: Optional[BudgetLimits] = None,
+                 overrides: Optional[Dict] = None,
+                 initial_usage: Optional[BudgetUsage] = None):
         self.limits = limits or BudgetLimits()
         if overrides:
             for k, v in overrides.items():
                 if hasattr(self.limits, k):
                     setattr(self.limits, k, v)
-        self.usage = BudgetUsage()
+        # 暂停/恢复沿用同一任务的累计用量（PRD 55/56：单任务预算不因重启重置）
+        self.usage = BudgetUsage(**(initial_usage.__dict__ if initial_usage
+                                    else {}))
+        self._restored_seconds = float(self.usage.seconds)
         self._started = time.monotonic()
 
     # ---- 校验（执行前调用）----
@@ -76,7 +81,7 @@ class BudgetController:
         return time.monotonic() - self._started
 
     def _tick_seconds(self) -> None:
-        self.usage.seconds = self.elapsed()
+        self.usage.seconds = self._restored_seconds + self.elapsed()
 
     def snapshot(self) -> Dict:
         self._tick_seconds()

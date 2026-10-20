@@ -24,7 +24,8 @@ from ..tools.registry import ToolRegistry
 from ..workflows.engine import WorkflowEngine
 from ..workflows.models import WorkflowDef, WorkflowNodeState
 from ..config import Config
-from .budget import BudgetController, BudgetLimits
+from .budget import (BudgetController, BudgetExceeded, BudgetLimits,
+                     BudgetUsage)
 from .checkpoint import Checkpoint, CheckpointManager
 from .events import EventBus, RunEvent
 from .persistence import Database
@@ -98,20 +99,23 @@ class RuntimeController:
         version_manifest = self._version_manifest()
         task.version_manifest = version_manifest
         try:
+            # 单任务硬预算在分类前建立；分类/规划/ReAct 的模型调用统一计量（PRD 55/56）
+            budget = self._make_budget(task)
             # 1) 分类（CREATED -> CLASSIFYING）
-            task = self._classify(task, intent_hint, domain_hint)
+            task = self._classify(task, intent_hint, domain_hint, budget)
             if task.is_terminal() or task.task_status == TaskStatus.WAITING_USER:
                 self.db.save_task(task)
                 return task
+            self._apply_expert_budget(task, budget)
             # 2) 规划（CLASSIFYING -> PLANNING 或 READY）
-            task = self._plan(task)
+            task = self._plan(task, budget)
             if task.is_terminal():
                 if task.task_status == TaskStatus.FAILED:
                     self._record_diagnostic(task, Verdict(passed=False), [], "")
                 self._emit(task, "task_finalized", {"status": task.task_status.value})
                 return task
             # 3) 执行（READY -> RUNNING -> VERIFYING）
-            task = self._run(task)
+            task = self._run(task, budget)
             # 4) 验收产出的最终状态写回持久层
             self.db.save_task(task)
         except IllegalTransition as e:
@@ -137,11 +141,23 @@ class RuntimeController:
 
     # ---- Phase 1: 分类 ----
     def _classify(self, task: Task, intent_hint: Optional[str],
-                  domain_hint: Optional[str]) -> Task:
+                  domain_hint: Optional[str],
+                  budget: BudgetController) -> Task:
         task = self._move(task, TaskStatus.CLASSIFYING)
         if self.classifier is not None:
+            # 显式 hint 短路不调用模型；无 hint 时先做预算闸门
+            if not intent_hint:
+                try:
+                    budget.check_model_call()
+                except BudgetExceeded as e:
+                    task.failure_reason = f"预算耗尽[{e.dimension}]"
+                    self._emit(task, "task_budget_exhausted",
+                               {"dimension": e.dimension}, severity="warn")
+                    return self._move(task, TaskStatus.FAILED)
             intent, domain, conf, method = self.classifier.classify(
                 task.user_goal, hint=intent_hint, domain_hint=domain_hint)
+            if method in ("model", "heuristic_fallback"):
+                budget.record_model_call(0.0)
             task.confidence = conf
             task.runtime_manifest["intent_classification"] = {
                 "method": method, "confidence": conf}
@@ -161,7 +177,7 @@ class RuntimeController:
         return task
 
     # ---- Phase 2: 规划 ----
-    def _plan(self, task: Task) -> Task:
+    def _plan(self, task: Task, budget: BudgetController) -> Task:
         # 已注册工作流直接就绪（PRD 11.3：固定流程不必重新发明计划）
         expert = self.experts.get(task.domain) or self.experts.route(task.intent)
         if task.workflow_ref is None and expert and expert.workflow_ids \
@@ -170,24 +186,34 @@ class RuntimeController:
         if task.workflow_ref:
             task = self._move(task, TaskStatus.READY)
             return task
-        plan = self.planner.make_plan(
-            task.user_goal, intent=task.intent,
-            constraints=task.constraints,
-            acceptance=task.acceptance_criteria)
+        task = self._move(task, TaskStatus.PLANNING)
+        model = self._route_model(task)
+        try:
+            plan = self.planner.make_plan(
+                task.user_goal, intent=task.intent,
+                constraints=task.constraints,
+                acceptance=task.acceptance_criteria,
+                model=model, budget=budget)
+        except BudgetExceeded as e:
+            task.failure_reason = f"预算耗尽[{e.dimension}]"
+            self._emit(task, "task_budget_exhausted",
+                       {"dimension": e.dimension}, severity="warn")
+            return self._move(task, TaskStatus.FAILED)
         problems = plan.validate()
         if problems:
             task.failure_reason = "规划验收未通过: " + "; ".join(problems)
             task = self._move(task, TaskStatus.FAILED)
             return task
         task.execution_plan_ref = plan.plan_id
+        task.runtime_manifest["execution_plan"] = plan.to_dict()
         task = self._move(task, TaskStatus.READY)
         return task
 
     # ---- Phase 3: 执行 ----
-    def _run(self, task: Task) -> Task:
-        task = self._move(task, TaskStatus.RUNNING)
-        budget = self._make_budget(task)
-
+    def _run(self, task: Task, budget: BudgetController,
+             *, start: bool = True) -> Task:
+        if start:
+            task = self._move(task, TaskStatus.RUNNING)
         if task.workflow_ref:
             return self._run_workflow(task, budget)
         return self._run_react(task, budget)
@@ -203,10 +229,28 @@ class RuntimeController:
             messages.insert(0, ChatMessage(role="system",
                                            content=expert.system_prompt))
         cancel_flag = self._active.get(task.task_id)
+        plan = self._plan_from_task(task)
+        model = self._route_model(task)
         outcome = self.react.run(
             messages, budget,
             allowed_tools=expert.tool_whitelist if expert else None,
-            run_id=task.task_id, cancel_flag=cancel_flag)
+            run_id=task.task_id, cancel_flag=cancel_flag,
+            plan=plan, model=model)
+        if plan is not None:
+            task.runtime_manifest["execution_plan"] = plan.to_dict()
+            task.runtime_manifest["plan_progress"] = _plan_progress(plan)
+        if outcome.stop_reason == "cancel":
+            if task.task_status != TaskStatus.CANCELLED:
+                task = self._move(task, TaskStatus.CANCELLED)
+            return task
+        if outcome.stop_reason == "paused":
+            task = self._move(task, TaskStatus.SUSPENDED)
+            self.checkpoint(task, "paused", extras={
+                "budget": budget.snapshot(),
+                "plan": plan.to_dict() if plan else None})
+            self._emit(task, "task_paused", {
+                "plan_progress": task.runtime_manifest.get("plan_progress")})
+            return task
         # 验收：Plan 完成 ≠ 实际完成（PRD 7.4），必须走独立验收
         task = self._move(task, TaskStatus.VERIFYING)
         # 收集本轮全部工具结果作为验收证据（PRD 15.4.8）
@@ -322,34 +366,119 @@ class RuntimeController:
                         task_state=task.to_dict())
         if extras:
             cp.pending_side_effects = extras.get("pending_side_effects", [])
+            cp.budget_state = extras.get("budget", {}) or {}
         # 已完成节点与下一步候选（PRD 34）
         cp.next_candidate_actions = [{"action": "resume"}]
         return self.cp_mgr.save(cp)
 
-    def resume_task(self, task_id: str) -> Optional[Task]:
-        """恢复：重新验证外部状态，不假设之前的工具调用一定成功（PRD 35）。"""
+    def pause_task(self, task_id: str) -> Dict[str, Any]:
+        """请求暂停运行中的 ReAct 任务；在下一个决策边界转入 SUSPENDED（PRD 36）。"""
+        task = self.db.get_task(task_id)
+        if task is None:
+            return {"ok": False, "error": "任务不存在"}
+        if task.workflow_ref:
+            return {"ok": False, "error": "工作流任务暂不支持暂停"}
+        flag = self._active.get(task_id)
+        if flag is None:
+            return {"ok": False, "error": "任务未在执行（仅运行中的任务可暂停）"}
+        if task.task_status != TaskStatus.RUNNING:
+            return {"ok": False, "error": f"任务状态 {task.task_status.value} 不可暂停"}
+        flag.paused = True
+        self._emit(task, "pause_requested", {})
+        return {"ok": True, "task_id": task_id, "status": "PAUSE_REQUESTED"}
+
+    def resume_task(self, task_id: str, *, force: bool = False,
+                    wait: bool = True) -> Optional[Task]:
+        """恢复暂停任务，或把失败任务作为新任务重跑（PRD 34-36）。
+
+        恢复前检查副作用状态：存在结果未知的外部操作时必须人工核验并用
+        force=True 显式确认，不盲目重放（PRD 35）。
+        wait=False 时在后台执行，供 HTTP 接口立即返回。
+        """
         task = self.db.get_task(task_id)
         if task is None:
             return None
-        cp = self.cp_mgr.latest(task_id)
-        if cp is not None and cp.pending_side_effects:
-            # 副作用结果未知 → 不盲目重试，先标记待人工验证
-            self._emit(task, "side_effect_state_unknown",
-                       {"side_effects": cp.pending_side_effects},
-                       severity="warn")
         if task.task_status == TaskStatus.SUSPENDED:
-            task.task_status = transition(task.task_status, TaskStatus.RUNNING)
-            task.task_status = transition(task.task_status, TaskStatus.VERIFYING)
-            # 恢复后重新验收既有结果
-            verdict = Verdict(passed=bool(task.result),
-                              checks=[{"type": "resumed", "passed": bool(task.result)}])
-            return self._finalize(task, verdict, task.result,
-                                  budget=self._make_budget(task))
+            cp = self.cp_mgr.latest(task_id)
+            pending = cp.pending_side_effects if cp else []
+            if pending and not force:
+                self._emit(task, "side_effect_state_unknown",
+                           {"side_effects": pending}, severity="warn")
+                raise PermissionError(
+                    "存在结果未知的副作用；需人工核验后以 force=true 恢复")
+            usage = None
+            state = (cp.budget_state if cp else {}) or {}
+            if state.get("usage"):
+                u = state["usage"]
+                usage = BudgetUsage(
+                    model_calls=int(u.get("model_calls", 0)),
+                    tool_calls=int(u.get("tool_calls", 0)),
+                    cost=float(u.get("cost", 0.0)),
+                    seconds=float(u.get("seconds", 0.0)))
+            budget = self._make_budget(task, initial_usage=usage)
+            self._apply_expert_budget(task, budget)
+            if wait:
+                return self._resume_suspended(task, budget, force)
+            threading.Thread(target=self._resume_suspended,
+                             args=(task, budget, force), daemon=True).start()
+            return task
         if task.task_status == TaskStatus.FAILED:
-            # 失败恢复：清空失败原因后重跑（新 run 记录）
-            task.failure_reason = None
-            return self.execute(task)
+            retry = self._build_retry(task)
+            if wait:
+                return self.execute(retry, intent_hint=task.intent or None,
+                                    domain_hint=task.domain or None)
+            threading.Thread(
+                target=self.execute, args=(retry,),
+                kwargs={"intent_hint": task.intent or None,
+                        "domain_hint": task.domain or None},
+                daemon=True).start()
+            return retry
+        if task.task_status in (TaskStatus.SUCCEEDED, TaskStatus.CANCELLED):
+            raise ValueError(f"任务已是终态 {task.task_status.value}，不可恢复")
+        if task.task_status == TaskStatus.RUNNING:
+            return task
+        raise ValueError(f"任务状态 {task.task_status.value} 不支持恢复")
+
+    def _resume_suspended(self, task: Task, budget: BudgetController,
+                          force: bool) -> Task:
+        self._register_active(task)
+        started = time.time()
+        try:
+            task.task_status = transition(TaskStatus.SUSPENDED,
+                                          TaskStatus.RUNNING)
+            task.updated_at = time.time()
+            self.db.save_task(task)
+            self._emit(task, "task_resumed", {"forced": bool(force)})
+            task = self._run(task, budget, start=False)
+            self.db.save_task(task)
+        except Exception as e:  # noqa: BLE001
+            task.task_status = TaskStatus.FAILED
+            task.failure_reason = f"恢复异常: {type(e).__name__}: {e}"
+            self.db.save_task(task)
+            self._record_diagnostic(task, Verdict(passed=False), [],
+                                    "resume_error")
+            self._emit(task, "task_failed",
+                       {"reason": task.failure_reason}, severity="error")
+        finally:
+            self.db.save_run(f"run_{task.task_id}", task.task_id, started,
+                             time.time(), task.task_status.value,
+                             task.version_manifest)
+            self._unregister_active(task.task_id)
         return task
+
+    def _build_retry(self, task: Task) -> Task:
+        """失败任务重跑创建新任务（终态不可改写，PRD 36 / Arch 3.3）。"""
+        retry = Task(user_goal=task.user_goal,
+                     constraints=list(task.constraints),
+                     acceptance_criteria=list(task.acceptance_criteria),
+                     risk_level=task.risk_level,
+                     budget_policy=dict(task.budget_policy),
+                     intent=task.intent, domain=task.domain)
+        retry.parent_task_id = task.task_id
+        retry.runtime_manifest["resumed_from"] = task.task_id
+        self._emit(retry, "task_created",
+                   {"goal": retry.user_goal, "resumed_from": task.task_id})
+        return retry
 
     def cancel_task(self, task_id: str) -> Dict[str, Any]:
         task = self.db.get_task(task_id)
@@ -370,14 +499,44 @@ class RuntimeController:
         return {"ok": True, "task_id": task_id, "status": task.task_status.value}
 
     # ================= 内部工具 =================
-    def _make_budget(self, task: Task) -> BudgetController:
-        overrides = dict(task.budget_policy or {})
-        limits = BudgetLimits()
-        scope = self.experts.get(task.domain)
+    def _make_budget(self, task: Task,
+                     initial_usage: Optional[BudgetUsage] = None
+                     ) -> BudgetController:
+        return BudgetController(BudgetLimits(), dict(task.budget_policy or {}),
+                                initial_usage=initial_usage)
+
+    def _apply_expert_budget(self, task: Task,
+                             budget: BudgetController) -> None:
+        scope = self.experts.get(task.domain) or self.experts.route(task.intent)
         if scope and scope.budget_class == "generous":
-            limits.max_model_calls *= 2
-            limits.max_cost *= 2
-        return BudgetController(limits, overrides)
+            budget.limits.max_model_calls *= 2
+            budget.limits.max_cost *= 2
+
+    def _route_model(self, task: Task) -> Any:
+        """按意图/领域选择模型并记录路由结果（PRD 19）。"""
+        try:
+            model = self.router.route(task.intent or "general",
+                                      task.domain or "general")
+        except Exception:  # noqa: BLE001 —— 路由失败回退默认适配器
+            model = self.react.model
+        try:
+            profile = model.profile()
+        except Exception:  # noqa: BLE001
+            profile = None
+        task.runtime_manifest["model_route"] = {
+            "model_id": getattr(profile, "model_id", None),
+            "intent": task.intent, "domain": task.domain}
+        return model
+
+    @staticmethod
+    def _plan_from_task(task: Task) -> Optional[ExecutionPlan]:
+        raw = task.runtime_manifest.get("execution_plan")
+        if not isinstance(raw, dict):
+            return None
+        try:
+            return ExecutionPlan.from_dict(raw)
+        except Exception:  # noqa: BLE001 —— 旧任务/损坏计划不影响执行
+            return None
 
     def _version_manifest(self) -> Dict[str, Any]:
         if self.releases and self.releases.current_release_id:
@@ -427,6 +586,7 @@ class RuntimeController:
     def _register_active(self, task: Task) -> None:
         class _Flag:
             cancelled = False
+            paused = False
         with self._lock:
             self._active[task.task_id] = _Flag()
 
@@ -440,3 +600,14 @@ def verdict_of(task: Task) -> Dict[str, Any]:
         if "verdict" in ev:
             return ev
     return {}
+
+
+def _plan_progress(plan: ExecutionPlan) -> Dict[str, Any]:
+    states = {s.step_id: s.state for s in plan.steps}
+    return {
+        "steps": states,
+        "done": [k for k, v in states.items() if v == "done"],
+        "failed": [k for k, v in states.items() if v == "failed"],
+        "pending": [k for k, v in states.items() if v in ("pending", "running")],
+        "change_reasons": list(plan.change_reasons),
+    }

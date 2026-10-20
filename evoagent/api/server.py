@@ -6,6 +6,7 @@ Android 端通过轮询任务状态与事件流展示进度（PRD 89.2 任务详
 """
 
 import json
+import re
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -15,6 +16,11 @@ from urllib.parse import parse_qs, urlparse
 from ..app import App
 from ..core.task import RiskLevel, TaskStatus
 from ..evolution.controller import PUBLISH_RULES
+from .events_sync import BatchError, validate_batch
+
+CLIENT_REQUEST_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
+# 幂等提交的检查-创建-登记需要原子化（单进程 API 假设）
+_submit_lock = threading.Lock()
 
 
 def make_handler(app: App):
@@ -104,21 +110,54 @@ def make_handler(app: App):
                     rl = RiskLevel(risk)
                 except ValueError:
                     return self._json(400, {"error": f"非法 risk_level: {risk}"})
-                # 后台执行 + 立即返回（客户端轮询 /tasks/{id}）
-                t = app.controller.submit_task(
-                    goal,
-                    intent=body.get("intent"),
-                    domain=body.get("domain"),
-                    constraints=body.get("constraints") or [],
-                    acceptance=body.get("acceptance_criteria") or [],
-                    risk_level=rl,
-                    budget_overrides=body.get("budget_policy"),
-                    wait=False)
+                request_id = body.get("client_request_id")
+                if request_id is not None and (
+                        not isinstance(request_id, str)
+                        or not CLIENT_REQUEST_RE.match(request_id)):
+                    return self._json(
+                        400, {"error": "非法 client_request_id"})
+                with _submit_lock:
+                    if request_id:
+                        existing = app.db.get_request_task_id(request_id)
+                        if existing:
+                            return self._json(202, {
+                                "task_id": existing, "status": "CREATED",
+                                "deduplicated": True})
+                    # 后台执行 + 立即返回（客户端轮询 /tasks/{id}）
+                    t = app.controller.submit_task(
+                        goal,
+                        intent=body.get("intent"),
+                        domain=body.get("domain"),
+                        constraints=body.get("constraints") or [],
+                        acceptance=body.get("acceptance_criteria") or [],
+                        risk_level=rl,
+                        budget_overrides=body.get("budget_policy"),
+                        wait=False)
+                    if request_id:
+                        app.db.save_request(request_id, t.task_id)
                 return self._json(202, {"task_id": t.task_id, "status": "CREATED"})
+            if path == "/events/sync":
+                return self._events_sync(body)
             parts = path.lstrip("/").split("/")
             if len(parts) == 3 and parts[0] == "tasks" and parts[2] == "cancel":
                 out = app.controller.cancel_task(parts[1])
                 return self._json(200 if out.get("ok") else 409, out)
+            if len(parts) == 3 and parts[0] == "tasks" and parts[2] == "pause":
+                out = app.controller.pause_task(parts[1])
+                return self._json(200 if out.get("ok") else 409, out)
+            if len(parts) == 3 and parts[0] == "tasks" and parts[2] == "resume":
+                try:
+                    t = app.controller.resume_task(
+                        parts[1], force=bool(body.get("force")), wait=False)
+                except PermissionError as e:
+                    return self._json(409, {"error": str(e),
+                                            "requires_force": True})
+                except ValueError as e:
+                    return self._json(409, {"error": str(e)})
+                if t is None:
+                    return self._json(404, {"error": "任务不存在"})
+                return self._json(202, {"task": t.to_dict(),
+                                        "resuming": True})
             if path == "/diagnostics/scan":
                 return self._diagnostic_scan(body)
             if (len(parts) == 3 and parts[0] == "diagnostics"
@@ -128,6 +167,24 @@ def make_handler(app: App):
                     and parts[2] == "candidates"):
                 return self._diagnostic_candidate(parts[1], body)
             return self._json(404, {"error": "未知路径"})
+
+        # ---------- 客户端事件同步 ----------
+        def _events_sync(self, body: Dict[str, Any]):
+            try:
+                events, errors = validate_batch(body)
+            except BatchError as exc:
+                return self._json(400, {"error": str(exc)})
+            accepted, duplicates = [], []
+            for evt in events:
+                if app.bus.ingest(evt):
+                    accepted.append(evt.event_id)
+                else:
+                    duplicates.append(evt.event_id)
+            payload = {"accepted": accepted, "duplicates": duplicates,
+                       "rejected": errors}
+            if not accepted and not duplicates:
+                return self._json(400, payload)
+            return self._json(200, payload)
 
         # ---------- 诊断辅助 ----------
         def _diagnostic_scan(self, body: Dict[str, Any]):
@@ -217,9 +274,12 @@ class ApiServer:
             self.httpd.serve_forever()
         except KeyboardInterrupt:
             pass
+        finally:
+            self.httpd.server_close()
 
     def shutdown(self) -> None:
         self.httpd.shutdown()
+        self.httpd.server_close()
 
 
 def create_app(config_path: Optional[str] = None) -> App:

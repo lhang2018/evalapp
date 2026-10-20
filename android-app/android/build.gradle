@@ -1,9 +1,11 @@
 buildscript {
     ext {
+        buildToolsVersion = "34.0.0"
         minSdkVersion = 24
         compileSdkVersion = 34
         targetSdkVersion = 34
-        kotlinVersion = "1.9.0"
+        // RN 0.75 官方模板版本；AGP 8.7 需要 Gradle 8.9+
+        kotlinVersion = "1.9.24"
     }
     repositories {
         google()
@@ -11,8 +13,9 @@ buildscript {
     }
     dependencies {
         classpath("com.android.tools.build:gradle:8.7.2")
+        classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
 
-apply from: file("../node_modules/@react-native/gradle-plugin/react-native-gradle-plugin.gradle")
+apply plugin: "com.facebook.react.rootproject"

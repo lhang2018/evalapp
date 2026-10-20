@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- 无障碍能力按需启用（PRD 68：用户明确启用 + 授权后才能使用） -->
-    <uses-permission android:name="INTERNET" />
-    <uses-permission android:name="VIBRATE" />
-    <uses-permission android:name="POST_NOTIFICATIONS" />
+    <!-- 网络仅用于本地/局域网 EvoAgent 服务；无障碍能力须用户在系统设置中显式启用 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
+        android:name=".MainApplication"
         android:label="@string/app_name"
         android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme">
@@ -19,8 +20,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!--
-          无障碍服务声明：迭代升级时再接入手机操作 specialists 的 DeviceService。
-        -->
+
+        <!-- 只做节点级操作（点击文本/启动 Intent），不注入坐标手势 -->
+        <service
+            android:name=".DeviceAccessibilityService"
+            android:exported="true"
+            android:label="@string/accessibility_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
     </application>
 </manifest>

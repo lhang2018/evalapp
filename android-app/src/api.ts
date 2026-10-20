@@ -63,10 +63,32 @@ export class EvoAgentClient {
       .then((r) => r.events);
   }
 
-  async submitTask(goal: string, intent: string, riskLevel = "low") {
-    return this.req<{ task_id: string }>("/tasks", {
+  async submitTask(
+    goal: string,
+    intent: string,
+    riskLevel = "low",
+    clientRequestId?: string,
+  ) {
+    const body: Record<string, unknown> = {
+      goal,
+      intent,
+      risk_level: riskLevel,
+    };
+    if (clientRequestId) body.client_request_id = clientRequestId;
+    return this.req<{ task_id: string; deduplicated?: boolean }>("/tasks", {
       method: "POST",
-      body: JSON.stringify({ goal, intent, risk_level: riskLevel }),
+      body: JSON.stringify(body),
+    });
+  }
+
+  syncEvents(events: unknown[]) {
+    return this.req<{
+      accepted: string[];
+      duplicates: string[];
+      rejected: { event_id: string; error: string }[];
+    }>("/events/sync", {
+      method: "POST",
+      body: JSON.stringify({ client_id: "android", events }),
     });
   }
 

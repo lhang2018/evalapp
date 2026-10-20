@@ -11,6 +11,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from ..core.budget import BudgetController, BudgetExceeded
 from ..models.base import ChatMessage
 
 
@@ -22,6 +23,20 @@ class PlanStep:
     tool_hint: Optional[str] = None
     acceptance: Optional[List[Dict[str, Any]]] = None
     state: str = "pending"             # pending | running | done | failed | skipped
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"step_id": self.step_id, "description": self.description,
+                "deps": list(self.deps), "tool_hint": self.tool_hint,
+                "acceptance": self.acceptance, "state": self.state}
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "PlanStep":
+        return cls(step_id=str(d.get("step_id") or ""),
+                   description=str(d.get("description") or ""),
+                   deps=list(d.get("deps") or []),
+                   tool_hint=d.get("tool_hint"),
+                   acceptance=d.get("acceptance"),
+                   state=str(d.get("state") or "pending"))
 
 
 @dataclass
@@ -45,6 +60,37 @@ class ExecutionPlan:
         self.change_reasons.append(reason)
         self.completed_work = [s.step_id for s in new_steps if s.state == "done"]
         return self.change_reasons
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "plan_id": self.plan_id, "goal": self.goal,
+            "steps": [s.to_dict() for s in self.steps],
+            "original_goal": self.original_goal,
+            "immutable_constraints": list(self.immutable_constraints),
+            "completed_work": list(self.completed_work),
+            "change_reasons": list(self.change_reasons),
+            "reserved_budget_hint": dict(self.reserved_budget_hint),
+            "risks": list(self.risks),
+            "acceptance_criteria": list(self.acceptance_criteria),
+            "created_at": self.created_at,
+        }
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "ExecutionPlan":
+        return cls(
+            plan_id=str(d.get("plan_id") or "plan_main"),
+            goal=str(d.get("goal") or ""),
+            steps=[PlanStep.from_dict(s) for s in (d.get("steps") or [])
+                   if isinstance(s, dict)],
+            original_goal=str(d.get("original_goal") or d.get("goal") or ""),
+            immutable_constraints=list(d.get("immutable_constraints") or []),
+            completed_work=list(d.get("completed_work") or []),
+            change_reasons=list(d.get("change_reasons") or []),
+            reserved_budget_hint=dict(d.get("reserved_budget_hint") or {}),
+            risks=list(d.get("risks") or []),
+            acceptance_criteria=list(d.get("acceptance_criteria") or []),
+            created_at=float(d.get("created_at") or time.time()),
+        )
 
     def validate(self) -> List[str]:
         """规划验收（PRD 11.3）：完整性/依赖顺序/资源可行性/风险覆盖/终止条件。"""
@@ -87,18 +133,24 @@ class PlanningEngine:
     def make_plan(self, goal: str, *, intent: str = "general",
                   constraints: Optional[List[str]] = None,
                   acceptance: Optional[List[Dict[str, Any]]] = None,
-                  plan_id: str = "plan_main") -> ExecutionPlan:
+                  plan_id: str = "plan_main",
+                  model=None,
+                  budget: Optional[BudgetController] = None) -> ExecutionPlan:
         steps: Optional[List[PlanStep]] = None
         change_reasons: List[str] = []
-        if self.model is not None:
+        adapter = model or self.model
+        if adapter is not None:
             try:
                 steps = self._model_plan(goal, intent, constraints or [],
-                                         acceptance or [])
+                                         acceptance or [], model=adapter,
+                                         budget=budget)
+            except BudgetExceeded:
+                raise
             except Exception as e:  # noqa: BLE001
                 change_reasons.append(f"model_plan_failed:{type(e).__name__}")
         if not steps:
             steps = self._default_steps(goal, intent)
-            if self.model is not None and not change_reasons:
+            if adapter is not None and not change_reasons:
                 change_reasons.append("model_plan_failed:empty")
         plan = ExecutionPlan(
             plan_id=plan_id, goal=goal, steps=steps,
@@ -115,7 +167,9 @@ class PlanningEngine:
     # ---- 模型辅助规划（PRD 11.2；失败必须可追溯地回退）----
     def _model_plan(self, goal: str, intent: str,
                     constraints: List[str],
-                    acceptance: List[Dict[str, Any]]) -> List[PlanStep]:
+                    acceptance: List[Dict[str, Any]],
+                    *, model=None,
+                    budget: Optional[BudgetController] = None) -> List[PlanStep]:
         system = ChatMessage(role="system", content=(
             "你是任务规划器。只输出 JSON，不要解释或 Markdown 围栏："
             '{"steps":[{"step_id":"s1","description":"...",'
@@ -126,7 +180,13 @@ class PlanningEngine:
             f"goal:{goal}\nintent:{intent}\n"
             f"constraints:{json.dumps(constraints, ensure_ascii=False)}\n"
             f"acceptance:{json.dumps(acceptance, ensure_ascii=False)}"))
-        raw = self.model.generate([system, user])
+        adapter = model or self.model
+        if budget is not None:
+            budget.check_model_call()
+        raw = adapter.generate([system, user])
+        if budget is not None:
+            budget.record_model_call(_estimate_cost(
+                adapter, len(system.content) + len(user.content), len(raw)))
         data = _parse_json(raw)
         steps_raw = data.get("steps")
         if not isinstance(steps_raw, list) or not steps_raw:
@@ -169,6 +229,16 @@ class PlanningEngine:
         if intent == "comic_drama":
             return ["生成成本较高，失败需局部重试而非整体重做"]
         return []
+
+
+def _estimate_cost(model, input_chars: int, output_chars: int) -> float:
+    fn = getattr(model, "estimate_cost", None)
+    if not callable(fn):
+        return 0.0
+    try:
+        return float(fn(input_chars, output_chars))
+    except Exception:  # noqa: BLE001 —— 计量失败不阻断规划
+        return 0.0
 
 
 def _parse_json(raw: str) -> Dict[str, Any]:

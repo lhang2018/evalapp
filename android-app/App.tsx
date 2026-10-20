@@ -1,143 +1,410 @@
 /**
- * EvoAgent Android 客户端主界面（PRD 89 用户端功能）。
+ * EvoAgent Android 客户端主界面（PRD 89 / 64-76）。
  *
- - 任务首页：文本输入提交任务（89.1）
- - 任务详情：执行阶段/结果/失败原因/预算（89.2）
- - 任务列表轮询（89.2 / 89.5）
+ * - 离线优先任务：本地落盘 → 在线后以 client_request_id 幂等提交
+ * - 事件队列：断点续传、去重、死信、连续 checkpoint
+ * - 无障碍操作：显式授权、结果可验证、高风险独立确认
  *
- * UI 可通过 OTA（CodePush / Expo Updates）整包推送更新 —— JS 层不依赖原生改动。
+ * UI 可通过 OTA（CodePush / Expo Updates）整包推送更新。
  */
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Button,
-  FlatList,
   KeyboardAvoidingView,
+  Linking,
+  NativeModules,
   Platform,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
-import { api, TaskInfo } from "./src/api";
 
-const AUTO_POLL_MS = 1500;
+import { api } from "./src/api.ts";
+import { asyncStorageStore } from "./src/storage/asyncStorage.ts";
+import { OfflineRepository } from "./src/offline/storage.ts";
+import { EventQueue } from "./src/offline/queue.ts";
+import { LocalTaskService } from "./src/offline/tasks.ts";
+import { ClientTransport } from "./src/offline/apiTransport.ts";
+import { SyncEngine } from "./src/offline/sync.ts";
+import type { DeadLetter, LocalTask, QueueStats } from "./src/offline/types.ts";
+import { DeviceBroker } from "./src/device/broker.ts";
+import { NativeDeviceTransport } from "./src/device/nativeTransport.ts";
+import type { NativeDeviceModuleLike } from "./src/device/nativeTransport.ts";
+import type {
+  ActionJournalEntry,
+  DeviceAction,
+  DeviceResult,
+  DeviceRisk,
+} from "./src/device/types.ts";
+
+const POLL_MS = 5000;
+
+function guessIntent(text: string): string {
+  if (/(几点|时间|日期|今天|现在)/.test(text)) return "time_query";
+  return "general";
+}
+
+function confirmHighRisk(action: DeviceAction, risk: DeviceRisk): Promise<boolean> {
+  return new Promise((resolve) => {
+    Alert.alert(
+      "高风险操作确认",
+      `类型: ${action.kind}\n目标: ${action.target}\n风险: ${risk}`,
+      [
+        { text: "取消", style: "cancel", onPress: () => resolve(false) },
+        {
+          text: "确认执行",
+          style: "destructive",
+          onPress: () => resolve(true),
+        },
+      ],
+      { cancelable: false }
+    );
+  });
+}
 
 export default function App(): React.JSX.Element {
   const [goal, setGoal] = useState("");
-  const [tasks, setTasks] = useState<TaskInfo[]>([]);
-  const [busy, setBusy] = useState(false);
+  const [online, setOnline] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [localTasks, setLocalTasks] = useState<LocalTask[]>([]);
+  const [stats, setStats] = useState<QueueStats | null>(null);
+  const [deadLetters, setDeadLetters] = useState<DeadLetter[]>([]);
+  const [deviceAvailable, setDeviceAvailable] = useState(false);
+  const [deviceResult, setDeviceResult] = useState<DeviceResult | null>(null);
+  const [journal, setJournal] = useState<ActionJournalEntry[]>([]);
+  const [clickTarget, setClickTarget] = useState("设置");
 
-  // 服务器地址：开发用本机；真机用局域网 IP（在设置页可改，此处先简单常量）
+  // 服务器地址：开发用本机；真机用局域网 IP
   const baseUrl = "http://10.0.2.2:8300";
 
-  const refresh = useCallback(async () => {
-    try {
-      setTasks(await api(baseUrl).listTasks());
-      setError(null);
-    } catch (e: any) {
-      setError("无法连接 EvoAgent 服务端：" + e.message);
-    }
+  const services = useMemo(() => {
+    const client = api(baseUrl);
+    const repo = new OfflineRepository(asyncStorageStore);
+    const queue = new EventQueue(repo);
+    const transport = new ClientTransport(client);
+    const tasks = new LocalTaskService(repo, transport);
+    const sync = new SyncEngine(queue, transport, tasks);
+    const deviceModule =
+      (NativeModules as Record<string, unknown>).EvoAgentDevice as
+        | NativeDeviceModuleLike
+        | null;
+    const deviceTransport = new NativeDeviceTransport(deviceModule ?? null);
+    const broker = new DeviceBroker(deviceTransport, {
+      confirm: confirmHighRisk,
+    });
+    return { client, repo, queue, tasks, sync, deviceTransport, broker };
   }, [baseUrl]);
 
+  const reloadLocal = useCallback(async () => {
+    setLocalTasks(await services.tasks.list());
+    setStats(await services.queue.stats());
+    setDeadLetters(await services.queue.deadLetters());
+    setJournal(services.broker.listJournal());
+  }, [services]);
+
+  const flush = useCallback(
+    async (force: boolean = false) => {
+      setSyncing(true);
+      try {
+        const result = await services.sync.flush(force);
+        if (!result.ok) {
+          setOnline(false);
+          setError("同步失败：" + (result.error ?? "网络错误"));
+        } else if (!result.skipped) {
+          setOnline(true);
+          setError(null);
+        }
+        await services.tasks.refresh();
+        await reloadLocal();
+      } catch (e: unknown) {
+        setOnline(false);
+        setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setSyncing(false);
+      }
+    },
+    [services, reloadLocal]
+  );
+
   useEffect(() => {
-    const timer = setInterval(refresh, AUTO_POLL_MS);
-    refresh();
-    return () => clearInterval(timer);
-  }, [refresh]);
+    let mounted = true;
+    (async () => {
+      await services.tasks.recoverInterrupted();
+      const available = await services.deviceTransport.isAvailable();
+      if (mounted) setDeviceAvailable(available);
+      await reloadLocal();
+      try {
+        await services.client.health();
+        if (mounted) setOnline(true);
+        await services.sync.flush(false);
+      } catch {
+        if (mounted) setOnline(false);
+      }
+      if (mounted) await reloadLocal();
+    })();
+
+    const timer = setInterval(async () => {
+      if (!mounted) return;
+      try {
+        await services.client.health();
+        if (mounted) setOnline(true);
+        await services.sync.flush(false);
+        await services.tasks.refresh();
+      } catch {
+        if (mounted) setOnline(false);
+      }
+      if (mounted) await reloadLocal();
+    }, POLL_MS);
+
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, [services, reloadLocal]);
 
   const submit = useCallback(async () => {
-    if (!goal.trim()) return;
+    const text = goal.trim();
+    if (!text) return;
     setBusy(true);
     try {
-      await api(baseUrl).submitTask(goal.trim(), "general");
+      const task = await services.tasks.submit(text, guessIntent(text), "low");
       setGoal("");
-      await refresh();
-    } catch (e: any) {
-      setError(e.message);
+      setError(null);
+      await reloadLocal();
+      if (online) {
+        await flush(true);
+      }
+      if (task.status === "LOCAL_ONLY") {
+        setError("已离线保存；联网后自动以幂等键提交");
+      }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
-  }, [baseUrl, goal, refresh]);
+  }, [goal, online, services, reloadLocal, flush]);
 
-  const cancel = useCallback(
-    async (id: string) => {
+  const cancelTask = useCallback(
+    async (task: LocalTask) => {
+      if (!task.server_task_id) return;
       try {
-        await api(baseUrl).cancelTask(id);
-        await refresh();
-      } catch (e: any) {
-        setError(e.message);
+        await services.client.cancelTask(task.server_task_id);
+        await flush(true);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : String(e));
       }
     },
-    [baseUrl, refresh]
+    [services, flush]
   );
+
+  const confirmReconcile = useCallback(
+    async (task: LocalTask) => {
+      await services.tasks.confirmResubmit(task.local_task_id);
+      await flush(true);
+    },
+    [services, flush]
+  );
+
+  const retryDead = useCallback(
+    async (eventId: string) => {
+      await services.queue.retryDeadLetter(eventId);
+      await reloadLocal();
+      await flush(true);
+    },
+    [services, reloadLocal, flush]
+  );
+
+  const runDevice = useCallback(
+    async (action: DeviceAction) => {
+      const result = await services.broker.execute(action);
+      setDeviceResult(result);
+      setJournal(services.broker.listJournal());
+    },
+    [services]
+  );
+
+  const openAccessibilitySettings = useCallback(async () => {
+    try {
+      if (Platform.OS === "android") {
+        await Linking.sendIntent("android.settings.ACCESSIBILITY_SETTINGS");
+      }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }, []);
 
   return (
     <SafeAreaView style={s.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "android" ? undefined : "padding"}
         style={s.inner}>
-        <Text style={s.title}>EvoAgent 任务中心</Text>
-        <Text style={s.hint}>服务端: {baseUrl}（/health 健康状态见上方提示）</Text>
-        {error && <Text style={s.error}>{error}</Text>}
-        <View style={s.inputRow}>
-          <TextInput
-            style={s.input}
-            placeholder="输入任务目标，例如：查询现在几点了"
-            value={goal}
-            onChangeText={setGoal}
-          />
-        </View>
-        {busy ? (
-          <ActivityIndicator />
-        ) : (
-          <Button title="提交任务" onPress={submit} disabled={!goal.trim()} />
-        )}
-        <FlatList
-          style={s.list}
-          data={tasks}
-          keyExtractor={(t) => t.task_id}
-          renderItem={({ item }) => (
-            <TaskCard task={item} onCancel={() => cancel(item.task_id)} />
+        <ScrollView>
+          <Text style={s.title}>EvoAgent 任务中心</Text>
+          <View style={[s.banner, online ? s.bannerOnline : s.bannerOffline]}>
+            <Text style={s.bannerText}>
+              {online ? "在线 · 事件自动同步" : "离线 · 任务保存在本机"}
+            </Text>
+            <Button
+              title={syncing ? "同步中…" : "立即同步"}
+              onPress={() => flush(true)}
+              disabled={syncing}
+            />
+          </View>
+          <Text style={s.hint}>服务端: {baseUrl}</Text>
+          {stats && (
+            <Text style={s.hint}>
+              待上传 {stats.pending} · 仅本地 {stats.localOnly} · 死信{" "}
+              {stats.dead} · checkpoint {stats.checkpoint}/{stats.capacity}
+            </Text>
           )}
-        />
+          {error && <Text style={s.error}>{error}</Text>}
+
+          <View style={s.inputRow}>
+            <TextInput
+              style={s.input}
+              placeholder="输入任务目标，例如：查询现在几点了"
+              value={goal}
+              onChangeText={setGoal}
+            />
+          </View>
+          {busy ? (
+            <ActivityIndicator />
+          ) : (
+            <Button title="提交任务" onPress={submit} disabled={!goal.trim()} />
+          )}
+
+          <Text style={s.section}>本地任务</Text>
+          {localTasks.length === 0 && <Text style={s.hint}>暂无任务</Text>}
+          {localTasks.map((task) => (
+            <View key={task.local_task_id} style={s.card}>
+              <View style={s.row}>
+                <Text style={[s.status, statusColor(task.status)]}>
+                  {task.status}
+                </Text>
+                {task.status === "NEEDS_RECONCILE" && (
+                  <View style={s.action}>
+                    <Button
+                      title="确认重提"
+                      onPress={() => confirmReconcile(task)}
+                    />
+                  </View>
+                )}
+                {task.server_task_id &&
+                  (task.status === "SUBMITTED" ||
+                    task.status === "WAITING_DEPENDENCY") && (
+                    <View style={s.action}>
+                      <Button
+                        title="取消"
+                        onPress={() => cancelTask(task)}
+                      />
+                    </View>
+                  )}
+              </View>
+              <Text style={s.goal}>{task.goal}</Text>
+              {task.result ? (
+                <Text style={s.result}>结果: {task.result}</Text>
+              ) : null}
+              {task.failure_reason ? (
+                <Text style={s.fail}>失败: {task.failure_reason}</Text>
+              ) : null}
+              {task.last_sync_error ? (
+                <Text style={s.hint}>{task.last_sync_error}</Text>
+              ) : null}
+              <Text style={s.mono}>幂等键 {task.client_request_id}</Text>
+            </View>
+          ))}
+
+          {deadLetters.length > 0 && (
+            <>
+              <Text style={s.section}>死信（需人工处理）</Text>
+              {deadLetters.map((letter) => (
+                <View key={letter.event.event_id} style={s.card}>
+                  <Text style={s.fail}>{letter.reason}</Text>
+                  <Text style={s.mono}>
+                    {letter.event.event_type} · seq {letter.event.seq}
+                  </Text>
+                  <Button
+                    title="重试"
+                    onPress={() => retryDead(letter.event.event_id)}
+                  />
+                </View>
+              ))}
+            </>
+          )}
+
+          <Text style={s.section}>无障碍设备操作</Text>
+          <Text style={s.hint}>
+            {deviceAvailable
+              ? "服务已启用：仅节点级操作，结果需证据验证"
+              : "服务未启用：请在系统设置中授权"}
+          </Text>
+          <Button
+            title="打开系统无障碍设置"
+            onPress={openAccessibilitySettings}
+          />
+          <View style={s.gap} />
+          <Button
+            title="打开系统设置（低风险）"
+            onPress={() =>
+              runDevice({
+                action_id: `launch-${Date.now()}`,
+                kind: "launch_intent",
+                target: "com.android.settings",
+              })
+            }
+          />
+          <View style={s.inputRow}>
+            <TextInput
+              style={s.input}
+              placeholder="要点击的页面文本"
+              value={clickTarget}
+              onChangeText={setClickTarget}
+            />
+          </View>
+          <Button
+            title="点击页面文本（中风险）"
+            onPress={() =>
+              runDevice({
+                action_id: `click-${Date.now()}`,
+                kind: "click_text",
+                target: clickTarget.trim(),
+              })
+            }
+            disabled={!clickTarget.trim()}
+          />
+          {deviceResult && (
+            <Text
+              style={[
+                s.result,
+                deviceResult.status === "verified" ? null : s.fail,
+              ]}>
+              [{deviceResult.status}] {deviceResult.message ?? ""}
+            </Text>
+          )}
+          {journal.slice(-5).reverse().map((entry) => (
+            <Text key={entry.action_id} style={s.mono}>
+              {entry.kind} · {entry.state} · {entry.risk}
+            </Text>
+          ))}
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-function TaskCard({ task, onCancel }: { task: TaskInfo; onCancel: () => void }) {
-  const done =
-    task.task_status === "SUCCEEDED" || task.task_status === "FAILED" ||
-    task.task_status === "CANCELLED";
-  const open = !done;
-  return (
-    <View style={s.card}>
-      <View style={s.row}>
-        <Text style={[s.status, statusColor(task.task_status)]}>
-          {task.task_status}
-        </Text>
-        {open && (
-          <View style={s.cancel}>
-            <Button title="取消" onPress={onCancel} />
-          </View>
-        )}
-      </View>
-      <Text style={s.goal}>{task.user_goal}</Text>
-      {task.result ? <Text style={s.result}>结果: {task.result}</Text> : null}
-      {task.failure_reason ? (
-        <Text style={s.fail}>失败: {task.failure_reason}</Text>
-      ) : null}
-    </View>
-  );
-}
-
 function statusColor(status: string) {
-  if (status === "SUCCEEDED") return { color: "#1a7f37" };
-  if (status === "FAILED") return { color: "#cf222e" };
-  if (status === "RUNNING" || status === "VERIFYING") return { color: "#0969da" };
+  if (status === "DONE") return { color: "#1a7f37" };
+  if (status === "NEEDS_RECONCILE") return { color: "#cf222e" };
+  if (status === "SUBMITTED" || status === "WAITING_DEPENDENCY") {
+    return { color: "#0969da" };
+  }
   return { color: "#57606a" };
 }
 
@@ -147,20 +414,43 @@ const s = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "700", marginBottom: 8 },
   hint: { fontSize: 12, color: "#57606a", marginBottom: 8 },
   error: { color: "#cf222e", marginBottom: 8 },
-  inputRow: { flexDirection: "row", marginBottom: 8 },
-  input: {
-    flex: 1, borderWidth: 1, borderColor: "#d0d7de",
-    borderRadius: 6, paddingHorizontal: 10, height: 44, backgroundColor: "#fff",
+  banner: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginBottom: 8,
   },
-  list: { marginTop: 12 },
+  bannerOnline: { backgroundColor: "#dafbe1" },
+  bannerOffline: { backgroundColor: "#ffebe9" },
+  bannerText: { fontWeight: "600" },
+  inputRow: { flexDirection: "row", marginBottom: 8, marginTop: 8 },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#d0d7de",
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    height: 44,
+    backgroundColor: "#fff",
+  },
+  section: { fontSize: 17, fontWeight: "700", marginTop: 18, marginBottom: 8 },
   card: {
-    backgroundColor: "#fff", borderRadius: 8, padding: 12,
-    marginBottom: 8, borderWidth: 1, borderColor: "#d0d7de",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#d0d7de",
   },
   row: { flexDirection: "row", justifyContent: "space-between" },
   status: { fontWeight: "700" },
-  cancel: { width: 90 },
+  action: { width: 100 },
   goal: { marginTop: 4, fontSize: 15 },
   result: { marginTop: 4, color: "#1a7f37" },
   fail: { marginTop: 4, color: "#cf222e" },
+  mono: { marginTop: 4, fontSize: 11, color: "#57606a" },
+  gap: { height: 8 },
 });
