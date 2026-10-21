@@ -7,7 +7,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from .task import RiskLevel
 
@@ -29,13 +29,17 @@ class ToolPolicy:
 
 class PermissionController:
     def __init__(self, high_risk_mode: str = "confirm",
-                 confirm_callback: Optional[Callable[[str, Dict], bool]] = None):
+                 confirm_callback: Optional[Callable[[str, Dict], bool]] = None,
+                 approvals: Optional[Any] = None):
         """
         high_risk_mode: 记录 in deny | confirm | allow（仅测试环境用 allow）
         confirm_callback: (op_name, payload) -> bool；默认无回调=拒绝
+        approvals: 审批记录存取（core/approvals.ApprovalStore）；F-04 高风险
+                   决策与一次性语义落账用，缺省None 保持旧行为
         """
         self.high_risk_mode = high_risk_mode
         self.confirm_callback = confirm_callback
+        self.approvals: Optional[Any] = approvals
         self._tool_policies: Dict[str, ToolPolicy] = {}
         # 内置高风险操作名单（PRD 84：支付、删除、外部发送、账户修改、权限变更）
         self.high_risk_ops = {
@@ -68,10 +72,18 @@ class PermissionController:
 
     def _decide_high_risk(self, op: str, args: Dict) -> PermissionDecision:
         if self.high_risk_mode == "allow":
-            return PermissionDecision.ALLOW
-        if self.high_risk_mode == "deny":
-            return PermissionDecision.DENY
-        # confirm 模式：有回调且回调同意才放行
-        if self.confirm_callback and self.confirm_callback(op, args):
-            return PermissionDecision.ALLOW
-        return PermissionDecision.DENY
+            decision = PermissionDecision.ALLOW
+        elif self.high_risk_mode == "deny":
+            decision = PermissionDecision.DENY
+        else:
+            # confirm 模式：有回调且回调同意才放行
+            if self.confirm_callback and self.confirm_callback(op, args):
+                decision = PermissionDecision.ALLOW
+            else:
+                decision = PermissionDecision.DENY
+        # F-04：高风险决策必须落审批记录（A-01 五项绑定 + 一次性语义）
+        if self.approvals is not None:
+            self.approvals.note_decision(
+                op, args, granted_by=f"policy:{self.high_risk_mode}",
+                approved=(decision == PermissionDecision.ALLOW))
+        return decision

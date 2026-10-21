@@ -26,6 +26,7 @@ from ..workflows.models import WorkflowDef, WorkflowNodeState
 from ..config import Config
 from .budget import (BudgetController, BudgetExceeded, BudgetLimits,
                      BudgetUsage)
+from .approvals import ApprovalStore  # F-04 审批记录
 from .checkpoint import Checkpoint, CheckpointManager
 from .side_effects import SideEffectLedger  # F-03 副作用账本
 from .events import EventBus, RunEvent
@@ -594,6 +595,16 @@ class RuntimeController:
                            {"side_effects": pending}, severity="warn")
                 raise PermissionError(
                     "存在结果未知的副作用；需人工核验后以 force=true 恢复")
+            if pending and force:
+                # F-04：明示授权落审批记录（动作摘要绑 resume+任务、
+                # 目标对象=task_id、一次性语义=自动消费）
+                if self.permissions.approvals is not None:
+                    self.permissions.approvals.note_decision(
+                        "resume",
+                        {"target": task_id,
+                         "pending_side_effects": len(pending)},
+                        task_id=task_id, granted_by="api:force",
+                        approved=True)
             usage = None
             state = (cp.budget_state if cp else {}) or {}
             if state.get("usage"):

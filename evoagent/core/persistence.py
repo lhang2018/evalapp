@@ -170,6 +170,67 @@ class Database:
                 " ORDER BY created_at", (task_id,)).fetchall()
         return [dict(r) for r in rows]
 
+    # ---- approvals（A-01 五项绑定，F-04；建表见 core/schema/approvals.py）----
+    def save_approval(self, approval_id: str, *, task_id: str, op: str,
+                      target: str, scope: str, action_summary: str,
+                      status: str, granted_by: str,
+                      expires_at: Optional[float]) -> str:
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO approvals VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                (approval_id, task_id, op, target, scope, action_summary,
+                 status, granted_by, time.time(), expires_at,
+                 None, None))  # created_at, expires_at, consumed_at, revoked_at
+            self._conn.commit()
+        return approval_id
+
+    def consume_approval(self, approval_id: str) -> bool:
+        """一次性：把 approved 标记为 used，仅当仍为 approved。"""
+        with self._lock:
+            cur = self._conn.execute(
+                "UPDATE approvals SET status='used', consumed_at=?"
+                " WHERE approval_id=? AND status='approved'",
+                (time.time(), approval_id))
+            self._conn.commit()
+        return cur.rowcount > 0
+
+    def revoke_approval(self, approval_id: str) -> bool:
+        with self._lock:
+            cur = self._conn.execute(
+                "UPDATE approvals SET status='revoked', revoked_at=?"
+                " WHERE approval_id=? AND status='approved'",
+                (time.time(), approval_id))
+            self._conn.commit()
+        return cur.rowcount > 0
+
+    def expire_approvals(self, now: float) -> int:
+        with self._lock:
+            cur = self._conn.execute(
+                "UPDATE approvals SET status='expired'"
+                " WHERE status='approved' AND expires_at IS NOT NULL"
+                " AND expires_at < ?", (now,))
+            self._conn.commit()
+        return cur.rowcount
+
+    def get_approval(self, approval_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT * FROM approvals WHERE approval_id=?",
+            (approval_id,)).fetchone()
+        return dict(row) if row else None
+
+    def list_approvals_by_task(self, task_id: str, limit: int = 100
+                               ) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT * FROM approvals WHERE task_id=?"
+            " ORDER BY created_at DESC LIMIT ?", (task_id, limit)).fetchall()
+        return [dict(r) for r in rows]
+
+    def list_approvals_recent(self, limit: int = 50) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT * FROM approvals ORDER BY created_at DESC LIMIT ?",
+            (limit,)).fetchall()
+        return [dict(r) for r in rows]
+
     # ---- client idempotency ----
     def get_request_task_id(self, client_request_id: str) -> Optional[str]:
         row = self._conn.execute(

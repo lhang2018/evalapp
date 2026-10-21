@@ -1471,3 +1471,13 @@
 - 预计触及：新 `core/approvals.py`、新 `core/schema/approvals.py`、`core/persistence.py`(+CRUD ~30 行)、`core/permissions.py`(check_op 接账)、`core/controller.py`(resume force 落账 ≤10 行)、新 `api/approvals_api.py`(注册表路由)、新测试；**不碰** WorkBuddy 在途的 6 份台账 .md 与 android 通知文件
 - 完成前置：F-13/F-01/F-03 已完成（F-03 尚未推送，网络通了会自动补推）
 
+
+### F-04 审批记录实体 approval_id 完成（2026-10-22 凌晨）
+- 新表 core/schema/approvals.py（独立域）+ core/approvals.py：A-01 五项绑定（动作摘要/目标对象/范围/有效期/一次性语义）全落字段；approval_id 此前全仓零命中→现在有产生它的代码路径
+- 状态机：approved→used（授即用，二次拒绝）/approved→revoked/denied/expired；get 惰性过期 + expire_stale 批量
+- 决策收口：permissions._decide_high_risk 三路径全落账（confirm 允→used、拒→denied、policy:allow/deny 同口径）——高风险决策处不存在不落账的放行；workflow 审批节点恒放行缺陷一并获得记账（R-06 的一半前置）
+- resume force 明示授权落账（op=resume/target=task_id/granted_by=api:force），与 F-03 对账链相接
+- API：/approvals + /approvals/?task_id= 注册表路由（admin），server.py 仅 +1 行 import——F-00 基座第二次实战
+- +12 测试；DoD 三连绿 474/474/475（+1 skip）
+- 另：后台重试环已将 F-03 与标记批推送远端完成
+

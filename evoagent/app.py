@@ -12,6 +12,7 @@ from .core.audit import AuditLog
 from .core.backup import BackupManager
 from .core.budget import BudgetLedger, BudgetLimits
 from .core.checkpoint import CheckpointManager
+from .core.approvals import ApprovalStore  # F-04 审批记录
 from .core.controller import RuntimeController
 from .core.events import EventBus
 from .core.log_layers import (EvidenceStore, ExecutionTracer, LayerManager)
@@ -88,8 +89,11 @@ class App:
                 iter(self.releases.manifests.values()))
 
         # 权限（高风险默认确认制；confirm_callback 由宿主在获得用户授权后注入）
+        # F-04：审批记录存取——高风险决策与一次性语义在决策点落账
+        self.approvals = ApprovalStore(self.db)
         self.permissions = PermissionController(high_risk_mode=self.config.high_risk_mode,
-                                                confirm_callback=confirm_callback)
+                                                confirm_callback=confirm_callback,
+                                                approvals=self.approvals)
 
         # 工具
         self.tools = ToolRegistry(self.permissions, store=self.db)
