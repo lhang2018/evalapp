@@ -58,6 +58,8 @@
 | 42 | 版本对账与客户端更新管理器 | 补充 A §3/§5/§7/§8：运行清单持久化（设备身份）、事件批次回执与重放、`/sync/reconcile`（平台/最低版本/契约/制品/灰度）、`/sync/apply-result`（幂等）、设备安装与部署记录；客户端安装实例 ID、本地复核、双槽位原子切换、健康检查与自动回滚、回执上报；App 更新中心接线 | complete（327 项 Python + 57 项客户端） |
 | 43 | 候选阶段同步 | 补充 A §2/§8：`GET /sync/candidates` 只下发评测后的候选阶段（不含假设/证据），`device_candidate_states` 记录每个安装实例已见状态；客户端更新管理器 `refreshCandidates()` 持久化快照，更新分区只读展示，不参与激活路径 | complete（331 项 Python + 60 项客户端） |
 | 44 | 离线日志与可靠同步文档映射 | 补充 C 转规范 md（含三处 ASCII 围栏）；IMPLEMENTATION 新增「补充设计 C 映射」18 条逐项核对（✅/🔹/⬜），覆盖率与迭代待办更新（12/13 项） | complete |
+| 45 | 全量详细设计正式版 1.0 接入 | 解压两包至 docs/（89 主题 ID + 审计汇编 v0.1），22 份 md 格式校验全部合规；IMPLEMENTATION 新增「全量详细设计正式版 1.0 映射」节（分组覆盖核对 + 契约差异 + 冲突裁定），迭代待办新增 15-18 项 | complete |
+| 46 | 全量基线裁定与逐项对账 | 用户裁定 v0.1 降级为历史参考、正式版 1.0 全量基线（非 MVP）；89 主题逐项对账（✅59/🔹15/⬜15）+ A/SV/CTRL 31 项 + 阶段 A-H 覆盖 + 契约差异 + 20 条系统级验收；待办按阶段 A-H 重排 | complete |
 | 45 | 离线日志可靠同步实现 | 补充 C §3/§5：服务端 `sequence_no`/`runtime_manifest_id`/`clock_source` 落库与 `query_run` 因果排序、回执协议 1.0（confirmed/unconfirmed/confirmed_count）；客户端 per-run 序号、pending/in_flight/quarantined 状态机、崩溃后 stale in-flight 回收、稳定 batch_id、部分成功精确 ack、永久错误隔离与人工重入、App 隔离区面板 | complete（335 项 Python + 66 项客户端；typecheck 通过） |
 | 46 | 离线容量治理 | 补充 C §4：critical/normal/debug 保留等级（7 天/1 天，critical 永不自动清理）、过期清理、容量腾位（debug→normal，critical 只增不减）、`DataLossMarker` 持久化（原因/事件清单/等级计数/seq 范围）、80% 预警与界面提示 | complete（335 项 Python + 69 项客户端；typecheck 通过） |
 | 47 | 诊断包受控导入 | 补充 C §8：ZIP 仅解析不执行；包/条目/解压总量/压缩比限制、路径穿越与符号链接拒绝、文件与附件白名单、逐文件 SHA-256、`format_version` 与事件字段校验、关联关系审查；按包 SHA-256 幂等写入 `diagnostics_imports`/`diagnostics_import_events`，admin-only，成功与拒绝均审计；GET 审查接口 | complete（344 项 Python + 69 项客户端） |
@@ -167,3 +169,8 @@
 - 无 LLM Key 时运行 `python -m evoagent.cli demo` 走 Mock 模型全链路。
 - 真实模型：设 `EVOAGENT_PROVIDER=openai` 即可复用 Claude 全局配置（Key/端点/模型）；
   也可用 `EVOAGENT_API_KEY` / `EVOAGENT_BASE_URL` / `EVOAGENT_MODEL` 显式覆盖。
+
+## Phase 47（2026-10-21）：ChatGPT 对话全量归档完成
+- 基线素材: chat/extracted 113 组问答全量 + 对账_89主题出处.md（89/89 有出处）
+- 下一步候选: ①待办 15（阶段 E: G 组 AGIG，Task 契约补 goal_id/origin）②特性明细 docx 到达后 docx2md+对账
+- 安全: curl.txt 已删；建议用户近期在 ChatGPT 退出重登作废已暴露会话

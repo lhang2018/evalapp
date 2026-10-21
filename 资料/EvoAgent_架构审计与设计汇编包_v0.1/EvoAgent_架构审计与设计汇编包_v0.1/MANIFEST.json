@@ -1,0 +1,41 @@
+{
+  "package": "EvoAgent 架构审计与设计汇编包",
+  "version": "v0.1",
+  "date": "2026-10-20",
+  "status": "初步审计基线；非全部 50+ 原始专项逐字汇编",
+  "contents": [
+    {
+      "path": "01_架构审计/EvoAgent_全系统架构一致性审计报告_v0.1.md",
+      "purpose": "架构冲突、控制权、风险与冻结门槛"
+    },
+    {
+      "path": "01_架构审计/EvoAgent_全系统架构一致性审计报告_v0.1.docx",
+      "purpose": "可编辑 Word 审计报告"
+    },
+    {
+      "path": "02_总体架构/EvoAgent_总体架构与接口基线_v0.1.md",
+      "purpose": "统一架构、核心模块、数据契约与状态边界"
+    },
+    {
+      "path": "02_总体架构/EvoAgent_总体架构与接口基线_v0.1.docx",
+      "purpose": "可编辑 Word 总体架构"
+    },
+    {
+      "path": "03_专项目录/EvoAgent_50plus专项设计目录与缺口台账_v0.1.md",
+      "purpose": "80 个专项主题、来源状态与缺口追踪"
+    },
+    {
+      "path": "03_专项目录/EvoAgent_50plus专项设计目录与缺口台账_v0.1.docx",
+      "purpose": "可编辑 Word 专项目录"
+    },
+    {
+      "path": "04_工程基线/EvoAgent_V0.1工程基线与验收计划.md",
+      "purpose": "工程目录、实施范围与验收用例"
+    },
+    {
+      "path": "04_工程基线/EvoAgent_V0.1工程基线与验收计划.docx",
+      "purpose": "可编辑 Word 工程基线"
+    }
+  ],
+  "known_source_gap": "当前可读取资料不含全部 50+ 专项的完整原稿；专项目录中的 A/B/C/D 标识区分原文可读取、对话摘要支持、待核对/补写、待决策。"
+}
