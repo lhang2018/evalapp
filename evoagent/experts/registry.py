@@ -6,7 +6,7 @@
 
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 
 @dataclass
@@ -75,15 +75,27 @@ class ExpertRegistry:
     # ---- 路由 ----
     def route(self, intent: str, domain: str = "") -> Expert:
         """多层路由第二层：领域能力路由（Architecture 4.2）。"""
+        expert, _ = self.route_with_match(intent, domain)
+        return expert
+
+    def route_with_match(self, intent: str, domain: str = ""
+                         ) -> Tuple[Expert, bool]:
+        """路由并返回是否命中专属能力（E-07 能力缺口信号源：兜底=False）。
+
+        命中 = 意图显式命中某专家的 applicable_intents，或按领域取到；
+        兜底 = 落到 general/任一专家但意图未显式声明——能力目录缺口。
+        """
         intent_match = [e for e in self._experts.values()
                         if intent in e.applicable_intents]
         if intent_match:
-            return intent_match[0]
+            return intent_match[0], True
         by_name = self._experts.get(domain)
-        if by_name:
-            return by_name
+        if by_name is not None:
+            return by_name, True
         general = [e for e in self._experts.values() if e.expert_id == "general"]
-        return general[0] if general else list(self._experts.values())[0]
+        return (general[0] if general else
+                (list(self._experts.values())[0] if self._experts else None),
+                False)
 
     # ---- 影响分析（PRD 10.3，GAP C-09：传递闭包 + 分层回归范围）----
     def _depends_on_closure(self, cap_id: str) -> set:

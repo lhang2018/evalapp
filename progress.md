@@ -1574,3 +1574,13 @@
 - 在途区存目：WorkBuddy 仍占用台账 .md/server.py 端点迁移/三个校验器；其各处零引用断言继续由台账持有人刷新
 - 下一批（GAP §7 后续）：E-07 四类信号定义补写 + 进化候选自动生成（当前最大空壳）
 
+
+### E-07 四类信号定义补写 + 进化候选自动生成 完成（2026-10-22）
+- ⑥a 契约补写（core/contracts.py 代码侧单点）：EVOLUTION_SIGNAL_TYPES 四类（failure/cost_anomaly/quality_regression/capability_gap）+ EVOLUTION_SIGNAL_SPEC（每类 hook_event/触发/输入/判据/冷却/产出形态）+ 判据默认参数（COST_ANOMALY_RATIO=3/FLOOR=0.05/MIN_RECENT=5；CAPABILITY_GAP_MIN_FALLBACKS=3/窗口 24h）+ target_component 命名规范（expert/<id>|tool/<id>|router|budget|release/<version>）
+- ⑥b 实现：evolution/signals.py SignalCollector（bus 订阅→判据判定→冷却去重→ProblemTicket）+ ProblemTicket 增 signal 型六字段 + EvolutionController.run_signal_pipeline 消费链（仅 signal 型票据自动提案；同组件已有未决候选则节流；失败保留票据不丢证据）——register_problem 首个真实消费方
+- 四个真实 hook：失败=diagnostic_case_created（诊断建案即出，severity 沿诊断）；成本异常=task_finalized+任务账单 vs 近窗中位数×3（样本<5 证据不足不出——04 卷设计决策）；质量退化=evolution_monitored 中 monitor.assess『成功率较前窗口下降』；能力缺口=expert_fallback（解析落 general 且意图未声明；窗口计数≥3，显式 hint 意图可复现）
+- 接线：registry 增 route_with_match（route 语义不变纯委托）；App 装配 signal_collector（task_loader=db.get_task）；+evolution_signal/evolution_signal_skip 观测事件
+- 测试 +10(test_evo_signals.py)：四类各自 触发→票据→自动候选（证据映射/命名/ change_scope），冷却去重，样本不足不出信号，组件级节流，target 命名规范
+- ⚠️ 台账校验器断言再过时 3 个（同 ④ 族）：register_problem 零引用断言 ×2（test_ledger_drift/test_verify_claims）+ test_all_ledgers_have_no_drift——契约路线图第 7 项落地使断言失效，消费方已存在；文件属 WorkBuddy 在途区，由持有人刷新
+- 全量 583 passed（本批 +10）；下一项：E-12 失败案例→回归资产转换规则、E-13 进化并发与停止条件
+

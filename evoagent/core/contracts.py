@@ -15,7 +15,7 @@ EvoAgent_核心接口与数据契约正式规范.md` 为准；§9 的 6 条文�
 `CONFLICT_DECISIONS` 中记录代码级裁定。
 """
 
-from typing import Final, Tuple
+from typing import Dict, Final, Tuple
 
 # ---------------------------------------------------------------------------
 # 统一标识（契约 §1）
@@ -259,3 +259,96 @@ CONFLICT_DECISIONS: Final[Tuple[dict, ...]] = (
         "status": "待设计侧确认",
     },
 )
+
+# ---------------------------------------------------------------------------
+# E-07 四类信号契约（GAP 第二批第 7 项；04 卷 E-07 仅给 4 个信号名，
+# 本节为代码侧单点补写：触发条件 / 输入 / 判据 / 产出形态 / 去重口径）
+# ---------------------------------------------------------------------------
+
+EVOLUTION_SIGNAL_FAILURE: Final[str] = "failure"
+EVOLUTION_SIGNAL_COST_ANOMALY: Final[str] = "cost_anomaly"
+EVOLUTION_SIGNAL_QUALITY_REGRESSION: Final[str] = "quality_regression"
+EVOLUTION_SIGNAL_CAPABILITY_GAP: Final[str] = "capability_gap"
+
+EVOLUTION_SIGNAL_TYPES: Final[Tuple[str, ...]] = (
+    EVOLUTION_SIGNAL_FAILURE,
+    EVOLUTION_SIGNAL_COST_ANOMALY,
+    EVOLUTION_SIGNAL_QUALITY_REGRESSION,
+    EVOLUTION_SIGNAL_CAPABILITY_GAP,
+)
+
+#: target_component 命名规范（统一标识规范）：expert/<id> | tool/<id> |
+#: router | budget | release/<version>
+EVOLUTION_SIGNAL_TARGET_PATTERN: Final[str] = (
+    r"^(expert/[\w\-\.]+|tool/[\w\-\.]+|router|budget|release/[\w\-\.]+)$"
+)
+
+#: 产出形态：ProblemTicket（evolution/controller.py），signal 型票据额外
+#: 携带 signal_type / target_component / hypothesis / change_scope，由
+#: 消费链 run_signal_pipeline() 自动转 propose_candidate。手工票据
+#: （无 signal_type）只入观察队列，不自动提案（证据不足保持候选状态，
+#: 04 卷 E-07 设计决策）。
+
+#: 判据与去重默认参数（全部可覆盖；判据缺样本时不出信号——证据不足不假设）
+EVOLUTION_SIGNAL_SPEC: Final[Dict[str, Dict[str, str]]] = {
+    EVOLUTION_SIGNAL_FAILURE: {
+        "hook_event": "diagnostic_case_created",
+        "trigger": "诊断器对失败任务建案（记录故障分类，非仅现象）",
+        "inputs": "DiagnosticCase(case_id/task_id/symptom) + 任务领域",
+        "criteria": (
+            "建案即出信号；severity 沿用诊断结论（critical/high/…）；"
+            "target_component = expert/<任务领域>"
+        ),
+        "cooldown_seconds": "3600",
+        "change_scope": "local",
+    },
+    EVOLUTION_SIGNAL_COST_ANOMALY: {
+        "hook_event": "task_finalized",
+        "trigger": "单个真实运行任务成本显著超出近期基线",
+        "inputs": "任务账单(result_evidence.budget.usage.cost) + 近期已完成任务成本窗",
+        "criteria": (
+            "成本 > max(近期中位数×COST_ANOMALY_RATIO, COST_ANOMALY_FLOOR)；"
+            "近期样本 < COST_ANOMALY_MIN_RECENT 时证据不足不出信号；"
+            "target_component = budget"
+        ),
+        "cooldown_seconds": "21600",
+        "change_scope": "budget_policy",
+    },
+    EVOLUTION_SIGNAL_QUALITY_REGRESSION: {
+        "hook_event": "evolution_monitored",
+        "trigger": "发布候选监测质量退化（monitor.assess 已有阈值体系）",
+        "inputs": "monitor.assess 结果(decision/reasons) + 候选 target_component",
+        "criteria": (
+            "reasons 含『成功率较前窗口下降』类质量退化结论即出信号；"
+            "target_component = 候选 target_component"
+        ),
+        "cooldown_seconds": "86400",
+        "change_scope": "local",
+    },
+    EVOLUTION_SIGNAL_CAPABILITY_GAP: {
+        "hook_event": "expert_fallback",
+        "trigger": "任务意图无专属专家（路由兜底 general）",
+        "inputs": "expert_fallback 事件(intent/expert_id)",
+        "criteria": (
+            "同一 intent 在 CAPABILITY_GAP_WINDOW_SECONDS 内兜底 ≥"
+            "CAPABILITY_GAP_MIN_FALLBACKS 次即出信号（不用『连续』口径："
+            "命中任务无事件可记，窗口计数可判定）；target_component = expert/<intent>"
+        ),
+        "cooldown_seconds": "86400",
+        "change_scope": "experts",
+    },
+}
+
+EVOLUTION_SIGNAL_COOLDOWN_SPEC: Final[Dict[str, int]] = {
+    t: int(EVOLUTION_SIGNAL_SPEC[t]["cooldown_seconds"])
+    for t in EVOLUTION_SIGNAL_TYPES
+}
+
+#: 成本异常判据参数（契约默认值，SignalThresholds 可覆盖）
+COST_ANOMALY_RATIO: Final[float] = 3.0      # > 近窗中位数 × 3
+COST_ANOMALY_FLOOR: Final[float] = 0.05     # 绝对下限（低基数不误报）
+COST_ANOMALY_MIN_RECENT: Final[int] = 5     # 近窗样本少于此数 → 证据不足
+
+#: 能力缺口判据参数
+CAPABILITY_GAP_MIN_FALLBACKS: Final[int] = 3
+CAPABILITY_GAP_WINDOW_SECONDS: Final[int] = 86400

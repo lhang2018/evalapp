@@ -375,6 +375,16 @@ class RuntimeController:
 
     def _run_react(self, task: Task, budget: BudgetController) -> Task:
         expert = self.experts.get(task.domain) or self.experts.route(task.intent)
+        # E-07 能力缺口信号源：意图与领域均无专属能力，解析落到
+        # general 且该意图未在 general 的适用声明中——能力目录缺口，
+        # 发 expert_fallback 事件（dedup/阈值在 SignalCollector）
+        if (expert is not None and expert.expert_id == "general"
+                and task.intent
+                not in (getattr(expert, "applicable_intents", None) or [])):
+            self._emit(task, "expert_fallback", {
+                "intent": task.intent,
+                "expert_id": getattr(expert, "expert_id", "") or "",
+            })
         # GAP ⑤c：契约 §5 expert_ref（专家域解析即落值；ExpertSpec 无独立
         # 版本锚，版本取发布版本，任务清单存档）
         if expert:

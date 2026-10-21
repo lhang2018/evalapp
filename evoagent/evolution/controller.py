@@ -15,7 +15,8 @@ from ..core.events import EventBus
 from ..tools.registry import ToolRegistry
 from .benefit import evaluate_benefit
 from .candidates import (ALLOWED, CandidateStatus, EvolutionCandidate,
-                         IllegalCandidateTransition)
+                         IllegalCandidateTransition, TERMINAL as
+                         TERMINAL_CANDIDATE_STATES)
 from .evaluator import (EvalDataset, Evaluator, EvalReport, GateThresholds,
                         ReleaseGate)
 from .monitor import MonitorPolicy, PostReleaseMonitor
@@ -42,6 +43,15 @@ class ProblemTicket:
     source_task_id: Optional[str] = None
     evidence: List[str] = field(default_factory=list)
     detected_at: float = field(default_factory=time.time)
+    # E-07（GAP 第二批第 7 项）：signal 型票据四字段——由
+    # evolution/signals.py 从四类信号自动生成，经 run_signal_pipeline
+    # 自动转候选；无 signal_type 的手工票据只入观察队列，不自动提案
+    signal_type: str = ""           # contracts.EVOLUTION_SIGNAL_TYPES
+    target_component: str = ""      # expert/<id> | tool/<id> | router | budget
+    hypothesis: str = ""            # 可反驳假设（候选 hypothesis 来源）
+    change_scope: str = "local"     # local | budget_policy | experts
+    candidate_id: Optional[str] = None   # 消费后回填
+    consumed: bool = False
 
 
 class EvolutionController:
@@ -146,6 +156,65 @@ class EvolutionController:
     # ---- 问题登记与排序 ----
     def register_problem(self, ticket: ProblemTicket) -> None:
         self.tickets.append(ticket)
+
+    # ---- E-07 消费链：问题票据 → 自动候选提案（GAP 第二批第 7 项）----
+    def _baseline_version(self) -> str:
+        """候选基线=当前稳定版本：来自发布清单，无发布时 unreleased。"""
+        if self.releases and getattr(self.releases, "current_release_id", None):
+            m = self.releases.manifests.get(self.releases.current_release_id)
+            if m is not None:
+                return m.version
+        return "unreleased"
+
+    def _has_open_candidate_for(self, target_component: str) -> bool:
+        """组件级节流：该组件已有未决候选（未到终态）时不再自动提案。"""
+        for cand in self.candidates.values():
+            if (cand.target_component == target_component
+                    and cand.status not in TERMINAL_CANDIDATE_STATES):
+                return True
+        return False
+
+    def run_signal_pipeline(self, max_candidates: int = 1) -> List[str]:
+        """消费 signal 型问题票据 → 自动 propose_candidate。
+
+        - 只消费 signal 型票据（含 signal_type）；手工票据等待人工。
+        - 组件级节流：同组件已有未决候选则跳过（候选状态本身就是
+          证据在途，04 卷 E-07 设计决策）。
+        - 提案成功即回填 ticket.candidate_id 并消费出队；失败（预算/
+          校验）保留票据待下一轮——证据不足保持候选状态，不丢弃证据。
+        """
+        proposed: List[str] = []
+        for ticket in list(self.tickets):
+            if len(proposed) >= max(1, int(max_candidates)):
+                break
+            if not ticket.signal_type or ticket.consumed:
+                continue
+            if self._has_open_candidate_for(ticket.target_component):
+                continue
+            try:
+                cand = self.propose_candidate(
+                    self._baseline_version(),
+                    ticket.target_component,
+                    ticket.description,
+                    ticket.hypothesis or ticket.description,
+                    change_scope=ticket.change_scope or "local",
+                    evidence=list(ticket.evidence),
+                )
+            except Exception as e:  # noqa: BLE001 —— 票据保留不丢证据
+                if self.bus:
+                    self.bus.emit(
+                        event_type="evolution_signal_skip",
+                        component_id="evolution",
+                        payload={"ticket_id": ticket.ticket_id,
+                                 "error": f"{type(e).__name__}: {e}"})
+                ticket.consumed = False
+                continue
+            ticket.consumed = True
+            ticket.candidate_id = cand.candidate_id
+            proposed.append(cand.candidate_id)
+        self.tickets = deque(
+            t for t in self.tickets if not (t.signal_type and t.consumed))
+        return proposed
 
     def _next_candidate_id(self) -> str:
         self._seq += 1

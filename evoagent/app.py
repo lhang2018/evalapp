@@ -25,6 +25,7 @@ from .evolution.controller import EvolutionController
 from .evolution.datasets import builtin_datasets
 from .evolution.diagnostics import DiagnosisEngine
 from .evolution.sandbox import SandboxRunner
+from .evolution.signals import SignalCollector
 from .evolution.drift import DriftDetector
 from .evolution.evaluator import Evaluator, ReleaseGate
 from .evolution.probes import PROBES, ProbeRunner
@@ -161,6 +162,11 @@ class App:
         self.diagnostics = DiagnosisEngine(
             self.db, self.bus, self.probes, self.config.diagnostics,
             self.evolution, model=self._model())
+        # E-07（GAP 第二批第 7 项）：四类信号 → 问题票据 → 自动候选提案；
+        # 提案是否晋级仍由 evaluator/gate 独立裁决（诊断不改变稳定资产）
+        self.signal_collector = SignalCollector(
+            self.evolution, task_loader=self.db.get_task)
+        self.signal_collector.attach(self.bus)
         # 候选代码隔离执行（Arch 18.3）：一次性目录、无网络/子进程、凭据不继承
         self.sandbox = SandboxRunner()
         # 环境漂移检测（PRD 44）：只读窗口分析，默认不制造事件
