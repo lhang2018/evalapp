@@ -199,7 +199,7 @@ R-03、R-06、R-08、R-10、R-11、R-12、M-01..05、M-08、C-03、C-09、C-11�
 | A 可靠执行内核 | Task of Record、状态机、工具契约、Action Guard、受控 ReAct、验收器、检查点、幂等键、**副作用账本** | 🔹 **副作用账本整份缺失**；审批节点生产链路恒放行；人工接管与等待审批未实现（R-03/06/08/10/11/12 降级） |
 | B 工作流与能力资产 | DAG、Schema、匹配、注册表、依赖图、生命周期、候选生成 | 🔹 DAG 运行良好；**Capability Asset 实体与生命周期未落地**、影响分析零调用方（C-03/05/09/11 降级） |
 | C 记忆、上下文与专家路由 | 分层记忆、ContextManifest、压缩、来源追踪、路由评测、冲突 | 🔹 命名空间未接通（`memory_scope_key` 死字段）；路由无评测集；冲突零检测 |
-| D 观测、诊断与独立评测 | 事件、故障分类、工具健康、QEEG、隐藏回归集、失败案例库 | 🔹 **候选无自动信号**（E-07）；失败案例进不了数据集（E-12）；工具健康恒真；进化侧无并发/停止控制 |
+| D 观测、诊断与独立评测 | 事件、故障分类、工具健康、QEEG、隐藏回归集、失败案例库 | 🔹 **候选无自动信号**（E-07）；失败案例进不了数据集（E-12）；~~工具健康恒真~~（已由 `ae54291` 实装真探针）；进化侧无并发/停止控制 |
 | E 主动目标与资源治理 | AGIG Goal Registry、机会、价值排序、自主等级、停止、APRO、预算账本、复盘 | ⬜ **整阶段空白（G 组 9/10）**，且 05 卷无契约可依 |
 | F Android 首发端与离线可靠性 | 交互/审批、原生桥接、事件队列、离线导出、同步回执、版本校验、回滚 | ✅ 高质量（同步幂等/原子回滚/诊断包安全实现扎实）；降级矩阵与端侧缓存缺 |
 | G 端云进化闭环与受控发布 | 同步观测、诊断实验、独立门禁、Release Manifest、灰度、回滚 | 🔹 已交付；未发布时 Manifest 组件版本退化为空；制品装载未接 |
@@ -230,7 +230,7 @@ R 任务执行内核（12）：
 | R-05 ReAct 执行循环 | ✅ | 单动作提议+Schema/权限/预算检查；防循环。证据：`ModelAdapter`（`evoagent/models/base.py::ModelAdapter`）、`MockModel`（`evoagent/models/mock.py::MockModel`），test=2）、`check_tool_call`（`evoagent/core/budget.py::check_tool_call`）|
 | R-06 DAG/工作流运行时 | 🔹 | 条件跳过/并发/重试/检查点续跑 4 项真实现；**审批节点在生产链路恒放行**（`workflow_node_confirm` 不在 `evoagent/core/permissions.py:41-44` 的 `high_risk_ops` 名单 → `check_op`（`evoagent/core/permissions.py::check_op`）恒返回 ALLOW），且 `evoagent/workflows/engine.py:80` 使 `WAITING_AUTH` 节点重跑时被永久跳过 → 任务卡死；**补偿是空壳**（`_try_compensate` 空参执行、ctx 未用、异常全吞、只处理失败单节点，内置漫剧的补偿动作 `fs_list` 是只读列目录，物理上不可能回滚） |
 | R-07 三种执行模式选择 | ✅ | 稳定工作流优先 → 混合 Agent → 受限动态规划。证据：`WorkflowEngine`（`evoagent/workflows/engine.py::WorkflowEngine`）、`make_plan`（`evoagent/planning/planner.py::make_plan`），test=6）|
-| R-08 工具注册表与能力契约 | 🔹 | Schema/权限/超时/幂等齐备；**成本估算 100% 缺失**（契约无任何成本字段）；**`health_check` 是死字段** —— `builtin.py` 零设置 → `health()` 恒返回 True，监控面板 tools_health 永远全绿 |
+| R-08 工具注册表与能力契约 | 🔹 | Schema/权限/超时/幂等齐备；**成本估算 100% 缺失**（契约无任何成本字段）；**`health_check` 死字段已修**（并行工作流 `ae54291`：六工具装真探针——时钟 tick/计算自检/目录可列/可读/建删验写/git --version；`http_get` 显式无探针 → `health()` 返回 `None=unknown` 而非伪装 True；探针抛错 fail-closed 计 False）。**剩余缺口：契约仍无 `cost_model`/`risk_class`/`offline_capable`/`requires_network`/`contract_test_ref` 字段** |
 | R-09 Action Guard 动作授权 | ✅ | 授权绑定对象/范围/摘要；高风险默认 confirm。证据：`PermissionController`（`evoagent/core/permissions.py::PermissionController`），refs=5/test=3）、`ToolContract`（`evoagent/tools/contract.py::ToolContract`）。**注：`check_tool`（`:49`）与 `check_op`（`:64`）本身无直接测试调用，测试经 `ToolRegistry` 间接覆盖**|
 | R-10 取消、暂停、等待与人工接管 | 🔹 | 取消/暂停/恢复真实现，双 flag 传播正确；**但"等待审批"与"人工接管"未实现** —— `react/engine.py:110` 收到 `request_user` 立即返回并被转成失败 check（任务判 FAILED 而非挂起），`WAITING_USER` 在 `api/server.py` 零命中（无接口提交澄清答案）；工作流任务连暂停都不支持 |
 | R-11 检查点与恢复管理 | 🔹 | 恢复前核验副作用的思路正确（`_resume_suspended`（`evoagent/core/controller.py::_resume_suspended`）检查 pending_side_effects 并要求 force）；**但无恢复游标**（`CheckpointManager` 只有 `save`（`evoagent/core/checkpoint.py::save`）/`latest`（`:55`），只能取最新一条）；ReAct 路径检查点不写节点级状态；**"恢复前强制安全备份"完全未接线**（`backup` 符号在 `evoagent/core/controller.py` 零命中 —— 备份能力在 `evoagent/core/backup.py` 有实现，但恢复路径没调用它）。**F-13 已修写入有序性**（先落 paused 检查点再持久化 SUSPENDED），原 50% flaky 已消 |
@@ -273,7 +273,7 @@ E 观测诊断评测与进化（13）：
 | E-01 运行事件与 Trace | 🔹 | task/run/component/version/时延有记录，四层日志独立表齐备；**但无 node 级字段**；**成本/时延/结果全在 `payload` 自由字典**，`events.py:275-279` 靠 `payload.get("latency_s")` 取值，**缺失静默计 0 → 时延聚合被无声低估**，任何依赖它做门禁或收益判定的结论都不可靠 |
 | E-02 故障分类与证据等级 | ✅ | 规划/模型/工具/网络/权限/预算/验收分类；证据不足即 unknown。证据：`record_failure`（`evoagent/evolution/diagnostics.py::record_failure`），test=3）、`Hypothesis`（`evoagent/evolution/diagnostics.py::Hypothesis`）|
 | E-03 诊断与执行解耦 | ✅ | 诊断只出假设+探针验证，不改生产。证据：`diagnose_task`（`evoagent/evolution/diagnostics.py::diagnose_task`）、`Hypothesis`（`evoagent/evolution/diagnostics.py::Hypothesis`）|
-| E-04 工具健康与 Agent 能力分离 | 🔹 | tool_health 探针与质量指标分开（设计正确）；**但工具健康探针恒真** —— 内置工具零设置 `health_check`（见 R-08），实际分离度无法验证 |
+| E-04 工具健康与 Agent 能力分离 | 🔹 | tool_health 探针与质量指标分开（设计正确）；**工具健康探针已实装**（并行工作流 `ae54291`）：六工具真探针 + 三值语义（`True`=健康 / `False`=不健康 / `None`=未声明，未声明不再被算作健康）→ **实际分离度现在可验证**。**剩余缺口：`quality_metrics` 仍零消费点**（C-03），无按专家维度跑的评测 |
 | E-05 QEEG 评测治理 | ✅ | 独立评测+基线+保留集；门槛受保护，安全证据缺失时 fail-closed。证据：`judge`（`evoagent/evolution/evaluator.py::judge`），test=8）、`Evaluator`（`evoagent/evolution/evaluator.py::Evaluator`），test=11）|
 | E-06 评测集版本/覆盖/防泄漏 | 🔹 | `EvalDataset` 有 version/source/holdout，隐藏保留集独立于调优 ✅；**但 `datasets.py` 全文 47 行仅 4 个用例**，无数据集注册/版本演进机制，无覆盖率台账 |
 | E-07 进化候选生成 | ⬜ | **名为实现、实为空壳**。`propose_candidate()` 六参数全必填，**四类信号（失败/成本异常/质量退化/能力缺口）在 `evoagent/` 全目录零匹配**（`grep "capability_gap\|质量退化\|成本异常"` → 0 命中）；全部调用点均为人工/外部传入（`cli.py:235`、`api/server.py:1100`）；`register_problem` **永不读取**（`evoagent/evolution/controller.py:144`：向 deque 追加后无人再取）—— 问题队列本身也是死的。台账原写"失败/成本异常/退化/缺口→候选提案"与代码不符 |
@@ -499,11 +499,18 @@ python tools/verify_claims.py --check --json   # 机器可读
 python tools/verify_claims.py --check --lenient  # 证据不足只报告不判错
 python tools/scan_all_ledgers.py              # 全台账行号漂移扫描
 python tools/verify_claims.py --check-count    # 额外校验台账声明的测试数与实测一致（较慢）
+python tools/check_gap_closure.py             # 缺口闭合：未完成主题是否都落到了特性（2026-10-22 新增）
 ```
 
 > `scan_all_ledgers.py` 覆盖面更广：扫**全部**顶层 .md 的 `文件:行号` 引用，
 > 核对被引行确实含所指符号（`verify_claims.py` 只管 IMPLEMENTATION.md 的主题表）。
 > 代码一改引用就可能漂移 —— 这一层专门抓那个。
+
+> `check_gap_closure.py` 管的是**计划层面**的漏：它对本表的每个 🔹/⬜ 主题做
+> 「主题 → ROADMAP 工作包 → 特性」三段反查，一个主题若在两条路径中都没被特性认领，
+> 就报为**未认领**并以退出码 1 失败。2026-10-22 首次运行即查出 8 个主题在
+> ROADMAP 与特性表中双双零覆盖（已补为轨道 T6 / 特性 F-51..F-58）。
+> **它的意义**：计划里的漏洞此前只能靠人眼通读发现，现在变成了可执行断言。
 
 ### 判定标准（三条硬门槛，缺一不记 ✅）
 

@@ -76,8 +76,8 @@
 |---|---|---|---|---|---|
 | **F-01** 统一错误对象 ✅**已落地** | 七字段错误响应，`safe_to_repeat=unknown` 强制对账 | WP-1.1 | `core/errors.py`（实际落点） | `api/server.py`（`_json` 单点接入） | **✅ 2026-10-21 完成**（并行工作流 `e2681ff`）。原计划的 `api/errors.py` 改为 `core/errors.py`（契约层归位），测试 `tests/test_error_object.py` 11 项 |
 | **F-02** 工具契约补齐 | `cost_model`/`risk_class`/`offline_capable`/`requires_network`/`contract_test_ref` + 真实 `health_check` 探针 | WP-0.5 | `tools/probes.py` | `tools/contract.py`、`tools/builtin.py` | 契约文件扇入 7，但改动是**加带默认值字段**，风险低 |
-| **F-03** 副作用账本 | 六态状态机 + `side_effects` 表 + 检查点改账本投影 | WP-0.2 | `core/side_effects.py`、`core/schema/side_effects.py` | `core/controller.py`（副作用上报埋点） | ⚠️ **达成验收用例 4**，优先级最高 |
-| **F-04** 执行审计 | 状态流转/记忆沉淀/建案/预算拒绝落审计 | WP-0.6 | `core/audit.py` 扩展 + `core/audit_hooks.py` | `core/controller.py`（埋点） | 与 F-03 同碰 controller → **建议与 F-03 合并或错开** |
+| **F-03** 副作用账本 ✅**已落地** | 六态状态机 + `side_effects` 表 + 检查点改账本投影 | WP-0.2 | `core/side_effects.py`、`core/schema/effects.py` | `core/controller.py`（副作用上报埋点） | ✅ **2026-10-22 完成**（并行工作流 `ad5709e`）。六态 `planned/submitted/confirmed/failed/unknown/compensated`，`unknown` 强制 reconcile；resume 门禁改账本投影直读。**达成验收用例 4** |
+| **F-04** 执行审计 | 状态流转/记忆沉淀/建案/预算拒绝落审计 | WP-0.6 | `core/audit.py` 扩展 + `core/audit_hooks.py` | `core/controller.py`（埋点） | ⚠️ **未做**。`core/audit.py` 仍只有 `AuditLog.record/list`（1369 字节），`core/audit_hooks.py` 不存在，`controller.py` 内 `grep -c audit` = **0**。**注意：提交 `084d71d` 标题写作「F-04 审批记录实体」属特性号误标——其内容是 F-12 的审批记录实体，不是 S-05 的执行审计** |
 | **F-05** 记忆治理包 | 命名空间隔离接通 + `memory_scope_key`/`quality_metrics` 清理 + ContextManifest 实体 + 冲突识别 + 删除传播 + 压缩分域 | WP-0.7 + WP-5.1..5.4 | `memory/context_manifest.py`、`memory/conflict.py` | `memory/store.py`、`memory/context.py`、`experts/registry.py` | **6 个 WP 合成 1 个包**——它们全碰 `memory/store.py`，拆开必冲突 |
 | **F-06** 影响分析 | 传递闭包 + 风险分级 + 接入回归决策 | WP-0.8 | `experts/impact.py` | `experts/registry.py`（转发） | **达成验收用例 16**，轻量 |
 | **F-07** 进化候选自动生成 | 四类信号检测器 + 问题队列消费 + 证据强绑定 | WP-3.1 | `evolution/signals.py` | `evolution/controller.py` | 补上「自主进化」的实际空壳，**独立价值最高** |
@@ -92,7 +92,7 @@
 | **F-09** Event/Task 契约 | `schema_version`/`payload_ref`/`privacy_level`/`sync_status`；`node_run_id`/`acceptance_contract_ref`/`authorization_ref`/Task 级 `idempotency_key` | WP-1.2 + WP-1.3 | `core/contracts.py` 的消费侧适配 | `core/events.py`、`core/task.py`、`offline/types.ts` | F-00.3 |
 | **F-10** Runtime Manifest 结构化 | 9 个结构化字段 + 修复未发布时版本退化 | WP-1.4 | `core/manifest.py` | `core/controller.py`（`_version_manifest`） | F-09 |
 | **F-11** Capability Asset 实体 | 十字段 + 八态生命周期 | WP-1.5 | `assets/entity.py`、`assets/lifecycle.py`、`core/schema/assets.py` | `experts/registry.py` | F-00.1 |
-| **F-12** 人工接管与审批节点 | `WAITING_USER` 真挂起 + 澄清接口 + 工作流审批节点链路修复 + 审批记录实体 | WP-0.3 + WP-0.4 | `api/routes/approval.py`、`core/approval.py` | `react/engine.py`、`core/permissions.py`、`workflows/engine.py` | F-01 |
+| **F-12** 人工接管与审批节点 🔶**部分完成** | `WAITING_USER` 真挂起 + 澄清接口 + 工作流审批节点链路修复 + 审批记录实体 | WP-0.3 + WP-0.4 | `api/approvals_api.py`、`core/approvals.py`、`core/schema/approvals.py` | `react/engine.py`、`core/permissions.py`、`workflows/engine.py` | 🔶 **2026-10-22 部分完成**（并行工作流 `084d71d`）：审批记录实体已落地，A-01 五项绑定（动作摘要/目标对象/范围/有效期/一次性语义）全落字段，`approval_id` 从零命中变为有产生路径；`/approvals` 注册表路由可用。**仍未做**：`WAITING_USER` 真挂起（`react/engine.py` 收到 `request_user` 仍立即转失败）、澄清答案提交接口、工作流审批节点恒放行缺陷 |
 | **F-13** 检查点有序化 🔶**部分完成** | 暂停语义不被 RUNNING 覆盖；恢复游标 | WP-0.1 | — | `core/checkpoint.py`、`core/controller.py` | **写入有序性已完成**（`2c0515d`）；**恢复游标仍未做**（`CheckpointManager` 仍只有 `save`/`latest`，取不到任意中间断点）|
 | **F-14** 候选门禁与控制器分离 | 手工入口证据校验 + CTRL-03/04 职责拆分 | WP-3.4 | `evolution/gates.py` | `evolution/controller.py` | F-07 |
 
@@ -131,6 +131,31 @@
 | F-29 | 能力包制品装载 | WP-4.4 | `release/artifacts.py` |
 | F-30 | Harness PoC | WP-4.5 | **独立调研型任务**，可全程并行 |
 | F-31..F-42 | 治理收尾 12 项（密钥轮换 / 迁移 / ADR 链 / 资源调度 / 降级矩阵 / 端侧缓存 / 跨端…） | WP-5.5..5.12 | 多数独立新建，个别触碰 `release/manager.py` |
+
+### 波次 4.5（**质量闭环补齐，2026-10-22 缺口闭合校验新增**）
+
+> **为什么新增这一波**：`tools/check_gap_closure.py` 对 89 主题做「主题 → WP → 特性」三段反查，
+> 发现 **8 个主题在原 T0..T5 轨道与特性表中零覆盖** —— 既没有工作包，也没有特性认领。
+> 判定依据是这 8 个主题号在 ROADMAP 原正文与 FEATURE_SPLIT 原 §7 表中**均无命中**（非解析误差）。
+> 它们共同的特点是「已有部分实现，但缺一个可验证的度量或守卫」——不补，则 🔹 无法升 ✅。
+
+| 特性 | 内容 | ROADMAP 来源 | 关联主题 | 独占文件 | 触碰 |
+|---|---|---|---|---|---|
+| **F-51** | 事件与 Trace 结构化 | WP-6.1 | E-01 | `core/events.py` 新增显式列 | `core/schema/` 加列迁移、`core/persistence.py` |
+| **F-52** | 评测集版本演进与覆盖率台账 | WP-6.2 | E-06 | `evolution/datasets.py` | — |
+| **F-53** | 路由质量评测与纠错 | WP-6.3 | R-03 | `evolution/routing_eval.py` | `experts/registry.py`（转发） |
+| **F-54** | Planner 计划修订与可执行恢复策略 | WP-6.4 | R-04 | `planning/revise.py` | `planning/planner.py`、`react/engine.py` |
+| **F-55** | 隐私分级口径统一 | WP-6.5 | S-02 | `core/privacy.py` 映射表 | `core/contracts.py`（枚举裁定） |
+| **F-56** | 模型输出不可信检测 | WP-6.6 | S-03 | `core/untrusted.py` | `core/controller.py`（接线） |
+| **F-57** | 独立 E2E 与兼容性测试目录 | WP-6.7 | S-07 | `tests/e2e/` | `tests/` 现有文件重构 |
+| **F-58** | 端侧本地推理运行时 | WP-6.8 | A-02 | `android-app/src/device/inference.ts` | `android-app/` Kotlin 侧 |
+
+**F-57 特殊性**：它不是新功能，而是**移除自证式测试**。当前 `tests/test_control.py:149` 这类
+「测试自己塞值才让分支变绿」的写法会让台账的 ✅ 判定失去证据力。F-57 必须与
+F-03（副作用账本）、F-13（检查点）一起复核——这三者的分支此前都有自证式嫌疑。
+
+**F-55 依赖 F-00.3**：`core/contracts.py` 是枚举唯一权威，隐私口径裁定必须落在那里，
+不能在 `core/privacy.py` 私自定义第二套。
 
 ### Android 客户端（**与服务端完全并行，天然隔离**）
 
@@ -226,27 +251,57 @@ F-13(检查点) → F-03(副作用埋点) → F-04(审计埋点) → F-10(Manife
 
 | 特性 | 覆盖的 ROADMAP WP | 关联主题 | 达成的系统级验收 |
 |---|---|---|---|
-| F-01 | WP-1.1 | 横切 | 3（增强可定位性） |
+| F-01 ✅ | WP-1.1 | 横切 | 3（增强可定位性） |
 | F-02 | WP-0.5 | R-08/E-04/G-09 | — |
-| F-03 | WP-0.2 | R-12 | **用例 4** ✅ |
+| F-03 ✅ | WP-0.2 | R-12 | **用例 4** ✅ |
 | F-04 | WP-0.6 | S-05 | — |
-| F-05 | WP-0.7 + 5.1-5.4 | M-01..10/C-03 | 17（路由回退）、18（压缩保约束） |
+| F-05 | WP-0.7 + 5.1-5.4 | M-01..05/M-06/M-07/M-08/M-10/C-03 | 17（路由回退）、18（压缩保约束） |
 | F-06 | WP-0.8 | C-09 | **用例 16** ✅ |
 | F-07 | WP-3.1 | E-07 | — |
 | F-08 | WP-3.2 + 3.3 | E-12/E-13 | — |
 | F-09 | WP-1.2 + 1.3 | 横切契约 | — |
 | F-10 | WP-1.4 | O-05 | **用例 9** 名副其实 |
 | F-11 | WP-1.5 | B/C-05/C-08 | — |
-| F-12 | WP-0.3 + 0.4 | R-06/R-10/A-01 | **用例 2**、**用例 17** |
-| F-13 | WP-0.1 | R-11 | — |
+| F-12 🔶部分 | WP-0.3 + 0.4 | R-06/R-10/A-01 | **用例 2**、**用例 17** |
+| F-13 🔶部分 | WP-0.1 | R-11 | — |
 | F-14 | WP-3.4 | E-09/C-11 | — |
 | F-15 | WP-2.0 | G 组前置 | — |
 | F-17..F-25 | WP-2.1..2.9 | G-01..G-10 | **用例 19**（F-20）✅ |
 | F-26..F-30 | WP-4.x | C-12/C-13/C-10/H | — |
 | F-31..F-42 | WP-5.x | S/O/A/P | — |
+| **F-51** | WP-6.1 | E-01 | — |
+| **F-52** | WP-6.2 | E-06 | — |
+| **F-53** | WP-6.3 | R-03 | — |
+| **F-54** | WP-6.4 | R-04 | — |
+| **F-55** | WP-6.5 | S-02 | — |
+| **F-56** | WP-6.6 | S-03 | — |
+| **F-57** | WP-6.7 | S-07 | — |
+| **F-58** | WP-6.8 | A-02 | — |
 
 **达成 20/20 的关键节点**：F-03（用例 4）→ F-06（用例 16）→ F-15+F-20（用例 19）。
-**F-15**（纯文档、零冲突、是高杠杆前置）仍是最佳切入点；F-01、F-00、F-13 已由并行工作流完成。
+**F-15**（纯文档、零冲突、是高杠杆前置）仍是最佳切入点；
+**F-01 / F-03 / F-13 已由并行工作流完成**（F-13 仅一半：恢复游标仍未做）。
+
+### 7.1 缺口闭合校验（机器判定）
+
+本表不是自述，而是由 `tools/check_gap_closure.py` 对 89 主题做
+「主题 → ROADMAP 工作包 → 特性」三段反查得出：
+
+```
+直接闭合（§7 关联主题列）      : 26 个未完成主题
+间接闭合（经 ROADMAP WP 追溯）  : 11 个
+未认领（真实漏项）             : 0
+```
+
+**2026-10-22 的校验结果**：初版校验器报出 **8 个主题在 ROADMAP 与特性表中双双零覆盖**
+（A-02/E-01/E-06/R-03/R-04/S-02/S-03/S-07），已补为 ROADMAP **轨道 T6（WP-6.1..6.8）**
+与特性 **F-51..F-58**。补完后重新校验为 0 漏项。
+
+> **漏项是怎么发现的**：不是读文档读出来的。校验器把 89 主题逐个反查——
+> 一个主题必须在「§7 关联主题列」或「经 ROADMAP WP 间接」两条路径中至少一条被特性认领，
+> 否则报为未认领。这个断言随台账漂移自动失败，**不能再靠人眼发现计划漏洞**。
+> 首次运行还暴露了校验器自身的 4 个解析缺陷（`P-01/02` 合号、`M-01..10` 区间、
+> `G-01..G-10` 前缀重复区间、`WP-4.x` 轨道概括），已全部修复。
 
 ---
 

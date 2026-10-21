@@ -768,22 +768,22 @@ cd android-app && npm run test:offline
 
 | 项 | 主题 | 缺什么 | 归属 |
 |---|---|---|---|
-| **副作用账本** | R-12 | 无实体、无表、无六态状态机；`Checkpoint.pending_side_effects` 是**恒空死字段**（唯一写入点 `controller.py:544` 依赖 `extras`，而唯一传 extras 的 `controller.py:391` 只传 budget/plan）→ **恢复门禁恒不触发**；`tests/test_control.py:149` 是测试自己塞值才让分支变绿（**自证式测试**） | WP-0.2 / F-03 |
+| **副作用账本** ✅**已修** | R-12 | ~~无实体、无表、无六态状态机~~ → **已由 `ad5709e` 实装**（`core/side_effects.py` 六态状态机 + `core/schema/effects.py` 独立域表；resume 门禁改账本投影直读） | WP-0.2 / F-03 |
 | **进化候选自动生成** | E-07 | 四类信号（失败/成本异常/质量退化/能力缺口）在 `evoagent/` 全目录**零匹配**；`propose_candidate()` 全靠调用方手工传字符串；`register_problem()` 写入的 deque 永不读取 | WP-3.1 / F-07 |
 | **检查点恢复游标 + 恢复前强制安全备份** | R-11 | `CheckpointManager` 只有 `save`/`latest`，无游标；`grep -c backup controller.py` = **0** | WP-0.1 / F-13 |
 | **依赖图影响分析** | C-09 | `impact_analysis` 9 行、只查一层直接下游、`must_rerun_tests` 硬编码、**零调用方零测试** | WP-0.8 / F-06 |
 | **执行环节审计** | S-05 | `grep -c audit controller.py` = **0**；台账原写"授权/执行/诊断/评测/发布/回滚全审计"，实际只覆盖 API/CLI 边界 | WP-0.6 / F-04 |
 | **工具契约成本估算** | R-08 | `grep cost contract.py registry.py` **零命中**；契约无任何成本字段 | WP-0.5 / F-02 |
-| **工具健康检查** | R-08/E-04 | `builtin.py` 零设置 `health_check` → `health()` 恒返回 True，**监控面板 tools_health 永远全绿** | WP-0.5 / F-02 |
+| **工具健康检查** ✅**已修** | R-08/E-04 | ~~`builtin.py` 零设置 `health_check` → `health()` 恒返回 True~~ → **已由 `ae54291` 实装真探针**（六工具真探针 + `None=unknown` 三值语义 + 探针故障 fail-closed） | WP-0.5 / F-02 |
 | **专家独立评测** | C-03 | `quality_metrics` 只被赋值、**零消费点** | WP-0.7 / F-05 |
 | **专家记忆命名空间隔离** | M-01..05 | `memory_scope_key` 全仓零读取；`store.py:248` 的 `or not m.scope_key` 使空 key 放行，**即使接上也无隔离能力** | WP-0.7 / F-05 |
-| **路由质量评测** | R-03 | 无任何路由评测集或指标；`datasets.py` 4 个内置用例全为通用任务，零个路由/分类用例 | WP-1.x / F-05 |
+| **路由质量评测** | R-03 | 无任何路由评测集或指标；`datasets.py` 4 个内置用例全为通用任务，零个路由/分类用例 | **WP-6.3 / F-53** |
 | **记忆冲突识别** | M-08 | `link()` 的 `contradicts` 关系**零调用点**；无置信合并与用户确认流 | WP-5.2 / F-05 |
 | **失败案例转回归资产** | E-12 | 无 `DiagnosticCase → EvalCase` 转换，案例进不了 `datasets` | WP-3.2 / F-08 |
-| **审批记录实体** | A-01 | `approval_id` 零命中；瞬时 `confirm_callback -> bool`，无动作摘要绑定/有效期/一次性语义 | WP-0.3 / F-12 |
+| **审批记录实体** ✅**已修** | A-01 | ~~`approval_id` 零命中；瞬时 `confirm_callback -> bool`，无动作摘要绑定/有效期/一次性语义~~ → **已由 `084d71d` 实装**（`core/approvals.py` + `core/schema/approvals.py`，A-01 五项绑定全落字段） | WP-0.3 / F-12 |
 | **工作流审批节点** | R-06 | `workflow_node_confirm` 不在 `high_risk_ops` → `check_op`（`evoagent/core/permissions.py::check_op`）恒 ALLOW，**审批节点生产链路永不阻塞**；`evoagent/workflows/engine.py:80` 使 `WAITING_AUTH` 重跑时被永久跳过 → 任务卡死 | WP-0.3 / F-12 |
 | **人工接管 / 等待审批** | R-10 | `request_user` 被转成失败 check（任务 FAILED 而非挂起）；`WAITING_USER` 在 API 零命中 | WP-0.4 / F-12 |
-| **Planner 计划修订** | R-04 | 无 replan/revise；`ExecutionPlan.adjust` 唯一调用方是「同工具连续失败 ≥3 次」追加固定模板 | WP-1.x |
+| **Planner 计划修订** | R-04 | 无 replan/revise；`ExecutionPlan.adjust` 唯一调用方是「同工具连续失败 ≥3 次」追加固定模板；`_risks_for` 返回静态文案非可执行恢复策略 | **WP-6.4 / F-54** |
 | **进化并发与停止条件** | E-13 | 进化侧无 Semaphore；`react/engine.py` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关（概念混淆） | WP-3.3 / F-08 |
 | **候选证据门禁（手工入口）** | C-11 | `evoagent/api/server.py:1141` 接受调用方自述的任意证据字符串数组（`evidence=body.get("evidence") or []`）→ 可零证据建候选 | WP-3.4 / F-14 |
 | **Capability Asset 实体** | C-05/C-08 | 无打包实体（`class *Pack` 零命中）；`CapabilityEntry.status`（`evoagent/experts/registry.py:33`）只 3 值 vs 契约八态（`evoagent/core/contracts.py:117` 的 `ASSET_LIFECYCLE`）；`namespace` 缺失 | WP-1.5 / F-11 |
@@ -792,10 +792,42 @@ cd android-app && npm run test:offline
 | **密钥轮换** | S-11 | 无轮换、无 KMS 抽象、无密钥扫描器；`release_secret` 明文、`_sign` 裸 sha256 非 HMAC | WP-5.7 |
 | **Schema 迁移** | S-12 | `FORMAT_VERSION` 只用于拒绝不兼容备份，无迁移脚本。**F-00.4 已补版本化迁移框架骨架** | WP-5.8 |
 | **Plugin/能力包实装** | C-13 | 漫剧 7 节点生成环节全为 lambda mock；无素材资产化/角色一致性/FFmpeg 合成；`out_path` 未使用，成片不落盘 | WP-4.2 / F-27 |
+| **事件成本时延显式化** | E-01 | 成本/时延/结果全在 `payload` 自由字典；`events.py:275-279` 靠 `payload.get("latency_s")` 取值，**缺失静默计 0 → 时延聚合被无声低估**，任何依赖它做门禁或收益判定的结论都不可靠；另缺 node 级字段 | **WP-6.1 / F-51** |
+| **评测集版本与覆盖率** | E-06 | `evolution/datasets.py` 全文 47 行仅 4 个用例（全为 time_query/computation 通用任务）；无数据集注册/版本演进机制，无覆盖率台账 | **WP-6.2 / F-52** |
+| **隐私分级口径统一** | S-02 | 实现为 `standard/sensitive/secret/private`，契约为 `public/internal/sensitive/restricted`——**数量相同语义不同，跨端有误判风险**；`MemoryItem` 无隐私级别字段 | **WP-6.5 / F-55** |
+| **模型输出不可信检测** | S-03 | `_looks_untrusted()` 仅覆盖记忆与执行结果两路，**不覆盖模型输出本身**；无归一化/编码变体处理（base64/零宽/同形字）、无分级、无审计告警 | **WP-6.6 / F-56** |
+| **独立 E2E 与兼容性测试** | S-07 | 无独立 E2E/兼容性测试目录；存在**自证式测试**（测试自己塞值才让分支变绿） | **WP-6.7 / F-57** |
+| **端侧本地推理运行时** | A-02 | 设备桥/文件选择/已授权操作已实现，**端侧本地推理运行时未做** | **WP-6.8 / F-58** |
 
 ### 9.3 经核验属实的已完成项（原记 ✅ 保留）
 
 LLM 辅助诊断假设（证据绑定+置信度封顶+探针门禁）、候选代码隔离沙箱、后台常驻同步（WorkManager）、Web 管理端 90.1-90.7、候选状态同步、诊断包附件上传（服务端全链 + 客户端分块续传）、记忆写入门禁（M-09，**实现质量优秀**）、同步幂等协议（O-02）、诊断包受控导入（O-04）、双槽位原子回滚（A-06）、失败-closed 发布门禁（E-09）、**统一错误对象 7 字段（F-01，`evoagent/core/errors.py` + `api/server.py` 单点接入，`safe_to_repeat=unknown ⇒ required_action=reconcile` 不变量已代码化）**。
+
+### 9.4 缺口闭合校验（机器判定，2026-10-22 新增）
+
+> `python tools/check_gap_closure.py` 对 89 主题做「主题 → ROADMAP 工作包 → 特性」三段反查：
+> 一个主题必须在 §7 关联主题列或经 ROADMAP WP 间接，至少一条路径被特性认领，否则报为**未认领**。
+> 退出码非 0 即视为计划有漏洞。
+
+**首次运行的结果是 8 个主题在 ROADMAP 与特性表中双双零覆盖**（非解析误差——
+这 8 个主题号在 ROADMAP 原正文与 §7 原表中均无命中）：
+
+| 主题 | 缺什么 | 补入 |
+|---|---|---|
+| R-03 路由质量评测 | 无路由评测集/指标，零个路由分类用例 | WP-6.3 / F-53 |
+| R-04 Planner 计划修订 | 无 replan/revise，风险文案非可执行策略 | WP-6.4 / F-54 |
+| E-01 运行事件与 Trace | 时延缺失静默计 0，聚合被无声低估 | WP-6.1 / F-51 |
+| E-06 评测集版本/覆盖 | 4 个用例，无注册/版本演进/覆盖率台账 | WP-6.2 / F-52 |
+| S-02 隐私与敏感数据 | 隐私分级口径与契约不一致，跨端有误判风险 | WP-6.5 / F-55 |
+| S-03 模型输出不可信 | 不覆盖模型输出本身，无编码变体处理/分级/告警 | WP-6.6 / F-56 |
+| S-07 自动化测试与验收 | 无独立 E2E 目录，存在自证式测试 | WP-6.7 / F-57 |
+| A-02 端侧运行时与工具桥接 | 端侧本地推理运行时未做 | WP-6.8 / F-58 |
+
+已补为 ROADMAP **轨道 T6**（WP-6.1..6.8）与特性 **F-51..F-58**，补完后重跑为 **0 漏项**。
+
+> **这个发现的意义**：计划里的漏洞此前只能靠人眼通读发现。校验器把「缺口是否都被排进了工作」变成
+> 可执行断言，**任何主题被漏掉或被静默删除都会立即失败**。首次运行还暴露了校验器自身 4 个解析缺陷
+> （`P-01/02` 合号、`M-01..10` 区间、`G-01..G-10` 前缀重复区间、`WP-4.x` 轨道概括），已全部修复。
 
 ---
 

@@ -172,13 +172,21 @@ class TestCriticalClaimsStillHold(unittest.TestCase):
         self.assertEqual(idx["register_problem"]["refs"], 0,
                          "register_problem 现在有引用了 —— E-07 判定需更新")
 
-    def test_builtin_tools_still_do_not_set_health_check(self):
-        """R-08 的核心指控：内置工具零设置 health_check → 面板永远全绿。"""
+    def test_builtin_tools_now_set_real_health_probes(self):
+        """R-08/E-04 死字段已修（提交 ae54291）—— 台账若还写「恒真」就是错的。
+
+        这条断言原本是反向的（`assertNotIn("health_check", ...)`），
+        锁的是「health_check 是死字段」这一指控。修复落地后指控失效，
+        断言必须翻转为正向锁定，否则会挡住正确的修复。
+        """
         path = os.path.join(ROOT, "evoagent", "tools", "builtin.py")
         with open(path, encoding="utf-8") as fh:
             src = fh.read()
-        self.assertNotIn("health_check", src,
-                         "内置工具现在设置了 health_check —— R-08 判定需更新")
+        self.assertIn("health_check", src,
+                      "内置工具又变回零设置 health_check —— R-08 判定需更新")
+        # 探针必须是真调用，不能是恒真包装
+        self.assertNotIn("health_check=lambda: True", src,
+                         "health_check 退化为恒真 —— 死字段回归")
 
     def test_experts_still_do_not_consume_quality_metrics(self):
         """C-03 的核心指控：quality_metrics 零消费点。"""
