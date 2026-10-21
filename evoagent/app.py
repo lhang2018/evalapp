@@ -154,7 +154,8 @@ class App:
         self.evolution = EvolutionController(
             event_bus=self.bus, store=self.db, releases=self.releases,
             datasets=self.datasets, gate=ReleaseGate(),
-            budget=self.ledger, budget_config=self.config.budget)
+            budget=self.ledger, budget_config=self.config.budget,
+            experts=self.experts)  # GAP 子步④：影响分析进候选
         self.probes = ProbeRunner(self.tools, self.memory,
                                   self.config.diagnostics)
         self.diagnostics = DiagnosisEngine(

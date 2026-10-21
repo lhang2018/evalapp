@@ -34,6 +34,7 @@ from .attachments import (
 from .auth import ApiAuth
 from . import routes
 from . import approvals_api  # F-04 审批记录端点（注册表路由）
+from . import impact_api  # GAP 子步④ 能力影响分析端点（注册表路由）
 from .routes import RouteContext
 from .diagnostics_import import (
     MAX_PACKAGE_BYTES,

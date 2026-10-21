@@ -6,7 +6,7 @@
 
 import time
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -85,14 +85,72 @@ class ExpertRegistry:
         general = [e for e in self._experts.values() if e.expert_id == "general"]
         return general[0] if general else list(self._experts.values())[0]
 
-    # ---- 影响分析（PRD 10.3）----
-    def impact_analysis(self, capability_id: str) -> Dict[str, List[str]]:
+    # ---- 影响分析（PRD 10.3，GAP C-09：传递闭包 + 分层回归范围）----
+    def _depends_on_closure(self, cap_id: str) -> set:
+        """上游依赖传递闭包（A→B→C 时 A 的上游 = B、C）。"""
+        seen: set = set()
+        stack = [x for x in self._dep_edges.get(cap_id, []) if x != cap_id]
+        while stack:
+            cur = stack.pop()
+            if cur in seen or cur == cap_id:
+                continue
+            seen.add(cur)
+            stack.extend(x for x in self._dep_edges.get(cur, [])
+                         if x not in seen)
+        return seen
+
+    def _affected_closure(self, cap_id: str) -> set:
+        """下游受影响传递闭包（谁最终依赖 cap_id）。环安全（visited）。"""
+        rev: Dict[str, List[str]] = {}
+        for cid, deps in self._dep_edges.items():
+            for d in deps:
+                rev.setdefault(d, []).append(cid)
+        seen: set = set()
+        stack = [x for x in rev.get(cap_id, []) if x != cap_id]
+        while stack:
+            cur = stack.pop()
+            if cur in seen or cur == cap_id:
+                continue
+            seen.add(cur)
+            stack.extend(x for x in rev.get(cur, [])
+                         if x not in seen)
+        return seen
+
+    def impact_analysis(self, capability_id: str) -> Dict[str, Any]:
+        """能力变更的影响分析（传递闭包，C-09 修复）。
+
+        must_rerun_tests 不再硬编码：按受影响闭包的能力分层定回归范围——
+        - 触及 shared 共享内核（如 file_toolset）：全量回归
+          （builtin_smoke + builtin_holdout + 安全套件 builtin_safety）
+        - 仅专家领域层受影响：领域回归（builtin_holdout）
+        - 无受影响能力：无需重跑（证据可复用）
+        名单对应真实评测资产（evolution/datasets.py 与 SafetySuite suite_id），
+        不发明不存在的测试名。
+        """
         direct = list(self._dep_edges.get(capability_id, []))
         reverse = [cid for cid, deps in self._dep_edges.items()
                    if capability_id in deps]
+        up = self._depends_on_closure(capability_id)
+        down = self._affected_closure(capability_id)
+        affected = sorted(down)
+        source = self._capabilities.get(capability_id)
+        touches_shared = any(
+            getattr(self._capabilities.get(cid), "domain", "") == "shared"
+            for cid in affected)
+        # 变更源本身是 shared 内核 → 同为结构性变更，全量回归
+        if source is not None and getattr(source, "domain", "") == "shared":
+            touches_shared = True
+        if touches_shared:
+            rerun = ["builtin_smoke", "builtin_holdout", "builtin_safety"]
+        elif affected:
+            rerun = ["builtin_holdout"]
+        else:
+            rerun = []
         return {
-            "directly_affected": reverse,          # 下游直接受影响
-            "depends_on": direct,                  # 上游依赖
-            "must_rerun_tests": ["capability_eval"] if reverse else [],
-            "can_reuse_evidence": True if not reverse else False,
+            "directly_affected": reverse,          # 下游一跳（兼容保留）
+            "depends_on": direct,                  # 上游一跳（兼容保留）
+            "affected_closure": affected,          # 下游传递闭包
+            "upstream_closure": sorted(up),        # 上游传递闭包
+            "must_rerun_tests": rerun,
+            "can_reuse_evidence": not affected,
         }

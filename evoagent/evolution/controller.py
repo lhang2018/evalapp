@@ -52,7 +52,8 @@ class EvolutionController:
                  store: Optional[Any] = None,
                  releases: Optional[Any] = None,
                  datasets: Optional[Dict[str, EvalDataset]] = None,
-                 budget_config: Optional[Any] = None):
+                 budget_config: Optional[Any] = None,
+                 experts: Optional[Any] = None):
         self.evaluator = evaluator
         self.gate = gate or ReleaseGate()
         # 生产路径要求安全证据与独立保留集（Arch 11.2 / 11.5）
@@ -65,6 +66,8 @@ class EvolutionController:
         self.store = store
         self.releases = releases
         self.datasets: Dict[str, EvalDataset] = dict(datasets or {})
+        # 能力依赖图来源（GAP 子步④：影响分析进候选）
+        self.experts = experts
         self.holdout_dataset: Optional[EvalDataset] = self._find_holdout()
         self.candidates: Dict[str, EvolutionCandidate] = {}
         self.tickets: deque = deque()
@@ -148,6 +151,20 @@ class EvolutionController:
         self._seq += 1
         return f"cand_{self._seq:03d}"
 
+    def _impact_for(self, target_component: str) -> Optional[Dict[str, Any]]:
+        """候选创建时的能力影响分析（GAP 子步④真实调用方①）。
+
+        target_component 可为 registered capability_id 或组件名；无依赖图
+        或查询故障时返回 None，绝不阻断候选创建。
+        """
+        if self.experts is None:
+            return None
+        try:
+            result = self.experts.impact_analysis(target_component)
+            return result if isinstance(result, dict) else None
+        except Exception:  # noqa: BLE001 —— 影响分析故障不阻断候选流程
+            return None
+
     # ---- 候选生命周期 ----
     def propose_candidate(self, baseline_version: str, target_component: str,
                           target_problem: str, hypothesis: str,
@@ -165,6 +182,8 @@ class EvolutionController:
             target_domain=target_domain,
             # PRD 50：候选必须有明确回滚版本
             rollback_version=baseline_version,
+            # GAP 子步④：候选创建即落影响分析传递闭包（故障不阻断）
+            impact_result=self._impact_for(target_component),
         )
         cand.transition(CandidateStatus.TRIAGED, "影响范围与优先级已评估",
                         {"severity": "auto"})
@@ -208,6 +227,21 @@ class EvolutionController:
                                    "publish_rule": cand.publish_suggestion})
         return cand
 
+    def _pick_dataset(self, cand: Any,
+                      dataset_id: str = "") -> "Optional[EvalDataset]":
+        """评测集选择（GAP 子步④：影响闭包定回归范围）。
+
+        显式 dataset_id / 候选自带 dataset 优先；未指定时，若候选的
+        影响闭包触及 shared 共享内核 → 选 builtin_holdout（更全的
+        领域回归）；否则维持原口径（首可用数据集 builtin_smoke）。
+        """
+        ds = self.datasets.get(dataset_id
+                               or getattr(cand, "eval_dataset_id", ""))
+        if ds is None and (getattr(cand, "impact_result", None) or {}).get(
+                "affected_closure") and "builtin_holdout" in self.datasets:
+            ds = self.datasets["builtin_holdout"]
+        return ds or next(iter(self.datasets.values()), None)
+
     def evaluate_candidate(self, candidate_id: str,
                            dataset_id: Optional[str] = None,
                            baseline: bool = True) -> Dict[str, Any]:
@@ -217,9 +251,9 @@ class EvolutionController:
             raise KeyError(candidate_id)
         if self.evaluator is None:
             raise RuntimeError("评测器未装配：无法运行候选评测")
-        ds = self.datasets.get(dataset_id or cand.eval_dataset_id or "")
+        ds = self._pick_dataset(cand, dataset_id)
         if ds is None:
-            ds = next(iter(self.datasets.values()), None)
+            raise ValueError("没有可用评测集")
         if ds is None:
             raise ValueError("没有可用评测集")
         cand.eval_dataset_id = ds.dataset_id

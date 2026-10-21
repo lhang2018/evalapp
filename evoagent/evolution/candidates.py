@@ -80,6 +80,9 @@ class EvolutionCandidate:
     # 状态变更依据（Arch 10.4：每次转换记录依据）
     transition_log: List[Dict[str, Any]] = field(default_factory=list)
     created_at: float = field(default_factory=time.time)
+    # PRD 10.3 影响分析（GAP 子步④：propose_candidate 落传递闭包，
+    # 供回归范围选择消费；None=无可用依赖图）
+    impact_result: Optional[Dict[str, Any]] = None
 
     def transition(self, target: CandidateStatus, reason: str,
                    evidence: Optional[Dict[str, Any]] = None) -> CandidateStatus:

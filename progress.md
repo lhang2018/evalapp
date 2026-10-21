@@ -1514,3 +1514,13 @@
 - +6 测试(test_memory_scope.py)：键匹配/错键不可见/空键不放行/shared 放行/写侧键对齐/跨蜂巢隔离
 - ⚠️ 在途区注记：test_verify_claims/test_gap_closure/test_ledger_drift 当前失败系 WorkBuddy 在途编辑（server.py 端点迁移后台账锚点 propose_candidate 失配 + 检查器 fixture 在改），锚点符号在 HEAD 084d71d 上完好——由台账持有人刷新，本会话不代改
 
+
+### 子步④ impact_analysis 传递闭包 + 回归范围消费 完成（2026-10-22）
+- 传递闭包：上游/下游双向 BFS（环安全）；directly_affected/depends_on 一跳键兼容保留
+- must_rerun_tests 去硬编码（不再恒 ["capability_eval"]）：按能力分层——变更源或受影响闭包触及 shared 共享内核 → 全量回归（builtin_smoke + builtin_holdout + 安全套件 builtin_safety）；仅专家域层 → builtin_holdout；无受影响 → 空；名单全部对应真实评测资产，不发明测试名
+- can_reuse_evidence 语义锚定：受影响闭包为空时证据可复用
+- 真实调用方①：propose_candidate 将 impact_result 落入 EvolutionCandidate（新字段；无依赖图/查询故障 → None，不阻断）；②evaluate_candidate 自动选集 _pick_dataset：无显式数据集且闭包触及内核 → builtin_holdout；③GET /impact 查询端点（api/impact_api.py，server.py 仅 +1 行 import，注意 precedence：服务端路径 rstrip("/")，注册表须同时挂无斜杠路径——本次踩坑已记）
+- +14 测试(test_impact_analysis.py)：闭包/环安全/分层回归/装配三调用方/端点
+- ⚠️ 台账联动：test_impact_analysis_still_unreferenced（C-09 零调用方断言）被本修复过时，由台账持有人刷新为「已接线：候选落 impact_result + 选集消费 + /impact 端点」；另 test_gap_closure 两检查器自测失败系其在途工具自改中，非本会话改动所致
+- 死字段批 4/4 子步全部完成（①health_check ②S-05审计 ③scope_key ④impact）
+
