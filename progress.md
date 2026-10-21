@@ -1531,3 +1531,8 @@
 - 下一步（GAP §7 第5项）：补齐 Event/Tool/Manifest 17 个契约字段（09 卷 §3/§4/§5）
 - 在途区存目：WorkBuddy 正在改 6 份台账 + server.py 端点迁移 + 三个校验器文件；其 test_impact_analysis_still_unreferenced / R-08 health_check 等死字段断言已被本批修复过时，等其台账刷新轮
 
+
+### 🔧 进行中标记（2026-10-22，本会话：主开发会话 GLM/OpenCode）
+- **当前任务：GAP §7 第一批第 5 项——补齐 Event/Tool/Manifest 17 个契约字段**（09 卷 §3/§4/§5；预置项含 schema_version/node_run_id/offline_capable/cost_model/Manifest 的 expert_ref 等）
+- 涉及文件：`core/events.py`、`tools/contract.py`、`release/`（Manifest 组装处）等，单点接线优先；**不碰** WorkBuddy 在途的台账 .md 与 android 文件
+
