@@ -65,6 +65,12 @@ def _optional_id(body: Dict[str, Any], name: str,
 def make_handler(app: App):
     class Handler(BaseHTTPRequestHandler):
         def _json(self, code: int, payload: Any) -> None:
+            # F-01 统一错误对象（契约 §10）：4xx/5xx 的裸 {"error": ...}
+            # 统一补齐七字段；成功负载原样。显式语义键调用方优先。
+            from ..core.errors import normalize_error_payload
+            if code >= 400 and isinstance(payload, dict) and \
+                    "error_code" not in payload:
+                payload = normalize_error_payload(code, payload)
             body = json.dumps(payload, ensure_ascii=False, default=str).encode()
             self.send_response(code)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -543,10 +549,16 @@ def make_handler(app: App):
                     t = app.controller.resume_task(
                         parts[1], force=bool(body.get("force")), wait=False)
                 except PermissionError as e:
+                    # 副作用结果未知 → 契约 §10 强制先对账/人工确认
                     return self._json(409, {"error": str(e),
-                                            "requires_force": True})
+                                            "requires_force": True,
+                                            "safe_to_repeat": "unknown",
+                                            "required_action": "reconcile"})
                 except ValueError as e:
-                    return self._json(409, {"error": str(e)})
+                    # 本地守卫冲突（终态/状态机拒绝），无副作用
+                    return self._json(409, {"error": str(e),
+                                            "safe_to_repeat": "yes",
+                                            "required_action": "none"})
                 if t is None:
                     return self._json(404, {"error": "任务不存在"})
                 return self._json(202, {"task": t.to_dict(),
