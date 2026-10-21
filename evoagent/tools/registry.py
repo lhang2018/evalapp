@@ -231,11 +231,23 @@ class ToolRegistry:
         return result
 
     # ---- 诊断 ----
-    def health(self) -> Dict[str, bool]:
-        out = {}
+    def health(self) -> Dict[str, Optional[bool]]:
+        """工具健康（F-04 死字段修复①，三值语义）。
+
+        True/False 来自 contract.health_check 真探针；None=工具未声明
+        探针（如网络类）→ 上报 **unknown**，不得再恒真伪装全绿。
+        探针自身抛错按 False 计（fail-closed）。
+        """
+        out: Dict[str, Optional[bool]] = {}
         for tid, rt in self._tools.items():
             hc = rt.contract.health_check
-            out[tid] = bool(hc()) if hc else True
+            if hc is None:
+                out[tid] = None
+                continue
+            try:
+                out[tid] = bool(hc())
+            except Exception:  # noqa: BLE001 —— 探针故障即不健康
+                out[tid] = False
         return out
 
 

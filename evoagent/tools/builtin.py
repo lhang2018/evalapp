@@ -28,6 +28,9 @@ def current_time_tool() -> ToolContract:
         input_schema={"type": "object"},
         output_schema={"type": "string"},
         side_effect_level="none", idempotency_policy="none", timeout_policy=2.0,
+        # 真探针（F-04 死字段修复①）：时钟 tick 一次且非空
+        health_check=lambda: bool(
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
     ), run
 
 
@@ -50,6 +53,9 @@ def calculate_tool() -> ToolContract:
                       "properties": {"expression": {"type": "string"}}},
         output_schema={"type": "number"},
         side_effect_level="none", idempotency_policy="none",
+        # 真探针：计算引擎自检（1+1 必须等于 2）
+        health_check=lambda: eval("1+1", {"__builtins__": {}}, {}) == 2
+        # noqa: S307 与 run 同一白名单口径
     ), run
 
 
@@ -83,6 +89,8 @@ def http_get_tool(timeout: float = 15.0, allowed_hosts: list | None = None) -> T
         output_schema={"type": "string"},
         side_effect_level="none", idempotency_policy="none",
         timeout_policy=timeout,
+        # 真探针：网络类工具**不做廉价探测**（会打外网/拖时延）——
+        # health() 返回 None=unknown，不再被"恒真"伪装成全绿（F-04①）
     ), run
 
 
@@ -100,6 +108,8 @@ def fs_list_tool(base: str = ".") -> ToolContract:
         tool_id="fs_list", description="列出目录内容",
         input_schema={"type": "object"},
         side_effect_level="none", idempotency_policy="none",
+        # 真探针：基目录可列（closure 捕获 base）
+        health_check=lambda: Path(base or ".").is_dir(),
     ), run
 
 
@@ -121,6 +131,8 @@ def file_read_tool() -> ToolContract:
         input_schema={"type": "object", "required": ["path"],
                       "properties": {"path": {"type": "string"}}},
         side_effect_level="none", idempotency_policy="none",
+        # 真探针：工作区可读
+        health_check=lambda: os.access(".", os.R_OK),
     ), run
 
 
@@ -155,6 +167,8 @@ def file_write_tool(workdir: str = ".") -> ToolContract:
                       "properties": {"path": {"type": "string"},
                                      "content": {"type": "string"}}},
         side_effect_level="local", idempotency_policy="key",
+        # 真探针：workdir 真实可写（建+删一个临时文件）
+        health_check=lambda: _probe_writable(workdir),
     ), run
 
 
@@ -224,11 +238,35 @@ def git_read_tool(workdir: str = ".") -> ToolContract:
         output_schema={"type": "string"},
         side_effect_level="none", idempotency_policy="none",
         timeout_policy=12.0,
+        # 真探针：git 可执行（--version 子进程退出码 0）
+        health_check=lambda: _probe_git(),
     ), run
 
 
-BUILTIN_FACTORIES = {
-    "current_time": current_time_tool,
+def _probe_git() -> bool:
+    try:
+        proc = subprocess.run(["git", "--version"], capture_output=True,
+                              timeout=5, check=False)
+        return proc.returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
+def _probe_writable(workdir: str) -> bool:
+    """file_write 健康探针：workdir 幂等自建后建删临时文件验写。
+    （mkdir 与 run 行为一致——run 也会按需建目录。）"""
+    try:
+        base = Path(workdir or ".")
+        base.mkdir(parents=True, exist_ok=True)
+        probe = base / f".health_probe_{os.getpid()}"
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink()
+        return True
+    except OSError:
+        return False
+
+
+BUILTIN_FACTORIES = {    "current_time": current_time_tool,
     "calculate": calculate_tool,
     "http_get": http_get_tool,
     "fs_list": fs_list_tool,

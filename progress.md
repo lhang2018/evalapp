@@ -1491,3 +1491,10 @@
 - 预计触及：`tools/builtin.py`、`tools/registry.py`、`core/controller.py`、`memory/store.py`、`experts/registry.py`、`core/schema/`、各新测试；**不碰** WorkBuddy 在途的台账 .md 与 android 文件
 - 已完成：F-13 / F-01 / F-03 / F-04（均已推送至 084d71d）
 
+
+### F-04① 工具健康真探针（死字段修复子步 committed 2026-10-22 凌晨）
+- 六内置工具真探针：current_time/calculate/fs_list/file_read/file_write(建删验写、幂等自建 workdir)/git_read(git --version)；http_get 显式不探（会打外网）→ health() 三值语义：True/False/None(unknown)
+- registry.health() fail-closed：探针炸了计 False
+- +9 测试(test_tool_health.py)
+- ⚠️ 台账联动：WorkBuddy 在途未提交的 test_ledger_drift::test_builtin_tools_still_do_not_set_health_check 守的 R-08 死字段断言已被本修复过时（全量 1 失败即此，属预期）——由台账持有人刷新为「内置工具已设真探针；http_get 等 unknown 口径」；GAP/IMPLEMENTATION 相应 R-08/E-04 行同批更新
+
