@@ -1440,3 +1440,11 @@
 - 验证：隔离 10/10 通过；全量 6 连轮 397 全绿；另记录 1 次未抓到名字的 396 轮（独立弱偶发嫌疑，持续观察）
 - workflow 暂停路径核查无恙（引擎先落 checkpoint 再返回 PAUSED）
 
+
+### F-01 统一错误对象完成（2026-10-21 深夜）
+- core/errors.py：error_payload/normalize/ApiError，7 字段语义表 + 不变量（unknown ⇒ 对账）；调用方显式键校验后采纳、非法值丢弃、error/detail 键保留
+- server._json 单点归一化（注册表 ctx.json 与既有链同管道）；resume 409 分流：PermissionError=副作用未知→reconcile，ValueError=本地守卫→yes/none
+- +11 测试；提交 F-01 后 430 全绿
+- 弱偶发定性：两轮分别揪到 diagnostics_import/sandbox，均 ConnectionAbortedError(W10053) 本机软件中止环回连接——环境级（本机多 AI 会话并发负载/安全软件），非代码缺陷；隔离复现均 12/12 过
+- DoD：本 watchdog 第 1/2/3 轮连续 430 全绿（第 4 轮 324 处撞环境抖动中断）
+
