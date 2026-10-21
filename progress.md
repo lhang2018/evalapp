@@ -1448,3 +1448,11 @@
 - 弱偶发定性：两轮分别揪到 diagnostics_import/sandbox，均 ConnectionAbortedError(W10053) 本机软件中止环回连接——环境级（本机多 AI 会话并发负载/安全软件），非代码缺陷；隔离复现均 12/12 过
 - DoD：本 watchdog 第 1/2/3 轮连续 430 全绿（第 4 轮 324 处撞环境抖动中断）
 
+
+### 🔧 进行中标记（2026-10-21 深夜，本会话：主开发会话 GLM/OpenCode）
+- **当前任务：F-03 副作用账本**（GAP §7 第一批第 2 项：Side-effect Ledger 实体 + 六态状态机，09 卷 §8 + 01 卷 R-12 枚举）
+- 预计触及：`core/persistence.py`(新增表经 core/schema 新域模块，不碰热点)、`core/controller.py`(≤30 行接线)、`core/permissions.py`、新 `core/side_effects.py`、新测试
+- 已完成并推送：F-13 检查点竞态修复(2c0515d)、F-01 统一错误对象(e2681ff + 8dbeec9)
+- 台账同批注意：另一会话的 `test_verify_claims.py` + `tools/` + IMPLEMENTATION 仍在途未提交，勿动
+- 遇到本标记请勿并行改 F-03 相关文件；若 2 小时内无后续提交，可认领接手
+
