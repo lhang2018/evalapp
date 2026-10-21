@@ -642,7 +642,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，352 项）
+### Python（`tests/`，397 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -684,8 +684,10 @@ Python 服务端（标准库，SQLite）
 | `test_control_plane.py` | 鉴权、审计、指标、管理页（PRD 90.1-90.7 分区、无 `innerHTML`、脚本语法校验） |
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
+| `test_collab_base.py` | 协作基座：schema 域拆分与自动发现、语句幂等、迁移框架（基线一次性/goal_id 补列/不可兼容重建）、契约枚举与 6 条冲突裁定、路由注册表分派语义与 body 惰性（30 项） |
+| `test_collab_base_api.py` | 协作基座端到端：注册端点真实 HTTP 可用、存量端点行为零变化、未知路径仍 404（7 项） |
 
-### 客户端（`android-app/test/`，120 项）
+### 客户端（`android-app/test/`，128 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -809,6 +811,23 @@ cd android-app && npm run android
 ---
 
 ## 变更记录
+
+### 2026-10-21 — 协作基座 F-00（解锁并行开发；`FEATURE_SPLIT.md` / `ROADMAP.md`）
+背景：审计发现并行开发有三个必然冲突的热点 —— `persistence.py::_init_schema` 写死 30 张表建表语句、`api/server.py` 是 1500 行顺序 `if path ==` 路由链、`core/controller.py` 855 行编排中枢（12+/8+/10+ 个特性争抢）。本批把它们从共享文件里剥离出来。
+
+- **core/schema/**（新包，10 个域模块）：`tasks`/`sync`/`diagnostics`/`evolution`/`release`/`tools`/`workflows`/`observability`/`memory`/`imports`，各导出 `DOMAIN`+`TABLES`。通过 `pkgutil` **自动发现** —— 新增特性加表 = 新建一个文件，**零处改动**，比原计划（还需在 `__init__.py` 加注册行）隔离度更高
+- **core/schema/migrations.py**（新）：版本化迁移框架（`schema_migrations` 表、幂等、版本记录）；历史 `_init_schema` 里的 DROP/ALTER 逻辑正式化为基线迁移（**语义不变**：缺 `created_at` 判不可兼容重建、缺 `goal_id` 补列）。同时补 S-12 迁移骨架
+- **core/persistence.py**：`_init_schema` 从 160 行建表段改为 `apply_migrations()` + 遍历执行，**1125 → 950 行**；建表行为零变化
+- **core/contracts.py**（新）：10 类数据契约字段与枚举的**唯一权威**（`ERROR_FIELDS` 七字段、`SIDE_EFFECT_STATUS` 六态、`GOAL_STATUS_SPEC` 十值、`ASSET_*`、`COMPAT_DECLARATION` 等），并记录 **6 条文档内部冲突的代码级裁定**（`CONFLICT_DECISIONS`，含 L 级同名不同义必须改名、Asset namespace 与记忆 Scope 双套保留等）
+- **api/routes.py**（新）：路由注册表。`get`/`post`/`put` 装饰器 + `RouteContext`（`app`/`query`/`body`/`auth`/`json`/`text`/`role_can_read`）；精确匹配优先、前缀匹配取最长；`dispatch_*` 返回**是否命中**
+- **api/server.py**：新增 `RouteContext` 惰性 `body` + `_dispatch` 辅助；`do_GET`/`do_POST`/`do_PUT` 各加一行分派（鉴权之后、既有链路之前，未命中即回落）；`_body` 保持原样
+- **schema/goals.py**（新）：Goal 域**占位模块**（`TABLES` 刻意为空）。它是 F-00 自动发现机制的验收演示；真正的 Goal 表由 F-17 落地（依赖 WP-2.0 补写设计并先裁决 Goal.status 冲突），避免过早固化与设计补写结果冲突
+- **测试**：`tests/test_collab_base.py`（30 项）+ `tests/test_collab_base_api.py`（7 项），全量 **397 通过**
+- **实施中修掉的两个真实缺陷**（均由新增测试捕获）：
+  1. 请求体被提前消费 —— `_ctx()` 急切解析 body 会读空 `rfile`，使 `POST /diagnostics/import`（直接读原始字节）拿到空数据、ZIP 压缩比防护测试超时。修复为惰性 `body` + 缓存，已加回归测试
+  2. 处理器返回值语义 —— 曾按返回值判定命中，但处理器返回 `None`，会误回落。改为按"是否命中"判定，已加测试
+- **协作规范沉淀**：见 `FEATURE_SPLIT.md` §5.5（不要提前读请求体；分派不按返回值）
+- **已知遗留**：`tests/test_control.py::TestPauseResume::test_pause_then_resume_completes` 约 50% flaky，为改动前既有的检查点写入竞态（`GAP_ANALYSIS.md` §1.3），由 F-13/WP-0.1 修
 
 ### 2026-10-21 — Task 契约补 goal_id/origin（待办 15 前置，G-01 前置）
 - core/task.py：新增 GoalOrigin 枚举（user/scheduled/derived/opportunity）与 Task goal_id/origin 字段；rom_dict 对旧数据缺省/非法值兜底 user

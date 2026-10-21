@@ -7,6 +7,8 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from . import schema
+from .schema.migrations import apply_migrations
 from .task import Task
 
 
@@ -22,173 +24,12 @@ class Database:
     def _init_schema(self) -> None:
         with self._lock:
             c = self._conn
-            # 开发期：不兼容旧库直接重建（生产需正式迁移）
-            cols = [r[1] for r in c.execute("PRAGMA table_info(tasks)")]
-            if cols and "created_at" not in cols:
-                c.execute("DROP TABLE tasks")
-            elif cols and "goal_id" not in cols:
-                # 旧库迁移：补 goal_id 列（G-01 目标关联）
-                c.execute("ALTER TABLE tasks ADD COLUMN goal_id TEXT")
-            c.execute("""CREATE TABLE IF NOT EXISTS tasks(
-                task_id TEXT PRIMARY KEY, status TEXT, intent TEXT, domain TEXT,
-                risk_level TEXT, user_goal TEXT, created_at REAL, data TEXT,
-                goal_id TEXT)""")
-            c.execute("CREATE INDEX IF NOT EXISTS idx_tasks_goal"
-                      " ON tasks(goal_id)")
-            c.execute("""CREATE TABLE IF NOT EXISTS task_runs(
-                run_id TEXT PRIMARY KEY, task_id TEXT, started_at REAL,
-                finished_at REAL, outcome TEXT, version_manifest TEXT)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS task_checkpoints(
-                checkpoint_id TEXT PRIMARY KEY, task_id TEXT,
-                created_at REAL, snapshot TEXT)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS workflow_runs(
-                workflow_run_id TEXT PRIMARY KEY, workflow_id TEXT, task_id TEXT,
-                status TEXT, node_states TEXT, updated_at REAL)""")
-            # 客户端幂等提交（PRD 74）：同一 client_request_id 只创建一个任务
-            c.execute("""CREATE TABLE IF NOT EXISTS client_requests(
-                client_request_id TEXT PRIMARY KEY, task_id TEXT NOT NULL,
-                created_at REAL)""")
-            # 双端协同（Arch 双端 §3/§5/§8）：设备安装实例、运行清单、同步回执
-            c.execute("""CREATE TABLE IF NOT EXISTS device_installations(
-                installation_id TEXT PRIMARY KEY, device_id TEXT, platform TEXT,
-                app_version TEXT, current_release_id TEXT, target_release_id TEXT,
-                status TEXT, created_at REAL, last_seen_at REAL, data TEXT)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS device_deployments(
-                deployment_id TEXT PRIMARY KEY, installation_id TEXT,
-                release_id TEXT, action TEXT, outcome TEXT, created_at REAL,
-                data TEXT)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_device_deployments_installation
-                ON device_deployments(installation_id, created_at)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS sync_batches(
-                batch_id TEXT PRIMARY KEY, receipt_id TEXT, client_id TEXT,
-                installation_id TEXT, received_at REAL, event_count INTEGER,
-                accepted INTEGER, duplicates INTEGER, rejected INTEGER,
-                data TEXT)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS runtime_manifests(
-                manifest_id TEXT PRIMARY KEY, task_id TEXT, run_id TEXT,
-                device_id TEXT, installation_id TEXT, created_at REAL,
-                data TEXT)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_runtime_manifests_task
-                ON runtime_manifests(task_id, created_at)""")
-            # 候选状态同步：记录每个安装实例已看到的候选阶段（双端协同 §2/§8）
-            c.execute("""CREATE TABLE IF NOT EXISTS device_candidate_states(
-                installation_id TEXT, candidate_id TEXT, status TEXT,
-                release_id TEXT, first_seen_at REAL, updated_at REAL, data TEXT,
-                PRIMARY KEY(installation_id, candidate_id))""")
-            # 诊断案例（PRD 41-45 / Architecture 9.2-9.3）
-            c.execute("""CREATE TABLE IF NOT EXISTS diagnostic_cases(
-                case_id TEXT PRIMARY KEY, task_id TEXT, run_id TEXT, status TEXT,
-                created_at REAL, data TEXT)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_diagnostic_cases_task
-                ON diagnostic_cases(task_id)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS diagnostic_hypotheses(
-                hypothesis_id TEXT PRIMARY KEY, case_id TEXT, category TEXT,
-                confidence REAL, status TEXT, data TEXT)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_diagnostic_hypotheses_case
-                ON diagnostic_hypotheses(case_id)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS diagnostic_experiments(
-                experiment_id TEXT PRIMARY KEY, case_id TEXT, hypothesis_id TEXT,
-                method TEXT, result TEXT, cost REAL, started_at REAL,
-                finished_at REAL, data TEXT)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_diagnostic_experiments_case
-                ON diagnostic_experiments(case_id)""")
-            # 进化轨状态（PRD 46-54 / Arch 10）：候选与发布必须可恢复，不能只存内存
-            c.execute("""CREATE TABLE IF NOT EXISTS evolution_candidates(
-                candidate_id TEXT PRIMARY KEY, status TEXT, risk_level TEXT,
-                created_at REAL, data TEXT)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_evolution_candidates_status
-                ON evolution_candidates(status)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS release_manifests(
-                release_id TEXT PRIMARY KEY, version TEXT, created_at REAL,
-                data TEXT)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS release_events(
-                event_id INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT,
-                release_id TEXT, created_at REAL, data TEXT)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_release_events_release
-                ON release_events(release_id)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS tool_executions(
-                idem_key TEXT PRIMARY KEY, tool_id TEXT, created_at REAL,
-                result TEXT)""")
-            # 日/月预算账本（PRD 55-58）：scope:period 为键
-            c.execute("""CREATE TABLE IF NOT EXISTS budget_ledger(
-                ledger_key TEXT PRIMARY KEY, model_calls INTEGER DEFAULT 0,
-                tool_calls INTEGER DEFAULT 0, cost REAL DEFAULT 0,
-                seconds REAL DEFAULT 0, updated_at REAL)""")
-            # 工作流资产库（PRD 13.4 / Arch 16）
-            c.execute("""CREATE TABLE IF NOT EXISTS workflow_defs(
-                workflow_id TEXT, version TEXT, status TEXT, updated_at REAL,
-                data TEXT, PRIMARY KEY(workflow_id, version))""")
-            # 从成功任务抽取的工作流候选（Arch 16.2）：单次成功不足以固化
-            c.execute("""CREATE TABLE IF NOT EXISTS workflow_candidates(
-                candidate_id TEXT PRIMARY KEY, intent TEXT, signature TEXT,
-                status TEXT, support INTEGER, sample_count INTEGER,
-                created_at REAL, updated_at REAL, data TEXT)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_workflow_candidates_status
-                ON workflow_candidates(status)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS eval_reports(
-                report_id TEXT PRIMARY KEY, dataset_id TEXT, candidate_id TEXT,
-                created_at REAL, data TEXT)""")
-            # 安全控制面审计（PRD 84 / Arch 18）
-            c.execute("""CREATE TABLE IF NOT EXISTS audit_log(
-                audit_id TEXT PRIMARY KEY, at REAL, actor TEXT, action TEXT,
-                target TEXT, outcome TEXT, detail TEXT)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_audit_log_at
-                ON audit_log(at)""")
-            # 日志分层（PRD 38-39 / Arch 9.2）：执行轨迹与诊断证据
-            c.execute("""CREATE TABLE IF NOT EXISTS execution_traces(
-                trace_id TEXT PRIMARY KEY, task_id TEXT, run_id TEXT, step INTEGER,
-                at REAL, kind TEXT, summary TEXT, payload TEXT,
-                privacy_classification TEXT)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_execution_traces_task
-                ON execution_traces(task_id, step)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_execution_traces_at
-                ON execution_traces(at)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS diagnostic_evidence(
-                evidence_id TEXT PRIMARY KEY, task_id TEXT, kind TEXT, ref TEXT,
-                summary TEXT, privacy_classification TEXT, authorized INTEGER,
-                created_at REAL)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_diagnostic_evidence_task
-                ON diagnostic_evidence(task_id)""")
-            # 模型迁移记录（PRD 20 / Arch 7.4）：兼容性、回归、发布与启用状态
-            c.execute("""CREATE TABLE IF NOT EXISTS model_migrations(
-                migration_id TEXT PRIMARY KEY, old_model_id TEXT,
-                new_model_id TEXT, status TEXT, created_at REAL,
-                updated_at REAL, data TEXT)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_model_migrations_status
-                ON model_migrations(status)""")
-            # 记忆质量评测报告（PRD 28）
-            c.execute("""CREATE TABLE IF NOT EXISTS memory_eval_reports(
-                report_id TEXT PRIMARY KEY, dataset_id TEXT, version TEXT,
-                created_at REAL, data TEXT)""")
-            # 离线诊断包受控导入（补充 C §8）：隔离区，不与线上事件混用
-            c.execute("""CREATE TABLE IF NOT EXISTS diagnostics_imports(
-                import_id TEXT PRIMARY KEY, source TEXT, status TEXT,
-                file_name TEXT, size_bytes INTEGER, sha256 TEXT UNIQUE,
-                format_version TEXT, exported_at REAL, entry_count INTEGER,
-                event_count INTEGER, warnings TEXT, actor TEXT,
-                imported_at REAL)""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_diagnostics_imports_at
-                ON diagnostics_imports(imported_at)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS diagnostics_import_events(
-                import_id TEXT, event_id TEXT, task_id TEXT, run_id TEXT,
-                runtime_manifest_id TEXT, event_type TEXT, timestamp REAL,
-                sequence_no INTEGER, severity TEXT, payload TEXT,
-                review_status TEXT, conflict_reason TEXT,
-                PRIMARY KEY(import_id, event_id))""")
-            c.execute("""CREATE INDEX IF NOT EXISTS idx_import_events_task
-                ON diagnostics_import_events(task_id)""")
-            # 诊断附件（补充 C §6）：独立上传任务，数据库只存引用/摘要/分块
-            c.execute("""CREATE TABLE IF NOT EXISTS attachments(
-                attachment_id TEXT PRIMARY KEY, file_name TEXT,
-                content_type TEXT, size_bytes INTEGER, sha256 TEXT,
-                chunk_size INTEGER, chunk_count INTEGER, consent INTEGER,
-                status TEXT, received_bytes INTEGER DEFAULT 0, actor TEXT,
-                created_at REAL, updated_at REAL, completed_at REAL,
-                last_error TEXT)""")
-            c.execute("""CREATE TABLE IF NOT EXISTS attachment_chunks(
-                attachment_id TEXT, chunk_index INTEGER, size_bytes INTEGER,
-                sha256 TEXT, data BLOB, created_at REAL,
-                PRIMARY KEY(attachment_id, chunk_index))""")
+            # 结构变更走版本化迁移（协作基座 F-00.4 / S-12）
+            apply_migrations(c)
+            # 建表语句按域拆分在 core/schema/（协作基座 F-00.1）：
+            # 新增表只需新建域模块并注册，不再改动本文件。
+            for stmt in schema.all_statements():
+                c.execute(stmt)
             c.commit()
 
     # ---- tasks ----

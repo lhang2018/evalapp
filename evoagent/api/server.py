@@ -32,6 +32,8 @@ from .attachments import (
     validate_init,
 )
 from .auth import ApiAuth
+from . import routes
+from .routes import RouteContext
 from .diagnostics_import import (
     MAX_PACKAGE_BYTES,
     PackageError,
@@ -115,12 +117,35 @@ def make_handler(app: App):
             parsed = urlparse(self.path)
             return {k: v[0] for k, v in parse_qs(parsed.query).items()}
 
+        def _ctx(self, method: str, path: str, auth) -> RouteContext:
+            """构造注册表路由上下文（协作基座 F-00.2）。
+
+            body 传**惰性 getter** 而非字典：既有端点
+            （如 POST /diagnostics/import）直接从 self.rfile 读原始字节，
+            若此处急切解析会消费掉流，导致处理器读到空数据。
+            """
+            return RouteContext(
+                app=app, method=method, path=path,
+                query=self._query(), body_getter=self._body, auth=auth,
+                json=self._json, text=self._text, role_can_read=role_can_read)
+
+        def _dispatch(self, method: str, path: str, auth) -> bool:
+            """先走注册表；未命中返回 False 让调用方继续既有链路。"""
+            fn = {"GET": routes.dispatch_get,
+                  "POST": routes.dispatch_post,
+                  "PUT": routes.dispatch_put}.get(method)
+            if fn is None:
+                return False
+            return fn(self._ctx(method, path, auth))
+
         # ---------- GET ----------
         def do_GET(self):
             path = urlparse(self.path).path.rstrip("/")
             qs = self._query()
             auth = self._authorize("GET", path)
             if auth is None:
+                return
+            if self._dispatch("GET", path, auth):
                 return
             if path in ("/admin", "/"):
                 return self._text(200, ADMIN_HTML, "text/html; charset=utf-8")
@@ -393,6 +418,8 @@ def make_handler(app: App):
             auth = self._authorize("POST", path)
             if auth is None:
                 return
+            if self._dispatch("POST", path, auth):
+                return
             if path == "/diagnostics/import":
                 return self._diagnostics_import(auth.role)
             body = self._body()
@@ -614,6 +641,8 @@ def make_handler(app: App):
             path = urlparse(self.path).path.rstrip("/")
             auth = self._authorize("PUT", path)
             if auth is None:
+                return
+            if self._dispatch("PUT", path, auth):
                 return
             parts = [p for p in path.split("/") if p]
             if (len(parts) == 4 and parts[0] == "attachments"

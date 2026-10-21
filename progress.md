@@ -1403,3 +1403,23 @@
 - 用户侧另开深度审计会话，重写 GAP_ANALYSIS.md（逐主题源码核验、文件:行号证据）：实测口径 ✅约41/🔹36/⬜12（名义 66% -> 核验约 46%）
 - 关键新发现：E-07 进化候选零信号（自主进化叙事空壳效验）；79/79 专项主题为模板填空缺契约；暂停检查点竞态缺陷（controller.py:391/795 无序写入）；客户端实测 128 项
 - 已提交 c3b478b；执行顺序应以 GAP_ANALYSIS.md §7 三批为准（第一批契约类可立即开工，G 组需先补契约设计）
+
+### 差距分析 → 实施计划 → 特性拆分（2026-10-21，Session 30-32）
+- GAP_ANALYSIS.md 重写（Session 30）：逐主题源码核验 41 个 ✅，18 项名不副实；实测 Python 358 / 客户端 128（修正文档三处过期数字）
+- 关键根因：8 个专项卷 79 主题 100% 模板填空（字段/接口/枚举/阈值全为 0），"留空"与"写歪"同源；G 组须先补写设计（WP-2.0）
+- ROADMAP.md（Session 31）：按设计文档官方阶段 A-H 排 43 个 WP；20 条验收映射（声称 19/20，用例 4/16/17 存疑）
+- FEATURE_SPLIT.md（Session 32）：实测耦合度确认 3 个必然冲突热点（persistence 建表段/1500 行路由链/855 行 controller），拆 39 特性 + 协作协议
+
+### 协作基座 F-00 完成（2026-10-21，Session 33）
+认领 F-00 并实现，解除并行开发前提：
+- core/schema/ 10 个域模块 + pkgutil 自动发现 → 新增表 = 新建一个文件、零处改动（原计划还需加注册行，隔离度更高）
+- core/schema/migrations.py 版本化迁移（schema_migrations 表、幂等）；历史 DROP/ALTER 正式化为基线迁移，语义不变
+- core/persistence.py 1125 → 950 行；建表行为零变化
+- core/contracts.py：10 类契约字段与枚举唯一权威 + 6 条文档冲突代码级裁定
+- api/routes.py 路由注册表；server.py 仅 3 行分派接入，存量端点行为零变化
+- schema/goals.py 占位演示模块（不建表，等 F-17 避免过早固化）
+- 测试 +39 项（test_collab_base.py 30 + test_collab_base_api.py 7），全量 397 通过
+- 实施中修掉两个真实缺陷：① _ctx 急切读 body 会读空 rfile，致 POST /diagnostics/import 拿空数据（改惰性 body + 缓存，已加回归测试）② dispatch 按返回值判定会误回落（改为按是否命中）
+- 环境事故：C 盘被 8259 个 evoagent 测试遗留临时目录占满至 0 GB，导致 ENOSPC 与大批假失败；经用户确认后清理，释放 9.73 GB
+- 已知遗留：test_pause_then_resume_completes 约 50% flaky（改动前既有，检查点写入竞态），由 F-13/WP-0.1 修
+- 下一步建议：F-13（WP-0.1 检查点有序化）——能消掉当前唯一违反 DoD 的 flaky，且无契约依赖
