@@ -30,7 +30,7 @@ from .checkpoint import Checkpoint, CheckpointManager
 from .events import EventBus, RunEvent
 from .persistence import Database
 from .state_machine import IllegalTransition, transition
-from .task import RiskLevel, Task, TaskStatus
+from .task import GoalOrigin, ORIGIN_VALUES, RiskLevel, Task, TaskStatus
 
 # 依赖网络的工具：未在契约里声明网络权限时用它推断 PRD 7.3 的 requires_network
 _NETWORK_TOOLS = {"http_get"}
@@ -94,8 +94,15 @@ class RuntimeController:
                     open_questions: Optional[List[str]] = None,
                     device_id: Optional[str] = None,
                     installation_id: Optional[str] = None,
-                    app_version: Optional[str] = None) -> Task:
+                    app_version: Optional[str] = None,
+                    goal_id: Optional[str] = None,
+                    origin: str = GoalOrigin.USER.value) -> Task:
+        if origin not in ORIGIN_VALUES:
+            raise ValueError(
+                f"非法 origin: {origin}（契约 §2: user|scheduled|derived|opportunity）")
         task = Task(user_goal=goal,
+                    goal_id=goal_id,
+                    origin=origin,
                     target_object=target_object,
                     expected_output=expected_output,
                     complexity=complexity,
@@ -120,7 +127,9 @@ class RuntimeController:
                 "installation_id": installation_id or None,
                 "app_version": app_version or None,
             }
-        self._emit(task, "task_created", {"goal": goal})
+        self._emit(task, "task_created",
+                   {"goal": goal, "goal_id": task.goal_id,
+                    "origin": task.origin})
         # 后台执行时接口会立即返回 202；任务必须先落库，避免客户端紧接着查询 404
         self.db.save_task(task)
         if wait:
@@ -633,6 +642,7 @@ class RuntimeController:
     def _build_retry(self, task: Task) -> Task:
         """失败任务重跑创建新任务（终态不可改写，PRD 36 / Arch 3.3）。"""
         retry = Task(user_goal=task.user_goal,
+                     goal_id=task.goal_id, origin=task.origin,
                      constraints=list(task.constraints),
                      acceptance_criteria=list(task.acceptance_criteria),
                      risk_level=task.risk_level,

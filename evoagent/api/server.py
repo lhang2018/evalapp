@@ -18,7 +18,7 @@ from urllib.parse import parse_qs, urlparse
 from ..app import App
 from ..core.budget import CostReporter
 from ..core.log_layers import role_can_read
-from ..core.task import RiskLevel, TaskStatus
+from ..core.task import ORIGIN_VALUES, RiskLevel, TaskStatus
 from ..evolution.candidates import IllegalCandidateTransition
 from ..memory.store import Credibility, MemoryKind, Scope
 from ..evolution.controller import PUBLISH_RULES
@@ -42,6 +42,8 @@ from .events_sync import BatchError, SYNC_PROTOCOL_VERSION, validate_batch
 CLIENT_REQUEST_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
 INSTALLATION_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
 DEVICE_ID_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
+# 契约 §2 Task.goal_id：goal_id 允许尚未注册的占位引用（阶段 E 落地前允许业务侧自定义 ID）
+GOAL_ID_RE = re.compile(r"^[A-Za-z0-9_.:-]{4,64}$")
 BATCH_ID_RE = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
 APPLY_ID_RE = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
 # 幂等提交的检查-创建-登记需要原子化（单进程 API 假设）
@@ -421,6 +423,17 @@ def make_handler(app: App):
                         body, "installation_id", INSTALLATION_RE)
                 except ValueError as e:
                     return self._json(400, {"error": str(e)})
+                # 契约 §2：goal_id/origin（G-01 目标注册表前置）
+                goal_id = body.get("goal_id")
+                if goal_id is not None:
+                    if not isinstance(goal_id, str) or not GOAL_ID_RE.match(goal_id):
+                        return self._json(400, {"error": "非法 goal_id"})
+                origin = body.get("origin")
+                if origin is None:
+                    origin = "user"
+                if (not isinstance(origin, str) or origin not in ORIGIN_VALUES):
+                    return self._json(400, {
+                        "error": "非法 origin，须为 user|scheduled|derived|opportunity"})
                 app_version = body.get("app_version")
                 if app_version is not None and (
                         not isinstance(app_version, str)
@@ -449,6 +462,8 @@ def make_handler(app: App):
                         device_id=device_id,
                         installation_id=installation_id,
                         app_version=app_version,
+                        goal_id=goal_id,
+                        origin=origin,
                         **parsed)
                     if request_id:
                         app.db.save_request(request_id, t.task_id)

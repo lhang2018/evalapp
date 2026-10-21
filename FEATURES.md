@@ -13,7 +13,7 @@
 | 🔹 | 接口/骨架已就位，实现待迭代 |
 | ⬜ | 未开始（已列入迭代待办） |
 
-测试基线（2026-10-20）：**Python 352 项 + 客户端 120 项全部通过**。
+测试基线（2026-10-20）：**Python 358 项 + 客户端 120 项全部通过**。
 
 ---
 
@@ -306,6 +306,12 @@ Python 服务端（标准库，SQLite）
 | ATT-04 | 附件正文受控读取 | ✅ | `api/server.py` | `GET /attachments/{id}` 返回元数据与进度；`GET /attachments/{id}/content` 仅 admin 且完成态可读，返回 `Content-Disposition` 与 `X-Attachment-SHA256`，读取写审计 |
 
 ---
+
+### 2.19 自主目标治理（G 组，契约前置已落地）
+
+| ID | 功能 | 状态 | 代码位置 | 说明 / 限制 |
+|---|---|---|---|---|
+| GO-C01 | Task.goal_id/origin 契约字段 | 🔹 | core/task.py, core/persistence.py, core/controller.py, pi/server.py | 契约 §2：goal_id 指向长期 Goal，origin ∈ user\|scheduled\|derived\|opportunity；API 校验、持久化列+索引、按目标查询 list_tasks_by_goal、重试继承、旧数据兼容兜底。目标注册表/机会发现等 G-01..G-10 本体未实现（待办 15） |
 
 ## 3. REST API 清单
 
@@ -803,6 +809,13 @@ cd android-app && npm run android
 ---
 
 ## 变更记录
+
+### 2026-10-21 — Task 契约补 goal_id/origin（待办 15 前置，G-01 前置）
+- core/task.py：新增 GoalOrigin 枚举（user/scheduled/derived/opportunity）与 Task goal_id/origin 字段；rom_dict 对旧数据缺省/非法值兜底 user
+- core/persistence.py：tasks 表新增 goal_id 列 + idx_tasks_goal 索引（含旧库 ALTER 迁移）；list_tasks_by_goal()
+- core/controller.py：submit_task(goal_id=, origin=) 校验并落库；task_created 事件带 goal_id/origin；_build_retry 继承
+- pi/server.py：POST /tasks 接收校验 goal_id（格式）/origin（枚举），非法返回 400
+- 测试：	ests/test_task_model.py 新增 TestGoalContract 6 项（往返/默认/持久化/按目标查询/重试继承/API 端到端与拒绝）；全量 358 通过
 
 ### 2026-10-20 — 语音输入与语音反馈（PRD 64/69/89.1）
 

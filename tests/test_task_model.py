@@ -174,5 +174,93 @@ class TestTaskModelApi(unittest.TestCase):
             self.assertIn("error", out)
 
 
+class TestGoalContract(unittest.TestCase):
+    """契约 §2 前置：Task.goal_id/origin（G-01 目标注册表）。"""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="evoagent_goalcontract_")
+        self.app = App(data_dir=self.tmp)
+        self.server = ApiServer(self.app, port=0)
+        self.port = self.server.httpd.server_address[1]
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+
+    def tearDown(self):
+        self.server.shutdown()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _post(self, payload):
+        req = urllib.request.Request(
+            f"http://127.0.0.1:{self.port}/tasks",
+            data=json.dumps(payload).encode(), method="POST")
+        req.add_header("Content-Type", "application/json")
+        try:
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return resp.status, json.loads(resp.read().decode())
+        except urllib.error.HTTPError as e:
+            return e.code, json.loads(e.read().decode())
+
+    def _get_task(self, task_id):
+        req = urllib.request.Request(
+            f"http://127.0.0.1:{self.port}/tasks/{task_id}")
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            return json.loads(resp.read().decode())
+
+    def test_roundtrip_and_defaults(self):
+        t = Task(user_goal="维护目标示例", goal_id="goal-abc-001",
+                 origin="opportunity")
+        r = Task.from_dict(t.to_dict())
+        self.assertEqual(r.goal_id, "goal-abc-001")
+        self.assertEqual(r.origin, "opportunity")
+        legacy = Task.from_dict({"task_id": "old", "user_goal": "旧"})
+        self.assertIsNone(legacy.goal_id)
+        self.assertEqual(legacy.origin, "user")
+        # 旧库写入的非法 origin 兜底为 user，不抛异常
+        self.assertEqual(Task.from_dict(
+            {"task_id": "x", "user_goal": "y", "origin": "bogus"}).origin, "user")
+
+    def test_submit_persists_and_lists_by_goal(self):
+        t = self.app.submit("整理相册", goal_id="goal-abc-002",
+                            origin="scheduled")
+        stored = self.app.get_task(t.task_id)
+        self.assertEqual(stored.goal_id, "goal-abc-002")
+        self.assertEqual(stored.origin, "scheduled")
+        self.assertEqual(self.app.controller.db.list_tasks_by_goal(
+            "goal-abc-002")[0].task_id, t.task_id)
+        self.assertEqual(self.app.controller.db.list_tasks_by_goal(
+            "goal-none"), [])
+
+    def test_retry_carries_goal_fields(self):
+        t = self.app.submit("好的任务", goal_id="goal-abc-003",
+                            origin="derived")
+        retry = self.app.controller._build_retry(t)
+        self.assertEqual(retry.goal_id, "goal-abc-003")
+        self.assertEqual(retry.origin, "derived")
+        self.assertEqual(retry.parent_task_id, t.task_id)
+
+    def test_invalid_origin_rejected(self):
+        with self.assertRaises(ValueError):
+            self.app.controller.submit_task("x", origin="agent")
+
+    def test_api_goal_fields_end_to_end(self):
+        status, out = self._post({
+            "goal": "机会候选任务", "goal_id": "goal-abc-004",
+            "origin": "opportunity"})
+        self.assertEqual(status, 202)
+        data = self._get_task(out["task_id"])
+        self.assertEqual(data["goal_id"], "goal-abc-004")
+        self.assertEqual(data["origin"], "opportunity")
+
+    def test_api_rejects_bad_goal_fields(self):
+        cases = [
+            {"goal": "x", "goal_id": "g!"},
+            {"goal": "x", "origin": "agent"},
+            {"goal": "x", "origin": 3},
+        ]
+        for payload in cases:
+            status, out = self._post(payload)
+            self.assertEqual(status, 400, payload)
+            self.assertIn("error", out)
+
+
 if __name__ == "__main__":
     unittest.main()

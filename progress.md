@@ -1392,3 +1392,9 @@
 - 资料/: v0.1 演进计划书（用户裁定放弃）、v0.1 审计汇编包、早期源文档 10 份、正式版 docx 副本 20 份、zip/a.txt -> 归档杂项
 - 资料/README.md 记录每类归档原因；FEATURES.md 经查为活跃功能总账，留根目录
 - 下一步: 待办 15（阶段 E 自主目标治理），前置 Task 契约补 goal_id/origin
+
+### 待办 15 前置完成（2026-10-21）
+- Task 契约 goal_id/origin 全链路落地：枚举/字段/持久化列+索引+按目标查询/controller 校验与重试继承/API 校验
+- tests/test_task_model.py +TestGoalContract 6 项；全量 358 通过（基线 352）
+- FEATURES.md 新增 2.19 G 组段落（范围外声明：G-01..G-10 本体仍未实现）
+- 下一步：阶段 E 主体——目标注册表 Goal 实体 + 机会发现 + 价值排序 + 自主等级矩阵 + Goal 状态机 + 无进展停止 + 前后台调度

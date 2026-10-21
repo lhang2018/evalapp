@@ -26,9 +26,15 @@ class Database:
             cols = [r[1] for r in c.execute("PRAGMA table_info(tasks)")]
             if cols and "created_at" not in cols:
                 c.execute("DROP TABLE tasks")
+            elif cols and "goal_id" not in cols:
+                # 旧库迁移：补 goal_id 列（G-01 目标关联）
+                c.execute("ALTER TABLE tasks ADD COLUMN goal_id TEXT")
             c.execute("""CREATE TABLE IF NOT EXISTS tasks(
                 task_id TEXT PRIMARY KEY, status TEXT, intent TEXT, domain TEXT,
-                risk_level TEXT, user_goal TEXT, created_at REAL, data TEXT)""")
+                risk_level TEXT, user_goal TEXT, created_at REAL, data TEXT,
+                goal_id TEXT)""")
+            c.execute("CREATE INDEX IF NOT EXISTS idx_tasks_goal"
+                      " ON tasks(goal_id)")
             c.execute("""CREATE TABLE IF NOT EXISTS task_runs(
                 run_id TEXT PRIMARY KEY, task_id TEXT, started_at REAL,
                 finished_at REAL, outcome TEXT, version_manifest TEXT)""")
@@ -189,10 +195,12 @@ class Database:
     def save_task(self, task: Task) -> None:
         with self._lock:
             self._conn.execute(
-                "INSERT OR REPLACE INTO tasks VALUES (?,?,?,?,?,?,?,?)",
+                "INSERT OR REPLACE INTO tasks"
+                " (task_id, status, intent, domain, risk_level, user_goal,"
+                "  created_at, data, goal_id) VALUES (?,?,?,?,?,?,?,?,?)",
                 (task.task_id, task.task_status.value, task.intent, task.domain,
                  task.risk_level.value, task.user_goal, task.created_at,
-                 json.dumps(task.to_dict(), ensure_ascii=False)))
+                 json.dumps(task.to_dict(), ensure_ascii=False), task.goal_id))
             self._conn.commit()
 
     def get_task(self, task_id: str) -> Optional[Task]:
@@ -205,6 +213,13 @@ class Database:
     def list_tasks(self, limit: int = 50) -> List[Task]:
         rows = self._conn.execute(
             "SELECT data FROM tasks ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
+        return [Task.from_dict(json.loads(r["data"])) for r in rows]
+
+    def list_tasks_by_goal(self, goal_id: str, limit: int = 200) -> List[Task]:
+        """按长期目标拉任务（G-01 目标注册表前置；索引列 goal_id）。"""
+        rows = self._conn.execute(
+            "SELECT data FROM tasks WHERE goal_id=?"
+            " ORDER BY created_at ASC LIMIT ?", (goal_id, limit)).fetchall()
         return [Task.from_dict(json.loads(r["data"])) for r in rows]
 
     # ---- runs ----

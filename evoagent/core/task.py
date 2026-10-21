@@ -10,6 +10,24 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 
+class GoalOrigin(str, Enum):
+    """目标来源（契约 §2 Task.origin，G-01 目标注册表前置）。
+
+    user        用户直接下达
+    scheduled   定时/维护计划触发
+    derived     从父目标派生的子目标
+    opportunity AGIG 主动机会发现产生的候选
+    """
+
+    USER = "user"
+    SCHEDULED = "scheduled"
+    DERIVED = "derived"
+    OPPORTUNITY = "opportunity"
+
+
+ORIGIN_VALUES = {g.value for g in GoalOrigin}
+
+
 class TaskStatus(str, Enum):
     """/task_status 状态见 state_machine.py 的转移表"""
 
@@ -42,6 +60,9 @@ TERMINAL_STATES = {TaskStatus.SUCCEEDED, TaskStatus.FAILED, TaskStatus.CANCELLED
 class Task:
     task_id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
     parent_task_id: Optional[str] = None
+    # G-01 前置（契约 §2）：任务与长期 Goal 通过 goal_id 引用关联，不共享万能状态字段
+    goal_id: Optional[str] = None
+    origin: str = GoalOrigin.USER.value
     user_goal: str = ""
     intent: str = "general"
     domain: str = "general"
@@ -80,6 +101,8 @@ class Task:
         return {
             "task_id": self.task_id,
             "parent_task_id": self.parent_task_id,
+            "goal_id": self.goal_id,
+            "origin": self.origin,
             "user_goal": self.user_goal,
             "intent": self.intent,
             "domain": self.domain,
@@ -114,5 +137,10 @@ class Task:
         d = dict(d)
         d["task_status"] = TaskStatus(d.get("task_status", "CREATED"))
         d["risk_level"] = RiskLevel(d.get("risk_level", "low"))
+        # goal_id/origin 兼容旧数据：缺省按用户直接下达处理；非法值兜底为 user
+        origin = d.get("origin") or GoalOrigin.USER.value
+        if origin not in ORIGIN_VALUES:
+            origin = GoalOrigin.USER.value
+        d["origin"] = origin
         t = cls(**{k: v for k, v in d.items() if k in cls.__dataclass_fields__})
         return t
