@@ -35,6 +35,27 @@ class RunEvent:
     runtime_manifest_id: Optional[str] = None
     # 诊断附件引用（补充 C §6）；附件可先于事件完成或稍后补传
     attachment_refs: List[str] = field(default_factory=list)
+    # 契约 §3：schema_version（GAP 第一批第5项·Event 字段批）
+    schema_version: str = "1.0"
+    # 契约 §3：payload_ref = local-uri-or-inline-small-payload。
+    # 内联 payload 继续走 payload 字段；大附件/远端引用走这里。
+    payload_ref: Optional[str] = None
+
+    # 契约 §3 privacy_level 四值映射（core/contracts.py 裁定：spec 为准）。
+    # 内部字段 privacy_classification 迁移期保留：证据层/追溯层的红去逻辑
+    # 以其为准，不在此处改动行为口径。
+    _PRIVACY_SPEC_MAP = {
+        "standard": "internal",
+        "sensitive": "sensitive",
+        "secret": "restricted",
+        "private": "restricted",
+    }
+
+    @property
+    def privacy_level(self) -> str:
+        """契约 §3 四值（public/internal/sensitive/restricted）。"""
+        return self._PRIVACY_SPEC_MAP.get(
+            self.privacy_classification, "restricted")
 
     def json_payload(self) -> str:
         return json.dumps(self.payload, ensure_ascii=False, default=str)
@@ -48,11 +69,14 @@ class RunEvent:
             "correlation_id": self.correlation_id, "causation_id": self.causation_id,
             "payload": self.payload,
             "privacy_classification": self.privacy_classification,
+            "privacy_level": self.privacy_level,
             "sync_status": self.sync_status,
             "sequence_no": self.sequence_no,
             "runtime_manifest_id": self.runtime_manifest_id,
             "clock_source": self.clock_source,
             "attachment_refs": self.attachment_refs,
+            "schema_version": self.schema_version,
+            "payload_ref": self.payload_ref,
         }
 
 
@@ -66,13 +90,15 @@ _EXTRA_COLUMNS = {
     "runtime_manifest_id": "TEXT",
     "clock_source": "TEXT DEFAULT 'server'",
     "attachment_refs": "TEXT",
+    "schema_version": "TEXT DEFAULT '1.0'",
+    "payload_ref": "TEXT",
 }
 
 _EVENT_COLUMNS = (
     "event_id, task_id, run_id, severity, event_type, component_id, timestamp,"
     " payload, component_version, correlation_id, causation_id,"
     " privacy_classification, sync_status, sequence_no, runtime_manifest_id,"
-    " clock_source, attachment_refs")
+    " clock_source, attachment_refs, schema_version, payload_ref")
 
 
 def _row_to_event(row) -> RunEvent:
@@ -84,7 +110,9 @@ def _row_to_event(row) -> RunEvent:
         privacy_classification=row[11] or "standard",
         sync_status=row[12] or "local",
         sequence_no=row[13], runtime_manifest_id=row[14],
-        clock_source=row[15] or "server")
+        clock_source=row[15] or "server",
+        schema_version=row[17] or "1.0",
+        payload_ref=row[18])
     try:
         evt.payload = json.loads(row[7])
     except Exception:
@@ -131,14 +159,15 @@ class EventBus:
         with self._lock:
             cur = self._conn.execute(
                 f"INSERT {mode} INTO runtime_events ({_EVENT_COLUMNS})"
-                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (evt.event_id, evt.task_id, evt.run_id, evt.severity,
                  evt.event_type, evt.component_id, evt.timestamp,
                  evt.json_payload(), evt.component_version,
                  evt.correlation_id, evt.causation_id,
                  evt.privacy_classification, evt.sync_status,
                  evt.sequence_no, evt.runtime_manifest_id,
-                 evt.clock_source, json.dumps(evt.attachment_refs)))
+                 evt.clock_source, json.dumps(evt.attachment_refs),
+                 evt.schema_version, evt.payload_ref))
             self._conn.commit()
             return cur.rowcount > 0
 
@@ -153,8 +182,14 @@ class EventBus:
         return evt
 
     def ingest(self, evt: RunEvent) -> bool:
-        """接收客户端事件；event_id 已存在返回 False（幂等，不触发订阅者）。"""
-        evt.sync_status = "synced"
+        """接收客户端事件；event_id 已存在返回 False（幂等，不触发订阅者）。
+
+        契约 §3 sync_status：入库即服务端确认（acknowledged）——
+        回执由批次接口下发，事件自身状态以 acknowledged 落库
+        （contracts.py CONFLICT_DECISIONS 裁定补齐 acknowledged）。
+        存量 legacy "synced" 记录原样保留，读取兼容。
+        """
+        evt.sync_status = "acknowledged"
         return self._insert(evt, "OR IGNORE")
 
     def exists(self, event_id: str) -> bool:

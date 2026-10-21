@@ -1536,3 +1536,11 @@
 - **当前任务：GAP §7 第一批第 5 项——补齐 Event/Tool/Manifest 17 个契约字段**（09 卷 §3/§4/§5；预置项含 schema_version/node_run_id/offline_capable/cost_model/Manifest 的 expert_ref 等）
 - 涉及文件：`core/events.py`、`tools/contract.py`、`release/`（Manifest 组装处）等，单点接线优先；**不碰** WorkBuddy 在途的台账 .md 与 android 文件
 
+
+### 子步⑤a Event 契约字段 完成（2026-10-22）
+- 契约 §3 四缺口：schema_version（字段+持久化+ingest 校验，默认 1.0）/ payload_ref（local-uri-or-inline-small-payload，≤512）/ privacy_level（契约四值 public/internal/sensitive/restricted 映射属性，红去逻辑内部分级不变）/ sync_status=acknowledged（入库即确认——contracts.py CONFLICT_DECISIONS 已裁定补齐，回执 confirmed 数组降辅助）
+- EventBus.ingest 与 /events/sync 入站均落 acknowledged；legacy synced 行读取兼容
+- API 边界同时接受 client 的 schema_version/payload_ref（越界拒绝）
+- +7 新测试(test_event_contract.py)；test_event_sync 两处断言随裁定口径更新
+- 全量 559 passed（除 WorkBuddy 在途校验器区同款 4 失败）
+

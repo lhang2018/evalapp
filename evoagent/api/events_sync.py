@@ -98,6 +98,14 @@ def _one(raw: Any, now: float) -> RunEvent:
     if clock_source not in CLOCK_SOURCES:
         raise ValueError(f"未知 clock_source: {clock_source}")
 
+    # 契约 §3（GAP Event 字段批）：schema_version / payload_ref
+    schema_version = _optional_str(raw, "schema_version") or "1.0"
+    if len(schema_version) > 16:
+        raise ValueError("schema_version 过长")
+    payload_ref = _optional_str(raw, "payload_ref")
+    if payload_ref is not None and len(payload_ref) > 512:
+        raise ValueError("payload_ref 过长")
+
     refs_raw = raw.get("attachment_refs", [])
     if refs_raw is None:
         refs_raw = []
@@ -125,11 +133,13 @@ def _one(raw: Any, now: float) -> RunEvent:
         causation_id=_optional_str(raw, "causation_id"),
         payload=payload,
         privacy_classification="standard",
-        sync_status="synced",
+        sync_status="acknowledged",  # 契约 §3：入库即确认（GAP Event 字段批）
         sequence_no=sequence_no,
         runtime_manifest_id=runtime_manifest_id,
         clock_source=clock_source,
         attachment_refs=refs,
+        schema_version=schema_version,
+        payload_ref=payload_ref,
     )
 
 

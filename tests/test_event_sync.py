@@ -49,7 +49,7 @@ class TestEventBus(unittest.TestCase):
         self.assertTrue(bus.exists(eid(1)))
         rows = bus.query(task_id="t1")
         self.assertEqual(len(rows), 1)
-        self.assertEqual(rows[0].sync_status, "synced")
+        self.assertEqual(rows[0].sync_status, "acknowledged")
         bus._conn.close()
 
     def test_old_schema_migrated_and_defaults(self):
@@ -143,7 +143,7 @@ class TestEventSyncApi(unittest.TestCase):
         stored = self.app.bus.query(task_id=None, limit=1000)
         matching = [e for e in stored if e.event_id in (eid(10), eid(11))]
         self.assertEqual(len(matching), 2)
-        self.assertTrue(all(e.sync_status == "synced" for e in matching))
+        self.assertTrue(all(e.sync_status == "acknowledged" for e in matching))
 
     def test_sensitive_event_rejected(self):
         st, out = self._post("/events/sync", {"events": [
