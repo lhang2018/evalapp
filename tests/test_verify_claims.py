@@ -120,6 +120,36 @@ class TestCheckerCatchesFalseClaims(unittest.TestCase):
         kinds = {p["kind"] for p in self._problems(bad)}
         self.assertIn("citation_path_missing", kinds)
 
+    def test_anchor_form_is_actually_used(self):
+        """台账应**主要使用符号锚定形式** —— 它在并行开发下不会漂移。
+
+        行号引用在并行工作流里必然失效（实测 controller.py 的
+        submit_task 因 F-03 改动从 77 行移到 80 行）。
+        锚定形式把「指向哪个定义」与「它在第几行」解耦。
+        """
+        import re as _re
+        anchored = len(_re.findall(
+            r"`[A-Za-z0-9_\-./]+\.(?:py|ts|kt|tsx)::[A-Za-z_][A-Za-z0-9_]*`",
+            self.text))
+        self.assertGreater(anchored, 30,
+                           f"符号锚定引用只有 {anchored} 处 —— "
+                           f"应把易变引用尽量改成锚定形式")
+
+    def test_catches_anchor_symbol_missing(self):
+        """锚定引用指向不存在的符号 —— 必须报出。"""
+        import re as _re
+        m = _re.search(r"`([A-Za-z0-9_\-./]+\.py)::([A-Za-z_][A-Za-z0-9_]*)`",
+                       self.text)
+        if not m:
+            self.skipTest("台账中暂无符号锚定引用")
+        path_hint = m.group(1)
+        old = f"`{path_hint}::{m.group(2)}`"
+        bad = self.text.replace(old, f"`{path_hint}::no_such_symbol_xyz`", 1)
+        self.assertNotEqual(bad, self.text, "注入失败")
+        problems = self._problems(bad)
+        kinds = {p["kind"] for p in problems}
+        self.assertIn("anchor_symbol_missing", kinds)
+
     def test_catches_line_drift(self):
         """符号名对但行号指向别处 —— 语义引用校验必须抓住。
 
@@ -131,7 +161,8 @@ class TestCheckerCatchesFalseClaims(unittest.TestCase):
             r"`([A-Za-z_][A-Za-z0-9_]*)`（`([A-Za-z0-9_\-./]+\.py):(\d+)`）",
             self.text)
         if not m:
-            self.skipTest("台账中暂无 `符号`（`文件:行号`）形态的引用")
+            self.skipTest("台账中已无 `符号`（`文件:行号`）形态的引用"
+                          "（全部改为符号锚定形式）—— 本判据暂无适用样本")
         sym, path_hint, num = m.group(1), m.group(2), m.group(3)
         # 找一个**行号在范围内但不含该符号**的行 —— 越界会被另一个判据先抓到
         wrong = self._a_line_without(path_hint, sym, int(num))
@@ -330,6 +361,26 @@ class TestClaimExtraction(unittest.TestCase):
                          "contradicts 是关系名字符串，不是可验证的主体")
         self.assertNotIn("can_reuse_evidence", syms,
                          "can_reuse_evidence 是返回字典的键，不是主体")
+
+    def test_does_not_bind_across_backtick(self):
+        """**回归锁**：声明不得跨过中间的引用去绑错主体。
+
+        实测过的坑：M-08 那行是
+          「`write` 只做精确去重；`link` **生产代码零调用点**」
+        抽取器若允许符号与措辞之间出现反引号，就会把「零调用点」
+        绑到 `write` 上 —— 判定对象直接错了，而工具还会报"通过"。
+        """
+        rows = [{
+            "line": 1,
+            "theme": "X-01 测试",
+            "status": vc.MISS,
+            "note": "`write` 只做精确去重；`link` **生产代码零调用点**",
+        }]
+        claims = vc.extract_dead_claims(rows)
+        syms = {c["symbol"] for c in claims}
+        self.assertEqual(syms, {"link"},
+                         f"声明绑错主体：{syms}（应为 link）")
+        self.assertNotIn("write", syms)
 
     def test_extracts_absent_claims_with_scope(self):
         claims = vc.extract_absent_claims(self.rows)

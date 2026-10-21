@@ -25,7 +25,7 @@
 ## 1. 实测基线（本次审计跑出来的，非文档转述）
 
 ```
-服务端：python -m pytest tests/ -q          → 462 passed
+服务端：python -m pytest tests/ -q          → 475 passed
         首轮全量 1 failed: test_control.py::TestPauseResume::test_pause_then_resume_completes
         隔离重复 3 次                          → 5 passed / 5 passed / 5 passed  ⇒ 竞态，非确定性缺陷
 客户端：node --test test/{offline,device,update}/*.test.ts → 128 passed
@@ -33,7 +33,7 @@
 
 三点需要注意：
 
-1. **文档数字三处互相矛盾且全部过期**（审计时）：README.md 写「352 Python + 120 客户端」；FEATURES.md 写「352 项」；IMPLEMENTATION.md 写「331 Python + 60 客户端」。实测 358 + 128。**注：本轮已全部更正为 462 + 128**。
+1. **文档数字三处互相矛盾且全部过期**（审计时）：README.md 写「352 Python + 120 客户端」；FEATURES.md 写「352 项」；IMPLEMENTATION.md 写「331 Python + 60 客户端」。实测 358 + 128。**注：本轮已全部更正为 475 + 128**。
 2. **工作区处于未提交状态**，含在途新文件 `NotificationModule.kt` / `nativeNotifications.ts` / `notifications.ts` / `notifications.test.ts`（客户端 128 项比文档 120 项多的部分即来自此处）。本次审计未触碰这些文件。
 3. **已定位一处真实并发缺陷**（非 flaky 测试问题）：`tests/test_control.py:125` 断言 `cp.current_stage == "paused"` 实际拿到 `'RUNNING'`。根因是 `evoagent/core/controller.py` 写 `paused` 检查点与写 `target.value`（RUNNING）检查点两处无序，`CheckpointManager.latest()` 取到较晚写入的 RUNNING。**暂停语义在检查点层面被后写的运行态检查点覆盖**，这与 Session 4 确立的"暂停后落检查点"设计约束冲突。**✅ 已由 F-13 修复**（并行工作流 `2c0515d`：先落 paused 检查点再持久化 SUSPENDED 状态；修复后连续 3 次全量跑通过）。
 
@@ -103,7 +103,7 @@
 - 实际：
   - **无恢复游标**：`CheckpointManager`（`evoagent/core/checkpoint.py:45-61`）只有 `save`/`latest`，每次生成新 `checkpoint_id` 且只保留 latest，无法回到任意中间断点。
   - **无节点级检查点（ReAct 路径）**：`controller.py:801` 的 `self.checkpoint(task, target.value)` 只写 `task_state` + 硬编码 `next_candidate_actions=[{"action":"resume"}]`，不写 `completed_nodes`/`pending_nodes`。节点级快照只有工作流引擎 `evoagent/workflows/engine.py:254-271` 在写。
-  - **"恢复前强制安全备份"完全未接线**：`grep -c backup evoagent/core/controller.py` = **0**。`BackupManager.restore` 的 `safety_backup`（`evoagent/core/backup.py:196`）只服务数据库恢复，与任务恢复是两条独立路径。
+  - **"恢复前强制安全备份"完全未接线**：`grep -c backup evoagent/core/controller.py` = **0**。`BackupManager.restore` 的 `safety_backup`（`evoagent/core/backup.py::safety_backup`）只服务数据库恢复，与任务恢复是两条独立路径。
   - 两个关键限定语（"恢复游标""强制安全备份"）在说明文字里都找不到对应代码。
 
 ### 3.4 R-10 人工接管与等待审批
@@ -113,7 +113,7 @@
 - 但：
   - **等待审批是空的**：`evoagent/react/engine.py:110-114` 收到 `request_user` 立即返回，`evoagent/core/controller.py` 的工作流结果分支把它转成一条失败 check → 任务判 **FAILED**。没有任何"挂起等用户"语义。
   - **人工接管无落点**：`WAITING_USER` 在 `api/server.py` **零命中**——用户没有任何接口可以提交澄清答案让任务继续跑。
-  - **工作流任务连暂停都不支持**：`controller.py:547` 直接返回"工作流任务暂不支持暂停"，"停止传播"在工作流路径上是断的。
+  - **工作流任务连暂停都不支持**：`evoagent/core/controller.py` 的 `pause_task` 直接返回"工作流任务暂不支持暂停"，"停止传播"在工作流路径上是断的。
 - 一句话：系统能"暂停-恢复"，但不能"问一句、等回答、再继续"。
 
 ### 3.5 R-06 审批节点与补偿
@@ -179,7 +179,7 @@
 
 | 主题 | 判定 | 实际 |
 |---|---|---|
-| R-04 Planner 计划修订 | ✅→🔹 | `_risks_for`（`evoagent/planning/planner.py:242`）是按 intent 硬编码的风险文案，不是可执行恢复策略；**无 replan/revise**，`ExecutionPlan.adjust` 全库唯一调用方是 `evoagent/react/engine.py:232` 的"同工具连续失败≥3 次"追加固定模板步骤 |
+| R-04 Planner 计划修订 | ✅→🔹 | `_risks_for`（`evoagent/planning/planner.py::_risks_for`）是按 intent 硬编码的风险文案，不是可执行恢复策略；**无 replan/revise**，`ExecutionPlan.adjust` 全库唯一调用方是 `evoagent/react/engine.py:232` 的"同工具连续失败≥3 次"追加固定模板步骤 |
 | R-03 路由质量评测 | ✅→⬜ | **无任何路由评测集/指标**。`evolution/datasets.py` 两个内置集共 4 用例全为 `time_query`/`computation` 通用任务，**零个路由/分类评测用例**；无准确率/混淆矩阵/top-k/回退率/弃权率 |
 | E-01 运行事件与 Trace | ✅→🔹 | 无 node 级字段；成本/时延/结果全在 `payload` 自由字典，`events.py:275-279` 靠 `payload.get("latency_s")` 取值，**缺失静默计 0 → 时延聚合被无声低估**，任何依赖它做门禁或收益判定的结论不可靠 |
 | E-13 独立进化控制器 | ✅→🔹 | 预算池 ✅、次数上限 ✅；**并发控制缺失**（进化侧无 Semaphore）、**"重复失败即停止"不存在**（`react/engine.py:160` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关） |
@@ -189,7 +189,7 @@
 | S-03 不可信边界 | ✅→🔹 | `memory/context.py:19-26` 13 条正则黑名单，仅覆盖记忆与执行结果两路输入，**不覆盖模型输出本身**；无归一化/编码变体/分级/审计告警 |
 | S-12 备份迁移 | 🔹 | 备份 ✅（三库 zip + SHA-256 + integrity_check + 恢复前安全备份）；**迁移 ❌**——`FORMAT_VERSION` 只用于**拒绝**不兼容备份（`backup.py:167-168`），无迁移脚本、无升级路径 |
 | C-13 AI 漫剧能力包 | 🔹 | 7 节点全 mock（`builtin.py:13-18` 全是 lambda 返回 f-string）；无素材资产化、无角色一致性、无 FFmpeg 合成（`mock_compose` 返回字符串不产文件）；`out_path` 形参声明后全函数体未使用，**成片不落盘**；`storyboard` 节点用 `calculate` 算 `6` 来"分镜" |
-| S-07 自动化测试 | 🔹 | 数量已更新为 462/128；**无独立端到端/兼容性矩阵测试目录** |
+| S-07 自动化测试 | 🔹 | 数量已更新为 475/128；**无独立端到端/兼容性矩阵测试目录** |
 
 ### 3.14 主题外差距（跨主题 / 客户端 / 打包一致性）
 
@@ -220,7 +220,7 @@
 |---|---|---|
 | **Goal** | `goal_id`/`goal_type`(5值)/`parent_goal_id`/`success_criteria`/`authorization_ref`/`budget_ref`/`deadline`/`no_progress_policy_ref`/`status`(10值)/`evidence_refs` | 仅 `tasks.goal_id` 一个可空外键列（Session 29 补的契约前置）+ `GoalOrigin` 枚举。无 Goal 实体、无表 |
 | **Side-effect Ledger** | `effect_id`/`task_id`/`run_id`/`tool_id`/`idempotency_key`/`effect_summary`/`status`(6值)/`external_receipt_ref`/`last_reconciled_at` | 全部缺失。六态枚举 `planned/submitted/confirmed/failed/unknown/compensated` **零匹配**（`compensated` 在 `workflows/models.py:54` 有对应动作但从不写回账本） |
-| **Capability Asset** | `asset_id`/`asset_type`(8值)/`namespace`(5值)/`version`/`content_digest`/`source_refs`/`dependency_refs`/`compatibility`/`lifecycle_state`(8值)/`evaluation_evidence_refs`/`rollback_ref` | 只有 `CapabilityEntry`（`experts/registry.py:33`）：`asset_type` 被 `domain` 取代、`lifecycle_state` 只 3 值 `active/experimental/disabled`、`namespace` 完全缺失 |
+| **Capability Asset** | `asset_id`/`asset_type`(8值)/`namespace`(5值)/`version`/`content_digest`/`source_refs`/`dependency_refs`/`compatibility`/`lifecycle_state`(8值)/`evaluation_evidence_refs`/`rollback_ref` | 只有 `CapabilityEntry`（`experts/registry.py::CapabilityEntry`）：`asset_type` 被 `domain` 取代、`lifecycle_state` 只 3 值 `active/experimental/disabled`、`namespace` 完全缺失 |
 
 ### 4.2 统一错误对象：7 字段 0 实现
 
@@ -372,7 +372,7 @@ C-10 能力去重与别名合并、C-12 编程专家 AST/LSP、P-04 Windows 桌�
 |---|---|
 | `IMPLEMENTATION.md` 第 156-329 行 | 按本报告 §2.1 修正 ✅/🔹/⬜ 判定；在表头加"判定依据=源码核验，非文档转述"；补充 §3 的死字段清单 |
 | `IMPLEMENTATION.md` §迭代待办 15/16 | 按"可立即开工 / 需先补设计"重新分层；G 组待办补"先补写 G 组契约"前置 |
-| `FEATURES.md` §8 测试矩阵 | 数字已从 352/120 更新为 462/128 |
+| `FEATURES.md` §8 测试矩阵 | 数字已从 352/120 更新为 475/128 |
 | `FEATURES.md` §9 未实现清单 | 补入统一错误对象、Side-effect Ledger、Goal 实体、Capability Asset 契约、审批记录、ContextManifest 实体 |
 | `README.md` 末段 | 「已实现 / 迭代占位」段落加一句指向本报告，并修正测试数字 |
 | `progress.md` | 追加本次审计 Session（Session 30），记录死字段清单与竞态缺陷 |
@@ -387,13 +387,13 @@ C-10 能力去重与别名合并、C-12 编程专家 AST/LSP、P-04 Windows 桌�
 - **零调用方检测**：`grep -rn` 全仓（含 `tests/`）确认函数被调用。
 - **恒真分支检测**：对 `if hc() if hc else True` 一类短路分支，核查实际数据是否供给。
 - **契约密度普查**：对 8 个专项卷做段落级逐字比对，统计模板段落出现次数与唯一信息增量。
-- **实测基线**：`pytest tests/ -q`（**462**）+ 客户端 `node --test`（128），失败用例隔离重复 3 次判定确定性。
+- **实测基线**：`pytest tests/ -q`（**475**）+ 客户端 `node --test`（128），失败用例隔离重复 3 次判定确定性。
 
 ## 附录 B：可复现命令
 
 ```bash
 cd E:/evalapp
-python -m pytest tests/ -q                                   # 462 passed
+python -m pytest tests/ -q                                   # 475 passed
 cd android-app && node --test "test/offline/*.test.ts" "test/device/*.test.ts" "test/update/*.test.ts"
 
 # 死字段自检（三条应只命中定义/赋值，不命中读取）

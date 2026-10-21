@@ -36,7 +36,7 @@
 > 另有 `python tools/verify_claims.py --check-count` 校验**台账声明的测试数与实测是否一致**
 > —— 并行开发会持续加测试，这个数字必然滞后，与其靠人记得更新，不如让工具报出来。
 
-测试基线（2026-10-21 实测快照）：**Python 462 项 + 客户端 128 项**。
+测试基线（2026-10-21 实测快照）：**Python 475 项 + 客户端 128 项**。
 > 数字是**快照**，并行开发持续加测试会自然滞后 ——
 > 用 `python tools/verify_claims.py --check-count` 查看当前实测值（提示级，不拦截提交）。
 已知遗留：`test_pause_then_resume_completes` 原约 50% flaky（检查点写入竞态）—— **已由 F-13 修复**（先落 paused 检查点再持久化 SUSPENDED 状态），连续 3 次全量跑均通过。
@@ -669,7 +669,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，462 项）
+### Python（`tests/`，475 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -781,7 +781,7 @@ cd android-app && npm run test:offline
 | **记忆冲突识别** | M-08 | `link()` 的 `contradicts` 关系**零调用点**；无置信合并与用户确认流 | WP-5.2 / F-05 |
 | **失败案例转回归资产** | E-12 | 无 `DiagnosticCase → EvalCase` 转换，案例进不了 `datasets` | WP-3.2 / F-08 |
 | **审批记录实体** | A-01 | `approval_id` 零命中；瞬时 `confirm_callback -> bool`，无动作摘要绑定/有效期/一次性语义 | WP-0.3 / F-12 |
-| **工作流审批节点** | R-06 | `workflow_node_confirm` 不在 `high_risk_ops` → `check_op`（`evoagent/core/permissions.py:64`）恒 ALLOW，**审批节点生产链路永不阻塞**；`evoagent/workflows/engine.py:80` 使 `WAITING_AUTH` 重跑时被永久跳过 → 任务卡死 | WP-0.3 / F-12 |
+| **工作流审批节点** | R-06 | `workflow_node_confirm` 不在 `high_risk_ops` → `check_op`（`evoagent/core/permissions.py::check_op`）恒 ALLOW，**审批节点生产链路永不阻塞**；`evoagent/workflows/engine.py:80` 使 `WAITING_AUTH` 重跑时被永久跳过 → 任务卡死 | WP-0.3 / F-12 |
 | **人工接管 / 等待审批** | R-10 | `request_user` 被转成失败 check（任务 FAILED 而非挂起）；`WAITING_USER` 在 API 零命中 | WP-0.4 / F-12 |
 | **Planner 计划修订** | R-04 | 无 replan/revise；`ExecutionPlan.adjust` 唯一调用方是「同工具连续失败 ≥3 次」追加固定模板 | WP-1.x |
 | **进化并发与停止条件** | E-13 | 进化侧无 Semaphore；`react/engine.py` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关（概念混淆） | WP-3.3 / F-08 |
@@ -803,7 +803,7 @@ LLM 辅助诊断假设（证据绑定+置信度封顶+探针门禁）、候选�
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 462 passed
+python -m pytest tests/ -q                       # 475 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..

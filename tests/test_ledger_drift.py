@@ -35,9 +35,9 @@ class TestNoDrift(unittest.TestCase):
     def test_scan_covers_known_references(self):
         """扫描必须真的核对了引用，而不是空跑。"""
         rep = sal.scan(DOCS)
-        self.assertGreater(rep["checked"], 40,
-                           "语义引用核对数过低 —— 扫描器可能失效")
-        self.assertGreater(rep["bare_checked"], 30,
+        self.assertGreater(rep["checked"] + rep.get("anchor_checked", 0), 40,
+                           "引用核对数过低 —— 扫描器可能失效")
+        self.assertGreater(rep["bare_checked"], 20,
                            "裸引用核对数过低 —— 扫描器可能失效")
 
 

@@ -24,7 +24,7 @@
 
 | 指标 | 实测值 | 台账记载 | 差异 |
 |---|---|---|---|
-| 服务端测试 | **462 passed** | README「352」/ IMPLEMENTATION「331」 | 三处数字互不一致且均过期（**本轮已全部更正**）|
+| 服务端测试 | **475 passed** | README「352」/ IMPLEMENTATION「331」 | 三处数字互不一致且均过期（**本轮已全部更正**）|
 | 客户端测试 | **128 passed** | README「120」/ IMPLEMENTATION「60」 | 同上（**本轮已全部更正**）|
 | 89 主题名义覆盖 | ✅59 / 🔹15 / ⬜15（66%） | 同 | — |
 | 89 主题核验后覆盖 | **✅34 / 🔹36 / ⬜19（38%）** | 未记载 | **18 项 ✅ 名不副实** |
@@ -87,7 +87,7 @@
 - **问题**：`controller.py:391` 写 `paused` 检查点、`:795` 写 `target.value`（RUNNING）检查点，二者无序；`CheckpointManager.latest()` 取到后写的 RUNNING。实测首轮全量测试失败即源于此（隔离跑 3 次全过）。
 - **交付**：检查点写入带单调序号或状态合法性校验；`latest()` 语义明确为"最新有效检查点"；`test_pause_then_resume_completes` 全量稳定通过。
 - **边界**：`evoagent/core/checkpoint.py`、`evoagent/core/controller.py`（仅检查点调用段）
-- **验收**：全量 `pytest` 连续 3 次 462 passed 无失败。**✅ 已完成**（并行工作流 `2c0515d` 修复写入有序性，原 50% flaky 已消）。
+- **验收**：全量 `pytest` 连续 3 次 475 passed 无失败。**✅ 已完成**（并行工作流 `2c0515d` 修复写入有序性，原 50% flaky 已消）。
 - **依赖**：无
 
 #### WP-0.2 副作用账本实体与检查点投影
@@ -108,7 +108,7 @@
 
 #### WP-0.4 等待审批与人工接管语义
 - **主题**：R-10｜**现状**：能"暂停-恢复"但不能"问一句、等回答、再继续"
-- **问题**：`react/engine.py:110-114` 收到 `request_user` 立即返回，`controller.py:468-472` 转成失败 check → 任务判 FAILED；`WAITING_USER` 在 `api/server.py` **零命中**，无接口提交澄清答案；`controller.py:547` 工作流任务不支持暂停。
+- **问题**：`evoagent/react/engine.py:114` 收到 `request_user` 立即返回，`evoagent/core/controller.py` 的工作流结果分支转成失败 check → 任务判 FAILED；`WAITING_USER` 在 `evoagent/api/server.py` **零命中**，无接口提交澄清答案；`evoagent/core/controller.py` 的 `pause_task` 工作流任务不支持暂停。
 - **交付**：真挂起语义（任务停在 `WAITING_USER` 而非 FAILED）；澄清提交接口（`POST /tasks/{id}/clarify`）；ReAct 循环在等待态可恢复并注入答案；工作流任务的暂停支持。
 - **边界**：`evoagent/react/engine.py`、`evoagent/core/controller.py`、`evoagent/api/server.py`
 - **验收**：低置信任务 → 挂起 → 提交答案 → 继续完成，端到端可用。
@@ -394,7 +394,7 @@ DoD「连续 3 次全绿」的 flaky 用例，且工作量最小、无契约依�
 | `IMPLEMENTATION.md` 第 156-329 行 | 判定需按 `GAP_ANALYSIS.md` §2.1 修正；建议加"判定依据=源码核验"标注 |
 | `IMPLEMENTATION.md` 待办 15-18 | 按本计划 T0-T5 轨道重新编号，原 15（G 组）拆为 WP-2.0..2.9 |
 | `task_plan.md` Phases | 追加 Phase 53 起对应本计划 T0-T5 |
-| `FEATURES.md` §8 测试矩阵 | 数字更新为 462 / 128 |
+| `FEATURES.md` §8 测试矩阵 | 数字更新为 475 / 128 |
 | `progress.md` | 追加本计划制定记录 |
 | `GAP_ANALYSIS.md` | 本计划的现状依据，不重复其证据 |
 
