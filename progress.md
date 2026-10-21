@@ -1481,3 +1481,13 @@
 - +12 测试；DoD 三连绿 474/474/475（+1 skip）
 - 另：后台重试环已将 F-03 与标记批推送远端完成
 
+
+### 🔧 进行中标记（2026-10-22 凌晨，本会话：主开发会话 GLM/OpenCode）
+- **当前任务：GAP §7 第一批第 4 项——修复 4 处死字段/零调用方**，拆 4 个子步各自提交：
+  ① health_check 恒真→真探针（R-08/E-04）
+  ② S-05 执行环节审计（controller 状态流转/_remember/失败建案落审计台）
+  ③ memory_scope_key 死字段→检索隔离（M-01..05，含取消 `or not m.scope_key` 放行）
+  ④ impact_analysis 传递闭包 + 接入回归范围（C-09）
+- 预计触及：`tools/builtin.py`、`tools/registry.py`、`core/controller.py`、`memory/store.py`、`experts/registry.py`、`core/schema/`、各新测试；**不碰** WorkBuddy 在途的台账 .md 与 android 文件
+- 已完成：F-13 / F-01 / F-03 / F-04（均已推送至 084d71d）
+
