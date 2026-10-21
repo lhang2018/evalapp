@@ -24,11 +24,11 @@
 
 | 指标 | 实测值 | 台账记载 | 差异 |
 |---|---|---|---|
-| 服务端测试 | **358 passed** | README「352」/ IMPLEMENTATION「331」 | 三处数字互不一致且均过期 |
-| 客户端测试 | **128 passed** | README「120」/ IMPLEMENTATION「60」 | 同上 |
+| 服务端测试 | **462 passed** | README「352」/ IMPLEMENTATION「331」 | 三处数字互不一致且均过期（**本轮已全部更正**）|
+| 客户端测试 | **128 passed** | README「120」/ IMPLEMENTATION「60」 | 同上（**本轮已全部更正**）|
 | 89 主题名义覆盖 | ✅59 / 🔹15 / ⬜15（66%） | 同 | — |
-| 89 主题核验后覆盖 | **≈✅41（46%）** | 未记载 | **18 项 ✅ 名不副实** |
-| 20 条系统级验收 | 声称 19/20 通过 | 同 | **用例 4、16、17 的「通过」存疑**（支撑实现分别是死字段、零调用方、零评测集） |
+| 89 主题核验后覆盖 | **✅34 / 🔹36 / ⬜19（38%）** | 未记载 | **18 项 ✅ 名不副实** |
+| 20 条系统级验收 | 声称 19/20 通过 | 同 | 已修正为 **✅13 / 🔹4 / ⬜3**（⬜ = 用例 4、16、19：支撑实现分别是死字段、零调用方、目标级不存在）|
 
 **三条主线的问题性质不同，不能混为一谈**：
 
@@ -87,7 +87,7 @@
 - **问题**：`controller.py:391` 写 `paused` 检查点、`:795` 写 `target.value`（RUNNING）检查点，二者无序；`CheckpointManager.latest()` 取到后写的 RUNNING。实测首轮全量测试失败即源于此（隔离跑 3 次全过）。
 - **交付**：检查点写入带单调序号或状态合法性校验；`latest()` 语义明确为"最新有效检查点"；`test_pause_then_resume_completes` 全量稳定通过。
 - **边界**：`evoagent/core/checkpoint.py`、`evoagent/core/controller.py`（仅检查点调用段）
-- **验收**：全量 `pytest` 连续 3 次 358 passed 无失败。
+- **验收**：全量 `pytest` 连续 3 次 462 passed 无失败。**✅ 已完成**（并行工作流 `2c0515d` 修复写入有序性，原 50% flaky 已消）。
 - **依赖**：无
 
 #### WP-0.2 副作用账本实体与检查点投影
@@ -116,7 +116,7 @@
 
 #### WP-0.5 工具契约成本估算与健康检查实装
 - **主题**：R-08 / E-04 / G-09｜**现状**：健康检查恒真、成本字段完全缺失
-- **问题**：`ToolContract.health_check`（`contract.py:24`）类型齐全、`registry.py:238` 确实调用，但 `builtin.py` 零设置 → 7 个内置工具健康**永远全绿**；`grep cost contract.py registry.py` 零命中。
+- **问题**：`ToolContract.health_check`（`evoagent/tools/contract.py:24`）类型齐全、`evoagent/tools/registry.py:237` 确实调用，但 `builtin.py` 零设置 → 7 个内置工具健康**永远全绿**；`grep cost contract.py registry.py` 零命中。
 - **交付**：契约补 `cost_model`（09 卷 §4 要求字段）；内置工具补 `risk_class`（声明式，与运行时推导同源）、`offline_capable`、`requires_network`、`contract_test_ref`；`health_check` 为每个内置工具实现真实探针（含慢依赖工具）。
 - **边界**：`evoagent/tools/contract.py`、`registry.py`、`builtin.py`
 - **验收**：`GET /metrics` 的 tools_health 不再恒为全绿；工具不可用时能被识别。
@@ -132,7 +132,7 @@
 
 #### WP-0.7 记忆命名空间隔离接通与死字段清理
 - **主题**：M-01..05 / C-03｜**现状**：`memory_scope_key` 零读取；`quality_metrics` 零读取
-- **问题**：`memory_scope_key` 定义于 `registry.py:22`、赋值于 `builtin.py:28/40/49/60`，**全仓零读取点**；`controller.py:352/808` 传的是 `task_id`/`domain`，与专家的 `memory_scope_key` 语义不同。且 `store.py:248` 检索过滤含 `or not m.scope_key`，**空 key 直接放行**——即使接上也不隔离。`Scope` 枚举无 `session`。
+- **问题**：`memory_scope_key` 定义于 `evoagent/experts/registry.py:22`、赋值于 `evoagent/experts/builtin.py:28/40/49/60`，**全仓零读取点**；`evoagent/core/controller.py:357/814` 传的是 `task_id`/`domain`，与专家的 `memory_scope_key` 语义不同。且 `evoagent/memory/store.py:248` 检索过滤含 `or not m.scope_key`，**空 key 直接放行**——即使接上也不隔离。`Scope` 枚举无 `session`。
 - **交付**：专家记忆命名空间真正参与装配与检索隔离；`Scope` 补 `session`/`domain_private`（对齐契约五域）；过滤条件修正为**空 key 拒绝跨域检索**而非放行；`quality_metrics` 接入评测执行。
 - **边界**：`evoagent/memory/store.py`、`context.py`、`evoagent/experts/registry.py`
 - **验收**：阶段 C 验收「跨领域隔离」测试通过；两个专家的记忆互不可见。
@@ -394,7 +394,7 @@ DoD「连续 3 次全绿」的 flaky 用例，且工作量最小、无契约依�
 | `IMPLEMENTATION.md` 第 156-329 行 | 判定需按 `GAP_ANALYSIS.md` §2.1 修正；建议加"判定依据=源码核验"标注 |
 | `IMPLEMENTATION.md` 待办 15-18 | 按本计划 T0-T5 轨道重新编号，原 15（G 组）拆为 WP-2.0..2.9 |
 | `task_plan.md` Phases | 追加 Phase 53 起对应本计划 T0-T5 |
-| `FEATURES.md` §8 测试矩阵 | 数字更新为 358 / 128 |
+| `FEATURES.md` §8 测试矩阵 | 数字更新为 462 / 128 |
 | `progress.md` | 追加本计划制定记录 |
 | `GAP_ANALYSIS.md` | 本计划的现状依据，不重复其证据 |
 
@@ -402,12 +402,14 @@ DoD「连续 3 次全绿」的 flaky 用例，且工作量最小、无契约依�
 
 ## 附录：工作包速查
 
-> ✅ = 已完成。当前完成：**F-00 协作基座**（对应 WP-1.1 的地基部分已就绪，
-> 枚举定义在 `core/contracts.py`；错误响应落地见 F-01）。
+> ✅ = 已完成。**当前已完成**：
+> - **F-00 协作基座**（`core/schema/` 按域拆分 + `api/routes.py` 路由注册表 + `core/contracts.py` 契约唯一权威 + 迁移框架）
+> - **F-01 统一错误对象**（WP-1.1 完成）：七字段错误响应在 `evoagent/core/errors.py`，`api/server.py` 的 `_json` 单点接入，`safe_to_repeat=unknown ⇒ required_action=reconcile` 不变量已代码化
+> - **F-13 检查点写入有序化**（WP-0.1 **部分**完成）：写入有序性已修（`2c0515d`），**恢复游标仍未做**
 
 | 编号 | 名称 | 优先级 | 轨道 | 关键依赖 |
 |---|---|---|---|---|
-| WP-0.1 | 检查点有序化与暂停语义 | P0 | T0 | — |
+| WP-0.1 | 检查点有序化与暂停语义 🔶部分 | P0 | T0 | — |
 | WP-0.2 | 副作用账本实体与投影 | P0 | T0 | WP-0.1 |
 | WP-0.3 | 工作流审批节点链路修复 | P0 | T0 | WP-1.1 |
 | WP-0.4 | 等待审批与人工接管 | P0 | T0 | WP-1.1 |
@@ -415,7 +417,7 @@ DoD「连续 3 次全绿」的 flaky 用例，且工作量最小、无契约依�
 | WP-0.6 | 执行环节审计补齐 | P0 | T0 | — |
 | WP-0.7 | 记忆命名空间隔离与死字段清理 | P0 | T0 | WP-1.2 |
 | WP-0.8 | 影响分析传递闭包与接入 | P0 | T0 | — |
-| WP-1.1 | 统一错误对象 | **P0** | T1 | — |
+| WP-1.1 | 统一错误对象 ✅ | **P0** | T1 | — |
 | WP-1.2 | Event 契约补齐 | P1 | T1 | — |
 | WP-1.3 | Task 与标识契约补齐 | P1 | T1 | — |
 | WP-1.4 | Runtime Manifest 结构化 | P1 | T1 | WP-0.1 |

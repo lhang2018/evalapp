@@ -54,7 +54,7 @@
 **实际做到的隔离程度（强于原计划）**：原计划是"新建域模块 + 在 `__init__.py` 加一行注册"。实现时改为 `pkgutil` 自动发现，**连注册都不用改** —— 新增特性加表是**纯新建一个文件，零处改动**。
 
 **F-00 验收**：
-- ✅ 全量测试 **397 passed**（358 原有 + 39 条新增）
+- ✅ 全量测试 **462 passed**（358 原有 + F-00 的 39 + F-01 的 11 + 台账校验器 22）
 - ✅ 新增一张演示表**不触碰** `persistence.py` 即可生效（`schema/goals.py` 演示模块）
 - ✅ 新增一个演示端点**不触碰** `server.py` 即可生效（`tests/test_collab_base_api.py` 真实 HTTP 验证）
 - ✅ 存量端点行为零变化（`/health`/`/version`/`/tasks`/POST 任务提交/404 均验证）
@@ -74,7 +74,7 @@
 
 | 特性 | 内容 | ROADMAP 来源 | 独占 | 触碰 | 并行说明 |
 |---|---|---|---|---|---|
-| **F-01** 统一错误对象 | 七字段错误响应，`safe_to_repeat=unknown` 强制对账 | WP-1.1 | `api/errors.py`、`api/routes/errors.py` | — | **零共享文件冲突**，最优先起步 |
+| **F-01** 统一错误对象 ✅**已落地** | 七字段错误响应，`safe_to_repeat=unknown` 强制对账 | WP-1.1 | `core/errors.py`（实际落点） | `api/server.py`（`_json` 单点接入） | **✅ 2026-10-21 完成**（并行工作流 `e2681ff`）。原计划的 `api/errors.py` 改为 `core/errors.py`（契约层归位），测试 `tests/test_error_object.py` 11 项 |
 | **F-02** 工具契约补齐 | `cost_model`/`risk_class`/`offline_capable`/`requires_network`/`contract_test_ref` + 真实 `health_check` 探针 | WP-0.5 | `tools/probes.py` | `tools/contract.py`、`tools/builtin.py` | 契约文件扇入 7，但改动是**加带默认值字段**，风险低 |
 | **F-03** 副作用账本 | 六态状态机 + `side_effects` 表 + 检查点改账本投影 | WP-0.2 | `core/side_effects.py`、`core/schema/side_effects.py` | `core/controller.py`（副作用上报埋点） | ⚠️ **达成验收用例 4**，优先级最高 |
 | **F-04** 执行审计 | 状态流转/记忆沉淀/建案/预算拒绝落审计 | WP-0.6 | `core/audit.py` 扩展 + `core/audit_hooks.py` | `core/controller.py`（埋点） | 与 F-03 同碰 controller → **建议与 F-03 合并或错开** |
@@ -93,7 +93,7 @@
 | **F-10** Runtime Manifest 结构化 | 9 个结构化字段 + 修复未发布时版本退化 | WP-1.4 | `core/manifest.py` | `core/controller.py`（`_version_manifest`） | F-09 |
 | **F-11** Capability Asset 实体 | 十字段 + 八态生命周期 | WP-1.5 | `assets/entity.py`、`assets/lifecycle.py`、`core/schema/assets.py` | `experts/registry.py` | F-00.1 |
 | **F-12** 人工接管与审批节点 | `WAITING_USER` 真挂起 + 澄清接口 + 工作流审批节点链路修复 + 审批记录实体 | WP-0.3 + WP-0.4 | `api/routes/approval.py`、`core/approval.py` | `react/engine.py`、`core/permissions.py`、`workflows/engine.py` | F-01 |
-| **F-13** 检查点有序化 | 暂停语义不被 RUNNING 覆盖；恢复游标 | WP-0.1 | — | `core/checkpoint.py`、`core/controller.py` | 轻量，**建议最早做**（修测试偶发失败） |
+| **F-13** 检查点有序化 🔶**部分完成** | 暂停语义不被 RUNNING 覆盖；恢复游标 | WP-0.1 | — | `core/checkpoint.py`、`core/controller.py` | **写入有序性已完成**（`2c0515d`）；**恢复游标仍未做**（`CheckpointManager` 仍只有 `save`/`latest`，取不到任意中间断点）|
 | **F-14** 候选门禁与控制器分离 | 手工入口证据校验 + CTRL-03/04 职责拆分 | WP-3.4 | `evolution/gates.py` | `evolution/controller.py` | F-07 |
 
 ### 波次 2.5（**纯文档，完全并行，可从今天就开始**）
@@ -191,11 +191,10 @@ F-13(检查点) → F-03(副作用埋点) → F-04(审计埋点) → F-10(Manife
 3. 契约字段来自 `core/contracts.py`，不在本地重复定义枚举
 4. 不引入新的"接口在、逻辑空"：新增字段必须有**产生它的代码路径**（本次审计发现 18 项虚假 ✅ 的教训）
 
-> ⚠️ **当前唯一阻碍 DoD 第 2 条的已知缺陷**：`tests/test_control.py::TestPauseResume::test_pause_then_resume_completes`
-> 约 50% 概率失败。根因是 `controller.py:391` 与 `:795` 检查点写入无序、`latest()` 取到后写的
-> RUNNING 覆盖 paused（详见 `GAP_ANALYSIS.md` §1.3）。**这是 F-13（WP-0.1）要修的既有缺陷，
-> 非本次新增回归**（改动前即存在）。在此之前 DoD 第 2 条按"除该已知 flaky 用例外全绿"执行，
-> F-13 完成后恢复严格要求。
+> ✅ **DoD 第 2 条已无例外**：原阻碍项 `tests/test_control.py::TestPauseResume::test_pause_then_resume_completes`
+> 约 50% 概率失败（检查点写入无序、`latest()` 取到后写的 RUNNING 覆盖 paused），
+> **已由 F-13 修复**（并行工作流 `2c0515d`：先落 paused 检查点再持久化 SUSPENDED 状态）。
+> 修复后连续 3 次全量跑通过，**DoD「连续 3 次全绿」现为严格要求，无例外**。
 
 ### 5.5 F-00 沉淀的两条协作规范（实施中踩坑所得）
 
@@ -247,12 +246,12 @@ F-13(检查点) → F-03(副作用埋点) → F-04(审计埋点) → F-10(Manife
 | F-31..F-42 | WP-5.x | S/O/A/P | — |
 
 **达成 20/20 的关键节点**：F-03（用例 4）→ F-06（用例 16）→ F-15+F-20（用例 19）。
-**先做 F-15**（纯文档、零冲突、是高杠杆前置）**和 F-01**（零共享文件冲突）**是启动协作的最佳切入点**。
+**F-15**（纯文档、零冲突、是高杠杆前置）仍是最佳切入点；F-01、F-00、F-13 已由并行工作流完成。
 
 ---
 
 ## 8. 给协作方的三句话
 
-1. **今天就能开工的**：F-01（错误对象）、F-06（影响分析）、F-15（补写 G 组设计）、F-30（Harness 调研）——这四个都不碰热点文件或只需文档。
+1. **今天就能开工的**：F-06（影响分析）、F-15（补写 G 组设计）、F-30（Harness 调研）、F-02（工具契约补齐）——这四个都不碰热点文件或只需文档。（F-01 错误对象已由并行工作流完成）
 2. **动手前先看 §5.1**：你要碰的共享文件在不在别人的写入权范围里。
 3. **别造第二个空壳**：新增字段必须同时给出产生它的代码路径和一条走通该路径的测试。本次审计发现 18 项 ✅ 属于"接口在、逻辑空"，别把新的空壳写进去。

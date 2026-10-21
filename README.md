@@ -236,7 +236,7 @@ Android 后台周期同步（WorkManager 最短 15 分钟、联网 + 电量不�
 在任务窗口内直接执行无界面 JS，不依赖前台服务，支持冷启动；ROM 自启动限制需用户授权）、
 语音输入与反馈（系统 SpeechRecognizer/TTS，显式授权、结果只填入输入框不自动提交、可取消/停止、
 不可用时降级）。
-测试通过：Python 352 项、客户端 120 项。迭代占位：视觉/OCR 操作、真实生成服务适配、能力包制品装载。
+测试通过：Python 462 项、客户端 128 项。迭代占位：视觉/OCR 操作、真实生成服务适配、能力包制品装载。
 
 ## 目录
 
@@ -256,11 +256,11 @@ evoagent/                  Python 服务端核心
   core/replay.py           只读运行回放
   core/backup.py           三库备份/校验/恢复
   cli.py                   命令行
-tests/                     352 项服务端测试
+tests/                     462 项服务端测试
 android-app/               React Native Android 客户端
   src/offline/             本地任务/事件队列、隐私过滤、同步引擎、后台同步策略、诊断包导出/导入、附件分块上传（纯 TS，可单测）
   src/device/              设备操作契约/风险闸门/界面观测/语音输入与朗读/原生桥接（纯 TS，可单测）
   src/update/              安装实例/版本对账/双槽位更新管理（纯 TS，可单测）
   android/                 Kotlin 原生壳：AccessibilityService + DeviceModule + VoiceModule + WorkManager 后台同步
-  test/                    120 项客户端测试（node --test）
+  test/                    128 项客户端测试（node --test）
 ```

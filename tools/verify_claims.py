@@ -204,6 +204,14 @@ CITE_RE = re.compile(r"([A-Za-z0-9_\-./]+\.(?:py|ts|kt|tsx|md|json)):(\d+)")
 SEM_CITE_RE = re.compile(
     r"`([A-Za-z_][A-Za-z0-9_]*)`[^`\n\u4e00-\u9fff]{0,20}?"
     r"`([A-Za-z0-9_\-./]+\.(?:py|ts|kt|tsx)):(\d+)`")
+
+# **符号锚定引用**：`file.py::symbol` —— 不依赖行号。
+#
+# 为什么需要：并行开发中任何人在文件里加几行，`file.py:123` 就指向别的语句了。
+# 实测 controller.py 的 submit_task 因并行工作流的 F-03 改动从 77 行移到 80 行，
+# 硬编码行号的引用当场失效。锚定形式把「指向哪个定义」与「它在第几行」解耦。
+ANCHOR_CITE_RE = re.compile(
+    r"`([A-Za-z0-9_\-./]+\.(?:py|ts|kt|tsx))::([A-Za-z_][A-Za-z0-9_]*)`")
 # 主题行：`| P-01 ... | ✅ | 说明 |`，也支持 `M-01..05` 合并写法
 STATUS_RE = re.compile(r"^\*{0,2}([PRMCEGOS])-([0-9]+)")
 
@@ -382,6 +390,8 @@ def check_semantic_citations(text: str) -> list[dict]:
     这是比「路径存在、行号在范围内」更强的判据 —— 它能抓住
     「行号漂移」：代码改过之后引用还指向旧的行，而那一行现在
     已经是别的语句。
+
+    另校验**符号锚定引用** `file.py::symbol`：该文件里必须能找到这个符号。
     """
     problems = []
     seen = set()
@@ -410,6 +420,32 @@ def check_semantic_citations(text: str) -> list[dict]:
                     "citation": f"{path_hint}:{num} -> `{sym}`",
                     "ledger_line": lineno,
                     "detail": f"该行未提及 `{sym}`，实际内容：{target.strip()[:60]}",
+                })
+
+    # --- 符号锚定引用：`file.py::symbol` ---
+    for lineno, line in enumerate(text.split("\n"), 1):
+        for m in ANCHOR_CITE_RE.finditer(line):
+            path_hint, sym = m.group(1), m.group(2)
+            key = (path_hint, sym)
+            if key in seen:
+                continue
+            seen.add(key)
+            full = resolve(path_hint)
+            if full is None:
+                continue  # 路径问题已由 check_citations 报过
+            try:
+                with open(full, "r", encoding="utf-8") as fh:
+                    src = fh.read()
+            except (OSError, UnicodeDecodeError):
+                continue
+            if not re.search(
+                    rf"(\bdef\s+{re.escape(sym)}\b|\bclass\s+{re.escape(sym)}\b"
+                    rf"|\b{re.escape(sym)}\s*[:=])", src):
+                problems.append({
+                    "kind": "anchor_symbol_missing",
+                    "citation": f"{path_hint}::{sym}",
+                    "ledger_line": lineno,
+                    "detail": f"锚定引用指向的 `{sym}` 在文件里找不到",
                 })
     return problems
 
@@ -569,6 +605,74 @@ def check_positive_claims(rows: list[dict], index: dict[str, dict],
     return problems, weak
 
 
+# 台账里声明的服务端测试数量。形如 "Python 443 项" / "443 passed" /
+# "Python（`tests/`，443 项）"。并行工作流会持续加测试，所以这个数字
+# 天然会变 —— 工具的作用是**发现它没跟上**，而不是让���去手工追。
+COUNT_PATTERNS = [
+    re.compile(r"Python\s*(\d+)\s*项"),
+    re.compile(r"Python\s+(\d+)\s*\+"),
+    re.compile(r"(\d+)\s*passed"),
+    re.compile(r"，(\d+)\s*项）"),
+    # 「当前基线 443」/「全量 458 通过」这类不带「Python/项」的写法
+    re.compile(r"当前基线\s*(\d+)"),
+    re.compile(r"全量\s*\*?\*?(\d+)\s*(?:项|通过|passed)"),
+]
+
+
+def collect_stated_counts(text: str) -> set[int]:
+    """从台账正文里抽出所有声明过的服务端测试数量。"""
+    found = set()
+    for pat in COUNT_PATTERNS:
+        for m in pat.finditer(text):
+            found.add(int(m.group(1)))
+    return found
+
+
+def measure_test_count() -> int | None:
+    """实测服务端测试数量（跑一次 pytest --collect-only）。"""
+    import subprocess
+    py = sys.executable
+    try:
+        out = subprocess.run(
+            [py, "-m", "pytest", "tests/", "--collect-only", "-q"],
+            cwd=ROOT, capture_output=True, text=True, timeout=300)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    m = re.search(r"(\d+)\s+tests?\s+collected", out.stdout)
+    if m:
+        return int(m.group(1))
+    # 兜底：解析最后一行的 "N passed" / "collected"
+    m = re.search(r"collected\s+(\d+)\s+items?", out.stdout)
+    return int(m.group(1)) if m else None
+
+
+def check_test_count(text: str) -> list[dict]:
+    """校验台账声明的测试数量与实测是否一致。
+
+    这是本工具存在的意义之一：**并行开发会持续加测试**，
+    台账里的数字必然滞后。与其靠人记得更新，不如让工具报出来。
+    """
+    actual = measure_test_count()
+    if actual is None:
+        return []
+    stated = collect_stated_counts(text)
+    if not stated:
+        return [{
+            "kind": "test_count_absent",
+            "detail": "台账未声明服务端测试数量",
+        }]
+    # 取声明里的最大值作为「当前口径」（历史基线数字会并存）
+    claimed = max(stated)
+    if claimed == actual:
+        return []
+    return [{
+        "kind": "test_count_drift",
+        "detail": (f"台账声明的服务端测试数最大为 {claimed}，"
+                   f"实测 {actual} —— 数字未跟上"
+                   f"（{'台账偏旧' if claimed < actual else '台账偏大'}）"),
+    }]
+
+
 # ---------------------------------------------------------------- 状态自洽
 
 def count_statuses(rows: list[dict]) -> dict:
@@ -647,6 +751,8 @@ def main() -> int:
                     help="列出 ✅ 行证据不足的清单（待补证据工作项）")
     ap.add_argument("--lenient", action="store_true",
                     help="证据不足只报告不判错")
+    ap.add_argument("--check-count", action="store_true",
+                    help="额外校验台账声明的测试数量与实测是否一致（较慢）")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--ledger", default=LEDGER)
     args = ap.parse_args()
@@ -669,9 +775,15 @@ def main() -> int:
         rows, index, strict=not args.lenient)
     problems += pos_problems
     problems += check_status_ledger(rows, text)
+    # 计数漂移是**提示**而非判错：并行开发持续加测试，
+    # 台账里的快照必然滞后。它该被看见，但不该拦住别人的提交。
+    count_warnings: list[dict] = []
+    if args.check_count:
+        count_warnings = check_test_count(text)
 
     actual = count_statuses(rows)
     report = {
+        "count_warnings": count_warnings,
         "ledger": rel(args.ledger),
         "rows_parsed": len(rows),
         "status_counts": actual,
@@ -711,6 +823,11 @@ def main() -> int:
             print("--- ✅ 行证据不足（需补 file:line 引用或符号名）---")
             for w in weak:
                 print(f"  {w['theme']:<32} {w['detail']}")
+            print()
+        if count_warnings:
+            print("--- 计数快照提示（不判错）---")
+            for w in count_warnings:
+                print(f"  {w['detail']}")
             print()
         if not problems:
             print("✅ 台账声明全部通过机器校验")

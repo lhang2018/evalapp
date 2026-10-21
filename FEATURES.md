@@ -28,8 +28,17 @@
 > `python tools/verify_claims.py --check` 会解析 `IMPLEMENTATION.md` 的每条声明并逐条验证：
 > 引用行号是否漂移、声称「零调用」的符号是否真零引用、声称「不存在」的模式是否真搜不到、
 > 每个 ✅ 行是否有可校验的代码路径与测试覆盖。**该命令退出码非 0 即视为台账不合格。**
+>
+> 另有 `python tools/scan_all_ledgers.py` 扫**全部**台账的行号漂移（覆盖 67 条语义引用 +
+> 66 条裸引用 + 13 条符号锚定引用），并由 `tests/test_ledger_drift.py` 锁定「核心指控与代码现状一致」
+> —— 一旦 `impact_analysis` 有了调用方、内置工具开始设置 `health_check`，对应判定会立即报错。
+>
+> 另有 `python tools/verify_claims.py --check-count` 校验**台账声明的测试数与实测是否一致**
+> —— 并行开发会持续加测试，这个数字必然滞后，与其靠人记得更新，不如让工具报出来。
 
-测试基线（2026-10-21 实测）：**Python 430 项 + 客户端 128 项**。
+测试基线（2026-10-21 实测快照）：**Python 462 项 + 客户端 128 项**。
+> 数字是**快照**，并行开发持续加测试会自然滞后 ——
+> 用 `python tools/verify_claims.py --check-count` 查看当前实测值（提示级，不拦截提交）。
 已知遗留：`test_pause_then_resume_completes` 原约 50% flaky（检查点写入竞态）—— **已由 F-13 修复**（先落 paused 检查点再持久化 SUSPENDED 状态），连续 3 次全量跑均通过。
 
 ---
@@ -660,7 +669,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，430 项）
+### Python（`tests/`，462 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -703,6 +712,7 @@ Python 服务端（标准库，SQLite）
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
 | `test_verify_claims.py` | 台账声明校验器自身测试：真实台账必须通过 + 6 类故意构造的错误台账必须被抓住（22 项） |
+| `test_ledger_drift.py` | 全台账行号漂移扫描器自身测试 + 台账核心指控与代码现状一致性的回归锁（13 项） |
 | `test_collab_base.py` | 协作基座：schema 域拆分与自动发现、语句幂等、迁移框架（基线一次性/goal_id 补列/不可兼容重建）、契约枚举与 6 条冲突裁定、路由注册表分派语义与 body 惰性（30 项） |
 | `test_collab_base_api.py` | 协作基座端到端：注册端点真实 HTTP 可用、存量端点行为零变化、未知路径仍 404（7 项） |
 
@@ -771,13 +781,12 @@ cd android-app && npm run test:offline
 | **记忆冲突识别** | M-08 | `link()` 的 `contradicts` 关系**零调用点**；无置信合并与用户确认流 | WP-5.2 / F-05 |
 | **失败案例转回归资产** | E-12 | 无 `DiagnosticCase → EvalCase` 转换，案例进不了 `datasets` | WP-3.2 / F-08 |
 | **审批记录实体** | A-01 | `approval_id` 零命中；瞬时 `confirm_callback -> bool`，无动作摘要绑定/有效期/一次性语义 | WP-0.3 / F-12 |
-| **工作流审批节点** | R-06 | `workflow_node_confirm` 不在 `high_risk_ops` → `check_op` 恒 ALLOW，**审批节点生产链路永不阻塞**；`engine.py:80` 使 `WAITING_AUTH` 重跑时被永久跳过 → 任务卡死 | WP-0.3 / F-12 |
+| **工作流审批节点** | R-06 | `workflow_node_confirm` 不在 `high_risk_ops` → `check_op`（`evoagent/core/permissions.py:64`）恒 ALLOW，**审批节点生产链路永不阻塞**；`evoagent/workflows/engine.py:80` 使 `WAITING_AUTH` 重跑时被永久跳过 → 任务卡死 | WP-0.3 / F-12 |
 | **人工接管 / 等待审批** | R-10 | `request_user` 被转成失败 check（任务 FAILED 而非挂起）；`WAITING_USER` 在 API 零命中 | WP-0.4 / F-12 |
 | **Planner 计划修订** | R-04 | 无 replan/revise；`ExecutionPlan.adjust` 唯一调用方是「同工具连续失败 ≥3 次」追加固定模板 | WP-1.x |
 | **进化并发与停止条件** | E-13 | 进化侧无 Semaphore；`react/engine.py` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关（概念混淆） | WP-3.3 / F-08 |
-| **候选证据门禁（手工入口）** | C-11 | `api/server.py:1091` 接受调用方自述的任意证据字符串数组 → 可零证据建候选 | WP-3.4 / F-14 |
-| **Capability Asset 实体** | C-05/C-08 | 无打包实体（`class *Pack` 零命中）；`lifecycle_state` 只 3 值 vs 契约八态；`namespace` 缺失 | WP-1.5 / F-11 |
-| **统一错误对象** | 契约 §10 | 7 字段**全部零实现**；全 API 返回 `{"error": "中文串"}`（209 处）。**这是失败可定位性的地基** | WP-1.1 / F-01 |
+| **候选证据门禁（手工入口）** | C-11 | `evoagent/api/server.py:1141` 接受调用方自述的任意证据字符串数组（`evidence=body.get("evidence") or []`）→ 可零证据建候选 | WP-3.4 / F-14 |
+| **Capability Asset 实体** | C-05/C-08 | 无打包实体（`class *Pack` 零命中）；`CapabilityEntry.status`（`evoagent/experts/registry.py:33`）只 3 值 vs 契约八态（`evoagent/core/contracts.py:117` 的 `ASSET_LIFECYCLE`）；`namespace` 缺失 | WP-1.5 / F-11 |
 | **离线降级矩阵** | O-08 | `OFFLINE_INTENTS = ["time_query"]` 硬编码；无降级声明机制 | WP-5.9 / F-43 |
 | **低资源调度** | S-10 | `BudgetLimits` 无 CPU/内存/磁盘/电量任何维度 | WP-5.6 |
 | **密钥轮换** | S-11 | 无轮换、无 KMS 抽象、无密钥扫描器；`release_secret` 明文、`_sign` 裸 sha256 非 HMAC | WP-5.7 |
@@ -786,7 +795,7 @@ cd android-app && npm run test:offline
 
 ### 9.3 经核验属实的已完成项（原记 ✅ 保留）
 
-LLM 辅助诊断假设（证据绑定+置信度封顶+探针门禁）、候选代码隔离沙箱、后台常驻同步（WorkManager）、Web 管理端 90.1-90.7、候选状态同步、诊断包附件上传（服务端全链 + 客户端分块续传）、记忆写入门禁（M-09，**实现质量优秀**）、同步幂等协议（O-02）、诊断包受控导入（O-04）、双槽位原子回滚（A-06）、失败-closed 发布门禁（E-09）。
+LLM 辅助诊断假设（证据绑定+置信度封顶+探针门禁）、候选代码隔离沙箱、后台常驻同步（WorkManager）、Web 管理端 90.1-90.7、候选状态同步、诊断包附件上传（服务端全链 + 客户端分块续传）、记忆写入门禁（M-09，**实现质量优秀**）、同步幂等协议（O-02）、诊断包受控导入（O-04）、双槽位原子回滚（A-06）、失败-closed 发布门禁（E-09）、**统一错误对象 7 字段（F-01，`evoagent/core/errors.py` + `api/server.py` 单点接入，`safe_to_repeat=unknown ⇒ required_action=reconcile` 不变量已代码化）**。
 
 ---
 
@@ -794,7 +803,7 @@ LLM 辅助诊断假设（证据绑定+置信度封顶+探针门禁）、候选�
 
 ```bash
 # 1. 服务端测试
-python -m pytest tests/ -q                       # 352 passed
+python -m pytest tests/ -q                       # 462 passed
 
 # 2. 客户端测试 + 类型检查
 cd android-app && npm run test:offline && npm run typecheck && cd ..
@@ -880,7 +889,7 @@ cd android-app && npm run android
 - **契约差异段重写**：三份契约整份缺失（Goal / Side-effect Ledger / Capability Asset）、统一错误对象 7 字段零实现（209 处 `{"error": 中文串}`）、字段级缺口逐条列出；指向 `core/contracts.py` 作为枚举唯一权威
 - **CTRL-03/04**：由"全 ✅"修正为**未真正分离** —— 评测编排、批准、发布三职合一于 `EvolutionController`，ADR-011 当前靠状态机与 `actor=="auto"` 间接保证，而非控制器隔离
 - **FEATURES.md**：状态标记改为三条硬门槛（①有实现逻辑 ②有产生它的代码路径 ③有走通该路径的测试，不接受测试自塞数据）+ 写 ✅ 前必答的"自检三问"；§9 重写为 §9.1 主题外差距 / §9.2「接口在、逻辑空」24 项清单 / §9.3 经核验属实的已完成项；§2.10 补 EV-13 候选自动生成信号 ⬜，EV-02/EV-04/EV-10 降为 🔹
-- **可复现化**：新增状态计数复核命令（`IMPLEMENTATION.md` 文末），任何修改分组表的提交必须重跑并把实际输出写回表格 —— 本次即因此发现自己上一轮的**估算值 ✅41/🔹36/⬜12 有误**，实际为 ✅34/🔹36/⬜19，已一并更正 `GAP_ANALYSIS.md` §2.1
+- **可复现化**：新增 `tools/verify_claims.py` 台账声明校验器（`IMPLEMENTATION.md` 文末「状态声明校验」章节）—— 把 6 类声明变成可执行断言，退出码非 0 即视为台账不合格。本次即因此发现自己上一轮的**估算值 ✅41/🔹36/⬜12 有误**，实际为 ✅34/🔹36/⬜19，已一并更正 `GAP_ANALYSIS.md` §2.1
 - 测试数字全量修正：IMPLEMENTATION 三处、FEATURES 两处 → **Python 397 + 客户端 128**
 
 ### 2026-10-21 — 协作基座 F-00（解锁并行开发；`FEATURE_SPLIT.md` / `ROADMAP.md`）
@@ -893,7 +902,7 @@ cd android-app && npm run android
 - **api/routes.py**（新）：路由注册表。`get`/`post`/`put` 装饰器 + `RouteContext`（`app`/`query`/`body`/`auth`/`json`/`text`/`role_can_read`）；精确匹配优先、前缀匹配取最长；`dispatch_*` 返回**是否命中**
 - **api/server.py**：新增 `RouteContext` 惰性 `body` + `_dispatch` 辅助；`do_GET`/`do_POST`/`do_PUT` 各加一行分派（鉴权之后、既有链路之前，未命中即回落）；`_body` 保持原样
 - **schema/goals.py**（新）：Goal 域**占位模块**（`TABLES` 刻意为空）。它是 F-00 自动发现机制的验收演示；真正的 Goal 表由 F-17 落地（依赖 WP-2.0 补写设计并先裁决 Goal.status 冲突），避免过早固化与设计补写结果冲突
-- **测试**：`tests/test_collab_base.py`（30 项）+ `tests/test_collab_base_api.py`（7 项），全量 **397 通过**
+- **测试**：`tests/test_collab_base.py`（30 项）+ `tests/test_collab_base_api.py`（7 项），全量 **397 通过**（当轮基线；当前基线 443）
 - **实施中修掉的两个真实缺陷**（均由新增测试捕获）：
   1. 请求体被提前消费 —— `_ctx()` 急切解析 body 会读空 `rfile`，使 `POST /diagnostics/import`（直接读原始字节）拿到空数据、ZIP 压缩比防护测试超时。修复为惰性 `body` + 缓存，已加回归测试
   2. 处理器返回值语义 —— 曾按返回值判定命中，但处理器返回 `None`，会误回落。改为按"是否命中"判定，已加测试

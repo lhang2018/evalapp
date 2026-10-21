@@ -40,7 +40,7 @@
 | PRD 89-90 界面 | `api/server.py`, `api/admin.py` + `android-app/App.tsx` | ✅ | 客户端七分区：任务（在线状态/同步统计/本地任务/死信/设备操作/语音输入/结果朗读/系统状态）、离线状态、工作流中心（版本/运行/产物）、记忆中心（过滤/纠正/删除，权限范围 403 与审计）、预算与模型（只读）、权限（无障碍状态、麦克风/语音识别/语音合成可用性、系统设置引导）、更新（版本/清单/兼容性/回滚）；Web 管理端覆盖 90.1-90.7：健康与告警、问题中心与诊断详情（假设/证据/不确定性/探针/模型辅助假设）、候选实验中心、版本中心（发布/模型/迁移/工作流）、成本中心、审计与发布回滚，另有回放/备份/沙箱分区 |
 | PRD 91 数据实体 | `core/persistence.py`, `memory/store.py` | ✅ | 逻辑实体的核心子集 |
 | PRD 92-99 非功能需求 | 各模块内 | ✅/🔹 | 稳定性→检查点；性能/成本计量在列 |
-| PRD 106-113 验收标准 | `tests/`, `android-app/test/` | ✅ | Python 397 项：任务执行/预算/安全/回滚/验收/诊断闭环与趋势/模型辅助假设证据绑定与探针门禁/候选代码隔离执行/规划与意图分类/事件同步幂等与批次回执/诊断附件分块上传与摘要校验/版本对账与应用回执/候选阶段同步/运行清单/计划与预算接线/暂停恢复/鉴权与审计/指标/工具超时重试幂等/工具替代安全链/工作流并行跳过续跑/成功任务抽取与发布门禁/上下文治理与质量检查/评测完整性与 fail-closed 门禁/九级预算与成本报告/十维收益与发布后监测/路由评分/资产库/日志分层与告警/模型迁移执行链/记忆评测/嵌入向量检索/环境漂移/运行回放/备份恢复/管理端分区与安全渲染/发布分支与快进合并/Claude 全局模型配置/任务模型全字段/用户端中心接口/诊断包受控导入；客户端 128 项：离线队列/同步/任务状态/保留等级与损失标记/本地回执与不可用告警/附件分块上传与续传/同内容重新选择复用记录/设备闸门/界面观测与结果验证/语音能力检测与六态/朗读规整与停止/更新管理器与候选阶段同步/诊断包导出与导入/后台同步策略与原生契约 |
+| PRD 106-113 验收标准 | `tests/`, `android-app/test/` | ✅ | Python 462 项：任务执行/预算/安全/回滚/验收/诊断闭环与趋势/模型辅助假设证据绑定与探针门禁/候选代码隔离执行/规划与意图分类/事件同步幂等与批次回执/诊断附件分块上传与摘要校验/版本对账与应用回执/候选阶段同步/运行清单/计划与预算接线/暂停恢复/鉴权与审计/指标/工具超时重试幂等/工具替代安全链/工作流并行跳过续跑/成功任务抽取与发布门禁/上下文治理与质量检查/评测完整性与 fail-closed 门禁/九级预算与成本报告/十维收益与发布后监测/路由评分/资产库/日志分层与告警/模型迁移执行链/记忆评测/嵌入向量检索/环境漂移/运行回放/备份恢复/管理端分区与安全渲染/发布分支与快进合并/Claude 全局模型配置/任务模型全字段/用户端中心接口/诊断包受控导入；客户端 128 项：离线队列/同步/任务状态/保留等级与损失标记/本地回执与不可用告警/附件分块上传与续传/同内容重新选择复用记录/设备闸门/界面观测与结果验证/语音能力检测与六态/朗读规整与停止/更新管理器与候选阶段同步/诊断包导出与导入/后台同步策略与原生契约 |
 | PRD 115 实施顺序 | Phase 1-2 全部 | ✅ | 阶段三（进化闭环）部分完成 |
 
 ## PRD 覆盖率盘点（2026-10-20）
@@ -59,7 +59,7 @@
 | 远端推送、冲突自动合并 | PRD 59-63 | M | 仅本地分支/标签/ff 合并 | 不自动 push；分叉即失败，需人工处理 |
 
 **实现规模参考**：服务端约 17.2k 行 Python（含 CLI），Android 客户端约 9.0k 行 TS/Kotlin，
-测试约 9.6k 行；Python 397 项 + 客户端 128 项。
+测试约 9.6k 行；Python 462 项 + 客户端 128 项。
 
 ## 补充设计 A 映射：《双端协同进化与版本分发架构补充设计》
 
@@ -216,24 +216,24 @@ P 产品与部署（8）：
 | P-04 Windows 桌面端 | ⬜ | 设计路线已定，实施后置（跨端复用同一契约） |
 | P-05 Mini PC/Linux 宿主 | 🔹 | 服务端（Python 单体）即常驻宿主雏形；未产品化打包与部署文档 |
 | P-06 多端与宿主解耦 | ✅ | Android/CLI/Web 分离，UI 不拥有任务权威状态。证据：`get_task`（`evoagent/app.py:285`，refs=10/test=7）、`main`（`evoagent/cli.py`，tests 引用 40 次）|
-| P-07 本地优先与可选远程 | ✅ | 端侧 Task 状态/事件/检查点本地持久化；远端可降级。证据：`save_task`（`evoagent/core/persistence.py:36`）、`EventBus`（`evoagent/core/events.py:100`）|
+| P-07 本地优先与可选远程 | ✅ | 端侧 Task 状态/事件/检查点本地持久化；远端可降级。证据：`save_task`（`evoagent/core/persistence.py::save_task`））、`EventBus`（`evoagent/core/events.py:100`）|
 | P-08 Harness 可替换 | 🔹 | Mock + OpenAI 兼容适配器已隔离；**但无跨 Runtime 的 `AgentRuntimeAdapter` 协议层**（`models/` 下只有两个实现类），真实 DSH PoC 未做（ADR-010 是 14 条中唯一非"已确认"状态） |
 
 R 任务执行内核（12）：
 
 | 主题 | 状态 | 说明 |
 |---|---|---|
-| R-01 统一入口与 Task of Record | ✅ | 幂等键防重复创建；统一目标/约束/验收/预算接收。证据：`submit_task`（`evoagent/core/controller.py:77`，refs=5/test=7）、`Task`（`evoagent/core/task.py:60`，refs=50/test=17）|
+| R-01 统一入口与 Task of Record | ✅ | 幂等键防重复创建；统一目标/约束/验收/预算接收。证据：`submit_task`（`evoagent/core/controller.py::submit_task`），refs=5/test=7）、`Task`（`evoagent/core/task.py:60`，refs=50/test=17）|
 | R-02 意图理解与多层路由 | ✅ | 意图/领域/复杂度/风险分层路由；低置信回退 general。证据：`classify`（`evoagent/planning/intent.py:43`，test=6）、`route`（`evoagent/experts/registry.py:76`）|
 | R-03 路由质量评测与纠错 | ⬜ | **无任何路由评测集或指标**。`evolution/datasets.py` 两个内置集共 4 用例全为 time_query/computation 通用任务，零个路由/分类评测用例；无准确率、混淆矩阵、top-k、回退率、弃权率 |
 | R-04 Planner 与计划修订 | 🔹 | 目标拆解/依赖校验/验收齐备；**但无 replan/revise 方法**，`ExecutionPlan.adjust` 全库唯一调用方是「同工具连续失败 ≥3 次」追加固定模板步骤；`_risks_for` 返回的是静态风险文案，非可执行恢复策略 |
 | R-05 ReAct 执行循环 | ✅ | 单动作提议+Schema/权限/预算检查；防循环。证据：`ModelAdapter`（`evoagent/models/base.py:53`）、`MockModel`（`evoagent/models/mock.py:39`，test=2）、`check_tool_call`（`evoagent/core/budget.py:216`）|
 | R-06 DAG/工作流运行时 | 🔹 | 条件跳过/并发/重试/检查点续跑 4 项真实现；**审批节点在生产链路恒放行**（`workflow_node_confirm` 不在 `evoagent/core/permissions.py:41-44` 的 `high_risk_ops` 名单 → `check_op`（`evoagent/core/permissions.py:64`）恒返回 ALLOW），且 `evoagent/workflows/engine.py:80` 使 `WAITING_AUTH` 节点重跑时被永久跳过 → 任务卡死；**补偿是空壳**（`_try_compensate` 空参执行、ctx 未用、异常全吞、只处理失败单节点，内置漫剧的补偿动作 `fs_list` 是只读列目录，物理上不可能回滚） |
-| R-07 三种执行模式选择 | ✅ | 稳定工作流优先 → 混合 Agent → 受限动态规划。证据：`WorkflowEngine`（`evoagent/workflows/engine.py:38`）、`make_plan`（`evoagent/planning/planner.py:141`，test=6）|
+| R-07 三种执行模式选择 | ✅ | 稳定工作流优先 → 混合 Agent → 受限动态规划。证据：`WorkflowEngine`（`evoagent/workflows/engine.py::WorkflowEngine`））、`make_plan`（`evoagent/planning/planner.py:141`，test=6）|
 | R-08 工具注册表与能力契约 | 🔹 | Schema/权限/超时/幂等齐备；**成本估算 100% 缺失**（契约无任何成本字段）；**`health_check` 是死字段** —— `builtin.py` 零设置 → `health()` 恒返回 True，监控面板 tools_health 永远全绿 |
 | R-09 Action Guard 动作授权 | ✅ | 授权绑定对象/范围/摘要；高风险默认 confirm。证据：`PermissionController`（`evoagent/core/permissions.py:30`，refs=5/test=3）、`ToolContract`（`evoagent/tools/contract.py:12`）。**注：`check_tool`（`:49`）与 `check_op`（`:64`）本身无直接测试调用，测试经 `ToolRegistry` 间接覆盖**|
 | R-10 取消、暂停、等待与人工接管 | 🔹 | 取消/暂停/恢复真实现，双 flag 传播正确；**但"等待审批"与"人工接管"未实现** —— `react/engine.py:110` 收到 `request_user` 立即返回并被转成失败 check（任务判 FAILED 而非挂起），`WAITING_USER` 在 `api/server.py` 零命中（无接口提交澄清答案）；工作流任务连暂停都不支持 |
-| R-11 检查点与恢复管理 | 🔹 | 恢复前核验副作用的思路正确（`_resume_suspended`（`evoagent/core/controller.py:618`）检查 pending_side_effects 并要求 force）；**但无恢复游标**（`CheckpointManager` 只有 `save`（`evoagent/core/checkpoint.py:49`）/`latest`（`:55`），只能取最新一条）；ReAct 路径检查点不写节点级状态；**"恢复前强制安全备份"完全未接线**（`backup` 符号在 `evoagent/core/controller.py` 零命中 —— 备份能力在 `evoagent/core/backup.py` 有实现，但恢复路径没调用它）。**F-13 已修写入有序性**（先落 paused 检查点再持久化 SUSPENDED），原 50% flaky 已消 |
+| R-11 检查点与恢复管理 | 🔹 | 恢复前核验副作用的思路正确（`_resume_suspended`（`evoagent/core/controller.py::_resume_suspended`））检查 pending_side_effects 并要求 force）；**但无恢复游标**（`CheckpointManager` 只有 `save`（`evoagent/core/checkpoint.py:49`）/`latest`（`:55`），只能取最新一条）；ReAct 路径检查点不写节点级状态；**"恢复前强制安全备份"完全未接线**（`backup` 符号在 `evoagent/core/controller.py` 零命中 —— 备份能力在 `evoagent/core/backup.py` 有实现，但恢复路径没调用它）。**F-13 已修写入有序性**（先落 paused 检查点再持久化 SUSPENDED），原 50% flaky 已消 |
 | R-12 外部副作用账本 | ⬜ | **整份缺失**：无实体、无持久化表、无状态机。最接近的 `Checkpoint.pending_side_effects` 是**恒空死字段** —— 唯一写入点 `evoagent/core/controller.py:549` 依赖 `extras`，而唯一传 extras 的 `evoagent/core/controller.py:395` 只传 budget/plan → 生产环境恒为 `[]` → 恢复门禁恒不触发。`tests/test_control.py:149` 是测试自己塞值才让该分支变绿（自证式测试）。违反 ADR-006 |
 
 M 记忆上下文（10）：
@@ -254,17 +254,17 @@ C 专家能力与工作流（14）：
 | C-01 专家注册表 | ✅ | 领域/能力/工具/模型/评测声明齐全。证据：`builtin_experts`（`evoagent/experts/builtin.py:9`）、`route`（`evoagent/experts/registry.py:76`，test=2）|
 | C-02 受保护共享内核 | ✅ | 安全/权限/预算/门禁不可被专家或候选覆盖（已代码化：L4 禁止普通流程发布、L2/L3 拒绝 actor=="auto"）。证据：`PermissionController`（`evoagent/core/permissions.py:30`）、`BudgetController`（`evoagent/core/budget.py:150`，test=14）|
 | C-03 领域专家隔离与独立进化 | 🔹 | 5 个专家、独立 system_prompt ✅、tool_whitelist ✅、budget_class ✅；**但"独立评测"是死字段** —— `quality_metrics`（`registry.py:26` 定义、`builtin.py:18/30` 赋值）**零消费点**，无按专家维度跑的评测；`comic_drama` 专家既无 tool_whitelist 也无 quality_metrics，与通用内核完全共用；`mobile_operation` 白名单里无任何设备控制工具 |
-| C-04 Tool/Skill/Workflow/Expert 边界 | ✅ | 概念与调用关系与实现一致。证据：`ToolContract`（`evoagent/tools/contract.py:12`，refs=24/test=7）、`ToolRegistry`（`evoagent/tools/registry.py:31`）、`WorkflowEngine`（`evoagent/workflows/engine.py:38`）|
+| C-04 Tool/Skill/Workflow/Expert 边界 | ✅ | 概念与调用关系与实现一致。证据：`ToolContract`（`evoagent/tools/contract.py:12`，refs=24/test=7）、`ToolRegistry`（`evoagent/tools/registry.py:31`）、`WorkflowEngine`（`evoagent/workflows/engine.py::WorkflowEngine`））|
 | C-05 Capability Pack 能力包 | 🔹 | 清单/下发/状态同步 ✅；**无打包实体** —— `grep "class .*Pack\|Bundle"` 零命中，`bundle_kind` 只是 ReleaseManifest 上的默认字符串，与实际制品内容无关联；制品下载与装载未接线 |
 | C-06 轨迹到工作流编译 | ✅ | 重复支持+人工批准+失败注入回归。证据：`extract`（`evoagent/workflows/extraction.py:33`，test=13）、`publish`（`evoagent/workflows/extraction.py:216`）|
-| C-07 工作流适用性匹配 | ✅ | 输入契约/工具/预算/权限匹配。证据：`node`（`evoagent/workflows/models.py:59`，refs=61/test=2）、`WorkflowEngine`（`evoagent/workflows/engine.py:38`）|
-| C-08 能力资产生命周期 | 🔹 | 候选工作流有状态机；**但 CapabilityEntry.status 只有 active/experimental/disabled 三值**，与契约 §6 的八态（draft/candidate/validating/approved/active/degraded/deprecated/retired）无语义对应 |
+| C-07 工作流适用性匹配 | ✅ | 输入契约/工具/预算/权限匹配。证据：`node`（`evoagent/workflows/models.py:59`，refs=61/test=2）、`WorkflowEngine`（`evoagent/workflows/engine.py::WorkflowEngine`））|
+| C-08 能力资产生命周期 | 🔹 | 候选工作流有状态机；**但 `CapabilityEntry.status`（`evoagent/experts/registry.py:33`）只有 active/experimental/disabled 三值**，与契约 §6 的八态（`evoagent/core/contracts.py:117` 的 `ASSET_LIFECYCLE`：draft/candidate/validating/approved/active/degraded/deprecated/retired）无语义对应 |
 | C-09 能力依赖图与影响分析 | 🔹 | `impact_analysis` **全代码库零调用方、零测试**（`evoagent/experts/registry.py:89`）→ 台账原写"确定回归范围"没有任何代码在依赖它。函数共 9 行：**只查一层直接下游，无传递闭包**（A→B→C 改 A 只报 B）；`must_rerun_tests` 硬编码 `["capability_eval"]`；`can_reuse_evidence` 是布尔翻转。依赖图本身也只有 2 节点 1 边 |
 | C-10 能力去重、别名与合并 | ⬜ | 未实现 |
-| C-11 经验来源与晋升证据 | 🔹 | `promote_to_candidate` 的证据门禁是真的（无证据直接 raise、模型假设须先过探针）；**但只覆盖失败证据**（成功运行→进化候选的路径不存在），且**手工入口可零证据建候选**（`api/server.py:1091` 接受调用方自述的任意字符串数组，`propose_candidate` 原样存入不校验） |
+| C-11 经验来源与晋升证据 | 🔹 | `promote_to_candidate` 的证据门禁是真的（无证据直接 raise、模型假设须先过探针）；**但只覆盖失败证据**（成功运行→进化候选的路径不存在），且**手工入口可零证据建候选**（`evoagent/api/server.py:1141` 接受调用方自述的任意字符串数组，`propose_candidate` 原样存入不校验） |
 | C-12 编程专家 AST/LSP | ⬜ | 全仓 grep `AST\|LSP` 在 evoagent 下零命中（仅 node_modules）；`experts/builtin.py` 无编程专家 |
 | C-13 AI 漫剧能力包 | 🔹 | 7 节点示例工作流 ✅；**但生成环节全为 mock**（4 个工具都是 lambda 返回 f-string）；无素材资产化、无角色一致性、无 FFmpeg 合成（`mock_compose` 返回字符串不产文件）；`out_path` 形参声明后全函数体未使用，**成片不落盘**；`storyboard` 节点用 `calculate` 工具算 `6` 来"分镜" |
-| C-14 受控手机操作能力包 | ✅ | 观察-动作-再观察+权限检查+安全停止（真机验收）；前后节点快照证据完整。证据：`WorkflowEngine`（`evoagent/workflows/engine.py:38`）、`node`（`evoagent/workflows/models.py:59`）|
+| C-14 受控手机操作能力包 | ✅ | 观察-动作-再观察+权限检查+安全停止（真机验收）；前后节点快照证据完整。证据：`WorkflowEngine`（`evoagent/workflows/engine.py::WorkflowEngine`））、`node`（`evoagent/workflows/models.py:59`）|
 
 E 观测诊断评测与进化（13）：
 
@@ -278,7 +278,7 @@ E 观测诊断评测与进化（13）：
 | E-06 评测集版本/覆盖/防泄漏 | 🔹 | `EvalDataset` 有 version/source/holdout，隐藏保留集独立于调优 ✅；**但 `datasets.py` 全文 47 行仅 4 个用例**，无数据集注册/版本演进机制，无覆盖率台账 |
 | E-07 进化候选生成 | ⬜ | **名为实现、实为空壳**。`propose_candidate()` 六参数全必填，**四类信号（失败/成本异常/质量退化/能力缺口）在 `evoagent/` 全目录零匹配**（`grep "capability_gap\|质量退化\|成本异常"` → 0 命中）；全部调用点均为人工/外部传入（`cli.py:235`、`api/server.py:1100`）；`register_problem` **永不读取**（`evoagent/evolution/controller.py:144`：向 deque 追加后无人再取）—— 问题队列本身也是死的。台账原写"失败/成本异常/退化/缺口→候选提案"与代码不符 |
 | E-08 隔离实验环境 | ✅ | `evoagent/evolution/sandbox.py`（网络/子进程/凭据/读写阻断）；容器级隔离明确不做，边界已注明。证据：`run_code`（`evoagent/evolution/sandbox.py:171`，test=10）、`SandboxRunner`（`evoagent/evolution/sandbox.py:165`）|
-| E-09 发布晋级门禁 | ✅ | fail-closed 安全一票否决+人工批准；`deploy_candidate` 真实检查 L4 禁发布、L2/L3 拒绝 auto。证据：`build_manifest`（`evoagent/release/manager.py:87`，test=10）、`deploy`（`evoagent/release/manager.py:104`，test=9）。**注：`deploy_candidate`（`evoagent/evolution/controller.py:363`）的 L4/L2/L3 分支目前只有 `PUBLISH_RULES` 常量级测试（`tests/test_evolution.py:104`），门禁分支本身无直接测试调用**|
+| E-09 发布晋级门禁 | ✅ | fail-closed 安全一票否决+人工批准；`deploy_candidate` 真实检查 L4 禁发布、L2/L3 拒绝 auto。证据：`build_manifest`（`evoagent/release/manager.py:87`，test=10）、`deploy`（`evoagent/release/manager.py:104`，test=9）。**注：`deploy_candidate`（`evoagent/evolution/controller.py::deploy_candidate`））的 L4/L2/L3 分支目前只有 `PUBLISH_RULES` 常量级测试（`tests/test_evolution.py:104`），门禁分支本身无直接测试调用**|
 | E-10 稳定/候选轨道隔离 | ✅ | 生产绑定稳定资产；候选不能触碰稳定指针。证据：`build_manifest`（`evoagent/release/manager.py:87`）、`deploy`（`evoagent/release/manager.py:104`）|
 | E-11 收益与退化评估 | ✅ | 基线 vs 候选+漂移监测（`evoagent/evolution/drift.py`）；但**若 E-07 无自动候选，该链上游是空的**。证据：`evaluate_benefit`（`evoagent/evolution/benefit.py:177`，test=12）、`detect`（`evoagent/evolution/drift.py:52`，test=11）|
 | E-12 失败案例转回归资产 | 🔹 | `record_failure` 自动建案例（含 version_manifest + evidence_snapshot，信息量足够）；**但全仓无 DiagnosticCase → EvalCase 转换**（`grep "to_eval\|to_dataset\|regression_case"` 零匹配），案例止步于 diagnostics 表，**进不了 datasets**，"可复现回归资产"不成立 |
@@ -314,7 +314,7 @@ O 端云协同与可靠性（10）：
 | O-07 版本分发、激活与回滚 | 🔹 | 清单/签名/灰度/双槽位回滚 ✅（**双槽位原子切换实现优秀**）；制品装载未接；`release_secret` 为明文文件，`_sign` 用裸 sha256 而非 HMAC |
 | O-08 离线降级与恢复 | ⬜ | **降级矩阵不存在**。`offline/policy.ts:8` 的 `OFFLINE_INTENTS = ["time_query"]` 是硬编码白名单；`degrade`/`degrade_matrix`/`offline_capable` 在客户端仅命中测试断言。O-08 要求"降级必须显式告知，不能伪装成完整云端能力"，当前无声明机制 |
 | O-09 附件与大型资产 | 🔹 | 授权+分块+断点续传+SHA-256 校验 ✅（三项能力均真实现）；但大资产保留/清理仅 LRU 截断 20 条，未系统化；原始字节仅内存驻留，重启需重选文件 |
-| O-10 多设备状态一致性 | ✅ | 安装实例/部署记录/批次回执/对账/`/sync/candidates`。证据：`list_tasks`（`evoagent/core/persistence.py:54`，refs=12/test=2）、`save_task`（`evoagent/core/persistence.py:36`）|
+| O-10 多设备状态一致性 | ✅ | 安装实例/部署记录/批次回执/对账/`/sync/candidates`。证据：`list_tasks`（`evoagent/core/persistence.py::list_tasks`），refs=12/test=2）、`save_task`（`evoagent/core/persistence.py::save_task`））|
 
 S 安全治理与工程化（12）：
 
@@ -326,7 +326,7 @@ S 安全治理与工程化（12）：
 | S-04 本地沙箱与执行隔离 | ✅ | 审计钩子+环境白名单+凭据不继承+超时强杀（容器级隔离明确不做，边界已注明）。证据：`run_code`（`evoagent/evolution/sandbox.py:171`，test=10）、`SandboxRunner`（`evoagent/evolution/sandbox.py:165`）|
 | S-05 审计日志与可解释性 | 🔹 | API/CLI 边界已审计（`server.py` 约 24 处、`cli.py` 4 处）；**但执行环节零审计** —— `grep -c audit evoagent/core/controller.py` = **0**，所有状态流转、记忆沉淀、失败建案均不留痕。S-05 要求七环节全审计，台账原写"全审计"与代码不符 |
 | S-06 ADR 决策治理 | 🔹 | 14 条 ADR 决策台账齐全（`10_术语与架构决策/`）；但无状态流转与 Superseded 关系链 |
-| S-07 自动化测试与端到端验收 | 🔹 | **实测 397 Python + 128 客户端**（原记「331 Python + 60 客户端」，三处数字互不一致且均过期，已修正）；含失败注入/重启/恶意输入场景 ✅；**但无独立 E2E/兼容性测试目录**，且存在自证式测试（见 R-12） |
+| S-07 自动化测试与端到端验收 | 🔹 | **实测 462 Python + 128 客户端**（原记「331 Python + 60 客户端」，三处数字互不一致且均过期，已修正）；含失败注入/重启/恶意输入场景 ✅；**但无独立 E2E/兼容性测试目录**，且存在自证式测试（见 R-12） |
 | S-08 模块化单体与技术基线 | ✅ | 与实现一致（SQLite/单进程/模块化单体/零外部依赖）；**F-00 后建表与路由已从共享文件剥离**（`core/schema/` 10 域模块 + `api/routes.py` 注册表）。证据：`all_statements`（`evoagent/core/schema/__init__.py:47`，test=3）、`dispatch_get`（`evoagent/api/routes.py:111`，test=50）|
 | S-09 运行时可替换性 | ✅ | 业务只依赖自有契约；Mock/OpenAI 兼容双适配器共用同一契约。证据：`MockModel`（`evoagent/models/mock.py:39`，test=2）、`ModelAdapter`（`evoagent/models/base.py:53`）|
 | S-10 低资源设备与性能治理 | ⬜ | **完全无**。`BudgetLimits` 只有 token/成本/时长/并发/调用数，无 CPU/内存/磁盘/电量任何硬件资源维度；Android 是第一终端，资源治理缺位直接影响首发可用性 |
@@ -365,7 +365,7 @@ SV-04 🔹（ContextManifest/删除传播/冲突识别缺）；SV-08 🔹（制�
 - **Side-effect Ledger ⬜** —— 十字段零实现，六态枚举零匹配（见 R-12）
 - **Capability Asset 🔹** —— 只有 `CapabilityEntry`：`asset_type` 被 `domain` 取代、`lifecycle_state` 只 3 值（契约八态）、`namespace` 完全缺失
 
-**统一错误对象 ⬜**：7 字段（`error_code`/`message`/`retryable`/`correlation_id`/`related_event_id`/`required_action`/`safe_to_repeat`）**全部零实现**；全 API 统一返回 `{"error": "中文可读串"}`（`server.py` 209 处 `self._json`）。"safe_to_repeat=unknown 必须先对账"这条规则目前只以散文形式落在 `controller.py:566-584` 与 `replay.py:86`。**这是所有验收失败可定位性的地基。**
+**统一错误对象 ✅（F-01 已落地，2026-10-21）**：7 字段（`error_code`/`message`/`retryable`/`correlation_id`/`related_event_id`/`required_action`/`safe_to_repeat`）全部实现于 `evoagent/core/errors.py`（`error_payload`/`normalize_error_payload`/`ApiError`），并在 `evoagent/api/server.py:66` 的 `_json` 单点接入（4xx/5xx 且无显式 `error_code` 时补齐，成功负载原样）。**契约不变量已代码化**：`safe_to_repeat=unknown` 时强制 `required_action=reconcile`（`errors.py:114`），不再只是散文。
 
 其余字段级缺口：
 - Task：`acceptance_contract_ref`、`authorization_ref`、`runtime_manifest_id`（实体上）、**Task 级 `idempotency_key`**（键散落三处且不同名：`client_request_id`/`idem_key`/`ToolResult.idempotency_key`）；`created_at` 为 float 而非 RFC3339；`constraints` 为 `List[str]` 而非对象；`status` 缺 `waiting_approval`
@@ -382,7 +382,7 @@ SV-04 🔹（ContextManifest/删除传播/冲突识别缺）；SV-08 🔹（制�
 
 | 状态 | 用例 | 说明 |
 |---|---|---|
-| ✅ | 1、3、5、6、7、8、10、11、12、13、15、18、20 | 幂等创建/重启一致/取消/预算/验收门/断网落地/幂等同步/恶意导入隔离/门禁不动指针/健康回滚/压缩保约束/晋级报告。**用例 3 的"可定位"目前靠中文错误串**（统一错误对象落地后才名副其实） |
+| ✅ | 1、3、5、6、7、8、10、11、12、13、15、18、20 | 幂等创建/重启一致/取消/预算/验收门/断网落地/幂等同步/恶意导入隔离/门禁不动指针/健康回滚/压缩保约束/晋级报告。**用例 3 的"可定位"已由 F-01 兑现** —— 错误响应带 `error_code` + `correlation_id` + `safe_to_repeat`（`evoagent/core/errors.py`） |
 | 🔹 | 2、9、14、17 | **2 高风险未审批不执行**：工具级真实现，但**工作流审批节点恒放行**（R-06）；**9 MANIFEST 还原**：未发布时组件版本退化为空（O-05）；**14 签名/兼容**：fail-closed 有，但 `_sign` 用裸 sha256 非 HMAC（S-11）；**17 路由回退**：回退逻辑有，但**无路由评测集**，"回退正确"无法度量（R-03） |
 | ⬜ | **4**、**16**、**19** | **4 副作用未知先对账**：账本整份缺失，`pending_side_effects` 恒空 → 门禁恒不触发（R-12）；**16 依赖图回归范围**：`impact_analysis` 零调用方（C-09）；**19 主动目标无进展停止**：目标级不存在（G-06） |
 
@@ -497,7 +497,13 @@ SV-04 🔹（ContextManifest/删除传播/冲突识别缺）；SV-08 🔹（制�
 python tools/verify_claims.py --check          # 有错退出码 1
 python tools/verify_claims.py --check --json   # 机器可读
 python tools/verify_claims.py --check --lenient  # 证据不足只报告不判错
+python tools/scan_all_ledgers.py              # 全台账行号漂移扫描
+python tools/verify_claims.py --check-count    # 额外校验台账声明的测试数与实测一致（较慢）
 ```
+
+> `scan_all_ledgers.py` 覆盖面更广：扫**全部**顶层 .md 的 `文件:行号` 引用，
+> 核对被引行确实含所指符号（`verify_claims.py` 只管 IMPLEMENTATION.md 的主题表）。
+> 代码一改引用就可能漂移 —— 这一层专门抓那个。
 
 ### 判定标准（三条硬门槛，缺一不记 ✅）
 
@@ -519,6 +525,7 @@ python tools/verify_claims.py --check --lenient  # 证据不足只报告不判�
 | `dead_claim_unverifiable` | 声称「零调用」但主体不是函数/类（字典键、字段名） | 声明绑错了主体，无法验证 |
 | `absent_claim_but_present` | 声称「不存在」但模式搜得到 | 判定反了（注意作用域限定） |
 | `positive_claim_weak_evidence` | ✅ 行没有可校验符号或引用 | ✅ 判定缺证据支撑 |
+| `test_count_drift` | 台账声明的测试数与实测不符 | **并行开发持续加测试，数字必然滞后** —— 让工具报出来，而不是靠人记得更新 |
 
 另校验**状态计数自洽**：总体差距表声明的 ✅/🔹/⬜ 数字必须等于分组表逐行统计结果
 （按 89 主题口径展开 `P-01/02`、`M-01..05` 两个合并行）。
@@ -530,6 +537,11 @@ python tools/verify_claims.py --check --lenient  # 证据不足只报告不判�
 2. **缺席声明要带作用域**：`X` 在 `api/server.py` 零命中 ≠ `X` 全仓不存在。
 3. **符号与路径之间不要夹中文散文**，否则无法判定二者是「定义关系」。
 4. 引用写成 `符号`（`文件:行号`）形式，校验器会核对**该行确实含该符号**。
+5. **并行开发中优先用符号锚定形式** `符号`（`文件::符号`）—— 它不依赖行号，
+   别人在文件里加几行也不会失效。实测并行工作流的 F-03 改动让
+   `controller.py` 的 `submit_task` 从 77 行移到 80 行，
+   所有硬编码行号的引用当场失效；锚定形式不受影响。
+   （`scan_all_ledgers.py` 与 `verify_claims.py` 两种形式都校验）
 
 ### 校验器自身的回归测试
 

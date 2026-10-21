@@ -121,13 +121,56 @@ class TestCheckerCatchesFalseClaims(unittest.TestCase):
         self.assertIn("citation_path_missing", kinds)
 
     def test_catches_line_drift(self):
-        """符号名对但行号指向别处 —— 语义引用校验必须抓住。"""
-        bad = self.text.replace(
-            "`submit_task`（`evoagent/core/controller.py:77`",
-            "`submit_task`（`evoagent/core/controller.py:790`", 1)
+        """符号名对但行号指向别处 —— 语义引用校验必须抓住。
+
+        刻意不硬编码行号：并行开发中文件行号会移动，
+        硬编码会让测试假失败。测试要验证的是**校验器逻辑**。
+        """
+        import re as _re
+        m = _re.search(
+            r"`([A-Za-z_][A-Za-z0-9_]*)`（`([A-Za-z0-9_\-./]+\.py):(\d+)`）",
+            self.text)
+        if not m:
+            self.skipTest("台账中暂无 `符号`（`文件:行号`）形态的引用")
+        sym, path_hint, num = m.group(1), m.group(2), m.group(3)
+        # 找一个**行号在范围内但不含该符号**的行 —— 越界会被另一个判据先抓到
+        wrong = self._a_line_without(path_hint, sym, int(num))
+        if wrong is None:
+            self.skipTest(f"{path_hint} 中找不到不含 {sym} 的行")
+        old = f"`{sym}`（`{path_hint}:{num}`）"
+        bad = self.text.replace(old, f"`{sym}`（`{path_hint}:{wrong}`）", 1)
         self.assertNotEqual(bad, self.text, "注入失败：原文未找到待替换串")
-        kinds = {p["kind"] for p in self._problems(bad)}
+        problems = self._problems(bad)
+        kinds = {p["kind"] for p in problems}
         self.assertIn("semantic_citation_mismatch", kinds)
+
+    def _a_line_without(self, path_hint: str, sym: str, near: int) -> int | None:
+        """在 path_hint 里找一个不含 sym 的行号（优先靠近 near）。"""
+        full = os.path.join(ROOT, path_hint)
+        if not os.path.exists(full):
+            return None
+        with open(full, "r", encoding="utf-8") as fh:
+            lines = fh.read().split("\n")
+        for delta in (1, 2, 3, -1, -2, -3, 5, -5, 10, -10):
+            idx = near + delta
+            if 1 <= idx <= len(lines) and sym not in lines[idx - 1]:
+                return idx
+        return None
+
+    def test_catches_anchor_symbol_missing(self):
+        """锚定引用指向不存在的符号 —— 必须报出。"""
+        import re as _re
+        m = _re.search(r"`([A-Za-z0-9_\-./]+\.py)::([A-Za-z_][A-Za-z0-9_]*)`",
+                       self.text)
+        if not m:
+            self.skipTest("台账中暂无符号锚定引用")
+        path_hint = m.group(1)
+        old = f"`{path_hint}::{m.group(2)}`"
+        bad = self.text.replace(old, f"`{path_hint}::no_such_symbol_xyz`", 1)
+        self.assertNotEqual(bad, self.text, "注入失败")
+        problems = self._problems(bad)
+        kinds = {p["kind"] for p in problems}
+        self.assertIn("anchor_symbol_missing", kinds)
 
     def test_catches_dead_claim_that_is_referenced(self):
         """声称「零调用」但符号实际有引用 —— 判定反了。"""
@@ -202,6 +245,45 @@ class TestSymbolIndex(unittest.TestCase):
         self.assertEqual(self.index["deploy_candidate"]["test_calls"], 0,
                          "deploy_candidate 现在有直接测试调用了 —— "
                          "请更新 IMPLEMENTATION.md 中 E-09 的说明")
+
+
+class TestTestCountCheck(unittest.TestCase):
+    """测试数量漂移检查。
+
+    存在的理由：并行开发会持续加测试，台账里的数字必然滞后。
+    与其靠人记得更新，不如让工具报出来。
+    """
+
+    def test_collects_stated_counts(self):
+        counts = vc.collect_stated_counts(
+            "测试基线：Python 443 项 + 客户端 128 项。\n"
+            "python -m pytest tests/ -q  # 443 passed\n")
+        self.assertIn(443, counts)
+
+    def test_takes_max_as_current(self):
+        """历史基线数字会并存，取最大者作为当前口径。"""
+        counts = vc.collect_stated_counts(
+            "Python 397 项（当轮基线；当前基线 443）\n"
+            "首轮基线 358\n")
+        self.assertEqual(max(counts), 443)
+
+    def test_detects_drift(self):
+        """台账数字与实测不符时必须报出。"""
+        actual = vc.measure_test_count()
+        if actual is None:
+            self.skipTest("无法实测测试数量")
+        stale = f"Python {actual + 7} 项"
+        problems = vc.check_test_count(stale)
+        kinds = {p["kind"] for p in problems}
+        self.assertIn("test_count_drift", kinds)
+
+    def test_passes_when_matching(self):
+        actual = vc.measure_test_count()
+        if actual is None:
+            self.skipTest("无法实测测试数量")
+        problems = vc.check_test_count(f"Python {actual} 项")
+        self.assertEqual(problems, [],
+                         f"数字一致却报错：{problems}")
 
 
 class TestClaimExtraction(unittest.TestCase):
