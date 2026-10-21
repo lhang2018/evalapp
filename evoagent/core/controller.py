@@ -360,7 +360,10 @@ class RuntimeController:
             constraints=task.constraints, acceptance=task.acceptance_criteria,
             status=task.task_status.value,
             tool_docs=self._tool_docs(whitelist),
-            scope_key=task.task_id,
+            # GAP 死字段修复③：读侧用专家 memory_scope_key（与 _remember
+            # 写侧同键），专家域记忆真正隔离在专属蜂巢内
+            scope_key=(expert.memory_scope_key if expert and
+                       expert.memory_scope_key else task.domain),
             max_chars=self._context_limit_chars(model))
         task.runtime_manifest["context"] = ctx.stats()
         quality = ctx.quality or {}
@@ -837,13 +840,18 @@ class RuntimeController:
 
     def _remember(self, task: Task, verified: bool) -> None:
         """执行结果沉淀为记忆（凭证据决定可信状态；原始日志不自动成为经验）。"""
+        # GAP 死字段修复③：写侧 key 与专家 memory_scope_key 对齐
+        # （读侧 _run_react 同键检索；mobile_operation 专家键=mobile）
+        expert = self.experts.get(task.domain)
+        hive_key = (expert.memory_scope_key if expert and
+                    expert.memory_scope_key else "") or task.domain
         content = f"任务<{task.intent}>: {task.user_goal} -> " + \
                   (task.result or task.failure_reason or "")
         item = MemoryItem(
             content=content[:300],
             kind=MemoryKind.RUNTIME_EXPERIENCE,
             scope=Scope.EXPERT,
-            scope_key=task.domain,
+            scope_key=hive_key,
             status=Credibility.VERIFIED if verified else Credibility.CANDIDATE,
             source="runtime",
             applicable_domains=[task.domain],

@@ -1506,3 +1506,11 @@
 - +5 测试(test_execution_audit.py)；全量连续两轮 505 passed + 1 skipped
 - 台账联动确认：WorkBuddy 已刷新 test_ledger_drift 的 R-08 health_check 断言（此前预期失败已消失），天账刷新流程按先例闭环
 
+
+### 子步③ memory_scope_key 检索隔离 完成（2026-10-22）
+- 死字段机制定位：search 只有在调用方同时给 scope 时才应用键过滤；controller 读侧传 scope_key=task_id（写侧无任何记忆带该键）且 `or not m.scope_key` 空键放行——赋值四专家齐全但检索不生效
+- store.search 新口径：带键条目必须键一致（键不匹配绝不跨界）；空键条目仅 shared（横切通用层）放行，task/expert/project/model 空键=归属未声明按隔离处置；请求无键不参与隔离（既有行为不变）
+- 写读同键接线：_run_react 读侧 scope_key=expert.memory_scope_key（回退 domain）；_remember 写侧同键对齐（mobile_operation 专家键=mobile，此前写 domain 名导致读不到）
+- +6 测试(test_memory_scope.py)：键匹配/错键不可见/空键不放行/shared 放行/写侧键对齐/跨蜂巢隔离
+- ⚠️ 在途区注记：test_verify_claims/test_gap_closure/test_ledger_drift 当前失败系 WorkBuddy 在途编辑（server.py 端点迁移后台账锚点 propose_candidate 失配 + 检查器 fixture 在改），锚点符号在 HEAD 084d71d 上完好——由台账持有人刷新，本会话不代改
+

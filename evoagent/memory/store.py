@@ -242,10 +242,14 @@ class MemoryStore:
         items = [m for m in items if m.allowed and m.status != Credibility.REVOKED]
         # 2) 过期过滤
         items = [m for m in items if not m.is_expired(now)]
-        # 3) 范围过滤（更窄 scope 匹配优先）
+        # 3) 范围过滤（GAP 死字段修复③：scope_key 真正参与检索隔离）
         if scope is not None:
             items = [m for m in items if m.scope == scope
-                     and (not scope_key or not m.scope_key or m.scope_key == scope_key)]
+                     and _key_isolated(m, scope_key)]
+        elif scope_key:
+            # 只给了键未给 scope：同样执行键隔离（此前此路径被完全忽略，
+            # memory_scope_key 因此是死字段——赋值存在、检索不生效）
+            items = [m for m in items if _key_isolated(m, scope_key)]
         # 4) 领域过滤
         if domains:
             matching = [m for m in items
@@ -446,6 +450,22 @@ class MemoryStore:
 def _vector(text: str) -> List[float]:
     """哈希向量（回退实现）；保留名称供旧调用点使用。"""
     return hash_vector(text)
+
+
+def _key_isolated(m: MemoryItem, want: str) -> bool:
+    """scope_key 隔离判定（GAP 死字段修复③）。
+
+    - 条目带键：必须与请求键一致（键不匹配绝不跨界可见）
+    - 条目空键：仅 shared（横切通用层，如用户偏好）放行；
+      task/expert/project/model 空键视为归属未声明，按隔离处置——
+      取消旧口径的 `or not m.scope_key` 全量放行
+    - 请求键为空：不参与隔离（予以全量）
+    """
+    if not want:
+        return True
+    if m.scope_key:
+        return m.scope_key == want
+    return m.scope == Scope.SHARED
 
 
 def _cosine(a: List[float], b: List[float]) -> float:
