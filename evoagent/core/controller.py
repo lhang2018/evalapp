@@ -27,6 +27,7 @@ from ..config import Config
 from .budget import (BudgetController, BudgetExceeded, BudgetLimits,
                      BudgetUsage)
 from .checkpoint import Checkpoint, CheckpointManager
+from .side_effects import SideEffectLedger  # F-03 副作用账本
 from .events import EventBus, RunEvent
 from .persistence import Database
 from .state_machine import IllegalTransition, transition
@@ -60,6 +61,8 @@ class RuntimeController:
         self.memory = memory
         self.assembler = assembler
         self.cp_mgr = checkpoints
+        self.side_fx = SideEffectLedger(db)  # F-03 副作用账本
+        self.react.effects = self.side_fx  # 工具结果回传记账（可选 sink）
         self.permissions = permissions
         self.releases = releases
         self.wf_lookup = wf_lookup or (lambda wid: None)
@@ -394,6 +397,7 @@ class RuntimeController:
             task = self._move(task, TaskStatus.SUSPENDED, save=False)
             self.checkpoint(task, "paused", extras={
                 "budget": budget.snapshot(),
+                "pending_side_effects": self.side_fx.pending(task.task_id),
                 "plan": plan.to_dict() if plan else None})
             self.db.save_task(task)
             self._emit(task, "task_paused", {
@@ -580,8 +584,11 @@ class RuntimeController:
         if task is None:
             return None
         if task.task_status == TaskStatus.SUSPENDED:
+            # F-03：未决副作用以账本投影为准（GAP §7：不再是检查点自持）；
+            # 无账本记录的旧任务回落读检查点（向后兼容）。
             cp = self.cp_mgr.latest(task_id)
-            pending = cp.pending_side_effects if cp else []
+            pending = self.side_fx.pending(task_id) \
+                or (cp.pending_side_effects if cp else [])
             if pending and not force:
                 self._emit(task, "side_effect_state_unknown",
                            {"side_effects": pending}, severity="warn")

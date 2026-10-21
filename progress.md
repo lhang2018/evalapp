@@ -1456,3 +1456,12 @@
 - 台账同批注意：另一会话的 `test_verify_claims.py` + `tools/` + IMPLEMENTATION 仍在途未提交，勿动
 - 遇到本标记请勿并行改 F-03 相关文件；若 2 小时内无后续提交，可认领接手
 
+
+### F-03 副作用账本完成（2026-10-22 凌晨）
+- 新表 `core/schema/effects.py`（独立域文件，零触热点建表段）：task_side_effects 11 列 + 双索引
+- 新 `core/side_effects.py`：契约六态（planned/submitted/confirmed/failed/unknown/compensated）状态机 TRANSITIONS；unknown 必须 reconcile 且盖 last_reconciled_at；终态 failed/compensated 拒绝转出
+- ToolResult → 六态映射（record_from_tool_result）：ok+executed→confirmed；side_effect_uncertain→unknown（GAP「已发生未确认」）；executed 未成功→unknown；未执行→failed；level=none 不入账
+- 运行期接线：ReactEngine 可选 effects 回调在工具结果返回时记账（账本故障不阻断执行，仅 warn 事件）；controller.__init__ 注入
+- resume 门禁改账本投影直读（GAP §7 DoD：pending_side_effects 自持→投影）；旧任务回落读检查点兼容；pause 检查点 extras 同步投影留档
+- +12 测试；提交后全量 458 全绿（含另一会话的台账漂移校验器 test_verify_claims/test_ledger_drift——先前窗口的 2 失败系台账编辑中态误踩，已自愈）
+

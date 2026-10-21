@@ -41,12 +41,16 @@ class ReactEngine:
     def __init__(self, model: ModelAdapter, tools: ToolRegistry,
                  event_bus: Optional[EventBus] = None,
                  max_iterations: int = 20,
-                 max_repeat_failures: int = 3):
+                 max_repeat_failures: int = 3,
+                 effects: Any = None):
         self.model = model
         self.tools = tools
         self.bus = event_bus
         self.max_iterations = max_iterations
         self.max_repeat_failures = max_repeat_failures
+        # F-03：副作用账本（SideEffectLedger 或等价 sink），可选；
+        # 每次工具结果返回后回传 (task_id, tool_id, result) 记账。
+        self.effects = effects
 
     def run(self, base_messages: List[ChatMessage],
             budget: BudgetController,
@@ -129,6 +133,17 @@ class ReactEngine:
                 return outcome
 
             step.tool_result = result
+            # F-03：副作用记账（有账本时按 ToolResult 映射六态）
+            if self.effects is not None:
+                try:
+                    self.effects.record_from_tool_result(
+                        run_id, tool, result, run_id=run_id)
+                except Exception:  # noqa: BLE001 —— 账本故障不阻断执行
+                    if self.bus:
+                        self.bus.emit(
+                            event_type="side_effect_ledger_error",
+                            task_id=run_id, run_id=run_id,
+                            payload={"tool": tool}, severity="warn")
             payload = result.to_dict()
             messages.append(ChatMessage(
                 role="assistant",

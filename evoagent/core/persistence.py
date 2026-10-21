@@ -112,6 +112,64 @@ class Database:
             return None
         return json.loads(row["snapshot"])
 
+    # ---- side effects（契约 09 卷 §8，F-03；建表见 core/schema/effects.py）----
+    def save_side_effect(self, effect_id: str, task_id: str, run_id: str,
+                         tool_id: str, idempotency_key: Optional[str],
+                         effect_summary: str, status: str) -> str:
+        now = time.time()
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO task_side_effects (effect_id, task_id, run_id,"
+                " tool_id, idempotency_key, effect_summary, status,"
+                " external_receipt_ref, last_reconciled_at,"
+                " created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                (effect_id, task_id, run_id, tool_id, idempotency_key,
+                 effect_summary, status, None, None, now, now))
+            self._conn.commit()
+        return effect_id
+
+    def update_side_effect_status(self, effect_id: str, status: str, *,
+                                  receipt_ref: Optional[str] = None,
+                                  reconciled_at: Optional[float] = None
+                                  ) -> bool:
+        parts = ["status=?", "updated_at=?"]
+        args: List[Any] = [status, time.time()]
+        if receipt_ref is not None:
+            parts.append("external_receipt_ref=?")
+            args.append(receipt_ref)
+        if reconciled_at is not None:
+            parts.append("last_reconciled_at=?")
+            args.append(reconciled_at)
+        args.append(effect_id)
+        with self._lock:
+            cur = self._conn.execute(
+                f"UPDATE task_side_effects SET {', '.join(parts)}"
+                " WHERE effect_id=?", args)
+            self._conn.commit()
+        return cur.rowcount > 0
+
+    def get_side_effect(self, effect_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT * FROM task_side_effects WHERE effect_id=?",
+            (effect_id,)).fetchone()
+        return dict(row) if row else None
+
+    def list_side_effects_by_task(self, task_id: str,
+                                  statuses: Optional[List[str]] = None
+                                  ) -> List[Dict[str, Any]]:
+        """按任务列副作用；statuses 给定时过滤，按创建时间正序。"""
+        if statuses:
+            q = ",".join("?" for _ in statuses)
+            rows = self._conn.execute(
+                "SELECT * FROM task_side_effects WHERE task_id=? AND"
+                f" status IN ({q}) ORDER BY created_at",
+                (task_id, *statuses)).fetchall()
+        else:
+            rows = self._conn.execute(
+                "SELECT * FROM task_side_effects WHERE task_id=?"
+                " ORDER BY created_at", (task_id,)).fetchall()
+        return [dict(r) for r in rows]
+
     # ---- client idempotency ----
     def get_request_task_id(self, client_request_id: str) -> Optional[str]:
         row = self._conn.execute(
