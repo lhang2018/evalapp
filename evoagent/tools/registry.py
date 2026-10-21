@@ -20,6 +20,9 @@ RETRYABLE_ERRORS = {"timeout", "network_or_unavailable", "tool_defect_or_env"}
 # 主工具失败后可尝试备用工具的错误类别（Arch 6.4）
 SUBSTITUTABLE_ERRORS = {"timeout", "network_or_unavailable", "tool_defect_or_env"}
 _SIDE_EFFECT_RANK = {"none": 0, "local": 1, "external": 2, "destructive": 3}
+# 契约 §4（GAP ⑤b）：风险级序（声明与执行同源取严格者用）
+_ORDER = {RiskLevel.LOW: 0, RiskLevel.MEDIUM: 1, RiskLevel.HIGH: 2,
+          RiskLevel.CRITICAL: 3}
 
 
 @dataclass
@@ -36,8 +39,18 @@ class ToolRegistry:
         self._tools: Dict[str, RegisteredTool] = {}
 
     # ---- 生命周期: 注册 ----
+    _RISK_DERIVED = {"none": "low", "local": "medium",
+                     "external": "high", "destructive": "critical"}
+
     def register(self, contract: ToolContract,
                  runner: Callable[[Dict], ToolResult]) -> None:
+        # 契约 §4（GAP ⑤b）：risk_class 声明与执行同源——未声明时在
+        # 注册单点按副作用级推导；显式声明走 fail-closed 抬升裁决
+        risk_declared = bool(contract.risk_class)
+        if not risk_declared:
+            contract.risk_class = self._RISK_DERIVED.get(
+                contract.side_effect_level, "medium")
+        contract.risk_declared = risk_declared
         self._tools[contract.tool_id] = RegisteredTool(contract, runner)
 
     def register_mock_tool(self, tool_id: str, fn: Callable[[Dict], Any],
@@ -54,7 +67,7 @@ class ToolRegistry:
                                   evidence={"mock": True})
             except Exception as e:  # noqa: BLE001
                 return ToolResult.error_result(str(e), class_error(e))
-        self._tools[tool_id] = RegisteredTool(contract, runner)
+        self.register(contract, runner)
 
     def contract(self, tool_id: str) -> Optional[ToolContract]:
         rt = self._tools.get(tool_id)
@@ -126,12 +139,19 @@ class ToolRegistry:
 
         # 兼容性检查（Arch 6.2）：注册时已校验 schema；执行时核对契约仍在
         c = rt.contract
-        # 权限校验
+        # 权限校验（契约 §4，GAP ⑤b）：声明与执行同源——取声明
+        # risk_class 与副作用级推导的严格者（fail-closed，声明只能
+        # 升高不能降低裁决风险）
         risk = RiskLevel.CRITICAL if c.side_effect_level == "destructive" else (
             RiskLevel.HIGH if c.side_effect_level in ("external", "local") else RiskLevel.LOW)
+        declared = c.declared_risk() if c.risk_declared else None
+        lifted = declared is not None and _ORDER[declared] > _ORDER[risk]
+        if lifted:
+            risk = declared
         if self.permissions:
             decision = self.permissions.check_tool(
-                tool_id, args, risk, side_effect=c.side_effect_level)
+                tool_id, args, risk, side_effect=c.side_effect_level,
+                lifted=lifted)
             if decision == PermissionDecision.DENY:
                 return ToolResult.error_result(f"工具被权限拒绝: {tool_id}",
                                                "auth_or_permission")

@@ -7,6 +7,8 @@
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Optional
 
+from ..core.task import RiskLevel
+
 
 @dataclass
 class ToolContract:
@@ -24,6 +26,23 @@ class ToolContract:
     health_check: Optional[Callable[[], bool]] = None
     # 备用工具（Arch 6.4）：仅在主工具可重试失败且副作用未发生时尝试
     substitutes: list = field(default_factory=list)
+    # 契约 §4（GAP ⑤b Tool 字段批）：声明式风险级、离线/联网、成本模型、
+    # 契约测试引用。risk_class 为空时由注册单点按 side_effect_level 推导，
+    # 且执行裁决取声明与推导的严格者（fail-closed，声明与执行同源）。
+    risk_class: str = ""                # low | medium | high | critical
+    risk_declared: bool = False         # 显式声明标记（区别于注册推导）
+    offline_capable: bool = False
+    requires_network: bool = False
+    cost_model: Dict[str, Any] = field(default_factory=dict)
+    contract_test_ref: Optional[str] = None
+
+    def declared_risk(self) -> Optional[RiskLevel]:
+        """风险级枚举值（契约 §4；未声明返回 None）。"""
+        try:
+            return RiskLevel[self.risk_class.upper()] if self.risk_class \
+                else None
+        except KeyError:
+            return None
 
 
 @dataclass

@@ -31,6 +31,10 @@ def current_time_tool() -> ToolContract:
         # 真探针（F-04 死字段修复①）：时钟 tick 一次且非空
         health_check=lambda: bool(
             datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+        # 契约 §4（GAP ⑤b）
+        offline_capable=True,
+        cost_model={"unit": "compute", "cost_per_call": 0},
+        contract_test_ref="tests/test_tool_health.py",
     ), run
 
 
@@ -54,8 +58,12 @@ def calculate_tool() -> ToolContract:
         output_schema={"type": "number"},
         side_effect_level="none", idempotency_policy="none",
         # 真探针：计算引擎自检（1+1 必须等于 2）
-        health_check=lambda: eval("1+1", {"__builtins__": {}}, {}) == 2
+        health_check=lambda: (eval("1+1", {"__builtins__": {}}, {}) == 2),
         # noqa: S307 与 run 同一白名单口径
+        # 契约 §4（GAP ⑤b）
+        offline_capable=True,
+        cost_model={"unit": "compute", "cost_per_call": 0},
+        contract_test_ref="tests/test_tool_health.py",
     ), run
 
 
@@ -91,6 +99,11 @@ def http_get_tool(timeout: float = 15.0, allowed_hosts: list | None = None) -> T
         timeout_policy=timeout,
         # 真探针：网络类工具**不做廉价探测**（会打外网/拖时延）——
         # health() 返回 None=unknown，不再被"恒真"伪装成全绿（F-04①）
+        # 契约 §4（GAP ⑤b）：显式联网声明
+        requires_network=True,
+        offline_capable=False,
+        cost_model={"unit": "request", "varies": "response_size"},
+        contract_test_ref="tests/test_tool_health.py",
     ), run
 
 
@@ -110,6 +123,9 @@ def fs_list_tool(base: str = ".") -> ToolContract:
         side_effect_level="none", idempotency_policy="none",
         # 真探针：基目录可列（closure 捕获 base）
         health_check=lambda: Path(base or ".").is_dir(),
+        offline_capable=True,
+        cost_model={"unit": "compute", "cost_per_call": 0},
+        contract_test_ref="tests/test_tool_health.py",
     ), run
 
 
@@ -133,6 +149,9 @@ def file_read_tool() -> ToolContract:
         side_effect_level="none", idempotency_policy="none",
         # 真探针：工作区可读
         health_check=lambda: os.access(".", os.R_OK),
+        offline_capable=True,
+        cost_model={"unit": "bytes_read", "varies": "file_size"},
+        contract_test_ref="tests/test_tool_health.py",
     ), run
 
 
@@ -169,6 +188,9 @@ def file_write_tool(workdir: str = ".") -> ToolContract:
         side_effect_level="local", idempotency_policy="key",
         # 真探针：workdir 真实可写（建+删一个临时文件）
         health_check=lambda: _probe_writable(workdir),
+        offline_capable=True,
+        cost_model={"unit": "op", "varies": "content_size"},
+        contract_test_ref="tests/test_tool_health.py",
     ), run
 
 
@@ -240,6 +262,9 @@ def git_read_tool(workdir: str = ".") -> ToolContract:
         timeout_policy=12.0,
         # 真探针：git 可执行（--version 子进程退出码 0）
         health_check=lambda: _probe_git(),
+        offline_capable=True,
+        cost_model={"unit": "subprocess"},
+        contract_test_ref="tests/test_tool_health.py",
     ), run
 
 

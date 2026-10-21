@@ -51,8 +51,14 @@ class PermissionController:
         self._tool_policies[policy.tool_id] = policy
 
     def check_tool(self, tool_id: str, args: Dict, risk: RiskLevel,
-                   side_effect: str = "none") -> PermissionDecision:
-        """工具调用前权限校验。裁决链：显式策略 > 副作用登记 > 高风险名单。"""
+                   side_effect: str = "none",
+                   lifted: bool = False) -> PermissionDecision:
+        """工具调用前权限校验。裁决链：显式策略 > 副作用登记 > 高风险名单。
+
+        lifted（契约 §4，GAP ⑤b）：工具契约风险声明高于副作用推导时
+        由注册表传入——显式声明可把工具拉入高风险确认链（fail-closed）。
+        自动推导的 risk 参数不触发（避免行为面意外放大）。
+        """
         policy = self._tool_policies.get(tool_id)
         if policy:
             if policy.decision == PermissionDecision.DENY:
@@ -61,7 +67,8 @@ class PermissionController:
                 return PermissionDecision.ALLOW
         if tool_id in self.high_risk_ops \
                 or (policy and policy.decision == PermissionDecision.CONFIRM) \
-                or side_effect in ("local", "destructive"):
+                or side_effect in ("local", "destructive") \
+                or lifted:
             return self._decide_high_risk(tool_id, args)
         return PermissionDecision.ALLOW
 

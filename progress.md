@@ -1544,3 +1544,10 @@
 - +7 新测试(test_event_contract.py)；test_event_sync 两处断言随裁定口径更新
 - 全量 559 passed（除 WorkBuddy 在途校验器区同款 4 失败）
 
+
+### 子步⑤b Tool 契约字段 完成（2026-10-22）
+- 契约 §4 五缺口：risk_class（声明式，risk_declared 区分显式/推导）、offline_capable、requires_network、cost_model、contract_test_ref
+- 注册单点：未声明 risk_class 按 side_effect_level 推导落值；显式声明执行裁决 fail-closed（声明只能升不能降；仅显式声明抬入高风险链，自动推导不放大行为面——check_tool 增 lifted 参数）
+- 内置六工具显式声明离线/成本模型/测试引用；http_get 显式要求联网
+- +6 测试(test_tool_contract_fields.py)；全量 565 passed（同款 4 在途区失败）
+
