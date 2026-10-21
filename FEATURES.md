@@ -24,8 +24,13 @@
 
 本文件 §9.2 列出本次核验出的全部「接口在、逻辑空」条目，共 24 项。
 
-测试基线（2026-10-21 实测）：**Python 397 项 + 客户端 128 项**。
-已知遗留：`test_pause_then_resume_completes` 约 50% flaky（改动前既有的检查点写入竞态，见 `GAP_ANALYSIS.md` §1.3，由 WP-0.1 修）。
+> 🔧 **机器校验（2026-10-21 新增）**：上述三条门槛现在**可自动复核**，不再依赖人工阅读 ——
+> `python tools/verify_claims.py --check` 会解析 `IMPLEMENTATION.md` 的每条声明并逐条验证：
+> 引用行号是否漂移、声称「零调用」的符号是否真零引用、声称「不存在」的模式是否真搜不到、
+> 每个 ✅ 行是否有可校验的代码路径与测试覆盖。**该命令退出码非 0 即视为台账不合格。**
+
+测试基线（2026-10-21 实测）：**Python 430 项 + 客户端 128 项**。
+已知遗留：`test_pause_then_resume_completes` 原约 50% flaky（检查点写入竞态）—— **已由 F-13 修复**（先落 paused 检查点再持久化 SUSPENDED 状态），连续 3 次全量跑均通过。
 
 ---
 
@@ -655,7 +660,7 @@ Python 服务端（标准库，SQLite）
 
 ## 8. 测试矩阵
 
-### Python（`tests/`，397 项）
+### Python（`tests/`，430 项）
 
 | 文件 | 覆盖范围 |
 |---|---|
@@ -697,6 +702,7 @@ Python 服务端（标准库，SQLite）
 | `test_control_plane.py` | 鉴权、审计、指标、管理页（PRD 90.1-90.7 分区、无 `innerHTML`、脚本语法校验） |
 | `test_release.py` | 清单、签名、回滚 |
 | `test_api.py` | API 冒烟 + `/costs` |
+| `test_verify_claims.py` | 台账声明校验器自身测试：真实台账必须通过 + 6 类故意构造的错误台账必须被抓住（22 项） |
 | `test_collab_base.py` | 协作基座：schema 域拆分与自动发现、语句幂等、迁移框架（基线一次性/goal_id 补列/不可兼容重建）、契约枚举与 6 条冲突裁定、路由注册表分派语义与 body 惰性（30 项） |
 | `test_collab_base_api.py` | 协作基座端到端：注册端点真实 HTTP 可用、存量端点行为零变化、未知路径仍 404（7 项） |
 
