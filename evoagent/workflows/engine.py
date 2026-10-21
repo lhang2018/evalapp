@@ -7,6 +7,7 @@
 
 import threading
 import time
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -106,7 +107,8 @@ class WorkflowEngine:
                         continue
                 runnable.append(node)
 
-            outcomes = self._run_batch(runnable, ctx_input, dict(done), budget)
+            outcomes = self._run_batch(runnable, ctx_input, dict(done),
+                                       budget, wf.workflow_id)
             paused_msg: Optional[str] = None
             failed: Optional[Tuple[WorkflowNode, str]] = None
             for node, (state, output, error, retries) in zip(runnable, outcomes):
@@ -114,6 +116,7 @@ class WorkflowEngine:
                 result.node_stats.append({
                     "node": node.node_id, "state": state,
                     "attempts": node.attempt + 1, "output": _clip(output),
+                    "node_run_id": node.node_run_id,
                 })
                 if state == WorkflowNodeState.SUCCESS:
                     done[node.node_id] = output
@@ -158,22 +161,36 @@ class WorkflowEngine:
         return result
 
     def _run_batch(self, nodes: List[WorkflowNode], ctx_input: Dict,
-                   snapshot: Dict, budget: Optional[BudgetController]
+                   snapshot: Dict, budget: Optional[BudgetController],
+                   workflow_id: str = ""
                    ) -> List[Tuple[str, Any, Optional[str], int]]:
         if not nodes:
             return []
         if len(nodes) == 1 or self.max_parallel == 1:
-            return [self._run_node(n, ctx_input, snapshot, budget)
+            return [self._run_node(n, ctx_input, snapshot, budget,
+                                   workflow_id)
                     for n in nodes]
         workers = min(self.max_parallel, len(nodes))
         with ThreadPoolExecutor(max_workers=workers) as pool:
             futures = [pool.submit(self._run_node, n, ctx_input, snapshot,
-                                   budget) for n in nodes]
+                                   budget, workflow_id) for n in nodes]
             return [f.result() for f in futures]
 
     def _run_node(self, node: WorkflowNode, ctx_input: Dict,
-                  done: Dict, budget: Optional[BudgetController]
+                  done: Dict, budget: Optional[BudgetController],
+                  workflow_id: str = ""
                   ) -> Tuple[str, Any, Optional[str], int]:
+        # GAP ⑤d：节点执行实体 ID（一次 _run_node = 一个 node_run，
+        # 覆盖其全部重试），入运行事件 payload 与任务清单（契约统一标识）
+        node.node_run_id = f"nod_{uuid.uuid4().hex[:16]}"
+        state, output, error, retries = self._node_attempt_loop(
+            node, ctx_input, done, budget)
+        self._emit_node_run(workflow_id, node, state)
+        return state, output, error, retries
+
+    def _node_attempt_loop(self, node: WorkflowNode, ctx_input: Dict,
+                           done: Dict, budget: Optional[BudgetController]
+                           ) -> Tuple[str, Any, Optional[str], int]:
         node.state = WorkflowNodeState.RUNNING
         attempt = 0
         retries = 0
@@ -204,6 +221,25 @@ class WorkflowEngine:
                     return WorkflowNodeState.FAILED, None, node.error, retries
         node.state = WorkflowNodeState.FAILED
         return WorkflowNodeState.FAILED, None, node.error, retries
+
+    def _emit_node_run(self, workflow_id: str, node: WorkflowNode,
+                       state: str) -> None:
+        """节点执行运行事件（GAP ⑤d：node_run_id 入事件 payload）。
+
+        事件自身故障不影响执行（与事件总线口径一致）。
+        """
+        if self.bus is None:
+            return
+        try:
+            self.bus.emit(event_type="workflow_node_run",
+                          component_id="workflow",
+                          payload={"workflow_id": workflow_id,
+                                   "node_id": node.node_id,
+                                   "node_run_id": node.node_run_id,
+                                   "state": state,
+                                   "attempts": node.attempt + 1})
+        except Exception:  # noqa: BLE001
+            pass
 
     def _exec_node_with_timeout(self, node: WorkflowNode, ctx_input: Dict,
                                 done: Dict, budget) -> Any:

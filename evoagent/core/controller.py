@@ -493,6 +493,11 @@ class RuntimeController:
             cancel_flag=self._active.get(task.task_id), confirm=_confirm,
             completed=completed)
         task.runtime_manifest["workflow_budget"] = wf_budget.snapshot()
+        # GAP ⑤d：node_run_id（契约统一标识）入任务清单——DAG 节点执行实体
+        task.runtime_manifest["node_runs"] = [
+            {"node": s.get("node"), "node_run_id": s.get("node_run_id"),
+             "state": s.get("state")} for s in result.node_stats
+            if s.get("node_run_id")]
         if result.status == WorkflowNodeState.PAUSED:
             task = self._move(task, TaskStatus.SUSPENDED)
             self.db.save_task(task)

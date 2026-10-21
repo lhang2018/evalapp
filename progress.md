@@ -1559,3 +1559,18 @@
 - +8 测试(test_manifest_contract.py)：十一键落值/摘要形状与稳定性/工具版本数组/expert_ref/评测链两级 stamp/workflow_ref 对象与 null
 - 全量两轮 573 passed（同款 4 在途区失败）
 
+
+### 子步⑤d node_run_id 完成（2026-10-22）
+- 契约统一标识落地：DAG 节点执行实体 ID `nod_{hex16}`——一次 `_run_node`（含其全部重试）= 一个 node_run，挂 `WorkflowNode.node_run_id` 运行期属性
+- 双落点：①运行事件 `workflow_node_run`（payload: workflow_id/node_id/node_run_id/state/attempts；事件故障不影响执行）；②任务清单 `task.runtime_manifest["node_runs"]`（controller._run_workflow 从 result.node_stats 收敛）
+- engine 既有 bus 装配此前从不发事件（0 处 emit）——本次是引擎首个运行事件出口
+- +3 测试(test_node_run_id.py)：ID 形状与唯一性/事件载荷与统计一致/任务清单记录
+- 全量 576 passed（同款 4 在途区失败）
+
+### 📌 契约字段批（GAP §7 第5项）收批（2026-10-22）
+- 17 个契约字段 + node_run_id 全部落地：⑤a Event 四字段（schema_version/payload_ref/privacy_level/acknowledged）/ ⑤b Tool 五字段（risk_class/offline_capable/requires_network/cost_model/contract_test_ref）/ ⑤c Manifest 八字段+workflow_ref 对象 / ⑤d node_run_id；共 +24 测试（7+6+8+3）
+- 每子步独立提交可回退；DoD：新增字段均有产生代码路径 + 测试（无「接口在、逻辑空」）
+- 09 卷 §3/§4/§5 契约字段缺口清零（07 卷 Goal/Side-effect Ledger/Capability Asset 三份整份契约属 E-07 前置，下一批处理）
+- 在途区存目：WorkBuddy 仍占用台账 .md/server.py 端点迁移/三个校验器；其各处零引用断言继续由台账持有人刷新
+- 下一批（GAP §7 后续）：E-07 四类信号定义补写 + 进化候选自动生成（当前最大空壳）
+
