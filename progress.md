@@ -1465,3 +1465,9 @@
 - resume 门禁改账本投影直读（GAP §7 DoD：pending_side_effects 自持→投影）；旧任务回落读检查点兼容；pause 检查点 extras 同步投影留档
 - +12 测试；提交后全量 458 全绿（含另一会话的台账漂移校验器 test_verify_claims/test_ledger_drift——先前窗口的 2 失败系台账编辑中态误踩，已自愈）
 
+
+### 🔧 进行中标记（2026-10-22 凌晨，本会话：主开发会话 GLM/OpenCode）
+- **当前任务：审批记录实体 approval_id**（GAP §7 第一批第 3 项：09 卷 §1 + A-01 五项绑定——动作摘要/目标对象/范围/有效期/一次性语义；resume 校验 safe_to_repeat）
+- 预计触及：新 `core/approvals.py`、新 `core/schema/approvals.py`、`core/persistence.py`(+CRUD ~30 行)、`core/permissions.py`(check_op 接账)、`core/controller.py`(resume force 落账 ≤10 行)、新 `api/approvals_api.py`(注册表路由)、新测试；**不碰** WorkBuddy 在途的 6 份台账 .md 与 android 通知文件
+- 完成前置：F-13/F-01/F-03 已完成（F-03 尚未推送，网络通了会自动补推）
+
