@@ -1524,3 +1524,10 @@
 - ⚠️ 台账联动：test_impact_analysis_still_unreferenced（C-09 零调用方断言）被本修复过时，由台账持有人刷新为「已接线：候选落 impact_result + 选集消费 + /impact 端点」；另 test_gap_closure 两检查器自测失败系其在途工具自改中，非本会话改动所致
 - 死字段批 4/4 子步全部完成（①health_check ②S-05审计 ③scope_key ④impact）
 
+
+### 📌 死字段修复批（GAP §7 第4项）收批（2026-10-22）
+- 4/4 子步全部落地并各自独立提交：①health_check 真探针三值语义 ②S-05 执行环节审计 ③memory_scope_key 检索隔离 ④impact_analysis 传递闭包+回归范围消费；共 +34 测试（9+5+6+14）
+- 本会话累计已完成推送（或待推送）：F-13 检查点竞态 / F-01 错误对象 / F-03 副作用账本 / F-04 审批记录 / 死字段批
+- 下一步（GAP §7 第5项）：补齐 Event/Tool/Manifest 17 个契约字段（09 卷 §3/§4/§5）
+- 在途区存目：WorkBuddy 正在改 6 份台账 + server.py 端点迁移 + 三个校验器文件；其 test_impact_analysis_still_unreferenced / R-08 health_check 等死字段断言已被本批修复过时，等其台账刷新轮
+
