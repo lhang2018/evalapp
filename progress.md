@@ -1551,3 +1551,11 @@
 - 内置六工具显式声明离线/成本模型/测试引用；http_get 显式要求联网
 - +6 测试(test_tool_contract_fields.py)；全量 565 passed（同款 4 在途区失败）
 
+
+### 子步⑤c Runtime Manifest 契约字段 完成（2026-10-22）
+- 契约 §5 八缺口 + workflow_ref 形态：runtime_adapter{name,version}（openai_compat|mock 按 provider.api_key）/ model_profile_ref（{model_id}/{adapter版本}）/ router_policy_ref（adapter/锚点）/ context_policy_ref（env/锚点）/ environment_digest（稳定事实 sha256，64hex、created_at 不参与→稳定）/ tool_versions[]（对象数组，来源 ToolRegistry.version_inventory）/ expert_ref（_run_react 专家解析后 stamp）/ evaluation_suite_ref（manifest_extras 传链：evaluate_candidate → runner.suite_ref → run_case → submit_task → 快照 merge 补 null）
+- workflow_ref：run manifest 落 {id, version} 对象（wf_lookup 核对版本）或 null；task.workflow_ref 字符串不动（20 处比较逻辑不受影响）
+- 接线：_version_manifest 补契约字段（映射既有版本锚点，注释说明）；execute 快照 merge（实值不覆盖、null 契约字段可补）；submit_task 增 manifest_extras 参数
+- +8 测试(test_manifest_contract.py)：十一键落值/摘要形状与稳定性/工具版本数组/expert_ref/评测链两级 stamp/workflow_ref 对象与 null
+- 全量两轮 573 passed（同款 4 在途区失败）
+

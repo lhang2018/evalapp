@@ -53,6 +53,11 @@ class ToolRegistry:
         contract.risk_declared = risk_declared
         self._tools[contract.tool_id] = RegisteredTool(contract, runner)
 
+    def version_inventory(self) -> List[Dict[str, str]]:
+        """注册表工具版本清单（契约 §5 tool_versions[]，GAP ⑤c 真实来源）。"""
+        return [{"tool_id": tid, "version": rt.contract.tool_version}
+                for tid, rt in sorted(self._tools.items())]
+
     def register_mock_tool(self, tool_id: str, fn: Callable[[Dict], Any],
                            side_effect_level: str = "external") -> None:
         """注册一个简单 Mock 工具（演示/测试用；真实接入请用带契约的正式注册）。"""

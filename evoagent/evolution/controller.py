@@ -254,9 +254,11 @@ class EvolutionController:
         ds = self._pick_dataset(cand, dataset_id)
         if ds is None:
             raise ValueError("没有可用评测集")
-        if ds is None:
-            raise ValueError("没有可用评测集")
         cand.eval_dataset_id = ds.dataset_id
+        # GAP ⑤c：评测套件引用传入执行链（run_case → manifest_extras）
+        _runner = getattr(self.evaluator, "runner", None)
+        if _runner is not None and hasattr(_runner, "suite_ref"):
+            _runner.suite_ref = f"{ds.dataset_id}/{ds.version}"
         baseline_report = None
         if baseline:
             baseline_report = self.evaluator.run(

@@ -6,10 +6,14 @@
 - Planning/ReAct/工作流不得绕过它直接获得不受约束的执行能力。
 """
 
+import datetime
+import hashlib
+import json
 import threading
 import time
 from typing import Any, Callable, Dict, List, Optional
 
+from .. import __version__ as CORE_VERSION
 from ..acceptance.verify import Verdict, Verifier
 from ..experts.registry import Expert, ExpertRegistry
 from ..memory.context import AssembledContext, ContextAssembler
@@ -102,7 +106,8 @@ class RuntimeController:
                     installation_id: Optional[str] = None,
                     app_version: Optional[str] = None,
                     goal_id: Optional[str] = None,
-                    origin: str = GoalOrigin.USER.value) -> Task:
+                    origin: str = GoalOrigin.USER.value,
+                    manifest_extras: Optional[Dict[str, Any]] = None) -> Task:
         if origin not in ORIGIN_VALUES:
             raise ValueError(
                 f"非法 origin: {origin}（契约 §2: user|scheduled|derived|opportunity）")
@@ -133,6 +138,10 @@ class RuntimeController:
                 "installation_id": installation_id or None,
                 "app_version": app_version or None,
             }
+        # GAP ⑤c：调用方预置的运行时清单事实（如评测套件引用），随任务
+        # 保存并在 execute 快照 merge 时并入 run manifest
+        if manifest_extras:
+            task.runtime_manifest.update(manifest_extras)
         self._emit(task, "task_created",
                    {"goal": goal, "goal_id": task.goal_id,
                     "origin": task.origin})
@@ -161,6 +170,20 @@ class RuntimeController:
             "installation_id": device.get("installation_id"),
             "app_version": device.get("app_version"),
         })
+        # GAP ⑤c：workflow_ref 契约形态 = {id, version} 对象或 null
+        # （任务级 task.workflow_ref 保持字符串 id，不动其既有比较逻辑）
+        if task.workflow_ref:
+            wf = self.wf_lookup(task.workflow_ref)
+            version_manifest["workflow_ref"] = {
+                "id": task.workflow_ref,
+                "version": getattr(wf, "version", None) if wf else None}
+        # GAP ⑤c：任务级运行时清单快照并入 run manifest（source/
+        # model_override/device/manifest_extras 等执行前已知事实）；
+        # 已算出的契约实值不覆盖，为 null 的契约字段（如
+        # evaluation_suite_ref）允许被运行前已知事实补齐
+        for k, v in (task.runtime_manifest or {}).items():
+            if k not in version_manifest or version_manifest[k] is None:
+                version_manifest[k] = v
         task.version_manifest = version_manifest
         # 每次运行固定一份不可变清单，供服务端按 run_id 还原组件组合
         self.db.save_runtime_manifest(
@@ -352,6 +375,12 @@ class RuntimeController:
 
     def _run_react(self, task: Task, budget: BudgetController) -> Task:
         expert = self.experts.get(task.domain) or self.experts.route(task.intent)
+        # GAP ⑤c：契约 §5 expert_ref（专家域解析即落值；ExpertSpec 无独立
+        # 版本锚，版本取发布版本，任务清单存档）
+        if expert:
+            task.runtime_manifest["expert_ref"] = (
+                f"{expert.expert_id}/"
+                f"{(task.version_manifest or {}).get('version') or 'unreleased'}")
         model = self._route_model(task)
         self._bind_model_pool(budget, model)
         whitelist = expert.tool_whitelist if expert else None
@@ -812,18 +841,73 @@ class RuntimeController:
     def _version_manifest(self) -> Dict[str, Any]:
         if self.releases and self.releases.current_release_id:
             m = self.releases.manifests.get(self.releases.current_release_id)
-            if m:
-                return {
-                    "release_id": m.release_id, "version": m.version,
-                    "artifact_digest": m.artifact_digest,
-                    "code_commit": m.code_commit,
-                    "model_adapter_version": m.model_adapter_version,
-                    "prompt_version": m.prompt_version,
-                    "tools_version": m.tools_version,
-                    "workflow_versions": list(m.workflow_versions),
-                    "env_version": m.env_version,
-                }
-        return {"release_id": None, "version": "unreleased"}
+        else:
+            m = None
+        if m is not None:
+            base = {
+                "release_id": m.release_id, "version": m.version,
+                "artifact_digest": m.artifact_digest,
+                "code_commit": m.code_commit,
+                "model_adapter_version": m.model_adapter_version,
+                "prompt_version": m.prompt_version,
+                "tools_version": m.tools_version,
+                "workflow_versions": list(m.workflow_versions),
+                "env_version": m.env_version,
+            }
+        else:
+            base = {"release_id": None, "version": "unreleased"}
+        return self._manifest_contract_fields(base)
+
+    def _manifest_contract_fields(self, base: Dict[str, Any]) -> Dict[str, Any]:
+        """契约 §5 Runtime Manifest 补充字段（GAP 第一批第5项·子步⑤c）。
+
+        契约字段映射到既有版本锚点（release manifest），不发明新版本源：
+        - runtime_adapter{name,version}：适配器形态取当前 provider，
+          版本锚 = model_adapter_version
+        - model_profile_ref：{model_id}/{model_adapter_version}
+        - router_policy_ref：adapter/{model_adapter_version}（路由策略
+          归属适配器层版本锚）
+        - context_policy_ref：env/{env_version}（上下文策略归属环境版本锚）
+        - environment_digest：稳定事实集合的 sha256（不可变指纹）
+        - evaluation_suite_ref：运行前由调用方经 manifest_extras 预置
+          （evolution runner 传数据集 id/version），未知为 null
+        - workflow_ref：契约形态为 {id, version} 对象或 null，execute
+          落值（wf_lookup 核对版本）
+        - expert_ref：_run_react 专家解析后落值
+        - tool_versions[]：注册表逐工具 {tool_id, version} 对象数组
+        """
+        adapter_version = str(base.get("model_adapter_version") or "0.0.0")
+        adapter_name = ("openai_compat"
+                        if self.cfg.provider.api_key else "mock")
+        facts = {
+            "version": base.get("version"),
+            "code_commit": base.get("code_commit"),
+            "model_adapter_version": base.get("model_adapter_version"),
+            "prompt_version": base.get("prompt_version"),
+            "tools_version": base.get("tools_version"),
+            "env_version": base.get("env_version"),
+            "core_version": CORE_VERSION,
+        }
+        base.update({
+            "created_at": datetime.datetime.now(
+                datetime.timezone.utc).isoformat(timespec="seconds"),
+            "core_version": CORE_VERSION,
+            "runtime_adapter": {"name": adapter_name,
+                                "version": adapter_version},
+            "model_profile_ref": f"{self.cfg.provider.model_id}/"
+                                 f"{adapter_version}",
+            "router_policy_ref": f"adapter/{adapter_version}",
+            "context_policy_ref": f"env/{base.get('env_version') or '0.0.0'}",
+            "evaluation_suite_ref": None,
+            "expert_ref": None,
+            "workflow_ref": None,
+            "tool_versions": self.tools.version_inventory()
+            if self.tools is not None else [],
+            "environment_digest": hashlib.sha256(
+                json.dumps(facts, sort_keys=True, ensure_ascii=False,
+                           default=str).encode("utf-8")).hexdigest(),
+        })
+        return base
 
     def _move(self, task: Task, target: TaskStatus, *,
               save: bool = True) -> Task:
