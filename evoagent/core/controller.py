@@ -387,10 +387,15 @@ class RuntimeController:
                 task = self._move(task, TaskStatus.CANCELLED)
             return task
         if outcome.stop_reason == "paused":
-            task = self._move(task, TaskStatus.SUSPENDED)
+            # F-13 检查点有序化（GAP §1.3）：必须先落 paused 检查点、最后才
+            # 把 SUSPENDED 状态写库。否则观察者一看到 SUSPENDED 状态就读
+            # latest()，拿到的仍是旧 running 检查点（丢失预算/计划），
+            # test_pause_then_resume_completes 的 50% flaky 即此窗口。
+            task = self._move(task, TaskStatus.SUSPENDED, save=False)
             self.checkpoint(task, "paused", extras={
                 "budget": budget.snapshot(),
                 "plan": plan.to_dict() if plan else None})
+            self.db.save_task(task)
             self._emit(task, "task_paused", {
                 "plan_progress": task.runtime_manifest.get("plan_progress")})
             return task
@@ -788,7 +793,8 @@ class RuntimeController:
                 }
         return {"release_id": None, "version": "unreleased"}
 
-    def _move(self, task: Task, target: TaskStatus) -> Task:
+    def _move(self, task: Task, target: TaskStatus, *,
+              save: bool = True) -> Task:
         task.task_status = transition(task.task_status, target)
         task.updated_at = time.time()
         if target in (TaskStatus.RUNNING, TaskStatus.VERIFYING):

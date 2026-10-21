@@ -103,9 +103,11 @@ class Database:
             self._conn.commit()
 
     def get_latest_checkpoint(self, task_id: str) -> Optional[Dict[str, Any]]:
+        # created_at 同精度写入可能打平（Windows time.time() 分辨率粗），
+        # rowid DESC 决胜：后插必后取（F-13）
         row = self._conn.execute(
             "SELECT snapshot FROM task_checkpoints WHERE task_id=?"
-            " ORDER BY created_at DESC LIMIT 1", (task_id,)).fetchone()
+            " ORDER BY created_at DESC, rowid DESC LIMIT 1", (task_id,)).fetchone()
         if not row:
             return None
         return json.loads(row["snapshot"])
