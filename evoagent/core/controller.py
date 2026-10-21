@@ -49,7 +49,8 @@ class RuntimeController:
                  permissions: Any, releases: Optional[ReleaseManager] = None,
                  wf_lookup: Optional[Callable[[str], Optional[WorkflowDef]]] = None,
                  diagnostics: Any = None, classifier: Any = None,
-                 ledger: Optional[Any] = None):
+                 ledger: Optional[Any] = None,
+                 audit: Any = None):
         self.cfg = config
         self.db = db
         self.bus = bus
@@ -70,6 +71,7 @@ class RuntimeController:
         self.diagnostics = diagnostics
         self.classifier = classifier
         self.ledger = ledger
+        self.audit = audit  # S-05 执行环节审计（可选）
         # 并发管理（Arch 3.2 管理并发和取消）
         self._active: Dict[str, threading.Event] = {}
         self._lock = threading.Lock()
@@ -401,6 +403,8 @@ class RuntimeController:
                 "pending_side_effects": self.side_fx.pending(task.task_id),
                 "plan": plan.to_dict() if plan else None})
             self.db.save_task(task)
+            self._audit("task_paused", target=task.task_id,
+                        detail_stage="react_decision_boundary")
             self._emit(task, "task_paused", {
                 "plan_progress": task.runtime_manifest.get("plan_progress")})
             return task
@@ -460,6 +464,9 @@ class RuntimeController:
         if result.status == WorkflowNodeState.PAUSED:
             task = self._move(task, TaskStatus.SUSPENDED)
             self.db.save_task(task)
+            self._audit("task_paused", target=task.task_id,
+                        workflow=task.workflow_ref,
+                        reason=str(result.error or ""))
             self._emit(task, "task_paused", {
                 "workflow": task.workflow_ref, "reason": result.error})
             return task
@@ -544,6 +551,10 @@ class RuntimeController:
             return
         task.runtime_manifest["diagnostic_case_id"] = case.case_id
         self.db.save_task(task)
+        # S-05：失败建案审计（含案件引用）
+        self._audit("diagnostic_case_recorded", target=task.task_id,
+                    outcome="warn", case_id=case.case_id,
+                    stop_reason=stop_reason)
 
     # ================= 检查点 / 恢复 / 取消 =================
     def checkpoint(self, task: Task, stage: str,
@@ -818,6 +829,9 @@ class RuntimeController:
         if target in (TaskStatus.RUNNING, TaskStatus.VERIFYING):
             self.checkpoint(task, target.value)
         self.db.save_task(task)
+        # S-05：状态流转全审计（每转必留痕）
+        self._audit("task_state_transition", target=task.task_id,
+                    to=target.value)
         self._emit(task, "state_transition", {"to": target.value})
         return task
 
@@ -838,6 +852,24 @@ class RuntimeController:
             valid_until=(time.time() + 7 * 86400) if not verified else None,
         )
         self.memory.write(item)
+        # S-05：记忆沉淀审计（记录可信状态与证据引用）
+        self._audit("memory_remembered", target=task.task_id,
+                    verified=verified, status=item.status.value)
+
+    def _audit(self, action: str, *, target: str = "", outcome: str = "ok",
+               **detail: Any) -> None:
+        """S-05 执行环节审计：追加记录、不参与业务判断（Arch 18.2）。
+
+        审计自身故障不阻断执行；detail 展开为结构的负载。
+        """
+        if self.audit is None:
+            return
+        try:
+            self.audit.record("controller", action, target=target,
+                              outcome=outcome,
+                              detail=detail if detail else None)
+        except Exception:  # noqa: BLE001 —— 审计故障不得影响业务
+            pass
 
     def _emit(self, task: Task, event_type: str,
               payload: Dict[str, Any], severity: str = "info") -> RunEvent:

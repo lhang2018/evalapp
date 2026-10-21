@@ -1498,3 +1498,11 @@
 - +9 测试(test_tool_health.py)
 - ⚠️ 台账联动：WorkBuddy 在途未提交的 test_ledger_drift::test_builtin_tools_still_do_not_set_health_check 守的 R-08 死字段断言已被本修复过时（全量 1 失败即此，属预期）——由台账持有人刷新为「内置工具已设真探针；http_get 等 unknown 口径」；GAP/IMPLEMENTATION 相应 R-08/E-04 行同批更新
 
+
+### 子步② S-05 执行环节审计 完成（2026-10-22）
+- RuntimeController 持可选 audit（app 装配注入）；`_audit()` helper：追加记录、不参与业务判断（Arch 18.2）、审计故障不阻断执行
+- 五类执行事件落审计台：task_state_transition（_move 每转必留痕，含 to=）/ memory_remembered（verified+status）/ diagnostic_case_recorded（case_id+stop_reason, outcome=warn）/ task_paused ×2（ReAct 决策边界 & 工作流暂停）
+- API/CLI 边界外执行环节零审计的 S-05 缺陷闭环
+- +5 测试(test_execution_audit.py)；全量连续两轮 505 passed + 1 skipped
+- 台账联动确认：WorkBuddy 已刷新 test_ledger_drift 的 R-08 health_check 断言（此前预期失败已消失），天账刷新流程按先例闭环
+
