@@ -73,6 +73,22 @@ class TestRoutingEvalApiEndToEnd(unittest.TestCase):
         self.assertTrue(out["confusion"])
         self.assertTrue(out["per_intent"])
         self.assertTrue(out["method_counts"])
+        # 五层覆盖复核随报告返回
+        self.assertEqual([r["layer"] for r in out["coverage"]],
+                         ["intent", "expert", "workflow",
+                          "execution_mode", "model"])
+
+    def test_coverage_endpoint(self):
+        """GET /routing/coverage 返回五层覆盖矩阵与缺口。"""
+        status, out = self._get("/routing/coverage")
+        self.assertEqual(status, 200)
+        self.assertEqual(out["order"],
+                         ["intent", "expert", "workflow",
+                          "execution_mode", "model"])
+        layers = {r["layer"]: r for r in out["layers"]}
+        self.assertTrue(layers["intent"]["evaluated"])
+        self.assertFalse(layers["execution_mode"]["evaluated"])
+        self.assertTrue(layers["execution_mode"]["gap"])
 
     def test_run_eval_reports_misclassified(self):
         """错分样本必须被列出（这是「纠错」的输入）。"""

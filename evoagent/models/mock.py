@@ -45,6 +45,7 @@ class MockModel:
         return ModelProfile(model_id=self.model_id, provider="builtin",
                             context_limit=100000, supports_tool_call=True,
                             price_per_1k_input=0.0, price_per_1k_output=0.0,
+                            pricing_known=True,
                             compat_tested=True, last_verified_at=time.time())
 
     def generate(self, messages: List[ChatMessage]) -> str:

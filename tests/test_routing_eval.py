@@ -22,11 +22,13 @@ sys.path.insert(0, ROOT)
 from evoagent.core.persistence import Database  # noqa: E402
 from evoagent.evolution.routing_eval import (  # noqa: E402
     FALLBACK_METHODS,
+    ROUTING_LAYERS,
     RoutingCase,
     RoutingDataset,
     RoutingEvaluator,
     builtin_routing_datasets,
     load_reports,
+    routing_coverage,
     save_report,
 )
 from evoagent.experts.builtin import builtin_experts  # noqa: E402
@@ -243,6 +245,39 @@ class TestRegressionFeedback(unittest.TestCase):
         report = self.evaluator.run(ds)
         regs = self.evaluator.regression_cases(report, max_cases=5)
         self.assertLessEqual(len(regs), 5)
+
+
+class TestFiveLayerCoverage(unittest.TestCase):
+    """ALN-08 五层覆盖复核：已评测层有指标，缺失层必须显式标出。"""
+
+    def test_layers_listed_in_order(self):
+        rows = routing_coverage()
+        self.assertEqual([r["layer"] for r in rows], list(ROUTING_LAYERS))
+        self.assertEqual(len(rows), 5)
+
+    def test_evaluated_layers_have_metrics_and_no_gap(self):
+        rows = {r["layer"]: r for r in routing_coverage()}
+        for name in ("intent", "expert"):
+            self.assertTrue(rows[name]["evaluated"], f"{name} 应已评测")
+            self.assertTrue(rows[name]["metrics"], f"{name} 缺指标")
+            self.assertEqual(rows[name]["gap"], "", f"{name} 不应标缺口")
+
+    def test_missing_layers_are_explicit(self):
+        rows = {r["layer"]: r for r in routing_coverage()}
+        for name in ("workflow", "execution_mode", "model"):
+            self.assertFalse(rows[name]["evaluated"],
+                             f"{name} 当前没有评测，不能标成已覆盖")
+            self.assertTrue(rows[name]["gap"], f"{name} 必须写明缺口")
+        self.assertIsNone(rows["workflow"]["entry"])
+        self.assertIsNone(rows["execution_mode"]["entry"])
+
+    def test_model_layer_has_route_entry_but_no_eval(self):
+        rows = {r["layer"]: r for r in routing_coverage()}
+        model = rows["model"]
+        self.assertIn("ModelRouter.route", model["implementation"])
+        self.assertIn("runtime_manifest", model["entry"])
+        self.assertFalse(model["evaluated"])
+        self.assertIn("实测费用", model["gap"])
 
 
 class TestBaselineComparison(unittest.TestCase):

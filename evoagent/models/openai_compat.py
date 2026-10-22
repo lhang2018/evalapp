@@ -28,9 +28,14 @@ class OpenAICompatAdapter:
         self.timeout = timeout_seconds
         # 网关（如 OpenCode Zen Go）用会话头做路由与缓存；普通 OpenAI 端点忽略未知头
         self._session_id = f"sess-{uuid.uuid4().hex}"
-        self._profile = ModelProfile(
+        registered = registry.get(model_id) if registry is not None else None
+        self._profile = registered or ModelProfile(
             model_id=model_id, provider="openai-compat",
         )
+        # 提供方返回的真实用量/请求号；由 MeteredModel 读取，缺省 None 表示
+        # 提供方未返回（不能据此推断免费）。
+        self.last_usage: Dict[str, Any] | None = None
+        self.last_request_id: str | None = None
 
     def profile(self) -> ModelProfile:
         return self._profile
@@ -95,6 +100,8 @@ class OpenAICompatAdapter:
             "User-Agent": "evoagent/0.1",
             "x-opencode-session": self._session_id,
         }
+        self.last_usage = None
+        self.last_request_id = None
         last_err: Exception | None = None
         for attempt in range(_MAX_RETRIES):
             try:
@@ -108,6 +115,10 @@ class OpenAICompatAdapter:
                         out["function_call"] = msg["function_call"]
                     if msg.get("tool_calls"):
                         out["tool_calls"] = msg["tool_calls"]
+                    self.last_usage = _usage_of(data.get("usage"))
+                    self.last_request_id = (
+                        data.get("id")
+                        or (r.headers or {}).get("x-request-id"))
                     return out
                 if r.status_code in (429, 500, 502, 503):
                     last_err = RuntimeError(f"HTTP {r.status_code}")
@@ -117,6 +128,24 @@ class OpenAICompatAdapter:
                 last_err = e
             time.sleep(_BACKOFF_SECONDS[min(attempt, len(_BACKOFF_SECONDS) - 1)])
         raise RuntimeError(f"LLM 调用重试 {_MAX_RETRIES} 次仍失败: {last_err}")
+
+
+def _usage_of(raw: Any) -> Dict[str, int] | None:
+    """规范化提供方用量；缺失或不可解析时返回 None（不当作 0 用量）。"""
+    if not isinstance(raw, dict):
+        return None
+    def _int(value: Any) -> int | None:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+    inp = _int(raw.get("prompt_tokens", raw.get("input_tokens")))
+    out = _int(raw.get("completion_tokens", raw.get("output_tokens")))
+    if inp is None or out is None:
+        return None
+    total = _int(raw.get("total_tokens"))
+    return {"input_tokens": inp, "output_tokens": out,
+            "total_tokens": inp + out if total is None else total}
 
 
 def _openai_tool(t: ToolContract | Dict[str, Any]) -> Dict[str, Any]:

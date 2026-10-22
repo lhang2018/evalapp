@@ -402,6 +402,78 @@ class RoutingEvaluator:
         }
 
 
+# ---------------------------------------------------------------- 五层覆盖复核
+
+#: ALN-08 要求的五层路由决策
+ROUTING_LAYERS = ("intent", "expert", "workflow", "execution_mode", "model")
+
+
+def routing_coverage() -> List[Dict[str, Any]]:
+    """五层路由覆盖复核（ALN-08-M）。
+
+    只陈述**当前代码能证明**的范围：有实现/有入口/有评测分别判断，
+    不用“字段存在”代替“真实调用”。缺失层明确列出，供后续排期。
+    """
+    # 导入即自检：入口类/方法缺失时这里会失败，避免复核表悄悄过期。
+    from ..experts.registry import ExpertRegistry
+    from ..models.router import ModelRouter
+    from ..planning.intent import IntentClassifier
+
+    assert callable(getattr(IntentClassifier, "classify", None))
+    assert callable(getattr(ExpertRegistry, "route", None))
+    assert callable(getattr(ModelRouter, "route", None))
+
+    return [
+        {
+            "layer": "intent",
+            "implementation": "planning/intent.py::IntentClassifier.classify",
+            "entry": "IntentClassifier.classify（hint → model → heuristic）",
+            "evaluated": True,
+            "metrics": ["intent_accuracy", "top1_accuracy", "top3_accuracy",
+                        "fallback_rate", "abstention_rate", "confusion",
+                        "per_intent", "method_counts"],
+            "evidence": "RoutingEvaluator.evaluate_case 直接调用同一 classify 入口",
+            "gap": "",
+        },
+        {
+            "layer": "expert",
+            "implementation": "experts/registry.py::ExpertRegistry.route",
+            "entry": "RoutingEvaluator → experts.route(intent, domain)；运行时同入口",
+            "evaluated": True,
+            "metrics": ["expert_accuracy", "expert_case_count", "per_expert"],
+            "evidence": "对声明 expected_expert 的用例走真实专家路由并比对",
+            "gap": "",
+        },
+        {
+            "layer": "workflow",
+            "implementation": "workflows/library.py（仅存取/执行，无匹配）",
+            "entry": None,
+            "evaluated": False,
+            "metrics": [],
+            "evidence": "",
+            "gap": "没有按目标/意图自动选择工作流的匹配入口；工作流只能显式指定",
+        },
+        {
+            "layer": "execution_mode",
+            "implementation": "",
+            "entry": None,
+            "evaluated": False,
+            "metrics": [],
+            "evidence": "",
+            "gap": "没有 ReAct/计划/直答等执行模式的决策入口",
+        },
+        {
+            "layer": "model",
+            "implementation": "models/router.py::ModelRouter.route",
+            "entry": "controller._route_model → runtime_manifest.model_route",
+            "evaluated": False,
+            "metrics": [],
+            "evidence": "路由结果记录 model_id/provider/source，但未被 routing_eval 评测",
+            "gap": "缺模型层评测指标与实测费用对账；调用尚未回填 task/run 关联",
+        },
+    ]
+
+
 # ---------------------------------------------------------------- 内置评测集
 
 def builtin_routing_datasets() -> Dict[str, RoutingDataset]:

@@ -22,6 +22,10 @@ class ModelProfile:
     rpm_limit: int = 60
     price_per_1k_input: float = 0.0
     price_per_1k_output: float = 0.0
+    #: 价格是否已知。缺省 False：**价格缺失不等于免费**，
+    #: 计量时必须保留为 unknown，不能按 0 计入成本。显式免费（如 Mock）
+    #: 需同时设 pricing_known=True 且两项价格为 0。
+    pricing_known: bool = False
     # 路由评分维度（Arch 7：质量/成本/时延/可用性）
     quality_score: float = 0.7
     avg_latency_s: float = 1.0

@@ -44,7 +44,7 @@ def run_routing_eval(ctx):
     报告落库（routing_reports 表），供后续基线对比。
     """
     from ..evolution.routing_eval import (builtin_routing_datasets,
-                                         save_report)
+                                         routing_coverage, save_report)
 
     body = ctx.body or {}
     dataset_id = str(body.get("dataset_id") or "builtin_routing")
@@ -92,8 +92,18 @@ def run_routing_eval(ctx):
              "confidence": r.confidence,
              "low_confidence": r.low_confidence}
             for r in report.case_results if not r.ok],
+        "coverage": routing_coverage(),
         "regression_candidates": len(regressions),
     })
+
+
+@get("/routing/coverage")
+def routing_coverage_layers(ctx):
+    """五层路由覆盖复核：哪些层有真实入口/评测，哪些仍是缺口。"""
+    from ..evolution.routing_eval import ROUTING_LAYERS, routing_coverage
+
+    ctx.json(200, {"layers": routing_coverage(),
+                   "order": list(ROUTING_LAYERS)})
 
 
 @get("/routing/reports")
