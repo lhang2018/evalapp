@@ -129,6 +129,7 @@ class TestPauseResume(Base):
         self.assertEqual(resumed.task_status.value, "SUCCEEDED")
 
     def test_resume_failed_creates_new_task(self):
+        self.app.permissions.high_risk_mode = "deny"
         t = self.app.submit("写笔记 path=notes/x.txt content=abc",
                             intent="note_taking",
                             acceptance=[{"type": "tool_succeeded"}])

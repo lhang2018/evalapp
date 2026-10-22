@@ -24,8 +24,13 @@ import type {
   ReconcileResponse,
 } from "./update/types.ts";
 import { headerFileName } from "./offline/packageImport.ts";
+import type { UserInputRequest } from "./offline/types.ts";
 
 export interface TaskInfo {
+  current_run_id?: string | null;
+  parent_run_id?: string | null;
+  waiting_request?: UserInputRequest | null;
+  waiting_approvals?: string[];
   task_id: string;
   user_goal: string;
   intent: string;
@@ -38,12 +43,24 @@ export interface TaskInfo {
 }
 
 export interface RunEvent {
+  run_id?: string | null;
   event_id: string;
   event_type: string;
   task_id?: string;
   severity: string;
   timestamp: number;
   payload: Record<string, unknown>;
+}
+
+export interface ApprovalInfo {
+  approval_id: string;
+  task_id: string;
+  op: string;
+  status: string;
+  action_summary: string;
+  binding_json: string | null;
+  action_digest: string | null;
+  expires_at: number | null;
 }
 
 export interface MetricsSnapshot {
@@ -280,8 +297,34 @@ export class EvoAgentClient {
     return this.req<{ tasks: TaskInfo[] }>("/tasks").then((r) => r.tasks);
   }
 
-  getTask(id: string) {
-    return this.req<TaskInfo>(`/tasks/${id}`);
+  getTask(id: string, adminToken?: string) {
+    if (!adminToken) return this.req<TaskInfo>(`/tasks/${encodeURIComponent(id)}`);
+    return this.req<TaskInfo>(`/tasks/${encodeURIComponent(id)}`, {
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken}` },
+    });
+  }
+
+  answerTask(id: string, requestId: string, answer: string) {
+    return this.req<{ task_id: string; accepted: boolean; run_id: string | null }>(
+      `/tasks/${encodeURIComponent(id)}/answer`, {
+        method: "POST",
+        body: JSON.stringify({ request_id: requestId, answer }),
+      });
+  }
+
+  getApproval(id: string, adminToken?: string) {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (adminToken) headers.Authorization = `Bearer ${adminToken}`;
+    return this.req<ApprovalInfo>(`/approvals/${encodeURIComponent(id)}`, { headers });
+  }
+
+  decideApproval(id: string, approved: boolean, adminToken?: string) {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (adminToken) headers.Authorization = `Bearer ${adminToken}`;
+    return this.req<{ accepted: boolean; task_id: string; task_status: string }>(
+      `/approvals/${encodeURIComponent(id)}/decision`, {
+        method: "POST", headers, body: JSON.stringify({ approved }),
+      });
   }
 
   events(id: string): Promise<RunEvent[]> {

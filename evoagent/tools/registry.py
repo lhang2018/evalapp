@@ -13,6 +13,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ..core.budget import BudgetController
 from ..core.permissions import PermissionController, PermissionDecision
+from ..core.approvals import ApprovalRequired
+from ..core.leases import LeaseLost, assert_current_lease
+from contextvars import copy_context
 from ..core.side_effects import SideEffectLedger
 from ..core.task import RiskLevel
 from .contract import ToolContract, ToolResult, class_error, validate_against_schema
@@ -102,10 +105,14 @@ class ToolRegistry:
                 allowed_tools: Optional[List[str]] = None,
                 task_id: str = "", run_id: str = "",
                 effects: Optional[Any] = None,
-                timeout_seconds: Optional[float] = None) -> ToolResult:
+                timeout_seconds: Optional[float] = None,
+                require_confirmation: bool = False,
+                authorization_context: Optional[Dict] = None) -> ToolResult:
         context = dict(allowed_tools=allowed_tools, task_id=task_id,
                        run_id=run_id, effects=effects,
-                       timeout_seconds=timeout_seconds)
+                       timeout_seconds=timeout_seconds,
+                       require_confirmation=require_confirmation,
+                       authorization_context=authorization_context)
         result = self._execute_direct(tool_id, args, budget, idempotency_key,
                                       **context)
         if result.ok or result.executed or result.side_effect_uncertain:
@@ -156,7 +163,10 @@ class ToolRegistry:
                         allowed_tools: Optional[List[str]] = None,
                         task_id: str = "", run_id: str = "",
                         effects: Optional[Any] = None,
-                        timeout_seconds: Optional[float] = None) -> ToolResult:
+                        timeout_seconds: Optional[float] = None,
+                        require_confirmation: bool = False,
+                        authorization_context: Optional[Dict] = None) -> ToolResult:
+        assert_current_lease()
         # The model's visible schema is advisory; enforce its scope here for
         # the primary tool and every substitute before any runner is invoked.
         if allowed_tools is not None and tool_id not in allowed_tools:
@@ -168,6 +178,14 @@ class ToolRegistry:
 
         # 兼容性检查（Arch 6.2）：注册时已校验 schema；执行时核对契约仍在
         c = rt.contract
+        err = validate_against_schema(args, c.input_schema)
+        if err:
+            return ToolResult.error_result(f"参数校验失败: {err}", "invalid_arguments")
+        if budget:
+            try:
+                budget.check_tool_call(tool_id)
+            except Exception as exc:
+                return ToolResult.error_result(str(exc), "budget_exceeded")
         # 权限校验（契约 §4，GAP ⑤b）：声明与执行同源——取声明
         # risk_class 与副作用级推导的严格者（fail-closed，声明只能
         # 升高不能降低裁决风险）
@@ -178,19 +196,26 @@ class ToolRegistry:
         if lifted:
             risk = declared
         if self.permissions:
-            decision = self.permissions.check_tool(
-                tool_id, args, risk, side_effect=c.side_effect_level,
-                lifted=lifted, task_id=task_id)
+            try:
+                decision = self.permissions.check_tool(
+                    tool_id, args, risk, side_effect=c.side_effect_level,
+                    lifted=lifted, task_id=task_id, run_id=run_id,
+                    require_confirmation=require_confirmation,
+                    authorization_context={**(authorization_context or {}),
+                        "tool_version": c.tool_version,
+                        "side_effect": c.side_effect_level, "risk": risk.value,
+                        "permissions": list(c.permission_requirements or [])})
+            except ApprovalRequired as exc:
+                result = ToolResult.error_result(str(exc), "approval_required")
+                result.evidence["approval_id"] = exc.approval_id
+                return result
             if decision != PermissionDecision.ALLOW:
                 return ToolResult.error_result(f"工具被权限拒绝: {tool_id}",
                                                "auth_or_permission")
+        elif require_confirmation:
+            return ToolResult.error_result("缺少节点确认权限控制器", "auth_or_permission")
 
-        # 参数验证
-        err = validate_against_schema(args, c.input_schema)
-        if err:
-            return ToolResult.error_result(f"参数校验失败: {err}", "invalid_arguments")
-
-        # 预算检查
+        # Synchronous confirmation may take time; recheck before execution.
         if budget:
             try:
                 budget.check_tool_call(tool_id)
@@ -230,6 +255,8 @@ class ToolRegistry:
                     blocked.evidence.update(tool=tool_id, effect_id=effect_id,
                                             side_effect_level=c.side_effect_level)
                     return blocked
+            except LeaseLost:
+                raise
             except Exception as e:
                 return ToolResult.error_result(
                     f"副作用预记账失败，拒绝执行: {type(e).__name__}",
@@ -254,15 +281,17 @@ class ToolRegistry:
             timeout = min(timeout, timeout_seconds) if timeout > 0 else timeout_seconds
         while True:
             attempts += 1
-            counted = False
+            if budget:
+                budget.check_tool_call(tool_id)
+                budget.record_tool_call(tool_id)  # durable reservation before entering runner
             try:
+                assert_current_lease()
                 result = self._run_with_timeout(rt.runner, args,
                                                 timeout)
                 break
+            except LeaseLost:
+                raise
             except Exception as e:  # noqa: BLE001
-                if budget:
-                    budget.record_tool_call(tool_id)
-                    counted = True
                 err_class = class_error(e)
                 failed = ToolResult.error_result(
                     f"{type(e).__name__}: {e}", err_class)
@@ -277,8 +306,6 @@ class ToolRegistry:
                     break
                 time.sleep(min(0.05 * attempts, 0.5))
         elapsed = time.time() - started
-        if budget and not counted:
-            budget.record_tool_call(tool_id)
 
         # 输出契约校验（Arch 6.2）：返回成功不等于符合契约
         if c.output_schema and result.ok:
@@ -310,6 +337,7 @@ class ToolRegistry:
         return result
 
     def _run_with_timeout(self, runner, args, timeout: float) -> ToolResult:
+        assert_current_lease()
         if not timeout or timeout <= 0:
             result = runner(args)
             if not isinstance(result, ToolResult):
@@ -319,11 +347,12 @@ class ToolRegistry:
 
         def target() -> None:
             try:
+                assert_current_lease()
                 holder["result"] = runner(args)
             except BaseException as e:  # noqa: BLE001
                 holder["error"] = e
 
-        th = threading.Thread(target=target, daemon=True)
+        th = threading.Thread(target=copy_context().run, args=(target,), daemon=True)
         th.start()
         th.join(timeout)
         if th.is_alive():

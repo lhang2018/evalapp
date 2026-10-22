@@ -125,7 +125,19 @@ export interface LocalAttachment {
   last_error: string | null;
 }
 
+export interface UserInputRequest {
+  request_id: string;
+  question: string;
+  phase: string;
+  answered: boolean;
+  created_at: number;
+}
+
 export interface LocalTask {
+  server_status?: string;
+  current_run_id?: string | null;
+  waiting_request?: UserInputRequest | null;
+  waiting_approvals?: string[];
   local_task_id: string;
   /** 幂等键：任务生命周期内保持不变 */
   client_request_id: string;

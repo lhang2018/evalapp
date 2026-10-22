@@ -36,6 +36,7 @@ from . import routes
 from . import approvals_api  # F-04 审批记录端点（注册表路由）
 from . import impact_api  # GAP 子步④ 能力影响分析端点（注册表路由）
 from . import routing_eval_api  # F-53 路由质量评测端点（注册表路由）
+from . import task_control_api  # 用户补充信息与独立运行历史
 from .routes import RouteContext
 from .diagnostics_import import (
     MAX_PACKAGE_BYTES,
@@ -104,9 +105,38 @@ def make_handler(app: App):
                           app.config.api_admin_token).check(
                               self.headers.get("Authorization"), method, path)
             if not res.ok:
+                self._drain_rejected_body()
                 self._json(res.status, {"error": res.error})
                 return None
             return res
+
+        def _drain_rejected_body(self):
+            # Closing a Windows socket with unread POST bytes can reset the
+            # connection before the client receives its 401/403 response.
+            # Discard a bounded body without parsing or executing it.
+            self.close_connection = True
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                return
+            if not 0 < length <= 65536:
+                return
+            deadline = time.monotonic() + 0.25
+            original_timeout = self.connection.gettimeout()
+            try:
+                while length:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        break
+                    self.connection.settimeout(remaining)
+                    chunk = self.rfile.read1(length)
+                    if not chunk:
+                        break
+                    length -= len(chunk)
+            except OSError:
+                pass
+            finally:
+                self.connection.settimeout(original_timeout)
 
         def _body(self) -> Dict[str, Any]:
             length = int(self.headers.get("Content-Length") or 0)

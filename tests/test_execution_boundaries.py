@@ -327,9 +327,10 @@ def test_runtime_waits_for_workflow_authorization_and_preserves_definition(tmp_p
         task = app.controller.execute(task, intent_hint="general")
         assert task.task_status == TaskStatus.SUSPENDED
         assert calls == [] and wf.nodes[0].state == WorkflowNodeState.PENDING
-        assert app.approvals.list_for_task(task.task_id)[0]["status"] == "denied"
-        app.permissions.confirm_callback = lambda *_: True
-        resumed = app.controller.resume_task(task.task_id)
+        approval = app.approvals.list_for_task(task.task_id)[0]
+        assert approval["status"] == "pending"
+        resumed, accepted = app.controller.decide_approval(approval["approval_id"], True)
+        assert accepted and app.approvals.get(approval["approval_id"])["status"] == "used"
         assert resumed.task_status == TaskStatus.SUCCEEDED
         assert calls == [1] and wf.nodes[0].state == WorkflowNodeState.PENDING
     finally:

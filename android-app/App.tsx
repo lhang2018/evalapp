@@ -26,6 +26,7 @@ import {
 } from "react-native";
 
 import { api } from "./src/api.ts";
+import { ApprovalPanel } from "./src/features/approvals/ApprovalPanel.tsx";
 import type {
   CandidateSummary,
   MemoryEntry,
@@ -140,6 +141,8 @@ export default function App(): React.JSX.Element {
   const [online, setOnline] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>({});
+  const [answerBusy, setAnswerBusy] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [localTasks, setLocalTasks] = useState<LocalTask[]>([]);
   const [stats, setStats] = useState<QueueStats | null>(null);
@@ -642,6 +645,29 @@ export default function App(): React.JSX.Element {
     },
     [services, flush]
   );
+
+  const answerTask = useCallback(async (task: LocalTask) => {
+    const request = task.waiting_request;
+    if (!request || !task.server_task_id) return;
+    const answer = answerDrafts[request.request_id]?.trim();
+    if (!answer) return;
+    setAnswerBusy(request.request_id);
+    try {
+      await services.client.answerTask(task.server_task_id, request.request_id, answer);
+      setAnswerDrafts((drafts) => {
+        const next = { ...drafts };
+        delete next[request.request_id];
+        return next;
+      });
+      await services.tasks.refresh();
+      await reloadLocal();
+      setError(null);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setAnswerBusy(null);
+    }
+  }, [answerDrafts, services, reloadLocal]);
 
   const confirmReconcile = useCallback(
     async (task: LocalTask) => {
@@ -1229,6 +1255,30 @@ export default function App(): React.JSX.Element {
                   )}
               </View>
               <Text style={s.goal}>{task.goal}</Text>
+              {!!task.waiting_approvals?.length && task.server_task_id && (
+                <ApprovalPanel client={services.client} ids={task.waiting_approvals}
+                  taskId={task.server_task_id} online={online} />
+              )}
+              {task.server_status === "WAITING_USER" && task.waiting_request &&
+                !task.waiting_request.answered && (
+                <View>
+                  <Text style={s.hint}>{task.waiting_request.question}</Text>
+                  <TextInput
+                    style={s.input}
+                    placeholder="补充信息后继续任务"
+                    value={answerDrafts[task.waiting_request.request_id] ?? ""}
+                    onChangeText={(value) => setAnswerDrafts((drafts) => ({
+                      ...drafts, [task.waiting_request!.request_id]: value,
+                    }))}
+                    maxLength={16000}
+                    multiline
+                  />
+                  <Button title="回答并继续"
+                    disabled={answerBusy !== null ||
+                      !answerDrafts[task.waiting_request.request_id]?.trim()}
+                    onPress={() => void answerTask(task)} />
+                </View>
+              )}
               {task.result ? (
                 <View style={s.resultRow}>
                   <Text style={[s.result, s.resultText]}>

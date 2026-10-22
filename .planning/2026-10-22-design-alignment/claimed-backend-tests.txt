@@ -1,0 +1,45 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  9%]
+........................................................................ [ 18%]
+........................................................................ [ 28%]
+........................................................................ [ 37%]
+........................................................................ [ 47%]
+................................................F....................... [ 56%]
+........................................................................ [ 66%]
+........................................................................ [ 75%]
+........................................................................ [ 85%]
+......................................................s................. [ 94%]
+.......................................                                  [100%]
+================================== FAILURES ===================================
+_________________ TestNoDrift.test_all_ledgers_have_no_drift __________________
+
+self = <test_ledger_drift.TestNoDrift testMethod=test_all_ledgers_have_no_drift>
+
+    def test_all_ledgers_have_no_drift(self):
+        rep = sal.scan(DOCS)
+>       self.assertEqual(
+            rep["problems"], [],
+            f"台账存在 {len(rep['problems'])} 处引用问题："
+            f"{[(p['doc'], p['doc_line'], p['kind']) for p in rep['problems'][:5]]}")
+E       AssertionError: Lists differ: [{'doc': 'GAP_ANALYSIS.md', 'doc_line': 93[180 chars]空行'}] != []
+E
+E       First list contains 2 additional elements.
+E       First extra element 0:
+E       {'doc': 'GAP_ANALYSIS.md', 'doc_line': 93, 'kind': 'bare_points_to_blank', 'detail': '裸引用 `evoagent/cli.py:235` 指向空行'}
+E
+E       + []
+E       - [{'detail': '裸引用 `evoagent/cli.py:235` 指向空行',
+E       -   'doc': 'GAP_ANALYSIS.md',
+E       -   'doc_line': 93,
+E       -   'kind': 'bare_points_to_blank'},
+E       -  {'detail': '裸引用 `cli.py:235` 指向空行',
+E       -   'doc': 'ROADMAP.md',
+E       -   'doc_line': 242,
+E       -   'kind': 'bare_points_to_blank'}] : 台账存在 2 处引用问题：[('GAP_ANALYSIS.md', 93, 'bare_points_to_blank'), ('ROADMAP.md', 242, 'bare_points_to_blank')]
+
+tests\test_ledger_drift.py:30: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_ledger_drift.py::TestNoDrift::test_all_ledgers_have_no_drift
+1 failed, 757 passed, 1 skipped in 98.67s (0:01:38)

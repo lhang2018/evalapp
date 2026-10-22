@@ -29,6 +29,7 @@ class Checkpoint:
     pending_side_effects: List[Dict[str, Any]] = field(default_factory=list)
     # 暂停时的累计预算用量，恢复后继续计入同一任务（PRD 55/56）
     budget_state: Dict[str, Any] = field(default_factory=dict)
+    react_state: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return self.__dict__.copy()

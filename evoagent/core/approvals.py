@@ -8,9 +8,9 @@
 5. 一次性语义：一个 approval 只授权一次执行——授即用（synchronous
    confirm 流），再次执行须重新授权；`used` 后不可复用。
 
-状态机：approved → used（消费）；approved → revoked（吊销）；
-        approved → expired（到期）；denied / revoked / expired 终态。
-读侧惰性过期（`_age` 处理 expired 标记）。
+状态机：pending → approved / denied；approved → used（消费）或 revoked；
+pending / approved → expired（到期）。异步请求默认有效 15 分钟，完整绑定
+以规范 JSON 和 SHA-256 保存；摘要截断只影响显示，不参与授权匹配。
 
 接线策略（GAP 第一批第 3 项）：`PermissionController._decide_high_risk`
 是 check_tool（高风险工具）与 check_op（工作流审批节点）的**单一收口**，
@@ -19,15 +19,22 @@
 resume 的 `force` 明示授权同样落账（与侧结果未知→对账链相接，F-03）。
 """
 
+import hashlib
 import json
 import time
 import uuid
 from typing import Any, Dict, List, Optional
 
-__all__ = ["APPROVAL_STATUS", "ApprovalStore"]
+__all__ = ["APPROVAL_STATUS", "ApprovalStore", "ApprovalRequired"]
 
 
-#: 状态域。pending 预留异步审批（本批仍走同步 confirm），
+class ApprovalRequired(Exception):
+    def __init__(self, approval_id: str):
+        self.approval_id = approval_id
+        super().__init__(f"等待审批: {approval_id}")
+
+
+#: 状态域。pending 为持久化的异步审批请求，
 #: used/denied/revoked/expired 为已决记录（审计可见）。
 APPROVAL_STATUS = ("pending", "approved", "used", "denied", "revoked",
                    "expired")
@@ -41,6 +48,21 @@ class ApprovalStore:
 
     def __init__(self, db):
         self.db = db
+
+    def authorize_action(self, op, args, *, task_id, context=None, run_id=""):
+        context = dict(context or {})
+        scope = str(context.get("scope") or "tool")
+        binding = {"task_id": task_id, "op": op, "args": args, "context": context}
+        encoded = json.dumps(binding, ensure_ascii=False, sort_keys=True,
+                             separators=(",", ":"), allow_nan=False)
+        digest = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+        target = str(args.get("target") or args.get("path") or context.get("node") or op)
+        identity, status = self.db.authorize_bound_action(
+            "apr_" + uuid.uuid4().hex, task_id, op, scope, target,
+            digest, encoded, run_id, 900.0)
+        if status == "pending":
+            raise ApprovalRequired(identity)
+        return status == "used"
 
     # ---- 记录 ----
 
@@ -88,17 +110,19 @@ class ApprovalStore:
         row = self.db.get_approval(approval_id)
         if row is None:
             return None
-        if row["status"] == "approved" and row["expires_at"] and \
-                row["expires_at"] < time.time():
+        if row["status"] in ("pending", "approved") and row["expires_at"] is not None and \
+                row["expires_at"] <= time.time():
             return {**row, "status": "expired"}
         return row
 
     def list_for_task(self, task_id: str,
                       limit: int = 100) -> List[Dict[str, Any]]:
-        return self.db.list_approvals_by_task(task_id, limit=limit)
+        return [self.get(row["approval_id"]) for row in
+                self.db.list_approvals_by_task(task_id, limit=limit)]
 
     def list_recent(self, limit: int = 50) -> List[Dict[str, Any]]:
-        return self.db.list_approvals_recent(limit=limit)
+        return [self.get(row["approval_id"]) for row in
+                self.db.list_approvals_recent(limit=limit)]
 
     # ---- 高风险决策便利封装 ----
 

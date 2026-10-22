@@ -42,6 +42,8 @@ class ReplayService:
                 "kind": e.event_type, "severity": e.severity,
                 "component_id": e.component_id,
                 "component_version": e.component_version,
+                "run_id": e.run_id,
+                "runtime_manifest_id": e.runtime_manifest_id,
                 "correlation_id": e.correlation_id,
                 "causation_id": e.causation_id,
                 "privacy_classification": privacy, "payload": payload,

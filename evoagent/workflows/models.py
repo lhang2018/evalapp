@@ -38,6 +38,7 @@ class WorkflowNode:
     attempt: int = 0
     output: Any = None
     error: Optional[str] = None
+    approval_id: Optional[str] = None
 
 
 @dataclass

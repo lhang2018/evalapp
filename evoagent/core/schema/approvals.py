@@ -21,7 +21,10 @@ TABLES = [
   created_at REAL NOT NULL,
   expires_at REAL,
   consumed_at REAL,
-  revoked_at REAL
+  revoked_at REAL,
+  action_digest TEXT,
+  binding_json TEXT,
+  requested_run_id TEXT
 )""",
     "CREATE INDEX IF NOT EXISTS "
     "idx_approvals_task ON approvals(task_id)",

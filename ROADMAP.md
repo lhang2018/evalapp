@@ -5,6 +5,8 @@
 **现状依据**：`GAP_ANALYSIS.md`（2026-10-21 源码级审计）、`IMPLEMENTATION.md`、`FEATURES.md`
 **基线裁定**（延续 Session 29）：正式版 1.0 为唯一全量目标基线，全量推进，不做 MVP 裁剪。
 
+**2026-10-22 多人开发入口**：[协作开发](docs/协作开发/README.md)，含当前交付、23 ALN 依赖认领、首轮任务卡与集中整合规则。原 WP 保留为历史范围映射；新认领不照旧快照重复实现运行/审批与 F-53。当前 ALN-04 尚有未提交源码，先完成可共享基线。
+
 ---
 
 ## 1. 计划定位
@@ -112,8 +114,8 @@
 
 #### WP-0.4 等待审批与人工接管语义
 - **主题**：R-10｜**现状**：能"暂停-恢复"但不能"问一句、等回答、再继续"
-- **问题**：`evoagent/react/engine.py:114` 收到 `request_user` 立即返回，`evoagent/core/controller.py` 的工作流结果分支转成失败 check → 任务判 FAILED；`WAITING_USER` 在 `evoagent/api/server.py` **零命中**，无接口提交澄清答案；`evoagent/core/controller.py` 的 `pause_task` 工作流任务不支持暂停。
-- **交付**：真挂起语义（任务停在 `WAITING_USER` 而非 FAILED）；澄清提交接口（`POST /tasks/{id}/clarify`）；ReAct 循环在等待态可恢复并注入答案；工作流任务的暂停支持。
+- **当前进度（2026-10-22，ALN-04 工作区）**：`evoagent/core/controller.py::answer_task` 与 `evoagent/api/task_control_api.py::answer_task` 已支持问题持久化、回答和 ReAct 原上下文续跑；工作流支持批次边界暂停；`evoagent/core/controller.py::decide_approval` 支持异步批准/拒绝后恢复或取消。持久暂停/等待后跨 App 重启已验证，运行中强杀接管待做。
+- **交付**：真挂起语义（任务停在 `WAITING_USER` 而非 FAILED）；澄清提交接口（`POST /tasks/{id}/answer`）；审批决策（`POST /approvals/{id}/decision`，admin）；恢复沿用累计预算、原行动和工具证据。实现与剩余验收见 [运行身份与等待恢复交付](docs/运行身份与等待恢复交付_2026-10-22.md)。
 - **边界**：`evoagent/react/engine.py`、`evoagent/core/controller.py`、`evoagent/api/server.py`
 - **验收**：低置信任务 → 挂起 → 提交答案 → 继续完成，端到端可用。
 - **依赖**：WP-1.1
@@ -237,7 +239,7 @@
 ### 轨道 T3｜进化闭环补齐（P1）
 
 #### WP-3.1 进化候选自动生成（E-07）—— **最高优先**
-- **现状**：`propose_candidate` 六参数全必填，四类信号在 `evoagent/` 全目录**零匹配**；全部靠 `cli.py:235`/`evoagent/api/server.py`（API 手工入口）、`evoagent/evolution/controller.py::propose_candidate`（定义） 手工传字符串；`register_problem()` 写的 deque 永不读取。**"自主进化"叙事建立在这个空壳上。**
+- **现状**：`propose_candidate` 六参数全必填，四类信号在 `evoagent/` 全目录**零匹配**；全部靠 `cli.py::cmd_propose`/`evoagent/api/server.py`（API 手工入口）、`evoagent/evolution/controller.py::propose_candidate`（定义） 手工传字符串；`register_problem()` 写的 deque 永不读取。**"自主进化"叙事建立在这个空壳上。**
 - **交付**：四类信号检测器（失败聚集、成本异常、质量退化、能力缺口）→ 自动产出候选提案；问题队列真正被消费；候选须绑定真实运行证据。
 - **边界**：`evoagent/evolution/controller.py`、`diagnostics.py`
 - **验收**：无人工输入时，构造劣化场景能自动产出候选；候选证据来自真实运行记录。

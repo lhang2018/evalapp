@@ -1,0 +1,33 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  9%]
+........................................................................ [ 18%]
+........................................................................ [ 28%]
+........................................................................ [ 37%]
+........................................................................ [ 46%]
+........................................................................ [ 56%]
+..........................F............................................. [ 65%]
+........................................................................ [ 75%]
+........................................................................ [ 84%]
+...............................................................s........ [ 93%]
+................................................                         [100%]
+================================== FAILURES ===================================
+________________ TestWorkflowLibraryAndGit.test_git_read_tool _________________
+
+self = <test_memory_router_diag.TestWorkflowLibraryAndGit testMethod=test_git_read_tool>
+
+    def test_git_read_tool(self):
+        import shutil as sh
+        if not sh.which("git"):
+            self.skipTest("git 不可用")
+        contract, run = git_read_tool(workdir=".")
+        self.assertEqual(contract.side_effect_level, "none")
+        res = run({"action": "log", "limit": 3})
+>       self.assertTrue(res.ok, res.error)
+E       AssertionError: False is not true : fatal: not a git repository (or any of the parent directories): .git
+
+tests\test_memory_router_diag.py:153: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_memory_router_diag.py::TestWorkflowLibraryAndGit::test_git_read_tool
+1 failed, 766 passed, 1 skipped in 118.29s (0:01:58)

@@ -21,9 +21,8 @@ from typing import Dict, Final, Tuple
 # 统一标识（契约 §1）
 # ---------------------------------------------------------------------------
 
-#: 运行实例 ID 的构造方式。注意当前实现为确定性派生（同一 task 恒定同值），
-#: 而非独立执行实例 ID —— 见 IMPLEMENTATION 契约差异待办。
-RUN_ID_IS_DERIVED: Final[bool] = True
+#: 每次执行/恢复分配独立运行 ID，parent_run_id 保留恢复链。
+RUN_ID_IS_DERIVED: Final[bool] = False
 
 #: 副作用账本状态机（契约 §8 / 01 卷 R-12）。当前实现尚无此实体，
 #: 由 F-03 落地；此处先固定取值域，避免实现时再定义。

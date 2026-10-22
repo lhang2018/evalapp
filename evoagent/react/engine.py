@@ -8,11 +8,12 @@
 
 import json
 import time
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from dataclasses import asdict, dataclass, field
+from typing import Any, Callable, Dict, List, Optional
 
 from ..core.budget import BudgetController, BudgetExceeded
 from ..core.events import EventBus
+from ..core.leases import assert_current_lease
 from ..models.base import Action, ChatMessage, ModelAdapter
 from ..planning.planner import ExecutionPlan, PlanStep
 from ..tools.contract import ToolResult
@@ -35,6 +36,8 @@ class ReactOutcome:
     # normal | max_iter | no_progress | repeated_failure | budget | cancel | paused | needs_user
     stop_reason: str = ""
     repeated_failures: int = 0
+    continuation: Dict[str, Any] = field(default_factory=dict)
+    approval_ids: List[str] = field(default_factory=list)
 
 
 class ReactEngine:
@@ -58,7 +61,11 @@ class ReactEngine:
             run_id: str = "",
             cancel_flag: Optional[Any] = None,
             plan: Optional[ExecutionPlan] = None,
-            model: Optional[ModelAdapter] = None) -> ReactOutcome:
+            model: Optional[ModelAdapter] = None,
+            task_id: Optional[str] = None,
+            restored_state: Optional[Dict[str, Any]] = None,
+            user_replies: Optional[List[Dict[str, Any]]] = None,
+            on_checkpoint: Optional[Callable[[Dict[str, Any]], None]] = None) -> ReactOutcome:
         """执行 ReAct 循环直到 finish / 触发防循环条件。
 
         cancel_flag: 可被外部线程置位的对象（getattr(obj, 'cancelled'/'paused')）。
@@ -67,45 +74,87 @@ class ReactEngine:
         返回 ReactOutcome；工具结果的**处理与验收**由运行时控制器负责。
         """
         adapter = model or self.model
+        logical_task_id = task_id or run_id
         outcome = ReactOutcome()
-        messages = list(base_messages)
-        if plan is not None:
+        restored = restored_state or {}
+        messages = ([ChatMessage(**m) for m in restored["messages"]]
+                    if restored.get("messages") else list(base_messages))
+        for step in restored.get("steps", []):
+            outcome.steps.append(TraceStep(
+                step["iteration"], Action(**step["action"]),
+                ToolResult(**step["tool_result"]) if step.get("tool_result") else None))
+        if plan is not None and not restored.get("messages"):
             _ensure_current_running(plan)
             _insert_plan_message(messages, plan)
         tool_schemas = self.tools.schema_for_model(allowed_tools)
-        fail_signature_counts: Dict[str, int] = {}
-        last_actions: List[str] = []
+        fail_signature_counts: Dict[str, int] = dict(restored.get("failure_counts") or {})
+        last_actions: List[str] = list(restored.get("last_actions") or [])
+        delivered = set(restored.get("delivered_reply_ids") or [])
+        for reply in user_replies or []:
+            if reply["request_id"] not in delivered:
+                messages.append(ChatMessage(role="user", content=reply["answer"]))
+                delivered.add(reply["request_id"])
+        next_iteration = int(restored.get("next_iteration") or 1)
+        pending_action = restored.get("pending_action")
+        model_call_inflight = False
 
-        for i in range(1, self.max_iterations + 1):
+        def capture():
+            outcome.continuation = {
+                "messages": [asdict(m) for m in messages],
+                "steps": [asdict(s) for s in outcome.steps],
+                "failure_counts": dict(fail_signature_counts),
+                "last_actions": list(last_actions),
+                "delivered_reply_ids": sorted(delivered),
+                "next_iteration": next_iteration,
+                "pending_action": pending_action,
+                "model_call_inflight": model_call_inflight,
+            }
+            if on_checkpoint:
+                on_checkpoint(outcome.continuation)
+            return outcome
+
+        capture()
+
+        for i in range(next_iteration, self.max_iterations + 1):
+            assert_current_lease()
             if _flag(cancel_flag, "cancelled"):
                 outcome.stop_reason = "cancel"
-                return outcome
+                return capture()
             if _flag(cancel_flag, "paused"):
                 outcome.stop_reason = "paused"
-                return outcome
+                return capture()
 
-            try:
-                budget.check_model_call()
-                suggestion = adapter.suggest_action(messages, tool_schemas)
-            except BudgetExceeded as e:
-                outcome.stop_reason = f"budget:{e.dimension}"
-                return outcome
-            try:
-                model_id = adapter.profile().model_id
-            except Exception:  # noqa: BLE001
-                model_id = None
-            budget.record_model_call(
-                _estimate_cost(adapter, messages, suggestion), model_id)
+            if pending_action:
+                suggestion = Action(**pending_action)
+                pending_action = None
+            else:
+                try:
+                    budget.check_model_call()
+                    try:
+                        model_id = adapter.profile().model_id
+                    except Exception:
+                        model_id = None
+                    budget.record_model_call(0.0, model_id)
+                    model_call_inflight = True
+                    capture()  # reserve and checkpoint BEFORE the provider call
+                    suggestion = adapter.suggest_action(messages, tool_schemas)
+                except BudgetExceeded as e:
+                    outcome.stop_reason = f"budget:{e.dimension}"
+                    return capture()
+                assert_current_lease()
+                budget.settle_model_cost(_estimate_cost(adapter, messages, suggestion), model_id)
+                model_call_inflight = False
+            next_iteration = i + 1
 
             if _flag(cancel_flag, "cancelled"):
                 outcome.stop_reason = "cancel"
-                return outcome
+                return capture()
 
             # 暂停在模型返回后生效：不执行新的工具调用，避免暂停后仍有副作用
             if _flag(cancel_flag, "paused"):
                 outcome.steps.append(TraceStep(i, suggestion))
                 outcome.stop_reason = "paused"
-                return outcome
+                return capture()
 
             # ---- 行动确认/推进 ----
             if suggestion.kind == "finish":
@@ -113,13 +162,14 @@ class ReactEngine:
                 outcome.answer = suggestion.answer or ""
                 outcome.stop_reason = "normal"
                 outcome.steps.append(TraceStep(i, suggestion))
-                return outcome
+                return capture()
 
             if suggestion.kind == "request_user":
                 outcome.stop_reason = "needs_user"
                 outcome.answer = suggestion.answer or ""
                 outcome.steps.append(TraceStep(i, suggestion))
-                return outcome
+                messages.append(ChatMessage(role="assistant", content=outcome.answer))
+                return capture()
 
             # tool_call: 交由控制器执行（这里仅执行，验收在控制器）
             tool = suggestion.tool
@@ -133,12 +183,20 @@ class ReactEngine:
                 result = self.tools.execute(tool or "", suggestion.args,
                                             budget=budget,
                                             allowed_tools=allowed_tools,
-                                            task_id=run_id, run_id=run_id,
+                                            task_id=logical_task_id, run_id=run_id,
+                                            authorization_context={"scope": f"react:{i}"},
                                             effects=self.effects)
             except BudgetExceeded as e:
                 outcome.stop_reason = f"budget:{e.dimension}"
-                return outcome
+                return capture()
 
+            if result.error_class == "approval_required":
+                pending_action, next_iteration = asdict(suggestion), i
+                outcome.steps.pop()
+                last_actions.pop()
+                outcome.approval_ids = [result.evidence["approval_id"]]
+                outcome.stop_reason = "approval_required"
+                return capture()
             step.tool_result = result
             payload = result.to_dict()
             messages.append(ChatMessage(
@@ -148,14 +206,14 @@ class ReactEngine:
             messages.append(ChatMessage(
                 role="tool", content=f"{tool}::{_json_compact(payload)}"))
             if self.bus:
-                self.bus.emit(event_type="tool_call", task_id=run_id,
+                self.bus.emit(event_type="tool_call", task_id=logical_task_id,
                               run_id=run_id,
                               payload={"tool": tool, "ok": result.ok,
                                        "error_class": result.error_class})
 
             if result.side_effect_uncertain:
                 outcome.stop_reason = "side_effect_unknown"
-                return outcome
+                return capture()
 
             if plan is not None and result.ok and _advance_plan(plan, tool):
                 messages.append(ChatMessage(
@@ -173,13 +231,14 @@ class ReactEngine:
                     if plan is not None:
                         _mark_step_failed(plan, tool)
                     outcome.stop_reason = "repeated_failure"
-                    return outcome
+                    return capture()
             if last_actions[-3:] == [signature] * 3:
                 outcome.stop_reason = "no_progress"
-                return outcome
+                return capture()
+            capture()
 
         outcome.stop_reason = "max_iter"
-        return outcome
+        return capture()
 
 
 def last_success(result: Optional[ToolResult]) -> bool:

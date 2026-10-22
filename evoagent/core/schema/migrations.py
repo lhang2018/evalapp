@@ -23,7 +23,7 @@ import sqlite3
 from typing import Callable, List, Tuple
 
 # 当前代码期望的 schema 版本。升级迁移时 +1。
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 3
 
 Migration = Tuple[int, str, Callable[[sqlite3.Connection], None]]
 
@@ -42,9 +42,25 @@ def _m001_baseline(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE tasks ADD COLUMN goal_id TEXT")
 
 
+def _m002_run_parent(conn: sqlite3.Connection) -> None:
+    cols = [r[1] for r in conn.execute("PRAGMA table_info(task_runs)")]
+    if cols and "parent_run_id" not in cols:
+        conn.execute("ALTER TABLE task_runs ADD COLUMN parent_run_id TEXT")
+
+
+def _m003_approval_bindings(conn: sqlite3.Connection) -> None:
+    cols = [r[1] for r in conn.execute("PRAGMA table_info(approvals)")]
+    if cols:
+        for name in ("action_digest", "binding_json", "requested_run_id"):
+            if name not in cols:
+                conn.execute(f"ALTER TABLE approvals ADD COLUMN {name} TEXT")
+
+
 # 已发布迁移（顺序即执行顺序）
 MIGRATIONS: List[Migration] = [
     (1, "baseline", _m001_baseline),
+    (2, "independent_run_parent", _m002_run_parent),
+    (3, "async_approval_bindings", _m003_approval_bindings),
 ]
 
 

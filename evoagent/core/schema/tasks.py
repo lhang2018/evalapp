@@ -11,7 +11,8 @@ TABLES = [
         ON tasks(goal_id)""",
     """CREATE TABLE IF NOT EXISTS task_runs(
         run_id TEXT PRIMARY KEY, task_id TEXT, started_at REAL,
-        finished_at REAL, outcome TEXT, version_manifest TEXT)""",
+        finished_at REAL, outcome TEXT, version_manifest TEXT,
+        parent_run_id TEXT)""",
     """CREATE TABLE IF NOT EXISTS task_checkpoints(
         checkpoint_id TEXT PRIMARY KEY, task_id TEXT,
         created_at REAL, snapshot TEXT)""",

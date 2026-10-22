@@ -4,7 +4,35 @@
 按 admin 权限开放（与其余审计类端点一致）。
 """
 
-from .routes import get
+from .routes import get, post
+
+
+@get("/approvals/{approval_id}")
+def get_approval(ctx):
+    if ctx.auth.role != "admin":
+        return ctx.json(403, {"error": "该操作需要 admin 权限"})
+    row = ctx.app.approvals.get(ctx.path.split("/")[2])
+    return ctx.json(200, row) if row else ctx.json(404, {"error": "审批不存在"})
+
+
+@post("/approvals/{approval_id}/decision")
+def decide_approval(ctx):
+    if ctx.auth.role != "admin":
+        return ctx.json(403, {"error": "该操作需要 admin 权限"})
+    body = ctx.body
+    if not isinstance(body, dict) or not isinstance(body.get("approved"), bool):
+        return ctx.json(400, {"error": "approved 必须是布尔值"})
+    try:
+        task, accepted = ctx.app.controller.decide_approval(
+            ctx.path.split("/")[2], body["approved"], actor="api:admin", wait=False)
+    except KeyError:
+        return ctx.json(404, {"error": "审批不存在"})
+    except (ValueError, PermissionError) as exc:
+        return ctx.json(409, {"error": str(exc)})
+    return ctx.json(202 if accepted else 200, {
+        "accepted": accepted, "task_id": task.task_id,
+        "task_status": task.task_status.value,
+        "waiting_approvals": task.waiting_approvals})
 
 
 @get("/approvals")

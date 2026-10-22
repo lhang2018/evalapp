@@ -262,7 +262,7 @@ class DiagnosisEngine:
         tool_results = list(tool_results or [])
         case = DiagnosticCase(
             task_id=task.task_id,
-            run_id=f"run_{task.task_id}",
+            run_id=task.current_run_id,
             symptom=(task.failure_reason or (verdict.summary() if verdict else "")
                      or "任务失败"),
             version_manifest=dict(task.version_manifest or {}),

@@ -5,6 +5,7 @@ import { MemoryStore, OfflineRepository } from "../../src/offline/storage.ts";
 import { EventQueue } from "../../src/offline/queue.ts";
 import { LocalTaskService, mapServerStatus } from "../../src/offline/tasks.ts";
 import type { TaskTransport } from "../../src/offline/tasks.ts";
+import type { UserInputRequest } from "../../src/offline/types.ts";
 
 class FakeTaskTransport implements TaskTransport {
   submits: { clientRequestId: string; goal: string }[] = [];
@@ -12,6 +13,9 @@ class FakeTaskTransport implements TaskTransport {
   serverStatus = "SUCCEEDED";
   result: string | null = "服务端结果";
   failureReason: string | null = null;
+  runId: string | null = null;
+  waitingRequest: UserInputRequest | null = null;
+  waitingApprovals: string[] = [];
 
   async submitTask(goal: string, _intent: string, _risk: string,
                    clientRequestId: string) {
@@ -25,6 +29,9 @@ class FakeTaskTransport implements TaskTransport {
       task_status: this.serverStatus,
       result: this.result,
       failure_reason: this.failureReason,
+      current_run_id: this.runId,
+      waiting_request: this.waitingRequest,
+      waiting_approvals: this.waitingApprovals,
     };
   }
 }
@@ -148,4 +155,46 @@ test("mapServerStatus covers terminal and waiting states", () => {
   assert.equal(mapServerStatus("CANCELLED"), "DONE");
   assert.equal(mapServerStatus("SUSPENDED"), "WAITING_DEPENDENCY");
   assert.equal(mapServerStatus("READY"), "SUBMITTED");
+});
+
+test("clarification and run identity persist across client restart and clear on resume", async () => {
+  const { tasks, transport, kv } = setup();
+  const task = await tasks.submit("写入报告", "general");
+  await tasks.flushPending();
+  transport.serverStatus = "WAITING_USER";
+  transport.runId = "run_1";
+  transport.waitingRequest = {
+    request_id: "question_1", question: "报告保存到哪里？",
+    phase: "react", answered: false, created_at: 1,
+  };
+  await tasks.refresh();
+  const restarted = new LocalTaskService(new OfflineRepository(kv), transport);
+  const waiting = await restarted.get(task.local_task_id);
+  assert.equal(waiting?.server_status, "WAITING_USER");
+  assert.equal(waiting?.waiting_request?.question, "报告保存到哪里？");
+  assert.equal(waiting?.current_run_id, "run_1");
+  transport.serverStatus = "RUNNING";
+  transport.runId = "run_2";
+  transport.waitingRequest = null;
+  await restarted.refresh();
+  const resumed = await restarted.get(task.local_task_id);
+  assert.equal(resumed?.waiting_request, null);
+  assert.equal(resumed?.current_run_id, "run_2");
+  assert.equal(resumed?.status, "SUBMITTED");
+});
+
+test("pending approval ids persist and clear after task resumes", async () => {
+  const { tasks, transport, kv } = setup();
+  const task = await tasks.submit("写入报告", "general");
+  await tasks.flushPending();
+  transport.serverStatus = "SUSPENDED";
+  transport.waitingApprovals = ["apr_first", "apr_second"];
+  await tasks.refresh();
+  const restarted = new LocalTaskService(new OfflineRepository(kv), transport);
+  assert.deepEqual((await restarted.get(task.local_task_id))?.waiting_approvals,
+    ["apr_first", "apr_second"]);
+  transport.serverStatus = "RUNNING";
+  transport.waitingApprovals = [];
+  await restarted.refresh();
+  assert.deepEqual((await restarted.get(task.local_task_id))?.waiting_approvals, []);
 });

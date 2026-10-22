@@ -7,6 +7,8 @@
 
 条目级代码映射见 [IMPLEMENTATION.md](./IMPLEMENTATION.md)；全量功能状态（后续开发在此追加）见 [FEATURES.md](./FEATURES.md)。Android 客户端见 [android-app/](./android-app/)。
 
+**协作开发从这里开始：[协作开发入口](docs/协作开发/README.md)**。包含当前进度、23 个工作包认领表、首轮 5 张任务卡、共享文件归属和交付模板。运行/审批改动尚未全部提交，先由集成人发布可共享基线，再从同一 commit 并行接线。
+
 ## 快速开始（无需 LLM Key）
 
 ```bash

@@ -90,7 +90,7 @@
 
 - 判定：标 ✅「失败/成本异常/质量退化/能力缺口→候选提案」
 - 实际：`evoagent/evolution/controller.py:152-180` `propose_candidate()` 六个参数全部必填，**无任何信号检测代码**。四类信号在 `evoagent/` 全目录**零匹配**（`grep "capability_gap|质量退化|成本异常"` → 0 命中）。
-- 全部调用点均为人工/外部传入：`evoagent/cli.py:235`、`evoagent/api/server.py`（API 手工入口）、`evoagent/evolution/controller.py::propose_candidate`（定义）（HTTP body 直传 `target_component`/`hypothesis`）。
+- 全部调用点均为人工/外部传入：`evoagent/cli.py::cmd_propose`、`evoagent/api/server.py`（API 手工入口）、`evoagent/evolution/controller.py::propose_candidate`（定义）（HTTP body 直传 `target_component`/`hypothesis`）。
 - `register_problem()`（`:144-145`）向 deque 追加后**永不读取**——问题队列本身也是死的。
 - 后果：PRD 46-54 的"从真实运行证据自动发现改进点"未实现；E-11 收益评估、E-09 门禁都建立在无自动候选来源之上。
 - **▸ 演进（2026-10-22）**：上述指控已闭合——`SignalCollector` 订阅真实运行事件判定四类信号并登记票据，`run_signal_pipeline` 消费票据自动提案（`evoagent/evolution/signals.py::SignalCollector`、`evoagent/evolution/controller.py::run_signal_pipeline`）。本段保留为历史基线。

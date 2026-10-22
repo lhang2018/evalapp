@@ -60,6 +60,11 @@ TERMINAL_STATES = {TaskStatus.SUCCEEDED, TaskStatus.FAILED, TaskStatus.CANCELLED
 class Task:
     task_id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
     parent_task_id: Optional[str] = None
+    current_run_id: Optional[str] = None
+    parent_run_id: Optional[str] = None
+    waiting_request: Optional[Dict[str, Any]] = None
+    waiting_approvals: List[str] = field(default_factory=list)
+    user_answers: List[Dict[str, Any]] = field(default_factory=list)
     # G-01 前置（契约 §2）：任务与长期 Goal 通过 goal_id 引用关联，不共享万能状态字段
     goal_id: Optional[str] = None
     origin: str = GoalOrigin.USER.value
@@ -101,6 +106,11 @@ class Task:
         return {
             "task_id": self.task_id,
             "parent_task_id": self.parent_task_id,
+            "current_run_id": self.current_run_id,
+            "parent_run_id": self.parent_run_id,
+            "waiting_request": self.waiting_request,
+            "waiting_approvals": list(self.waiting_approvals),
+            "user_answers": list(self.user_answers),
             "goal_id": self.goal_id,
             "origin": self.origin,
             "user_goal": self.user_goal,

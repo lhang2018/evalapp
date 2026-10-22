@@ -1,0 +1,13 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+..........................................F............................. [ 71%]
+.............................                                            [100%]
+================================== FAILURES ===================================
+______________ TestManifestContract.test_contract_fields_landed _______________
+tests\test_manifest_contract.py:66: in test_contract_fields_landed
+    self.assertIn(self.app.config.provider.model_id,
+E   AssertionError: 'gpt-4o-mini' not found in 'mock-1/mock'
+=========================== short test summary info ===========================
+FAILED tests/test_manifest_contract.py::TestManifestContract::test_contract_fields_landed
+1 failed, 100 passed in 5.32s

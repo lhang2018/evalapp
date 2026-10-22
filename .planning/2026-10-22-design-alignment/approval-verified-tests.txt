@@ -1,0 +1,92 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [ 10%]
+........................................................................ [ 21%]
+........................................................................ [ 32%]
+........................................................................ [ 42%]
+........................................................................ [ 53%]
+........................................................................ [ 64%]
+........................................................................ [ 75%]
+....F................................................................... [ 85%]
+.....................................s.................................. [ 96%]
+......................                                                   [100%]
+================================== FAILURES ===================================
+___________ test_answer_api_status_validation_auth_and_run_history ____________
+
+app = <evoagent.app.App object at 0x0000021DE9B33D30>
+
+    def test_answer_api_status_validation_auth_and_run_history(app):
+        task = waiting_task(app)
+        app.config.api_token = "operator"
+        app.config.api_admin_token = "admin"
+        server = ApiServer(app, host="127.0.0.1", port=0)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+
+        def request(path, body=None, token="operator"):
+            req = urllib.request.Request(f"http://127.0.0.1:{server.port}" + path,
+                data=json.dumps(body).encode() if body is not None else None,
+                headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"})
+            try:
+                response = urllib.request.urlopen(req, timeout=10)
+            except urllib.error.HTTPError as error:
+                response = error
+            with response:
+                return response.status, json.loads(response.read())
+
+        try:
+            path = f"/tasks/{task.task_id}/answer"
+            body = {"request_id": task.waiting_request["request_id"], "answer": "使用北京时间"}
+>           assert request(path, body, token="bad")[0] == 403
+
+tests\test_run_continuation.py:275:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_run_continuation.py:266: in request
+    response = urllib.request.urlopen(req, timeout=10)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:216: in urlopen
+    return opener.open(url, data, timeout)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:519: in open
+    response = self._open(req, data)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:536: in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:496: in _call_chain
+    result = func(*args)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:1377: in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:1352: in do_open
+    r = h.getresponse()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:1375: in getresponse
+    response.begin()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:318: in begin
+    version, status, reason = self._read_status()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:279: in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <socket.SocketIO object at 0x0000021DE865BC10>
+b = <memory at 0x0000021DE86B9D80>
+
+    def readinto(self, b):
+        """Read up to len(b) bytes into the writable buffer *b* and return
+        the number of bytes read.  If the socket is non-blocking and no bytes
+        are available, None is returned.
+
+        If *b* is non-empty, a 0 return value indicates that the connection
+        was shutdown at the other end.
+        """
+        self._checkClosed()
+        self._checkReadable()
+        if self._timeout_occurred:
+            raise OSError("cannot read from timed out object")
+        while True:
+            try:
+>               return self._sock.recv_into(b)
+E               ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\socket.py:705: ConnectionAbortedError
+---------------------------- Captured stdout call -----------------------------
+EvoAgent API: http://127.0.0.1:1223  (GET /health)
+=========================== short test summary info ===========================
+FAILED tests/test_run_continuation.py::test_answer_api_status_validation_auth_and_run_history
+1 failed, 668 passed, 1 skipped in 64.55s (0:01:04)

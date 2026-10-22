@@ -176,6 +176,15 @@ class BudgetController:
         self.pools: List[PoolLimit] = []
         self._violations: Dict[str, str] = {}
         self._lock = threading.RLock()
+        self.on_change = None
+        self._scope_budgets = {}
+        self._restored_scopes = {}
+
+    def persist_usage(self):
+        if self.on_change:
+            self.on_change({**self.snapshot(), "scopes": {
+                **self._restored_scopes,
+                **{name: scope.snapshot() for name, scope in self._scope_budgets.items()}}})
 
     # ---- 预算池（提供方/专家/进化）----
     def bind_pool(self, scope: str, *, max_model_calls: Optional[int] = None,
@@ -198,10 +207,10 @@ class BudgetController:
                               max_cost=p.max_cost, period=p.period)
 
     def _record_scopes(self, **kw: Any) -> None:
-        if self.ledger is None:
-            return
-        for scope in self._scopes:
-            self.ledger.record(scope, **kw)
+        if self.ledger is not None:
+            for scope in self._scopes:
+                self.ledger.record(scope, **kw)
+        self.persist_usage()
 
     # ---- 校验（执行前调用）----
     def check_model_call(self, model_id: Optional[str] = None) -> None:
@@ -251,6 +260,18 @@ class BudgetController:
                 self._violations["model_call_cost"] = (
                     f"单次模型调用成本 {cost} > "
                     f"{self.limits.max_cost_per_model_call}")
+
+    def settle_model_cost(self, cost: float, model_id: Optional[str] = None) -> None:
+        """Add the result cost to an already reserved model call, without counting twice."""
+        cost = max(0.0, float(cost))
+        with self._lock:
+            self.usage.cost += cost
+            if model_id:
+                usage = self.usage.model_usage.setdefault(model_id, {"calls": 0, "cost": 0.0})
+                usage["cost"] += cost
+            self._record_scopes(cost=cost)
+            if cost > self.limits.max_cost_per_model_call:
+                self._violations["model_call_cost"] = f"单次模型调用成本 {cost} > {self.limits.max_cost_per_model_call}"
 
     def record_tool_call(self, tool_id: Optional[str] = None,
                          cost: float = 0.0) -> None:
@@ -326,9 +347,14 @@ class BudgetController:
         cur["cost"] = float(cur.get("cost", 0.0)) + cost
 
     # ---- 作用域预算（工作流/子任务）----
-    def for_scope(self, name: str, limits: Optional[BudgetLimits] = None
+    def for_scope(self, name: str, limits: Optional[BudgetLimits] = None,
+                  initial_usage: Optional[BudgetUsage] = None
                   ) -> "ScopedBudget":
-        return ScopedBudget(self, name, limits or BudgetLimits())
+        restored = self._restored_scopes.get(name, {}).get("usage")
+        scope = ScopedBudget(self, name, limits or BudgetLimits(),
+                             BudgetUsage.from_dict(restored) if restored is not None else initial_usage)
+        self._scope_budgets[name] = scope
+        return scope
 
     def snapshot(self) -> Dict:
         with self._lock:
@@ -347,16 +373,17 @@ class ScopedBudget:
     """
 
     def __init__(self, parent: BudgetController, name: str,
-                 limits: BudgetLimits):
+                 limits: BudgetLimits, initial_usage: Optional[BudgetUsage] = None):
         self.parent = parent
         self.name = name
         self.limits = limits
-        self.usage = BudgetUsage()
+        self.usage = initial_usage or BudgetUsage()
+        self._restored_seconds = self.usage.seconds
         self._started = time.monotonic()
         self._violations: Dict[str, str] = {}
 
     def _tick(self) -> None:
-        self.usage.seconds = time.monotonic() - self._started
+        self.usage.seconds = self._restored_seconds + time.monotonic() - self._started
 
     def _raise_violation(self) -> None:
         if self._violations:
@@ -404,36 +431,53 @@ class ScopedBudget:
 
     def record_model_call(self, cost: float = 0.0,
                           model_id: Optional[str] = None) -> None:
-        cost = max(0.0, float(cost))
-        self.parent.record_model_call(cost, model_id)
-        self.usage.model_calls += 1
-        self.usage.cost += cost
-        BudgetController._attribute(self.usage.model_usage, model_id, cost)
-        if self.parent.ledger is not None:
-            self.parent.ledger.record(self.name, model_calls=1, cost=cost)
-        if cost > self.limits.max_cost_per_model_call:
-            self._violations["model_call_cost"] = (
-                f"{self.name} 单次调用成本 {cost} > "
-                f"{self.limits.max_cost_per_model_call}")
+        with self.parent._lock:
+            cost = max(0.0, float(cost))
+            self.parent.record_model_call(cost, model_id)
+            self.usage.model_calls += 1
+            self.usage.cost += cost
+            BudgetController._attribute(self.usage.model_usage, model_id, cost)
+            if self.parent.ledger is not None:
+                self.parent.ledger.record(self.name, model_calls=1, cost=cost)
+            if cost > self.limits.max_cost_per_model_call:
+                self._violations["model_call_cost"] = (
+                    f"{self.name} 单次调用成本 {cost} > "
+                    f"{self.limits.max_cost_per_model_call}")
+            self.parent.persist_usage()
+
+    def settle_model_cost(self, cost: float, model_id: Optional[str] = None) -> None:
+        with self.parent._lock:
+            cost = max(0.0, float(cost))
+            self.parent.settle_model_cost(cost, model_id)
+            self.usage.cost += cost
+            if model_id:
+                self.usage.model_usage.setdefault(model_id, {"calls": 0, "cost": 0.0})["cost"] += cost
+            if self.parent.ledger:
+                self.parent.ledger.record(self.name, cost=cost)
+            if cost > self.limits.max_cost_per_model_call:
+                self._violations["model_call_cost"] = f"{self.name} 单次模型调用成本 {cost} > {self.limits.max_cost_per_model_call}"
+            self.parent.persist_usage()
 
     def record_tool_call(self, tool_id: Optional[str] = None,
                          cost: float = 0.0) -> None:
-        cost = max(0.0, float(cost))
-        self.parent.record_tool_call(tool_id, cost)
-        self.usage.tool_calls += 1
-        self.usage.cost += cost
-        BudgetController._attribute(self.usage.tool_usage, tool_id, cost)
-        self._tick()
-        if self.parent.ledger is not None:
-            self.parent.ledger.record(self.name, tool_calls=1, cost=cost)
-        if tool_id:
-            limit = float(self.limits.tool_limit(
-                tool_id, "max_cost", self.limits.max_tool_cost_per_tool))
-            spent = float(self.usage.tool_usage.get(
-                tool_id, {}).get("cost", 0.0))
-            if spent > limit:
-                self._violations[f"tool_cost:{tool_id}"] = (
-                    f"{self.name}/{tool_id} 成本 {spent} > {limit}")
+        with self.parent._lock:
+            cost = max(0.0, float(cost))
+            self.parent.record_tool_call(tool_id, cost)
+            self.usage.tool_calls += 1
+            self.usage.cost += cost
+            BudgetController._attribute(self.usage.tool_usage, tool_id, cost)
+            self._tick()
+            if self.parent.ledger is not None:
+                self.parent.ledger.record(self.name, tool_calls=1, cost=cost)
+            if tool_id:
+                limit = float(self.limits.tool_limit(
+                    tool_id, "max_cost", self.limits.max_tool_cost_per_tool))
+                spent = float(self.usage.tool_usage.get(
+                    tool_id, {}).get("cost", 0.0))
+                if spent > limit:
+                    self._violations[f"tool_cost:{tool_id}"] = (
+                        f"{self.name}/{tool_id} 成本 {spent} > {limit}")
+            self.parent.persist_usage()
 
     def snapshot(self) -> Dict:
         self._tick()

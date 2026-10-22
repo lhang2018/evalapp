@@ -1,0 +1,316 @@
+{
+  "kind": "candidate_not_a_published_git_snapshot",
+  "created_at": "2026-10-22T09:38:11.628139+08:00",
+  "head_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
+  "scope": "HEAD plus changed/untracked evoagent/, tests/, android-app/ files. Docs, tools, future additions and unknown private files are not frozen.",
+  "excluded": [
+    ".workbuddy/",
+    "local databases and private data",
+    "build caches",
+    "new collaboration docs/tools"
+  ],
+  "python_version": "3.10.11",
+  "node_version": "v24.16.0",
+  "files": [
+    {
+      "path": "android-app/App.tsx",
+      "sha256": "4e4af4e3035819ee6174d41313a8001d2e9f3ff436503144cb3ac857eadbe666",
+      "bytes": 73512,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "android-app/android/app/src/main/java/com/evoagent/DevicePackage.kt",
+      "sha256": "4c3a2e1acbd8d6fd3cd9c9ba263281ed4bb1ad0aae82250feb2bb50a7ebfd0f8",
+      "bytes": 622,
+      "group": "separate_notification_inflight"
+    },
+    {
+      "path": "android-app/android/app/src/main/java/com/evoagent/NotificationModule.kt",
+      "sha256": "514a0adb1b169c795a8c06aa738bc7c3feb24e40b14fa825130c8a871788bde4",
+      "bytes": 3309,
+      "group": "separate_notification_inflight"
+    },
+    {
+      "path": "android-app/src/api.ts",
+      "sha256": "6be926e0dea8c28942479d332d5aa271e4deff8612f86f53fe0b0d3115481b23",
+      "bytes": 16148,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "android-app/src/device/nativeNotifications.ts",
+      "sha256": "0b87be8246d5d6afebc080bbc159ae80f4e88cbb55beef8c6db645995f4a2598",
+      "bytes": 492,
+      "group": "separate_notification_inflight"
+    },
+    {
+      "path": "android-app/src/device/notifications.ts",
+      "sha256": "03b1ce3e3a844eaa2752c92b534522128a3898152f4e909790d1f5ec0cdfbdc7",
+      "bytes": 3088,
+      "group": "separate_notification_inflight"
+    },
+    {
+      "path": "android-app/src/offline/apiTransport.ts",
+      "sha256": "5fb0d3eb1ec27a8a24ad4480c362e44cddf334b129fd2ac164929d502b6e7611",
+      "bytes": 3943,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "android-app/src/offline/backgroundRunner.ts",
+      "sha256": "179b29403067586d0399b5cf03653d921b74e96b9a2ecc2898bdaf9c42ebbc55",
+      "bytes": 2412,
+      "group": "separate_notification_inflight"
+    },
+    {
+      "path": "android-app/src/offline/tasks.ts",
+      "sha256": "1a5e22ad6a1569eb16e923582ac4817daf4fc4302bd6f7853becc90d77ca8922",
+      "bytes": 9718,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "android-app/src/offline/types.ts",
+      "sha256": "76c3c3306bd40968a91592864dffa989b36bd32015b6450aa4bbff5aeb663c58",
+      "bytes": 5823,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "android-app/test/device/notifications.test.ts",
+      "sha256": "7e90f97e9fbaeb2a48f217a3607d894021abdfeec53906055346bc04532db4db",
+      "bytes": 4643,
+      "group": "separate_notification_inflight"
+    },
+    {
+      "path": "android-app/test/offline/taskAnswer.test.ts",
+      "sha256": "4472c4c2656a50537321478b83a00b3161efe6a94d07f2c746a0012f7ae13aa2",
+      "bytes": 2348,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "android-app/test/offline/tasks.test.ts",
+      "sha256": "96cf359b503ecf258c109caabd76715cb0b52358b71d50adf96120c7c9c22e44",
+      "bytes": 7786,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/api/approvals_api.py",
+      "sha256": "9e3f17071153d3be300034f62e59e0662315474449ac0ca656e1bfb18f985c46",
+      "bytes": 2399,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/api/auth.py",
+      "sha256": "d450f6c837414247d1724af871c30a03c735bdf7ae769c92d6ad1f897f990963",
+      "bytes": 2481,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/api/routes.py",
+      "sha256": "7de69ef01d947d19035d8e5e51e0d9a0ba7916c1d37eefabb4d8992a50f4fea2",
+      "bytes": 5252,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/api/server.py",
+      "sha256": "8ab92e5ff67e8e6753524ae3a4a9e6ae8e7ff75298fb02030ad27f76018e7f39",
+      "bytes": 80498,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/api/task_control_api.py",
+      "sha256": "d5547edd09f06b73fcf5427867fbfe1d72e47a891c54c70bc9be4ec26e22cf86",
+      "bytes": 1148,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/cli.py",
+      "sha256": "5cf33affe32a3fe2c71b6d945eb7c8dae6f2e7ffa010142b66f1e51c79c27dd5",
+      "bytes": 35360,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/approvals.py",
+      "sha256": "7abebee6e4cc3f4f1da77fd9bb7a27e9ed108ea3c0c13d165edff64b6a0b4be8",
+      "bytes": 6788,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/budget.py",
+      "sha256": "77e23361a443c372ba53fca2e8bdeb7fdea4ebc5afd13e631c2cf1f0fd1667dd",
+      "bytes": 24893,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/checkpoint.py",
+      "sha256": "406d23d0cbd684ee4d56e2bbd31d9ef24ac0fdd7a13089215f865fc035eebecc",
+      "bytes": 2317,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/contracts.py",
+      "sha256": "7f6770d8ad11d31ca2e7758e1c31953a9d47074bbf7ff836fa038bad894120ac",
+      "bytes": 18036,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/controller.py",
+      "sha256": "9b90f34587e1706716b9cb0a6fcb0be4ccdb0bd88c13f2dae7493708ed502854",
+      "bytes": 60740,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/permissions.py",
+      "sha256": "3437247210c12b47948e9cd25d8afd83099e6946d4017499211e867edd026b72",
+      "bytes": 5303,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/persistence.py",
+      "sha256": "a52bd274ea9acd8c2945b5bfe6e4366ddbc0297ce55d0c3097eb45cf30886386",
+      "bytes": 65252,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/replay.py",
+      "sha256": "be6c3494439a003ebc48d6d8049b5f7e1604eccc97dee33dbb05c8b0e241934d",
+      "bytes": 4208,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/runs.py",
+      "sha256": "c56dfbea5803ac7064b72956959c528da4bddc0aa3edbb2ee9a507cde0cd22e1",
+      "bytes": 2092,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/schema/approvals.py",
+      "sha256": "c4c9801d4f2b0d2394ab6df30b526127dab5a494d5288f94bc553d5913922e27",
+      "bytes": 909,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/schema/migrations.py",
+      "sha256": "e8521920a014c6c8cbe4a8481dc1bfb11d4e803318e3f24f1e56c81a9a867be6",
+      "bytes": 3829,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/schema/tasks.py",
+      "sha256": "c8446010d85d5441d825b1038dc6360f3c80e16e2c10b3088ebe3982a164826b",
+      "bytes": 931,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/state_machine.py",
+      "sha256": "1330dc63de54848ec600651571a8c8a111e50b42e4344704bc3cc4b7719513da",
+      "bytes": 2238,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/core/task.py",
+      "sha256": "297f8a9c1b173d8fd003ebecb62edc3d40a47dea301b15b2af0c2a963da7986a",
+      "bytes": 6034,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/evolution/diagnostics.py",
+      "sha256": "f4c20bdc44e32110bd06866e9101b81982f1f7ba99a836a2c8dc7c840b76de56",
+      "bytes": 34499,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/react/engine.py",
+      "sha256": "66227e8cec7ed47e9f9b42f8601f4d18866522b1bf6309b767dc3b6c9a098f88",
+      "bytes": 14277,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/tools/registry.py",
+      "sha256": "ad5f991e2d4fdd8e9b896f81e8178d50915aa69a5b09efab954db05b21178505",
+      "bytes": 20174,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/workflows/engine.py",
+      "sha256": "659dc5fc61cecb54465f66feba9bfc3707adc11c1d50c2c40ee046b8589a77db",
+      "bytes": 23168,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "evoagent/workflows/models.py",
+      "sha256": "8bda31b94993daec6e2e3578f0c52c06de132a34235794f076e4032d14df2f88",
+      "bytes": 5227,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "tests/test_async_approvals.py",
+      "sha256": "54cf8f8e9fcdef24b954eb07efc1195c555f930761d95f2a0de99aa7c216c6e1",
+      "bytes": 18267,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "tests/test_auth_rejection_transport.py",
+      "sha256": "349fd62ee6f74463ce1b8f82b31f95fc5d96c0c635fe39f8576cbfa8aba4fab9",
+      "bytes": 2012,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "tests/test_collab_base.py",
+      "sha256": "30a80419a71b63459c84db1b35d8a311eef43da9e746ce3a9276971c0ee746dc",
+      "bytes": 14811,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "tests/test_control.py",
+      "sha256": "5443a0b3b3a6f1b167285e37dd0d05393d92fa1b01dd63754d77c0fb3b0d7f89",
+      "bytes": 6761,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "tests/test_diagnostics.py",
+      "sha256": "bd3701c53ae7d77c82b38c575dfb4b0d7e12458c745104dbe0058463cfcc9974",
+      "bytes": 9627,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "tests/test_execution_boundaries.py",
+      "sha256": "976d7f8d6055e8f7ae033d1eb4b44bb97ca164855951dab8707e6ba239618536",
+      "bytes": 17929,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "tests/test_manifest_contract.py",
+      "sha256": "933e48443b1553c9cb985e595793a22eaca324f0bca3741c01da8aca553ddb42",
+      "bytes": 6218,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "tests/test_run_continuation.py",
+      "sha256": "65bae6197d693281dad8024a651eccd4d89e06e623ac7662fde49b85757681b8",
+      "bytes": 12002,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "tests/test_runtime.py",
+      "sha256": "1d9f6a9edf45711977395effca008513dd2a5493feaeb2d912862f3e4d139dec",
+      "bytes": 3254,
+      "group": "runtime_approval_candidate"
+    },
+    {
+      "path": "tests/test_version_sync.py",
+      "sha256": "18711a493075118680fa2b28c7bbfeb2f8235a4c64772e57eeaf52969b11c6cd",
+      "bytes": 14895,
+      "group": "runtime_approval_candidate"
+    }
+  ],
+  "evidence": [
+    {
+      "path": ".planning/2026-10-22-design-alignment/approval-delivery-tests.txt",
+      "sha256": "c7204ee48e82ce4577a965756c5b0cdce0d3cc01a4a30b7312478b9b77d6535a",
+      "bytes": 1159
+    },
+    {
+      "path": ".planning/2026-10-22-design-alignment/approval-client-tests.txt",
+      "sha256": "8e66a60bf6a2e979cba4b6e3f9018a53b98df7c0ffe5d3463cd44faed1a44519",
+      "bytes": 16737
+    }
+  ]
+}

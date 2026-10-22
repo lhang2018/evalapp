@@ -63,8 +63,8 @@ class TestManifestContract(unittest.TestCase):
         self.assertIn(ra["name"], ("mock", "openai_compat"))
         self.assertTrue(ra["version"])
         # *_ref 形态 id/version
-        self.assertIn(self.app.config.provider.model_id,
-                      vm["model_profile_ref"])
+        self.assertTrue(vm["model_profile_ref"].startswith(
+            task.runtime_manifest["model_route"]["model_id"] + "/"))
         self.assertRegex(vm["router_policy_ref"], r"^adapter/.+")
         self.assertRegex(vm["context_policy_ref"], r"^env/.+")
 
@@ -93,11 +93,11 @@ class TestManifestContract(unittest.TestCase):
         task = self._run_simple_task()
         ref = (task.runtime_manifest or {}).get("expert_ref")
         self.assertTrue(ref, "expert_ref 应在专家解析后落值")
-        # 形态 expert_id/version，且版本锚=发布版本
+        # 引用真实 Expert.version，不能借用发布版本冒充专家版本。
         parts = ref.split("/", 1)
         self.assertEqual(len(parts), 2)
         self.assertEqual(parts[1],
-                         task.version_manifest["version"])
+                         self.app.experts.get(task.domain).version)
         self.assertNotEqual(parts[1], "")
 
     def test_evaluation_suite_ref_chain(self):

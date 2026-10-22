@@ -8,6 +8,7 @@
 import threading
 import time
 import uuid
+from contextvars import copy_context
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -16,6 +17,8 @@ from ..acceptance.verify import Verifier
 from ..core.budget import BudgetController, BudgetExceeded
 from ..core.checkpoint import Checkpoint, CheckpointManager
 from ..core.events import EventBus
+from ..core.approvals import ApprovalRequired
+from ..core.leases import LeaseLost, assert_current_lease
 from ..tools.contract import ToolResult, validate_against_schema
 from ..tools.registry import ToolRegistry
 from .models import WorkflowDef, WorkflowNode, WorkflowNodeState
@@ -30,6 +33,7 @@ class WorkflowRunResult:
     skipped: List[str] = field(default_factory=list)
     error: Optional[str] = None
     retries_used: int = 0
+    approval_ids: List[str] = field(default_factory=list)
 
 
 class NodeBudgetSignal(RuntimeError):
@@ -55,7 +59,8 @@ class WorkflowEngine:
             cancel_flag: Optional[Any] = None,
             confirm: Optional[Callable[[str], bool]] = None,
             completed: Optional[Dict[str, Any]] = None,
-            allowed_tools: Optional[List[str]] = None
+            allowed_tools: Optional[List[str]] = None,
+            run_id: Optional[str] = None
             ) -> WorkflowRunResult:
         problems = wf.validate()
         if problems:
@@ -64,8 +69,11 @@ class WorkflowEngine:
         wf.status = WorkflowNodeState.RUNNING
         result = WorkflowRunResult()
         execution_context = {"task_id": wf.created_from_task or wf.workflow_id,
-                             "run_id": wf.created_from_task or wf.workflow_id,
-                             "allowed_tools": allowed_tools}
+                             "run_id": run_id or wf.created_from_task or wf.workflow_id,
+                             "allowed_tools": allowed_tools,
+                             "workflow_id": wf.workflow_id,
+                             "workflow_version": wf.version,
+                             "confirmed_nodes": []}
 
         done: Dict[str, Any] = {}
         for nid, output in (completed or {}).items():
@@ -77,9 +85,18 @@ class WorkflowEngine:
         retries_used = 0
 
         for batch in _batches(wf):
+            assert_current_lease()
+            # Persist the initial budget/outputs before entering a blocking runner.
+            self._snapshot(wf, result, done, budget)
             if cancel_flag is not None and getattr(cancel_flag, "cancelled", False):
                 wf.status = WorkflowNodeState.CANCELLED
                 result.status = wf.status
+                return result
+            if cancel_flag is not None and getattr(cancel_flag, "paused", False):
+                wf.status = WorkflowNodeState.PAUSED
+                result.status, result.error = wf.status, "用户请求暂停"
+                result.outputs = dict(done)
+                self._snapshot(wf, result, done, budget)
                 return result
 
             runnable: List[WorkflowNode] = []
@@ -91,7 +108,7 @@ class WorkflowEngine:
                 if node.state != WorkflowNodeState.PENDING:
                     continue
                 # 高风险节点 → 等待授权（PRD 13.3 waiting_authorization）
-                if node.requires_confirmation:
+                if node.requires_confirmation and (confirm is not None or not self.tools.permissions):
                     if not (confirm and confirm(node.node_id)):
                         node.state = WorkflowNodeState.WAITING_AUTH
                         result.error = f"节点 {node_id} 等待授权"
@@ -99,6 +116,7 @@ class WorkflowEngine:
                         result.status = wf.status
                         self._snapshot(wf, result, done, budget)
                         return result
+                    execution_context["confirmed_nodes"].append(node.node_id)
                 # 条件不满足 → 跳过，不阻断下游
                 if node.condition is not None:
                     try:
@@ -135,6 +153,8 @@ class WorkflowEngine:
                     paused_msg = error or "预算耗尽"
                 elif state == WorkflowNodeState.WAITING_EXTERNAL:
                     unknown_msg = error or "副作用结果待对账"
+                elif state == WorkflowNodeState.WAITING_AUTH and node.approval_id:
+                    result.approval_ids.append(node.approval_id)
                 elif state == WorkflowNodeState.FAILED:
                     failed = (node, error or "节点失败")
 
@@ -162,6 +182,12 @@ class WorkflowEngine:
                 result.status = wf.status
                 result.error = f"节点 {node.node_id} 失败: {error}"
                 result.retries_used = retries_used
+                self._snapshot(wf, result, done, budget)
+                return result
+            if result.approval_ids:
+                wf.status = WorkflowNodeState.WAITING_AUTH
+                result.status, result.error = wf.status, "节点等待审批"
+                result.outputs = dict(done)
                 self._snapshot(wf, result, done, budget)
                 return result
             self._snapshot(wf, result, done, budget)
@@ -193,7 +219,7 @@ class WorkflowEngine:
                     for n in nodes]
         workers = min(self.max_parallel, len(nodes))
         with ThreadPoolExecutor(max_workers=workers) as pool:
-            futures = [pool.submit(self._run_node, n, ctx_input, snapshot,
+            futures = [pool.submit(copy_context().run, self._run_node, n, ctx_input, snapshot,
                                    budget, workflow_id, execution_context) for n in nodes]
             return [f.result() for f in futures]
 
@@ -206,7 +232,7 @@ class WorkflowEngine:
         node.node_run_id = f"nod_{uuid.uuid4().hex[:16]}"
         state, output, error, retries = self._node_attempt_loop(
             node, ctx_input, done, budget, execution_context)
-        self._emit_node_run(workflow_id, node, state)
+        self._emit_node_run(workflow_id, node, state, execution_context)
         return state, output, error, retries
 
     def _node_attempt_loop(self, node: WorkflowNode, ctx_input: Dict,
@@ -219,6 +245,7 @@ class WorkflowEngine:
         while attempt <= node.max_retries:
             node.attempt = attempt
             try:
+                assert_current_lease()
                 if budget:
                     budget.check_alive()
                 output = self._exec_node_with_timeout(node, ctx_input, done,
@@ -230,6 +257,12 @@ class WorkflowEngine:
                 node.state = WorkflowNodeState.SUCCESS
                 node.output = output
                 return WorkflowNodeState.SUCCESS, output, None, retries
+            except LeaseLost:
+                raise
+            except ApprovalRequired as exc:
+                node.state = WorkflowNodeState.WAITING_AUTH
+                node.approval_id, node.error = exc.approval_id, str(exc)
+                return node.state, None, node.error, retries
             except NodeEffectUnknown as e:
                 node.state = WorkflowNodeState.WAITING_EXTERNAL
                 node.error = str(e)
@@ -254,7 +287,7 @@ class WorkflowEngine:
         return WorkflowNodeState.FAILED, None, node.error, retries
 
     def _emit_node_run(self, workflow_id: str, node: WorkflowNode,
-                       state: str) -> None:
+                       state: str, execution_context: Optional[Dict] = None) -> None:
         """节点执行运行事件（GAP ⑤d：node_run_id 入事件 payload）。
 
         事件自身故障不影响执行（与事件总线口径一致）。
@@ -263,6 +296,8 @@ class WorkflowEngine:
             return
         try:
             self.bus.emit(event_type="workflow_node_run",
+                          task_id=(execution_context or {}).get("task_id"),
+                          run_id=(execution_context or {}).get("run_id"),
                           component_id="workflow",
                           payload={"workflow_id": workflow_id,
                                    "node_id": node.node_id,
@@ -290,7 +325,7 @@ class WorkflowEngine:
             except BaseException as e:  # noqa: BLE001
                 holder["error"] = e
 
-        th = threading.Thread(target=target, daemon=True)
+        th = threading.Thread(target=copy_context().run, args=(target,), daemon=True)
         th.start()
         th.join(timeout)
         if th.is_alive():
@@ -302,7 +337,13 @@ class WorkflowEngine:
     def _exec_node(self, node: WorkflowNode, ctx_input: Dict, done: Dict,
                    budget: Optional[BudgetController],
                    execution_context: Optional[Dict] = None) -> Any:
+        assert_current_lease()
         # 工具节点：填入依赖输出（形如 "$node_id" 的参数引用上游结果）
+        context = execution_context or {}
+        authorization = {
+            "scope": f"workflow:{context.get('workflow_id')}/{context.get('workflow_version')}/node:{node.node_id}",
+            "workflow": context.get("workflow_id"),
+            "workflow_version": context.get("workflow_version"), "node": node.node_id}
         if node.tool:
             args = dict(node.args)
             for k, v in args.items():
@@ -312,7 +353,14 @@ class WorkflowEngine:
                 node.tool, args, budget=budget,
                 idempotency_key=(str((execution_context or {}).get("task_id", ""))
                                  + ":node:" + node.node_id),
-                timeout_seconds=node.timeout, **(execution_context or {}))
+                timeout_seconds=node.timeout,
+                task_id=context.get("task_id", ""), run_id=context.get("run_id", ""),
+                allowed_tools=context.get("allowed_tools"),
+                require_confirmation=(node.requires_confirmation and
+                    node.node_id not in context.get("confirmed_nodes", [])),
+                authorization_context=authorization)
+            if result.error_class == "approval_required":
+                raise ApprovalRequired(result.evidence["approval_id"])
             if result.side_effect_uncertain:
                 raise NodeEffectUnknown(result.error or "副作用结果待对账")
             if not result.ok:
@@ -321,13 +369,25 @@ class WorkflowEngine:
                 raise RuntimeError(result.error or "tool failed")
             return result.data
         if node.fn:
+            if node.requires_confirmation and node.node_id not in context.get("confirmed_nodes", []):
+                permission = self.tools.permissions
+                if permission is None or permission.check_op(
+                    "workflow_node_confirm", {"node": node.node_id, "input": ctx_input,
+                                               "dependencies": done, "args": node.args},
+                    task_id=context.get("task_id", ""),
+                    authorization_context=authorization,
+                    run_id=context.get("run_id", "")).value != "allow":
+                    raise PermissionError("节点授权被拒绝")
             return node.fn({"ctx": ctx_input, **done})
         raise RuntimeError("无可执行体")
 
     def _try_compensate(self, comp_tool: str, ctx: Dict,
                         execution_context: Optional[Dict] = None) -> None:
         try:
-            self.tools.execute(comp_tool, {}, **(execution_context or {}))
+            context = execution_context or {}
+            self.tools.execute(comp_tool, {}, task_id=context.get("task_id", ""),
+                run_id=context.get("run_id", ""), allowed_tools=context.get("allowed_tools"),
+                authorization_context={"scope": f"workflow:{context.get('workflow_id')}/compensation"})
         except Exception:
             pass
 
@@ -347,9 +407,13 @@ class WorkflowEngine:
         if self.tools.effects is not None:
             cp.pending_side_effects = self.tools.effects.pending(cp.task_id)
         # 已完成节点输出用于断点续跑（避免重复副作用）
-        cp.task_state = {"workflow_outputs": dict(done or {})}
+        cp.task_state = {"workflow_outputs": dict(done or {}),
+                         "workflow_id": wf.workflow_id}
         if budget is not None:
-            cp.budget_state = budget.snapshot()
+            parent = getattr(budget, "parent", None)
+            cp.budget_state = parent.snapshot() if parent else budget.snapshot()
+            if parent:
+                cp.budget_state["workflow_scope"] = budget.snapshot()
         self.cp.save(cp)
 
 

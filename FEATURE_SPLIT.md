@@ -4,6 +4,8 @@
 **配套**：`ROADMAP.md`（43 个工作包，按优先级排序）｜`GAP_ANALYSIS.md`（现状依据）
 **目的**：把 ROADMAP 的工作包重组为**可独立开发、独立验收、独立合并**的特性，并给出协作协议。
 
+**2026-10-22 协作交接入口**：[协作开发](docs/协作开发/README.md)。最新进度、可认领 ALN 子任务与共享文件归属以该协作包和全量对齐计划为准；本页保留历史 F 编号与拆分依据。下文基座重构前的热点规模是历史测量，不是当前源码规模；已有 F-00/F-53 等实现先复核再补缺口，不重复开发。
+
 ---
 
 ## 1. 为什么 ROADMAP 的 43 个 WP 不能直接并行
@@ -92,7 +94,7 @@
 | **F-09** Event/Task 契约 | `schema_version`/`payload_ref`/`privacy_level`/`sync_status`；`node_run_id`/`acceptance_contract_ref`/`authorization_ref`/Task 级 `idempotency_key` | WP-1.2 + WP-1.3 | `core/contracts.py` 的消费侧适配 | `core/events.py`、`core/task.py`、`offline/types.ts` | F-00.3 |
 | **F-10** Runtime Manifest 结构化 | 9 个结构化字段 + 修复未发布时版本退化 | WP-1.4 | `core/manifest.py` | `core/controller.py`（`_version_manifest`） | F-09 |
 | **F-11** Capability Asset 实体 | 十字段 + 八态生命周期 | WP-1.5 | `assets/entity.py`、`assets/lifecycle.py`、`core/schema/assets.py` | `experts/registry.py` | F-00.1 |
-| **F-12** 人工接管与审批节点 🔶**部分完成** | `WAITING_USER` 真挂起 + 澄清接口 + 工作流审批节点链路修复 + 审批记录实体 | WP-0.3 + WP-0.4 | `api/approvals_api.py`、`core/approvals.py`、`core/schema/approvals.py` | `react/engine.py`、`core/permissions.py`、`workflows/engine.py` | 🔶 **2026-10-22 部分完成**（并行工作流 `084d71d`）：审批记录实体已落地，A-01 五项绑定（动作摘要/目标对象/范围/有效期/一次性语义）全落字段，`approval_id` 从零命中变为有产生路径；`/approvals` 注册表路由可用。**仍未做**：`WAITING_USER` 真挂起（`react/engine.py` 收到 `request_user` 仍立即转失败）、澄清答案提交接口、工作流审批节点恒放行缺陷 |
+| **F-12** 人工接管与审批节点 🔶**部分完成** | `WAITING_USER` 真挂起 + 澄清接口 + 工作流审批节点链路修复 + 审批记录实体 | WP-0.3 + WP-0.4 | `api/approvals_api.py`、`core/approvals.py`、`core/schema/approvals.py` | `react/engine.py`、`core/permissions.py`、`workflows/engine.py` | 🔶 **2026-10-22 ALN-04 工作区**：已实现 WAITING_USER、问题/答案持久化、回答 API/CLI/Android 入口；工作流审批恒放行已修复。待审批动作绑定完整参数/任务/作用域/工具版本，admin 决策后批准继续原动作，拒绝取消；一次性消费/过期/跨连接并发保护已接线。**仍待验收**：运行中强杀接管、真机组合路径；详见 docs/异步审批与原动作恢复交付_2026-10-22.md。 |
 | **F-13** 检查点有序化 🔶**部分完成** | 暂停语义不被 RUNNING 覆盖；恢复游标 | WP-0.1 | — | `core/checkpoint.py`、`core/controller.py` | **写入有序性已完成**（`2c0515d`）；**恢复游标仍未做**（`CheckpointManager` 仍只有 `save`/`latest`，取不到任意中间断点）|
 | **F-14** 候选门禁与控制器分离 | 手工入口证据校验 + CTRL-03/04 职责拆分 | WP-3.4 | `evolution/gates.py` | `evolution/controller.py` | F-07 |
 

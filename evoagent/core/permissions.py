@@ -33,7 +33,8 @@ class PermissionController:
                  approvals: Optional[Any] = None):
         """
         high_risk_mode: 记录 in deny | confirm | allow（仅测试环境用 allow）
-        confirm_callback: (op_name, payload) -> bool；默认无回调=拒绝
+        confirm_callback: (op_name, payload) -> bool；无回调时持久任务进入异步审批，
+                          无任务/无审批存储的调用继续拒绝
         approvals: 审批记录存取（core/approvals.ApprovalStore）；F-04 高风险
                    决策与一次性语义落账用，缺省None 保持旧行为
         """
@@ -53,7 +54,10 @@ class PermissionController:
 
     def check_tool(self, tool_id: str, args: Dict, risk: RiskLevel,
                    side_effect: str = "none",
-                   lifted: bool = False, task_id: str = "") -> PermissionDecision:
+                   lifted: bool = False, task_id: str = "", *,
+                   require_confirmation: bool = False,
+                   authorization_context: Optional[Dict] = None,
+                   run_id: str = "") -> PermissionDecision:
         """工具调用前权限校验。裁决链：显式策略 > 副作用登记 > 高风险名单。
 
         lifted（契约 §4，GAP ⑤b）：工具契约风险声明高于副作用推导时
@@ -64,28 +68,35 @@ class PermissionController:
         if policy:
             if policy.decision == PermissionDecision.DENY:
                 return PermissionDecision.DENY
-            if policy.decision == PermissionDecision.ALLOW:
+            if policy.decision == PermissionDecision.ALLOW and not require_confirmation:
                 return PermissionDecision.ALLOW
         if tool_id in self.high_risk_ops \
                 or (policy and policy.decision == PermissionDecision.CONFIRM) \
                 or side_effect in ("local", "external", "destructive") \
-                or lifted:
-            return self._decide_high_risk(tool_id, args, task_id=task_id)
+                or lifted or require_confirmation:
+            return self._decide_high_risk(tool_id, args, task_id=task_id,
+                context=authorization_context, run_id=run_id)
         return PermissionDecision.ALLOW
 
-    def check_op(self, op_name: str, args: Dict) -> PermissionDecision:
+    def check_op(self, op_name: str, args: Dict, *, task_id=None,
+                 authorization_context=None, run_id="") -> PermissionDecision:
         if op_name in self.high_risk_ops:
             return self._decide_high_risk(
-                op_name, args, task_id=str(args.get("task_id") or ""))
+                op_name, args, task_id=task_id or str(args.get("task_id") or ""),
+                context=authorization_context, run_id=run_id)
         return PermissionDecision.ALLOW
 
     def _decide_high_risk(self, op: str, args: Dict,
-                          task_id: str = "") -> PermissionDecision:
+                          task_id: str = "", context=None, run_id="") -> PermissionDecision:
         if self.high_risk_mode == "allow":
             decision = PermissionDecision.ALLOW
         elif self.high_risk_mode == "deny":
             decision = PermissionDecision.DENY
         else:
+            if self.confirm_callback is None and self.approvals is not None and task_id:
+                permitted = self.approvals.authorize_action(
+                    op, args, task_id=task_id, context=context, run_id=run_id)
+                return PermissionDecision.ALLOW if permitted else PermissionDecision.DENY
             # confirm 模式：有回调且回调同意才放行
             if self.confirm_callback and self.confirm_callback(op, args):
                 decision = PermissionDecision.ALLOW

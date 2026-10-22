@@ -88,7 +88,7 @@ class TestMigrations(unittest.TestCase):
     def test_baseline_migration_runs_once(self):
         conn = sqlite3.connect(":memory:")
         first = migrations.apply_migrations(conn)
-        self.assertEqual(first, ["baseline"])
+        self.assertEqual(first, [name for _, name, _ in migrations.MIGRATIONS])
         second = migrations.apply_migrations(conn)
         self.assertEqual(second, [], "重复调用不应重复执行")
         conn.close()

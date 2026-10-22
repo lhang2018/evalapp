@@ -58,6 +58,11 @@ class ApiAuth:
                 return AuthResult(False, role, 403, "该操作需要 admin 权限")
             return AuthResult(True, role)
         parts = [p for p in path.split("/") if p]
+        if (len(parts) == 3 and parts[0] == "tasks" and parts[2] == "recover" and role != "admin"):
+            return AuthResult(False, role, 403, "该操作需要 admin 权限")
+        if (len(parts) == 3 and parts[0] == "approvals"
+                and parts[2] == "decision" and role != "admin"):
+            return AuthResult(False, role, 403, "该操作需要 admin 权限")
         if (len(parts) == 4 and parts[0] == "evolution"
                 and parts[1] == "candidates"
                 and parts[3] in ADMIN_ONLY_ACTIONS

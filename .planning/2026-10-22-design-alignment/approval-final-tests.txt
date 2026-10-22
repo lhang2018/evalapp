@@ -1,0 +1,78 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [ 10%]
+...................................................................F.... [ 21%]
+........................................................................ [ 32%]
+........................................................................ [ 43%]
+........................................................................ [ 53%]
+........................................................................ [ 64%]
+........................................................................ [ 75%]
+........................................................................ [ 86%]
+....................................s................................... [ 96%]
+.....................                                                    [100%]
+================================== FAILURES ===================================
+_____ TestControlPlaneServer.test_token_enforcement_and_audit_on_mutation _____
+
+self = <test_control_plane.TestControlPlaneServer testMethod=test_token_enforcement_and_audit_on_mutation>
+
+    def test_token_enforcement_and_audit_on_mutation(self):
+        self.app.config.api_token = "op"
+        self.app.config.api_admin_token = "root"
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            self._get("/audit")
+        self.assertEqual(ctx.exception.code, 401)
+
+        body = json.dumps({"reason": "test"}).encode()
+        req = urllib.request.Request(
+            f"http://127.0.0.1:{self.port}/releases/rollback",
+            data=body, method="POST")
+        req.add_header("Authorization", "Bearer op")
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+>           urllib.request.urlopen(req, timeout=5)
+
+tests\test_control_plane.py:192:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:216: in urlopen
+    return opener.open(url, data, timeout)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:519: in open
+    response = self._open(req, data)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:536: in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:496: in _call_chain
+    result = func(*args)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:1377: in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:1352: in do_open
+    r = h.getresponse()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:1375: in getresponse
+    response.begin()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:318: in begin
+    version, status, reason = self._read_status()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:279: in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def readinto(self, b):
+        """Read up to len(b) bytes into the writable buffer *b* and return
+        the number of bytes read.  If the socket is non-blocking and no bytes
+        are available, None is returned.
+
+        If *b* is non-empty, a 0 return value indicates that the connection
+        was shutdown at the other end.
+        """
+        self._checkClosed()
+        self._checkReadable()
+        if self._timeout_occurred:
+            raise OSError("cannot read from timed out object")
+        while True:
+            try:
+>               return self._sock.recv_into(b)
+E               ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\socket.py:705: ConnectionAbortedError
+---------------------------- Captured stdout call -----------------------------
+EvoAgent API: http://127.0.0.1:14472  (GET /health)
+=========================== short test summary info ===========================
+FAILED tests/test_control_plane.py::TestControlPlaneServer::test_token_enforcement_and_audit_on_mutation
+1 failed, 667 passed, 1 skipped in 65.23s (0:01:05)

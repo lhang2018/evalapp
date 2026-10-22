@@ -32,7 +32,7 @@ def render(board):
     for card in board["dispatches"]:
         lines.append(f"| {card['id']} | {roles[card['stream']]} | {card['owner'] or '待认领'} | "
             f"{card['reviewer'] or '待定'} | {card['status']} | [{card['title']}]({card['card'].split('docs/协作开发/', 1)[1]}) |")
-    lines += ["", "基线发布之前，非集成任务只准备接口、夹具和独立草稿；接线、集成与验收等待共同基线和原工作包依赖。",
+    lines += ["", board.get("execution_note", "基线发布之前，非集成任务只准备接口、夹具和独立草稿；接线、集成与验收等待共同基线和原工作包依赖。"),
         "", "## 23 个工作包总账", "", "planned 表示本次整包尚未开工，不表示仓库没有相关基础模块。",
         "needs_recheck 表示不能照历史快照重复开发；先核对已提交/在途行为再细化。", "",
         "| ALN | 优先级 | 工作包 | 当前进度 | 推荐协调角色 | 协调人 | 原始依赖 | 下一项工作 |",

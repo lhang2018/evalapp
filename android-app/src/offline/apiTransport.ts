@@ -5,7 +5,7 @@ import type {
   SyncResponse,
 } from "./sync.ts";
 import type { TaskTransport } from "./tasks.ts";
-import type { OfflineEvent } from "./types.ts";
+import type { OfflineEvent, UserInputRequest } from "./types.ts";
 import { createId } from "./ids.ts";
 
 interface SyncMeta {
@@ -30,6 +30,9 @@ interface HttpLike {
     meta?: TaskMeta,
   ): Promise<{ task_id: string }>;
   getTask(taskId: string): Promise<{
+    current_run_id?: string | null;
+    waiting_request?: UserInputRequest | null;
+    waiting_approvals?: string[];
     task_status: string;
     result?: string | null;
     failure_reason?: string | null;

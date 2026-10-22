@@ -1,6 +1,6 @@
 /** 本地任务库：离线创建、幂等提交、状态刷新与崩溃恢复。 */
 
-import type { LocalTask, LocalTaskStatus, OfflineState } from "./types.ts";
+import type { LocalTask, LocalTaskStatus, OfflineState, UserInputRequest } from "./types.ts";
 import type { OfflineRepository } from "./storage.ts";
 import { createClientRequestId, createLocalTaskId } from "./ids.ts";
 import { enqueueInto } from "./queue.ts";
@@ -14,6 +14,9 @@ export interface TaskTransport {
     clientRequestId: string,
   ): Promise<{ task_id: string }>;
   getTask(taskId: string): Promise<{
+    current_run_id?: string | null;
+    waiting_request?: UserInputRequest | null;
+    waiting_approvals?: string[];
     task_status: string;
     result?: string | null;
     failure_reason?: string | null;
@@ -200,9 +203,17 @@ export class LocalTaskService {
           );
           if (!target) return;
           const changed = target.status !== mapped ||
+            target.server_status !== info.task_status ||
+            target.current_run_id !== info.current_run_id ||
+            target.waiting_request?.request_id !== info.waiting_request?.request_id ||
+            JSON.stringify(target.waiting_approvals ?? []) !== JSON.stringify(info.waiting_approvals ?? []) ||
             (info.result ?? null) !== target.result ||
             (info.failure_reason ?? null) !== target.failure_reason;
           target.status = mapped;
+          target.server_status = info.task_status;
+          target.current_run_id = info.current_run_id ?? null;
+          target.waiting_request = info.waiting_request ?? null;
+          target.waiting_approvals = info.waiting_approvals ?? [];
           target.result = info.result ?? null;
           target.failure_reason = info.failure_reason ?? null;
           target.last_sync_error = null;

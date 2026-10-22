@@ -230,9 +230,18 @@
           "scope": "租约/隔离/15 项恢复与入口专项；真实杀进程与双进程竞争",
           "command": "python -m pytest -q; npm run test:offline; npm run typecheck",
           "result": "764 passed, 1 skipped；客户端 144 passed；typecheck passed",
-          "source": "共享候选工作区，未提交；含其他人在途资产与模型实现，非纯 HEAD 验证",
+          "source": "验证当时的共享候选工作区；含其他人在途资产与模型实现，非纯 HEAD 验证",
           "log": ".planning/2026-10-22-design-alignment/claimed-backend-final.txt",
           "delivery": "docs/协作开发/交付/ALN-04-R-运行租约与中断接管.md"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "导出本轮提交候选，未纳入其他人在途源码",
+          "command": "python -m pytest -q；Git 元数据补齐后单项复验；npm run test:offline；npm run typecheck",
+          "result": "后端 766 passed / 1 skipped + Git 读取项补验 1 passed；候选客户端 136 passed/typecheck passed",
+          "source": "父提交 a957fe8 + 本轮暂存源码；本记录与源码同次提交",
+          "log": ".planning/2026-10-22-design-alignment/commit-candidate-backend-tests.txt",
+          "supplemental_log": ".planning/2026-10-22-design-alignment/commit-candidate-git-test.txt"
         }
       ],
       "card": "docs/协作开发/任务卡/04-运行恢复.md",
@@ -331,9 +340,18 @@
           "scope": "完整动作审阅、单次审批、断网/过期/权限/回包丢失状态测试；真机待验",
           "command": "python -m pytest -q; npm run test:offline; npm run typecheck",
           "result": "764 passed, 1 skipped；客户端 144 passed；typecheck passed",
-          "source": "共享候选工作区，未提交；含其他人在途资产与模型实现，非纯 HEAD 验证",
+          "source": "验证当时的共享候选工作区；含其他人在途资产与模型实现，非纯 HEAD 验证",
           "log": ".planning/2026-10-22-design-alignment/claimed-client-tests.txt",
           "delivery": "docs/协作开发/交付/ALN-04-UI-管理员审批页面.md"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "导出本轮提交候选，未纳入其他人在途源码",
+          "command": "python -m pytest -q；Git 元数据补齐后单项复验；npm run test:offline；npm run typecheck",
+          "result": "后端 766 passed / 1 skipped + Git 读取项补验 1 passed；候选客户端 136 passed/typecheck passed",
+          "source": "父提交 a957fe8 + 本轮暂存源码；本记录与源码同次提交",
+          "log": ".planning/2026-10-22-design-alignment/commit-candidate-backend-tests.txt",
+          "supplemental_log": ".planning/2026-10-22-design-alignment/commit-candidate-git-test.txt"
         }
       ],
       "card": "docs/协作开发/任务卡/04-Android审批.md",

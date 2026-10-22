@@ -37,12 +37,13 @@ class TestRuntime(Base):
         self.assertEqual(t.task_status.value, "SUCCEEDED")
         self.assertIn("408", str(t.result))
 
-    def test_high_risk_without_confirm_fails_safe(self):
+    def test_high_risk_without_confirm_waits_safely(self):
         t = self.app.submit("写笔记 path=notes/x.txt content=abc",
                             intent="note_taking",
                             acceptance=[{"type": "tool_succeeded"}])
-        # 无确认回调 → file_write 被拒绝 → Mock 走降级 finish → 工具未成功
-        self.assertEqual(t.task_status.value, "FAILED")
+        self.assertEqual(t.task_status.value, "SUSPENDED")
+        self.assertTrue(t.waiting_approvals)
+        self.assertFalse(Path(self.tmp, "workspace", "notes", "x.txt").exists())
 
     def test_high_risk_with_confirm_succeeds(self):
         t = self.confirm_app.submit("写笔记 path=notes/x.txt content=abc",

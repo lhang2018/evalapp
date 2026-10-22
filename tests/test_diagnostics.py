@@ -100,6 +100,7 @@ class TestDiagnosisRules(Base):
         self.assertIsNone(self.app.db.get_case_by_task(t.task_id))
 
     def test_runtime_failure_creates_persisted_case(self):
+        self.app.permissions.high_risk_mode = "deny"
         t = self.app.submit("写笔记 path=notes/x.txt content=abc",
                             intent="note_taking",
                             acceptance=[{"type": "tool_succeeded"}])
@@ -172,6 +173,7 @@ class TestDiagnosticsApi(unittest.TestCase):
             return r.status, json.loads(r.read().decode())
 
     def test_full_diagnostic_chain(self):
+        self.app.permissions.high_risk_mode = "deny"
         t = self.app.submit("写笔记 path=notes/api.txt content=abc",
                             intent="note_taking",
                             acceptance=[{"type": "tool_succeeded"}])

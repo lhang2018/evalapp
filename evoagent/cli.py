@@ -214,6 +214,44 @@ def cmd_resume(task_id: str, force: bool) -> str:
     return json.dumps(t.to_dict(), ensure_ascii=False, indent=1)
 
 
+def cmd_answer(task_id: str, request_id: str, answer: str) -> str:
+    try:
+        task, accepted = _app().controller.answer_task(task_id, request_id, answer)
+    except (KeyError, TypeError, ValueError, PermissionError) as exc:
+        return _fail(str(exc))
+    print(json.dumps({"accepted": accepted, "task": task.to_dict()},
+                     ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_recover(task_id: str) -> str:
+    try:
+        task = _app().controller.recover_task(task_id)
+    except (KeyError, ValueError, PermissionError) as exc:
+        return _fail(str(exc))
+    print(json.dumps(task.to_dict(), ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_approvals(task_id: str = "") -> str:
+    app = _app()
+    records = (app.approvals.list_for_task(task_id) if task_id
+               else app.approvals.list_recent())
+    print(json.dumps({"approvals": records}, ensure_ascii=False, indent=1))
+    return ""
+
+
+def cmd_approval_decision(approval_id: str, decision: str) -> str:
+    try:
+        task, accepted = _app().controller.decide_approval(
+            approval_id, decision == "approve", actor="cli:local")
+    except (KeyError, ValueError, PermissionError) as exc:
+        return _fail(str(exc))
+    print(json.dumps({"accepted": accepted, "task": task.to_dict()},
+                     ensure_ascii=False, indent=1))
+    return ""
+
+
 def cmd_candidates(candidate_id: str) -> str:
     app = _app()
     if candidate_id:
@@ -645,6 +683,17 @@ def main() -> None:
     rs = sub.add_parser("resume")
     rs.add_argument("task_id")
     rs.add_argument("--force", action="store_true")
+    recover = sub.add_parser("recover")
+    recover.add_argument("task_id")
+    ans = sub.add_parser("answer")
+    ans.add_argument("task_id")
+    ans.add_argument("request_id")
+    ans.add_argument("answer")
+    ap = sub.add_parser("approvals")
+    ap.add_argument("task_id", nargs="?", default="")
+    decision = sub.add_parser("approval-decision")
+    decision.add_argument("approval_id")
+    decision.add_argument("decision", choices=("approve", "reject"))
     d = sub.add_parser("diagnose")
     d.add_argument("task_id", nargs="?")
     d.add_argument("--probe", default="",
@@ -761,6 +810,14 @@ def main() -> None:
         cmd_pause(args.task_id)
     elif args.cmd == "resume":
         cmd_resume(args.task_id, args.force)
+    elif args.cmd == "recover":
+        cmd_recover(args.task_id)
+    elif args.cmd == "answer":
+        cmd_answer(args.task_id, args.request_id, args.answer)
+    elif args.cmd == "approvals":
+        cmd_approvals(args.task_id)
+    elif args.cmd == "approval-decision":
+        cmd_approval_decision(args.approval_id, args.decision)
     elif args.cmd == "diagnose":
         cmd_diagnose(args.task_id, args.probe)
     elif args.cmd == "diagnose-assist":

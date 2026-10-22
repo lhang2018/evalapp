@@ -251,10 +251,11 @@ class TestVersionSyncApi(unittest.TestCase):
         self.assertEqual(manifest["installation_id"], INSTALLATION)
         inner = manifest["manifest"]
         self.assertEqual(inner["app_version"], "0.1.0")
-        self.assertEqual(inner["run_id"], f"run_{task_id}")
+        self.assertTrue(inner["run_id"].startswith("run_"))
+        self.assertNotEqual(inner["run_id"], f"run_{task_id}")
         self.assertIn("release_id", inner)
 
-        st, run = self._get(f"/runs/run_{task_id}/manifest")
+        st, run = self._get(f"/runs/{inner['run_id']}/manifest")
         self.assertEqual(st, 200)
         self.assertEqual(run["manifest"]["device_id"], DEVICE)
 

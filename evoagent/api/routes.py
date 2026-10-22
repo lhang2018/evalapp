@@ -99,6 +99,14 @@ def _match(routes: List[tuple], path: str):
     for route_path, fn in routes:
         if route_path == path:
             return fn
+    for route_path, fn in routes:
+        if "{" not in route_path:
+            continue
+        pattern, actual = route_path.split("/"), path.split("/")
+        if len(pattern) == len(actual) and all(
+                bool(value) if part.startswith("{") and part.endswith("}")
+                else part == value for part, value in zip(pattern, actual)):
+            return fn
     prefix_hits = [(p, fn) for p, fn in routes if p.endswith("/") and
                    path.startswith(p)]
     if prefix_hits:

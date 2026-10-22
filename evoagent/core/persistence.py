@@ -9,7 +9,8 @@ from typing import Any, Dict, List, Optional
 
 from . import schema
 from .schema.migrations import apply_migrations
-from .task import Task
+from .task import Task, TaskStatus
+from .leases import guard_write, assert_connection_lease
 
 
 class Database:
@@ -35,6 +36,7 @@ class Database:
     # ---- tasks ----
     def save_task(self, task: Task) -> None:
         with self._lock:
+            guard_write(self)
             self._conn.execute(
                 "INSERT OR REPLACE INTO tasks"
                 " (task_id, status, intent, domain, risk_level, user_goal,"
@@ -64,20 +66,104 @@ class Database:
         return [Task.from_dict(json.loads(r["data"])) for r in rows]
 
     # ---- runs ----
+    def claim_run(self, task: Task, expected_run_id, expected_status,
+                  started_at: float, *, ownership=None, recovery=False):
+        """Compare and claim a task attempt in one SQLite transaction."""
+        allowed = (TaskStatus.RUNNING, TaskStatus.SUSPENDED) if recovery else (TaskStatus.CREATED, TaskStatus.SUSPENDED)
+        if expected_status not in allowed:
+            raise ValueError("任务状态不允许开始运行")
+        with self._lock:
+            self._conn.execute("BEGIN IMMEDIATE")
+            try:
+                assert_connection_lease(self._conn, self)
+                row = self._conn.execute(
+                    "SELECT data FROM tasks WHERE task_id=?", (task.task_id,)).fetchone()
+                if row:
+                    stored = Task.from_dict(json.loads(row["data"]))
+                    if (stored.current_run_id != expected_run_id or
+                            stored.task_status != expected_status):
+                        raise ValueError("任务状态已改变，请刷新后重试")
+                token = ownership.claim(self._conn, task, recovery=recovery) if ownership else None
+                if expected_run_id:
+                    previous = self._conn.execute(
+                        "SELECT finished_at FROM task_runs WHERE run_id=?",
+                        (expected_run_id,)).fetchone()
+                    if previous and previous["finished_at"] is None:
+                        raise ValueError("上一次运行尚未结束")
+                self._conn.execute(
+                    "INSERT INTO task_runs"
+                    " (run_id,task_id,started_at,outcome,version_manifest,parent_run_id)"
+                    " VALUES (?,?,?,?,?,?)",
+                    (task.current_run_id, task.task_id, started_at, "RUNNING",
+                     json.dumps(task.version_manifest, ensure_ascii=False), task.parent_run_id))
+                self._conn.execute(
+                    "INSERT OR REPLACE INTO tasks"
+                    " (task_id,status,intent,domain,risk_level,user_goal,created_at,data,goal_id)"
+                    " VALUES (?,?,?,?,?,?,?,?,?)",
+                    (task.task_id, task.task_status.value, task.intent, task.domain,
+                     task.risk_level.value, task.user_goal, task.created_at,
+                     json.dumps(task.to_dict(), ensure_ascii=False), task.goal_id))
+                self._conn.commit()
+                return token
+            except BaseException:
+                self._conn.rollback()
+                raise
+
+    def record_user_answer(self, task_id: str, request_id: str,
+                            answer: str):
+        """Atomically consume a specific question, including cross-connection retries."""
+        with self._lock:
+            self._conn.execute("BEGIN IMMEDIATE")
+            try:
+                row = self._conn.execute(
+                    "SELECT data FROM tasks WHERE task_id=?", (task_id,)).fetchone()
+                if row is None:
+                    raise KeyError("任务不存在")
+                task = Task.from_dict(json.loads(row["data"]))
+                for old in task.user_answers:
+                    if old["request_id"] == request_id:
+                        if old["answer"] != answer:
+                            raise ValueError("该问题已回答，不能替换为不同答案")
+                        self._conn.commit()
+                        return task, False
+                request = task.waiting_request or {}
+                if task.task_status != TaskStatus.WAITING_USER or request.get("request_id") != request_id:
+                    raise ValueError("任务未等待此问题的答案")
+                task.user_answers.append({"request_id": request_id,
+                                          "answer": answer, "at": time.time()})
+                request["answered"] = True
+                task.task_status = TaskStatus.SUSPENDED
+                task.updated_at = time.time()
+                self._conn.execute(
+                    "UPDATE tasks SET status=?,data=? WHERE task_id=?",
+                    (task.task_status.value, json.dumps(task.to_dict(), ensure_ascii=False), task_id))
+                self._conn.commit()
+                return task, True
+            except BaseException:
+                self._conn.rollback()
+                raise
+
     def save_run(self, run_id: str, task_id: str, started_at: float,
                  finished_at: Optional[float], outcome: str,
-                 version_manifest: Dict[str, Any]) -> None:
+                 version_manifest: Dict[str, Any],
+                 parent_run_id: Optional[str] = None) -> None:
         with self._lock:
+            guard_write(self)
             self._conn.execute(
-                "INSERT OR REPLACE INTO task_runs VALUES (?,?,?,?,?,?)",
+                "INSERT INTO task_runs"
+                " (run_id,task_id,started_at,finished_at,outcome,version_manifest,parent_run_id)"
+                " VALUES (?,?,?,?,?,?,?) ON CONFLICT(run_id) DO UPDATE SET"
+                " finished_at=excluded.finished_at,outcome=excluded.outcome,"
+                " version_manifest=excluded.version_manifest"
+                " WHERE task_runs.task_id=excluded.task_id",
                 (run_id, task_id, started_at, finished_at, outcome,
-                 json.dumps(version_manifest, ensure_ascii=False)))
+                 json.dumps(version_manifest, ensure_ascii=False), parent_run_id))
             self._conn.commit()
 
     def list_runs(self, task_id: str, limit: int = 100) -> List[Dict[str, Any]]:
         rows = self._conn.execute(
             "SELECT run_id, task_id, started_at, finished_at, outcome,"
-            " version_manifest FROM task_runs WHERE task_id=?"
+            " version_manifest, parent_run_id FROM task_runs WHERE task_id=?"
             " ORDER BY started_at ASC LIMIT ?", (task_id, limit)).fetchall()
         out = []
         for r in rows:
@@ -89,6 +175,7 @@ class Database:
                         "started_at": r["started_at"],
                         "finished_at": r["finished_at"],
                         "outcome": r["outcome"],
+                        "parent_run_id": r["parent_run_id"],
                         "version_manifest": manifest})
         return out
 
@@ -96,6 +183,7 @@ class Database:
     def save_checkpoint(self, checkpoint_id: str, task_id: str,
                         created_at: float, snapshot: Dict[str, Any]) -> None:
         with self._lock:
+            guard_write(self)
             self._conn.execute(
                 "INSERT OR REPLACE INTO task_checkpoints VALUES (?,?,?,?)",
                 (checkpoint_id, task_id, created_at,
@@ -134,6 +222,7 @@ class Database:
         """Atomic operation claim; duplicate claims never leave an open transaction."""
         now = time.time()
         with self._lock:
+            guard_write(self)
             cursor = self._conn.execute(
                 "INSERT OR IGNORE INTO task_side_effects"
                 " (effect_id,task_id,run_id,tool_id,idempotency_key,"
@@ -158,6 +247,7 @@ class Database:
             args.append(reconciled_at)
         args.append(effect_id)
         with self._lock:
+            guard_write(self)
             cur = self._conn.execute(
                 f"UPDATE task_side_effects SET {', '.join(parts)}"
                 " WHERE effect_id=?", args)
@@ -192,8 +282,11 @@ class Database:
                       status: str, granted_by: str,
                       expires_at: Optional[float]) -> str:
         with self._lock:
+            guard_write(self)
             self._conn.execute(
-                "INSERT INTO approvals VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO approvals (approval_id,task_id,op,target,scope,"
+                "action_summary,status,granted_by,created_at,expires_at,"
+                "consumed_at,revoked_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                 (approval_id, task_id, op, target, scope, action_summary,
                  status, granted_by, time.time(), expires_at,
                  None, None))  # created_at, expires_at, consumed_at, revoked_at
@@ -203,12 +296,116 @@ class Database:
     def consume_approval(self, approval_id: str) -> bool:
         """一次性：把 approved 标记为 used，仅当仍为 approved。"""
         with self._lock:
-            cur = self._conn.execute(
-                "UPDATE approvals SET status='used', consumed_at=?"
-                " WHERE approval_id=? AND status='approved'",
-                (time.time(), approval_id))
-            self._conn.commit()
+            self._conn.execute("BEGIN IMMEDIATE")
+            try:
+                assert_connection_lease(self._conn, self)
+                now = time.time()
+                cur = self._conn.execute(
+                    "UPDATE approvals SET status='used', consumed_at=?"
+                    " WHERE approval_id=? AND status='approved'"
+                    " AND (expires_at IS NULL OR expires_at>?)", (now, approval_id, now))
+                self._conn.commit()
+            except BaseException:
+                self._conn.rollback()
+                raise
         return cur.rowcount > 0
+
+    def authorize_bound_action(self, approval_id: str, task_id: str,
+                               op: str, scope: str, target: str,
+                               digest: str, binding_json: str,
+                               run_id: str, ttl_seconds: float):
+        """Reuse pending requests or consume one exact approved action atomically."""
+        with self._lock:
+            self._conn.execute("BEGIN IMMEDIATE")
+            try:
+                assert_connection_lease(self._conn, self)
+                now = time.time()
+                row = self._conn.execute(
+                    "SELECT * FROM approvals WHERE task_id=? AND op=? AND scope=?"
+                    " AND action_digest=? AND binding_json=?"
+                    " AND status IN ('pending','approved','denied')"
+                    " AND (expires_at IS NULL OR expires_at>?)"
+                    " ORDER BY created_at DESC,rowid DESC LIMIT 1",
+                    (task_id, op, scope, digest, binding_json, now)).fetchone()
+                if row:
+                    identity, status = row["approval_id"], row["status"]
+                    if status == "approved":
+                        self._conn.execute(
+                            "UPDATE approvals SET status='used',consumed_at=?"
+                            " WHERE approval_id=?", (now, identity))
+                        status = "used"
+                else:
+                    identity, status = approval_id, "pending"
+                    self._conn.execute(
+                        "INSERT INTO approvals (approval_id,task_id,op,target,scope,"
+                        "action_summary,status,granted_by,created_at,expires_at,"
+                        "action_digest,binding_json,requested_run_id)"
+                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        (identity, task_id, op, target[:300], scope,
+                         (op + " " + binding_json)[:500], status, "", now,
+                         now + ttl_seconds, digest, binding_json, run_id))
+                self._conn.commit()
+                return identity, status
+            except BaseException:
+                self._conn.rollback()
+                raise
+
+    def decide_task_approval(self, approval_id: str, approved: bool, actor: str):
+        """Decide only a request belonging to the task's current suspended boundary."""
+        with self._lock:
+            self._conn.execute("BEGIN IMMEDIATE")
+            try:
+                row = self._conn.execute("SELECT * FROM approvals WHERE approval_id=?",
+                                         (approval_id,)).fetchone()
+                if row is None:
+                    raise KeyError("审批不存在")
+                task_row = self._conn.execute("SELECT data FROM tasks WHERE task_id=?",
+                                               (row["task_id"],)).fetchone()
+                if not task_row:
+                    raise ValueError("审批没有可恢复的任务")
+                task = Task.from_dict(json.loads(task_row["data"]))
+                if row["status"] in ("pending", "approved") and row["expires_at"] is not None and row["expires_at"] <= time.time():
+                    raise ValueError("审批已过期，请恢复任务以生成新请求")
+                if (approved and row["status"] in ("approved", "used")) or (
+                        not approved and row["status"] == "denied"):
+                    ready = (row["status"] == "approved" and
+                        task.task_status == TaskStatus.SUSPENDED and
+                        approval_id in task.waiting_approvals and
+                        self._task_approvals_ready(task.waiting_approvals))
+                    self._conn.commit()
+                    return task, False, ready
+                if row["status"] != "pending":
+                    raise ValueError("审批已经决定或失效")
+                if task.task_status != TaskStatus.SUSPENDED or approval_id not in task.waiting_approvals:
+                    raise ValueError("任务未在此审批边界等待")
+                self._conn.execute("UPDATE approvals SET status=?,granted_by=? WHERE approval_id=?",
+                    ("approved" if approved else "denied", actor, approval_id))
+                ready = False
+                if not approved:
+                    from .state_machine import transition
+                    task.task_status = transition(task.task_status, TaskStatus.CANCELLED)
+                    task.result = "用户拒绝审批，任务已取消"
+                    task.waiting_approvals = []
+                    task.updated_at = time.time()
+                    self._conn.execute("UPDATE tasks SET status=?,data=? WHERE task_id=?",
+                        (task.task_status.value, json.dumps(task.to_dict(), ensure_ascii=False), task.task_id))
+                    self._conn.execute(
+                        "UPDATE approvals SET status='revoked',revoked_at=? WHERE task_id=?"
+                        " AND status IN ('pending','approved')", (time.time(), task.task_id))
+                else:
+                    ready = self._task_approvals_ready(task.waiting_approvals)
+                self._conn.commit()
+                return task, True, ready
+            except BaseException:
+                self._conn.rollback()
+                raise
+
+    def _task_approvals_ready(self, identities):
+        states = [self._conn.execute(
+            "SELECT status,expires_at FROM approvals WHERE approval_id=?", (identity,)).fetchone()
+            for identity in identities]
+        return bool(states) and all(row and row["status"] == "approved" and
+            (row["expires_at"] is None or row["expires_at"] > time.time()) for row in states)
 
     def revoke_approval(self, approval_id: str) -> bool:
         with self._lock:
@@ -219,12 +416,20 @@ class Database:
             self._conn.commit()
         return cur.rowcount > 0
 
+    def revoke_task_approvals(self, task_id: str) -> None:
+        with self._lock:
+            self._conn.execute(
+                "UPDATE approvals SET status='revoked',revoked_at=?"
+                " WHERE task_id=? AND status IN ('pending','approved')",
+                (time.time(), task_id))
+            self._conn.commit()
+
     def expire_approvals(self, now: float) -> int:
         with self._lock:
             cur = self._conn.execute(
                 "UPDATE approvals SET status='expired'"
-                " WHERE status='approved' AND expires_at IS NOT NULL"
-                " AND expires_at < ?", (now,))
+                " WHERE status IN ('pending','approved') AND expires_at IS NOT NULL"
+                " AND expires_at <= ?", (now,))
             self._conn.commit()
         return cur.rowcount
 
@@ -424,12 +629,24 @@ class Database:
                               data: Dict[str, Any],
                               created_at: Optional[float] = None) -> None:
         with self._lock:
+            encoded = json.dumps(data, ensure_ascii=False, default=str,
+                                 sort_keys=True)
+            guard_write(self)
+            existing = self._conn.execute(
+                "SELECT data FROM runtime_manifests WHERE manifest_id=?",
+                (manifest_id,)).fetchone()
+            if existing:
+                if json.loads(existing["data"]) != data:
+                    self._conn.rollback()
+                    raise ValueError("不可变运行清单禁止覆盖")
+                self._conn.commit()
+                return
             self._conn.execute(
-                "INSERT OR REPLACE INTO runtime_manifests VALUES"
+                "INSERT INTO runtime_manifests VALUES"
                 " (?,?,?,?,?,?,?)",
                 (manifest_id, task_id, run_id, device_id, installation_id,
                  time.time() if created_at is None else created_at,
-                 json.dumps(data, ensure_ascii=False, default=str)))
+                 encoded))
             self._conn.commit()
 
     def get_runtime_manifest(self,
@@ -766,6 +983,7 @@ class Database:
     def save_tool_execution(self, idem_key: str, tool_id: str,
                             result: Dict[str, Any]) -> bool:
         with self._lock:
+            guard_write(self)
             cur = self._conn.execute(
                 "INSERT OR IGNORE INTO tool_executions VALUES (?,?,?,?)",
                 (idem_key, tool_id, time.time(),
@@ -774,10 +992,22 @@ class Database:
             return cur.rowcount > 0
 
     # ---- budget ledger ----
+    def save_execution_budget(self, task_id, run_id, state):
+        with self._lock:
+            guard_write(self)
+            self._conn.execute("INSERT OR REPLACE INTO execution_budget_state VALUES (?,?,?)",
+                               (task_id, run_id, json.dumps(state, ensure_ascii=False)))
+            self._conn.commit()
+
+    def get_execution_budget(self, task_id):
+        row = self._conn.execute("SELECT state FROM execution_budget_state WHERE task_id=?", (task_id,)).fetchone()
+        return json.loads(row["state"]) if row else None
+
     def record_budget(self, ledger_key: str, model_calls: int = 0,
                       tool_calls: int = 0, cost: float = 0.0,
                       seconds: float = 0.0) -> None:
         with self._lock:
+            guard_write(self)
             self._conn.execute(
                 "INSERT INTO budget_ledger VALUES (?,?,?,?,?,?)"
                 " ON CONFLICT(ledger_key) DO UPDATE SET"
