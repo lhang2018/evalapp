@@ -512,7 +512,7 @@ def _batches(wf: WorkflowDef) -> List[List[str]]:
 
 def _topo(wf: WorkflowDef) -> List[str]:
     """拓扑排序（Kahn）；定义错误已提前拒绝，这里直接顺序输出。"""
-    ids = {n.node_id for n in wf.nodes}
+    ids = [n.node_id for n in wf.nodes]  # Stable declaration order for equally ready nodes.
     indeg = {nid: 0 for nid in ids}
     dependents: Dict[str, List[str]] = {nid: [] for nid in ids}
     for n in wf.nodes:
