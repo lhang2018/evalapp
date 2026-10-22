@@ -1,0 +1,91 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFF                                                              [100%]
+================================== FAILURES ===================================
+________ test_run_event_uses_the_same_validation_as_dict_input[export] ________
+tests\test_aln16_acceptance.py:15: in test_run_event_uses_the_same_validation_as_dict_input
+    with pytest.raises(EvidenceContractError):
+E   Failed: DID NOT RAISE <class 'evoagent.observability.contract.EvidenceContractError'>
+________ test_run_event_uses_the_same_validation_as_dict_input[chain] _________
+tests\test_aln16_acceptance.py:15: in test_run_event_uses_the_same_validation_as_dict_input
+    with pytest.raises(EvidenceContractError):
+E   Failed: DID NOT RAISE <class 'evoagent.observability.contract.EvidenceContractError'>
+________________ test_legacy_error_events_infer_fault_severity ________________
+tests\test_aln16_acceptance.py:23: in test_legacy_error_events_infer_fault_severity
+    assert EvidenceEvent.from_run_event(RunEvent(severity="error")).fault_level == "degraded"
+E   AssertionError: assert 'none' == 'degraded'
+E     
+E     - degraded
+E     + none
+___________ test_rotation_does_not_extend_existing_expiry[registry] ___________
+tests\test_aln16_acceptance.py:32: in test_rotation_does_not_extend_existing_expiry
+    assert not ring.verify_secret("old", "old-value", at=21)
+E   AssertionError: assert not True
+E    +  where True = verify_secret('old', 'old-value', at=21)
+E    +    where verify_secret = <evoagent.observability.credentials.CredentialRegistry object at 0x00000230BC76E0E0>.verify_secret
+____________ test_rotation_does_not_extend_existing_expiry[token] _____________
+tests\test_aln16_acceptance.py:37: in test_rotation_does_not_extend_existing_expiry
+    assert ring.role_for("old-value", at=21) is None
+E   AssertionError: assert 'operator' is None
+E    +  where 'operator' = role_for('old-value', at=21)
+E    +    where role_for = <evoagent.observability.credentials.TokenRing object at 0x00000230BC78B6D0>.role_for
+_______ test_failed_rotation_leaves_old_credential_unchanged[registry] ________
+tests\test_aln16_acceptance.py:53: in test_failed_rotation_leaves_old_credential_unchanged
+    assert ring.status("old") == before
+E   AssertionError: assert {'distributab...': 86410, ...} == {'distributab...r': None, ...}
+E     
+E     Omitting 7 identical items, use -vv to show
+E     Differing items:
+E     {'status': 'retired'} != {'status': 'active'}
+E     {'not_after': 86410} != {'not_after': None}
+E     {'explanation': '已轮换退役，保留验证窗口至 86410；窗口结束后拒绝'} != {'explanation': '有效：按层级使用，秘密材料不进导出/日志/模型上下文'}
+E     Use -v to get more diff
+_________ test_failed_rotation_leaves_old_credential_unchanged[token] _________
+tests\test_aln16_acceptance.py:53: in test_failed_rotation_leaves_old_credential_unchanged
+    assert ring.status("old") == before
+E   AssertionError: assert {'key_id': 'o...perator', ...} == {'key_id': 'o...perator', ...}
+E     
+E     Omitting 3 identical items, use -vv to show
+E     Differing items:
+E     {'status': 'retired'} != {'status': 'active'}
+E     {'not_after': 86410} != {'not_after': None}
+E     Use -v to get more diff
+__________ test_revoked_ring_token_cannot_fall_back_to_static_config __________
+tests\test_aln16_acceptance.py:61: in test_revoked_ring_token_cannot_fall_back_to_static_config
+    assert not auth.check("Bearer same-value", "GET", "/tasks").ok
+E   AssertionError: assert not True
+E    +  where True = AuthResult(ok=True, role='admin', status=200, error='').ok
+E    +    where AuthResult(ok=True, role='admin', status=200, error='') = check('Bearer same-value', 'GET', '/tasks')
+E    +      where check = <evoagent.api.auth.ApiAuth object at 0x00000230BC76D0F0>.check
+_______________ test_scoped_chain_excludes_other_tasks_records ________________
+tests\test_aln16_acceptance.py:70: in test_scoped_chain_excludes_other_tasks_records
+    assert all(node.kind != "approval" for node in chain.nodes)
+E   assert False
+E    +  where False = all(<generator object test_scoped_chain_excludes_other_tasks_records.<locals>.<genexpr> at 0x00000230BCA791C0>)
+____________ test_chain_digest_is_independent_of_event_input_order ____________
+tests\test_aln16_acceptance.py:78: in test_chain_digest_is_independent_of_event_input_order
+    assert build_decision_chain([parent, left, right]).digest() == build_decision_chain([right, parent, left]).digest()
+E   AssertionError: assert 'fe3ad2076c42...610fe529ffccc' == '60fa882d2abe...b1ebeee795d10'
+E     
+E     - 60fa882d2abe0e098e7b07223126e5505f343e7fed7f46b9e0bb1ebeee795d10
+E     + fe3ad2076c4253850b0f7b0ccd44b68f2fb3b5b74b9d01d6957610fe529ffccc
+__________ test_chain_reports_missing_cause_even_without_run_filter ___________
+tests\test_aln16_acceptance.py:83: in test_chain_reports_missing_cause_even_without_run_filter
+    assert {"kind": "event", "id": "missing", "referenced_by": "event"} in build_decision_chain([event]).missing_refs
+E   AssertionError: assert {'id': 'missing', 'kind': 'event', 'referenced_by': 'event'} in ()
+E    +  where () = DecisionChain(task_id='', run_id='', nodes=(ChainNode(node_id='event', kind='event', event_id='event', timestamp=0.0, ...'trusted', untrusted_origin='', refs={}),), edges=(), missing_refs=(), schema_version='evoagent.observability.chain/1').missing_refs
+E    +    where DecisionChain(task_id='', run_id='', nodes=(ChainNode(node_id='event', kind='event', event_id='event', timestamp=0.0, ...'trusted', untrusted_origin='', refs={}),), edges=(), missing_refs=(), schema_version='evoagent.observability.chain/1') = build_decision_chain([EvidenceEvent(event_id='event', event_type='info', timestamp=0.0, schema_version='evoagent.observability.event/1', or... payload_ref=None, correlation_id=None, causation_id='missing', sequence_no=None, untrusted_origin='', redacted=False)])
+=========================== short test summary info ===========================
+FAILED tests/test_aln16_acceptance.py::test_run_event_uses_the_same_validation_as_dict_input[export]
+FAILED tests/test_aln16_acceptance.py::test_run_event_uses_the_same_validation_as_dict_input[chain]
+FAILED tests/test_aln16_acceptance.py::test_legacy_error_events_infer_fault_severity
+FAILED tests/test_aln16_acceptance.py::test_rotation_does_not_extend_existing_expiry[registry]
+FAILED tests/test_aln16_acceptance.py::test_rotation_does_not_extend_existing_expiry[token]
+FAILED tests/test_aln16_acceptance.py::test_failed_rotation_leaves_old_credential_unchanged[registry]
+FAILED tests/test_aln16_acceptance.py::test_failed_rotation_leaves_old_credential_unchanged[token]
+FAILED tests/test_aln16_acceptance.py::test_revoked_ring_token_cannot_fall_back_to_static_config
+FAILED tests/test_aln16_acceptance.py::test_scoped_chain_excludes_other_tasks_records
+FAILED tests/test_aln16_acceptance.py::test_chain_digest_is_independent_of_event_input_order
+FAILED tests/test_aln16_acceptance.py::test_chain_reports_missing_cause_even_without_run_filter
+11 failed in 0.47s

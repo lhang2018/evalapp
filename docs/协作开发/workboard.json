@@ -1069,6 +1069,16 @@
           "log": ".planning/2026-10-22-aln-11-16/ui5.xml; ui6.xml; ui8.xml; ui9.xml; ui10.xml; ui11.xml; screen-active.png; RKStorage.db",
           "delivery": "docs/协作开发/交付/ALN-11-A-端侧制品下载验签装载.md",
           "source_commit": "26aad1b56512364d0cdb3b616eeec6a781703532"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "独立验收与修复；源码隔离验证，未重跑真机",
+          "reviewed_commit": "03600e1982455b1d6c27992cb03023b6d40bccf2",
+          "source_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+          "result": "1095 passed/1 skipped; committed client165/typecheck passed; 29 new regressions",
+          "report": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+          "log": ".planning/2026-10-22-aln11-16-review/evidence.json",
+          "fix_status": "fixed_pending_independent_review"
         }
       ],
       "card": "docs/协作开发/任务卡/11-真实制品装载.md",
@@ -1077,8 +1087,12 @@
         "evoagent/release/delivery.py"
       ],
       "preparation_status": "delivered",
-      "next_step": "独立复核断点下载/真实字节验签/装载与回执幂等，以及 26aad1b 的真机 Range/原生IO/服务端 envelope；生产公钥轮换、弱网断电注入与多设备灰度未覆盖",
-      "delivered_commit": "26aad1b56512364d0cdb3b616eeec6a781703532"
+      "next_step": "独立复核aae0f9b的ALN-11-R修复；补修复后真机故障回滚、自动健康探针及执行器消费活动workflow",
+      "delivered_commit": "26aad1b56512364d0cdb3b616eeec6a781703532",
+      "review_result": "changes_requested",
+      "review_note": "2026-10-22 codex-runtime独立验收发现边界缺陷，已以aae0f9b修复；因审阅人编写修复，交其他reviewer复核，不自批",
+      "acceptance_report": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+      "fix_status": "fixed_pending_independent_review"
     },
     {
       "id": "ALN-16-A",
@@ -1109,6 +1123,16 @@
           "log": ".planning/2026-10-22-aln-11-16/python-full.txt",
           "delivery": "docs/协作开发/交付/ALN-16-A-观测证据隐私与凭证.md",
           "source_commit": "bc7eb65050ca5a704918e739cb9596ca4caf8b30"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "独立验收与修复；源码隔离验证，未重跑真机",
+          "reviewed_commit": "03600e1982455b1d6c27992cb03023b6d40bccf2",
+          "source_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+          "result": "1095 passed/1 skipped; committed client165/typecheck passed; 29 new regressions",
+          "report": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+          "log": ".planning/2026-10-22-aln11-16-review/evidence.json",
+          "fix_status": "fixed_pending_independent_review"
         }
       ],
       "card": "docs/协作开发/任务卡/16-观测隐私凭证.md",
@@ -1118,8 +1142,68 @@
         "evoagent/api/auth.py"
       ],
       "preparation_status": "delivered",
-      "next_step": "独立复核跨端契约/决策链/导出最小化/凭证分级轮换；端侧 EvidenceEvent 产出、业务仓储自动装配与生产密钥托管转后续接线",
-      "delivered_commit": "bc7eb65050ca5a704918e739cb9596ca4caf8b30"
+      "next_step": "独立复核aae0f9b的ALN-16-R修复；端侧EvidenceEvent、仓储装配及实际导出删除仍待接线",
+      "delivered_commit": "bc7eb65050ca5a704918e739cb9596ca4caf8b30",
+      "review_result": "changes_requested",
+      "review_note": "2026-10-22 codex-runtime独立验收发现边界缺陷，已以aae0f9b修复；因审阅人编写修复，交其他reviewer复核，不自批",
+      "acceptance_report": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+      "fix_status": "fixed_pending_independent_review"
+    },
+    {
+      "id": "ALN-11-R",
+      "workpackage": "ALN-11",
+      "title": "制品更新边界与回执修复",
+      "stream": "android",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "branch": "main",
+      "base_commit": "03600e1982455b1d6c27992cb03023b6d40bccf2",
+      "status": "review",
+      "blocker": null,
+      "card": "docs/协作开发/任务卡/11-R-制品更新验收修复.md",
+      "shared_files": [
+        "android-app/App.tsx"
+      ],
+      "delivery": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+      "delivered_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "独立验收反例与修复源码；不自批修复",
+          "source_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+          "result": "后端1095 passed/1 skipped；提交内客户端165 passed，typecheck通过；新增29项回归",
+          "log": ".planning/2026-10-22-aln11-16-review/evidence.json"
+        }
+      ],
+      "next_step": "由修复作者之外的reviewer复核；通过后再补端到端与真机验收"
+    },
+    {
+      "id": "ALN-16-R",
+      "workpackage": "ALN-16",
+      "title": "观测链与凭证边界修复",
+      "stream": "models",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "branch": "main",
+      "base_commit": "03600e1982455b1d6c27992cb03023b6d40bccf2",
+      "status": "review",
+      "blocker": null,
+      "card": "docs/协作开发/任务卡/16-R-观测凭证验收修复.md",
+      "shared_files": [
+        "evoagent/api/auth.py"
+      ],
+      "delivery": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+      "delivered_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "独立验收反例与修复源码；不自批修复",
+          "source_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+          "result": "后端1095 passed/1 skipped；提交内客户端165 passed，typecheck通过；新增29项回归",
+          "log": ".planning/2026-10-22-aln11-16-review/evidence.json"
+        }
+      ],
+      "next_step": "由修复作者之外的reviewer复核；通过后再补端到端与真机验收"
     }
   ],
   "workpackages": [
@@ -1290,7 +1374,7 @@
       "stream": "android",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "ALN-11-A 内核与真机适配（26aad1b）已交付待审；真机下载→验签→槽B装载→激活→健康回执跑通，生产公钥轮换与弱网/断电/多设备灰度未覆盖"
+      "next_step": "内核、真机接线及验收修复已提交；ALN-11-R待独立复核；执行器消费活动workflow、自动健康探针与真机故障回滚待验"
     },
     {
       "id": "ALN-12",
@@ -1361,7 +1445,7 @@
       "stream": "models",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "ALN-16-A 观测契约/决策链/隐私与凭证治理已交付待审；端侧事件产出、业务装配与密钥托管未完成"
+      "next_step": "观测凭证模块及验收修复已提交；ALN-16-R待独立复核；Android事件、仓储自动装配与实际导出删除待接线"
     },
     {
       "id": "ALN-17",

@@ -1,0 +1,13 @@
+android-app/App.tsx
+android-app/src/update/artifact.ts
+android-app/src/update/manager.ts
+android-app/src/update/types.ts
+android-app/src/update/workflowBundle.ts
+android-app/src/update/devTrust.ts
+android-app/test/update/artifact.test.ts
+android-app/test/update/nativeArtifact.test.ts
+evoagent/api/auth.py
+evoagent/observability/contract.py
+evoagent/observability/credentials.py
+evoagent/observability/chain.py
+tests/test_aln16_acceptance.py

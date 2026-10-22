@@ -1,0 +1,216 @@
+(node:90516) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\.planning\2026-10-22-aln11-16-review\source\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ downloader resumes from the staged offset and renames after digest check (2.7983ms)
+✔ downloader rejects bad digest and truncated sources without renaming (1.0979ms)
+✔ downloader refuses when free space is below the next chunk (0.1906ms)
+✔ trusted key ring verifies real artifact bytes and rejects tampering (88.2058ms)
+✔ prepare downloads and verifies before allowing activation (15.6378ms)
+✔ prepare blocks missing permissions, incompatible app and bad signature (46.664ms)
+✔ low free space and store failures never reach activation (64.3551ms)
+✔ bundle apply failure keeps the active slot and reports activation_failed (20.4224ms)
+✔ a restart before activation does not switch slots without a verifier/applier (8.103ms)
+✔ failed receipts persist and flush with the same apply id (48.196ms)
+✖ real artifact cannot use the legacy verify shortcut (13.9684ms)
+✖ activation rechecks actual bytes before calling the applier (45.4011ms)
+✖ activation rechecks permission revocation (11.5773ms)
+✖ activation rechecks signing key expiry (34.4946ms)
+✖ unknown-length downloads enforce the byte cap before appending (0.2431ms)
+✖ cached files cannot evade the download byte cap (0.1388ms)
+✖ release IDs cannot escape the staging directory (24.5444ms)
+✖ short App versions are compared with zero-filled segments (18.6999ms)
+✖ real rollback reapplies the known-good bundle before reporting success (48.7953ms)
+✖ failed rollback apply preserves the active slot and does not report success (15.8489ms)
+✖ unacknowledged receipts are retained beyond fifty events (40.7664ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 10
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 676.8934
+
+✖ failing tests:
+
+test at test\update\artifact.test.ts:453:1
+✖ real artifact cannot use the legacy verify shortcut (13.9684ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts:457:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /prepare|真实制品/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:461:1
+✖ activation rechecks actual bytes before calling the applier (45.4011ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts:467:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /摘要|制品|校验/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:472:1
+✖ activation rechecks permission revocation (11.5773ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts:479:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /权限/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:483:1
+✖ activation rechecks signing key expiry (34.4946ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts:489:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /过期|验签/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:493:1
+✖ unknown-length downloads enforce the byte cap before appending (0.2431ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts:498:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /超出/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:506:1
+✖ cached files cannot evade the download byte cap (0.1388ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts:509:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /超出/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:514:1
+✖ release IDs cannot escape the staging directory (24.5444ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'available'
+  - 'blocked'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts:518:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'available',
+    expected: 'blocked',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:522:1
+✖ short App versions are compared with zero-filled segments (18.6999ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'available'
+  - 'blocked'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts:525:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'available',
+    expected: 'blocked',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:528:1
+✖ real rollback reapplies the known-good bundle before reporting success (48.7953ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 3
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts:538:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 3,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:544:1
+✖ failed rollback apply preserves the active slot and does not report success (15.8489ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts:552:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /apply failed/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:557:1
+✖ unacknowledged receipts are retained beyond fifty events (40.7664ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  50 !== 51
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts:565:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 50,
+    expected: 51,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

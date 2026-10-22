@@ -1,0 +1,78 @@
+(node:99852) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\.planning\2026-10-22-aln11-16-review\source\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ downloader resumes from the staged offset and renames after digest check (3.4767ms)
+✔ downloader rejects bad digest and truncated sources without renaming (0.7966ms)
+✔ downloader refuses when free space is below the next chunk (0.2041ms)
+✔ trusted key ring verifies real artifact bytes and rejects tampering (27.8467ms)
+✔ prepare downloads and verifies before allowing activation (44.6504ms)
+✔ prepare blocks missing permissions, incompatible app and bad signature (19.5395ms)
+✔ low free space and store failures never reach activation (82.1183ms)
+✔ bundle apply failure keeps the active slot and reports activation_failed (51.8078ms)
+✔ a restart before activation does not switch slots without a verifier/applier (14.3566ms)
+✔ failed receipts persist and flush with the same apply id (10.6106ms)
+✔ real artifact cannot use the legacy verify shortcut (23.5544ms)
+✔ activation rechecks actual bytes before calling the applier (55.8668ms)
+✔ activation rechecks permission revocation (29.8725ms)
+✔ activation rechecks signing key expiry (61.3547ms)
+✔ unknown-length downloads enforce the byte cap before appending (0.2243ms)
+✔ cached files cannot evade the download byte cap (0.1064ms)
+✔ release IDs cannot escape the staging directory (22.7096ms)
+✔ short App versions are compared with zero-filled segments (53.0653ms)
+✔ real rollback reapplies the known-good bundle before reporting success (28.3004ms)
+✔ failed rollback apply preserves the active slot and does not report success (19.6797ms)
+✔ unacknowledged receipts are retained beyond fifty events (23.01ms)
+✖ concurrent health checks cannot overwrite each other's receipts (18.258ms)
+(node:98904) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/nativeArtifact.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\.planning\2026-10-22-aln11-16-review\source\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ base64 codec round-trips arbitrary bytes and UTF-8 text (1.1367ms)
+✔ bundle applier installs to the slot and points the active marker (0.5737ms)
+✖ bundle applier checks the bytes it reads against the verified digest (0.6432ms)
+✔ bundle applier rejects invalid payloads without touching the marker (0.2256ms)
+✔ range source slices full responses and parses totals (7.7708ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 25
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 720.3774
+
+✖ failing tests:
+
+test at test\update\artifact.test.ts:573:1
+✖ concurrent health checks cannot overwrite each other's receipts (18.258ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 4
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts:580:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 4,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\update\nativeArtifact.test.ts:89:1
+✖ bundle applier checks the bytes it reads against the verified digest (0.6432ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/nativeArtifact.test.ts:93:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /摘要/,
+    operator: 'rejects',
+    diff: 'simple'
+  }

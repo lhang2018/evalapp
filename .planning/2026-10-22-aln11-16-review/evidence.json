@@ -1,0 +1,48 @@
+{
+  "reviewed_commit": "03600e1982455b1d6c27992cb03023b6d40bccf2",
+  "fixed_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+  "source_tree": "80493677859295f6c4376fd931d89fc614b7f67c",
+  "verification_scope": "isolated committed-source snapshot; all code paths compared against fixed commit; live in-flight changes excluded; node_modules reused read-only via junction",
+  "matched_code_files": 314,
+  "backend": {
+    "passed": 1095,
+    "skipped": 1
+  },
+  "client": {
+    "passed": 165
+  },
+  "typecheck": "passed",
+  "new_regressions": 29,
+  "independent_fix_review": "pending",
+  "device_rerun": false,
+  "logs": [
+    {
+      "path": ".planning/2026-10-22-aln11-16-review/python-integrated.txt",
+      "sha256": "5c52b182c404b8ae083202572b80d0aa63af22bade7546b5784abf22d2a86bee"
+    },
+    {
+      "path": ".planning/2026-10-22-aln11-16-review/client-final.txt",
+      "sha256": "1f6b42f320a1db86cd2ebfbd7828e20babfd0f05354253bc257befc98cb6f1b6"
+    },
+    {
+      "path": ".planning/2026-10-22-aln11-16-review/typecheck-final.txt",
+      "sha256": "8cbafc7cf12a272ca79c7f62f9f8e7f22c469fc231061b69b5d974a20906718d"
+    },
+    {
+      "path": ".planning/2026-10-22-aln11-16-review/aln16-before-final.txt",
+      "sha256": "0b54810ba3b2a183b834fcfb5b29435657758f5fafe2365cc2ee36f29ad73cb7"
+    },
+    {
+      "path": ".planning/2026-10-22-aln11-16-review/aln11-before-final.txt",
+      "sha256": "6ed0ae38af4ce36bfb83294272f1d73c5e1016869dae2e9697c7a9de950e4d12"
+    },
+    {
+      "path": ".planning/2026-10-22-aln11-16-review/integration-before.txt",
+      "sha256": "19f3e4a54b23f9241273aee87c24ba275c287a2fba15c693015f613162a6c81d"
+    },
+    {
+      "path": ".planning/2026-10-22-aln11-16-review/known-good-before.txt",
+      "sha256": "1eb7ab694639401f052fc7976ce7b8fc6e98d458d2a219a9884fa26691e30cfd"
+    }
+  ]
+}

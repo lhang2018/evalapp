@@ -1,0 +1,53 @@
+(node:86068) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/artifact.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\.planning\2026-10-22-aln11-16-review\source\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ downloader resumes from the staged offset and renames after digest check (2.9733ms)
+✔ downloader rejects bad digest and truncated sources without renaming (0.7722ms)
+✔ downloader refuses when free space is below the next chunk (0.3381ms)
+✔ trusted key ring verifies real artifact bytes and rejects tampering (30.2457ms)
+✔ prepare downloads and verifies before allowing activation (43.3533ms)
+✔ prepare blocks missing permissions, incompatible app and bad signature (11.793ms)
+✔ low free space and store failures never reach activation (32.2974ms)
+✔ bundle apply failure keeps the active slot and reports activation_failed (28.286ms)
+✔ a restart before activation does not switch slots without a verifier/applier (12.3118ms)
+✔ failed receipts persist and flush with the same apply id (38.8123ms)
+✔ real artifact cannot use the legacy verify shortcut (73.0977ms)
+✔ activation rechecks actual bytes before calling the applier (62.3639ms)
+✔ activation rechecks permission revocation (37.7086ms)
+✔ activation rechecks signing key expiry (33.4859ms)
+✔ unknown-length downloads enforce the byte cap before appending (0.2187ms)
+✔ cached files cannot evade the download byte cap (0.1072ms)
+✔ release IDs cannot escape the staging directory (20.9933ms)
+✔ short App versions are compared with zero-filled segments (28.8893ms)
+(node:104624) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/.planning/2026-10-22-aln11-16-review/source/android-app/test/update/manager.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\.planning\2026-10-22-aln11-16-review\source\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ init generates and persists an installation id (1.2162ms)
+✔ check accepts a signed capability target (0.5489ms)
+✔ check blocks target without artifact digest (0.3985ms)
+✔ check blocks unsigned target (0.1912ms)
+✔ check blocks native binary updates that need the app store (0.3547ms)
+✔ network failure during check marks phase failed and rethrows (0.7828ms)
+✔ verify refuses when storage headroom is insufficient (0.5443ms)
+✔ verify stores a pending candidate after integrity and space checks (0.5166ms)
+✔ activate requires a verified candidate (0.5015ms)
+✔ verify without a candidate throws (0.1779ms)
+✔ activate switches the inactive slot and keeps the previous release (2.0424ms)
+✔ health check success promotes the active slot to last known good (0.4406ms)
+✔ health check failure rolls back to the last known good release (1.2847ms)
+✔ rollback without a known good release throws (0.2664ms)
+✔ report upload failure keeps the local activation and records the error (0.2886ms)
+✔ corrupted state falls back to an empty slot state (0.1083ms)
+✔ candidate sync stores server stages without changing the active slot (0.3173ms)
+✔ candidate sync failure records an error and keeps local state (0.2742ms)
+✔ state persisted before candidate sync defaults to an empty list (0.1063ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 598.6596

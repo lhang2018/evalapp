@@ -1,0 +1,15 @@
+{
+  "android-app/App.tsx": "c748725df0155676e501aa91f575fddbb58539a96f521297d95655ffb6a618bf",
+  "android-app/src/update/artifact.ts": "2180220a3351221a0f46febbdea2b3af317e3e990c17fe475c972cba7c6d77ee",
+  "android-app/src/update/manager.ts": "ecf5bfbb6adfbcbc6cded118327c0884f2c4ca0d9629ba72322982fe2da2089c",
+  "android-app/src/update/types.ts": "2f980a295b83f869fd4d8b78f20c571f385450bcce528468720624ee13b56c77",
+  "android-app/src/update/workflowBundle.ts": "9b63572a8cf744d19a694ae41936edb19e8d598f90e84c5f04949c4b1f3bd912",
+  "android-app/src/update/devTrust.ts": "39f2d176b3ef4061b10fd3c68430f0eb0de85d4b131dfba8e5a5ef110d23d97f",
+  "android-app/test/update/artifact.test.ts": "24e40f2823a5b1b36835b6914ae4b79255bd2b69bd1f826d0137a8a51e26abb7",
+  "android-app/test/update/nativeArtifact.test.ts": "f69303a24ae4692cd2a74fe40848ff7af2024540a59a0c34a05ef2a219ed7f2d",
+  "evoagent/api/auth.py": "002ca6bcbfd7c071dd871915815ac1499e0c1a7ab0e680bb0204000f901abb22",
+  "evoagent/observability/contract.py": "0ac68666a4419a984742eb893bffd18198618d2713f7745e748c630417f133e9",
+  "evoagent/observability/credentials.py": "e81355dea40b75e1cea068cf86e23268fe49fc5c358c6a5649c164ffa3fe6fb7",
+  "evoagent/observability/chain.py": "06ffa0ab6d5edae10d4526430be721c57bac6e605e509fb5edfd572cd9037694",
+  "tests/test_aln16_acceptance.py": "6d7988b7f5f2ec3f2a700755da0074a75ca043d78abfc35871594ab6e2b1a43e"
+}
