@@ -183,6 +183,7 @@ def build_decision_chain(
         normalized = [item for item in normalized
                       if item.refs.run_id == run_id]
 
+    normalized.sort(key=lambda event: _sort_key(_event_node(event)))
     nodes: List[ChainNode] = [_event_node(item) for item in normalized]
     collections = {
         "audit": (audits, "audit_id"),
@@ -192,9 +193,31 @@ def build_decision_chain(
         "release": (releases, "release_id"),
         "effect": (effects, "effect_id"),
     }
+    pending = []
     for kind, (records, id_field) in collections.items():
         for record in records:
-            nodes.append(_record_node(dict(record), kind, id_field))
+            record = dict(record)
+            if task_id and record.get("task_id") not in (None, "", task_id):
+                continue
+            if run_id and record.get("run_id") not in (None, "", run_id):
+                continue
+            node = _record_node(record, kind, id_field)
+            if (not task_id or record.get("task_id") == task_id) and (
+                    not run_id or record.get("run_id") == run_id):
+                nodes.append(node)
+            else:
+                pending.append(node)
+    # Global release/evaluation records may lack a task scope. Only include
+    # them when a selected event or scoped record actually references them.
+    while pending:
+        refs = {(key, value) for node in nodes for key, value in node.refs.items()}
+        linked = [node for node in pending if any(
+            (key, value) in refs for key, value in node.refs.items()
+            if key not in ("task_id", "run_id"))]
+        if not linked:
+            break
+        nodes.extend(linked)
+        pending = [node for node in pending if node not in linked]
 
     nodes.sort(key=_sort_key)
     by_event = {node.event_id: node for node in nodes}
@@ -274,11 +297,12 @@ def build_decision_chain(
             continue
         missing.append({"kind": kind, "id": identity,
                         "referenced_by": ",".join(sorted(sources))})
-    if run_id:
-        for event in normalized:
-            if event.causation_id and event.causation_id not in by_event:
-                missing.append({"kind": "event", "id": event.causation_id,
-                                "referenced_by": event.event_id})
+    for event in normalized:
+        if event.causation_id and event.causation_id not in by_event:
+            missing.append({"kind": "event", "id": event.causation_id,
+                            "referenced_by": event.event_id})
+    edges = sorted(set(edges), key=lambda edge: (edge.source, edge.target, edge.relation))
+    missing.sort(key=lambda item: (item["kind"], item["id"], item["referenced_by"]))
 
     task = task_id or (normalized[0].refs.task_id if normalized else "")
     run = run_id or (normalized[0].refs.run_id if normalized else "")

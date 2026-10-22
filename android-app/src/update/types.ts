@@ -69,6 +69,8 @@ export interface UpdateSlot {
   digest: string;
   activated_at: number;
   signing_key_id?: string;
+  /** 保留已验签制品，供健康回退时重新装载真实内容。 */
+  artifact_path?: string;
 }
 
 /** 服务端候选改进阶段（仅评测之后的状态会下发）。 */

@@ -13,3 +13,8 @@ export const DEV_RELEASE_KEY: TrustedPublicKey = {
   e: "AQAB",
   algorithm: "rsa-sha256",
 };
+
+/** Release builds must receive production trust through the release process. */
+export function releaseKeysForBuild(isDevelopment: boolean): TrustedPublicKey[] {
+  return isDevelopment ? [{ ...DEV_RELEASE_KEY }] : [];
+}

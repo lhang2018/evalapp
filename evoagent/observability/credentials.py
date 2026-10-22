@@ -155,7 +155,8 @@ class CredentialRegistry:
         self._entries[key_id] = entry
         return entry
 
-    def rotate(self, old_key_id: str, new_key_id: str, *, secret: str,
+    def rotate(self, old_key_id: str, new_key_id: str, *,
+               secret: Optional[str] = None, public_key: str = "",
                grace_seconds: float = 86400, at: Optional[float] = None,
                metadata: Optional[Dict[str, Any]] = None) -> CredentialEntry:
         now = time.time() if at is None else at
@@ -166,11 +167,14 @@ class CredentialRegistry:
             raise CredentialError("已撤销凭证不能轮换")
         if new_key_id in self._entries:
             raise CredentialError(f"凭证已存在: {new_key_id}")
-        old.status = "retired"
-        old.not_after = now + max(0.0, grace_seconds)
         new = self.register(
-            new_key_id, old.tier, secret=secret, not_before=now,
+            new_key_id, old.tier, secret=secret, public_key=public_key,
+            not_before=now,
             rotated_from=old_key_id, metadata=metadata)
+        # Validate/register first: a failed rotation must not retire a live key.
+        old.status = "retired"
+        deadline = now + max(0.0, grace_seconds)
+        old.not_after = min(old.not_after, deadline) if old.not_after is not None else deadline
         return new
 
     def revoke(self, key_id: str, *, actor: str, reason: str,
@@ -256,6 +260,8 @@ class TokenRing:
         identity = key_id or "tok_" + uuid.uuid4().hex[:12]
         if identity in self._entries:
             raise CredentialError(f"令牌已存在: {identity}")
+        if self.knows_secret(secret):
+            raise CredentialError("令牌秘密不得重复使用")
         self._entries[identity] = TokenEntry(
             key_id=identity, role=role, fingerprint=_digest(secret),
             not_after=not_after)
@@ -269,9 +275,19 @@ class TokenRing:
             raise CredentialError(f"令牌不存在: {old_key_id}")
         if old.status == "revoked":
             raise CredentialError("已撤销令牌不能轮换")
+        new_id = self.add(new_secret, old.role, not_after=None)
         old.status = "retired"
-        old.not_after = now + max(0.0, grace_seconds)
-        return self.add(new_secret, old.role, not_after=None)
+        deadline = now + max(0.0, grace_seconds)
+        old.not_after = min(old.not_after, deadline) if old.not_after is not None else deadline
+        return new_id
+
+    def knows_secret(self, secret: str) -> bool:
+        """Include revoked/expired entries so legacy auth cannot resurrect them."""
+        candidate = _digest(secret)
+        matched = False
+        for entry in self._entries.values():
+            matched |= hmac.compare_digest(entry.fingerprint, candidate)
+        return matched
 
     def revoke(self, key_id: str, *, reason: str) -> None:
         if not reason:

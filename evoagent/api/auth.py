@@ -50,6 +50,8 @@ class ApiAuth:
         role = ""
         if self.token_ring is not None:
             role = self.token_ring.role_for(presented) or ""
+            if not role and self.token_ring.knows_secret(presented):
+                return AuthResult(False, "anonymous", 403, "令牌已撤销或过期")
         if not role and self.admin_token and hmac.compare_digest(
                 presented, self.admin_token):
             role = "admin"

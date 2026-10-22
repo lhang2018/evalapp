@@ -4,6 +4,7 @@
  */
 
 import type { ArtifactFileSystem } from "./artifact.ts";
+import { sha256Hex } from "../offline/sha256.ts";
 import { utf8Decode } from "./base64.ts";
 import type { KeyValueStore } from "../offline/storage.ts";
 import type { BundleApplyRequest, BundleApplier } from "./manager.ts";
@@ -56,6 +57,9 @@ export class WorkflowBundleApplier implements BundleApplier {
 
   async apply(request: BundleApplyRequest): Promise<void> {
     const bytes = await this.fs.read(request.path);
+    if (sha256Hex(bytes) !== request.digest) {
+      throw new Error("装载时制品摘要不符");
+    }
     const bundle = parseBundle(bytes);
     const record: InstalledBundle = {
       release_id: request.release_id,

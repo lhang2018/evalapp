@@ -70,7 +70,7 @@ import type { NativeDeviceModuleLike } from "./src/device/nativeTransport.ts";
 import { UpdateManager } from "./src/update/manager.ts";
 import { ApiUpdateTransport } from "./src/update/apiTransport.ts";
 import { TrustedKeyRing } from "./src/update/trust.ts";
-import { DEV_RELEASE_KEY } from "./src/update/devTrust.ts";
+import { releaseKeysForBuild } from "./src/update/devTrust.ts";
 import {
   FetchArtifactSource,
   NativeArtifactFiles,
@@ -253,7 +253,7 @@ export default function App(): React.JSX.Element {
         stagingDir: "updates",
         artifactSource: new FetchArtifactSource(),
         artifactFiles: updateFiles,
-        trustedKeys: new TrustedKeyRing([DEV_RELEASE_KEY]),
+        trustedKeys: new TrustedKeyRing(releaseKeysForBuild(__DEV__)),
         bundleApplier: new WorkflowBundleApplier(
           updateFiles, asyncStorageStore),
         grantedPermissions: () => [],

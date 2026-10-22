@@ -11,6 +11,9 @@ import {
 import { FetchArtifactSource } from "../../src/update/rangeSource.ts";
 import type { ArtifactFileSystem } from "../../src/update/artifact.ts";
 import { MemoryStore } from "../../src/offline/storage.ts";
+import { sha256Hex } from "../../src/offline/sha256.ts";
+import { releaseKeysForBuild } from "../../src/update/devTrust.ts";
+import { TrustedKeyRing } from "../../src/update/trust.ts";
 
 class MemoryFs implements ArtifactFileSystem {
   files = new Map<string, Uint8Array>();
@@ -59,6 +62,18 @@ test("base64 codec round-trips arbitrary bytes and UTF-8 text", () => {
   assert.equal(utf8Decode(encoded), text);
 });
 
+test("production trust never accepts the bundled development key", () => {
+  const envelope = {
+    schema: "evoagent.release.signing/1", release_id: "rel", version: "v1",
+    artifact_sha256: sha256Hex(new Uint8Array([1])), artifact_size: 1,
+    signing_key_id: "dev-release-1", signature: "00",
+  };
+  assert.match(new TrustedKeyRing(releaseKeysForBuild(false))
+    .verifyArtifact(envelope, new Uint8Array([1])).reasons.join(";"), /未知签名密钥/);
+  assert.doesNotMatch(new TrustedKeyRing(releaseKeysForBuild(true))
+    .verifyArtifact(envelope, new Uint8Array([1])).reasons.join(";"), /未知签名密钥/);
+});
+
 test("bundle applier installs to the slot and points the active marker", async () => {
   const fs = new MemoryFs();
   const kv = new MemoryStore();
@@ -69,7 +84,7 @@ test("bundle applier installs to the slot and points the active marker", async (
   const applier = new WorkflowBundleApplier(fs, kv, () => 123);
   await applier.apply({
     release_id: "rel_1", version: "v9.1.0", path: "updates/rel.bundle",
-    digest: "a".repeat(64), slot: "b", bundle_ref: "bundle://rel_1",
+    digest: sha256Hex(body), slot: "b", bundle_ref: "bundle://rel_1",
   });
 
   const slot = JSON.parse((await kv.getItem(slotBundleKey("b"))) as string);
@@ -83,6 +98,17 @@ test("bundle applier installs to the slot and points the active marker", async (
   assert.equal(restored?.release_id, "rel_1");
   assert.equal(restored?.slot, "b");
   assert.equal(restored?.bundle.workflow, "demo/v2");
+});
+
+test("bundle applier checks the bytes it reads against the verified digest", async () => {
+  const fs = new MemoryFs(), kv = new MemoryStore();
+  const original = new TextEncoder().encode(JSON.stringify({ workflow: "safe" }));
+  fs.files.set("updates/rel.bundle", new TextEncoder().encode(JSON.stringify({ workflow: "changed" })));
+  await assert.rejects(() => new WorkflowBundleApplier(fs, kv).apply({
+    release_id: "rel", version: "v1", path: "updates/rel.bundle",
+    digest: sha256Hex(original), slot: "b",
+  }), /摘要/);
+  assert.equal(await kv.getItem(ACTIVE_BUNDLE_KEY), null);
 });
 
 test("bundle applier rejects invalid payloads without touching the marker", async () => {

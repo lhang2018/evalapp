@@ -218,10 +218,12 @@ class EvidenceEvent:
         privacy = str(getattr(event, "privacy_level", "") or
                       to_four_level(str(getattr(
                           event, "privacy_classification", "standard"))))
-        fault = getattr(event, "fault_level", None) or infer_fault_level(
-            str(getattr(event, "event_type", "")),
-            str(getattr(event, "severity", "info")), payload)
-        return cls(
+        fault = getattr(event, "fault_level", None)
+        if not fault or fault == "none":
+            fault = infer_fault_level(
+                str(getattr(event, "event_type", "")),
+                str(getattr(event, "severity", "info")), payload)
+        result = cls(
             event_id=str(event.event_id),
             event_type=str(getattr(event, "event_type", "info")),
             timestamp=float(getattr(event, "timestamp", 0.0) or 0.0),
@@ -242,6 +244,8 @@ class EvidenceEvent:
             untrusted_origin=str(getattr(event, "untrusted_origin", "") or ""),
             redacted=bool(getattr(event, "redacted", False)),
         )
+        result.validate()
+        return result
 
 
 def as_evidence_event(raw: Any) -> EvidenceEvent:

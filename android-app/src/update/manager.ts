@@ -9,6 +9,7 @@
 import type { KeyValueStore } from "../offline/storage.ts";
 import { createId } from "../offline/ids.ts";
 import { getInstallationId } from "./identity.ts";
+import { sha256Hex } from "../offline/sha256.ts";
 import { ArtifactDownloader } from "./artifact.ts";
 import type { ArtifactFileSystem, ArtifactSource } from "./artifact.ts";
 import { TrustedKeyRing } from "./trust.ts";
@@ -53,17 +54,30 @@ export interface UpdateManagerOptions {
 }
 
 function versionAtLeast(current: string, minimum: string): boolean {
-  const parse = (value: string): number[] =>
-    value.trim().replace(/^v/i, "").split(/[.-]/)
-      .slice(0, 3)
-      .map((part) => Number.parseInt(part, 10) || 0);
+  const parse = (value: string): number[] | null => {
+    const match = /^v?(\d+)(?:\.(\d+))?(?:\.(\d+))?$/i.exec(value.trim());
+    if (!match) return null;
+    const parts = [match[1], match[2] ?? "0", match[3] ?? "0"].map(Number);
+    return parts.every(Number.isSafeInteger) ? parts : null;
+  };
   const left = parse(current);
   const right = parse(minimum);
+  if (!left || !right) return false;
   for (let index = 0; index < 3; index += 1) {
     if (left[index] > right[index]) return true;
     if (left[index] < right[index]) return false;
   }
   return true;
+}
+
+function safeReleaseId(value: string): boolean {
+  return /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(value);
+}
+
+function realArtifactTarget(target: UpdateTarget | null): boolean {
+  return Boolean(target && [target.artifact_url, target.artifact_sha256,
+    target.artifact_signature, target.signing_key_id, target.signature_schema,
+    target.artifact_size].some((value) => value !== undefined && value !== null));
 }
 
 function emptyState(installationId: string): UpdateState {
@@ -209,7 +223,7 @@ export class UpdateManager {
         if (!target) {
           decision = "blocked";
           reasons.push("服务端未返回目标版本");
-        } else if (!target.release_id || !target.artifact_digest) {
+        } else if (!safeReleaseId(target.release_id) || !target.artifact_digest) {
           decision = "blocked";
           reasons.push("目标版本缺少 ID 或制品摘要");
         } else if (!target.signature_ok) {
@@ -301,6 +315,8 @@ export class UpdateManager {
         throw new Error(message);
       };
 
+      if (!safeReleaseId(target.release_id)) return fail("候选制品 ID 非法");
+
       if (!versionAtLeast(this.appVersion, target.min_app_version)) {
         return fail("当前 App 版本低于目标最低版本");
       }
@@ -321,7 +337,9 @@ export class UpdateManager {
         }
       }
       if (!target.artifact_url || !target.artifact_sha256
-          || !target.artifact_signature || !target.signing_key_id) {
+          || !target.artifact_signature || !target.signing_key_id
+          || !target.signature_schema || !Number.isSafeInteger(target.artifact_size)
+          || (target.artifact_size ?? 0) <= 0) {
         return fail("候选版本缺少制品地址、摘要、签名或签名密钥");
       }
       if (!this.downloader || !this.trustedKeys) {
@@ -409,6 +427,10 @@ export class UpdateManager {
         throw new Error("没有可验证的候选版本");
       }
       const target = state.target;
+      if (realArtifactTarget(target) || this.downloader || this.trustedKeys
+          || this.bundleApplier) {
+        throw new Error("真实制品必须通过 prepare() 下载并验签");
+      }
       if (!target.artifact_digest || !target.signature_ok) {
         state.phase = "failed";
         state.last_error = "候选版本签名或摘要不可信";
@@ -444,6 +466,8 @@ export class UpdateManager {
         throw new Error("候选版本尚未通过校验，不能激活");
       }
       const candidate = state.pending;
+      const requiresArtifact = realArtifactTarget(state.target)
+        || Boolean(this.downloader || this.trustedKeys || this.bundleApplier);
       if (this.activationAllowed
           && !(await this.activationAllowed())) {
         state.last_error = "当前时机不允许激活";
@@ -454,6 +478,44 @@ export class UpdateManager {
       const artifact = state.artifact
         && state.artifact.release_id === candidate.release_id
         ? state.artifact : null;
+      if (requiresArtifact || artifact) {
+        try {
+          if (!artifact || !this.artifactFiles || !this.trustedKeys || !state.target) {
+            throw new Error("缺少已校验的真实制品或验签器");
+          }
+          if (!this.bundleApplier) throw new Error("缺少能力包装载器，不能激活");
+          const target = state.target;
+          if (artifact.version !== candidate.version || artifact.digest !== candidate.digest
+              || target.release_id !== candidate.release_id
+              || target.version !== candidate.version) {
+            throw new Error("制品与待激活版本不匹配");
+          }
+          if (!versionAtLeast(this.appVersion, target.min_app_version)
+              || (target.required_tool_contracts ?? []).some(
+                (name) => !this.toolContracts.includes(name))) {
+            throw new Error("当前 App 版本或工具契约不兼容");
+          }
+          const required = target.required_permissions ?? [];
+          const granted = required.length ? await this.grantedPermissions() : [];
+          if (required.some((name) => !granted?.includes(name))) {
+            throw new Error("缺少所需权限，不能激活");
+          }
+          const bytes = await this.artifactFiles.read(artifact.path);
+          const checked = this.trustedKeys.verifyArtifact({
+            schema: target.signature_schema ?? "",
+            release_id: candidate.release_id, version: candidate.version,
+            artifact_sha256: artifact.digest, artifact_size: artifact.size,
+            signing_key_id: artifact.signing_key_id,
+            signature: target.artifact_signature ?? "",
+          }, bytes);
+          if (!checked.ok) throw new Error(`制品验签失败: ${checked.reasons.join("; ")}`);
+        } catch (error) {
+          state.phase = "failed";
+          state.last_error = messageOf(error);
+          await this.save(state);
+          throw error;
+        }
+      }
       await this.report(state, "activation_pending", candidate.release_id,
         "ok", "", undefined, {
           version: candidate.version, digest: candidate.digest,
@@ -492,9 +554,11 @@ export class UpdateManager {
         ...candidate,
         activated_at: this.now(),
         signing_key_id: artifact?.signing_key_id,
+        artifact_path: artifact?.path,
       };
       state.active_slot = inactive;
-      state.last_known_good = previous;
+      // Real bundles become rollback candidates only after healthCheck(true).
+      if (!artifact) state.last_known_good = previous;
       state.pending = null;
       state.artifact = null;
       state.phase = "active";
@@ -509,51 +573,61 @@ export class UpdateManager {
   }
 
   /** 健康检查：成功则把当前版本记为已知良好；失败自动回滚。 */
-  async healthCheck(ok: boolean): Promise<UpdateState> {
-    const state = await this.load();
-    const active = state.slots[state.active_slot];
-    if (state.phase !== "active" || !active) {
-      throw new Error("当前没有已激活的版本");
-    }
-    await this.report(state, "health_check", active.release_id,
-      ok ? "ok" : "unhealthy", ok ? "" : "健康检查失败", undefined, {
-        version: active.version, digest: active.digest,
-        keyId: active.signing_key_id,
-      });
-    if (ok) {
-      return this.queue(async () => {
-        const current = await this.load();
-        current.last_known_good = current.slots[current.active_slot];
-        current.last_error = null;
-        await this.save(current);
-        return current;
-      });
-    }
-    return this.rollback("健康检查失败");
+  healthCheck(ok: boolean): Promise<UpdateState> {
+    return this.queue(async () => {
+      const state = await this.load();
+      const active = state.slots[state.active_slot];
+      if (state.phase !== "active" || !active) {
+        throw new Error("当前没有已激活的版本");
+      }
+      await this.report(state, "health_check", active.release_id,
+        ok ? "ok" : "unhealthy", ok ? "" : "健康检查失败", undefined, {
+          version: active.version, digest: active.digest,
+          keyId: active.signing_key_id,
+        });
+      if (ok) {
+        state.last_known_good = active;
+        await this.save(state);
+        return state;
+      }
+      return this.rollbackState(state, "健康检查失败");
+    });
   }
 
   rollback(reason = "manual rollback"): Promise<UpdateState> {
-    return this.queue(async () => {
-      const state = await this.load();
-      const target = state.last_known_good;
-      if (!target) throw new Error("没有可回滚的健康版本");
-      const inactive = state.active_slot === "a" ? "b" : "a";
-      if (state.slots[inactive]?.release_id !== target.release_id) {
-        state.slots[inactive] = { ...target };
+    return this.queue(async () => this.rollbackState(await this.load(), reason));
+  }
+
+  private async rollbackState(state: UpdateState, reason: string): Promise<UpdateState> {
+    const target = state.last_known_good;
+    if (!target) throw new Error("没有可回滚的健康版本");
+    const inactive = state.active_slot === "a" ? "b" : "a";
+    if (target.signing_key_id) {
+      if (!target.artifact_path || !this.artifactFiles || !this.bundleApplier) {
+        throw new Error("缺少真实回滚制品或装载器");
       }
-      state.active_slot = inactive;
-      state.pending = null;
-      state.artifact = null;
-      state.phase = "rolled_back";
-      state.reasons = [...state.reasons, `回滚: ${reason}`];
-      await this.save(state);
-      await this.report(state, "rolled_back", target.release_id, "ok",
-        reason, target.release_id, {
-          version: target.version, digest: target.digest,
-          keyId: target.signing_key_id,
-        });
-      return state;
-    });
+      const bytes = await this.artifactFiles.read(target.artifact_path);
+      if (sha256Hex(bytes) !== target.digest) throw new Error("回滚制品摘要不符");
+      await this.bundleApplier.apply({
+        release_id: target.release_id, version: target.version,
+        path: target.artifact_path, digest: target.digest, slot: inactive,
+      });
+    }
+    if (state.slots[inactive]?.release_id !== target.release_id) {
+      state.slots[inactive] = { ...target };
+    }
+    state.active_slot = inactive;
+    state.pending = null;
+    state.artifact = null;
+    state.phase = "rolled_back";
+    state.reasons = [...state.reasons, `回滚: ${reason}`];
+    await this.save(state);
+    await this.report(state, "rolled_back", target.release_id, "ok",
+      reason, target.release_id, {
+        version: target.version, digest: target.digest,
+        keyId: target.signing_key_id,
+      });
+    return state;
   }
 
   // ---- 内部 ----
@@ -601,7 +675,7 @@ export class UpdateManager {
       attempts: 0,
       last_attempt_at: 0,
     };
-    state.receipts = [...state.receipts, receipt].slice(-50);
+    state.receipts = [...state.receipts, receipt];
     await this.save(state);
     const error = await this.deliver(state, receipt);
     if (!error) {

@@ -85,13 +85,21 @@ export class ArtifactDownloader {
     }
     const maxBytes = options.maxBytes ?? DEFAULT_MAX;
     const chunkSize = options.chunkSize ?? DEFAULT_CHUNK;
+    if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0
+        || !Number.isSafeInteger(chunkSize) || chunkSize <= 0) {
+      throw new ArtifactDownloadError("bad_limit", "下载限额或分块大小非法");
+    }
     if (options.sizeBytes !== undefined
-        && (options.sizeBytes < 0 || options.sizeBytes > maxBytes)) {
+        && (!Number.isSafeInteger(options.sizeBytes)
+          || options.sizeBytes <= 0 || options.sizeBytes > maxBytes)) {
       throw new ArtifactDownloadError("too_large", "制品大小超出允许范围");
     }
 
     const existingFinal = await this.fs.stat(options.finalPath);
     if (existingFinal) {
+      if (existingFinal.size > maxBytes) {
+        throw new ArtifactDownloadError("too_large", "制品大小超出允许范围");
+      }
       const bytes = await this.fs.read(options.finalPath);
       if (sha256Hex(bytes) === expected
           && (options.sizeBytes === undefined
@@ -107,6 +115,9 @@ export class ArtifactDownloader {
     }
 
     let offset = (await this.fs.stat(options.stagingPath))?.size ?? 0;
+    if (offset > maxBytes) {
+      throw new ArtifactDownloadError("too_large", "暂存制品大小超出允许范围");
+    }
     if (options.sizeBytes !== undefined && offset > options.sizeBytes) {
       await this.fs.remove(options.stagingPath);
       offset = 0;
@@ -143,12 +154,18 @@ export class ArtifactDownloader {
           "short_read", `下载提前结束: ${offset}/${total || "?"}`);
       }
       if (!total && response.totalBytes !== undefined) {
+        if (!Number.isSafeInteger(response.totalBytes) || response.totalBytes <= 0) {
+          throw new ArtifactDownloadError("size_mismatch", "制品总大小非法");
+        }
         total = response.totalBytes;
       }
       if (total > maxBytes) {
         throw new ArtifactDownloadError("too_large", "制品大小超出允许范围");
       }
       const next = offset + bytes.length;
+      if (next > maxBytes) {
+        throw new ArtifactDownloadError("too_large", "制品大小超出允许范围");
+      }
       if (total && next > total) {
         throw new ArtifactDownloadError("size_mismatch", "制品实际大小不符");
       }

@@ -447,3 +447,150 @@ test("failed receipts persist and flush with the same apply id", async () => {
   assert.equal(replayed?.apply_id, failed?.apply_id);
   assert.equal(replayed?.action, "verified");
 });
+
+
+// Independent acceptance: hostile inputs and state changes between prepare/apply.
+test("real artifact cannot use the legacy verify shortcut", async () => {
+  const keys = rsaKeys(), body = payload();
+  const ctx = setup(makeTargetWithArtifact(body, {}, keys), body, keys);
+  await ctx.manager.check();
+  await assert.rejects(() => ctx.manager.verify(), /prepare|真实制品/);
+  assert.equal((await ctx.manager.status()).active_slot, "a");
+});
+
+test("activation rechecks actual bytes before calling the applier", async () => {
+  const keys = rsaKeys(), body = payload();
+  const applier = { calls: [] as BundleApplyRequest[] };
+  const ctx = setup(makeTargetWithArtifact(body, {}, keys), body, keys, { applier });
+  await ctx.manager.check(); await ctx.manager.prepare();
+  ctx.fs.files.set("updates/rel_art_1.bundle", new Uint8Array([42]));
+  await assert.rejects(() => ctx.manager.activate(), /摘要|制品|校验/);
+  assert.equal(applier.calls.length, 0);
+  assert.equal((await ctx.manager.status()).active_slot, "a");
+});
+
+test("activation rechecks permission revocation", async () => {
+  const keys = rsaKeys(), body = payload(), permissions = ["camera"];
+  const applier = { calls: [] as BundleApplyRequest[] };
+  const ctx = setup(makeTargetWithArtifact(body, { required_permissions: ["camera"] }, keys),
+    body, keys, { applier, permissions });
+  await ctx.manager.check(); await ctx.manager.prepare();
+  permissions.length = 0;
+  await assert.rejects(() => ctx.manager.activate(), /权限/);
+  assert.equal(applier.calls.length, 0);
+});
+
+test("activation rechecks signing key expiry", async () => {
+  const keys = rsaKeys(), body = payload(); let now = 100;
+  keys.publicKey.not_after = 200;
+  const applier = { calls: [] as BundleApplyRequest[] };
+  const ctx = setup(makeTargetWithArtifact(body, {}, keys), body, keys, { applier, now: () => now });
+  await ctx.manager.check(); await ctx.manager.prepare(); now = 300;
+  await assert.rejects(() => ctx.manager.activate(), /过期|验签/);
+  assert.equal(applier.calls.length, 0);
+});
+
+test("unknown-length downloads enforce the byte cap before appending", async () => {
+  const body = new Uint8Array(12).fill(7), fs = new FakeFs();
+  const source: ArtifactSource = { async fetchRange(_url, start, end) {
+    return { bytes: body.slice(start, end + 1) };
+  } };
+  await assert.rejects(() => new ArtifactDownloader(source, fs).download({
+    url: "test", sha256: sha256Hex(body), stagingPath: "part", finalPath: "final",
+    maxBytes: 8, chunkSize: 5,
+  }), /超出/);
+  assert.ok((fs.files.get("part")?.length ?? 0) <= 8);
+  assert.equal(fs.files.has("final"), false);
+});
+
+test("cached files cannot evade the download byte cap", async () => {
+  const body = new Uint8Array(12).fill(7), fs = new FakeFs();
+  fs.files.set("final", body);
+  await assert.rejects(() => new ArtifactDownloader(new FakeSource(body), fs).download({
+    url: "test", sha256: sha256Hex(body), stagingPath: "part", finalPath: "final", maxBytes: 8,
+  }), /超出/);
+});
+
+test("release IDs cannot escape the staging directory", async () => {
+  const keys = rsaKeys(), body = payload();
+  const ctx = setup(makeTargetWithArtifact(body, { release_id: "../outside" }, keys), body, keys);
+  const state = await ctx.manager.check();
+  assert.equal(state.phase, "blocked");
+  assert.equal(ctx.source.starts.length, 0);
+});
+
+test("short App versions are compared with zero-filled segments", async () => {
+  const keys = rsaKeys(), body = payload();
+  const ctx = setup(makeTargetWithArtifact(body, { min_app_version: "1.1.0" }, keys), body, keys, { appVersion: "1" });
+  assert.equal((await ctx.manager.check()).phase, "blocked");
+});
+
+test("real rollback reapplies the known-good bundle before reporting success", async () => {
+  const keys = rsaKeys(), body = payload();
+  const applier = { calls: [] as BundleApplyRequest[] };
+  const ctx = setup(makeTargetWithArtifact(body, {}, keys), body, keys, { applier });
+  await ctx.manager.check(); await ctx.manager.prepare(); await ctx.manager.activate();
+  await ctx.manager.healthCheck(true);
+  ctx.transport.response = responseFor(makeTargetWithArtifact(body,
+    { release_id: "rel_art_2", version: "v9.2.0" }, keys));
+  await ctx.manager.check(); await ctx.manager.prepare(); await ctx.manager.activate();
+  const rolled = await ctx.manager.rollback();
+  assert.equal(applier.calls.length, 3);
+  assert.equal(applier.calls[2].release_id, "rel_art_1");
+  assert.equal(applier.calls[2].slot, rolled.active_slot);
+  assert.equal(ctx.transport.reports.at(-1)?.action, "rolled_back");
+});
+
+test("failed rollback apply preserves the active slot and does not report success", async () => {
+  const keys = rsaKeys(), body = payload();
+  const applier = { calls: [] as BundleApplyRequest[], fail: false };
+  const ctx = setup(makeTargetWithArtifact(body, {}, keys), body, keys, { applier });
+  await ctx.manager.check(); await ctx.manager.prepare(); await ctx.manager.activate();
+  await ctx.manager.healthCheck(true);
+  const before = await ctx.manager.status();
+  applier.fail = true;
+  await assert.rejects(() => ctx.manager.rollback(), /apply failed/);
+  assert.equal((await ctx.manager.status()).active_slot, before.active_slot);
+  assert.notEqual(ctx.transport.reports.at(-1)?.action, "rolled_back");
+});
+
+test("unacknowledged receipts are retained beyond fifty events", async () => {
+  const keys = rsaKeys(), body = payload();
+  const applier = { calls: [] as BundleApplyRequest[] };
+  const ctx = setup(makeTargetWithArtifact(body, {}, keys), body, keys, { applier });
+  await ctx.manager.check(); await ctx.manager.prepare(); await ctx.manager.activate();
+  ctx.transport.reportError = new Error("offline");
+  for (let index = 0; index < 51; index += 1) await ctx.manager.healthCheck(true);
+  const reports = await ctx.manager.status();
+  assert.equal(reports.receipts.length, 51);
+  const firstId = reports.receipts[0].apply_id;
+  ctx.transport.reportError = null;
+  await ctx.manager.flushReceipts();
+  assert.ok(ctx.transport.reports.some((r) => r.apply_id === firstId));
+  assert.equal((await ctx.manager.status()).receipts.length, 0);
+});
+
+test("concurrent health checks cannot overwrite each other's receipts", async () => {
+  const keys = rsaKeys(), body = payload();
+  const applier = { calls: [] as BundleApplyRequest[] };
+  const ctx = setup(makeTargetWithArtifact(body, {}, keys), body, keys, { applier });
+  await ctx.manager.check(); await ctx.manager.prepare(); await ctx.manager.activate();
+  ctx.transport.reportError = new Error("offline");
+  await Promise.all(Array.from({ length: 4 }, () => ctx.manager.healthCheck(true)));
+  assert.equal((await ctx.manager.status()).receipts.length, 4);
+});
+
+test("unconfirmed releases cannot replace the last known healthy bundle", async () => {
+  const keys = rsaKeys(), body = payload();
+  const applier = { calls: [] as BundleApplyRequest[] };
+  const ctx = setup(makeTargetWithArtifact(body, {}, keys), body, keys, { applier });
+  await ctx.manager.check(); await ctx.manager.prepare(); await ctx.manager.activate();
+  await ctx.manager.healthCheck(true);
+  for (const id of ["rel_art_2", "rel_art_3"]) {
+    ctx.transport.response = responseFor(makeTargetWithArtifact(body, { release_id: id }, keys));
+    await ctx.manager.check(); await ctx.manager.prepare(); await ctx.manager.activate();
+  }
+  assert.equal((await ctx.manager.status()).last_known_good?.release_id, "rel_art_1");
+  await ctx.manager.healthCheck(false);
+  assert.equal(applier.calls.at(-1)?.release_id, "rel_art_1");
+});
