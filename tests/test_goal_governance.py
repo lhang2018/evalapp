@@ -116,6 +116,12 @@ def test_create_and_transition_commands_replay_once_and_reject_changed_payload(s
         change(store, goal, "paused", command_id="move-001")
 
 
+def test_custom_goal_ids_do_not_collide_with_create_command_namespace(store):
+    goal = create(store, goal_id="create", command_id="shared-001")
+    goal = authorize(store, goal)
+    assert change(store, goal, "ready", command_id="shared-001")["status"] == "ready"
+
+
 def test_cross_connection_state_cas_has_one_winner(store):
     goal = ready(store)
     other = Database(store.db.path)

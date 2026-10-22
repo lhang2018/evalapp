@@ -204,7 +204,7 @@ class GoalStore:
                        success_criteria=success_criteria, parent_goal_id=parent_goal_id,
                        deadline=deadline, goal_id=goal_id)
         with self._write():
-            cached, fingerprint = self._command("create", command_id, payload)
+            cached, fingerprint = self._command("goal:create", command_id, payload)
             if cached is not None:
                 return cached
             if parent_goal_id:
@@ -223,7 +223,7 @@ class GoalStore:
                         no_progress_policy_ref=None, status="proposed", evidence_refs=[],
                         revision=1, created_at=self.clock(), updated_at=self.clock())
             result = self._save(goal, actor, "register", "goal_created")
-            return self._remember("create", command_id, fingerprint, result)
+            return self._remember("goal:create", command_id, fingerprint, result)
 
     def get(self, goal_id):
         self.expire_due()
@@ -309,7 +309,8 @@ class GoalStore:
         payload = dict(target=target, actor=actor, reason=reason,
                        expected_revision=expected_revision, evidence_refs=refs)
         with self._write():
-            cached, fingerprint = self._command(goal_id, command_id, payload)
+            command_scope = "goal:transition:" + goal_id
+            cached, fingerprint = self._command(command_scope, command_id, payload)
             if cached is not None:
                 return cached
             goal = self._get(goal_id)
@@ -327,7 +328,7 @@ class GoalStore:
             goal.update(status=target, revision=goal["revision"] + 1)
             goal["evidence_refs"] = sorted(set(goal["evidence_refs"] + refs))
             result = self._save(goal, actor, reason, "goal_transition")
-            return self._remember(goal_id, command_id, fingerprint, result)
+            return self._remember(command_scope, command_id, fingerprint, result)
 
     def revoke(self, goal_id, *, actor, reason, expected_revision):
         actor, reason = _text(actor, "actor"), _text(reason, "reason")
@@ -371,7 +372,7 @@ class GoalStore:
         if request_policy is not None:
             request_policy = normalize_policy(request_policy)
         with self._write():
-            scope = "task:" + task.goal_id
+            scope = "goal:task:" + task.goal_id
             cached, fingerprint = self._command(scope, command_id, dict(
                 title=task.user_goal, action=action, budget=task.budget_policy,
                 request_policy=request_policy))
