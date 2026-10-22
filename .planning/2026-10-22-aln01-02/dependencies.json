@@ -1,0 +1,66 @@
+{
+  "ALN-01": {
+    "direct_dependents": [
+      "ALN-02",
+      "ALN-04",
+      "ALN-08",
+      "ALN-12",
+      "ALN-13",
+      "ALN-16",
+      "ALN-20",
+      "ALN-22"
+    ],
+    "transitive_dependents": [
+      "ALN-02",
+      "ALN-04",
+      "ALN-05",
+      "ALN-07",
+      "ALN-08",
+      "ALN-09",
+      "ALN-10",
+      "ALN-11",
+      "ALN-12",
+      "ALN-13",
+      "ALN-14",
+      "ALN-15",
+      "ALN-16",
+      "ALN-17",
+      "ALN-18",
+      "ALN-19",
+      "ALN-20",
+      "ALN-21",
+      "ALN-22"
+    ],
+    "count": 19
+  },
+  "ALN-02": {
+    "direct_dependents": [
+      "ALN-04",
+      "ALN-07",
+      "ALN-12",
+      "ALN-15",
+      "ALN-20",
+      "ALN-22"
+    ],
+    "transitive_dependents": [
+      "ALN-04",
+      "ALN-05",
+      "ALN-07",
+      "ALN-09",
+      "ALN-10",
+      "ALN-11",
+      "ALN-12",
+      "ALN-13",
+      "ALN-14",
+      "ALN-15",
+      "ALN-16",
+      "ALN-17",
+      "ALN-18",
+      "ALN-19",
+      "ALN-20",
+      "ALN-21",
+      "ALN-22"
+    ],
+    "count": 17
+  }
+}

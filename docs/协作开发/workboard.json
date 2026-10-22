@@ -17,31 +17,31 @@
       "source": "当前未提交共享工作区；不是历史候选快照或纯 HEAD"
     },
     "last_verified_candidate": {
-      "commit": "5b0cc085560aa222d86d4fd4c2527e6988bbb145",
-      "source_tree": "ff3a7dd05e471850d8e0988f02d72cf3460d4e27",
-      "python_passed": 979,
+      "commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+      "source_tree": "5c3d7765f191abdf81e92136008a854970eb9812",
+      "python_passed": 1065,
       "python_skipped": 1,
       "client_passed": 136,
       "typecheck": "passed",
       "client_evidence_source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
-      "log": ".planning/2026-10-22-opencode-fixes/clean-backend-tests.txt",
-      "scope": "精确5b0cc08干净克隆后端979/1，已包含CA源码修复；原5个OC探针复验5 passed。客户端同tree沿用136/typecheck；新补丁和其他修复仍待独立复核"
+      "log": ".planning/2026-10-22-aln01-02/clean-backend-tests.txt",
+      "scope": "ALN-01/02源码22c50ca干净克隆1065/1；新增49项通过，三个哈希种子并发/排序验证通过；客户端同tree沿用136/typecheck。含同期03/05及CA源码，未自批其他卡"
     },
     "initial_head_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
     "prepared_candidate": {
-      "commit": "5b0cc085560aa222d86d4fd4c2527e6988bbb145",
-      "source_tree": "ff3a7dd05e471850d8e0988f02d72cf3460d4e27",
+      "commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+      "source_tree": "5c3d7765f191abdf81e92136008a854970eb9812",
       "status": "verified_pending_independent_review",
       "clean_before_and_after": true,
-      "python_passed": 979,
+      "python_passed": 1065,
       "python_skipped": 1,
       "client_passed": 136,
       "typecheck": "passed",
-      "dependency_scope": "精确5b0cc08干净克隆后端全量，包含已提交CA修复；客户端tree与d77b241相同，136/typecheck沿用既有证据，本轮未重跑客户端",
+      "dependency_scope": "ALN-01/02精确源码干净克隆全量，包含同期已提交03/05及CA修复；客户端目录tree未变，沿用d77b241的136/typecheck，本轮未重跑客户端",
       "evidence": [
         {
-          "path": ".planning/2026-10-22-opencode-fixes/clean-backend-tests.txt",
-          "sha256": "2a9f237f0f0adcfd33851e1e746c9b1cdbbc194b4cbe4d385badc872b8cd9177"
+          "path": ".planning/2026-10-22-aln01-02/clean-backend-tests.txt",
+          "sha256": "bb4c882765de88676949298556d2552e28d1b96b97caff15b7d64792bc1dfd93"
         },
         {
           "path": ".planning/2026-10-22-cross-review/clean-client-tests.txt",
@@ -63,11 +63,15 @@
         ".workbuddy/"
       ],
       "remaining_review": [
-        "ALN-09-F",
-        "ALN-10-H",
-        "ALN-04-UI",
         "ALN-06-A",
-        "ALN-08-M"
+        "ALN-08-M",
+        "ALN-04-UI",
+        "ALN-10-H",
+        "ALN-09-F",
+        "ALN-03-S",
+        "ALN-05-M",
+        "ALN-01-A",
+        "ALN-02-A"
       ],
       "tools": {
         "python": "3.10.11",
@@ -968,16 +972,30 @@
       "reviewer": null,
       "branch": "main",
       "base_commit": "a3a39a1f24c91d6e79131f20eaf9a6ad6628aefb",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "任务授权/资源范围/撤销与审批交集；回执对账、产物恢复、逆拓扑补偿和同任务副作用串行；共新增49项",
+          "command": "clean clone: python -m pytest -q --tb=short",
+          "result": "1065 passed, 1 skipped (113.30s)；新增49 passed；3 seeds × 3稳定性用例通过",
+          "source_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+          "source_tree": "5c3d7765f191abdf81e92136008a854970eb9812",
+          "log": ".planning/2026-10-22-aln01-02/clean-backend-tests.txt"
+        }
+      ],
       "card": "docs/协作开发/任务卡/01-任务范围授权.md",
       "shared_files": [
         "evoagent/tools/registry.py",
         "evoagent/core/controller.py",
         "evoagent/workflows/engine.py"
       ],
-      "working_basis": "用户明确要求完成01/02，接续既有安全网关基础实现"
+      "working_basis": "用户明确要求完成01/02，接续既有安全网关基础实现",
+      "delivered_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+      "review_result": "pending",
+      "delivery": "docs/协作开发/交付/ALN-01-A-统一任务范围授权.md",
+      "next_step": "独立复核精确22c50ca及关闭标准；通过后由集成人关闭父包/推进共同基线，不能作者自批"
     },
     {
       "id": "ALN-02-A",
@@ -988,16 +1006,30 @@
       "reviewer": null,
       "branch": "main",
       "base_commit": "a3a39a1f24c91d6e79131f20eaf9a6ad6628aefb",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "任务授权/资源范围/撤销与审批交集；回执对账、产物恢复、逆拓扑补偿和同任务副作用串行；共新增49项",
+          "command": "clean clone: python -m pytest -q --tb=short",
+          "result": "1065 passed, 1 skipped (113.30s)；新增49 passed；3 seeds × 3稳定性用例通过",
+          "source_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+          "source_tree": "5c3d7765f191abdf81e92136008a854970eb9812",
+          "log": ".planning/2026-10-22-aln01-02/clean-backend-tests.txt"
+        }
+      ],
       "card": "docs/协作开发/任务卡/02-回执对账与验证补偿.md",
       "shared_files": [
         "evoagent/tools/registry.py",
         "evoagent/core/controller.py",
         "evoagent/workflows/engine.py"
       ],
-      "working_basis": "用户明确要求完成01/02，接续既有安全网关基础实现"
+      "working_basis": "用户明确要求完成01/02，接续既有安全网关基础实现",
+      "delivered_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+      "review_result": "pending",
+      "delivery": "docs/协作开发/交付/ALN-02-A-回执对账与验证补偿.md",
+      "next_step": "独立复核精确22c50ca及关闭标准；通过后由集成人关闭父包/推进共同基线，不能作者自批"
     }
   ],
   "workpackages": [
@@ -1021,7 +1053,8 @@
       "stream": "runtime",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "由ALN-01-A补齐资源范围授权/撤销与回执/补偿，联合验证后交独立审阅"
+      "next_step": "ALN-01-A代码已交付，任务范围/撤销/审批交集已验证；独立验收后关闭，供19个下游包对接",
+      "implementation_state": "complete_pending_independent_review"
     },
     {
       "id": "ALN-02",
@@ -1033,7 +1066,8 @@
       "stream": "runtime",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "由ALN-02-A补齐资源范围授权/撤销与回执/补偿，联合验证后交独立审阅"
+      "next_step": "ALN-02-A代码已交付，回执/产物恢复与验证补偿已验证；独立验收后关闭，供17个下游包对接",
+      "implementation_state": "complete_pending_independent_review"
     },
     {
       "id": "ALN-03",
@@ -1348,5 +1382,5 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "最新精确源码3b7ef62全量963/1；CXR三项与CA三项均已提交修复，均待原验收方独立复验；ALN-03-S/ALN-05-M 已由 claude-main 认领开工。Android真机仍待原线处理；基线candidate，未发布，不混入在途文件。"
+  "execution_note": "ALN-01-A/02-A代码完成并进入review；精确22c50ca干净全量1065/1，新增49项；客户端同tree沿用136/typecheck。01传递影响19包、02影响17包，原依赖未改；03/05等同期交付继续各自独立审阅。基线candidate未发布，不自批、不混入他人在途内容。"
 }

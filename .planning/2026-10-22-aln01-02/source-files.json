@@ -1,0 +1,95 @@
+{
+  "commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+  "files": [
+    {
+      "path": "evoagent/core/authorization.py",
+      "git_blob": "5588ae7c915dfea30edc1755d124950dfe195611",
+      "sha256": "63fe6bdf7797ba93dc77fbef392f2767a5e40c4536ff8a714b148ea4c169a373"
+    },
+    {
+      "path": "evoagent/core/schema/authorizations.py",
+      "git_blob": "e4c1090a027215b3be865a857d28b3e43d0dce46",
+      "sha256": "a56f55b873be682fe18a4f3a5ca5ac46b309f90a939cf923a232d54e18886724"
+    },
+    {
+      "path": "evoagent/core/permissions.py",
+      "git_blob": "a85df5bd2efe31589b53a15421b7a23004f90457",
+      "sha256": "f6de7a7dfaee0f056c6efb4afd12fea7f93121c8243dbc0f114c3ae0822967ab"
+    },
+    {
+      "path": "evoagent/core/side_effects.py",
+      "git_blob": "a09b11ff115c7caf1a13a4437b4510ca1e69a2d1",
+      "sha256": "7799f4d273b00491cb38498198925c7750f08632c2a17a86328075e596aecc29"
+    },
+    {
+      "path": "evoagent/core/persistence.py",
+      "git_blob": "def7c070e5e3220e3ea0a2c2fe5a2e41d8116568",
+      "sha256": "a5ec4a871b1230121b16ccfc2ae94ab1b6e73ddd43ca15e2a93de604949eb5dd"
+    },
+    {
+      "path": "evoagent/core/task.py",
+      "git_blob": "6d8ef63072de1c2256fde16b5a04a80c4e8e73d1",
+      "sha256": "29cdb0d53c4180af83638a84a09f4acec57eb5fb8efe51ed9c925276386de962"
+    },
+    {
+      "path": "evoagent/core/controller.py",
+      "git_blob": "90b09d530c1bfa1e05ffc22f81037bf938b9cd99",
+      "sha256": "6068c2404d6c897eaa6b784f1dd862a32e3577b2a4b730fab825f6cf9de57ae9"
+    },
+    {
+      "path": "evoagent/tools/builtin.py",
+      "git_blob": "91222d1ae900a57236a9ec1840bc77b14406975a",
+      "sha256": "f9fb46989705989b2f93e7179b340dbba02e76fd34e1fabdc1e90f09091196de"
+    },
+    {
+      "path": "evoagent/tools/contract.py",
+      "git_blob": "3829e7fea117f21a96508c0fe6a1d2baf7e84c07",
+      "sha256": "cd17665aa472905b1dd45b7a7542ccd9f2039bb7ad9d30da740f601979d61812"
+    },
+    {
+      "path": "evoagent/tools/registry.py",
+      "git_blob": "b1c9f0dd01241769be2a8bcff8c9daba3bc7ecf7",
+      "sha256": "bd9ff112c4d35f095a494d55ce08bde0c886808add203725d0a17a216fdb636e"
+    },
+    {
+      "path": "evoagent/workflows/models.py",
+      "git_blob": "a37c12a58af6c3632f1eebe41a3d238c67608df0",
+      "sha256": "ceac50c290bd3d596c9c9855cd05a26cb1877ebc9ec3e262e890343904f00c7a"
+    },
+    {
+      "path": "evoagent/workflows/engine.py",
+      "git_blob": "e2c54183d715c074a90d27014ea99544636e860b",
+      "sha256": "f6cf366ed830d9436c47825992087a0d00991cc49aadb4831ea0c37a6d3d21fd"
+    },
+    {
+      "path": "evoagent/workflows/builtin.py",
+      "git_blob": "d1a2749eb0cab8ec8e64f392237399bf394853e2",
+      "sha256": "edd2ad6188992239297b11502c4f090ea05271f8eb2944aec2edeec2fcba4379"
+    },
+    {
+      "path": "evoagent/workflows/compensation.py",
+      "git_blob": "6a5153ea4268c6f2409c257e3148c635c57a93df",
+      "sha256": "3e59beb591d9b6576359050d7288c119a4aba5b720d7226489b170c6a9b90835"
+    },
+    {
+      "path": "evoagent/api/action_security_api.py",
+      "git_blob": "89b301711d44365fde367e96493368b113ed7b16",
+      "sha256": "9e70a0f0abbcddc39264f5573c3d4281ba43bf5fa7e283fdb956d771f739643a"
+    },
+    {
+      "path": "evoagent/api/server.py",
+      "git_blob": "adea077738deef88a0540ec967eae5b6af9bcecf",
+      "sha256": "172152e4d9351455bec3b29787ff3c5e981f6793a77fbafcd8099d8d6c4efd70"
+    },
+    {
+      "path": "tests/test_aln01_authorization.py",
+      "git_blob": "a1527fd4082b7d63981017d5915773d9fdeca7c6",
+      "sha256": "3e7db119606aa08d14271c043b8165477fd4dd07937385444de13e20aee89d58"
+    },
+    {
+      "path": "tests/test_aln02_receipts.py",
+      "git_blob": "4ceb42bf1b1c1b1943f9cab1962164757f02612a",
+      "sha256": "6170c1c91235c7481cfde1d3d4b516464b2c503a1646695556cadb0f07bee4c7"
+    }
+  ]
+}

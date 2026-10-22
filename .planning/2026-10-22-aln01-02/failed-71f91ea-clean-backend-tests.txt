@@ -1,0 +1,383 @@
+Python version is above 3.10, patching the collections module.
+F..F...............F...FFFFFFFFFFFFFFFFFFFF.F........................... [  6%]
+........................................................................ [ 13%]
+..........FF.F.............F............................................ [ 20%]
+........................................................................ [ 27%]
+........................................................................ [ 33%]
+........................................................................ [ 40%]
+................................................................FF....F. [ 47%]
+FFFFFFFF.............................................................F.. [ 54%]
+........................................................................ [ 61%]
+........................................................................ [ 67%]
+...............FF.FF.................................................... [ 74%]
+........................................................................ [ 81%]
+...................................F.................................... [ 88%]
+.................................F.......F...................F.......s.. [ 94%]
+......................................................                   [100%]
+================================== FAILURES ===================================
+____ test_task_scope_blocks_runner_before_side_effects[args0-scope0-True] _____
+tests\test_aln01_authorization.py:53: in test_task_scope_blocks_runner_before_side_effects
+    assert result.ok is allowed
+E   AssertionError: assert False is True
+E    +  where False = ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+____ test_task_scope_blocks_runner_before_side_effects[args3-scope3-True] _____
+tests\test_aln01_authorization.py:53: in test_task_scope_blocks_runner_before_side_effects
+    assert result.ok is allowed
+E   AssertionError: assert False is True
+E    +  where False = ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+_________ test_confirmation_callback_cannot_change_the_frozen_action __________
+tests\test_aln01_authorization.py:135: in test_confirmation_callback_cannot_change_the_frozen_action
+    assert gateway.execute("action", source, task_id="task").ok
+E   AssertionError: assert False
+E    +  where False = ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+E    +    where ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None) = execute('action', {'target': 'original'}, task_id='task')
+E    +      where execute = <evoagent.tools.registry.ToolRegistry object at 0x000001F797975870>.execute
+________ test_verified_receipt_restores_result_across_database_restart ________
+tests\test_aln02_receipts.py:48: in test_verified_receipt_restores_result_across_database_restart
+    identity = unknown(gateway, reconciler=confirmed)
+tests\test_aln02_receipts.py:38: in unknown
+    return result.evidence["effect_id"]
+E   KeyError: 'effect_id'
+___ test_unverifiable_receipt_never_releases_pending_operation[unverified] ____
+tests\test_aln02_receipts.py:71: in test_unverifiable_receipt_never_releases_pending_operation
+    identity = unknown(gateway, reconciler=None if damage == "no_adapter" else reconcile)
+tests\test_aln02_receipts.py:38: in unknown
+    return result.evidence["effect_id"]
+E   KeyError: 'effect_id'
+____ test_unverifiable_receipt_never_releases_pending_operation[uncertain] ____
+tests\test_aln02_receipts.py:71: in test_unverifiable_receipt_never_releases_pending_operation
+    identity = unknown(gateway, reconciler=None if damage == "no_adapter" else reconcile)
+tests\test_aln02_receipts.py:38: in unknown
+    return result.evidence["effect_id"]
+E   KeyError: 'effect_id'
+_ test_unverifiable_receipt_never_releases_pending_operation[no_receipt_ref] __
+tests\test_aln02_receipts.py:71: in test_unverifiable_receipt_never_releases_pending_operation
+    identity = unknown(gateway, reconciler=None if damage == "no_adapter" else reconcile)
+tests\test_aln02_receipts.py:38: in unknown
+    return result.evidence["effect_id"]
+E   KeyError: 'effect_id'
+__ test_unverifiable_receipt_never_releases_pending_operation[wrong_version] __
+tests\test_aln02_receipts.py:71: in test_unverifiable_receipt_never_releases_pending_operation
+    identity = unknown(gateway, reconciler=None if damage == "no_adapter" else reconcile)
+tests\test_aln02_receipts.py:38: in unknown
+    return result.evidence["effect_id"]
+E   KeyError: 'effect_id'
+___ test_unverifiable_receipt_never_releases_pending_operation[no_adapter] ____
+tests\test_aln02_receipts.py:71: in test_unverifiable_receipt_never_releases_pending_operation
+    identity = unknown(gateway, reconciler=None if damage == "no_adapter" else reconcile)
+tests\test_aln02_receipts.py:38: in unknown
+    return result.evidence["effect_id"]
+E   KeyError: 'effect_id'
+_________ test_reconciliation_is_atomic_when_final_state_write_fails __________
+tests\test_aln02_receipts.py:79: in test_reconciliation_is_atomic_when_final_state_write_fails
+    identity = unknown(gateway, reconciler=confirmed)
+tests\test_aln02_receipts.py:38: in unknown
+    return result.evidence["effect_id"]
+E   KeyError: 'effect_id'
+__________ test_proven_not_executed_receipt_allows_one_fresh_attempt __________
+tests\test_aln02_receipts.py:94: in test_proven_not_executed_receipt_allows_one_fresh_attempt
+    identity = unknown(gateway, reconciler=not_sent)
+tests\test_aln02_receipts.py:38: in unknown
+    return result.evidence["effect_id"]
+E   KeyError: 'effect_id'
+__ test_live_timed_out_thread_is_not_declared_cancelled_by_another_registry ___
+tests\test_aln02_receipts.py:111: in test_live_timed_out_thread_is_not_declared_cancelled_by_another_registry
+    identity = result.evidence["effect_id"]
+E   KeyError: 'effect_id'
+__________ test_timeout_while_final_guard_waits_still_blocks_replay ___________
+tests\test_aln02_receipts.py:138: in test_timeout_while_final_guard_waits_still_blocks_replay
+    assert result.side_effect_uncertain and result.required_action == 'reconcile'
+E   AssertionError: assert (False)
+E    +  where False = ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).side_effect_uncertain
+
+During handling of the above exception, another exception occurred:
+tests\test_aln02_receipts.py:143: in test_timeout_while_final_guard_waits_still_blocks_replay
+    assert finished.wait(2)
+E   assert False
+E    +  where False = wait(2)
+E    +    where wait = <threading.Event object at 0x000001F797BF27D0>.wait
+____ test_real_http_provider_receipt_is_fetched_and_bound_to_original_key _____
+tests\test_aln02_receipts.py:175: in test_real_http_provider_receipt_is_fetched_and_bound_to_original_key
+    recovered = gateway.reconcile_effect(result.evidence['effect_id'], {'untrusted': 'cannot replace GET'})
+E   KeyError: 'effect_id'
+_ test_compensation_uses_original_arguments_and_verifies_real_file[False-False] _
+tests\test_aln02_receipts.py:210: in test_compensation_uses_original_arguments_and_verifies_real_file
+    original = next(row for row in gateway.effects.history('task') if row['tool_id'] == 'write')
+E   StopIteration
+_ test_compensation_uses_original_arguments_and_verifies_real_file[True-False] _
+tests\test_aln02_receipts.py:210: in test_compensation_uses_original_arguments_and_verifies_real_file
+    original = next(row for row in gateway.effects.history('task') if row['tool_id'] == 'write')
+E   StopIteration
+_ test_compensation_uses_original_arguments_and_verifies_real_file[False-True] _
+tests\test_aln02_receipts.py:210: in test_compensation_uses_original_arguments_and_verifies_real_file
+    original = next(row for row in gateway.effects.history('task') if row['tool_id'] == 'write')
+E   StopIteration
+_____________ test_compensation_cannot_bypass_task_authorization ______________
+tests\test_aln02_receipts.py:227: in test_compensation_cannot_bypass_task_authorization
+    assert not result.compensations[0]['verified']
+E   IndexError: list index out of range
+____ test_successful_external_tool_is_not_reexecuted_after_bad_node_output ____
+tests\test_aln02_receipts.py:238: in test_successful_external_tool_is_not_reexecuted_after_bad_node_output
+    assert not result.ok and calls == [1]
+E   AssertionError: assert (not False and [] == [1]
+E    +  where False = WorkflowRunResult(ok=False, status='failed', outputs={}, node_stats=[{'node': 'n', 'state': 'failed', 'attempts': 1, '... {}, 'idempotency_key': None, 'safe_to_repeat': False, 'retryable': False, 'required_action': None}}, compensations=[]).ok
+E
+E     Right contains one more item: 1
+E     Use -v to get more diff)
+_ test_process_crash_preserves_intent_and_requires_real_state_reconciliation[planned] _
+tests\test_aln02_receipts.py:261: in test_process_crash_preserves_intent_and_requires_real_state_reconciliation
+    assert result.returncode == 17, result.stderr
+E   AssertionError:
+E   assert 0 == 17
+E    +  where 0 = CompletedProcess(args=['C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe', '-c', "\nimport os...t-of-lhang\\pytest-142\\test_process_crash_preserves_i0\\artifact.txt', 'planned'], returncode=0, stdout='', stderr='').returncode
+_ test_process_crash_preserves_intent_and_requires_real_state_reconciliation[before] _
+tests\test_aln02_receipts.py:261: in test_process_crash_preserves_intent_and_requires_real_state_reconciliation
+    assert result.returncode == 17, result.stderr
+E   AssertionError:
+E   assert 0 == 17
+E    +  where 0 = CompletedProcess(args=['C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe', '-c', "\nimport os...st-of-lhang\\pytest-142\\test_process_crash_preserves_i1\\artifact.txt', 'before'], returncode=0, stdout='', stderr='').returncode
+_ test_process_crash_preserves_intent_and_requires_real_state_reconciliation[after] _
+tests\test_aln02_receipts.py:261: in test_process_crash_preserves_intent_and_requires_real_state_reconciliation
+    assert result.returncode == 17, result.stderr
+E   AssertionError:
+E   assert 0 == 17
+E    +  where 0 = CompletedProcess(args=['C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe', '-c', "\nimport os...est-of-lhang\\pytest-142\\test_process_crash_preserves_i2\\artifact.txt', 'after'], returncode=0, stdout='', stderr='').returncode
+______ test_real_app_compensation_waits_for_approval_then_restores_file _______
+tests\test_aln02_receipts.py:297: in test_real_app_compensation_waits_for_approval_then_restores_file
+    assert task.task_status == TaskStatus.SUSPENDED
+E   AssertionError: assert <TaskStatus.FAILED: 'FAILED'> == <TaskStatus.S...: 'SUSPENDED'>
+E
+E     - SUSPENDED
+E     + FAILED
+_____ test_confirmed_result_cannot_be_reinterpreted_as_a_new_tool_version _____
+tests\test_aln02_receipts.py:321: in test_confirmed_result_cannot_be_reinterpreted_as_a_new_tool_version
+    assert gateway.execute('send', {}, task_id='task', idempotency_key='operation').ok
+E   AssertionError: assert False
+E    +  where False = ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+E    +    where ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None) = execute('send', {}, task_id='task', idempotency_key='operation')
+E    +      where execute = <evoagent.tools.registry.ToolRegistry object at 0x000001F797796410>.execute
+_ test_approval_resumes_node_once_and_duplicate_decision_is_idempotent[external-False] _
+tests\test_async_approvals.py:62: in test_approval_resumes_node_once_and_duplicate_decision_is_idempotent
+    assert accepted and resumed.task_status == TaskStatus.SUCCEEDED
+E   AssertionError: assert (True and <TaskStatus.FAILED: 'FAILED'> == <TaskStatus.S...: 'SUCCEEDED'>
+E
+E     - SUCCEEDED
+E     + FAILED)
+_ test_approval_resumes_node_once_and_duplicate_decision_is_idempotent[external-True] _
+tests\test_async_approvals.py:62: in test_approval_resumes_node_once_and_duplicate_decision_is_idempotent
+    assert accepted and resumed.task_status == TaskStatus.SUCCEEDED
+E   AssertionError: assert (True and <TaskStatus.FAILED: 'FAILED'> == <TaskStatus.S...: 'SUCCEEDED'>
+E
+E     - SUCCEEDED
+E     + FAILED)
+______________ test_parallel_nodes_require_all_current_approvals ______________
+tests\test_async_approvals.py:99: in test_parallel_nodes_require_all_current_approvals
+    assert resumed.task_status == TaskStatus.SUCCEEDED
+E   AssertionError: assert <TaskStatus.FAILED: 'FAILED'> == <TaskStatus.S...: 'SUCCEEDED'>
+E
+E     - SUCCEEDED
+E     + FAILED
+_____ test_react_restart_executes_saved_action_without_new_model_decision _____
+tests\test_async_approvals.py:311: in test_react_restart_executes_saved_action_without_new_model_decision
+    assert resumed.task_status == TaskStatus.SUCCEEDED
+E   AssertionError: assert <TaskStatus.FAILED: 'FAILED'> == <TaskStatus.S...: 'SUCCEEDED'>
+E
+E     - SUCCEEDED
+E     + FAILED
+___________________ test_ledger_is_submitted_before_runner ____________________
+tests\test_execution_boundaries.py:108: in test_ledger_is_submitted_before_runner
+    assert result.ok
+E   AssertionError: assert False
+E    +  where False = ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+_______________ test_unknown_timeout_is_durable_and_not_retried _______________
+tests\test_execution_boundaries.py:124: in test_unknown_timeout_is_durable_and_not_retried
+    assert first.side_effect_uncertain and second.side_effect_uncertain
+E   AssertionError: assert (False)
+E    +  where False = ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).side_effect_uncertain
+______ test_confirmed_operation_replays_result_without_duplicate_ledger _______
+tests\test_execution_boundaries.py:174: in test_confirmed_operation_replays_result_without_duplicate_ledger
+    assert first.data == second.data == {"receipt": "r1"}
+E   AssertionError: assert None == {'receipt': 'r1'}
+E    +  where None = ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).data
+________________ test_concurrent_operation_has_only_one_runner ________________
+tests\test_execution_boundaries.py:209: in test_concurrent_operation_has_only_one_runner
+    assert entered.wait(3)
+E   assert False
+E    +  where False = wait(3)
+E    +    where wait = <threading.Event object at 0x000001F7990F7880>.wait
+________________ test_dag_unknown_does_not_retry_or_compensate ________________
+tests\test_execution_boundaries.py:235: in test_dag_unknown_does_not_retry_or_compensate
+    assert result.status == WorkflowNodeState.WAITING_EXTERNAL
+E   AssertionError: assert 'failed' == 'waiting_external'
+E
+E     - waiting_external
+E     + failed
+____________ test_react_stops_on_unknown_without_second_model_call ____________
+tests\test_execution_boundaries.py:245: in test_react_stops_on_unknown_without_second_model_call
+    assert result.stop_reason == "side_effect_unknown" and model.calls == 1
+E   AssertionError: assert ('normal' == 'side_effect_unknown'
+E
+E     - side_effect_unknown
+E     + normal)
+______________ test_gateway_result_write_failure_remains_pending ______________
+tests\test_execution_boundaries.py:256: in test_gateway_result_write_failure_remains_pending
+    assert result.side_effect_uncertain and not result.ok
+E   AssertionError: assert (False)
+E    +  where False = ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).side_effect_uncertain
+________ test_same_arguments_in_distinct_tasks_are_distinct_operations ________
+tests\test_execution_boundaries.py:267: in test_same_arguments_in_distinct_tasks_are_distinct_operations
+    assert gateway.execute("write", {}, task_id="one").ok
+E   AssertionError: assert False
+E    +  where False = ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+E    +    where ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None) = execute('write', {}, task_id='one')
+E    +      where execute = <evoagent.tools.registry.ToolRegistry object at 0x000001F797E40520>.execute
+______________ test_changed_arguments_cannot_reuse_operation_key ______________
+tests\test_execution_boundaries.py:276: in test_changed_arguments_cannot_reuse_operation_key
+    assert gateway.execute("write", {"target": "one"}, task_id="same", idempotency_key="k").ok
+E   AssertionError: assert False
+E    +  where False = ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+E    +    where ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None) = execute('write', {'target': 'one'}, task_id='same', idempotency_key='k')
+E    +      where execute = <evoagent.tools.registry.ToolRegistry object at 0x000001F797AE3D60>.execute
+__________________ test_uncertainty_overrides_success_claim ___________________
+tests\test_execution_boundaries.py:288: in test_uncertainty_overrides_success_claim
+    assert result.side_effect_uncertain
+E   AssertionError: assert False
+E    +  where False = ToolResult(ok=False, data=None, error='副作用预记账失败，拒绝执行: TypeError', error_class='side_effect_ledger', submitted=False, e...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).side_effect_uncertain
+____ test_runtime_unknown_workflow_can_only_continue_after_reconciliation _____
+tests\test_execution_boundaries.py:303: in test_runtime_unknown_workflow_can_only_continue_after_reconciliation
+    assert task.task_status == TaskStatus.SUSPENDED
+E   AssertionError: assert <TaskStatus.FAILED: 'FAILED'> == <TaskStatus.S...: 'SUSPENDED'>
+E
+E     - SUSPENDED
+E     + FAILED
+_________________ TestNoDrift.test_all_ledgers_have_no_drift __________________
+tests\test_ledger_drift.py:30: in test_all_ledgers_have_no_drift
+    self.assertEqual(
+E   AssertionError: Lists differ: [{'doc': 'IMPLEMENTATION.md', 'doc_line': [690 chars]空行'}] != []
+E
+E   First list contains 5 additional elements.
+E   First extra element 0:
+E   {'doc': 'IMPLEMENTATION.md', 'doc_line': 243, 'kind': 'bare_points_to_blank', 'detail': '裸引用 `evoagent/memory/store.py:248` 指向空行'}
+E
+E   Diff is 842 characters long. Set self.maxDiff to None to see it. : 台账存在 5 处引用问题：[('IMPLEMENTATION.md', 243, 'bare_points_to_blank'), ('FEATURES.md', 780, 'bare_points_to_blank'), ('GAP_ANALYSIS.md', 135, 'symbol_drift'), ('GAP_ANALYSIS.md', 150, 'bare_points_to_blank'), ('ROADMAP.md', 141, 'bare_points_to_blank')]
+________ test_killed_external_success_without_receipt_is_not_replayed _________
+tests\test_process_recovery.py:138: in test_killed_external_success_without_receipt_is_not_replayed
+    task_id, count_file = _kill_at_boundary(tmp_path, "external")
+tests\test_process_recovery.py:89: in _kill_at_boundary
+    assert receiving.poll(25), "worker never reached fault injection point"
+E   AssertionError: worker never reached fault injection point
+E   assert False
+E    +  where False = poll(25)
+E    +    where poll = <multiprocessing.connection.PipeConnection object at 0x000001F79A1C7A30>.poll
+_ test_killed_after_planned_intent_requires_reconciliation_before_any_runner __
+tests\test_process_recovery.py:156: in test_killed_after_planned_intent_requires_reconciliation_before_any_runner
+    task_id, count_file = _kill_at_boundary(tmp_path, "planned")
+tests\test_process_recovery.py:89: in _kill_at_boundary
+    assert receiving.poll(25), "worker never reached fault injection point"
+E   AssertionError: worker never reached fault injection point
+E   assert False
+E    +  where False = poll(25)
+E    +    where poll = <multiprocessing.connection.PipeConnection object at 0x000001F797DCBDC0>.poll
+______ test_confirmed_effect_before_checkpoint_reuses_receipt_and_budget ______
+tests\test_process_recovery.py:187: in test_confirmed_effect_before_checkpoint_reuses_receipt_and_budget
+    task_id, count_file = _kill_at_boundary(tmp_path, "confirmed")
+tests\test_process_recovery.py:89: in _kill_at_boundary
+    assert receiving.poll(25), "worker never reached fault injection point"
+E   AssertionError: worker never reached fault injection point
+E   assert False
+E    +  where False = poll(25)
+E    +    where poll = <multiprocessing.connection.PipeConnection object at 0x000001F797D998D0>.poll
+_____________ test_killed_after_final_checkpoint_only_closes_run ______________
+tests\test_process_recovery.py:206: in test_killed_after_final_checkpoint_only_closes_run
+    assert task.task_status == TaskStatus.SUCCEEDED
+E   AssertionError: assert <TaskStatus.FAILED: 'FAILED'> == <TaskStatus.S...: 'SUCCEEDED'>
+E
+E     - SUCCEEDED
+E     + FAILED
+______________ TestRuntime.test_high_risk_with_confirm_succeeds _______________
+tests\test_runtime.py:52: in test_high_risk_with_confirm_succeeds
+    self.assertEqual(t.task_status.value, "SUCCEEDED")
+E   AssertionError: 'FAILED' != 'SUCCEEDED'
+E   - FAILED
+E   + SUCCEEDED
+______ TestToolSubstitution.test_executed_failed_substitute_stops_chain _______
+tests\test_tool_substitution.py:155: in test_executed_failed_substitute_stops_chain
+    self.assertEqual(out.evidence["substitution_attempts"][0]["reason"],
+E   AssertionError: 'side_effect_uncertain' != 'executed'
+E   - side_effect_uncertain
+E   + executed
+_____________ TestToolLifecycle.test_idempotency_journal_replays ______________
+tests\test_tool_workflow.py:100: in test_idempotency_journal_replays
+    self.assertTrue(first.ok and second.ok)
+E   AssertionError: False is not true
+_________________ TestRealLedgerPasses.test_full_check_passes _________________
+tests\test_verify_claims.py:104: in test_full_check_passes
+    self.assertEqual(problems, [],
+E   AssertionError: Lists differ: [{'kind': 'absent_claim_but_present', 'the[242 chars]245}] != []
+E
+E   First list contains 1 additional elements.
+E   First extra element 0:
+E   {'kind': 'absent_claim_but_present', 'theme': 'M-07', 'pattern': 'ContextManifest', 'detail': "台账称 `ContextManifest` 在 全仓 不存在，实际命中 ['evoagent/memory/context.py:16', 'evoagent/memory/context.py:66', 'evoagent/memory/context.py:246', 'evoagent/memory/context.py:313']", 'ledger_line': 245}
+E
+E   + []
+E   - [{'detail': '台账称 `ContextManifest` 在 全仓 不存在，实际命中 '
+E   -             "['evoagent/memory/context.py:16', "
+E   -             "'evoagent/memory/context.py:66', "
+E   -             "'evoagent/memory/context.py:246', "
+E   -             "'evoagent/memory/context.py:313']",
+E   -   'kind': 'absent_claim_but_present',
+E   -   'ledger_line': 245,
+E   -   'pattern': 'ContextManifest',
+E   -   'theme': 'M-07'}] : 台账声明未通过机器校验：[{'kind': 'absent_claim_but_present', 'theme': 'M-07', 'pattern': 'ContextManifest', 'detail': "台账称 `ContextManifest` 在 全仓 不存在，实际命中 ['evoagent/memory/context.py:16', 'evoagent/memory/context.py:66', 'evoagent/memory/context.py:246', 'evoagent/memory/context.py:313']", 'ledger_line': 245}]
+=========================== short test summary info ===========================
+FAILED tests/test_aln01_authorization.py::test_task_scope_blocks_runner_before_side_effects[args0-scope0-True]
+FAILED tests/test_aln01_authorization.py::test_task_scope_blocks_runner_before_side_effects[args3-scope3-True]
+FAILED tests/test_aln01_authorization.py::test_confirmation_callback_cannot_change_the_frozen_action
+FAILED tests/test_aln02_receipts.py::test_verified_receipt_restores_result_across_database_restart
+FAILED tests/test_aln02_receipts.py::test_unverifiable_receipt_never_releases_pending_operation[unverified]
+FAILED tests/test_aln02_receipts.py::test_unverifiable_receipt_never_releases_pending_operation[uncertain]
+FAILED tests/test_aln02_receipts.py::test_unverifiable_receipt_never_releases_pending_operation[no_receipt_ref]
+FAILED tests/test_aln02_receipts.py::test_unverifiable_receipt_never_releases_pending_operation[wrong_version]
+FAILED tests/test_aln02_receipts.py::test_unverifiable_receipt_never_releases_pending_operation[no_adapter]
+FAILED tests/test_aln02_receipts.py::test_reconciliation_is_atomic_when_final_state_write_fails
+FAILED tests/test_aln02_receipts.py::test_proven_not_executed_receipt_allows_one_fresh_attempt
+FAILED tests/test_aln02_receipts.py::test_live_timed_out_thread_is_not_declared_cancelled_by_another_registry
+FAILED tests/test_aln02_receipts.py::test_timeout_while_final_guard_waits_still_blocks_replay
+FAILED tests/test_aln02_receipts.py::test_real_http_provider_receipt_is_fetched_and_bound_to_original_key
+FAILED tests/test_aln02_receipts.py::test_compensation_uses_original_arguments_and_verifies_real_file[False-False]
+FAILED tests/test_aln02_receipts.py::test_compensation_uses_original_arguments_and_verifies_real_file[True-False]
+FAILED tests/test_aln02_receipts.py::test_compensation_uses_original_arguments_and_verifies_real_file[False-True]
+FAILED tests/test_aln02_receipts.py::test_compensation_cannot_bypass_task_authorization
+FAILED tests/test_aln02_receipts.py::test_successful_external_tool_is_not_reexecuted_after_bad_node_output
+FAILED tests/test_aln02_receipts.py::test_process_crash_preserves_intent_and_requires_real_state_reconciliation[planned]
+FAILED tests/test_aln02_receipts.py::test_process_crash_preserves_intent_and_requires_real_state_reconciliation[before]
+FAILED tests/test_aln02_receipts.py::test_process_crash_preserves_intent_and_requires_real_state_reconciliation[after]
+FAILED tests/test_aln02_receipts.py::test_real_app_compensation_waits_for_approval_then_restores_file
+FAILED tests/test_aln02_receipts.py::test_confirmed_result_cannot_be_reinterpreted_as_a_new_tool_version
+FAILED tests/test_async_approvals.py::test_approval_resumes_node_once_and_duplicate_decision_is_idempotent[external-False]
+FAILED tests/test_async_approvals.py::test_approval_resumes_node_once_and_duplicate_decision_is_idempotent[external-True]
+FAILED tests/test_async_approvals.py::test_parallel_nodes_require_all_current_approvals
+FAILED tests/test_async_approvals.py::test_react_restart_executes_saved_action_without_new_model_decision
+FAILED tests/test_execution_boundaries.py::test_ledger_is_submitted_before_runner
+FAILED tests/test_execution_boundaries.py::test_unknown_timeout_is_durable_and_not_retried
+FAILED tests/test_execution_boundaries.py::test_confirmed_operation_replays_result_without_duplicate_ledger
+FAILED tests/test_execution_boundaries.py::test_concurrent_operation_has_only_one_runner
+FAILED tests/test_execution_boundaries.py::test_dag_unknown_does_not_retry_or_compensate
+FAILED tests/test_execution_boundaries.py::test_react_stops_on_unknown_without_second_model_call
+FAILED tests/test_execution_boundaries.py::test_gateway_result_write_failure_remains_pending
+FAILED tests/test_execution_boundaries.py::test_same_arguments_in_distinct_tasks_are_distinct_operations
+FAILED tests/test_execution_boundaries.py::test_changed_arguments_cannot_reuse_operation_key
+FAILED tests/test_execution_boundaries.py::test_uncertainty_overrides_success_claim
+FAILED tests/test_execution_boundaries.py::test_runtime_unknown_workflow_can_only_continue_after_reconciliation
+FAILED tests/test_ledger_drift.py::TestNoDrift::test_all_ledgers_have_no_drift
+FAILED tests/test_process_recovery.py::test_killed_external_success_without_receipt_is_not_replayed
+FAILED tests/test_process_recovery.py::test_killed_after_planned_intent_requires_reconciliation_before_any_runner
+FAILED tests/test_process_recovery.py::test_confirmed_effect_before_checkpoint_reuses_receipt_and_budget
+FAILED tests/test_process_recovery.py::test_killed_after_final_checkpoint_only_closes_run
+FAILED tests/test_runtime.py::TestRuntime::test_high_risk_with_confirm_succeeds
+FAILED tests/test_tool_substitution.py::TestToolSubstitution::test_executed_failed_substitute_stops_chain
+FAILED tests/test_tool_workflow.py::TestToolLifecycle::test_idempotency_journal_replays
+FAILED tests/test_verify_claims.py::TestRealLedgerPasses::test_full_check_passes
+48 failed, 1013 passed, 1 skipped in 184.31s (0:03:04)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(

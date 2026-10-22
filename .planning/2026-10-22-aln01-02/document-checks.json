@@ -1,0 +1,22 @@
+[
+  {
+    "command": "python -X utf8 tools/verify_claims.py --check",
+    "exit_code": 0,
+    "output": "====================================================================\r\n台账声明校验（IMPLEMENTATION.md）\r\n====================================================================\r\n解析主题行        : 84\r\n状态计数          : {'✅': 37, '⬜': 15, '🔹': 37}\r\n索引符号          : 1102\r\n自动抽取的声明     : 零调用 1 条 / 不存在 1 条\r\n  零调用声明明细    : link(M-08)\r\n  不存在声明明细    : WAITING_USER@api/server.py\r\n证据不足的 ✅ 行   : 0\r\n判错              : 0\r\n\r\n✅ 台账声明全部通过机器校验\r\n"
+  },
+  {
+    "command": "python -X utf8 tools/scan_all_ledgers.py",
+    "exit_code": 0,
+    "output": "====================================================================\r\n全台账行号漂移扫描\r\n====================================================================\r\n文档      : FEATURES.md, FEATURE_SPLIT.md, GAP_ANALYSIS.md, IMPLEMENTATION.md, ROADMAP.md, progress.md, task_plan.md, README.md\r\n语义引用  : 1 条已核对\r\n裸引用    : 50 条已核对\r\n锚定引用  : 105 条已核对\r\n发现问题  : 0\r\n\r\n"
+  },
+  {
+    "command": "python -X utf8 tools/check_gap_closure.py",
+    "exit_code": 0,
+    "output": "====================================================================\r\n缺口闭合校验：未完成主题 → 特性认领\r\n====================================================================\r\n主题表主题数  : 96\r\n未完成(🔹+⬜) : 55\r\n特性映射条目  : 26\r\nROADMAP WP 条目: 38\r\n\r\n✅ 直接闭合（§7 关联主题列）: 44\r\n   A-01 ✅ -> F-12\r\n   A-02 ✅ -> F-58\r\n   C-03 ✅ -> F-05\r\n   C-05 ✅ -> F-11\r\n   C-08 ✅ -> F-11\r\n   C-09 ✅ -> F-06\r\n   C-10 ⬜ -> F-26..F-30\r\n   C-11 ✅ -> F-14\r\n   C-12 ⬜ -> F-26..F-30\r\n   C-13 ✅ -> F-26..F-30\r\n   E-01 ✅ -> F-51\r\n   E-04 ✅ -> F-02\r\n   E-06 ✅ -> F-52\r\n   E-12 ✅ -> F-08\r\n   E-13 ✅ -> F-08\r\n   G-01 ⬜ -> F-17..F-25\r\n   G-02 ⬜ -> F-17..F-25\r\n   G-03 ⬜ -> F-17..F-25\r\n   G-04 ⬜ -> F-17..F-25\r\n   G-05 ⬜ -> F-17..F-25\r\n   G-06 ⬜ -> F-17..F-25\r\n   G-07 ⬜ -> F-17..F-25\r\n   G-08 ⬜ -> F-17..F-25\r\n   G-09 ✅ -> F-02, F-17..F-25\r\n   G-10 ⬜ -> F-17..F-25\r\n   M-01 ✅ -> F-05\r\n   M-02 ✅ -> F-05\r\n   M-03 ✅ -> F-05\r\n   M-04 ✅ -> F-05\r\n   M-05 ✅ -> F-05\r\n   M-06 ✅ -> F-05\r\n   M-07 ✅ -> F-05\r\n   M-08 ⬜ -> F-05\r\n   M-10 ✅ -> F-05\r\n   O-05 ✅ -> F-10\r\n   R-04 ✅ -> F-54\r\n   R-06 ✅ -> F-12\r\n   R-08 ✅ -> F-02\r\n   R-10 ✅ -> F-12\r\n   R-11 ✅ -> F-13\r\n   S-02 ✅ -> F-55\r\n   S-03 ✅ -> F-56\r\n   S-05 ✅ -> F-04\r\n   S-07 ✅ -> F-57\r\n\r\n✅ 间接闭合（经 ROADMAP WP 追溯）: 11\r\n   A-05 ✅ -> F-31..F-42\r\n   O-07 ✅ -> F-26..F-30\r\n   O-08 ⬜ -> F-31..F-42\r\n   O-09 ✅ -> F-31..F-42\r\n   P-04 ⬜ -> F-31..F-42\r\n   P-05 ✅ -> F-31..F-42\r\n   P-08 ✅ -> F-26..F-30\r\n   S-06 ✅ -> F-31..F-42\r\n   S-10 ⬜ -> F-31..F-42\r\n   S-11 ✅ -> F-31..F-42\r\n   S-12 ✅ -> F-31..F-42\r\n\r\n⬜ 未认领（真实漏项）: 0\r\n\r\nℹ️  状态已 ✅ 但仍被特性关联（特性收口后应解绑）: 4\r\n   E-07 -> F-07\r\n   E-09 -> F-14\r\n   R-03 -> F-53\r\n   R-12 -> F-03\r\n\r\n✅ 全部未完成主题均已落到特性\r\n"
+  },
+  {
+    "command": "python -X utf8 .planning/2026-10-22-design-alignment/verify_alignment_plan.py",
+    "exit_code": 0,
+    "output": "{\r\n  \"scope\": \"documentation coverage only\",\r\n  \"topics\": 89,\r\n  \"entities\": 19,\r\n  \"adrs\": 14,\r\n  \"contract_sections\": 11,\r\n  \"acceptance_cases\": 20,\r\n  \"workpackages\": 23,\r\n  \"errors\": [],\r\n  \"ok\": true\r\n}\r\n"
+  }
+]
