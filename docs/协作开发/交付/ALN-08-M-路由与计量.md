@@ -64,6 +64,8 @@
 
 ## 验证证据
 
+本节命令和数字为**首轮历史证据**，保留当时失败归因，不代表当前状态。后续交叉审阅修复的精确提交 `d77b241` 已在干净克隆验证 **909 passed / 1 skipped**、客户端136/typecheck通过，详见[交叉审阅与基线准备](ALN-06-08-X-交叉审阅与基线准备.md)。运行时拒绝旁路的后续修复另见[运行时路由拒绝交付](ALN-08-R-运行时路由拒绝.md)。
+
 - 正常路径：`tests/test_model_metering.py`（20 项）覆盖提供方用量采集、按 token 计费、Mock 显式免费、预估标记、账本对账与按模型归因。
 - 拒绝/失败：同文件覆盖 429 限流（3 次有界重试）、超时（有界）、400 供应商错误（不重试）、失败调用不产生伪造用量；事件总线故障不影响调用。
 - 覆盖矩阵：`tests/test_routing_eval.py::TestFiveLayerCoverage` 锁定五层顺序、已评测层有指标、缺失层必须写明缺口；`tests/test_routing_eval_api.py` 覆盖 `GET /routing/coverage` 与评测响应中的 `coverage`。

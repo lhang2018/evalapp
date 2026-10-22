@@ -4,7 +4,7 @@
   "purpose": "协作认领；不替代正式契约、原始 ALN 依赖或功能验收",
   "baseline": {
     "status": "candidate",
-    "head_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+    "head_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
     "published_commit": null,
     "snapshot": ".planning/2026-10-22-design-alignment/collaboration-baseline.json",
     "last_verified_workspace": {
@@ -17,30 +17,31 @@
       "source": "当前未提交共享工作区；不是历史候选快照或纯 HEAD"
     },
     "last_verified_candidate": {
-      "commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
-      "source_tree": "3b180c76591ea65bec2ee840238fe01b3e8cacbd",
-      "python_passed": 909,
+      "commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+      "source_tree": "616520516106b8c5130979f8fb320a5ccf751bc7",
+      "python_passed": 915,
       "python_skipped": 1,
       "client_passed": 136,
       "typecheck": "passed",
-      "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
-      "scope": "精确提交d77b241的独立干净克隆；客户端136/typecheck通过，未纳入通知在途改动；历史764/144与831/875为前序记录"
+      "client_evidence_source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+      "log": ".planning/2026-10-22-router-rejection/clean-backend-tests.txt",
+      "scope": "24cd524独立干净克隆后端915/1；客户端tree与d77b241相同，136/typecheck沿用d77b241证据，非本轮新测；排除在途通知/ALN-09修改"
     },
     "initial_head_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
     "prepared_candidate": {
-      "commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
-      "source_tree": "3b180c76591ea65bec2ee840238fe01b3e8cacbd",
+      "commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+      "source_tree": "616520516106b8c5130979f8fb320a5ccf751bc7",
       "status": "verified_pending_independent_review",
       "clean_before_and_after": true,
-      "python_passed": 909,
+      "python_passed": 915,
       "python_skipped": 1,
       "client_passed": 136,
       "typecheck": "passed",
-      "dependency_scope": "客户端复用已有node_modules；未重装依赖；源码及依赖清单来自精确提交",
+      "dependency_scope": "本轮后端干净克隆全量；客户端目录tree与d77b241相同，136/typecheck沿用该提交既有证据，本轮未重跑客户端",
       "evidence": [
         {
-          "path": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
-          "sha256": "1fc7edc8325266484df6d114f8c8ec900c4a7f596e933fa59136c855ff01766c"
+          "path": ".planning/2026-10-22-router-rejection/clean-backend-tests.txt",
+          "sha256": "2728f8121f62fc2773818cb7492da7bf99a519317f423a7f8170978c65414f89"
         },
         {
           "path": ".planning/2026-10-22-cross-review/clean-client-tests.txt",
@@ -66,14 +67,17 @@
         "ALN-04-UI",
         "ALN-10-Q",
         "ALN-10-R",
-        "ALN-00-V"
+        "ALN-00-V",
+        "ALN-08-R"
       ],
       "tools": {
         "python": "3.10.11",
         "node": "v24.16.0",
         "git": "git version 2.43.0.windows.1",
         "platform": "Windows-10-10.0.19045-SP0"
-      }
+      },
+      "client_evidence_source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+      "client_source_tree": "0a85de3e9a3a380798aae2d664fcc25bc9b82c01"
     }
   },
   "streams": [
@@ -285,6 +289,15 @@
           "result": "909 passed/1 skipped; client136/typecheck passed",
           "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
           "delivery": "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "运行时路由拒绝后续修复的干净候选；正式发布仍待审阅",
+          "source_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+          "command": "python -m pytest -q --tb=short",
+          "result": "915 passed/1 skipped; unchanged client tree reuses d77b241 evidence",
+          "log": ".planning/2026-10-22-router-rejection/clean-backend-tests.txt",
+          "delivery": "docs/协作开发/交付/ALN-08-R-运行时路由拒绝.md"
         }
       ],
       "card": "docs/协作开发/任务卡/00-基线发布.md",
@@ -322,7 +335,7 @@
         "GAP_ANALYSIS.md"
       ],
       "preparation_status": "verified_pending_review",
-      "next_step": "干净准备候选d77b241及日志已就绪；完成独立审阅后由集成人正式发布，不再等待ALN-04提交"
+      "next_step": "24cd524干净候选915/1已就绪；客户端136/typecheck沿用相同tree的d77b241证据；独立复核后发布精确提交"
     },
     {
       "id": "ALN-04-R",
@@ -610,6 +623,37 @@
       ],
       "working_basis": "用户要求检查并解决并行线问题；交叉审阅非本人原交付，修复和基线准备单独待审",
       "next_step": "其他审阅人复核本轮修复及ALN-04/10；集成人据精确准备提交完成正式基线发布"
+    },
+    {
+      "id": "ALN-08-R",
+      "workpackage": "ALN-08",
+      "title": "运行时遵守模型路由拒绝",
+      "stream": "runtime",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "61d3b94625a3e866258978bb4a634de3a18ae673",
+      "status": "review",
+      "blocker": null,
+      "delivered_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "真实App拒绝/异常/规划后拒绝/持久化与事件/合法fallback；新增6项专项",
+          "command": "python -m pytest -q --tb=short",
+          "result": "915 passed, 1 skipped (100.44s); 联合100 passed",
+          "source_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+          "source_tree": "616520516106b8c5130979f8fb320a5ccf751bc7",
+          "log": ".planning/2026-10-22-router-rejection/clean-backend-tests.txt"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/08-运行时路由拒绝.md",
+      "delivery": "docs/协作开发/交付/ALN-08-R-运行时路由拒绝.md",
+      "shared_files": [
+        "evoagent/core/controller.py"
+      ],
+      "working_basis": "用户明确指出并要求处理运行时共享文件中的路由拒绝旁路；不改变其他会话在途内容及正式验收状态",
+      "next_step": "独立runtime reviewer复核24cd524；不自批本卡和ALN-04/10"
     }
   ],
   "workpackages": [
@@ -621,7 +665,7 @@
       "stream": "integration",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "d77b241干净准备候选909/1、客户端136/typecheck已验证；补独立审阅后发布精确提交"
+      "next_step": "24cd524干净准备候选915/1，客户端同tree沿用d77b241的136/typecheck；独立复核后正式发布"
     },
     {
       "id": "ALN-01",
@@ -724,7 +768,7 @@
       "stream": "models",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "08-M已交叉审阅并修复并发计量/非法用量/路由/脱敏；待修复复核，补工作流/执行模式、生产评测与真实价格账单"
+      "next_step": "08-M交叉审阅修复与08-R运行时拒绝旁路已提交待复核；保留工作流/执行模式、生产评测与真实价格账单验收"
     },
     {
       "id": "ALN-09",
@@ -949,5 +993,5 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "ALN-04/10及06/08原交付均已提交；干净准备候选d77b241已验证，准备工作可推进。独立审阅与正式基线发布仍待完成；当前candidate不等于功能整包验收，修复作者不自批。"
+  "execution_note": "准备候选更新为24cd524，干净后端915/1；客户端同tree沿用d77b241的136/typecheck。ALN-04/10及本轮修复仍待独立复核，status=candidate、published_commit=null；其他会话在途文件不纳入。"
 }
