@@ -20,7 +20,19 @@ def resolve(value, bindings):
 
 def compensate(tools, wf, done, ctx_input, execution_context, budget):
     outcomes = []
-    for node in reversed(wf.nodes):
+    ordered, seen = [], set()
+    def visit(node):
+        if node.node_id in seen:
+            return
+        seen.add(node.node_id)
+        for identity in node.deps:
+            dependency = wf.node(identity)
+            if dependency:
+                visit(dependency)
+        ordered.append(node)
+    for node in wf.nodes:
+        visit(node)
+    for node in reversed(ordered):
         policy = wf.compensation_actions.get(node.node_id)
         evidence = node.tool_result or {}
         if not policy or not evidence.get("executed"):

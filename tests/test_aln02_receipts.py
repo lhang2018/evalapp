@@ -322,3 +322,34 @@ def test_confirmed_result_cannot_be_reinterpreted_as_a_new_tool_version(gateway)
     gateway.contract('send').tool_version = '2'
     result = gateway.execute('send', {}, task_id='task', idempotency_key='operation')
     assert not result.ok and calls == [1]
+
+
+def test_compensation_reverses_dependencies_even_when_definition_is_unsorted(gateway, tmp_path):
+    path = tmp_path/'order.txt'; path.write_text('A', encoding='utf-8')
+    wf = file_workflow(gateway, path)
+    def write(args):
+        previous = path.read_text(encoding='utf-8')
+        path.write_text(args['content'], encoding='utf-8')
+        return ok({'previous': previous})
+    gateway._tools['write'].runner = write
+    first = WorkflowNode('first', tool='write', args={'path': str(path), 'content': 'B'})
+    second = WorkflowNode('second', tool='write', deps=['first'], args={'path': str(path), 'content': 'C'})
+    failed = WorkflowNode('fail', tool='fail', deps=['second'])
+    wf.nodes = [second, first, failed]
+    policy = wf.compensation_actions['write']
+    wf.compensation_actions = {'first': policy, 'second': policy}
+    result = WorkflowEngine(gateway).run(wf, {})
+    assert [row['node'] for row in result.compensations] == ['second', 'first']
+    assert all(row['verified'] for row in result.compensations)
+    assert path.read_text(encoding='utf-8') == 'A'
+
+
+def test_compensation_verification_budget_exhaustion_pauses_instead_of_claiming_rollback(gateway, tmp_path):
+    from evoagent.core.budget import BudgetController, BudgetLimits
+    path = tmp_path/'budget.txt'; path.write_text('original', encoding='utf-8')
+    wf = file_workflow(gateway, path)
+    # write + failed node + restoration consume the three permitted calls.
+    result = WorkflowEngine(gateway).run(wf, {}, budget=BudgetController(BudgetLimits(max_tool_calls=3)))
+    assert result.status == WorkflowNodeState.PAUSED
+    assert not result.compensations[0]['verified']
+    assert next(e for e in gateway.effects.history('task') if e['tool_id']=='write')['status'] == 'confirmed'

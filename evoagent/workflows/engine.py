@@ -194,9 +194,16 @@ class WorkflowEngine:
                 result.compensations = compensate(self.tools, wf, done, ctx_input,
                                                    execution_context, budget)
                 for row in result.compensations:
-                    attempt = row.get("result") or {}
-                    if attempt.get("error_class") == "approval_required":
-                        result.approval_ids.append(attempt["evidence"]["approval_id"])
+                    for attempt in (row.get("result") or {}, row.get("verification") or {}):
+                        if attempt.get("error_class") == "approval_required":
+                            result.approval_ids.append(attempt["evidence"]["approval_id"])
+                if any((row.get(field) or {}).get("error_class") == "budget_exceeded"
+                       for row in result.compensations for field in ("result", "verification")):
+                    wf.status = WorkflowNodeState.PAUSED
+                    result.status, result.error = wf.status, "补偿/验证预算耗尽"
+                    result.outputs = dict(done)
+                    self._snapshot(wf, result, done, budget)
+                    return result
                 if result.approval_ids:
                     wf.status = WorkflowNodeState.WAITING_AUTH
                     result.status, result.error = wf.status, "补偿等待审批"
