@@ -8,25 +8,33 @@ import json
 import threading
 import time
 import uuid
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from ..core.budget import BudgetController
+from ..core.budget import BudgetController, BudgetExceeded
 from ..core.permissions import PermissionController, PermissionDecision
 from ..core.approvals import ApprovalRequired
 from ..core.leases import LeaseLost, assert_current_lease
 from contextvars import copy_context
 from ..core.side_effects import SideEffectLedger
+from ..core.authorization import AuthorizationStore
 from ..core.task import RiskLevel
 from .contract import ToolContract, ToolResult, class_error, validate_against_schema
 
 RETRYABLE_ERRORS = {"timeout", "network_or_unavailable", "tool_defect_or_env"}
+_LIVE_WORKERS = {}
+_WORKER_LOCK = threading.Lock()
 # 主工具失败后可尝试备用工具的错误类别（Arch 6.4）
 SUBSTITUTABLE_ERRORS = {"timeout", "network_or_unavailable", "tool_defect_or_env"}
 _SIDE_EFFECT_RANK = {"none": 0, "local": 1, "external": 2, "destructive": 3}
 # 契约 §4（GAP ⑤b）：风险级序（声明与执行同源取严格者用）
 _ORDER = {RiskLevel.LOW: 0, RiskLevel.MEDIUM: 1, RiskLevel.HIGH: 2,
           RiskLevel.CRITICAL: 3}
+
+
+class ActionBlocked(PermissionError):
+    """The final guard refused before any runner was entered."""
 
 
 @dataclass
@@ -41,6 +49,8 @@ class ToolRegistry:
         self.permissions = permissions
         self.store = store
         self.effects = SideEffectLedger(store) if store is not None else None
+        self.authorizations = AuthorizationStore(store) if store is not None else None
+        self.expert_scope = None
         self._tools: Dict[str, RegisteredTool] = {}
 
     # ---- 生命周期: 注册 ----
@@ -107,12 +117,14 @@ class ToolRegistry:
                 effects: Optional[Any] = None,
                 timeout_seconds: Optional[float] = None,
                 require_confirmation: bool = False,
-                authorization_context: Optional[Dict] = None) -> ToolResult:
+                authorization_context: Optional[Dict] = None,
+                confirmed: bool = False) -> ToolResult:
+        args = deepcopy(args)
         context = dict(allowed_tools=allowed_tools, task_id=task_id,
                        run_id=run_id, effects=effects,
                        timeout_seconds=timeout_seconds,
                        require_confirmation=require_confirmation,
-                       authorization_context=authorization_context)
+                       authorization_context=deepcopy(authorization_context), confirmed=confirmed)
         result = self._execute_direct(tool_id, args, budget, idempotency_key,
                                       **context)
         if result.ok or result.executed or result.side_effect_uncertain:
@@ -165,22 +177,47 @@ class ToolRegistry:
                         effects: Optional[Any] = None,
                         timeout_seconds: Optional[float] = None,
                         require_confirmation: bool = False,
-                        authorization_context: Optional[Dict] = None) -> ToolResult:
+                        authorization_context: Optional[Dict] = None,
+                        confirmed: bool = False) -> ToolResult:
         assert_current_lease()
         # The model's visible schema is advisory; enforce its scope here for
         # the primary tool and every substitute before any runner is invoked.
         if allowed_tools is not None and tool_id not in allowed_tools:
             return ToolResult.error_result(
                 f"工具不在当前任务允许列表: {tool_id}", "auth_or_permission")
+        expert_tools = self.expert_scope(task_id) if self.expert_scope and task_id else None
+        if expert_tools is not None and tool_id not in expert_tools:
+            return ToolResult.error_result("工具不在当前专家授权范围", "auth_or_permission")
         rt = self._tools.get(tool_id)
         if rt is None:
             return ToolResult.error_result(f"工具未注册: {tool_id}", "tool_not_found")
 
         # 兼容性检查（Arch 6.2）：注册时已校验 schema；执行时核对契约仍在
-        c = rt.contract
+        c = deepcopy(rt.contract)
         err = validate_against_schema(args, c.input_schema)
         if err:
             return ToolResult.error_result(f"参数校验失败: {err}", "invalid_arguments")
+        try:
+            authorization_ref = self.authorizations.check(task_id, c, args) if self.authorizations else None
+        except (PermissionError, ValueError) as exc:
+            return ToolResult.error_result(str(exc), "auth_or_permission")
+        # A verified, task-bound cached receipt is observation, not a second
+        # external action; do not consume another one-time action approval.
+        key = idempotency_key or _default_idem_key(tool_id, args)
+        ledger = effects if effects is not None else self.effects
+        if ledger is not None and task_id and c.side_effect_level != "none":
+            for previous in reversed(ledger.history(task_id)):
+                if previous["tool_id"] != tool_id or previous["idempotency_key"] != key:
+                    continue
+                if previous["effect_summary"] != _default_idem_key(tool_id, args):
+                    return ToolResult.error_result("副作用幂等键与操作参数不匹配", "auth_or_permission")
+                operation = ledger.operation(previous["effect_id"])
+                cached = ledger.db.get_tool_execution("effect:" + previous["effect_id"])
+                if previous["status"] == "confirmed" and cached and operation and operation["tool_version"] == c.tool_version:
+                    replay = ToolResult(**cached)
+                    replay.evidence["replayed"] = True
+                    return replay
+                break
         if budget:
             try:
                 budget.check_tool_call(tool_id)
@@ -201,7 +238,9 @@ class ToolRegistry:
                     tool_id, args, risk, side_effect=c.side_effect_level,
                     lifted=lifted, task_id=task_id, run_id=run_id,
                     require_confirmation=require_confirmation,
+                    confirmed=confirmed,
                     authorization_context={**(authorization_context or {}),
+                        "authorization_ref": authorization_ref,
                         "tool_version": c.tool_version,
                         "side_effect": c.side_effect_level, "risk": risk.value,
                         "permissions": list(c.permission_requirements or [])})
@@ -212,7 +251,7 @@ class ToolRegistry:
             if decision != PermissionDecision.ALLOW:
                 return ToolResult.error_result(f"工具被权限拒绝: {tool_id}",
                                                "auth_or_permission")
-        elif require_confirmation:
+        elif require_confirmation and not confirmed:
             return ToolResult.error_result("缺少节点确认权限控制器", "auth_or_permission")
 
         # Synchronous confirmation may take time; recheck before execution.
@@ -222,6 +261,37 @@ class ToolRegistry:
             except Exception as e:
                 return ToolResult.error_result(str(e), "budget_exceeded")
 
+        def final_guard():
+            assert_current_lease()
+            try:
+                if self.authorizations:
+                    current_ref = self.authorizations.check(task_id, c, args, expected_ref=authorization_ref)
+                    if current_ref != authorization_ref:
+                        raise PermissionError("动作等待期间任务授权已改变")
+                if self.contract(tool_id) is not rt.contract or rt.contract.tool_version != c.tool_version:
+                    raise PermissionError("动作等待期间工具版本已改变")
+                expert_tools = self.expert_scope(task_id) if self.expert_scope and task_id else None
+                if expert_tools is not None and tool_id not in expert_tools:
+                    raise PermissionError("专家工具范围已收紧")
+                policy = self.permissions._tool_policies.get(tool_id) if self.permissions else None
+                if policy and policy.decision == PermissionDecision.DENY:
+                    raise PermissionError("系统策略已拒绝该工具")
+                if self.permissions and self.permissions.high_risk_mode == "deny" and (
+                        c.side_effect_level != "none" or lifted or require_confirmation or
+                        tool_id in self.permissions.high_risk_ops):
+                    raise PermissionError("系统高风险策略已拒绝")
+                task = self.store.get_task(task_id) if self.store and task_id else None
+                if task and task.is_terminal():
+                    raise PermissionError("任务已终止，禁止执行新动作")
+                if budget:
+                    budget.check_alive()
+            except PermissionError as exc:
+                raise ActionBlocked(str(exc)) from exc
+
+        try:
+            final_guard()
+        except ActionBlocked as exc:
+            return ToolResult.error_result(str(exc), "auth_or_permission")
         # 幂等键（PRD 16 / Arch 6.5）：键幂等工具命中日志时直接返回原结果
         key = idempotency_key or _default_idem_key(tool_id, args)
         ledger = effects if effects is not None else self.effects
@@ -240,11 +310,12 @@ class ToolRegistry:
                     return blocked
                 effect_id, claimed = ledger.begin(
                     operation_task, tool_id, key,
-                    _default_idem_key(tool_id, args), run_id=run_id)
+                    _default_idem_key(tool_id, args), run_id=run_id, args=args, tool_version=c.tool_version)
                 if not claimed:
                     row = ledger.get(effect_id)
                     cached = ledger.db.get_tool_execution("effect:" + effect_id)
-                    if row["status"] == "confirmed" and cached:
+                    operation = ledger.operation(effect_id)
+                    if row["status"] == "confirmed" and cached and operation and operation["tool_version"] == c.tool_version:
                         replay = ToolResult(**cached)
                         replay.evidence["replayed"] = True
                         return replay
@@ -255,6 +326,7 @@ class ToolRegistry:
                     blocked.evidence.update(tool=tool_id, effect_id=effect_id,
                                             side_effect_level=c.side_effect_level)
                     return blocked
+                ledger.bind_operation(effect_id, args, c.tool_version)
             except LeaseLost:
                 raise
             except Exception as e:
@@ -281,21 +353,28 @@ class ToolRegistry:
             timeout = min(timeout, timeout_seconds) if timeout > 0 else timeout_seconds
         while True:
             attempts += 1
-            if budget:
-                budget.check_tool_call(tool_id)
-                budget.record_tool_call(tool_id)  # durable reservation before entering runner
+            entered = {"runner": False}
+            def invoke(frozen_args):
+                entered["runner"] = True
+                return rt.runner(frozen_args)
             try:
+                if budget:
+                    budget.check_tool_call(tool_id)
+                    budget.record_tool_call(tool_id)  # durable reservation before entering runner
                 assert_current_lease()
-                result = self._run_with_timeout(rt.runner, args,
-                                                timeout)
+                result = self._run_with_timeout(invoke, args,
+                                                timeout, before_run=final_guard, worker_key=effect_id)
                 break
             except LeaseLost:
                 raise
             except Exception as e:  # noqa: BLE001
                 err_class = class_error(e)
+                if isinstance(e, BudgetExceeded):
+                    err_class = "budget_exceeded"
                 failed = ToolResult.error_result(
                     f"{type(e).__name__}: {e}", err_class)
                 failed.side_effect_uncertain = (
+                    (entered["runner"] or isinstance(e, TimeoutError)) and not isinstance(e, ActionBlocked) and
                     c.side_effect_level in ("external", "local", "destructive"))
                 failed.evidence["attempts"] = attempts
                 if (attempts >= max_attempts or err_class not in RETRYABLE_ERRORS
@@ -321,6 +400,14 @@ class ToolRegistry:
         result.evidence["attempts"] = attempts
         result.evidence["duration_s"] = round(elapsed, 3)
         result.evidence["side_effect_level"] = c.side_effect_level
+        result.evidence["authorization_ref"] = authorization_ref
+        if c.side_effect_level != "none" and result.executed and not result.ok:
+            result.side_effect_uncertain = True
+        result.safe_to_repeat = not result.side_effect_uncertain and (
+            c.side_effect_level == "none" or not result.executed)
+        result.retryable = (not result.ok and result.safe_to_repeat and result.error_class in RETRYABLE_ERRORS)
+        if result.side_effect_uncertain:
+            result.required_action = "reconcile"
         if effect_id is not None:
             result.evidence["effect_id"] = effect_id
             try:
@@ -330,16 +417,28 @@ class ToolRegistry:
                 result.side_effect_uncertain = True
                 result.error_class = "side_effect_unknown"
                 result.error = f"副作用结果未可靠落账: {type(e).__name__}"
+                result.safe_to_repeat, result.retryable, result.required_action = False, False, "reconcile"
 
         if (self.store is not None and effect_id is None and c.idempotency_policy == "key"
                 and result.ok and result.executed):
             self.store.save_tool_execution(key, tool_id, result.to_dict())
         return result
 
-    def _run_with_timeout(self, runner, args, timeout: float) -> ToolResult:
+    def _run_with_timeout(self, runner, args, timeout: float, before_run=None, worker_key=None) -> ToolResult:
         assert_current_lease()
+        worker_identity = (getattr(self.store, "path", id(self.store)), worker_key)
         if not timeout or timeout <= 0:
-            result = runner(args)
+            try:
+                if worker_key:
+                    with _WORKER_LOCK:
+                        _LIVE_WORKERS[worker_identity] = threading.current_thread()
+                if before_run:
+                    before_run()
+                result = runner(args)
+            finally:
+                if worker_key:
+                    with _WORKER_LOCK:
+                        _LIVE_WORKERS.pop(worker_identity, None)
             if not isinstance(result, ToolResult):
                 raise TypeError("工具执行器必须返回 ToolResult")
             return result
@@ -348,11 +447,20 @@ class ToolRegistry:
         def target() -> None:
             try:
                 assert_current_lease()
+                if before_run:
+                    before_run()
                 holder["result"] = runner(args)
             except BaseException as e:  # noqa: BLE001
                 holder["error"] = e
+            finally:
+                if worker_key:
+                    with _WORKER_LOCK:
+                        _LIVE_WORKERS.pop(worker_identity, None)
 
         th = threading.Thread(target=copy_context().run, args=(target,), daemon=True)
+        if worker_key:
+            with _WORKER_LOCK:
+                _LIVE_WORKERS[worker_identity] = th
         th.start()
         th.join(timeout)
         if th.is_alive():
@@ -362,6 +470,30 @@ class ToolRegistry:
         result = holder.get("result")
         if not isinstance(result, ToolResult):
             raise TypeError("工具执行器必须返回 ToolResult")
+        return result
+
+    def reconcile_effect(self, effect_id, receipt):
+        if self.effects is None:
+            raise ValueError("副作用账本未装配")
+        operation = self.effects.operation(effect_id)
+        if operation is None:
+            raise ValueError("缺少原动作参数，不能核验回执")
+        with _WORKER_LOCK:
+            worker = _LIVE_WORKERS.get((getattr(self.store, "path", id(self.store)), effect_id))
+            if worker is not None:
+                raise ValueError("原调用仍在运行，不能宣称已取消或安全重试")
+        contract = self.contract(operation["tool_id"])
+        if contract is None or contract.tool_version != operation["tool_version"] or contract.reconcile is None:
+            raise ValueError("缺少与原版本一致的回执核验适配器")
+        result = self._run_with_timeout(
+            lambda _: contract.reconcile(deepcopy(operation), deepcopy(receipt)), {}, contract.timeout_policy or 10.0)
+        if not isinstance(result, ToolResult):
+            raise ValueError("核验适配器必须返回ToolResult")
+        result.idempotency_key = operation["idempotency_key"]
+        result.evidence.update(tool=operation["tool_id"], effect_id=effect_id,
+                               side_effect_level=contract.side_effect_level)
+        if not self.effects.accept_receipt(effect_id, result, receipt):
+            raise ValueError("回执未独立验证、结果仍未知或状态已改变")
         return result
 
     # ---- 诊断 ----

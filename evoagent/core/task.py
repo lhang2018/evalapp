@@ -67,6 +67,7 @@ class Task:
     user_answers: List[Dict[str, Any]] = field(default_factory=list)
     # G-01 前置（契约 §2）：任务与长期 Goal 通过 goal_id 引用关联，不共享万能状态字段
     goal_id: Optional[str] = None
+    authorization_ref: Optional[str] = None
     origin: str = GoalOrigin.USER.value
     user_goal: str = ""
     intent: str = "general"
@@ -112,6 +113,7 @@ class Task:
             "waiting_approvals": list(self.waiting_approvals),
             "user_answers": list(self.user_answers),
             "goal_id": self.goal_id,
+            "authorization_ref": self.authorization_ref,
             "origin": self.origin,
             "user_goal": self.user_goal,
             "intent": self.intent,

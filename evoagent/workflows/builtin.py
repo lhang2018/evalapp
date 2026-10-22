@@ -23,7 +23,7 @@ def comic_drama_workflow(theme: str, out_path: str = "outputs/final_30s.mp4") ->
     return WorkflowDef(
         workflow_id="comic_drama_demo", version="1.0.0",
         name="AI 漫剧 30s Demo",
-        input_schema={"type": "object", "required": ["theme"]},
+        input_schema={"type": "object"},  # theme is frozen in the constructed node args.
         preconditions=["用户已确认创作主题"],
         nodes=[
             WorkflowNode(node_id="clock", tool="current_time",
@@ -56,6 +56,6 @@ def comic_drama_workflow(theme: str, out_path: str = "outputs/final_30s.mp4") ->
             {"type": "result_nonempty"},
         ],
         budget={"max_cost": 0.5},
-        compensation_actions={"compose": "fs_list"},
+        compensation_actions={},  # A directory listing cannot prove restoration.
         created_from_task=None,
     )

@@ -17,7 +17,7 @@ class Database:
     def __init__(self, path: str = ".evoagent/evoagent.db"):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.path = path
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._conn = sqlite3.connect(path, check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
         self._init_schema()
@@ -47,8 +47,9 @@ class Database:
             self._conn.commit()
 
     def get_task(self, task_id: str) -> Optional[Task]:
-        row = self._conn.execute(
-            "SELECT data FROM tasks WHERE task_id=?", (task_id,)).fetchone()
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT data FROM tasks WHERE task_id=?", (task_id,)).fetchone()
         if not row:
             return None
         return Task.from_dict(json.loads(row["data"]))
@@ -218,24 +219,32 @@ class Database:
 
     def claim_side_effect(self, effect_id: str, task_id: str, run_id: str,
                           tool_id: str, idempotency_key: str,
-                          summary: str) -> bool:
+                          summary: str, *, args_json=None, tool_version="") -> bool:
         """Atomic operation claim; duplicate claims never leave an open transaction."""
         now = time.time()
         with self._lock:
             guard_write(self)
-            cursor = self._conn.execute(
-                "INSERT OR IGNORE INTO task_side_effects"
-                " (effect_id,task_id,run_id,tool_id,idempotency_key,"
-                "effect_summary,status,created_at,updated_at)"
-                " VALUES (?,?,?,?,?,?,'planned',?,?)",
-                (effect_id, task_id, run_id, tool_id, idempotency_key,
-                 summary, now, now))
-            self._conn.commit()
+            try:
+                cursor = self._conn.execute(
+                    "INSERT OR IGNORE INTO task_side_effects"
+                    " (effect_id,task_id,run_id,tool_id,idempotency_key,"
+                    "effect_summary,status,created_at,updated_at)"
+                    " VALUES (?,?,?,?,?,?,'planned',?,?)",
+                    (effect_id, task_id, run_id, tool_id, idempotency_key,
+                     summary, now, now))
+                if cursor.rowcount and args_json is not None:
+                    self._conn.execute("INSERT INTO effect_receipts VALUES (?,?,?,NULL,NULL,?)",
+                        (effect_id, args_json, tool_version, now))
+                self._conn.commit()
+            except BaseException:
+                self._conn.rollback()
+                raise
         return cursor.rowcount == 1
 
     def update_side_effect_status(self, effect_id: str, status: str, *,
                                   receipt_ref: Optional[str] = None,
-                                  reconciled_at: Optional[float] = None
+                                  reconciled_at: Optional[float] = None,
+                                  expected_status: Optional[str] = None
                                   ) -> bool:
         parts = ["status=?", "updated_at=?"]
         args: List[Any] = [status, time.time()]
@@ -246,34 +255,40 @@ class Database:
             parts.append("last_reconciled_at=?")
             args.append(reconciled_at)
         args.append(effect_id)
+        condition = ""
+        if expected_status is not None:
+            condition = " AND status=?"
+            args.append(expected_status)
         with self._lock:
             guard_write(self)
             cur = self._conn.execute(
                 f"UPDATE task_side_effects SET {', '.join(parts)}"
-                " WHERE effect_id=?", args)
+                " WHERE effect_id=?" + condition, args)
             self._conn.commit()
         return cur.rowcount > 0
 
     def get_side_effect(self, effect_id: str) -> Optional[Dict[str, Any]]:
-        row = self._conn.execute(
-            "SELECT * FROM task_side_effects WHERE effect_id=?",
-            (effect_id,)).fetchone()
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT * FROM task_side_effects WHERE effect_id=?",
+                (effect_id,)).fetchone()
         return dict(row) if row else None
 
     def list_side_effects_by_task(self, task_id: str,
                                   statuses: Optional[List[str]] = None
                                   ) -> List[Dict[str, Any]]:
         """按任务列副作用；statuses 给定时过滤，按创建时间正序。"""
-        if statuses:
-            q = ",".join("?" for _ in statuses)
-            rows = self._conn.execute(
-                "SELECT * FROM task_side_effects WHERE task_id=? AND"
-                f" status IN ({q}) ORDER BY created_at",
-                (task_id, *statuses)).fetchall()
-        else:
-            rows = self._conn.execute(
-                "SELECT * FROM task_side_effects WHERE task_id=?"
-                " ORDER BY created_at", (task_id,)).fetchall()
+        with self._lock:
+            if statuses:
+                q = ",".join("?" for _ in statuses)
+                rows = self._conn.execute(
+                    "SELECT * FROM task_side_effects WHERE task_id=? AND"
+                    f" status IN ({q}) ORDER BY created_at",
+                    (task_id, *statuses)).fetchall()
+            else:
+                rows = self._conn.execute(
+                    "SELECT * FROM task_side_effects WHERE task_id=?"
+                    " ORDER BY created_at", (task_id,)).fetchall()
         return [dict(r) for r in rows]
 
     # ---- approvals（A-01 五项绑定，F-04；建表见 core/schema/approvals.py）----
@@ -975,9 +990,10 @@ class Database:
 
     # ---- tool idempotency journal ----
     def get_tool_execution(self, idem_key: str) -> Optional[Dict[str, Any]]:
-        row = self._conn.execute(
-            "SELECT result FROM tool_executions WHERE idem_key=?",
-            (idem_key,)).fetchone()
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT result FROM tool_executions WHERE idem_key=?",
+                (idem_key,)).fetchone()
         return json.loads(row["result"]) if row else None
 
     def save_tool_execution(self, idem_key: str, tool_id: str,

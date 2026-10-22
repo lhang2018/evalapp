@@ -35,6 +35,10 @@ class ToolContract:
     requires_network: bool = False
     cost_model: Dict[str, Any] = field(default_factory=dict)
     contract_test_ref: Optional[str] = None
+    resource_bindings: Dict[str, str] = field(default_factory=dict)
+    resource_defaults: Dict[str, Any] = field(default_factory=dict)
+    resource_base: str = "."
+    reconcile: Optional[Callable] = None  # (operation, receipt) -> independently verified ToolResult
 
     def declared_risk(self) -> Optional[RiskLevel]:
         """风险级枚举值（契约 §4；未声明返回 None）。"""
@@ -60,6 +64,9 @@ class ToolResult:
     side_effect_uncertain: bool = False      # 副作用已发生但未收到确认
     evidence: Dict[str, Any] = field(default_factory=dict)
     idempotency_key: Optional[str] = None
+    safe_to_repeat: bool = False
+    retryable: bool = False
+    required_action: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -70,13 +77,18 @@ class ToolResult:
             "independently_verified": self.independently_verified,
             "side_effect_uncertain": self.side_effect_uncertain,
             "evidence": self.evidence, "idempotency_key": self.idempotency_key,
+            "safe_to_repeat": self.safe_to_repeat, "retryable": self.retryable,
+            "required_action": self.required_action,
         }
 
     @classmethod
     def error_result(cls, err: str, err_class: str = "execution_error") -> "ToolResult":
         return cls(ok=False, error=err, error_class=err_class,
                    submitted=False, executed=False, contract_valid=False,
-                   independently_verified=False)
+                   independently_verified=False,
+                   required_action={"side_effect_unknown": "reconcile", "approval_required": "approve",
+                                    "auth_or_permission": "authorize", "budget_exceeded": "restore_budget",
+                                    "invalid_arguments": "fix_arguments"}.get(err_class))
 
 
 def class_error(exc: Exception) -> str:

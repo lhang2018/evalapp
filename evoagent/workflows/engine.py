@@ -19,7 +19,7 @@ from ..core.checkpoint import Checkpoint, CheckpointManager
 from ..core.events import EventBus
 from ..core.approvals import ApprovalRequired
 from ..core.leases import LeaseLost, assert_current_lease
-from ..tools.contract import ToolResult, validate_against_schema
+from ..tools.contract import ToolContract, ToolResult, validate_against_schema
 from ..tools.registry import ToolRegistry
 from .models import WorkflowDef, WorkflowNode, WorkflowNodeState
 
@@ -34,6 +34,8 @@ class WorkflowRunResult:
     error: Optional[str] = None
     retries_used: int = 0
     approval_ids: List[str] = field(default_factory=list)
+    tool_results: Dict[str, Any] = field(default_factory=dict)
+    compensations: List[Dict[str, Any]] = field(default_factory=list)
 
 
 class NodeBudgetSignal(RuntimeError):
@@ -42,6 +44,12 @@ class NodeBudgetSignal(RuntimeError):
 
 class NodeEffectUnknown(RuntimeError):
     """An external result is unknown; retry/compensation must await reconciliation."""
+
+
+class NodeToolFailure(RuntimeError):
+    def __init__(self, result):
+        self.result = result
+        super().__init__(result.error or "tool failed")
 
 
 class WorkflowEngine:
@@ -60,9 +68,13 @@ class WorkflowEngine:
             confirm: Optional[Callable[[str], bool]] = None,
             completed: Optional[Dict[str, Any]] = None,
             allowed_tools: Optional[List[str]] = None,
-            run_id: Optional[str] = None
+            run_id: Optional[str] = None,
+            completed_tool_results: Optional[Dict] = None
             ) -> WorkflowRunResult:
         problems = wf.validate()
+        problem = validate_against_schema(ctx_input, wf.input_schema)
+        if problem:
+            problems.append(problem)
         if problems:
             return WorkflowRunResult(ok=False, status=WorkflowNodeState.FAILED,
                                      error="定义错误: " + "; ".join(problems))
@@ -82,6 +94,7 @@ class WorkflowEngine:
             if node is not None and node.state == WorkflowNodeState.PENDING:
                 node.state = WorkflowNodeState.SUCCESS
                 node.output = output
+                node.tool_result = (completed_tool_results or {}).get(nid)
         retries_used = 0
 
         for batch in _batches(wf):
@@ -146,7 +159,10 @@ class WorkflowEngine:
                     "node": node.node_id, "state": state,
                     "attempts": node.attempt + 1, "output": _clip(output),
                     "node_run_id": node.node_run_id,
+                    "tool_result": node.tool_result,
                 })
+                if node.tool_result is not None:
+                    result.tool_results[node.node_id] = node.tool_result
                 if state == WorkflowNodeState.SUCCESS:
                     done[node.node_id] = output
                 elif state == WorkflowNodeState.PAUSED:
@@ -174,9 +190,25 @@ class WorkflowEngine:
                 return result
             if failed is not None:
                 node, error = failed
-                comp = wf.compensation_actions.get(node.node_id)
-                if comp:
-                    self._try_compensate(comp, ctx_input, execution_context)
+                from .compensation import compensate
+                result.compensations = compensate(self.tools, wf, done, ctx_input,
+                                                   execution_context, budget)
+                for row in result.compensations:
+                    attempt = row.get("result") or {}
+                    if attempt.get("error_class") == "approval_required":
+                        result.approval_ids.append(attempt["evidence"]["approval_id"])
+                if result.approval_ids:
+                    wf.status = WorkflowNodeState.WAITING_AUTH
+                    result.status, result.error = wf.status, "补偿等待审批"
+                    result.outputs = dict(done)
+                    self._snapshot(wf, result, done, budget)
+                    return result
+                if any((row.get("result") or {}).get("side_effect_uncertain") for row in result.compensations):
+                    wf.status = WorkflowNodeState.WAITING_EXTERNAL
+                    result.status, result.error = wf.status, "补偿结果待对账"
+                    result.outputs = dict(done)
+                    self._snapshot(wf, result, done, budget)
+                    return result
                 wf.status = WorkflowNodeState.FAILED
                 result.ok = False
                 result.status = wf.status
@@ -253,6 +285,12 @@ class WorkflowEngine:
                 if node.output_schema:
                     problem = validate_against_schema(output, node.output_schema)
                     if problem:
+                        if node.tool_result:
+                            failed = ToolResult(**node.tool_result)
+                            failed.ok, failed.contract_valid = False, False
+                            failed.error, failed.error_class = f"输出契约校验失败: {problem}", "contract_violation"
+                            node.tool_result = failed.to_dict()
+                            raise NodeToolFailure(failed)
                         raise RuntimeError(f"输出契约校验失败: {problem}")
                 node.state = WorkflowNodeState.SUCCESS
                 node.output = output
@@ -271,6 +309,17 @@ class WorkflowEngine:
                 # 预算耗尽：暂停而非失败（PRD 8：根据任务情况停止/降级）
                 node.state = WorkflowNodeState.PAUSED
                 return WorkflowNodeState.PAUSED, None, str(e), retries
+            except NodeToolFailure as exc:
+                node.error = str(exc)
+                retryable = (not exc.result.executed and exc.result.error_class in
+                             ("timeout", "network_or_unavailable", "tool_defect_or_env"))
+                if exc.result.error_class == "unknown" and node.tool:
+                    retryable = self.tools.contract(node.tool).side_effect_level == "none"
+                if not retryable or attempt >= node.max_retries:
+                    node.state = WorkflowNodeState.FAILED
+                    return node.state, None, node.error, retries + (1 if retryable else 0)
+                attempt += 1
+                retries += 1
             except Exception as e:  # noqa: BLE001
                 node.error = f"{type(e).__name__}: {e}"
                 # A timed-out Python thread may still be running. Never
@@ -352,13 +401,15 @@ class WorkflowEngine:
             result = self.tools.execute(
                 node.tool, args, budget=budget,
                 idempotency_key=(str((execution_context or {}).get("task_id", ""))
-                                 + ":node:" + node.node_id),
+                                 + ":workflow:" + str(context.get("workflow_id")) + "@" +
+                                 str(context.get("workflow_version")) + ":node:" + node.node_id),
                 timeout_seconds=node.timeout,
                 task_id=context.get("task_id", ""), run_id=context.get("run_id", ""),
                 allowed_tools=context.get("allowed_tools"),
-                require_confirmation=(node.requires_confirmation and
-                    node.node_id not in context.get("confirmed_nodes", [])),
+                require_confirmation=node.requires_confirmation,
+                confirmed=node.node_id in context.get("confirmed_nodes", []),
                 authorization_context=authorization)
+            node.tool_result = result.to_dict()
             if result.error_class == "approval_required":
                 raise ApprovalRequired(result.evidence["approval_id"])
             if result.side_effect_uncertain:
@@ -366,30 +417,31 @@ class WorkflowEngine:
             if not result.ok:
                 if result.error_class == "budget_exceeded":
                     raise NodeBudgetSignal(result.error or "budget")
-                raise RuntimeError(result.error or "tool failed")
+                raise NodeToolFailure(result)
             return result.data
         if node.fn:
-            if node.requires_confirmation and node.node_id not in context.get("confirmed_nodes", []):
+            if node.requires_confirmation:
+                args = {"node": node.node_id, "input": ctx_input, "dependencies": done, "args": node.args}
+                scope = self.tools.authorizations
+                fn_contract = ToolContract("workflow_node_confirm", risk_class="high", risk_declared=True)
+                authorization_ref = scope.check(context.get("task_id", ""), fn_contract, args) if scope else None
+                authorization["authorization_ref"] = authorization_ref
+                if self.tools.expert_scope:
+                    allowed = self.tools.expert_scope(context.get("task_id", ""))
+                    if allowed is not None and "workflow_node_confirm" not in allowed:
+                        raise PermissionError("专家未授权函数确认节点")
                 permission = self.tools.permissions
-                if permission is None or permission.check_op(
-                    "workflow_node_confirm", {"node": node.node_id, "input": ctx_input,
-                                               "dependencies": done, "args": node.args},
+                if (permission is None and node.node_id not in context.get("confirmed_nodes", [])) or (permission is not None and permission.check_op(
+                    "workflow_node_confirm", args,
                     task_id=context.get("task_id", ""),
                     authorization_context=authorization,
-                    run_id=context.get("run_id", "")).value != "allow":
+                    run_id=context.get("run_id", ""),
+                    confirmed=node.node_id in context.get("confirmed_nodes", [])).value != "allow"):
                     raise PermissionError("节点授权被拒绝")
+                if scope and scope.check(context.get("task_id", ""), fn_contract, args, expected_ref=authorization_ref) != authorization_ref:
+                    raise PermissionError("函数动作授权已改变")
             return node.fn({"ctx": ctx_input, **done})
         raise RuntimeError("无可执行体")
-
-    def _try_compensate(self, comp_tool: str, ctx: Dict,
-                        execution_context: Optional[Dict] = None) -> None:
-        try:
-            context = execution_context or {}
-            self.tools.execute(comp_tool, {}, task_id=context.get("task_id", ""),
-                run_id=context.get("run_id", ""), allowed_tools=context.get("allowed_tools"),
-                authorization_context={"scope": f"workflow:{context.get('workflow_id')}/compensation"})
-        except Exception:
-            pass
 
     def _snapshot(self, wf: WorkflowDef, result: WorkflowRunResult,
                   done: Optional[Dict[str, Any]] = None,
@@ -408,7 +460,9 @@ class WorkflowEngine:
             cp.pending_side_effects = self.tools.effects.pending(cp.task_id)
         # 已完成节点输出用于断点续跑（避免重复副作用）
         cp.task_state = {"workflow_outputs": dict(done or {}),
-                         "workflow_id": wf.workflow_id}
+                         "workflow_id": wf.workflow_id,
+                         "workflow_tool_results": {n.node_id: n.tool_result for n in wf.nodes if n.tool_result},
+                         "workflow_compensations": result.compensations}
         if budget is not None:
             parent = getattr(budget, "parent", None)
             cp.budget_state = parent.snapshot() if parent else budget.snapshot()
@@ -481,6 +535,9 @@ def _as_tool_results(wf: WorkflowDef) -> List[ToolResult]:
     out: List[ToolResult] = []
     for n in wf.nodes:
         if n.state == WorkflowNodeState.SKIPPED:
+            continue
+        if n.tool_result:
+            out.append(ToolResult(**n.tool_result))
             continue
         ok = n.state == WorkflowNodeState.SUCCESS
         out.append(ToolResult(ok=ok, data=n.output,

@@ -39,6 +39,7 @@ class WorkflowNode:
     output: Any = None
     error: Optional[str] = None
     approval_id: Optional[str] = None
+    tool_result: Optional[Dict[str, Any]] = None
 
 
 @dataclass
@@ -52,7 +53,7 @@ class WorkflowDef:
     nodes: List[WorkflowNode] = field(default_factory=list)
     acceptance_criteria: List[Dict[str, Any]] = field(default_factory=list)
     budget: Dict[str, Any] = field(default_factory=dict)
-    compensation_actions: Dict[str, str] = field(default_factory=dict)
+    compensation_actions: Dict[str, Any] = field(default_factory=dict)
     # 7 种工作流状态（PRD 13.3）
     status: str = "pending"
     created_from_task: Optional[str] = None   # 固化来源（PRD 13.4 步骤1）
@@ -103,6 +104,8 @@ class WorkflowDef:
     def validate(self) -> List[str]:
         problems = []
         ids = {n.node_id for n in self.nodes}
+        if len(ids) != len(self.nodes):
+            problems.append("节点ID重复")
         for n in self.nodes:
             for d in n.deps:
                 if d not in ids:

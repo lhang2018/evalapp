@@ -34,6 +34,7 @@ from .attachments import (
 from .auth import ApiAuth
 from . import routes
 from . import approvals_api  # F-04 审批记录端点（注册表路由）
+from . import action_security_api  # ALN-01/02任务授权与副作用对账
 from . import assets_api  # ALN-06 资产端点；由生产入口注册，不能依赖测试导入
 from . import impact_api  # GAP 子步④ 能力影响分析端点（注册表路由）
 from . import routing_eval_api  # F-53 路由质量评测端点（注册表路由）
@@ -525,6 +526,7 @@ def make_handler(app: App):
                         acceptance=body.get("acceptance_criteria") or [],
                         risk_level=rl,
                         budget_overrides=body.get("budget_policy"),
+                        authorization_scope=body.get("authorization_scope"),
                         wait=False,
                         device_id=device_id,
                         installation_id=installation_id,

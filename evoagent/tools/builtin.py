@@ -119,6 +119,7 @@ def fs_list_tool(base: str = ".") -> ToolContract:
                           independently_verified=True)
     return ToolContract(
         tool_id="fs_list", description="列出目录内容",
+        resource_bindings={"dir": "path"}, resource_defaults={"dir": "."},
         input_schema={"type": "object"},
         side_effect_level="none", idempotency_policy="none",
         # 真探针：基目录可列（closure 捕获 base）
@@ -144,6 +145,7 @@ def file_read_tool() -> ToolContract:
                           independently_verified=True)
     return ToolContract(
         tool_id="file_read", description="读取文本文件（截断5KB）",
+        resource_bindings={"path": "path"},
         input_schema={"type": "object", "required": ["path"],
                       "properties": {"path": {"type": "string"}}},
         side_effect_level="none", idempotency_policy="none",
@@ -162,7 +164,7 @@ def file_write_tool(workdir: str = ".") -> ToolContract:
         content = args.get("content", "")
         if not path:
             return ToolResult.error_result("缺少 path", "invalid_arguments")
-        if ".." in path or path.startswith(("/", "\\")):
+        if not (Path(workdir) / path).resolve().is_relative_to(Path(workdir).resolve()):
             return ToolResult.error_result("路径越界", "auth_or_permission")
         p = Path(workdir) / path
         try:
@@ -182,6 +184,7 @@ def file_write_tool(workdir: str = ".") -> ToolContract:
                           evidence={"sha256": digest, "overwrote": existed})
     return ToolContract(
         tool_id="file_write", description="写入文本文件",
+        resource_bindings={"path": "path"}, resource_base=str(workdir),
         input_schema={"type": "object", "required": ["path", "content"],
                       "properties": {"path": {"type": "string"},
                                      "content": {"type": "string"}}},

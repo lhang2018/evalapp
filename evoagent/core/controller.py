@@ -89,6 +89,16 @@ class RuntimeController:
         self._results: Dict[str, Any] = {}
         self._slots = threading.BoundedSemaphore(
             max(1, int(getattr(config.budget, "max_concurrent_tasks", 2))))
+        self.tools.expert_scope = self._expert_tools_for_task
+
+    def _expert_tools_for_task(self, task_id):
+        task = self.db.get_task(task_id)
+        if task is None:
+            return None
+        expert = self.experts.get(task.domain) or self.experts.route(task.intent)
+        if expert and expert.tool_whitelist is None:
+            return None
+        return list(expert.tool_whitelist) if expert else []
 
     # ================= 任务提交 =================
     def submit_task(self, goal: str, *,
@@ -114,6 +124,7 @@ class RuntimeController:
                     app_version: Optional[str] = None,
                     goal_id: Optional[str] = None,
                     origin: str = GoalOrigin.USER.value,
+                    authorization_scope: Optional[Dict[str, Any]] = None,
                     manifest_extras: Optional[Dict[str, Any]] = None) -> Task:
         if origin not in ORIGIN_VALUES:
             raise ValueError(
@@ -154,6 +165,12 @@ class RuntimeController:
                     "origin": task.origin})
         # 后台执行时接口会立即返回 202；任务必须先落库，避免客户端紧接着查询 404
         self.db.save_task(task)
+        if authorization_scope is not None:
+            # Caller-specified scope only narrows the expert/system intersection
+            # enforced later; parsed required_* fields never grant authority.
+            task.authorization_ref = self.tools.authorizations.issue(
+                task.task_id, authorization_scope, actor="task:submit")
+            self.db.save_task(task)
         if wait:
             task = self.execute(task, intent_hint=intent, domain_hint=domain)
         else:
@@ -387,6 +404,26 @@ class RuntimeController:
     # ---- Phase 3: 执行 ----
     def _run(self, task: Task, budget: BudgetController,
              *, start: bool = True) -> Task:
+        if self.tools.authorizations is not None:
+            grant = self.tools.authorizations.current(task.task_id)
+            if grant is None:
+                if task.authorization_ref:
+                    raise PermissionError("任务引用的授权已丢失，禁止重新发放")
+                expert = self.experts.get(task.domain) or self.experts.route(task.intent)
+                contracts = self.tools.available_tools(expert.tool_whitelist if expert else None)
+                tool_ids = [c.tool_id for c in contracts]
+                workflow = self.wf_lookup(task.workflow_ref) if task.workflow_ref else None
+                if workflow and any(n.fn and n.requires_confirmation for n in workflow.nodes) and (
+                        expert is None or expert.tool_whitelist is None or "workflow_node_confirm" in expert.tool_whitelist):
+                    tool_ids.append("workflow_node_confirm")
+                task.authorization_ref = self.tools.authorizations.issue(task.task_id,
+                    {"tools": tool_ids,
+                     "permissions": sorted({p for c in contracts for p in c.permission_requirements})},
+                    actor="system:expert-scope")
+                self.db.save_task(task)
+            else:
+                task.authorization_ref = grant["authorization_ref"]
+            task.runtime_manifest["authorization_ref"] = task.authorization_ref
         if start:
             task = self._move(task, TaskStatus.RUNNING)
         if task.workflow_ref:
@@ -542,6 +579,7 @@ class RuntimeController:
             wf, {"goal": task.user_goal}, budget=wf_budget,
             cancel_flag=self._active.get(task.task_id),
             completed=completed,
+            completed_tool_results=cp.task_state.get("workflow_tool_results", {}) if cp else None,
             run_id=task.current_run_id,
             allowed_tools=(self.experts.get(task.domain).tool_whitelist
                            if self.experts.get(task.domain) else None))
