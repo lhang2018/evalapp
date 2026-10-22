@@ -78,6 +78,33 @@
       },
       "client_evidence_source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
       "client_source_tree": "0a85de3e9a3a380798aae2d664fcc25bc9b82c01"
+    },
+    "acceptance_review": {
+      "reviewed_commit": "8692637064389736695f433337c8d09e0bdcdafb",
+      "result": "changes_requested",
+      "publication_ready": false,
+      "findings": [
+        {
+          "id": "CA-08-01",
+          "priority": "P1",
+          "card": "ALN-08-M",
+          "title": "分类/规划未结算实测与未知费用"
+        },
+        {
+          "id": "CA-06-01",
+          "priority": "P2",
+          "card": "ALN-06-A",
+          "title": "GC后可复用旧资产版本绑定新正文"
+        },
+        {
+          "id": "CA-08-02",
+          "priority": "P2",
+          "card": "ALN-08-M",
+          "title": "估算金额混入actual_cost"
+        }
+      ],
+      "report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md",
+      "scope": "候选准备Git/日志证据有效；当前源码新增显式验收不通过，915/1仅为此前普通tests基线"
     }
   },
   "streams": [
@@ -335,7 +362,7 @@
         "GAP_ANALYSIS.md"
       ],
       "preparation_status": "verified_pending_review",
-      "next_step": "24cd524干净候选915/1已就绪；客户端136/typecheck沿用相同tree的d77b241证据；独立复核后发布精确提交"
+      "next_step": "准备证据有效；先修复CA-08-01/CA-06-01/CA-08-02并复验，再独立审阅与正式发布"
     },
     {
       "id": "ALN-04-R",
@@ -412,6 +439,16 @@
           "source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
           "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
           "delivery": "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "Claude认领专项验收：既有相关测试+新增跨阶段/生命周期检查",
+          "reviewed_commit": "8692637064389736695f433337c8d09e0bdcdafb",
+          "command": "python -m pytest acceptance_checks.py -q --tb=short; related tests",
+          "result": "新增显式验收4 failed/1 passed，归为3个根因；既有178 passed",
+          "log": ".planning/2026-10-22-claude-acceptance/acceptance-results.txt",
+          "observations": ".planning/2026-10-22-claude-acceptance/observations.json",
+          "report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md"
         }
       ],
       "card": "docs/协作开发/任务卡/06-资产基础.md",
@@ -425,9 +462,18 @@
         "evoagent/api/server.py",
         "evoagent/app.py"
       ],
-      "review_result": "changes_requested_fixed_pending_peer_recheck",
-      "review_note": "已交叉审阅claude-main原交付并修复复现缺陷；本轮修复由codex-runtime实现，须其他审阅人复核，未标accepted",
-      "next_step": "其他审阅人复核d77b241修复；按交叉审阅交付保留真实运行/Android或供应商验收"
+      "review_result": "changes_requested",
+      "review_note": "2026-10-22独立干净提交验收有未解决缺陷，需修改后复验；旧修复回归通过，不自批本线补丁",
+      "next_step": "修复CA-06-01并按验收脚本复验；另保留原真实环境/整包验收",
+      "acceptance_findings": [
+        {
+          "id": "CA-06-01",
+          "priority": "P2",
+          "card": "ALN-06-A",
+          "title": "GC后可复用旧资产版本绑定新正文"
+        }
+      ],
+      "acceptance_report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md"
     },
     {
       "id": "ALN-08-M",
@@ -456,6 +502,16 @@
           "source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
           "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
           "delivery": "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "Claude认领专项验收：既有相关测试+新增跨阶段/生命周期检查",
+          "reviewed_commit": "8692637064389736695f433337c8d09e0bdcdafb",
+          "command": "python -m pytest acceptance_checks.py -q --tb=short; related tests",
+          "result": "新增显式验收4 failed/1 passed，归为3个根因；既有178 passed",
+          "log": ".planning/2026-10-22-claude-acceptance/acceptance-results.txt",
+          "observations": ".planning/2026-10-22-claude-acceptance/observations.json",
+          "report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md"
         }
       ],
       "card": "docs/协作开发/任务卡/08-模型与计量.md",
@@ -469,9 +525,24 @@
         "evoagent/cli.py",
         "evoagent/react/engine.py"
       ],
-      "review_result": "changes_requested_fixed_pending_peer_recheck",
-      "review_note": "已交叉审阅claude-main原交付并修复复现缺陷；本轮修复由codex-runtime实现，须其他审阅人复核，未标accepted",
-      "next_step": "其他审阅人复核d77b241修复；按交叉审阅交付保留真实运行/Android或供应商验收"
+      "review_result": "changes_requested",
+      "review_note": "2026-10-22独立干净提交验收有未解决缺陷，需修改后复验；旧修复回归通过，不自批本线补丁",
+      "next_step": "修复CA-08-01,CA-08-02并按验收脚本复验；另保留原真实环境/整包验收",
+      "acceptance_findings": [
+        {
+          "id": "CA-08-01",
+          "priority": "P1",
+          "card": "ALN-08-M",
+          "title": "分类/规划未结算实测与未知费用"
+        },
+        {
+          "id": "CA-08-02",
+          "priority": "P2",
+          "card": "ALN-08-M",
+          "title": "估算金额混入actual_cost"
+        }
+      ],
+      "acceptance_report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md"
     },
     {
       "id": "ALN-04-UI",
@@ -665,7 +736,7 @@
       "stream": "integration",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "24cd524干净准备候选915/1，客户端同tree沿用d77b241的136/typecheck；独立复核后正式发布"
+      "next_step": "24cd524准备证据有效；新验收3个根因需修改复验，独立审阅后正式发布"
     },
     {
       "id": "ALN-01",
@@ -739,8 +810,8 @@
       ],
       "stream": "assets",
       "owner": "claude-main",
-      "delivery_state": "planned",
-      "next_step": "06-A已交叉审阅并修复API/完整性/依赖/GC缺陷；待修复复核，继续运行时资产消费和Android验签安装回执"
+      "delivery_state": "partial_verified",
+      "next_step": "验收不通过：补CA-06-01回收身份墓碑/拒绝旧版本改文复用；运行时消费与Android验收仍待完成"
     },
     {
       "id": "ALN-07",
@@ -767,8 +838,8 @@
       ],
       "stream": "models",
       "owner": "claude-main",
-      "delivery_state": "needs_recheck",
-      "next_step": "08-M交叉审阅修复与08-R运行时拒绝旁路已提交待复核；保留工作流/执行模式、生产评测与真实价格账单验收"
+      "delivery_state": "partial_verified",
+      "next_step": "验收不通过：先补CA-08-01分类/规划费用结算，再补CA-08-02来源分账；保留生产集/价格及工作流层验收"
     },
     {
       "id": "ALN-09",
@@ -993,5 +1064,5 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "准备候选更新为24cd524，干净后端915/1；客户端同tree沿用d77b241的136/typecheck。ALN-04/10及本轮修复仍待独立复核，status=candidate、published_commit=null；其他会话在途文件不纳入。"
+  "execution_note": "普通tests历史基线915/1，客户端同tree沿用136/typecheck；本次Claude验收新增4失败/1通过，对应3个根因，06/08需修改后复验。基线仍candidate，未发布；不自批本线修复、不混入在途文件。"
 }

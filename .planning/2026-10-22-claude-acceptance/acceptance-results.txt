@@ -1,0 +1,34 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFF.                                                                    [100%]
+================================== FAILURES ===================================
+_____________ test_full_task_cost_includes_classifier_and_planner _____________
+E:\evalapp\.planning\2026-10-22-claude-acceptance\acceptance_checks.py:85: in test_full_task_cost_includes_classifier_and_planner
+    assert data["recorded_budget"]["cost"] == pytest.approx(data["provider_recorded_cost"]), data
+E   AssertionError: {'configured_task_max_cost': 0.3, 'provider_calls': 3, 'provider_recorded_cost': 0.6000000000000001, 'provider_unknown_calls': 0, ...}
+E   assert 0.200001 == 0.6000000000000001 ± 6.0e-07
+E
+E     comparison failed
+E     Obtained: 0.200001
+E     Expected: 0.6000000000000001 ± 6.0e-07
+______________ test_unknown_calls_include_classifier_and_planner ______________
+E:\evalapp\.planning\2026-10-22-claude-acceptance\acceptance_checks.py:92: in test_unknown_calls_include_classifier_and_planner
+    assert data["recorded_budget"]["unknown_model_costs"] == 3, data
+E   AssertionError: {'configured_task_max_cost': 0.3, 'provider_calls': 3, 'provider_recorded_cost': 0, 'provider_unknown_calls': 3, ...}
+E   assert 1 == 3
+_____________ test_estimated_usage_is_not_reported_as_actual_cost _____________
+E:\evalapp\.planning\2026-10-22-claude-acceptance\acceptance_checks.py:101: in test_estimated_usage_is_not_reported_as_actual_cost
+    assert data["actual_cost"] == 0, data
+E   AssertionError: {'actual_cost': 0.5, 'by_model': {'priced': {'actual_cost': 0.5, 'calls': 1, 'unknown_calls': 0}}, 'calls': 1, 'estimated_cost_pending': 0.0, ...}
+E   assert 0.5 == 0
+______________ test_gc_never_reassigns_an_existing_asset_version ______________
+E:\evalapp\.planning\2026-10-22-claude-acceptance\acceptance_checks.py:122: in test_gc_never_reassigns_an_existing_asset_version
+    pytest.fail("GC allowed immutable identity reuse: " + json.dumps(data))
+E   Failed: GC allowed immutable identity reuse: {"same_ref": true, "original_digest": "ea9fcbf9d9d521ab2c1330cc5075b231a0623044f2f604db4bdd002d6bcc849b", "replacement_digest": "8a400e3f31de5901bdeeb36174998b84e8970f8de77fda332001c4a3bf00ce32", "event_actions": ["register", "transition", "collect", "register"]}
+=========================== short test summary info ===========================
+FAILED ::test_full_task_cost_includes_classifier_and_planner - AssertionError...
+FAILED ::test_unknown_calls_include_classifier_and_planner - AssertionError: ...
+FAILED ::test_estimated_usage_is_not_reported_as_actual_cost - AssertionError...
+FAILED ::test_gc_never_reassigns_an_existing_asset_version - Failed: GC allow...
+4 failed, 1 passed in 0.87s

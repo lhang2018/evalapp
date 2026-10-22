@@ -1,0 +1,16 @@
+{
+  "reviewed_commit": "8692637064389736695f433337c8d09e0bdcdafb",
+  "reviewed_tree": "03d5f186931b936cf44ef400bec1744bfc294dcf",
+  "clean_before_and_after": true,
+  "production_changes": false,
+  "existing_tests": {
+    "passed": 178
+  },
+  "acceptance": {
+    "failed": 4,
+    "passed": 1,
+    "root_causes": 3
+  },
+  "prepared_metadata": "passed",
+  "ordinary_tests_baseline": "previous 915 passed / 1 skipped; not rerun for unchanged production source"
+}
