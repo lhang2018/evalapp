@@ -11,15 +11,15 @@
   "evidence": [
     {
       "path": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
-      "sha256": "cb11d9fbf1bfc7a7eb0d2b2265cab0a5ba8b0d06066665f92cfb4bfbea36c129"
+      "sha256": "1fc7edc8325266484df6d114f8c8ec900c4a7f596e933fa59136c855ff01766c"
     },
     {
       "path": ".planning/2026-10-22-cross-review/clean-client-tests.txt",
-      "sha256": "d67aabd2d12d32cd989b2cfe595214badfea3f0bb29dcf821a5116eb40757296"
+      "sha256": "c865879d5e9ee09cbb152b38f79c336816f6f91f901a60d1a0883271ead46cd0"
     },
     {
       "path": ".planning/2026-10-22-cross-review/clean-client-typecheck.txt",
-      "sha256": "a7a02ccf05c0de54c157dc82e4d624f0b0bf1ba107625d8d1f94d4ed4da19c19"
+      "sha256": "0c8a944e707e9a2ccc5da7e82abac823ab9667d35f4a4b1079abe69a21f6af51"
     }
   ],
   "excluded_paths": [
