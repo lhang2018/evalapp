@@ -10,11 +10,15 @@
 """
 from __future__ import annotations
 
+import shutil
+import tempfile
 import unittest
 
+from evoagent.app import App
 from evoagent.core.budget import (BudgetController, BudgetLimits,
                                   BudgetUsage)
 from evoagent.core.permissions import PermissionController
+from evoagent.core.task import Task
 from evoagent.models.base import Action, ChatMessage, ModelProfile
 from evoagent.models.metering import MeteredModel
 from evoagent.react.engine import ReactEngine
@@ -117,6 +121,29 @@ class TestMeteredBudgetSettlement(unittest.TestCase):
         self.assertEqual(parent.usage.unknown_model_costs, 1)
         self.assertEqual(
             parent.snapshot()["usage"]["unknown_model_costs"], 1)
+
+
+class TestRuntimeMeteringAssociation(unittest.TestCase):
+    """真实任务执行链：model_call 事件必须能按 task/run 查询。"""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="evoagent_metering_")
+        self.app = App(data_dir=self.tmp)
+
+    def tearDown(self):
+        self.app.db.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_model_call_events_carry_task_and_run(self):
+        task = self.app.controller.execute(
+            Task(user_goal="你好"), intent_hint="general")
+        events = self.app.bus.query(task_id=task.task_id, limit=500)
+        calls = [e for e in events if e.event_type == "model_call"]
+        self.assertTrue(calls, "任务执行未产生 model_call 事件")
+        for evt in calls:
+            self.assertEqual(evt.run_id, task.current_run_id)
+            self.assertEqual(evt.payload["task_id"], task.task_id)
+            self.assertEqual(evt.payload["run_id"], task.current_run_id)
 
 
 if __name__ == "__main__":

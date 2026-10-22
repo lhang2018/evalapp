@@ -19,6 +19,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from ..core.leases import CURRENT_LEASE
 from .base import Action, ChatMessage, ModelProfile
 
 # 用量来源
@@ -285,6 +286,7 @@ class MeteredModel:
                         event_type="model_call",
                         component_id=self.component_id,
                         severity="info" if ok else "error",
+                        task_id=usage.task_id, run_id=usage.run_id,
                         payload=usage.to_dict())
                 except Exception:  # noqa: BLE001 —— 观测失败不影响调用
                     pass
@@ -299,11 +301,16 @@ class MeteredModel:
         model_id = getattr(profile, "model_id", None) or "unknown"
         provider = getattr(profile, "provider", None) or "unknown"
         request_id = getattr(self.inner, "last_request_id", None)
+        # 执行租约就是当前运行身份：有租约时把调用归因到 task/run；
+        # 无租约（如独立分类端点）保持 None，不臆造关联。
+        lease = CURRENT_LEASE.get()
         usage = ModelUsage(
             model_id=model_id, provider=provider, op=op, ok=ok,
             error_class=error_class, latency_s=latency_s,
             request_id=request_id, cost=None,
-            cost_source=COST_UNKNOWN, token_source=TOKEN_UNKNOWN)
+            cost_source=COST_UNKNOWN, token_source=TOKEN_UNKNOWN,
+            task_id=getattr(lease, "task_id", None),
+            run_id=getattr(lease, "run_id", None))
 
         provider_usage = getattr(self.inner, "last_usage", None)
         if (ok and isinstance(provider_usage, dict)

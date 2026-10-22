@@ -36,6 +36,7 @@ from evoagent.models.metering import (  # noqa: E402
     estimate_cost_optional,
     pricing_status,
 )
+from evoagent.core.leases import CURRENT_LEASE, LeaseToken  # noqa: E402
 from evoagent.models.mock import MockModel  # noqa: E402
 from evoagent.models.openai_compat import OpenAICompatAdapter  # noqa: E402
 
@@ -268,6 +269,44 @@ class TestMeteredModel(unittest.TestCase):
         action = metered.suggest_action(
             [ChatMessage(role="user", content="hi")], [])
         self.assertEqual(action.answer, "ok")
+
+
+class TestExecutionAssociation(unittest.TestCase):
+    """模型调用必须能归因到当前运行，否则账单无法按任务对账。"""
+
+    def _call(self, bus):
+        adapter = _ScriptedAdapter(
+            _priced_profile(), result=Action(kind="finish", answer="ok"))
+        metered = MeteredModel(adapter, bus)
+        metered.suggest_action([ChatMessage(role="user", content="hi")], [])
+        return metered
+
+    def test_call_inside_run_records_task_and_run(self):
+        token = LeaseToken(db=None, task_id="task-1", run_id="run-1",
+                           owner_id="owner", generation=1)
+        reset = CURRENT_LEASE.set(token)
+        try:
+            bus = _Bus()
+            metered = self._call(bus)
+        finally:
+            CURRENT_LEASE.reset(reset)
+        payload = bus.events[-1]["payload"]
+        self.assertEqual(payload["task_id"], "task-1")
+        self.assertEqual(payload["run_id"], "run-1")
+        self.assertEqual(metered.last_usage.task_id, "task-1")
+        self.assertEqual(metered.last_usage.run_id, "run-1")
+
+    def test_call_outside_run_does_not_fabricate_ids(self):
+        reset = CURRENT_LEASE.set(None)
+        try:
+            bus = _Bus()
+            metered = self._call(bus)
+        finally:
+            CURRENT_LEASE.reset(reset)
+        payload = bus.events[-1]["payload"]
+        self.assertIsNone(payload["task_id"])
+        self.assertIsNone(payload["run_id"])
+        self.assertIsNone(metered.last_usage.task_id)
 
 
 class TestOpenAIAdapterFailureBounds(unittest.TestCase):

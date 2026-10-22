@@ -289,8 +289,9 @@ class TestFiveLayerCoverage(unittest.TestCase):
         self.assertTrue(model["evaluated"])
         self.assertIn("route_accuracy", model["metrics"])
         self.assertIn("usage.actual_cost", model["metrics"])
-        # 预算接线仍是缺口，不能因为有了评测就说链路完整
-        self.assertIn("预算记账", model["gap"])
+        # 仍有真实缺口，不能因为有了评测就说链路完整
+        self.assertIn("生产评测集", model["gap"])
+        self.assertIn("未知成本", model["gap"])
 
 
 class _FakeAdapter:

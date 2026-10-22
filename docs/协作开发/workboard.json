@@ -306,9 +306,9 @@
       "evidence": [
         {
           "date": "2026-10-22",
-          "scope": "五层覆盖复核 + 实测/预估/未知费用计量 + 模型层路由评测与费用对账 + 实测成本接入任务预算（未知成本单独计数）",
+          "scope": "五层覆盖复核 + 实测/预估/未知费用计量 + 模型层路由评测与费用对账 + 实测成本接入任务预算（未知成本单独计数） + model_call 按执行租约回填 task/run",
           "command": "python -m pytest tests -q",
-          "result": "788 passed, 1 skipped；1 failed 为并行文档会话台账漂移（FEATURES/GAP 引用越界），非本卡范围",
+          "result": "816 passed, 1 skipped；2 failed 均为并行会话在途（ALN-10 completion、台账引用漂移），非本卡范围",
           "delivery": "docs/协作开发/交付/ALN-08-M-路由与计量.md"
         }
       ],

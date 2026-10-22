@@ -625,9 +625,10 @@ def routing_coverage() -> List[Dict[str, Any]]:
                         "by_kind", "per_model", "usage.actual_cost",
                         "usage.unknown_calls"],
             "evidence": "ModelRoutingEvaluator 走同一 ModelRouter.route 入口；"
-                        "UsageLedger.totals 提供实测/未知成本对账",
-            "gap": "运行时 model_call 尚未回填 task/run 关联；"
-                   "实测成本尚未写入预算记账",
+                        "UsageLedger.totals 提供实测/未知成本对账；"
+                        "model_call 经执行租约回填 task/run，"
+                        "实测成本进入任务预算",
+            "gap": "尚无生产评测集；未知成本只计数、不折算金额",
         },
     ]
 
