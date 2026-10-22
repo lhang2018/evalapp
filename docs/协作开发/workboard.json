@@ -370,10 +370,10 @@
       "title": "RUNNING 中断接管",
       "stream": "runtime",
       "owner": "codex-runtime",
-      "reviewer": null,
+      "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -393,6 +393,14 @@
           "source": "父提交 a957fe8 + 本轮暂存源码；本记录与源码同次提交",
           "log": ".planning/2026-10-22-design-alignment/commit-candidate-backend-tests.txt",
           "supplemental_log": ".planning/2026-10-22-design-alignment/commit-candidate-git-test.txt"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "claude-main 独立验收：租约/恢复/双进程专项 + 全量",
+          "command": "python -m pytest tests/test_process_recovery.py tests/test_run_ownership.py tests/test_run_continuation.py -q; python -m pytest tests -q",
+          "result": "目标专项通过；全量 915 passed, 1 skipped",
+          "reviewed_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+          "report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
         }
       ],
       "card": "docs/协作开发/任务卡/04-运行恢复.md",
@@ -409,7 +417,10 @@
       ],
       "working_basis": "用户明确要求认领并开发；在当前共享候选工作区增量实现，base_commit 不代表候选基线已发布。",
       "delivery": "docs/协作开发/交付/ALN-04-R-运行租约与中断接管.md",
-      "next_step": "分配独立审阅人，合入共同基线；保留整包组合验收",
+      "review_result": "accepted",
+      "review_note": "2026-10-22 claude-main 独立审阅：租约 fencing、恢复阻断、真实杀进程与双进程竞争测试通过；整包组合验收仍待运行线整合",
+      "review_report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md",
+      "next_step": "合入共同基线；整包 ALN-04 的运行时/Android 组合验收另计",
       "delivered_commit": "72d20f026ad0623ab1828341f88f290ed06f6006"
     },
     {
@@ -550,7 +561,7 @@
       "title": "Android 管理员审批",
       "stream": "android",
       "owner": "codex-runtime",
-      "reviewer": null,
+      "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
       "status": "review",
@@ -573,6 +584,14 @@
           "source": "父提交 a957fe8 + 本轮暂存源码；本记录与源码同次提交",
           "log": ".planning/2026-10-22-design-alignment/commit-candidate-backend-tests.txt",
           "supplemental_log": ".planning/2026-10-22-design-alignment/commit-candidate-git-test.txt"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "claude-main 独立验收：审批会话状态与安全路径单测",
+          "command": "node --test test/offline/approvals.test.ts; npm run typecheck",
+          "result": "12 pass；typecheck passed；真机批准/拒绝/断网/过期路径未执行",
+          "reviewed_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+          "report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
         }
       ],
       "card": "docs/协作开发/任务卡/04-Android审批.md",
@@ -583,7 +602,10 @@
       ],
       "working_basis": "用户明确要求认领并开发；在当前共享候选工作区增量实现，base_commit 不代表候选基线已发布。",
       "delivery": "docs/协作开发/交付/ALN-04-UI-管理员审批页面.md",
-      "next_step": "分配独立审阅人；补 Android 真机批准、拒绝、断网和过期验收",
+      "review_result": "unit_accepted_device_pending",
+      "review_note": "2026-10-22 claude-main 独立审阅：审批会话完整绑定展示、单次消费、错误不回显、过期/断网/陈旧响应单测通过；交付文档明确真机路径未验，整卡不转 accepted",
+      "review_report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md",
+      "next_step": "真机补批准、拒绝、断网和过期四路径；通过后再转 accepted",
       "delivered_commit": "72d20f026ad0623ab1828341f88f290ed06f6006"
     },
     {
@@ -592,10 +614,10 @@
       "title": "回归资产与独立门禁补全",
       "stream": "assets",
       "owner": "codex-runtime",
-      "reviewer": null,
+      "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "54f80588bfee03dfffefbfe21c2f0d15666a0ce6",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -606,6 +628,14 @@
           "source": "父提交 4065d523e35cb61abac239db02d8136834501d06 + 本次源码；候选导出 tree da3fc18a901b3999d8f47ca71a3eb97e5183eab2；源码与本记录同次提交",
           "log": ".planning/2026-10-22-aln10-completion/commit-candidate-tests.txt",
           "delivery": "docs/协作开发/交付/ALN-10-Q-回归资产与独立门禁补全.md"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "claude-main 独立验收：回归资产/独立门禁专项与源码审阅",
+          "command": "python -m pytest tests/test_aln10_completion.py tests/test_release_evidence.py -q; python -m pytest tests -q",
+          "result": "目标专项通过；全量 915 passed, 1 skipped",
+          "reviewed_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+          "report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
         }
       ],
       "card": "docs/协作开发/任务卡/10-回归门禁补全.md",
@@ -623,7 +653,10 @@
         "evoagent/memory/context.py"
       ],
       "working_basis": "用户明确指定接续编号10的半成品；保留 opencode-evo 首段与整包协调归属，本轮补充开发和接线。",
-      "next_step": "独立审阅；真实候选/隔离夹具宿主与 ALN-05/07/09 前置整合；补真实上线观察数据",
+      "review_result": "accepted",
+      "review_note": "2026-10-22 claude-main 独立审阅：不可变快照、独立门禁、逐套/领域阈值、保留集隔离与夹具复现通过；真实候选隔离宿主仍属整包未完成项",
+      "review_report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md",
+      "next_step": "真实候选/隔离夹具宿主与 ALN-05/07/09 前置整合；补真实上线观察数据",
       "delivered_commit": "3713a9ef2ebde582b9016ae26168dcee805ba68a"
     },
     {
@@ -632,10 +665,10 @@
       "title": "评测批准与发布证据衔接",
       "stream": "assets",
       "owner": "codex-runtime",
-      "reviewer": null,
+      "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "3713a9ef2ebde582b9016ae26168dcee805ba68a",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -646,6 +679,14 @@
           "source": "父提交 3713a9ef2ebde582b9016ae26168dcee805ba68a + 本轮源码；隔离候选 tree b149d53d904cd3185ee71873e9174ff4432c02b6；本轮源码与证据同次提交",
           "log": ".planning/2026-10-22-release-evidence/commit-candidate-tests.txt",
           "delivery": "docs/协作开发/交付/ALN-10-R-发布证据衔接.md"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "claude-main 独立验收：发布证据绑定/批准/重校验专项与源码审阅",
+          "command": "python -m pytest tests/test_release_evidence.py -q; python -m pytest tests -q",
+          "result": "44 项专项通过；全量 915 passed, 1 skipped",
+          "reviewed_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+          "report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
         }
       ],
       "card": "docs/协作开发/任务卡/10-发布证据衔接.md",
@@ -658,7 +699,10 @@
         "evoagent/api/server.py"
       ],
       "working_basis": "用户继续下一步，接续ALN-10发布衔接；保留其他人在途通知及ALN-09测试修改。",
-      "next_step": "独立审阅；真实候选隔离执行宿主、精确候选制品应用/装载、可信身份和跨进程发布仲裁仍待整合",
+      "review_result": "accepted",
+      "review_note": "2026-10-22 claude-main 独立审阅：报告/候选/上下文摘要绑定、批准人规则、发布重校验与回滚制品完整性通过；ReleaseGate 空基线明细与 fixture 成本标记列为非阻塞残余风险",
+      "review_report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md",
+      "next_step": "真实候选隔离执行宿主、精确候选制品应用/装载、可信身份和跨进程发布仲裁仍待整合",
       "delivered_commit": "bd33f5664d16ddaf42040893eec6d9a0614ab464"
     },
     {
@@ -671,10 +715,10 @@
       "title": "交叉审阅修复与干净基线核验",
       "stream": "integration",
       "owner": "codex-runtime",
-      "reviewer": null,
+      "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "bd33f5664d16ddaf42040893eec6d9a0614ab464",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -683,6 +727,14 @@
           "command": "clean clone: python -m pytest -q --tb=short; npm run test:offline; npm run typecheck",
           "result": "909 passed/1 skipped; client136/typecheck passed",
           "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "claude-main 独立验收：候选 tree/日志摘要核验与当前 HEAD 全量",
+          "command": "git rev-parse 24cd524^{tree}; sha256sum clean-backend-tests.txt; python -m pytest tests -q",
+          "result": "tree=6165205...；日志 sha256=2728f812...，末行 915/1；当前全量 915 passed, 1 skipped",
+          "reviewed_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+          "report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
         }
       ],
       "card": "docs/协作开发/任务卡/00-交叉审阅与基线核验.md",
@@ -693,7 +745,10 @@
         "tools/check_collaboration_plan.py"
       ],
       "working_basis": "用户要求检查并解决并行线问题；交叉审阅非本人原交付，修复和基线准备单独待审",
-      "next_step": "其他审阅人复核本轮修复及ALN-04/10；集成人据精确准备提交完成正式基线发布"
+      "review_result": "accepted",
+      "review_note": "2026-10-22 claude-main 独立审阅：候选 tree 与日志 SHA256 吻合，干净记录 909/1 与后续 915/1 一致；本卡为准备与核验，正式发布仍由集成人决定",
+      "review_report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md",
+      "next_step": "集成人据精确准备提交完成正式基线发布；另需处理并行验收提出的 CA-08-01/CA-06-01/CA-08-02"
     },
     {
       "id": "ALN-08-R",
@@ -701,10 +756,10 @@
       "title": "运行时遵守模型路由拒绝",
       "stream": "runtime",
       "owner": "codex-runtime",
-      "reviewer": null,
+      "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "61d3b94625a3e866258978bb4a634de3a18ae673",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "delivered_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
       "evidence": [
@@ -716,6 +771,14 @@
           "source_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
           "source_tree": "616520516106b8c5130979f8fb320a5ccf751bc7",
           "log": ".planning/2026-10-22-router-rejection/clean-backend-tests.txt"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "claude-main 独立验收：路由拒绝路径与全量回归",
+          "command": "python -m pytest tests/test_runtime_router_rejection.py -q; python -m pytest tests -q",
+          "result": "拒绝路径专项通过；全量 915 passed, 1 skipped",
+          "reviewed_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+          "report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
         }
       ],
       "card": "docs/协作开发/任务卡/08-运行时路由拒绝.md",
@@ -724,7 +787,10 @@
         "evoagent/core/controller.py"
       ],
       "working_basis": "用户明确指出并要求处理运行时共享文件中的路由拒绝旁路；不改变其他会话在途内容及正式验收状态",
-      "next_step": "独立runtime reviewer复核24cd524；不自批本卡和ALN-04/10"
+      "review_result": "accepted",
+      "review_note": "2026-10-22 claude-main 独立审阅：控制器在显式/默认/评分/视觉约束拒绝时均不静默回退，失败持久化并抛错；6 项专项与真实 App 路径通过",
+      "review_report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md",
+      "next_step": "整包 ALN-08 的工作流/执行模式路由入口与生产评测集/价格账单另计"
     }
   ],
   "workpackages": [
