@@ -159,7 +159,11 @@ class Evaluator:
                 fixture_digest = hashlib.sha256(encoded_fixture.encode()).hexdigest()
                 if evidence.get("fixture_reproduced") is not True or evidence.get("fixture_digest") != fixture_digest:
                     unverified_fixtures += 1
-            cost_known = cost_known and evidence.get("cost_known", "cost" in evidence) is True
+            # Failure injection hooks must attest cost explicitly. Preserve the
+            # historical cost-only contract only for ordinary task runners.
+            legacy_cost_known = not case.failure_fixture and "cost" in evidence
+            case_cost_known = evidence.get("cost_known", legacy_cost_known) is True
+            cost_known = cost_known and case_cost_known
             report.case_results.append({**evidence, "case": case.case_id, "ok": ok,
                                         "difficulty": case.difficulty,
                                         "domain": case.domain,
@@ -229,7 +233,10 @@ class ReleaseGate:
               benefit: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         th = thresholds or GateThresholds()
         reasons: List[str] = []
-        for label, current in (("baseline", baseline), ("candidate", candidate)):
+        for label, current in (("baseline", baseline), ("candidate", candidate),
+                               ("holdout", holdout_report), ("holdout_baseline", holdout_baseline)):
+            if current is None:
+                continue
             if any(not math.isfinite(value) or value < 0 for value in (
                     current.success_rate, current.cost, current.avg_latency)):
                 reasons.append("评测数值无效: " + label)
@@ -239,7 +246,9 @@ class ReleaseGate:
                 reasons.append("缺少可核对费用证据: " + label)
             if current.metadata.get("unverified_fixtures"):
                 reasons.append("故障夹具尚未确认重现，不能把输入重跑当作回归通过: " + label)
-            if current.case_results and (len(current.case_results) != current.case_count or
+            if (not current.case_results or
+                    any(not isinstance(r.get("case"), str) or not r["case"] for r in current.case_results) or
+                    len(current.case_results) != current.case_count or
                     len({r.get("case") for r in current.case_results}) != current.case_count):
                 reasons.append("评测明细/样本数量不一致: " + label)
 

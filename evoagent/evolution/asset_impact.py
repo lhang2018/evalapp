@@ -5,8 +5,8 @@ from ..assets.content import content_digest
 
 def asset_impact(store, component, capability_roots):
     if store is None or not hasattr(store, "_conn"):
-        return {"asset_refs": [], "asset_scope_status": "unavailable", "asset_scope_errors": []}
-    repo = AssetRepository(store._conn, ensure_schema=False, lock=store._lock)
+        return {"asset_refs": [], "asset_scope_status": "unavailable",
+                "asset_scope_errors": ["资产存储不可用，影响范围不可核验"]}
     sources = {component}
     sources.update("experts/capabilities/" + root for root in capability_roots)
     parts = component.split("/")
@@ -17,6 +17,7 @@ def asset_impact(store, component, capability_roots):
     result = {"asset_refs": [], "asset_roots": [], "asset_scope_errors": [],
               "asset_required_suites": [], "asset_required_domains": []}
     try:
+        repo = AssetRepository(store._conn, ensure_schema=False, lock=store._lock)
         if component.startswith("asset/"):
             roots = [repo.get_exact(component[len("asset/"):])]
         else:

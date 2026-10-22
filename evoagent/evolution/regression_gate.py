@@ -80,6 +80,10 @@ def evaluate_regressions(controller, candidate, *, evaluated=None):
               "missing_suites": [], "required_suites": required,
               "scope": impact, "coverage": {}}
     result["reasons"].extend(impact.get("asset_scope_errors", []))
+    # Old/persisted impact records may have an empty errors list despite an
+    # unresolved scope. The status itself must also prevent release.
+    if impact.get("asset_scope_status") in ("unavailable", "invalid") and not impact.get("asset_scope_errors"):
+        result["reasons"].append("资产影响范围不可核验: " + impact["asset_scope_status"])
     if controller.experts is not None and not impact:
         result["reasons"].append("影响范围不可核验，禁止复用旧证据")
     domains = set(impact.get("required_domains", []))

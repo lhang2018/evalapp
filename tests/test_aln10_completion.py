@@ -44,7 +44,7 @@ class Runner:
         if self.budget:
             self.budget.record_usage(model_calls=1)
         return (self.baseline or case.case_id not in self.fails), .01, {
-            "cost": .01, "tool_ok": True, "fixture_reproduced": bool(case.failure_fixture),
+            "cost": .01, "cost_known": True, "tool_ok": True, "fixture_reproduced": bool(case.failure_fixture),
             "fixture_digest": digest(case.failure_fixture)}
 
 
