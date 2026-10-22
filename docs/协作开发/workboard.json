@@ -885,17 +885,38 @@
       "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "delivered_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "新增22项签名专项：规范化字节、载荷绑定、真实文件摘要、缺失/多余/自改写、未知密钥、轮换、稳定通道缺项、证据持久化、旧格式迁移",
+          "command": "python -m pytest tests/test_release_signing.py tests/test_release*.py tests/test_version_sync.py tests/test_memory*.py tests/test_governance.py -q --tb=short",
+          "result": "151 passed",
+          "source_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+          "source_tree": "0fcfe0e9ee750647ddc853f66b42ac18142042e3",
+          "log": ".planning/2026-10-22-aln-03-05/targeted.txt"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "全量回归；另发现共享台账 M-07 陈旧声明与行号位移、异步审批用例偶发",
+          "command": "python -m pytest -q",
+          "result": "首轮1051 passed/1 skipped（含2项IMPLEMENTATION.md台账陈旧/行号位移、1项异步审批偶发）；复跑1055 passed/1 skipped，仅余同样2项台账失败，审批用例通过",
+          "source_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+          "source_tree": "0fcfe0e9ee750647ddc853f66b42ac18142042e3",
+          "log": ".planning/2026-10-22-aln-03-05/full-rerun.txt"
+        }
+      ],
       "card": "docs/协作开发/任务卡/03-发布签名.md",
+      "delivery": "docs/协作开发/交付/ALN-03-S-发布正文签名与兼容声明.md",
       "shared_files": [
         "evoagent/release/manager.py",
         "evoagent/release/delivery.py",
         "evoagent/core/contracts.py"
       ],
-      "preparation_status": "claimed",
-      "next_step": "锁定规范化签名载荷与兼容声明字段；在 ReleaseManager 发布路径重算摘要并验签，失败/迁移行为写成测试"
+      "preparation_status": "delivered",
+      "next_step": "独立复核53fc7bb的规范化签名/真实文件验签/兼容声明与旧格式迁移；端侧公钥验签、制品下载装载与真实回执转 ALN-11/Android 线"
     },
     {
       "id": "ALN-05-M",
@@ -906,16 +927,37 @@
       "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "delivered_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "新增15项：五类身份隔离/继承、专家蜂巢、AccessGrant 显式授权与越权拒绝、ContextManifest 可复现与正文不入清单、冲突三条裁决路径与人工审计、墓碑级联与冲突失效、压缩保留约束/验收",
+          "command": "python -m pytest tests/test_memory*.py tests/test_governance.py tests/test_release*.py tests/test_version_sync.py -q --tb=short",
+          "result": "151 passed",
+          "source_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+          "source_tree": "0fcfe0e9ee750647ddc853f66b42ac18142042e3",
+          "log": ".planning/2026-10-22-aln-03-05/targeted.txt"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "全量回归；共享台账 M-07 仍称 ContextManifest 零命中且行号位移",
+          "command": "python -m pytest -q",
+          "result": "首轮1051 passed/1 skipped（含2项IMPLEMENTATION.md台账陈旧/行号位移、1项异步审批偶发）；复跑1055 passed/1 skipped，仅余同样2项台账失败，审批用例通过",
+          "source_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+          "source_tree": "0fcfe0e9ee750647ddc853f66b42ac18142042e3",
+          "log": ".planning/2026-10-22-aln-03-05/full-rerun.txt"
+        }
+      ],
       "card": "docs/协作开发/任务卡/05-记忆与上下文.md",
+      "delivery": "docs/协作开发/交付/ALN-05-M-多维记忆与上下文清单.md",
       "shared_files": [
         "evoagent/memory/context.py",
         "evoagent/core/persistence.py"
       ],
-      "preparation_status": "claimed",
-      "next_step": "先定五类身份作用域与 ContextManifest 字段，再实现可追溯装配、冲突裁决与删除失效传播"
+      "preparation_status": "delivered",
+      "next_step": "独立复核53fc7bb的身份隔离/ContextManifest/冲突与删除传播；Task 身份字段、共享持久化与 controller 装配由集成角色合入，端侧离线记忆与隐私治理转 ALN-12/ALN-16"
     },
     {
       "id": "ALN-01-A",
