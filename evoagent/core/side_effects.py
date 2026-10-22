@@ -24,9 +24,11 @@ ReAct/DAG 共用该边界。legacy 结果映射只作兼容，不替代执行前
 """
 
 import hashlib
+import json
 import time
 import uuid
 from typing import Any, Dict, List, Optional
+from .leases import guard_write, assert_connection_lease
 
 __all__ = ["EFFECT_STATUS", "SideEffectLedger"]
 
@@ -60,7 +62,7 @@ class SideEffectLedger:
     # ---- 记账 ----
 
     def begin(self, task_id: str, tool_id: str, key: str,
-              summary: str, *, run_id: str = ""):
+              summary: str, *, run_id: str = "", args=None, tool_version=""):
         """Claim a logical operation durably before invoking its runner.
 
         The primary key arbitrates concurrent callers, including separate
@@ -79,7 +81,9 @@ class SideEffectLedger:
             identity = f"{task_id}\0{tool_id}\0{key}\0{attempt}"
             effect_id = "eff_" + hashlib.sha256(identity.encode()).hexdigest()[:32]
             claimed = self.db.claim_side_effect(
-                effect_id, task_id, run_id or task_id, tool_id, key, summary)
+                effect_id, task_id, run_id or task_id, tool_id, key, summary,
+                args_json=json.dumps(args, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+                    if args is not None else None, tool_version=tool_version)
             if not claimed:
                 row = self.get(effect_id)
                 if row is None or row["effect_summary"] != summary:
@@ -108,8 +112,64 @@ class SideEffectLedger:
             status = "unknown"
         else:
             status = "failed"
+        with self.db._lock:
+            guard_write(self.db)
+            self.db._conn.execute("UPDATE effect_receipts SET result_json=?,updated_at=? WHERE effect_id=?",
+                (json.dumps(result.to_dict(), ensure_ascii=False, allow_nan=False, default=str), time.time(), effect_id))
+            self.db._conn.commit()
         if not self.transition(effect_id, status):
             raise RuntimeError("副作用结果状态未持久化")
+
+    def bind_operation(self, effect_id, args, tool_version):
+        encoded = json.dumps(args, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+        with self.db._lock:
+            guard_write(self.db)
+            self.db._conn.execute("INSERT OR IGNORE INTO effect_receipts VALUES (?,?,?,NULL,NULL,?)",
+                                 (effect_id, encoded, tool_version, time.time()))
+            row = self.db._conn.execute("SELECT args_json,tool_version FROM effect_receipts WHERE effect_id=?", (effect_id,)).fetchone()
+            if tuple(row) != (encoded, tool_version):
+                self.db._conn.rollback()
+                raise ValueError("副作用参数或工具版本已改变")
+            self.db._conn.commit()
+
+    def operation(self, effect_id):
+        with self.db._lock:
+            row = self.db._conn.execute("SELECT * FROM effect_receipts WHERE effect_id=?", (effect_id,)).fetchone()
+        effect = self.get(effect_id)
+        return {**effect, "args": json.loads(row["args_json"]), "tool_version": row["tool_version"],
+                "result": json.loads(row["result_json"]) if row["result_json"] else None} if row and effect else None
+
+    def accept_receipt(self, effect_id, result, receipt):
+        """Atomically publish verified result + receipt + reconciliation verdict."""
+        if not result.independently_verified or result.side_effect_uncertain:
+            return False
+        ref = str(result.evidence.get("external_receipt_ref") or "").strip()
+        if not ref:
+            return False
+        status = "confirmed" if result.ok and result.executed else "failed" if not result.ok and not result.executed else None
+        if status is None:
+            return False
+        with self.db._lock:
+            self.db._conn.execute("BEGIN IMMEDIATE")
+            try:
+                assert_connection_lease(self.db._conn, self.db)
+                row = self.db._conn.execute("SELECT status FROM task_side_effects WHERE effect_id=?", (effect_id,)).fetchone()
+                if not row or row["status"] not in ("planned", "submitted", "unknown"):
+                    self.db._conn.rollback()
+                    return False
+                data = json.dumps(result.to_dict(), ensure_ascii=False, allow_nan=False)
+                self.db._conn.execute("UPDATE effect_receipts SET result_json=?,receipt_json=?,updated_at=? WHERE effect_id=?",
+                    (data, json.dumps(receipt, ensure_ascii=False, allow_nan=False), time.time(), effect_id))
+                if status == "confirmed":
+                    self.db._conn.execute("INSERT OR REPLACE INTO tool_executions VALUES (?,?,?,?)",
+                        ("effect:" + effect_id, result.evidence["tool"], time.time(), data))
+                self.db._conn.execute("UPDATE task_side_effects SET status=?,external_receipt_ref=?,last_reconciled_at=?,updated_at=? WHERE effect_id=?",
+                    (status, ref, time.time(), time.time(), effect_id))
+                self.db._conn.commit()
+            except BaseException:
+                self.db._conn.rollback()
+                raise
+        return True
 
     def record(self, task_id: str, tool_id: str, *,
                run_id: Optional[str] = None,
@@ -172,7 +232,7 @@ class SideEffectLedger:
             return False  # 非法转移拒绝（状态机不变量）
         return self.db.update_side_effect_status(
             effect_id, to_status, receipt_ref=receipt_ref,
-            reconciled_at=(time.time() if reconciled else None))
+            reconciled_at=(time.time() if reconciled else None), expected_status=current)
 
     def reconcile(self, effect_id: str, verdict: str, *,
                   receipt_ref: Optional[str] = None) -> bool:
@@ -185,7 +245,7 @@ class SideEffectLedger:
             return False
         return self.db.update_side_effect_status(
             effect_id, verdict, receipt_ref=receipt_ref,
-            reconciled_at=time.time())
+            reconciled_at=time.time(), expected_status="unknown")
 
     # ---- 查询 / 投影 ----
 
