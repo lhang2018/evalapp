@@ -1244,16 +1244,36 @@
       "reviewer": null,
       "branch": "main",
       "base_commit": "1ad71bc9d3b2d920cd8028d59765194941fd50c7",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "Goal十态/授权/Task接线；精确提交源码归档全量，排除在途文件",
+          "source_commit": "c885cbdc6464e8d253e9dba840a43aa48d746521",
+          "source_tree": "7725166fb61cba513b04b5f464059ff58533e049",
+          "result": "1162 passed/1 skipped; 53 new Goal tests passed; ledger checks passed",
+          "log": ".planning/2026-10-22-aln13/evidence.json",
+          "delivery": "docs/协作开发/交付/ALN-13-A-Goal十态与自主授权.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/13-Goal与自主授权.md",
       "shared_files": [
         "evoagent/app.py",
         "evoagent/core/controller.py",
-        "evoagent/api/server.py"
+        "evoagent/api/server.py",
+        "evoagent/core/budget.py",
+        "FEATURES.md",
+        "FEATURE_SPLIT.md",
+        "GAP_ANALYSIS.md",
+        "IMPLEMENTATION.md",
+        "ROADMAP.md"
       ],
-      "next_step": "按09卷十态实现Goal注册/授权与最终动作守卫；保留正式基线及独立审阅条件"
+      "next_step": "独立复核c885cbd的53项Goal回归与1162/1提交源码全量；ALN-14/15消费Goal/授权/预算引用，不自批、不发布共同基线",
+      "review_result": "pending",
+      "delivered_commit": "c885cbdc6464e8d253e9dba840a43aa48d746521",
+      "delivery": "docs/协作开发/交付/ALN-13-A-Goal十态与自主授权.md",
+      "preparation_status": "delivered"
     },
     {
       "id": "ALN-12-A",
@@ -1567,8 +1587,9 @@
       ],
       "stream": "runtime",
       "owner": "codex-runtime",
-      "delivery_state": "planned",
-      "next_step": "ALN-13-A已认领，交付Goal十态、持久授权、期限/撤销传播及Task接线；整包验收仍待前置与独立复核"
+      "delivery_state": "partial_verified",
+      "next_step": "ALN-13-A后端实体/十态/自主授权与Task动作接线已交付；c885cbd及1162/1证据待独立复核；自动推进与资源预留分别由ALN-14/15消费",
+      "implementation_state": "delivered_pending_independent_review"
     },
     {
       "id": "ALN-14",

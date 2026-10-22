@@ -1,0 +1,47 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  6%]
+........................................................................ [ 12%]
+........................................................................ [ 18%]
+........................................................................ [ 24%]
+........................................................................ [ 31%]
+........................................................................ [ 37%]
+........................................................................ [ 43%]
+........................................................................ [ 49%]
+........................................................................ [ 56%]
+........................................................................ [ 62%]
+........................................................................ [ 68%]
+........................................................................ [ 74%]
+........................................................................ [ 80%]
+........................................................................ [ 87%]
+........................................................................ [ 93%]
+............F..F....s................................................... [ 99%]
+.....                                                                    [100%]
+================================== FAILURES ===================================
+_________________ TestRealLedgerPasses.test_full_check_passes _________________
+tests\test_verify_claims.py:104: in test_full_check_passes
+    self.assertEqual(problems, [],
+E   AssertionError: Lists differ: [{'kind': 'status_count_mismatch', 'detail': '⬜ 声明 15，实际表格 12'}] != []
+E   
+E   First list contains 1 additional elements.
+E   First extra element 0:
+E   {'kind': 'status_count_mismatch', 'detail': '⬜ 声明 15，实际表格 12'}
+E   
+E   - [{'detail': '⬜ 声明 15，实际表格 12', 'kind': 'status_count_mismatch'}]
+E   + [] : 台账声明未通过机器校验：[{'kind': 'status_count_mismatch', 'detail': '⬜ 声明 15，实际表格 12'}]
+_________ TestRealLedgerPasses.test_status_counts_expand_to_89_themes _________
+tests\test_verify_claims.py:69: in test_status_counts_expand_to_89_themes
+    self.assertEqual(problems, [],
+E   AssertionError: Lists differ: [{'kind': 'status_count_mismatch', 'detail': '⬜ 声明 15，实际表格 12'}] != []
+E   
+E   First list contains 1 additional elements.
+E   First extra element 0:
+E   {'kind': 'status_count_mismatch', 'detail': '⬜ 声明 15，实际表格 12'}
+E   
+E   - [{'detail': '⬜ 声明 15，实际表格 12', 'kind': 'status_count_mismatch'}]
+E   + [] : 台账声明的计数与实际不符：[{'kind': 'status_count_mismatch', 'detail': '⬜ 声明 15，实际表格 12'}]
+=========================== short test summary info ===========================
+FAILED tests/test_verify_claims.py::TestRealLedgerPasses::test_full_check_passes
+FAILED tests/test_verify_claims.py::TestRealLedgerPasses::test_status_counts_expand_to_89_themes
+2 failed, 1154 passed, 1 skipped in 117.94s (0:01:57)

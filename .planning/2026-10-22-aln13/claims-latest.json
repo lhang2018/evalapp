@@ -1,0 +1,18 @@
+{
+  "count_warnings": [],
+  "ledger": "IMPLEMENTATION.md",
+  "rows_parsed": 84,
+  "status_counts": {
+    "✅": 37,
+    "⬜": 12,
+    "🔹": 40
+  },
+  "symbols_indexed": 1208,
+  "claims_checked": {
+    "dead_claims": 1,
+    "absent_claims": 1
+  },
+  "weak_positive_rows": 0,
+  "problems": [],
+  "ok": true
+}

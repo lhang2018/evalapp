@@ -1,0 +1,49 @@
+{
+  "source_commit": "c885cbdc6464e8d253e9dba840a43aa48d746521",
+  "source_tree": "7725166fb61cba513b04b5f464059ff58533e049",
+  "verification_scope": "exact committed-source archive within current project; no implementation moved to another worktree; unrelated working changes excluded",
+  "matched_code_files": 319,
+  "backend": {
+    "passed": 1162,
+    "skipped": 1
+  },
+  "new_goal_regressions": 53,
+  "client_changed": false,
+  "review_status": "pending_independent_review",
+  "logs": [
+    {
+      "path": ".planning/2026-10-22-aln13/backend-committed.txt",
+      "sha256": "cf9dc21030e5b72c1c3a2bd1e5df65da4907e82128889a69bab100118f00ee34"
+    },
+    {
+      "path": ".planning/2026-10-22-aln13/goal-tests-final.txt",
+      "sha256": "092164a4e154282b40898c1bc0aac5619576fab383dbb815decc885a06f83ccc"
+    },
+    {
+      "path": ".planning/2026-10-22-aln13/targeted-final.txt",
+      "sha256": "edfdd0ba09d8143cdc45fe7773569cc204e25404888bea9518b3222449ace5c2"
+    },
+    {
+      "path": ".planning/2026-10-22-aln13/backend-full-first.txt",
+      "sha256": "9a67a73cfe1e33b446688d7288885284d71d901e311d2a33726bf15dd9234b53"
+    },
+    {
+      "path": ".planning/2026-10-22-aln13/backend-af4b655.txt",
+      "sha256": "807e7be1a3e34cd894a0af3ac144cd8d60660c9bd5748b7e881dc8a3e35e5181"
+    },
+    {
+      "path": ".planning/2026-10-22-aln13/claims.json",
+      "sha256": "63118d3b6c487b1e015aa512814b58061401d147a97931bc3ecd0e40056009c4"
+    },
+    {
+      "path": ".planning/2026-10-22-aln13/ledgers.json",
+      "sha256": "4122187b3853f5edef5fb99bdf96704195aeb3954a1264ae7f2582d1acd89895"
+    }
+  ],
+  "post_integration_smoke": {
+    "commit": "a0db9ce88a77ab41bcdfc0d93a4f9a17b2916473",
+    "result": "53 Goal tests passed after concurrent coding-tools commit",
+    "log": ".planning/2026-10-22-aln13/goal-current-head.txt",
+    "sha256": "946bb5f5fce8da6cdd089aab894454d7be98c5a5bcda1a65401ba27315823ff4"
+  }
+}
