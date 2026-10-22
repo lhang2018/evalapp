@@ -13,6 +13,8 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 from ..models.base import ChatMessage
+from .manifest import (AccessGrant, ContextManifest, MemoryIdentity,
+                       make_entry)
 from .store import Credibility, MemoryKind, MemoryStore
 
 # 外部内容/记忆中出现这些模式时，只能当作数据，不能当作指令（Arch 18.2）。
@@ -60,6 +62,8 @@ class AssembledContext:
     dropped_tool_docs: int = 0
     dropped_evidence: int = 0
     compression_dropped_constraints: List[str] = field(default_factory=list)
+    # ALN-05：本次装配的不可变清单（只含引用与摘要，不含正文）
+    manifest: Optional[ContextManifest] = None
 
     def stats(self) -> Dict[str, Any]:
         return {
@@ -73,6 +77,8 @@ class AssembledContext:
             "dropped_evidence": self.dropped_evidence,
             "compression_summary": self.compression_summary,
             "quality": dict(self.quality),
+            "manifest_id": self.manifest.manifest_id if self.manifest else "",
+            "manifest_digest": self.manifest.digest if self.manifest else "",
         }
 
     def to_messages(self) -> List[ChatMessage]:
@@ -126,7 +132,9 @@ class ContextAssembler:
                  evidence_refs: List[str] | None = None,
                  scope_key: str = "",
                  include_memory: bool = True,
-                 max_chars: Optional[int] = None) -> AssembledContext:
+                 max_chars: Optional[int] = None,
+                 identity: Optional[MemoryIdentity] = None,
+                 grant: Optional[AccessGrant] = None) -> AssembledContext:
         limit = int(max_chars or self.budget.max_chars)
         ctx = AssembledContext(
             task_goal=goal,
@@ -143,17 +151,23 @@ class ContextAssembler:
         untrusted = 0
         untrusted_excluded = 0
 
+        rejected: List[Dict[str, Any]] = []
+        memory_pairs: List[Any] = []
         if self.memory is not None and include_memory:
-            mems = self.memory.search(goal, domains=[domain], scope_key=scope_key)
+            mems = self.memory.search(
+                goal, domains=[domain], scope_key=scope_key,
+                identity=identity, grant=grant)
             ctx.memory_candidates = len(mems)
             selected_candidates = []
             for m in mems:
                 if _cross_domain(m, domain):
                     cross_domain += 1
+                    rejected.append({"item": m, "reason": "cross_domain"})
                     continue
                 if _looks_untrusted(m.content):
                     untrusted += 1
                     untrusted_excluded += 1
+                    rejected.append({"item": m, "reason": "untrusted_content"})
                     continue
                 selected_candidates.append(m)
             # 记忆份额上限：优先保留检索分数更高的条目
@@ -163,10 +177,13 @@ class ContextAssembler:
                 cost = len(m.content) + 8
                 if used + cost > memory_cap:
                     ctx.dropped_memories += 1
+                    rejected.append({"item": m, "reason": "memory_budget"})
                     notes.append(f"记忆「{_short(m.content)}」超出记忆预算")
                     continue
                 used += cost
-                ctx.memories.append(f"[{m.status.value}] {m.content}")
+                text = f"[{m.status.value}] {m.content}"
+                ctx.memories.append(text)
+                memory_pairs.append((text, m))
                 ctx.memory_used += 1
                 self.memory.record_use(m.memory_id)
 
@@ -179,6 +196,12 @@ class ContextAssembler:
             else:
                 results.append(r)
         ctx.recent_results = results
+
+        # 压缩前快照（ALN-05：清单记录压缩前后条目引用）
+        pre_memories = list(ctx.memories)
+        pre_results = list(ctx.recent_results)
+        pre_tool_docs = list(ctx.tool_docs)
+        pre_evidence = list(ctx.evidence_refs)
 
         ctx.chars_before = _ctx_size(ctx)
         before = AssembledContext(
@@ -204,7 +227,92 @@ class ContextAssembler:
             ctx.quality["constraint_loss"] = list(
                 ctx.compression_dropped_constraints)
         ctx.chars_after = _ctx_size(ctx)
+        ctx.manifest = self._build_manifest(
+            ctx, goal=goal, intent=intent, domain=domain,
+            scope_key=scope_key, limit=limit, identity=identity,
+            grant=grant, memory_pairs=memory_pairs, rejected=rejected,
+            pre_memories=pre_memories, pre_results=pre_results,
+            pre_tool_docs=pre_tool_docs, pre_evidence=pre_evidence,
+            notes=notes)
         return ctx
+
+    def _build_manifest(self, ctx: AssembledContext, *, goal: str,
+                        intent: str, domain: str, scope_key: str,
+                        limit: int, identity: Optional[MemoryIdentity],
+                        grant: Optional[AccessGrant], memory_pairs: List[Any],
+                        rejected: List[Dict[str, Any]],
+                        pre_memories: List[str], pre_results: List[str],
+                        pre_tool_docs: List[str], pre_evidence: List[str],
+                        notes: List[str]) -> ContextManifest:
+        """构建只含引用与摘要的不可变清单；相同输入产生相同 digest。"""
+        entries = [make_entry("goal", goal, reason="任务目标")]
+        for i, text in enumerate(ctx.hard_constraints):
+            entries.append(make_entry("constraint", text, index=i + 1,
+                                      reason="硬约束"))
+        if ctx.task_status:
+            entries.append(make_entry("status", ctx.task_status,
+                                      reason="任务状态"))
+        _append_queue(entries, "tool_doc", pre_tool_docs, ctx.tool_docs,
+                      "工具说明")
+
+        retained = list(ctx.memories)
+        for i, (text, item) in enumerate(memory_pairs):
+            included = text in retained
+            if included:
+                retained.remove(text)
+            entries.append(make_entry(
+                "memory", item.content, index=i + 1,
+                source=item.source, source_id=item.memory_id,
+                source_version=item.source_version,
+                scope=getattr(item.scope, "value", item.scope),
+                scope_key=item.scope_key,
+                reason="relevance_retrieval" if included
+                else "dropped_by_compression",
+                included=included, created_at=item.created_at,
+                conflict_ids=getattr(item, "conflict_ids", ())))
+        for i, rej in enumerate(rejected):
+            item = rej["item"]
+            entries.append(make_entry(
+                "memory", item.content, index=1000 + i,
+                source=item.source, source_id=item.memory_id,
+                source_version=item.source_version,
+                scope=getattr(item.scope, "value", item.scope),
+                scope_key=item.scope_key, reason=rej["reason"],
+                included=False, created_at=item.created_at,
+                conflict_ids=getattr(item, "conflict_ids", ())))
+
+        _append_queue(entries, "result", pre_results, ctx.recent_results,
+                      "最近执行结果")
+        for i, criterion in enumerate(ctx.acceptance_criteria):
+            entries.append(make_entry("acceptance", str(criterion),
+                                      index=i + 1, reason="验收条件"))
+        _append_queue(entries, "evidence", pre_evidence, ctx.evidence_refs,
+                      "证据引用")
+
+        dropped_refs = [entry.entry_id for entry in entries if not entry.included]
+        compression = {
+            "applied": bool(notes),
+            "pre_compress_refs": dropped_refs,
+            "dropped": {"memories": ctx.dropped_memories,
+                        "results": ctx.dropped_results,
+                        "tool_docs": ctx.dropped_tool_docs,
+                        "evidence": ctx.dropped_evidence},
+            "hard_constraints_retained": list(ctx.hard_constraints),
+            "acceptance_retained": list(ctx.acceptance_criteria),
+        }
+        assembly = {
+            "intent": intent, "domain": domain, "scope_key": scope_key,
+            "budget_chars": limit,
+            "memory_share": self.budget.memory_share,
+            "result_share": self.budget.result_share,
+            "identity": identity.to_dict() if identity is not None else {},
+            "grant": grant.to_dict() if grant is not None else None,
+            "memory_candidates": ctx.memory_candidates,
+            "memory_used": ctx.memory_used,
+        }
+        return ContextManifest.build(
+            assembly=assembly, budget_tokens=max(1, (limit + 3) // 4),
+            entries=entries, compression=compression)
 
     def _apply_budget(self, ctx: AssembledContext, limit: int,
                       notes: List[str]) -> None:
@@ -238,6 +346,18 @@ class ContextAssembler:
             ctx.compression_summary = ctx.compression_summary[:-20]
         if len(ctx.compression_summary) <= 20 and _ctx_size(ctx) > limit:
             ctx.compression_summary = ""
+
+
+def _append_queue(entries: List[Any], kind: str, pre: List[str],
+                  post: List[str], reason: str) -> None:
+    """按压缩前后是否保留标记条目；被压掉的条目保留原 ID（included=False）。"""
+    remaining = list(post)
+    for i, text in enumerate(pre):
+        included = text in remaining
+        if included:
+            remaining.remove(text)
+        entries.append(make_entry(kind, text, index=i + 1, reason=reason,
+                                  included=included))
 
 
 def _cross_domain(item: Any, domain: str) -> bool:

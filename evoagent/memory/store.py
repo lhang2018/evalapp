@@ -16,8 +16,10 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+from .conflicts import ConflictLedger, TombstoneLedger
 from .embeddings import (EmbeddingProvider, HashEmbeddingProvider, hash_vector,
                          normalize, words)
+from .manifest import AccessGrant, MemoryAccessError, MemoryIdentity
 
 
 class MemoryKind(str, Enum):
@@ -40,8 +42,10 @@ class Credibility(str, Enum):
 
 
 class Scope(str, Enum):
-    TASK = "task"
+    USER = "user"
     PROJECT = "project"
+    SESSION = "session"
+    TASK = "task"
     EXPERT = "expert"
     MODEL = "model"
     SHARED = "shared"
@@ -68,6 +72,15 @@ class MemoryItem:
     updated_at: float = field(default_factory=time.time)
     valid_until: Optional[float] = None        # 过期标记（PRD 26）
     use_count: int = 0
+    # ALN-05：事实键与五类身份作用域（身份字段为空表示未声明归属）
+    fact_key: str = ""
+    user_id: str = ""
+    project_id: str = ""
+    session_id: str = ""
+    task_id: str = ""
+    expert_id: str = ""
+    conflict_ids: List[str] = field(default_factory=list)
+    has_conflict: bool = False
 
     def is_expired(self, now: float) -> bool:
         return bool(self.valid_until and now > self.valid_until)
@@ -122,7 +135,8 @@ class MemoryStore:
                  embedder: Optional[EmbeddingProvider] = None):
         import pathlib
         pathlib.Path(path).parent.mkdir(parents=True, exist_ok=True)
-        self._lock = threading.Lock()
+        # RLock：冲突/墓碑账本与存储共用同一临界区，可重入
+        self._lock = threading.RLock()
         self._embedder = embedder or HashEmbeddingProvider()
         self._conn = sqlite3.connect(path, check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
@@ -131,6 +145,8 @@ class MemoryStore:
             self._conn.execute(self._SCHEMA)
             self._conn.execute(self._VECTOR_SCHEMA)
             self._conn.commit()
+        self.conflicts = ConflictLedger(self._conn, self._lock)
+        self.tombstones = TombstoneLedger(self._conn, self._lock)
 
     def _migrate_if_needed(self) -> None:
         """开发期自动重建不兼容旧表；生产版需换成正式迁移。"""
@@ -139,11 +155,24 @@ class MemoryStore:
             self._conn.execute("DROP TABLE memory_items")
 
     # ---- 写入（PRD 27：来源识别→权限检查→冲突检查→验证→范围→版本记录）----
-    def write(self, item: MemoryItem, *, require_verification: bool = True) -> MemoryItem:
-        """require_verification=True 时：只有带证据的写入才能直接 verified。"""
+    def write(self, item: MemoryItem, *, require_verification: bool = True,
+              identity: Optional[MemoryIdentity] = None,
+              fact_key: str = "") -> MemoryItem:
+        """require_verification=True 时：只有带证据的写入才能直接 verified。
+
+        identity 非空时把五类身份键钉在条目上；fact_key 相同且内容不同的
+        新写入不会覆盖旧值，而是产生未裁决冲突（ALN-05）。
+        """
+        if identity is not None:
+            if not isinstance(identity, MemoryIdentity):
+                raise ValueError("identity 必须是 MemoryIdentity")
+            _apply_identity(item, identity)
+        if fact_key:
+            item.fact_key = fact_key
         if require_verification and item.status == Credibility.VERIFIED \
                 and not item.evidence:
             item.status = Credibility.PENDING_REVIEW
+        existing = None
         with self._lock:
             # 简单冲突处理：同 scope+kind 相同内容 → 跳过重复
             dup = self._conn.execute(
@@ -152,6 +181,8 @@ class MemoryStore:
                 (item.scope.value, item.kind.value, item.scope_key, item.content)).fetchone()
             if dup:
                 return item
+            if item.fact_key:
+                existing = self._find_fact(item)
             self._conn.execute(
                 "INSERT OR REPLACE INTO memory_items VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                 (item.memory_id, item.kind.value, item.scope.value, item.scope_key,
@@ -161,7 +192,31 @@ class MemoryStore:
                  json.dumps(self._extra(item), ensure_ascii=False)))
             self._conn.commit()
         self._store_vector(item)
+        if existing is not None and existing.content != item.content:
+            self._record_conflict(existing, item)
         return item
+
+    def _find_fact(self, item: MemoryItem) -> Optional[MemoryItem]:
+        rows = self._conn.execute(
+            "SELECT * FROM memory_items WHERE scope=? AND scope_key=?"
+            " AND status!='revoked' AND memory_id!=?",
+            (item.scope.value, item.scope_key, item.memory_id)).fetchall()
+        for row in rows:
+            candidate = self._row_to_item(row)
+            if candidate.fact_key and candidate.fact_key == item.fact_key:
+                return candidate
+        return None
+
+    def _record_conflict(self, old_item: MemoryItem,
+                         new_item: MemoryItem) -> Dict[str, Any]:
+        conflict = self.conflicts.record(old_item, new_item)
+        self.conflicts.attach(conflict["conflict_id"],
+                              [old_item.memory_id, new_item.memory_id])
+        new_item.has_conflict = True
+        if conflict["conflict_id"] not in new_item.conflict_ids:
+            new_item.conflict_ids.append(conflict["conflict_id"])
+        old_item.has_conflict = True
+        return conflict
 
     @staticmethod
     def _extra(item: MemoryItem) -> Dict[str, Any]:
@@ -169,9 +224,14 @@ class MemoryStore:
                 "applicable_domains": item.applicable_domains,
                 "evidence": item.evidence,
                 "relations": item.relations,
-                "superseded_by": item.superseded_by,
                 "revoked_reason": item.revoked_reason,
-                "valid_until": item.valid_until, "use_count": item.use_count}
+                "valid_until": item.valid_until, "use_count": item.use_count,
+                "fact_key": item.fact_key,
+                "user_id": item.user_id, "project_id": item.project_id,
+                "session_id": item.session_id, "task_id": item.task_id,
+                "expert_id": item.expert_id,
+                "conflict_ids": list(item.conflict_ids),
+                "has_conflict": bool(item.has_conflict)}
 
     # ---- 向量化（PRD 25）----
     def _embed_texts(self, texts: List[str]):
@@ -231,7 +291,9 @@ class MemoryStore:
     # ---- 检索（PRD 25）----
     def search(self, query: str, *, scope: Optional[Scope] = None,
                scope_key: str = "", domains: Optional[List[str]] = None,
-               limit: int = 5) -> List[MemoryItem]:
+               limit: int = 5,
+               identity: Optional[MemoryIdentity] = None,
+               grant: Optional[AccessGrant] = None) -> List[MemoryItem]:
         now = time.time()
         rows = self._conn.execute(
             "SELECT memory_id, kind, scope, scope_key, status, content, source,"
@@ -240,6 +302,14 @@ class MemoryStore:
         items = [self._row_to_item(r) for r in rows]
         # 1) 权限过滤
         items = [m for m in items if m.allowed and m.status != Credibility.REVOKED]
+        # 1b) 身份作用域隔离（ALN-05）：未显式授权的跨作用域请求直接拒绝
+        if identity is not None:
+            keys = _access_keys(identity, grant)
+            if scope is not None:
+                _require_scope_access(scope, scope_key, keys, identity)
+            elif scope_key and scope_key not in _all_keys(keys):
+                raise MemoryAccessError(f"越权访问作用域键: {scope_key}")
+            items = [m for m in items if _identity_visible(m, keys)]
         # 2) 过期过滤
         items = [m for m in items if not m.is_expired(now)]
         # 3) 范围过滤（GAP 死字段修复③：scope_key 真正参与检索隔离）
@@ -296,21 +366,34 @@ class MemoryStore:
                 (new_id, time.time(), old_id))
             self._conn.commit()
 
-    def get(self, memory_id: str) -> Optional[MemoryItem]:
+    def get(self, memory_id: str, *,
+            identity: Optional[MemoryIdentity] = None,
+            grant: Optional[AccessGrant] = None) -> Optional[MemoryItem]:
         row = self._conn.execute(
             "SELECT * FROM memory_items WHERE memory_id=?",
             (memory_id,)).fetchone()
-        return self._row_to_item(row) if row else None
+        if row is None:
+            return None
+        item = self._row_to_item(row)
+        if identity is not None and not _identity_visible(
+                item, _access_keys(identity, grant)):
+            raise MemoryAccessError(f"越权读取记忆: {memory_id}")
+        return item
 
     # ---- 用户端管理（PRD 89.4：查看 / 纠正 / 删除）----
     def list_items(self, *, kind: Optional[MemoryKind] = None,
                    scope: Optional[Scope] = None,
                    status: Optional[Credibility] = None,
                    allowed_only: bool = True,
-                   limit: int = 200) -> List[MemoryItem]:
+                   limit: int = 200,
+                   identity: Optional[MemoryIdentity] = None,
+                   grant: Optional[AccessGrant] = None) -> List[MemoryItem]:
         rows = self._conn.execute(
             "SELECT * FROM memory_items ORDER BY created_at DESC").fetchall()
         items = [self._row_to_item(r) for r in rows]
+        if identity is not None:
+            items = [m for m in items
+                     if _identity_visible(m, _access_keys(identity, grant))]
         if allowed_only:
             items = [m for m in items if m.allowed]
         if kind is not None:
@@ -348,14 +431,29 @@ class MemoryStore:
         self._store_vector(item)
         return item
 
-    def delete(self, memory_id: str) -> bool:
-        with self._lock:
-            cur = self._conn.execute(
-                "DELETE FROM memory_items WHERE memory_id=?", (memory_id,))
-            self._conn.execute(
-                "DELETE FROM memory_vectors WHERE memory_id=?", (memory_id,))
-            self._conn.commit()
-            return cur.rowcount > 0
+    def delete(self, memory_id: str, *, actor: str = "",
+               reason: str = "") -> bool:
+        """删除源记忆：写墓碑并沿派生/缓存引用链删除（ALN-05）。"""
+        result = self.delete_with_chain(memory_id, actor=actor, reason=reason)
+        return bool(result.get("ok"))
+
+    def delete_with_chain(self, memory_id: str, *, actor: str = "",
+                          reason: str = "") -> Dict[str, Any]:
+        return self.tombstones.delete_with_chain(
+            memory_id, actor=actor, reason=reason, conflicts=self.conflicts)
+
+    # ---- 冲突治理入口（规则裁决与人工裁决分离，ALN-05）----
+    def list_conflicts(self, *, status: Optional[str] = None,
+                       limit: int = 200) -> List[Dict[str, Any]]:
+        return self.conflicts.list(status=status, limit=limit)
+
+    def adjudicate_conflict(self, conflict_id: str) -> Dict[str, Any]:
+        return self.conflicts.adjudicate_rules(conflict_id)
+
+    def resolve_conflict(self, conflict_id: str, winner_id: str, *,
+                         actor: str, reason: str) -> Dict[str, Any]:
+        return self.conflicts.resolve_manually(
+            conflict_id, winner_id, actor=actor, reason=reason)
 
     def record_use(self, memory_id: str) -> None:
         """使用记录（PRD 25 检索最后一步）：use_count 存于 extra JSON。"""
@@ -440,7 +538,9 @@ class MemoryStore:
             scope=Scope(r["scope"]), scope_key=r["scope_key"],
             status=Credibility(r["status"]), content=r["content"],
             source=r["source"], allowed=bool(r["allowed"]),
-            created_at=r["created_at"], updated_at=r["updated_at"])
+            created_at=r["created_at"], updated_at=r["updated_at"],
+            superseded_by=(r["superseded_by"]
+                           if "superseded_by" in r.keys() else None))
         for k, v in extra.items():
             if hasattr(item, k):
                 setattr(item, k, v)
@@ -450,6 +550,76 @@ class MemoryStore:
 def _vector(text: str) -> List[float]:
     """哈希向量（回退实现）；保留名称供旧调用点使用。"""
     return hash_vector(text)
+
+
+_SCOPE_IDENTITY_FIELDS = {
+    "user": "user_id",
+    "project": "project_id",
+    "session": "session_id",
+    "task": "task_id",
+    "expert": "expert_id",
+}
+
+
+def _apply_identity(item: MemoryItem, identity: MemoryIdentity) -> None:
+    """写入时把五类身份键钉在条目上，并让 scope_key 与作用域字段一致。"""
+    for field_name in _SCOPE_IDENTITY_FIELDS.values():
+        setattr(item, field_name, getattr(identity, field_name, "") or "")
+    field_name = _SCOPE_IDENTITY_FIELDS.get(item.scope.value)
+    if field_name and not item.scope_key:
+        item.scope_key = getattr(identity, field_name, "") or ""
+
+
+def _access_keys(identity: MemoryIdentity,
+                 grant: Optional[AccessGrant]) -> Dict[str, set]:
+    """身份自带作用域 + 显式授权作用域；授权只增加可见键，不扩大默认范围。"""
+    keys: Dict[str, set] = {}
+    for scope, field_name in _SCOPE_IDENTITY_FIELDS.items():
+        value = getattr(identity, field_name, "") or ""
+        if value:
+            keys.setdefault(scope, set()).add(value)
+    if grant is not None:
+        for scope, value in grant.scope_map().items():
+            keys.setdefault(scope, set()).add(value)
+    return keys
+
+
+def _all_keys(keys: Dict[str, set]) -> set:
+    out: set = set()
+    for values in keys.values():
+        out.update(values)
+    return out
+
+
+def _identity_visible(item: MemoryItem, keys: Dict[str, set]) -> bool:
+    """作用域隔离：只读当前身份链上的键；shared 无 owner 时横切可见。"""
+    scope = item.scope.value
+    if scope == "shared":
+        owner = item.user_id
+        return not owner or owner in keys.get("user", set())
+    field_name = _SCOPE_IDENTITY_FIELDS.get(scope)
+    if field_name is None:
+        return True  # model 等非五类身份作用域沿用原有键隔离口径
+    item_key = getattr(item, field_name, "") or item.scope_key
+    return bool(item_key) and item_key in keys.get(scope, set())
+
+
+def _require_scope_access(scope: Scope, scope_key: str,
+                          keys: Dict[str, set],
+                          identity: MemoryIdentity) -> None:
+    scope_name = scope.value
+    if scope_name in ("shared", "model"):
+        return
+    field_name = _SCOPE_IDENTITY_FIELDS.get(scope_name)
+    if field_name is None:
+        return
+    allowed = keys.get(scope_name, set())
+    wanted = scope_key or getattr(identity, field_name, "")
+    if wanted:
+        if wanted not in allowed:
+            raise MemoryAccessError(f"越权访问作用域 {scope_name}:{wanted}")
+    elif not allowed:
+        raise MemoryAccessError(f"越权访问作用域 {scope_name}")
 
 
 def _key_isolated(m: MemoryItem, want: str) -> bool:

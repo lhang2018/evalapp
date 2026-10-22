@@ -17,8 +17,29 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 from ..assets.entity import AssetError, AssetRef, AssetValidationError
 from ..assets.refs import verify_manifest_ref
+from . import signing
 
 _DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
+_APP_VERSION_RE = re.compile(
+    r"^[vV]?\d+(?:\.\d+){0,2}(?:[-+][0-9A-Za-z.-]+)?$")
+_SUPPORTED_PLATFORMS = ("android", "ios")
+_CHANNELS = ("stable", "draft", "internal")
+# 这些字段由签名流程本身产生，不参与被签名的清单元数据。
+_SIGNING_FIELDS = frozenset({
+    "artifact_digest", "signed_by", "signing_payload_digest",
+    "signature_version", "signing_key_id",
+})
+# ALN-03 之前的 v1 签名只覆盖这些字段；迁移时按原字节重建以验证旧签名。
+_LEGACY_SIGNED_FIELDS = (
+    "release_id", "version", "code_commit", "model_adapter_version",
+    "prompt_version", "tools_version", "workflow_versions",
+    "memory_policy_version", "env_version", "eval_dataset_version",
+    "eval_report", "compatible_requirements", "target_platforms",
+    "min_app_version", "required_tool_contracts", "channel", "bundle_kind",
+    "asset_refs", "rollback_target", "artifact_digest", "signed_by",
+    "created_at", "signature_version", "permission_requirements",
+    "data_schema", "model_capabilities", "offline_support",
+)
 
 
 def _normalize_asset_refs(refs: Any) -> List[Dict[str, str]]:
@@ -77,6 +98,33 @@ def _digest(manifest: "ReleaseManifest") -> str:
     return hashlib.sha256(_canonical(payload)).hexdigest()
 
 
+def _signed_metadata(manifest: "ReleaseManifest") -> Dict[str, Any]:
+    """现代签名覆盖完整清单元数据（含冻结资产引用与逐文件摘要）。"""
+    return {key: value for key, value in manifest.to_dict().items()
+            if key not in _SIGNING_FIELDS}
+
+
+def _signing_payload(manifest: "ReleaseManifest") -> Dict[str, Any]:
+    return signing.build_payload(
+        _signed_metadata(manifest),
+        key_id=manifest.signing_key_id or "")
+
+
+def _legacy_artifact_payload(manifest: "ReleaseManifest") -> Dict[str, Any]:
+    data = manifest.to_dict()
+    payload = {key: data[key] for key in _LEGACY_SIGNED_FIELDS if key in data}
+    if not payload.get("asset_refs"):
+        payload.pop("asset_refs", None)
+    return payload
+
+
+def _legacy_digest(manifest: "ReleaseManifest") -> str:
+    payload = _legacy_artifact_payload(manifest)
+    payload.pop("artifact_digest", None)
+    payload.pop("signed_by", None)
+    return hashlib.sha256(_canonical(payload)).hexdigest()
+
+
 @dataclass
 class ReleaseManifest:
     release_id: str = field(default_factory=lambda: uuid.uuid4().hex[:10])
@@ -100,11 +148,16 @@ class ReleaseManifest:
     bundle_kind: str = "capability"
     # 冻结资产引用：asset_id + version + content_digest，永不写“最新版本”。
     asset_refs: List[Dict[str, str]] = field(default_factory=list)
+    # 逐文件制品摘要（相对制品包根目录的 POSIX 路径 + 大小 + sha256）。
+    artifact_files: List[Dict[str, Any]] = field(default_factory=list)
     rollback_target: Optional[str] = None
+    rollback_supported: Optional[bool] = None
     artifact_digest: Optional[str] = None
     signed_by: Optional[str] = None
+    signing_key_id: Optional[str] = None
+    signing_payload_digest: Optional[str] = None
     created_at: float = field(default_factory=time.time)
-    signature_version: str = "hmac-sha256-v1"
+    signature_version: str = signing.SIGNATURE_VERSION
     permission_requirements: Optional[List[str]] = None
     data_schema: Optional[str] = None
     model_capabilities: Optional[List[str]] = None
@@ -124,14 +177,22 @@ class ReleaseManifest:
 class ReleaseManager:
     def __init__(self, signing_secret: Optional[str] = None,
                  store: Optional[Any] = None,
-                 artifact_dir: Optional[str] = None):
-        self.secret = signing_secret or secrets.token_hex(16)
+                 artifact_dir: Optional[str] = None, *,
+                 keyring: Optional[signing.KeyRing] = None,
+                 signing_key_id: Optional[str] = None):
+        if keyring is None:
+            keyring = signing.KeyRing()
+            keyring.add(signing_key_id or "server-hmac-1",
+                        signing_secret or secrets.token_hex(16))
+        self.keyring = keyring
+        self.secret = keyring.active.secret
         self.manifests: Dict[str, ReleaseManifest] = {}
         self.deployments: List[Dict[str, Any]] = []
         self.rollback_records: List[Dict[str, Any]] = []
         self.current_release_id: Optional[str] = None
         # 不可逆副作用记录（Arch 13.5：不能假设简单回滚可消除全部影响）
         self.irreversible_actions: List[Dict[str, Any]] = []
+        self.verification_evidence: List[Dict[str, Any]] = []
         self.store = store
         self.artifact_dir = Path(artifact_dir) if artifact_dir else None
         if self.artifact_dir is not None:
@@ -155,26 +216,58 @@ class ReleaseManager:
     def build_manifest(self, **kwargs: Any) -> ReleaseManifest:
         # These explicit defaults describe the metadata-only built-in bundle.
         # Real capability builders must supply their additional requirements.
+        artifact_paths = kwargs.pop("artifact_files", None)
         defaults = dict(target_platforms=["android", "ios"],
                         permission_requirements=[], data_schema="evoagent/1",
-                        model_capabilities=[], offline_support=False)
+                        model_capabilities=[], offline_support=False,
+                        rollback_supported=True)
         defaults.update(kwargs)
         m = ReleaseManifest(**defaults)
         m.asset_refs = _normalize_asset_refs(m.asset_refs)
         if m.release_id in self.manifests:
             raise ValueError("发布 ID 已存在，禁止覆盖不可变制品")
-        m.artifact_digest = _digest(m)
-        m.signed_by = _sign({"digest": m.artifact_digest},
-                            self.secret)
+        m.artifact_files = self._collect_artifacts(m.release_id,
+                                                   artifact_paths)
+        self._sign(m)
+        self._store_manifest(m)
+        return m
+
+    def _collect_artifacts(self, release_id: str,
+                           paths: Any) -> List[Dict[str, Any]]:
+        if paths is None:
+            return []
+        if (isinstance(paths, (str, bytes))
+                or not isinstance(paths, (list, tuple))):
+            raise ValueError("artifact_files 必须是相对制品包根目录的路径数组")
+        if self.artifact_dir is None:
+            raise ValueError("声明制品文件必须先配置 artifact_dir")
+        bundle_root = self.artifact_dir / release_id
+        return signing.collect_artifact_files(bundle_root, paths)
+
+    def _sign(self, m: ReleaseManifest,
+              key: Optional[signing.SigningKey] = None) -> None:
+        key = key or self.keyring.active
+        m.signature_version = signing.SIGNATURE_VERSION
+        m.signing_key_id = key.key_id
+        payload = signing.build_payload(_signed_metadata(m),
+                                        key_id=key.key_id)
+        m.signing_payload_digest = signing.payload_digest(payload)
+        m.artifact_digest = m.signing_payload_digest
+        m.signed_by = signing.sign_payload(payload, key.secret)
+
+    def _write_artifact(self, m: ReleaseManifest) -> None:
+        if self.artifact_dir is None:
+            return
+        artifact = self.artifact_dir / f"{m.release_id}.json"
+        temporary = artifact.with_suffix(".tmp")
+        temporary.write_bytes(_canonical(_artifact_payload(m)))
+        temporary.replace(artifact)
+
+    def _store_manifest(self, m: ReleaseManifest) -> None:
         self.manifests[m.release_id] = m
         if self.store is not None:
             self.store.save_release_manifest(m)
-        if self.artifact_dir is not None:
-            artifact = self.artifact_dir / f"{m.release_id}.json"
-            temporary = artifact.with_suffix(".tmp")
-            temporary.write_bytes(_canonical(_artifact_payload(m)))
-            temporary.replace(artifact)
-        return m
+        self._write_artifact(m)
 
     # ---- 门禁之后的部署（PRD 62）----
     def deploy(self, release_id: str, *, gate_passed: bool,
@@ -189,11 +282,23 @@ class ReleaseManager:
             return {"ok": False, "error": "核心安全边界的改动不允许普通发布流程"}
         if not gate_passed:
             return {"ok": False, "error": "门禁未通过，拒绝部署"}
-        if m.channel == "stable" and not self.compatibility_complete(m):
-            return {"ok": False, "error": "稳定通道缺少完整兼容声明"}
+        missing = self.missing_compatibility(m)
+        if missing:
+            evidence = self._record_verification(
+                m, None, context="deploy",
+                extra={"ok": False, "errors": list(missing),
+                       "missing_compatibility": list(missing)})
+            prefix = ("发布通道声明非法: " if m.channel not in _CHANNELS
+                      else "稳定通道缺少完整兼容声明: ")
+            return {"ok": False, "error": prefix + ", ".join(missing),
+                    "missing": missing, "verification": evidence}
         check = self.verify(m.release_id)
+        evidence = self._record_verification(
+            m, check, context="deploy",
+            extra={"compatibility_relaxed": m.channel != "stable"})
         if not check.get("ok"):
-            return {"ok": False, "error": "制品签名/完整性校验失败", **check}
+            return {"ok": False, "error": "制品签名/完整性校验失败",
+                    **check, "verification": evidence}
         if m.asset_refs:
             # 含资产引用的发布必须先按精确版本与摘要复核；不给仓储就不放行。
             if asset_repo is None:
@@ -209,7 +314,8 @@ class ReleaseManager:
         self.deployments.append(rec)
         if self.store is not None:
             self.store.append_release_event("deploy", release_id, rec)
-        return {"ok": True, **rec, "version": m.version}
+        return {"ok": True, **rec, "version": m.version,
+                "verification": evidence}
 
     # ---- 回滚（PRD 63）----
     def rollback(self, reason: str) -> Dict[str, Any]:
@@ -220,8 +326,11 @@ class ReleaseManager:
         m = self.manifests.get(target) if target else None
         if m is None:
             return {"ok": False, "error": "回滚目标缺失"}
-        if not self.verify(target).get("ok"):
-            return {"ok": False, "error": "回滚目标完整性校验失败"}
+        check = self.verify(target)
+        evidence = self._record_verification(m, check, context="rollback")
+        if not check.get("ok"):
+            return {"ok": False, "error": "回滚目标完整性校验失败",
+                    **check, "verification": evidence}
         self.current_release_id = target
         rec = {"from": last["release_id"], "to": target,
                "reason": reason, "at": time.time()}
@@ -239,15 +348,34 @@ class ReleaseManager:
         m = self.manifests.get(release_id)
         if not m:
             return {"ok": False, "error": "manifest 不存在"}
+        if m.signature_version != signing.SIGNATURE_VERSION:
+            # 旧格式可读，但不得静默放行；必须显式迁移（重新签名）。
+            return {"ok": False, "legacy": True,
+                    "artifact_digest": m.artifact_digest,
+                    "key_id": m.signing_key_id,
+                    "error": "旧签名格式需显式迁移（重新签名）后才能发布"}
+        errors: List[str] = []
+        payload_digest: Optional[str] = None
         try:
-            digest_ok = (isinstance(m.artifact_digest, str)
-                         and hmac.compare_digest(_digest(m), m.artifact_digest))
-            expected_sig = _sign({"digest": m.artifact_digest}, self.secret)
-            sig_ok = (m.signature_version == "hmac-sha256-v1"
-                      and isinstance(m.signed_by, str)
-                      and hmac.compare_digest(expected_sig, m.signed_by))
-        except (TypeError, ValueError):
-            digest_ok = sig_ok = False
+            payload = _signing_payload(m)
+            payload_digest = signing.payload_digest(payload)
+            digest_ok = (
+                isinstance(m.signing_payload_digest, str)
+                and isinstance(m.artifact_digest, str)
+                and hmac.compare_digest(payload_digest,
+                                        m.signing_payload_digest)
+                and hmac.compare_digest(payload_digest, m.artifact_digest))
+            signature = signing.verify_signature(
+                payload, m.signed_by, self.keyring)
+            signature_ok = bool(signature.get("ok"))
+            if not signature_ok:
+                errors.append(str(signature.get("error") or "签名校验失败"))
+        except (TypeError, ValueError, signing.SigningError) as exc:
+            digest_ok = signature_ok = False
+            errors.append(f"签名载荷无法重建: {exc}")
+        artifacts = self._verify_artifacts(m)
+        errors.extend(f"{item['path']}: {item['error']}"
+                      for item in artifacts["errors"])
         artifact_ok = True
         if self.artifact_dir is not None:
             artifact = self.artifact_dir / f"{release_id}.json"
@@ -259,12 +387,59 @@ class ReleaseManager:
                                    _canonical(_artifact_payload(m))))
             except (OSError, ValueError, TypeError):
                 artifact_ok = False
+            if not artifact_ok:
+                errors.append("发布正文文件缺失或被篡改")
         # 签名只证明来源与完整性，制品本身安全仍需测试与门禁（Arch 18.4）
-        return {"ok": digest_ok and sig_ok and artifact_ok,
+        return {"ok": bool(digest_ok and signature_ok
+                           and artifacts["ok"] and artifact_ok),
                 "artifact_digest": m.artifact_digest,
+                "payload_digest": payload_digest,
+                "key_id": m.signing_key_id,
                 "digest_ok": digest_ok,
+                "signature_ok": signature_ok,
+                "artifact_files_ok": artifacts["ok"],
+                "artifact_files_errors": artifacts["errors"],
                 "artifact_ok": artifact_ok,
+                "errors": errors,
                 "note": "签名仅证明来源与完整性，安全结论依赖于评测与门禁"}
+
+    def _verify_artifacts(self, m: ReleaseManifest) -> Dict[str, Any]:
+        if not m.artifact_files:
+            return {"ok": True, "verified": [], "errors": []}
+        if self.artifact_dir is None:
+            return {"ok": False, "verified": [],
+                    "errors": [{"path": "-",
+                                "error": "清单声明了制品文件但未配置制品目录"}]}
+        return signing.verify_artifact_files(
+            self.artifact_dir / m.release_id, m.artifact_files,
+            check_extra=True)
+
+    def _record_verification(self, m: ReleaseManifest, result: Any, *,
+                             context: str,
+                             extra: Optional[Dict[str, Any]] = None
+                             ) -> Dict[str, Any]:
+        result = result or {}
+        evidence: Dict[str, Any] = {
+            "release_id": m.release_id,
+            "version": m.version,
+            "channel": m.channel,
+            "context": context,
+            "at": time.time(),
+            "signature_version": m.signature_version,
+            "key_id": result.get("key_id") or m.signing_key_id,
+            "payload_digest": result.get("payload_digest"),
+            "artifact_digest": m.artifact_digest,
+            "ok": bool(result.get("ok", False)),
+            "errors": list(result.get("errors") or []),
+        }
+        if extra:
+            evidence.update(extra)
+        self.verification_evidence.append(evidence)
+        if self.store is not None and hasattr(self.store,
+                                              "append_release_event"):
+            self.store.append_release_event(
+                "verification", m.release_id, evidence)
+        return evidence
 
     def verify_assets(self, release_id: str, repo: Any, *,
                       required_states: Tuple[str, ...] = ("approved", "active")
@@ -306,17 +481,120 @@ class ReleaseManager:
                              "content_digest": asset.content_digest})
         return {"ok": not errors, "refs": verified, "errors": errors}
 
+    # ---- 旧格式迁移：显式重新签名，绝不静默接受 ----
+    def migrate_signature(self, release_id: str, *,
+                          allow_unverified: bool = False,
+                          actor: str = "",
+                          key_id: Optional[str] = None
+                          ) -> Dict[str, Any]:
+        m = self.manifests.get(release_id)
+        if m is None:
+            return {"ok": False, "error": "manifest 不存在"}
+        if m.signature_version == signing.SIGNATURE_VERSION:
+            check = self.verify(release_id)
+            evidence = self._record_verification(
+                m, check, context="migration",
+                extra={"migrated": False, "legacy_verified": True})
+            return {"ok": bool(check.get("ok")), "migrated": False,
+                    "verification": evidence}
+        legacy_ok, legacy_reason = self._legacy_signature_status(m)
+        if not legacy_ok and not allow_unverified:
+            message = (f"旧签名无法验证（{legacy_reason}）；"
+                       f"需显式 allow_unverified 重新签名")
+            evidence = self._record_verification(
+                m, None, context="migration",
+                extra={"ok": False, "errors": [message],
+                       "migrated": False, "legacy_verified": False,
+                       "legacy_reason": legacy_reason,
+                       "actor": str(actor or "").strip()})
+            return {"ok": False, "migrated": False, "error": message,
+                    "verification": evidence}
+        if not legacy_ok and not str(actor or "").strip():
+            return {"ok": False, "migrated": False,
+                    "error": "无法验证的旧格式重新签名必须记录操作者"}
+        key = self.keyring.get(key_id) if key_id else self.keyring.active
+        if key is None:
+            return {"ok": False, "migrated": False,
+                    "error": f"未知签名密钥标识: {key_id!r}"}
+        self._sign(m, key)
+        self._store_manifest(m)
+        check = self.verify(release_id)
+        evidence = self._record_verification(
+            m, check, context="migration",
+            extra={"migrated": True, "legacy_verified": legacy_ok,
+                   "legacy_reason": legacy_reason,
+                   "actor": str(actor or "").strip()})
+        return {"ok": bool(check.get("ok")), "migrated": True,
+                "legacy_verified": legacy_ok,
+                "legacy_reason": legacy_reason,
+                "verification": evidence}
+
+    def _legacy_signature_status(
+            self, m: ReleaseManifest) -> Tuple[bool, str]:
+        if m.signature_version != "hmac-sha256-v1":
+            return False, f"不支持的旧签名版本: {m.signature_version!r}"
+        try:
+            if not (isinstance(m.artifact_digest, str)
+                    and hmac.compare_digest(_legacy_digest(m),
+                                            m.artifact_digest)):
+                return False, "旧制品摘要不匹配"
+            if not isinstance(m.signed_by, str) or not m.signed_by:
+                return False, "旧签名缺失"
+            for key_id in self.keyring.key_ids():
+                expected = _sign({"digest": m.artifact_digest},
+                                 self.keyring.get(key_id).secret)
+                if hmac.compare_digest(expected, m.signed_by):
+                    return True, key_id
+            return False, "旧签名与当前密钥环不匹配"
+        except (TypeError, ValueError):
+            return False, "旧签名格式无法解析"
+
+    # ---- 稳定通道兼容声明 ----
     @staticmethod
-    def compatibility_complete(m: ReleaseManifest) -> bool:
-        arrays = (m.target_platforms, m.required_tool_contracts,
-                  m.permission_requirements, m.model_capabilities)
+    def missing_compatibility(m: ReleaseManifest) -> List[str]:
+        if m.channel not in _CHANNELS:
+            return [f"channel(未知发布通道: {m.channel!r})"]
+        if m.channel != "stable":
+            # 草稿/内部通道可放宽，但验证证据会显式标记 relaxed。
+            return []
+        missing: List[str] = []
+
+        def declared_list(name: str, value: Any, *, require_item: bool
+                          ) -> None:
+            if (not isinstance(value, list)
+                    or not all(isinstance(v, str) and v.strip()
+                               for v in value)
+                    or (require_item and not value)):
+                missing.append(name)
+
+        declared_list("target_platforms", m.target_platforms,
+                      require_item=True)
+        if (isinstance(m.target_platforms, list)
+                and any(p not in _SUPPORTED_PLATFORMS
+                        for p in m.target_platforms
+                        if isinstance(p, str))):
+            missing.append("target_platforms(不支持的平台)")
+        if (not isinstance(m.min_app_version, str)
+                or not _APP_VERSION_RE.match(m.min_app_version)):
+            missing.append("min_app_version")
+        declared_list("permission_requirements", m.permission_requirements,
+                      require_item=False)
+        declared_list("required_tool_contracts", m.required_tool_contracts,
+                      require_item=False)
+        declared_list("model_capabilities", m.model_capabilities,
+                      require_item=False)
+        if not isinstance(m.data_schema, str) or not m.data_schema.strip():
+            missing.append("data_schema")
+        if not isinstance(m.offline_support, bool):
+            missing.append("offline_support")
+        if not isinstance(m.rollback_supported, bool):
+            missing.append("rollback_supported")
         try:
             _normalize_asset_refs(m.asset_refs)
         except ValueError:
-            return False
-        return (all(isinstance(a, list) and all(isinstance(v, str) and v
-                                               for v in a) for a in arrays)
-                and bool(m.target_platforms)
-                and isinstance(m.min_app_version, str) and bool(m.min_app_version)
-                and isinstance(m.data_schema, str) and bool(m.data_schema)
-                and isinstance(m.offline_support, bool))
+            missing.append("asset_refs")
+        return missing
+
+    @staticmethod
+    def compatibility_complete(m: ReleaseManifest) -> bool:
+        return not ReleaseManager.missing_compatibility(m)

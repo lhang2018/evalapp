@@ -1,0 +1,60 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  6%]
+........................................................................ [ 13%]
+......F................................................................. [ 20%]
+........................................................................ [ 27%]
+........................................................................ [ 34%]
+........................................................................ [ 40%]
+........................................................................ [ 47%]
+..............................................................F......... [ 54%]
+........................................................................ [ 61%]
+........................................................................ [ 68%]
+........................................................................ [ 75%]
+........................................................................ [ 81%]
+........................................................................ [ 88%]
+......................................................F.......s......... [ 95%]
+...............................................                          [100%]
+================================== FAILURES ===================================
+______________ test_parallel_nodes_require_all_current_approvals ______________
+tests\test_async_approvals.py:99: in test_parallel_nodes_require_all_current_approvals
+    assert resumed.task_status == TaskStatus.SUCCEEDED
+E   AssertionError: assert <TaskStatus.S...: 'SUSPENDED'> == <TaskStatus.S...: 'SUCCEEDED'>
+E     
+E     - SUCCEEDED
+E     + SUSPENDED
+_________________ TestNoDrift.test_all_ledgers_have_no_drift __________________
+tests\test_ledger_drift.py:30: in test_all_ledgers_have_no_drift
+    self.assertEqual(
+E   AssertionError: Lists differ: [{'doc': 'IMPLEMENTATION.md', 'doc_line': [1047 chars]空行'}] != []
+E   
+E   First list contains 8 additional elements.
+E   First extra element 0:
+E   {'doc': 'IMPLEMENTATION.md', 'doc_line': 243, 'kind': 'bare_points_to_blank', 'detail': '裸引用 `evoagent/memory/store.py:248` 指向空行'}
+E   
+E   Diff is 1244 characters long. Set self.maxDiff to None to see it. : 台账存在 8 处引用问题：[('IMPLEMENTATION.md', 243, 'bare_points_to_blank'), ('FEATURES.md', 780, 'bare_points_to_blank'), ('GAP_ANALYSIS.md', 133, 'bare_points_to_blank'), ('GAP_ANALYSIS.md', 135, 'symbol_drift'), ('GAP_ANALYSIS.md', 150, 'bare_points_to_blank')]
+_________________ TestRealLedgerPasses.test_full_check_passes _________________
+tests\test_verify_claims.py:104: in test_full_check_passes
+    self.assertEqual(problems, [],
+E   AssertionError: Lists differ: [{'kind': 'absent_claim_but_present', 'the[242 chars]245}] != []
+E   
+E   First list contains 1 additional elements.
+E   First extra element 0:
+E   {'kind': 'absent_claim_but_present', 'theme': 'M-07', 'pattern': 'ContextManifest', 'detail': "台账称 `ContextManifest` 在 全仓 不存在，实际命中 ['evoagent/memory/context.py:16', 'evoagent/memory/context.py:66', 'evoagent/memory/context.py:246', 'evoagent/memory/context.py:313']", 'ledger_line': 245}
+E   
+E   + []
+E   - [{'detail': '台账称 `ContextManifest` 在 全仓 不存在，实际命中 '
+E   -             "['evoagent/memory/context.py:16', "
+E   -             "'evoagent/memory/context.py:66', "
+E   -             "'evoagent/memory/context.py:246', "
+E   -             "'evoagent/memory/context.py:313']",
+E   -   'kind': 'absent_claim_but_present',
+E   -   'ledger_line': 245,
+E   -   'pattern': 'ContextManifest',
+E   -   'theme': 'M-07'}] : 台账声明未通过机器校验：[{'kind': 'absent_claim_but_present', 'theme': 'M-07', 'pattern': 'ContextManifest', 'detail': "台账称 `ContextManifest` 在 全仓 不存在，实际命中 ['evoagent/memory/context.py:16', 'evoagent/memory/context.py:66', 'evoagent/memory/context.py:246', 'evoagent/memory/context.py:313']", 'ledger_line': 245}]
+=========================== short test summary info ===========================
+FAILED tests/test_async_approvals.py::test_parallel_nodes_require_all_current_approvals
+FAILED tests/test_ledger_drift.py::TestNoDrift::test_all_ledgers_have_no_drift
+FAILED tests/test_verify_claims.py::TestRealLedgerPasses::test_full_check_passes
+3 failed, 1051 passed, 1 skipped in 109.68s (0:01:49)
