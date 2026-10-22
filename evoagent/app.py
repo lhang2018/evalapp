@@ -18,6 +18,7 @@ from .core.events import EventBus
 from .core.log_layers import (EvidenceStore, ExecutionTracer, LayerManager)
 from .core.metrics import MetricsAggregator
 from .core.persistence import Database
+from .goals import GoalStore
 from .core.permissions import (PermissionController, PermissionDecision,
                                 ToolPolicy)
 from .core.replay import ReplayService
@@ -68,6 +69,7 @@ class App:
 
         # 基础设施
         self.db = Database(str(d / "evoagent.db"))
+        self.goals = GoalStore(self.db)
         self.bus = EventBus(str(d / "events.db"))
         self.memory = MemoryStore(str(d / "memory.db"),
                                   embedder=build_embedder(self.config))

@@ -66,10 +66,11 @@ class TestSchemaDomainSplit(unittest.TestCase):
         from evoagent.core.schema import goals
 
         self.assertIn("goals", schema.domain_names())
-        self.assertEqual(goals.PLANNED_TABLES, ("goals", "goal_evidence"))
-        # F-17 落地前刻意不建表，避免与后续设计补写冲突
-        self.assertEqual(goals.TABLES, [])
-        self.assertNotIn("goals", schema.table_names())
+        # ALN-13 now supplies the real domain through the same discovery path.
+        self.assertEqual(goals.PLANNED_TABLES, ())
+        self.assertIn("goals", schema.table_names())
+        self.assertIn("goal_grants", schema.table_names())
+        self.assertIn("goal_evidence", schema.table_names())
 
     def test_database_creates_all_domain_tables(self):
         from evoagent.core.persistence import Database

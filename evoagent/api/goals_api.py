@@ -1,0 +1,99 @@
+"""Goal administration: roles come from transport auth, never request bodies."""
+from ..goals import GoalConflict
+from .routes import get, post
+
+
+def _admin(ctx):
+    if ctx.auth.role != "admin":
+        ctx.json(403, {"error": "Goal写操作需要admin权限"})
+        return False
+    return True
+
+
+def _call(ctx, fn, code=200):
+    try:
+        return ctx.json(code, fn())
+    except GoalConflict as exc:
+        return ctx.json(409, {"error": str(exc)})
+    except KeyError as exc:
+        return ctx.json(404, {"error": str(exc)})
+    except PermissionError as exc:
+        return ctx.json(403, {"error": str(exc)})
+    except (TypeError, ValueError) as exc:
+        return ctx.json(400, {"error": str(exc)})
+
+
+@get("/goals")
+def list_goals(ctx):
+    _call(ctx, lambda: {"goals": ctx.app.goals.list(
+        owner=ctx.query.get("owner"), limit=int(ctx.query.get("limit", 100)))})
+
+
+@get("/goals/{goal_id}")
+def get_goal(ctx):
+    _call(ctx, lambda: ctx.app.goals.get(ctx.path.split("/")[2]))
+
+
+@get("/goals/{goal_id}/evidence")
+def get_evidence(ctx):
+    _call(ctx, lambda: {"evidence": ctx.app.goals.evidence(ctx.path.split("/")[2])})
+
+
+@get("/goals/{goal_id}/tasks")
+def list_tasks(ctx):
+    def load():
+        goal_id = ctx.path.split("/")[2]
+        ctx.app.goals.get(goal_id)
+        return {"tasks": [task.to_dict() for task in ctx.app.db.list_tasks_by_goal(goal_id)]}
+    _call(ctx, load)
+
+
+@post("/goals")
+def create_goal(ctx):
+    if _admin(ctx):
+        _call(ctx, lambda: ctx.app.goals.create(actor="api:admin", **ctx.body), 201)
+
+
+@post("/goals/{goal_id}/authorization")
+def authorize_goal(ctx):
+    if _admin(ctx):
+        _call(ctx, lambda: ctx.app.goals.authorize(ctx.path.split("/")[2], actor="api:admin", **ctx.body), 201)
+
+
+@post("/goals/{goal_id}/transition")
+def transition_goal(ctx):
+    if _admin(ctx):
+        _call(ctx, lambda: ctx.app.goals.transition(ctx.path.split("/")[2], actor="api:admin", **ctx.body))
+
+
+@post("/goals/{goal_id}/revoke")
+def revoke_goal(ctx):
+    if _admin(ctx):
+        _call(ctx, lambda: ctx.app.goals.revoke(ctx.path.split("/")[2], actor="api:admin", **ctx.body))
+
+
+@post("/goals/{goal_id}/tasks")
+def submit_goal_task(ctx):
+    if not _admin(ctx):
+        return
+    def submit():
+        body = dict(ctx.body)
+        title = body.pop("goal", None)
+        action = body.pop("action", "execute")
+        command_id = body.pop("command_id", None)
+        if set(body) - {"budget_overrides", "authorization_scope"}:
+            raise ValueError("未知Goal任务字段")
+        if not isinstance(title, str) or not title.strip():
+            raise ValueError("任务goal不能为空")
+        task = ctx.app.submit(title, goal_id=ctx.path.split("/")[2],
+                              goal_action=action, goal_command_id=command_id,
+                              origin="derived", wait=False, **body)
+        return {"task_id": task.task_id, "goal_id": task.goal_id}
+    _call(ctx, submit, 202)
+
+
+@post("/goals/{goal_id}/sandbox")
+def sandbox_goal(ctx):
+    if _admin(ctx):
+        _call(ctx, lambda: ctx.app.goals.sandbox(ctx.path.split("/")[2],
+            ctx.body.get("code"), ctx.app.sandbox, actor="api:admin"))

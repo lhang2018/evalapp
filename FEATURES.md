@@ -339,7 +339,7 @@ Python 服务端（标准库，SQLite）
 
 | ID | 功能 | 状态 | 代码位置 | 说明 / 限制 |
 |---|---|---|---|---|
-| GO-C01 | Task.goal_id/origin 契约字段 | 🔹 | core/task.py, core/persistence.py, core/controller.py, pi/server.py | 契约 §2：goal_id 指向长期 Goal，origin ∈ user\|scheduled\|derived\|opportunity；API 校验、持久化列+索引、按目标查询 list_tasks_by_goal、重试继承、旧数据兼容兜底。目标注册表/机会发现等 G-01..G-10 本体未实现（待办 15） |
+| GO-C01 | Goal注册、Task关联与五级授权 | 🔹 | `goals/store.py`, `core/controller.py`, `core/authorization.py`, `api/goals_api.py` | ALN-13-A：持久Goal、十态CAS、期限/撤销、父子范围/预算不扩张、命令幂等、真实沙箱与Task接线；建议不派发，准备无宿主副作用；Goal/Task最终动作及模型调用复核。待独立审阅；自动机会/停止/APRO另计 |
 
 ## 3. REST API 清单
 

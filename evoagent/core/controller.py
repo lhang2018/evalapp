@@ -124,6 +124,8 @@ class RuntimeController:
                     app_version: Optional[str] = None,
                     goal_id: Optional[str] = None,
                     origin: str = GoalOrigin.USER.value,
+                    goal_action: str = "execute",
+                    goal_command_id: Optional[str] = None,
                     authorization_scope: Optional[Dict[str, Any]] = None,
                     manifest_extras: Optional[Dict[str, Any]] = None) -> Task:
         if origin not in ORIGIN_VALUES:
@@ -160,6 +162,14 @@ class RuntimeController:
         # 保存并在 execute 快照 merge 时并入 run manifest
         if manifest_extras:
             task.runtime_manifest.update(manifest_extras)
+        if goal_id:
+            from ..goals import GoalStore
+            bound = GoalStore(self.db).bind_task(task, goal_action,
+                command_id=goal_command_id, request_policy=authorization_scope)
+            if bound.task_id != task.task_id:
+                return bound
+        elif origin != GoalOrigin.USER.value:
+            raise PermissionError("自主来源任务必须关联已授权Goal")
         self._emit(task, "task_created",
                    {"goal": goal, "goal_id": task.goal_id,
                     "origin": task.origin})
@@ -790,6 +800,13 @@ class RuntimeController:
             return None
         if task.runtime_manifest.get("recovery_blocked"):
             raise ValueError(task.runtime_manifest["recovery_blocked"])
+        if task.task_status == TaskStatus.CREATED and task.goal_id:
+            from ..goals import GoalStore
+            GoalStore(self.db).check_task(task.task_id)
+            if wait:
+                return self.execute(task)
+            threading.Thread(target=self.execute, args=(task,), daemon=True).start()
+            return task
         if task.task_status == TaskStatus.SUSPENDED:
             # F-03：未决副作用以账本投影为准（GAP §7：不再是检查点自持）；
             # 无账本记录的旧任务回落读检查点（向后兼容）。
@@ -941,6 +958,9 @@ class RuntimeController:
         retry.parent_task_id = task.task_id
         retry.parent_run_id = task.current_run_id
         retry.runtime_manifest["resumed_from"] = task.task_id
+        if task.goal_id:
+            from ..goals import GoalStore
+            GoalStore(self.db).bind_retry(task.task_id, retry)
         self._emit(retry, "task_created",
                    {"goal": retry.user_goal, "resumed_from": task.task_id})
         return retry
@@ -987,6 +1007,13 @@ class RuntimeController:
         budget._restored_scopes = (durable or {}).get("scopes", {})
         budget.on_change = lambda state: self.db.save_execution_budget(
             task.task_id, task.current_run_id, state)
+        if task.goal_id or task.origin != GoalOrigin.USER.value:
+            from ..goals import GoalStore
+            def check_goal_authority():
+                limits = GoalStore(self.db).check_task(task.task_id)
+                for key, value in (limits or {}).items():
+                    setattr(budget.limits, key, min(getattr(budget.limits, key), value))
+            budget.authority_check = check_goal_authority
         return budget
 
     def _apply_expert_budget(self, task: Task,

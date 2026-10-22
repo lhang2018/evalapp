@@ -111,9 +111,9 @@
 
 | 特性 | 内容 | ROADMAP 来源 | 独占目录 |
 |---|---|---|---|
-| F-17 | Goal 实体与注册表（11 字段 + CRUD） | WP-2.1 | `goals/entity.py`、`goals/store.py` |
-| F-18 | Goal 状态机（10 值 + 合法转移表 + 守卫） | WP-2.2 | `goals/state_machine.py` |
-| F-19 | 自主等级与授权矩阵（五级，透传 Action Guard，父不得扩权子） | WP-2.3 | `goals/autonomy.py` |
+| F-17 | Goal 实体与注册表（11 字段 + CRUD） | WP-2.1 | `goals/store.py::GoalStore`（ALN-13-A已交付待审） |
+| F-18 | Goal 状态机（10 值 + 合法转移表 + 守卫） | WP-2.2 | `goals/store.py::TRANSITIONS`（ALN-13-A已交付待审） |
+| F-19 | 自主等级与授权矩阵（五级，透传 Action Guard，父不得扩权子） | WP-2.3 | `goals/store.py::LEVELS` / `check_task`（ALN-13-A已交付待审） |
 | F-20 | 无进展停止控制器（五类触发器 + 阈值） | WP-2.4 | `goals/no_progress.py` — **达成用例 19** |
 | F-21 | 递归子目标治理（深度/数量/环路/去重） | WP-2.5 | `goals/recursive.py` |
 | F-22 | 机会发现与价值排序（六维加权） | WP-2.6 | `goals/opportunity.py` |

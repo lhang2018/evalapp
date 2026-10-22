@@ -35,6 +35,7 @@ from .auth import ApiAuth
 from . import routes
 from . import approvals_api  # F-04 审批记录端点（注册表路由）
 from . import action_security_api  # ALN-01/02任务授权与副作用对账
+from . import goals_api  # ALN-13 Goal治理入口
 from . import assets_api  # ALN-06 资产端点；由生产入口注册，不能依赖测试导入
 from . import impact_api  # GAP 子步④ 能力影响分析端点（注册表路由）
 from . import routing_eval_api  # F-53 路由质量评测端点（注册表路由）
@@ -50,7 +51,7 @@ from .events_sync import BatchError, SYNC_PROTOCOL_VERSION, validate_batch
 CLIENT_REQUEST_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
 INSTALLATION_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
 DEVICE_ID_RE = re.compile(r"^[A-Za-z0-9_.:-]{8,128}$")
-# 契约 §2 Task.goal_id：goal_id 允许尚未注册的占位引用（阶段 E 落地前允许业务侧自定义 ID）
+# ALN-13: new Goal-linked tasks require registration and a durable grant.
 GOAL_ID_RE = re.compile(r"^[A-Za-z0-9_.:-]{4,64}$")
 BATCH_ID_RE = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
 APPLY_ID_RE = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
@@ -556,22 +557,29 @@ def make_handler(app: App):
                                 "task_id": existing, "status": "CREATED",
                                 "deduplicated": True})
                     # 后台执行 + 立即返回（客户端轮询 /tasks/{id}）
-                    t = app.controller.submit_task(
-                        goal,
-                        intent=body.get("intent"),
-                        domain=body.get("domain"),
-                        constraints=body.get("constraints") or [],
-                        acceptance=body.get("acceptance_criteria") or [],
-                        risk_level=rl,
-                        budget_overrides=body.get("budget_policy"),
-                        authorization_scope=body.get("authorization_scope"),
-                        wait=False,
-                        device_id=device_id,
-                        installation_id=installation_id,
-                        app_version=app_version,
-                        goal_id=goal_id,
-                        origin=origin,
-                        **parsed)
+                    try:
+                        t = app.controller.submit_task(
+                            goal,
+                            intent=body.get("intent"),
+                            domain=body.get("domain"),
+                            constraints=body.get("constraints") or [],
+                            acceptance=body.get("acceptance_criteria") or [],
+                            risk_level=rl,
+                            budget_overrides=body.get("budget_policy"),
+                            authorization_scope=body.get("authorization_scope"),
+                            wait=False,
+                            device_id=device_id,
+                            installation_id=installation_id,
+                            app_version=app_version,
+                            goal_id=goal_id,
+                            origin=origin,
+                            **parsed)
+                    except PermissionError as exc:
+                        return self._json(403, {"error": str(exc)})
+                    except KeyError as exc:
+                        return self._json(404, {"error": str(exc)})
+                    except (ValueError, TypeError) as exc:
+                        return self._json(400, {"error": str(exc)})
                     if request_id:
                         app.db.save_request(request_id, t.task_id)
                 return self._json(202, {"task_id": t.task_id, "status": "CREATED"})

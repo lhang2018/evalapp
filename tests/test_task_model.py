@@ -180,6 +180,16 @@ class TestGoalContract(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="evoagent_goalcontract_")
         self.app = App(data_dir=self.tmp)
+        # ALN-13 replaces permissive placeholder references with real grants.
+        for identity in ("goal-abc-002", "goal-abc-003", "goal-abc-004"):
+            deadline = time.time() + 3600
+            goal = self.app.goals.create("contract goal", actor="test-admin",
+                success_criteria=["task traceable"], goal_id=identity, deadline=deadline)
+            goal = self.app.goals.authorize(identity, {"tools": [], "permissions": []},
+                level="execution", actor="test-admin", reason="contract test",
+                expected_revision=goal["revision"], expires_at=deadline)
+            self.app.goals.transition(identity, "ready", actor="test-admin",
+                reason="ready", expected_revision=goal["revision"])
         self.server = ApiServer(self.app, port=0)
         self.port = self.server.httpd.server_address[1]
         threading.Thread(target=self.server.serve_forever, daemon=True).start()

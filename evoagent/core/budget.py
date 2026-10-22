@@ -181,6 +181,7 @@ class BudgetController:
         self._violations: Dict[str, str] = {}
         self._lock = threading.RLock()
         self.on_change = None
+        self.authority_check = None
         self._scope_budgets = {}
         self._restored_scopes = {}
 
@@ -219,6 +220,8 @@ class BudgetController:
     # ---- 校验（执行前调用）----
     def check_model_call(self, model_id: Optional[str] = None) -> None:
         with self._lock:
+            if self.authority_check:
+                self.authority_check()
             self._tick_seconds()
             self._raise_violation()
             if self.usage.model_calls + 1 > self.limits.max_model_calls:
@@ -228,6 +231,8 @@ class BudgetController:
 
     def check_tool_call(self, tool_id: Optional[str] = None) -> None:
         with self._lock:
+            if self.authority_check:
+                self.authority_check()
             self._tick_seconds()
             self._raise_violation()
             if self.usage.tool_calls + 1 > self.limits.max_tool_calls:
@@ -244,6 +249,8 @@ class BudgetController:
 
     def check_alive(self) -> None:
         with self._lock:
+            if self.authority_check:
+                self.authority_check()
             self._tick_seconds()
             self._raise_violation()
             if self.usage.seconds > self.limits.max_seconds:
