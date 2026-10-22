@@ -1,0 +1,53 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFF.                                                                   [100%]
+================================== FAILURES ===================================
+_ test_real_router_unavailable_default_is_rejected_by_runtime_and_evaluator[None] _
+tests\test_runtime_router_rejection.py:54: in test_real_router_unavailable_default_is_rejected_by_runtime_and_evaluator
+    assert_failed_route(app, task, source="router_rejected", error_class="ValueError")
+tests\test_runtime_router_rejection.py:34: in assert_failed_route
+    assert route["source"] == source and route["error_class"] == error_class
+E   AssertionError: assert ('router' == 'router_rejected'
+E
+E     - router_rejected
+E     + router)
+_ test_real_router_unavailable_default_is_rejected_by_runtime_and_evaluator[missing-model] _
+tests\test_runtime_router_rejection.py:54: in test_real_router_unavailable_default_is_rejected_by_runtime_and_evaluator
+    assert_failed_route(app, task, source="router_rejected", error_class="ValueError")
+tests\test_runtime_router_rejection.py:34: in assert_failed_route
+    assert route["source"] == source and route["error_class"] == error_class
+E   AssertionError: assert ('router' == 'router_rejected'
+E
+E     - router_rejected
+E     + router)
+______ test_router_errors_never_execute_controller_fallback[ValueError] _______
+tests\test_runtime_router_rejection.py:66: in test_router_errors_never_execute_controller_fallback
+    assert_failed_route(app, task, source="router_rejected" if exception is ValueError else "router_error",
+tests\test_runtime_router_rejection.py:34: in assert_failed_route
+    assert route["source"] == source and route["error_class"] == error_class
+E   AssertionError: assert ('router' == 'router_rejected'
+E
+E     - router_rejected
+E     + router)
+_____ test_router_errors_never_execute_controller_fallback[RuntimeError] ______
+tests\test_runtime_router_rejection.py:66: in test_router_errors_never_execute_controller_fallback
+    assert_failed_route(app, task, source="router_rejected" if exception is ValueError else "router_error",
+tests\test_runtime_router_rejection.py:34: in assert_failed_route
+    assert route["source"] == source and route["error_class"] == error_class
+E   AssertionError: assert ('router' == 'router_error'
+E
+E     - router_error
+E     + router)
+______ test_second_route_rejection_clears_the_successful_planning_route _______
+tests\test_runtime_router_rejection.py:82: in test_second_route_rejection_clears_the_successful_planning_route
+    assert len(attempts) == 2 and not calls
+E   AssertionError: assert (2 == 2 and not ['suggest_action'])
+E    +  where 2 = len([1, 1])
+=========================== short test summary info ===========================
+FAILED tests/test_runtime_router_rejection.py::test_real_router_unavailable_default_is_rejected_by_runtime_and_evaluator[None]
+FAILED tests/test_runtime_router_rejection.py::test_real_router_unavailable_default_is_rejected_by_runtime_and_evaluator[missing-model]
+FAILED tests/test_runtime_router_rejection.py::test_router_errors_never_execute_controller_fallback[ValueError]
+FAILED tests/test_runtime_router_rejection.py::test_router_errors_never_execute_controller_fallback[RuntimeError]
+FAILED tests/test_runtime_router_rejection.py::test_second_route_rejection_clears_the_successful_planning_route
+5 failed, 1 passed in 1.15s

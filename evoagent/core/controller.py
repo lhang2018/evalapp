@@ -968,8 +968,17 @@ class RuntimeController:
         try:
             model = self.router.route(task.intent or "general",
                                       task.domain or "general")
-        except Exception:  # noqa: BLE001 —— 路由失败回退默认适配器
-            model = self.react.model
+        except Exception as exc:  # noqa: BLE001 —— 记录后交由任务失败流程收尾
+            # Only the router may authorize a fallback. In particular its
+            # rejection must not execute react.model behind the policy's back.
+            task.runtime_manifest["model_route"] = {
+                "model_id": None, "provider": None,
+                "intent": task.intent, "domain": task.domain,
+                "source": "router_rejected" if isinstance(exc, ValueError) else "router_error",
+                "error_class": type(exc).__name__}
+            self._emit(task, "model_route_failed",
+                       dict(task.runtime_manifest["model_route"]), severity="error")
+            raise
         self._record_route(task, model, source="router")
         return model
 
