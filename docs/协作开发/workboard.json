@@ -1,0 +1,687 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-10-22",
+  "purpose": "协作认领；不替代正式契约、原始 ALN 依赖或功能验收",
+  "baseline": {
+    "status": "candidate",
+    "head_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
+    "published_commit": null,
+    "snapshot": ".planning/2026-10-22-design-alignment/collaboration-baseline.json",
+    "last_verified_workspace": {
+      "python_passed": 764,
+      "python_skipped": 1,
+      "client_passed": 144,
+      "typecheck": "passed",
+      "freshly_rerun_for_this_documentation_change": true,
+      "evidence": ".planning/2026-10-22-design-alignment/claimed-backend-final.txt",
+      "source": "当前未提交共享工作区；不是历史候选快照或纯 HEAD"
+    }
+  },
+  "streams": [
+    {
+      "id": "integration",
+      "name": "集成职责"
+    },
+    {
+      "id": "runtime",
+      "name": "运行内核"
+    },
+    {
+      "id": "assets",
+      "name": "资产与发布/进化"
+    },
+    {
+      "id": "models",
+      "name": "模型与上下文/证据"
+    },
+    {
+      "id": "android",
+      "name": "Android"
+    }
+  ],
+  "shared_files": [
+    {
+      "path": "evoagent/core/controller.py",
+      "stream": "runtime"
+    },
+    {
+      "path": "evoagent/core/runs.py",
+      "stream": "runtime"
+    },
+    {
+      "path": "evoagent/core/task.py",
+      "stream": "runtime"
+    },
+    {
+      "path": "evoagent/core/state_machine.py",
+      "stream": "runtime"
+    },
+    {
+      "path": "evoagent/react/engine.py",
+      "stream": "runtime"
+    },
+    {
+      "path": "evoagent/workflows/engine.py",
+      "stream": "runtime"
+    },
+    {
+      "path": "evoagent/tools/registry.py",
+      "stream": "runtime"
+    },
+    {
+      "path": "evoagent/core/permissions.py",
+      "stream": "runtime"
+    },
+    {
+      "path": "evoagent/core/approvals.py",
+      "stream": "runtime"
+    },
+    {
+      "path": "evoagent/core/side_effects.py",
+      "stream": "runtime"
+    },
+    {
+      "path": "evoagent/core/persistence.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/core/schema/migrations.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/core/contracts.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/core/events.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/core/budget.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/tools/contract.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/api/server.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/api/routes.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/api/auth.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/app.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/cli.py",
+      "stream": "integration"
+    },
+    {
+      "path": "android-app/App.tsx",
+      "stream": "android"
+    },
+    {
+      "path": "android-app/src/api.ts",
+      "stream": "android"
+    },
+    {
+      "path": "android-app/src/offline/types.ts",
+      "stream": "android"
+    },
+    {
+      "path": "evoagent/release/manager.py",
+      "stream": "assets"
+    },
+    {
+      "path": "evoagent/release/delivery.py",
+      "stream": "assets"
+    },
+    {
+      "path": "FEATURES.md",
+      "stream": "integration"
+    },
+    {
+      "path": "ROADMAP.md",
+      "stream": "integration"
+    },
+    {
+      "path": "FEATURE_SPLIT.md",
+      "stream": "integration"
+    },
+    {
+      "path": "IMPLEMENTATION.md",
+      "stream": "integration"
+    },
+    {
+      "path": "GAP_ANALYSIS.md",
+      "stream": "integration"
+    }
+  ],
+  "dispatches": [
+    {
+      "id": "ALN-00-B",
+      "workpackage": "ALN-00",
+      "title": "发布可共享基线",
+      "stream": "integration",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "blocked",
+      "blocker": "ALN-04 运行身份/问答/异步审批在途改动尚未由运行内核线提交，工作区不稳定；待其落库后在干净工作树核验并发布基线 commit",
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/00-基线发布.md",
+      "shared_files": [
+        "evoagent/core/controller.py",
+        "evoagent/core/runs.py",
+        "evoagent/core/task.py",
+        "evoagent/core/state_machine.py",
+        "evoagent/react/engine.py",
+        "evoagent/workflows/engine.py",
+        "evoagent/tools/registry.py",
+        "evoagent/core/permissions.py",
+        "evoagent/core/approvals.py",
+        "evoagent/core/side_effects.py",
+        "evoagent/core/persistence.py",
+        "evoagent/core/schema/migrations.py",
+        "evoagent/core/contracts.py",
+        "evoagent/core/events.py",
+        "evoagent/core/budget.py",
+        "evoagent/tools/contract.py",
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "evoagent/app.py",
+        "evoagent/cli.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "evoagent/release/manager.py",
+        "evoagent/release/delivery.py",
+        "FEATURES.md",
+        "ROADMAP.md",
+        "FEATURE_SPLIT.md",
+        "IMPLEMENTATION.md",
+        "GAP_ANALYSIS.md"
+      ]
+    },
+    {
+      "id": "ALN-04-R",
+      "workpackage": "ALN-04",
+      "title": "RUNNING 中断接管",
+      "stream": "runtime",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "租约/隔离/15 项恢复与入口专项；真实杀进程与双进程竞争",
+          "command": "python -m pytest -q; npm run test:offline; npm run typecheck",
+          "result": "764 passed, 1 skipped；客户端 144 passed；typecheck passed",
+          "source": "共享候选工作区，未提交；含其他人在途资产与模型实现，非纯 HEAD 验证",
+          "log": ".planning/2026-10-22-design-alignment/claimed-backend-final.txt",
+          "delivery": "docs/协作开发/交付/ALN-04-R-运行租约与中断接管.md"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/04-运行恢复.md",
+      "shared_files": [
+        "evoagent/core/controller.py",
+        "evoagent/core/runs.py",
+        "evoagent/core/task.py",
+        "evoagent/core/state_machine.py",
+        "evoagent/core/persistence.py",
+        "evoagent/core/schema/migrations.py",
+        "evoagent/api/server.py",
+        "evoagent/api/auth.py",
+        "evoagent/cli.py"
+      ],
+      "working_basis": "用户明确要求认领并开发；在当前共享候选工作区增量实现，base_commit 不代表候选基线已发布。",
+      "delivery": "docs/协作开发/交付/ALN-04-R-运行租约与中断接管.md",
+      "next_step": "分配独立审阅人，合入共同基线；保留整包组合验收"
+    },
+    {
+      "id": "ALN-06-A",
+      "workpackage": "ALN-06",
+      "title": "不可变资产基础",
+      "stream": "assets",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "Asset 十一字段/八态/五 namespace + 不可变仓储 + 依赖/证据门禁 + Pack 字节夹具 + 旧实体映射",
+          "command": "python -m pytest tests -q",
+          "result": "748 passed, 1 failed, 1 skipped（唯一失败为运行内核线在途改动导致的 test_ledger_drift 台账漂移，与资产域无关）",
+          "delivery": "docs/协作开发/交付/ALN-06-A-不可变资产基础.md"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/06-资产基础.md",
+      "shared_files": [
+        "evoagent/core/contracts.py",
+        "evoagent/core/persistence.py",
+        "evoagent/core/schema/migrations.py",
+        "evoagent/core/controller.py",
+        "evoagent/release/manager.py",
+        "evoagent/release/delivery.py",
+        "evoagent/api/server.py",
+        "evoagent/app.py"
+      ]
+    },
+    {
+      "id": "ALN-08-M",
+      "workpackage": "ALN-08",
+      "title": "路由与计量",
+      "stream": "models",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "五层覆盖复核 + 实测/预估/未知费用计量 + 确定性故障夹具",
+          "command": "python -m pytest tests -q",
+          "result": "696 passed, 1 skipped",
+          "delivery": "docs/协作开发/交付/ALN-08-M-路由与计量.md"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/08-模型与计量.md",
+      "shared_files": [
+        "evoagent/core/contracts.py",
+        "evoagent/core/persistence.py",
+        "evoagent/core/budget.py",
+        "evoagent/core/events.py",
+        "evoagent/core/controller.py",
+        "evoagent/app.py",
+        "evoagent/cli.py"
+      ]
+    },
+    {
+      "id": "ALN-04-UI",
+      "workpackage": "ALN-04",
+      "title": "Android 管理员审批",
+      "stream": "android",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "完整动作审阅、单次审批、断网/过期/权限/回包丢失状态测试；真机待验",
+          "command": "python -m pytest -q; npm run test:offline; npm run typecheck",
+          "result": "764 passed, 1 skipped；客户端 144 passed；typecheck passed",
+          "source": "共享候选工作区，未提交；含其他人在途资产与模型实现，非纯 HEAD 验证",
+          "log": ".planning/2026-10-22-design-alignment/claimed-client-tests.txt",
+          "delivery": "docs/协作开发/交付/ALN-04-UI-管理员审批页面.md"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/04-Android审批.md",
+      "shared_files": [
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts"
+      ],
+      "working_basis": "用户明确要求认领并开发；在当前共享候选工作区增量实现，base_commit 不代表候选基线已发布。",
+      "delivery": "docs/协作开发/交付/ALN-04-UI-管理员审批页面.md",
+      "next_step": "分配独立审阅人；补 Android 真机批准、拒绝、断网和过期验收"
+    }
+  ],
+  "workpackages": [
+    {
+      "id": "ALN-00",
+      "priority": "P0",
+      "title": "固定基线、统一台账与失败归因",
+      "depends_on": [],
+      "stream": "integration",
+      "owner": "claude-main",
+      "delivery_state": "partial_verified",
+      "next_step": "发布包括未提交 ALN-04 的可共享基线，复验源码快照"
+    },
+    {
+      "id": "ALN-01",
+      "priority": "P0",
+      "title": "统一动作授权网关与工作流审批",
+      "depends_on": [
+        "ALN-00"
+      ],
+      "stream": "runtime",
+      "owner": null,
+      "delivery_state": "partial_verified",
+      "next_step": "补对象/路径/设备范围策略与撤销传播，复核既有网关"
+    },
+    {
+      "id": "ALN-02",
+      "priority": "P0",
+      "title": "副作用预记账、DAG 重试与补偿安全",
+      "depends_on": [
+        "ALN-01"
+      ],
+      "stream": "runtime",
+      "owner": null,
+      "delivery_state": "partial_verified",
+      "next_step": "真实外部回执/产物恢复、补偿与进程隔离"
+    },
+    {
+      "id": "ALN-03",
+      "priority": "P0",
+      "title": "发布正文签名与完整兼容声明",
+      "depends_on": [
+        "ALN-00"
+      ],
+      "stream": "assets",
+      "owner": null,
+      "delivery_state": "partial_verified",
+      "next_step": "与资产/Android 锁定字节格式、公钥信任和兼容消费"
+    },
+    {
+      "id": "ALN-04",
+      "priority": "P1",
+      "title": "Task/Run/Node/Approval 状态与重启恢复",
+      "depends_on": [
+        "ALN-01",
+        "ALN-02"
+      ],
+      "stream": "runtime",
+      "owner": "codex-runtime",
+      "delivery_state": "partial_verified",
+      "next_step": "RUNNING 强杀接管；另行完成审批 UI 和组合验收"
+    },
+    {
+      "id": "ALN-05",
+      "priority": "P1",
+      "title": "多维记忆、ContextManifest 与冲突/删除",
+      "depends_on": [
+        "ALN-00",
+        "ALN-04"
+      ],
+      "stream": "models",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "先定身份隔离与 ContextManifest 接口，再补冲突/删除传播"
+    },
+    {
+      "id": "ALN-06",
+      "priority": "P1",
+      "title": "统一能力资产、Skill/Pack 与生命周期",
+      "depends_on": [
+        "ALN-00",
+        "ALN-03"
+      ],
+      "stream": "assets",
+      "owner": "claude-main",
+      "delivery_state": "planned",
+      "next_step": "统一资产身份、不可变内容、依赖与最小消费接口"
+    },
+    {
+      "id": "ALN-07",
+      "priority": "P1",
+      "title": "计划修订、工作流匹配和轨迹编译",
+      "depends_on": [
+        "ALN-02",
+        "ALN-04",
+        "ALN-06",
+        "ALN-08"
+      ],
+      "stream": "runtime",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "等资产/路由/恢复接口后补匹配、修订和轨迹编译"
+    },
+    {
+      "id": "ALN-08",
+      "priority": "P1",
+      "title": "模型网关、全层路由评测与计费",
+      "depends_on": [
+        "ALN-00",
+        "ALN-01"
+      ],
+      "stream": "models",
+      "owner": "claude-main",
+      "delivery_state": "needs_recheck",
+      "next_step": "先复核 F-53 五层覆盖，补真实计量和未知费用处理"
+    },
+    {
+      "id": "ALN-09",
+      "priority": "P1",
+      "title": "真实候选变更、持久队列与实验隔离",
+      "depends_on": [
+        "ALN-04",
+        "ALN-06",
+        "ALN-08"
+      ],
+      "stream": "assets",
+      "owner": "opencode-evo",
+      "delivery_state": "needs_recheck",
+      "next_step": "先复核同期队列/信号实现，补真实候选资产隔离与故障恢复"
+    },
+    {
+      "id": "ALN-10",
+      "priority": "P1",
+      "title": "回归资产、依赖范围与独立门禁",
+      "depends_on": [
+        "ALN-05",
+        "ALN-07",
+        "ALN-09"
+      ],
+      "stream": "assets",
+      "owner": "opencode-evo",
+      "delivery_state": "needs_recheck",
+      "next_step": "先复核已提交回归持久化/默认消费，再补独立门禁和覆盖"
+    },
+    {
+      "id": "ALN-11",
+      "priority": "P1",
+      "title": "Android 真实制品下载、装载与回滚",
+      "depends_on": [
+        "ALN-03",
+        "ALN-06",
+        "ALN-10"
+      ],
+      "stream": "android",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "依赖资产与门禁，补真实字节下载/验签/装载和健康回滚"
+    },
+    {
+      "id": "ALN-12",
+      "priority": "P1",
+      "title": "自然语言手机任务与离线可靠性",
+      "depends_on": [
+        "ALN-01",
+        "ALN-02",
+        "ALN-04"
+      ],
+      "stream": "android",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "先定设备动作与回执协议、离线故障矩阵，通知在途先确认归属"
+    },
+    {
+      "id": "ALN-13",
+      "priority": "P1",
+      "title": "Goal 实体、状态机与自主授权",
+      "depends_on": [
+        "ALN-00",
+        "ALN-01",
+        "ALN-04"
+      ],
+      "stream": "runtime",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "先定十态 Goal/授权接口，等待运行恢复接入"
+    },
+    {
+      "id": "ALN-14",
+      "priority": "P1",
+      "title": "机会排序、无进展停止、子目标与归因",
+      "depends_on": [
+        "ALN-09",
+        "ALN-10",
+        "ALN-13",
+        "ALN-15"
+      ],
+      "stream": "runtime",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "在 Goal/预算/评测证据齐备后实现排序、停止和归因"
+    },
+    {
+      "id": "ALN-15",
+      "priority": "P1",
+      "title": "APRO 资源调度、预算预留与费用对账",
+      "depends_on": [
+        "ALN-02",
+        "ALN-08",
+        "ALN-13"
+      ],
+      "stream": "runtime",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "先定预留/结算与设备资源接口，等 Goal/计量接入"
+    },
+    {
+      "id": "ALN-16",
+      "priority": "P1",
+      "title": "观测证据、隐私与凭证治理",
+      "depends_on": [
+        "ALN-00",
+        "ALN-01",
+        "ALN-04"
+      ],
+      "stream": "models",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "先定跨域引用、隐私与凭证契约，按运行/网关前置整合"
+    },
+    {
+      "id": "ALN-17",
+      "priority": "P2",
+      "title": "宿主部署、备份迁移与灾难恢复",
+      "depends_on": [
+        "ALN-03",
+        "ALN-04",
+        "ALN-06",
+        "ALN-16"
+      ],
+      "stream": "assets",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "依赖版本资产和运行恢复，补可演练部署/备份/升级"
+    },
+    {
+      "id": "ALN-18",
+      "priority": "P2",
+      "title": "真实编程能力包",
+      "depends_on": [
+        "ALN-06",
+        "ALN-07",
+        "ALN-10",
+        "ALN-16"
+      ],
+      "stream": "assets",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "资产/计划/门禁就绪后接真实项目编程工具"
+    },
+    {
+      "id": "ALN-19",
+      "priority": "P2",
+      "title": "真实 AI 漫剧能力包",
+      "depends_on": [
+        "ALN-06",
+        "ALN-07",
+        "ALN-10",
+        "ALN-15"
+      ],
+      "stream": "assets",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "资产/计划/门禁/资源就绪后接真实音视频供应商"
+    },
+    {
+      "id": "ALN-20",
+      "priority": "P2",
+      "title": "AgentRuntimeAdapter 与 Harness 固定版本 PoC",
+      "depends_on": [
+        "ALN-01",
+        "ALN-02",
+        "ALN-04",
+        "ALN-16"
+      ],
+      "stream": "runtime",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "依赖安全与观测，先定义保持内核权威的适配协议"
+    },
+    {
+      "id": "ALN-21",
+      "priority": "P2",
+      "title": "Windows/平板后续扩展",
+      "depends_on": [
+        "ALN-11",
+        "ALN-12",
+        "ALN-17",
+        "ALN-20"
+      ],
+      "stream": "android",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "Android 与部署/适配稳定后扩展终端"
+    },
+    {
+      "id": "ALN-22",
+      "priority": "收口",
+      "title": "全量验收与发布证据",
+      "depends_on": [
+        "ALN-00",
+        "ALN-01",
+        "ALN-02",
+        "ALN-03",
+        "ALN-04",
+        "ALN-05",
+        "ALN-06",
+        "ALN-07",
+        "ALN-08",
+        "ALN-09",
+        "ALN-10",
+        "ALN-11",
+        "ALN-12",
+        "ALN-13",
+        "ALN-14",
+        "ALN-15",
+        "ALN-16",
+        "ALN-17",
+        "ALN-18",
+        "ALN-19",
+        "ALN-20",
+        "ALN-21"
+      ],
+      "stream": "integration",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
+    }
+  ],
+  "execution_note": "基线发布前默认只准备协议与夹具；用户本轮明确授权 ALN-04-R/UI 在共享候选工作区开发与接线，现已进入 review。共同基线仍待发布，状态不等于整包验收。"
+}
