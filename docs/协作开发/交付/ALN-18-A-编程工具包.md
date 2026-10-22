@@ -4,7 +4,7 @@
 负责人：claude-main
 审阅人：待定（负责人不得自审，待 runtime 线独立复验）
 基线 commit：`c885cbd`（认领时 HEAD；验证在工作区含并行在途改动的状态下执行）
-分支与最终 commit：`main`（本地提交，未推送）；最终 commit 见文末提交记录
+分支与最终 commit：`main`（本地提交，未推送）；`acbd22a`（本卡源码与文档同批提交）
 认领状态：review
 
 ## 触发场景与行为变化
@@ -37,7 +37,7 @@
 - 命令与结果：
   - `python -m pytest tests/test_coding_tools.py -q` → `14 passed`（8.83s）。
   - `python -m pytest tests/test_coding_tools.py tests/test_tool_contract_fields.py tests/test_tool_health.py tests/test_tools.py -q` → `36 passed`（9.94s），日志 `.planning/2026-10-22-aln18/targeted.txt`。
-  - 全量：`.planning/2026-10-22-aln18/full-suite.txt`（见文末记录）。
+  - 全量：`python -m pytest -q` → `1176 passed, 1 skipped`（128.99s），日志 `.planning/2026-10-22-aln18/full-suite.txt`。该次运行含并行会话在途改动，且跑在最后一次 `coding_test` 风险声明调整之前；调整后专项 14 项已复跑通过。
 - 验证边界：本机未安装 mypy，**可执行分支用假检查器覆盖**（探针/成功/失败三路），真实 mypy 环境仍待联调；pytest 为真实子进程；无网络访问；未在 Android/真机侧验证（本卡是服务端工具包）。
 
 ## 回滚与未完成事项
@@ -56,4 +56,5 @@
 
 ## 提交记录
 
-- 待补：本文件与代码同批本地提交的哈希。
+- `acbd22a`：`evoagent/tools/coding.py`、`tests/test_coding_tools.py`、任务卡、本交付文档、workboard/认领表同批本地提交（未推送）。
+- 本提交记录补充为独立文档提交：`acbd22a` 之后仅更新本文件与 workboard 证据字段，不改源码与测试。

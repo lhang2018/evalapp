@@ -1360,9 +1360,10 @@
           "date": "2026-10-22",
           "scope": "编程工具包第一切片：AST 符号定位、唯一命中改写与语法门禁、compileall 语法检查、mypy 适配（不可用不判成功）、真实 pytest 执行；能力包清单含版本/回滚声明；新增14项负向优先专测",
           "command": "python -m pytest tests/test_coding_tools.py tests/test_tool_contract_fields.py tests/test_tool_health.py tests/test_tools.py -q",
-          "result": "36 passed（其中新增14 passed）；全量日志 .planning/2026-10-22-aln18/full-suite.txt",
+          "result": "新增14 passed；定向36 passed；全量1176 passed/1 skipped（共享工作区含并行在途改动）",
           "log": ".planning/2026-10-22-aln18/targeted.txt",
-          "delivery": "docs/协作开发/交付/ALN-18-A-编程工具包.md"
+          "delivery": "docs/协作开发/交付/ALN-18-A-编程工具包.md",
+          "source_commit": "acbd22a"
         }
       ],
       "card": "docs/协作开发/任务卡/18-真实编程能力包.md",
