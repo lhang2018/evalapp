@@ -11,6 +11,7 @@ from typing import Any, Dict, List
 
 from ..tools.contract import ToolContract, ToolResult
 from .base import Action, ChatMessage, ModelProfile, ModelRegistry
+from .metering import normalize_token_usage
 
 _MAX_RETRIES = 3
 _BACKOFF_SECONDS = [1, 2, 4]
@@ -123,9 +124,11 @@ class OpenAICompatAdapter:
                 if r.status_code in (429, 500, 502, 503):
                     last_err = RuntimeError(f"HTTP {r.status_code}")
                 else:
-                    raise RuntimeError(f"LLM 调用失败 HTTP {r.status_code}: {r.text[:300]}")
+                    # Provider bodies and transport messages can echo request
+                    # headers, credentials or user input. Persist only category/status.
+                    raise RuntimeError(f"LLM 调用失败 HTTP {r.status_code}")
             except requests.RequestException as e:
-                last_err = e
+                last_err = type(e).__name__
             time.sleep(_BACKOFF_SECONDS[min(attempt, len(_BACKOFF_SECONDS) - 1)])
         raise RuntimeError(f"LLM 调用重试 {_MAX_RETRIES} 次仍失败: {last_err}")
 
@@ -134,18 +137,11 @@ def _usage_of(raw: Any) -> Dict[str, int] | None:
     """规范化提供方用量；缺失或不可解析时返回 None（不当作 0 用量）。"""
     if not isinstance(raw, dict):
         return None
-    def _int(value: Any) -> int | None:
-        try:
-            return int(value)
-        except (TypeError, ValueError):
-            return None
-    inp = _int(raw.get("prompt_tokens", raw.get("input_tokens")))
-    out = _int(raw.get("completion_tokens", raw.get("output_tokens")))
-    if inp is None or out is None:
-        return None
-    total = _int(raw.get("total_tokens"))
-    return {"input_tokens": inp, "output_tokens": out,
-            "total_tokens": inp + out if total is None else total}
+    normalized = {"input_tokens": raw.get("prompt_tokens", raw.get("input_tokens")),
+                  "output_tokens": raw.get("completion_tokens", raw.get("output_tokens"))}
+    if "total_tokens" in raw:
+        normalized["total_tokens"] = raw["total_tokens"]
+    return normalize_token_usage(normalized)
 
 
 def _openai_tool(t: ToolContract | Dict[str, Any]) -> Dict[str, Any]:

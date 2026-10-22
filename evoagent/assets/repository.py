@@ -23,6 +23,7 @@ from .entity import (Asset, AssetConflict, AssetNotFound, AssetRef,
                      AssetValidationError, DependencyError, LifecycleError,
                      ensure_transition)
 from .mapping import REGISTERABLE_STATES, AssetDraft
+from .usage import persisted_references
 
 _JSON_FIELDS = ("source_refs_json", "dependency_refs_json",
                 "compatibility_json", "evaluation_evidence_refs_json")
@@ -234,18 +235,6 @@ class AssetRepository:
             raise DependencyError(
                 f"{asset.ref} 缺少依赖: {', '.join(sorted(missing))}")
         self._assert_acyclic(asset)
-
-        pins = dict(asset.compatibility.get("pins") or {})
-        by_id = {d.asset_id: d for d in deps.values()}
-        for dep_id, digest in pins.items():
-            dep = by_id.get(dep_id)
-            if dep is None:
-                raise DependencyError(
-                    f"{asset.ref} 的兼容性 pin 指向未声明的依赖 {dep_id}")
-            if dep.content_digest != digest:
-                raise DependencyError(
-                    f"{asset.ref} 与 {dep_id} 不兼容："
-                    f"pin {digest} / 实际 {dep.content_digest}")
         return deps
 
     def _assert_acyclic(self, root: Asset) -> None:
@@ -260,13 +249,21 @@ class AssetRepository:
             if key in done:
                 return
             visiting.add(key)
+            dependencies = {}
             for ref_text in asset.dependency_refs:
                 ref = AssetRef.parse(ref_text)
                 dep = self.get(ref.asset_id, ref.version)
                 if dep is None:
                     raise DependencyError(
                         f"{asset.ref} 缺少依赖: {ref}")
+                dependencies.setdefault(dep.asset_id, []).append(dep)
                 visit(dep)
+            for dep_id, expected in (asset.compatibility.get("pins") or {}).items():
+                versions = dependencies.get(dep_id)
+                if not versions:
+                    raise DependencyError(f"{asset.ref} 的兼容性 pin 指向未声明的依赖 {dep_id}")
+                if any(dep.content_digest != expected for dep in versions):
+                    raise DependencyError(f"{asset.ref} 与 {dep_id} 不兼容：依赖摘要不符合 pin {expected}")
             visiting.discard(key)
             done.add(key)
 
@@ -277,10 +274,10 @@ class AssetRepository:
         target = str(AssetRef(asset_id, version))
         out: List[AssetRef] = []
         rows = self._conn.execute(
-            "SELECT asset_id, version, dependency_refs_json FROM assets")
+            "SELECT asset_id, version, dependency_refs_json, rollback_ref FROM assets")
         for row in rows:
             refs = self._load(row["dependency_refs_json"])
-            if target in refs:
+            if target in refs or target == row["rollback_ref"]:
                 out.append(AssetRef(row["asset_id"], row["version"]))
         return sorted(out, key=str)
 
@@ -300,7 +297,8 @@ class AssetRepository:
             "SELECT * FROM assets WHERE lifecycle_state='retired'")
         for row in rows:
             asset = self._row_to_asset(row)
-            if not self.dependents(asset.asset_id, asset.version):
+            if (not self.dependents(asset.asset_id, asset.version) and
+                    not persisted_references(self._conn, asset.ref)):
                 out.append(asset.summary())
         return out
 
@@ -315,6 +313,9 @@ class AssetRepository:
             if refs:
                 raise DependencyError(
                     f"{asset.ref} 仍被引用: {', '.join(map(str, refs))}")
+            pinned = persisted_references(self._conn, asset.ref)
+            if pinned:
+                raise DependencyError(f"{asset.ref} 仍被冻结发布或运行引用: {', '.join(pinned)}")
             self._conn.execute(
                 "DELETE FROM assets WHERE asset_id=? AND version=?",
                 (asset_id, version))
@@ -364,7 +365,9 @@ class AssetRepository:
         except (TypeError, ValueError) as exc:
             raise AssetValidationError(
                 f"资产库内容损坏: {row['asset_id']}@{row['version']}") from exc
-        return Asset(
+        if not isinstance(content, dict) or content_digest(content) != row["content_digest"]:
+            raise AssetValidationError(f"资产库正文摘要不符: {row['asset_id']}@{row['version']}")
+        asset = Asset(
             asset_id=row["asset_id"], version=row["version"],
             asset_type=row["asset_type"], namespace=row["namespace"],
             content_digest=row["content_digest"],
@@ -376,6 +379,8 @@ class AssetRepository:
                 self._load(row["evaluation_evidence_refs_json"])),
             rollback_ref=row["rollback_ref"], content=content,
             created_at=row["created_at"], updated_at=row["updated_at"])
+        asset.validate()
+        return asset
 
     @staticmethod
     def _dump(value: Any) -> str:

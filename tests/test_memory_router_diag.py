@@ -81,10 +81,12 @@ class TestRouterScoring(unittest.TestCase):
     def _router(self):
         reg = ModelRegistry()
         reg.register(ModelProfile(model_id="strong", quality_score=0.95,
+                                  pricing_known=True,
                                   price_per_1k_input=0.01,
                                   price_per_1k_output=0.03,
                                   avg_latency_s=2.0))
         reg.register(ModelProfile(model_id="cheap", quality_score=0.45,
+                                  pricing_known=True,
                                   price_per_1k_input=0.0001,
                                   price_per_1k_output=0.0002,
                                   avg_latency_s=0.3))

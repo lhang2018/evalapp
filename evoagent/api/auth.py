@@ -58,6 +58,8 @@ class ApiAuth:
                 return AuthResult(False, role, 403, "该操作需要 admin 权限")
             return AuthResult(True, role)
         parts = [p for p in path.split("/") if p]
+        if parts and parts[0] == "assets" and role != "admin":
+            return AuthResult(False, role, 403, "资产写操作需要 admin 权限")
         if (len(parts) == 3 and parts[0] == "tasks" and parts[2] == "recover" and role != "admin"):
             return AuthResult(False, role, 403, "该操作需要 admin 权限")
         if (len(parts) == 3 and parts[0] == "approvals"

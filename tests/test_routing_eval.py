@@ -319,12 +319,15 @@ class TestModelRoutingEvaluation(unittest.TestCase):
     def setUp(self):
         profiles = [
             ModelProfile(model_id="cheap", quality_score=0.5,
+                         pricing_known=True,
                          price_per_1k_input=0.1, price_per_1k_output=0.1,
                          avg_latency_s=0.2),
             ModelProfile(model_id="strong", quality_score=0.95,
+                         pricing_known=True,
                          price_per_1k_input=0.2, price_per_1k_output=0.2,
                          avg_latency_s=0.5),
             ModelProfile(model_id="vision", quality_score=0.9,
+                         pricing_known=True,
                          price_per_1k_input=0.5, price_per_1k_output=0.5,
                          avg_latency_s=0.8, supports_vision=True),
             ModelProfile(model_id="off", quality_score=1.0, available=False),

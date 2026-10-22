@@ -7,6 +7,7 @@
 from typing import Any, Dict, List, Optional, Tuple
 
 from .base import ModelAdapter, ModelProfile, ModelRegistry
+from .metering import PRICING_UNKNOWN, pricing_status
 
 # 质量优先：成本/时延只在质量可接受时作为次要因素（Arch 7 / PRD 19）
 DEFAULT_WEIGHTS = {"quality": 0.70, "cost": 0.15, "latency": 0.15}
@@ -47,13 +48,14 @@ class ModelRouter:
         """
         if not model_id or self.adapter_factory is None:
             return None
-        if self.registry.get(model_id) is None:
+        profile = self.registry.get(model_id)
+        if profile is None or not profile.available:
             return None
         try:
             adapter = self.adapter_factory(model_id)
             if adapter is None:
                 return None
-            if adapter.profile().model_id != model_id:
+            if adapter.profile().model_id != model_id or not adapter.profile().available:
                 return None
             return adapter
         except Exception:  # noqa: BLE001 —— 解析失败视为不可用
@@ -82,40 +84,48 @@ class ModelRouter:
         model_id = self._routes.get(intent) or self._routes.get(domain)
         if model_id:
             prof = self.registry.get(model_id)
-            if prof and (not require_vision or prof.supports_vision):
+            if prof and prof.available and (not require_vision or prof.supports_vision):
                 adapter = self.resolve(model_id)
-                if adapter is not None:
+                if adapter is not None and (not require_vision or adapter.profile().supports_vision):
                     return adapter, "explicit"
         # 迁移受控启用：默认模型优先于评分；解析失败则继续评分
         if self.default_model_id:
             adapter = self.resolve(self.default_model_id)
             if adapter is not None and (
                     not require_vision
-                    or self.registry.get(self.default_model_id).supports_vision):
+                    or adapter.profile().supports_vision):
                 return adapter, "default"
         # 否则按能力过滤 + 质量/成本/时延评分（Arch 7 / PRD 19）
         candidates = [p for p in profiles if p.available
                       and (not require_vision or p.supports_vision)]
         if candidates and prefer_cost:
-            best = min(candidates, key=lambda p: p.price_per_1k_input)
-            adapter = self.resolve(best.model_id)
-            if adapter is not None:
-                return adapter, "cheap"
+            priced = [p for p in candidates if pricing_status(p) != PRICING_UNKNOWN]
+            for profile in sorted(priced, key=lambda p: float(p.price_per_1k_input) + float(p.price_per_1k_output)):
+                adapter = self.resolve(profile.model_id)
+                if adapter is not None and (not require_vision or adapter.profile().supports_vision):
+                    return adapter, "cheap"
         if candidates:
-            best = max(candidates, key=lambda p: self.score(p, candidates))
-            adapter = self.resolve(best.model_id)
-            if adapter is not None:
-                return adapter, "score"
+            for profile in sorted(candidates, key=lambda p: self.score(p, candidates), reverse=True):
+                adapter = self.resolve(profile.model_id)
+                if adapter is not None and (not require_vision or adapter.profile().supports_vision):
+                    return adapter, "score"
+        fallback = self.default_adapter.profile()
+        registered = self.registry.get(fallback.model_id)
+        if (not fallback.available or (registered is not None and not registered.available) or
+                (require_vision and not fallback.supports_vision)):
+            raise ValueError("没有满足能力与可用性要求的模型，拒绝不兼容回退")
         return self.default_adapter, "fallback"
 
     def score(self, profile: ModelProfile,
               pool: Optional[List[ModelProfile]] = None) -> float:
         """归一化质量/成本/时延加权分；可用性在候选过滤阶段处理。"""
         pool = pool or self.registry.all()
-        prices = [p.price_per_1k_input + p.price_per_1k_output for p in pool]
+        prices = [float(p.price_per_1k_input) + float(p.price_per_1k_output) for p in pool
+                  if pricing_status(p) != PRICING_UNKNOWN]
         max_price = max(prices) if prices else 0.0
-        price = profile.price_per_1k_input + profile.price_per_1k_output
-        cost_score = 1.0 - (price / max_price) if max_price > 0 else 1.0
+        known = pricing_status(profile) != PRICING_UNKNOWN
+        price = float(profile.price_per_1k_input) + float(profile.price_per_1k_output) if known else None
+        cost_score = (1.0 - (price / max_price) if max_price > 0 else 1.0) if known else 0.0
         latency_score = 1.0 / (1.0 + max(0.0, profile.avg_latency_s))
         return round(
             self.weights["quality"] * profile.quality_score
@@ -128,11 +138,13 @@ class ModelRouter:
         cands = [p for p in self.registry.all() if p.available
                  and (not require_vision or p.supports_vision)]
         rows = [{"model_id": p.model_id, "score": self.score(p, cands),
-                 "price": p.price_per_1k_input + p.price_per_1k_output,
+                 "price": (float(p.price_per_1k_input) + float(p.price_per_1k_output))
+                          if pricing_status(p) != PRICING_UNKNOWN else None,
+                 "pricing_status": pricing_status(p),
                  "quality": p.quality_score, "latency_s": p.avg_latency_s}
                 for p in cands]
         if prefer_cost:
-            rows.sort(key=lambda r: (r["price"], -r["score"]))
+            rows.sort(key=lambda r: (r["price"] is None, r["price"] or 0.0, -r["score"]))
         else:
             rows.sort(key=lambda r: r["score"], reverse=True)
         return rows

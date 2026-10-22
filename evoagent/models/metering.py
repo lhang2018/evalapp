@@ -42,6 +42,37 @@ COST_UNKNOWN = "unknown"
 CHARS_PER_TOKEN = 4
 
 
+def normalize_token_usage(raw: Any) -> Optional[Dict[str, int]]:
+    """Accept complete nonnegative integer counters, never bool/NaN/truncation."""
+    if not isinstance(raw, dict):
+        return None
+    def counter(value):
+        if isinstance(value, bool) or not isinstance(value, (int, str)):
+            return None
+        if isinstance(value, str) and not value.isdecimal():
+            return None
+        try:
+            number = int(value)
+        except (TypeError, ValueError, OverflowError):
+            return None
+        return number if number >= 0 else None
+    inp, out = counter(raw.get("input_tokens")), counter(raw.get("output_tokens"))
+    if inp is None or out is None:
+        return None
+    total = counter(raw["total_tokens"]) if "total_tokens" in raw else inp + out
+    if total is None or total < inp + out:
+        return None
+    return {"input_tokens": inp, "output_tokens": out, "total_tokens": total}
+
+
+def _prices(profile):
+    try:
+        prices = (float(profile.price_per_1k_input), float(profile.price_per_1k_output))
+    except (AttributeError, TypeError, ValueError, OverflowError):
+        return None
+    return prices if all(math.isfinite(p) and p >= 0 for p in prices) else None
+
+
 def pricing_status(profile: Optional[ModelProfile]) -> str:
     """档案价格状态：known / free / unknown。
 
@@ -49,8 +80,10 @@ def pricing_status(profile: Optional[ModelProfile]) -> str:
     """
     if profile is None or not bool(getattr(profile, "pricing_known", False)):
         return PRICING_UNKNOWN
-    price_in = float(getattr(profile, "price_per_1k_input", 0.0) or 0.0)
-    price_out = float(getattr(profile, "price_per_1k_output", 0.0) or 0.0)
+    prices = _prices(profile)
+    if prices is None:
+        return PRICING_UNKNOWN
+    price_in, price_out = prices
     if price_in == 0.0 and price_out == 0.0:
         return PRICING_FREE
     return PRICING_KNOWN
@@ -74,8 +107,14 @@ def cost_from_tokens(profile: Optional[ModelProfile],
         return None
     price_in = float(profile.price_per_1k_input)
     price_out = float(profile.price_per_1k_output)
-    return (int(input_tokens) * price_in
-            + int(output_tokens) * price_out) / 1000.0
+    tokens = normalize_token_usage({"input_tokens": input_tokens, "output_tokens": output_tokens})
+    if tokens is None:
+        return None
+    try:
+        cost = (tokens["input_tokens"] * price_in + tokens["output_tokens"] * price_out) / 1000.0
+    except OverflowError:
+        return None
+    return cost if math.isfinite(cost) else None
 
 
 def estimate_cost_optional(profile: Optional[ModelProfile],
@@ -89,8 +128,12 @@ def estimate_cost_optional(profile: Optional[ModelProfile],
         return 0.0
     price_in = float(profile.price_per_1k_input)
     price_out = float(profile.price_per_1k_output)
-    return (max(0, int(input_chars)) * price_in
-            + max(0, int(output_chars)) * price_out) / 1000.0
+    try:
+        cost = (max(0, int(input_chars)) * price_in
+                + max(0, int(output_chars)) * price_out) / 1000.0
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return cost if math.isfinite(cost) else None
 
 
 @dataclass
@@ -239,7 +282,20 @@ class MeteredModel:
         self.bus = bus
         self.component_id = component_id
         self.ledger = ledger
+        # The host shares adapters between task threads. Capture provider state
+        # before another call can overwrite it; retain usage per calling thread
+        # until that task settles its budget after this method returns.
+        self._call_lock = threading.RLock()
+        self._usage_local = threading.local()
         self.last_usage: Optional[ModelUsage] = None
+
+    @property
+    def last_usage(self):
+        return getattr(self._usage_local, "value", None)
+
+    @last_usage.setter
+    def last_usage(self, value):
+        self._usage_local.value = value
 
     def profile(self):
         return self.inner.profile()
@@ -259,6 +315,10 @@ class MeteredModel:
             lambda: self.inner.suggest_action(messages, available_tools))
 
     def _observe(self, op: str, messages: List[ChatMessage], fn):
+        with self._call_lock:
+            return self._observe_locked(op, messages, fn)
+
+    def _observe_locked(self, op: str, messages: List[ChatMessage], fn):
         start = time.time()
         ok = True
         error_class: Optional[str] = None
@@ -312,10 +372,8 @@ class MeteredModel:
             task_id=getattr(lease, "task_id", None),
             run_id=getattr(lease, "run_id", None))
 
-        provider_usage = getattr(self.inner, "last_usage", None)
-        if (ok and isinstance(provider_usage, dict)
-                and provider_usage.get("input_tokens") is not None
-                and provider_usage.get("output_tokens") is not None):
+        provider_usage = normalize_token_usage(getattr(self.inner, "last_usage", None))
+        if ok and provider_usage is not None:
             usage.input_tokens = int(provider_usage["input_tokens"])
             usage.output_tokens = int(provider_usage["output_tokens"])
             usage.total_tokens = int(provider_usage.get(

@@ -1,0 +1,198 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFF..FFFFFFFFFFFFFF                                              [100%]
+================================== FAILURES ===================================
+____ test_production_server_registers_asset_api_without_test_side_imports _____
+tests\test_cross_review_regressions.py:56: in test_production_server_registers_asset_api_without_test_side_imports
+    assert result.returncode == 0, result.stderr
+E   AssertionError: Traceback (most recent call last):
+E       File "<string>", line 10, in <module>
+E       File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py", line 216, in urlopen
+E         return opener.open(url, data, timeout)
+E       File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py", line 525, in open
+E         response = meth(req, response)
+E       File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py", line 634, in http_response
+E         response = self.parent.error(
+E       File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py", line 563, in error
+E         return self._call_chain(*args)
+E       File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py", line 496, in _call_chain
+E         result = func(*args)
+E       File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py", line 643, in http_error_default
+E         raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E     urllib.error.HTTPError: HTTP Error 404: Not Found
+E
+E   assert 1 == 0
+E    +  where 1 = CompletedProcess(args=['C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe', '-c', "\nimport js..._default\n    raise HTTPError(req.full_url, code, msg, hdrs, fp)\nurllib.error.HTTPError: HTTP Error 404: Not Found\n').returncode
+______ test_asset_writes_require_admin_but_reads_allow_operator[/assets] ______
+tests\test_cross_review_regressions.py:62: in test_asset_writes_require_admin_but_reads_allow_operator
+    assert auth.check("Bearer reader", "POST", path).status == 403
+E   AssertionError: assert 200 == 403
+E    +  where 200 = AuthResult(ok=True, role='operator', status=200, error='').status
+E    +    where AuthResult(ok=True, role='operator', status=200, error='') = check('Bearer reader', 'POST', '/assets')
+E    +      where check = <evoagent.api.auth.ApiAuth object at 0x000001850976BD30>.check
+_ test_asset_writes_require_admin_but_reads_allow_operator[/assets/demo/1/lifecycle] _
+tests\test_cross_review_regressions.py:62: in test_asset_writes_require_admin_but_reads_allow_operator
+    assert auth.check("Bearer reader", "POST", path).status == 403
+E   AssertionError: assert 200 == 403
+E    +  where 200 = AuthResult(ok=True, role='operator', status=200, error='').status
+E    +    where AuthResult(ok=True, role='operator', status=200, error='') = check('Bearer reader', 'POST', '/assets/demo/1/lifecycle')
+E    +      where check = <evoagent.api.auth.ApiAuth object at 0x0000018509761E40>.check
+_________ test_asset_body_corruption_cannot_pass_a_stored_digest[get] _________
+tests\test_cross_review_regressions.py:73: in test_asset_body_corruption_cannot_pass_a_stored_digest
+    with pytest.raises(AssetValidationError):
+E   Failed: DID NOT RAISE <class 'evoagent.assets.entity.AssetValidationError'>
+______ test_asset_body_corruption_cannot_pass_a_stored_digest[manifest] _______
+tests\test_cross_review_regressions.py:73: in test_asset_body_corruption_cannot_pass_a_stored_digest
+    with pytest.raises(AssetValidationError):
+E   Failed: DID NOT RAISE <class 'evoagent.assets.entity.AssetValidationError'>
+______ test_asset_body_corruption_cannot_pass_a_stored_digest[lifecycle] ______
+tests\test_cross_review_regressions.py:73: in test_asset_body_corruption_cannot_pass_a_stored_digest
+    with pytest.raises(AssetValidationError):
+E   Failed: DID NOT RAISE <class 'evoagent.assets.entity.AssetValidationError'>
+__ test_gc_keeps_exact_rollback_target_until_referencing_asset_is_collected ___
+tests\test_cross_review_regressions.py:86: in test_gc_keeps_exact_rollback_target_until_referencing_asset_is_collected
+    assert "old@1" not in {f"{a['asset_id']}@{a['version']}" for a in repo.gc_candidates()}
+E   AssertionError: assert 'old@1' not in {'old@1'}
+______ test_transitive_dependency_pins_are_checked_before_root_promotion ______
+tests\test_cross_review_regressions.py:99: in test_transitive_dependency_pins_are_checked_before_root_promotion
+    with pytest.raises(DependencyError):
+E   Failed: DID NOT RAISE <class 'evoagent.assets.entity.DependencyError'>
+_______ test_invalid_provider_tokens_are_not_accepted_as_real_usage[-1] _______
+tests\test_cross_review_regressions.py:105: in test_invalid_provider_tokens_are_not_accepted_as_real_usage
+    assert _usage_of({"prompt_tokens": value, "completion_tokens": 2}) is None
+E   AssertionError: assert {'input_tokens': -1, 'output_tokens': 2, 'total_tokens': 1} is None
+E    +  where {'input_tokens': -1, 'output_tokens': 2, 'total_tokens': 1} = _usage_of({'completion_tokens': 2, 'prompt_tokens': -1})
+______ test_invalid_provider_tokens_are_not_accepted_as_real_usage[1.5] _______
+tests\test_cross_review_regressions.py:105: in test_invalid_provider_tokens_are_not_accepted_as_real_usage
+    assert _usage_of({"prompt_tokens": value, "completion_tokens": 2}) is None
+E   AssertionError: assert {'input_tokens': 1, 'output_tokens': 2, 'total_tokens': 3} is None
+E    +  where {'input_tokens': 1, 'output_tokens': 2, 'total_tokens': 3} = _usage_of({'completion_tokens': 2, 'prompt_tokens': 1.5})
+______ test_invalid_provider_tokens_are_not_accepted_as_real_usage[True] ______
+tests\test_cross_review_regressions.py:105: in test_invalid_provider_tokens_are_not_accepted_as_real_usage
+    assert _usage_of({"prompt_tokens": value, "completion_tokens": 2}) is None
+E   AssertionError: assert {'input_tokens': 1, 'output_tokens': 2, 'total_tokens': 3} is None
+E    +  where {'input_tokens': 1, 'output_tokens': 2, 'total_tokens': 3} = _usage_of({'completion_tokens': 2, 'prompt_tokens': True})
+______ test_invalid_provider_tokens_are_not_accepted_as_real_usage[inf] _______
+tests\test_cross_review_regressions.py:105: in test_invalid_provider_tokens_are_not_accepted_as_real_usage
+    assert _usage_of({"prompt_tokens": value, "completion_tokens": 2}) is None
+evoagent\models\openai_compat.py:142: in _usage_of
+    inp = _int(raw.get("prompt_tokens", raw.get("input_tokens")))
+evoagent\models\openai_compat.py:139: in _int
+    return int(value)
+E   OverflowError: cannot convert float infinity to integer
+__________ test_provider_total_cannot_be_less_than_input_and_output ___________
+tests\test_cross_review_regressions.py:109: in test_provider_total_cannot_be_less_than_input_and_output
+    assert _usage_of({"prompt_tokens": 10, "completion_tokens": 2, "total_tokens": 1}) is None
+E   AssertionError: assert {'input_tokens': 10, 'output_tokens': 2, 'total_tokens': 1} is None
+E    +  where {'input_tokens': 10, 'output_tokens': 2, 'total_tokens': 1} = _usage_of({'completion_tokens': 2, 'prompt_tokens': 10, 'total_tokens': 1})
+___________________ test_invalid_prices_remain_unknown[-1] ____________________
+tests\test_cross_review_regressions.py:115: in test_invalid_prices_remain_unknown
+    assert pricing_status(profile) == "unknown"
+E   AssertionError: assert 'known' == 'unknown'
+E
+E     - unknown
+E     ? --
+E     + known
+___________________ test_invalid_prices_remain_unknown[nan] ___________________
+tests\test_cross_review_regressions.py:115: in test_invalid_prices_remain_unknown
+    assert pricing_status(profile) == "unknown"
+E   AssertionError: assert 'known' == 'unknown'
+E
+E     - unknown
+E     ? --
+E     + known
+___________________ test_invalid_prices_remain_unknown[inf] ___________________
+tests\test_cross_review_regressions.py:115: in test_invalid_prices_remain_unknown
+    assert pricing_status(profile) == "unknown"
+E   AssertionError: assert 'known' == 'unknown'
+E
+E     - unknown
+E     ? --
+E     + known
+___________________ test_invalid_prices_remain_unknown[bad] ___________________
+tests\test_cross_review_regressions.py:115: in test_invalid_prices_remain_unknown
+    assert pricing_status(profile) == "unknown"
+evoagent\models\metering.py:52: in pricing_status
+    price_in = float(getattr(profile, "price_per_1k_input", 0.0) or 0.0)
+E   ValueError: could not convert string to float: 'bad'
+_____________ test_concurrent_tasks_settle_their_own_model_usage ______________
+tests\test_cross_review_regressions.py:141: in test_concurrent_tasks_settle_their_own_model_usage
+    assert [f.result(timeout=8) for f in futures] == [(10, "request-10"), (20, "request-20")]
+E   AssertionError: assert [(20, 'reques...'request-20')] == [(10, 'reques...'request-20')]
+E
+E     At index 0 diff: (20, 'request-20') != (10, 'request-10')
+E     Use -v to get more diff
+______ test_malformed_usage_does_not_replace_success_with_metering_error ______
+tests\test_cross_review_regressions.py:149: in test_malformed_usage_does_not_replace_success_with_metering_error
+    assert model.generate([ChatMessage("user", "input")]) == "answer"
+evoagent\models\metering.py:251: in generate
+    return self._observe("generate", messages,
+evoagent\models\metering.py:274: in _observe
+    usage = self._build_usage(
+evoagent\models\metering.py:319: in _build_usage
+    usage.input_tokens = int(provider_usage["input_tokens"])
+E   ValueError: invalid literal for int() with base 10: 'invalid'
+______ test_unavailable_models_are_never_resolved_or_selected[explicit] _______
+tests\test_cross_review_regressions.py:163: in test_unavailable_models_are_never_resolved_or_selected
+    assert router.resolve("offline") is None
+E   AssertionError: assert <test_cross_review_regressions.Adapter object at 0x0000018509392DA0> is None
+E    +  where <test_cross_review_regressions.Adapter object at 0x0000018509392DA0> = resolve('offline')
+E    +    where resolve = <evoagent.models.router.ModelRouter object at 0x0000018509392B00>.resolve
+_______ test_unavailable_models_are_never_resolved_or_selected[default] _______
+tests\test_cross_review_regressions.py:163: in test_unavailable_models_are_never_resolved_or_selected
+    assert router.resolve("offline") is None
+E   AssertionError: assert <test_cross_review_regressions.Adapter object at 0x0000018509769D50> is None
+E    +  where <test_cross_review_regressions.Adapter object at 0x0000018509769D50> = resolve('offline')
+E    +    where resolve = <evoagent.models.router.ModelRouter object at 0x000001850976AD70>.resolve
+______ test_unavailable_models_are_never_resolved_or_selected[fallback] _______
+tests\test_cross_review_regressions.py:163: in test_unavailable_models_are_never_resolved_or_selected
+    assert router.resolve("offline") is None
+E   AssertionError: assert <test_cross_review_regressions.Adapter object at 0x00000185093C80D0> is None
+E    +  where <test_cross_review_regressions.Adapter object at 0x00000185093C80D0> = resolve('offline')
+E    +    where resolve = <evoagent.models.router.ModelRouter object at 0x00000185093CA6B0>.resolve
+____ test_missing_vision_model_does_not_fall_back_to_incompatible_adapter _____
+tests\test_cross_review_regressions.py:170: in test_missing_vision_model_does_not_fall_back_to_incompatible_adapter
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+______________ test_provider_failures_do_not_echo_secrets[http] _______________
+tests\test_cross_review_regressions.py:186: in test_provider_failures_do_not_echo_secrets
+    assert secret not in str(error.value)
+E   AssertionError: assert 'provider-se...uld-not-leak' not in 'LLM 调用失败 HT...uld-not-leak'
+E
+E     'provider-secret-should-not-leak' is contained here:
+E       LLM 调用失败 HTTP 400: provider-secret-should-not-leak
+____________ test_provider_failures_do_not_echo_secrets[transport] ____________
+tests\test_cross_review_regressions.py:186: in test_provider_failures_do_not_echo_secrets
+    assert secret not in str(error.value)
+E   AssertionError: assert 'provider-se...uld-not-leak' not in 'LLM 调用重试 3 ...uld-not-leak'
+E
+E     'provider-secret-should-not-leak' is contained here:
+E       LLM 调用重试 3 次仍失败: provider-secret-should-not-leak
+=========================== short test summary info ===========================
+FAILED tests/test_cross_review_regressions.py::test_production_server_registers_asset_api_without_test_side_imports
+FAILED tests/test_cross_review_regressions.py::test_asset_writes_require_admin_but_reads_allow_operator[/assets]
+FAILED tests/test_cross_review_regressions.py::test_asset_writes_require_admin_but_reads_allow_operator[/assets/demo/1/lifecycle]
+FAILED tests/test_cross_review_regressions.py::test_asset_body_corruption_cannot_pass_a_stored_digest[get]
+FAILED tests/test_cross_review_regressions.py::test_asset_body_corruption_cannot_pass_a_stored_digest[manifest]
+FAILED tests/test_cross_review_regressions.py::test_asset_body_corruption_cannot_pass_a_stored_digest[lifecycle]
+FAILED tests/test_cross_review_regressions.py::test_gc_keeps_exact_rollback_target_until_referencing_asset_is_collected
+FAILED tests/test_cross_review_regressions.py::test_transitive_dependency_pins_are_checked_before_root_promotion
+FAILED tests/test_cross_review_regressions.py::test_invalid_provider_tokens_are_not_accepted_as_real_usage[-1]
+FAILED tests/test_cross_review_regressions.py::test_invalid_provider_tokens_are_not_accepted_as_real_usage[1.5]
+FAILED tests/test_cross_review_regressions.py::test_invalid_provider_tokens_are_not_accepted_as_real_usage[True]
+FAILED tests/test_cross_review_regressions.py::test_invalid_provider_tokens_are_not_accepted_as_real_usage[inf]
+FAILED tests/test_cross_review_regressions.py::test_provider_total_cannot_be_less_than_input_and_output
+FAILED tests/test_cross_review_regressions.py::test_invalid_prices_remain_unknown[-1]
+FAILED tests/test_cross_review_regressions.py::test_invalid_prices_remain_unknown[nan]
+FAILED tests/test_cross_review_regressions.py::test_invalid_prices_remain_unknown[inf]
+FAILED tests/test_cross_review_regressions.py::test_invalid_prices_remain_unknown[bad]
+FAILED tests/test_cross_review_regressions.py::test_concurrent_tasks_settle_their_own_model_usage
+FAILED tests/test_cross_review_regressions.py::test_malformed_usage_does_not_replace_success_with_metering_error
+FAILED tests/test_cross_review_regressions.py::test_unavailable_models_are_never_resolved_or_selected[explicit]
+FAILED tests/test_cross_review_regressions.py::test_unavailable_models_are_never_resolved_or_selected[default]
+FAILED tests/test_cross_review_regressions.py::test_unavailable_models_are_never_resolved_or_selected[fallback]
+FAILED tests/test_cross_review_regressions.py::test_missing_vision_model_does_not_fall_back_to_incompatible_adapter
+FAILED tests/test_cross_review_regressions.py::test_provider_failures_do_not_echo_secrets[http]
+FAILED tests/test_cross_review_regressions.py::test_provider_failures_do_not_echo_secrets[transport]
+25 failed, 2 passed in 1.10s
