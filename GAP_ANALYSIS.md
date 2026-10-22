@@ -132,7 +132,7 @@
 - 实际：SKIPPED ✅（`engine.py:92-106`）、并发 ✅（`:160-172`）、重试 ✅（`:180-206`）、检查点续跑 ✅（`:254-271`）。**审批与补偿在生产链路是断的**：
   - **审批永不阻塞**：`controller.py:424` 传 `check_op("workflow_node_confirm", …)`，但该 op 名**不在** `permissions.py:41-44` 的 `high_risk_ops` 名单内；`check_op`（`:64-67`）对不在名单的 op 直接 `return ALLOW`。API 路径下 `app.py:92` 注入的 `confirm_callback` 由宿主注入，服务端默认 `None` → 恒 ALLOW。（`cli.py:38` 有个仅 CLI 生效的回调，属测试便利）
   - **审批请求不落库、无 approve 接口、无恢复路径**：`engine.py:80` `if node.state != PENDING: continue` → 重跑时 `WAITING_AUTH` 节点被**永久跳过**，任务卡死。
-  - **补偿是空壳**：`_try_compensate`（`:248-252`）用空参 `{}` 执行、`ctx` 形参未使用、异常全吞、只处理失败的单节点而不回滚已成功上游；内置漫剧声明的补偿动作 `fs_list`（`evoagent/workflows/builtin.py:59`：`compensation_actions={"compose": "fs_list"}`）是只读列目录，物理上不可能回滚视频合成。**零测试**。
+  - **历史补偿缺口已接续（ALN-02-A）**：现通过 `compensate`（`evoagent/workflows/compensation.py::compensate`）绑定原参数/持久结果、逆序恢复上游，并经只读工具独立验证后标记compensated；示例移除了只读列目录冒充补偿的配置。真实文件、审批等待和未知结果分支见 `tests/test_aln02_receipts.py`，新补丁待独立审阅。
 
 ### 3.6 R-08 工具契约：健康检查是死字段，成本估算完全缺失
 
@@ -147,7 +147,7 @@
 - 实际：
   - `MemoryKind` 8 类 ✅、`Scope` 5 值（task/project/expert/model/shared）✅、独立表 ✅、隐私级别 ✅。
   - **但 `memory_scope_key` 是纯死字段**：定义 `experts/registry.py:22`，赋值 `experts/builtin.py:28/40/49/60`，**全仓零读取点**。`controller.py:352-357` 装配时传 `scope_key=task.task_id`、`:808` 写记忆时传 `scope_key=task.domain`——与专家的 `memory_scope_key`（如 `"coding"`）**语义不同、值不同**。
-  - 更隐蔽：`evoagent/memory/store.py:248` 检索过滤条件含 `or not m.scope_key` → 空 key 直接放行，**即使接上也无隔离能力**。
+  - **键过滤已修复**：`MemoryStore.search`（`evoagent/memory/store.py::search`）拒绝空键跨域；新增 ALN-05-M 身份作用域机制待独立复核。此处历史空键放行结论不再描述当前源码。
   - `Scope` 枚举**无 `session` 值**（契约要求 user/project/domain/session/task 分层）。
   - `MemoryKind` 与 `Scope` 交叉不校验（可写 `kind=DOMAIN_KNOWLEDGE + scope=SHARED`）。
 

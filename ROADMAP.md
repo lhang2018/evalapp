@@ -138,7 +138,7 @@
 
 #### WP-0.7 记忆命名空间隔离接通与死字段清理
 - **主题**：M-01..05 / C-03｜**现状**：`memory_scope_key` 零读取；`quality_metrics` 零读取
-- **问题**：`memory_scope_key` 定义于 `evoagent/experts/registry.py:22`、赋值于 `evoagent/experts/builtin.py:28/40/49/60`，**全仓零读取点**；`evoagent/core/controller.py:357/814` 传的是 `task_id`/`domain`，与专家的 `memory_scope_key` 语义不同。且 `evoagent/memory/store.py:248` 检索过滤含 `or not m.scope_key`，**空 key 直接放行**——即使接上也不隔离。`Scope` 枚举无 `session`。
+- **当前进度（2026-10-22复核）**：专家 memory_scope_key 已参与运行时装配与写入；`MemoryStore.search`（`evoagent/memory/store.py::search`）拒绝空键跨域。ALN-05-M 提供身份作用域和 ContextManifest，整卡待独立审阅，真实运行身份接线继续按原计划验收。
 - **交付**：专家记忆命名空间真正参与装配与检索隔离；`Scope` 补 `session`/`domain_private`（对齐契约五域）；过滤条件修正为**空 key 拒绝跨域检索**而非放行；`quality_metrics` 接入评测执行。
 - **边界**：`evoagent/memory/store.py`、`context.py`、`evoagent/experts/registry.py`
 - **验收**：阶段 C 验收「跨领域隔离」测试通过；两个专家的记忆互不可见。

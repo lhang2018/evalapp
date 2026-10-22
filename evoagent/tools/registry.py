@@ -163,8 +163,7 @@ class ToolRegistry:
             # 备用工具已产生副作用（含状态不确定）时不得继续换下一个
             if sub_result.executed or sub_result.side_effect_uncertain:
                 attempts[-1]["reason"] = (
-                    "side_effect_uncertain" if sub_result.side_effect_uncertain
-                    else "executed")
+                    "executed" if sub_result.executed else "side_effect_uncertain")
                 break
         result.evidence["substitution_attempts"] = attempts
         return result

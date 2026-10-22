@@ -777,7 +777,7 @@ cd android-app && npm run test:offline
 | **工具契约成本估算** | R-08 | `grep cost contract.py registry.py` **零命中**；契约无任何成本字段 | WP-0.5 / F-02 |
 | **工具健康检查** ✅**已修** | R-08/E-04 | ~~`builtin.py` 零设置 `health_check` → `health()` 恒返回 True~~ → **已由 `ae54291` 实装真探针**（六工具真探针 + `None=unknown` 三值语义 + 探针故障 fail-closed） | WP-0.5 / F-02 |
 | **专家独立评测** | C-03 | `quality_metrics` 只被赋值、**零消费点** | WP-0.7 / F-05 |
-| **专家记忆命名空间隔离** | M-01..05 | `memory_scope_key` 全仓零读取；`evoagent/memory/store.py:248` 的 `or not m.scope_key` 使空 key 放行，**即使接上也无隔离能力** | WP-0.7 / F-05 |
+| **专家记忆命名空间隔离** | M-01..05 | 专家键已接读写，`MemoryStore.search`（`evoagent/memory/store.py::search`）执行键隔离；ALN-05-M 身份作用域扩展待独立验收 | WP-0.7 / F-05 |
 | **路由质量评测** ✅**已修** | R-03 | ~~无任何路由评测集或指标~~ → **已由 F-53 实装**（`evoagent/evolution/routing_eval.py`：意图准确率/专家准确率/混淆矩阵/top-1·top-3/兜底率/弃权率 + 低置信样本回流 + 基线对比）；**评测器首次运行即查出两个真实路由缺陷**：关键词表含幽灵意图 `programming`（从未注册）+ `coding`/`travel` 无关键词 → 已修，准确率 78.95% → 100% | **WP-6.3 / F-53** |
 | **记忆冲突识别** | M-08 | `link()` 的 `contradicts` 关系**零调用点**；无置信合并与用户确认流 | WP-5.2 / F-05 |
 | **失败案例转回归资产** | E-12 | 无 `DiagnosticCase → EvalCase` 转换，案例进不了 `datasets` | WP-3.2 / F-08 |
@@ -943,7 +943,8 @@ cd android-app && npm run android
 - **已知遗留**：`tests/test_control.py::TestPauseResume::test_pause_then_resume_completes` 约 50% flaky，为改动前既有的检查点写入竞态（`GAP_ANALYSIS.md` §1.3），由 F-13/WP-0.1 修
 
 ### 2026-10-21 — Task 契约补 goal_id/origin（待办 15 前置，G-01 前置）
-- core/task.py：新增 GoalOrigin 枚举（user/scheduled/derived/opportunity）与 Task goal_id/origin 字段；rom_dict 对旧数据缺省/非法值兜底 user
+- core/task.py：新增 GoalOrigin 枚举（user/scheduled/derived/opportunity）与 Task goal_id/origin 字段；
+rom_dict 对旧数据缺省/非法值兜底 user
 - core/persistence.py：tasks 表新增 goal_id 列 + idx_tasks_goal 索引（含旧库 ALTER 迁移）；list_tasks_by_goal()
 - core/controller.py：submit_task(goal_id=, origin=) 校验并落库；task_created 事件带 goal_id/origin；_build_retry 继承
 - pi/server.py：POST /tasks 接收校验 goal_id（格式）/origin（枚举），非法返回 400

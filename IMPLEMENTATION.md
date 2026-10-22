@@ -172,8 +172,8 @@
 | 状态 | 数量 | 占比 | 口径 |
 |---|---|---|---|
 | ✅ 已实现 | 37 | 42% | 有实现逻辑、有产生它的代码路径、有走通该路径的测试 |
-| 🔹 部分/接口已留 | 36 | 40% | 主路径可用，但关键分支缺失 / 字段无读取点 / 依赖未接线 |
-| ⬜ 未实现 | 16 | 18% | 无对应物，或仅有纯占位 |
+| 🔹 部分/接口已留 | 37 | 42% | 主路径可用，但关键分支缺失 / 字段无读取点 / 依赖未接线 |
+| ⬜ 未实现 | 15 | 17% | 无对应物，或仅有纯占位 |
 
 > 计数说明：分组表共 84 行，其中 `P-01/02` 合 1 行覆盖 2 主题、`M-01..05` 合 1 行覆盖 5 主题，
 > 展开后为 89 主题。上表数字由脚本对分组表逐行统计得出（见文末复核命令）。
@@ -240,9 +240,9 @@ M 记忆上下文（10）：
 
 | 主题 | 状态 | 说明 |
 |---|---|---|
-| M-01..05 用户/项目/领域/会话/工作记忆 | 🔹 | `MemoryKind` 8 类、`Scope` 5 值、独立表、隐私级别均有；**但命名空间隔离未接通** —— 专家 `memory_scope_key` 定义于 `registry.py:22`、赋值于 `builtin.py:28/40/49/60`，**全仓零读取点**；`controller.py:352/808` 传的是 `task_id`/`domain`，与专家的 `memory_scope_key` 语义不同；且 `evoagent/memory/store.py:248` 检索过滤含 `or not m.scope_key`（空 key 直接放行），即使接上也无隔离能力；`Scope` 枚举无 `session` |
+| M-01..05 用户/项目/领域/会话/工作记忆 | 🔹 | 专家 memory_scope_key 已参与运行时读写；`MemoryStore.search`（`evoagent/memory/store.py::search`）拒绝空键跨域。ALN-05-M 新增身份作用域接口，真实运行身份装配与完整隔离按该卡待独立复核 |
 | M-06 压缩与预算管理 | 🔹 | 共享压缩引擎+预算 ✅（硬约束保留有测试）；但保留是"结构化字段本来就不裁剪"的被动结果，非主动保全逻辑；领域压缩策略未分域 |
-| M-07 ContextManifest 来源追踪 | ⬜ | 无 ContextManifest 实体（`AssembledContext` 有 20 字段 + 12 项统计，但无该类型、不持久化、无缓存失效字段）；全仓 grep `ContextManifest` 在 evoagent 代码中零命中 |
+| M-07 ContextManifest 来源追踪 | 🔹 | 已有 `ContextManifest`（`evoagent/memory/manifest.py::ContextManifest`）及装配来源/摘要/预算记录；运行时消费、失效与完整验收按 ALN-05-M 独立审阅，不再沿用历史零命中结论 |
 | M-08 记忆冲突与事实更新 | ⬜ | **无冲突识别**。`evoagent/memory/store.py:148` 的 `write` 只做精确去重；`link` **生产代码零调用点**（`evoagent/memory/store.py::link`）（仅 `tests/test_memory_router_diag.py:48` 以 `refines` 调用一次）—— 它本可建立 `contradicts` 关系；无置信合并、无用户确认流 |
 | M-09 记忆写入门禁 | ✅ | 实现质量好：无 evidence 的 VERIFIED 写入被强制降级为 PENDING_REVIEW；5 态可信度；未验证经验设 7 天有效期。证据：`write`（`evoagent/memory/store.py::write`），test=26）、`set_status`（`evoagent/memory/store.py::set_status`）。**这是「文档给了明确二元判断→实现就到位」的正面样本**|
 | M-10 保留、删除与隐私 | 🔹 | 隐私分级/脱敏 ✅，删除时向量已级联；**但 relations 中指向该 id 的其他记忆留悬空引用**（`related()` 靠 get() 返回 None 静默跳过）；无导出 |
