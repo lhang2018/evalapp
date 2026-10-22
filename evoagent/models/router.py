@@ -4,7 +4,7 @@
 不允许因某模型整体便宜而把所有任务无条件切换过去。
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from .base import ModelAdapter, ModelProfile, ModelRegistry
 
@@ -65,6 +65,18 @@ class ModelRouter:
     def route(self, intent: str, domain: str,
               require_vision: bool = False,
               prefer_cost: bool = False) -> ModelAdapter:
+        return self.decide(intent, domain, require_vision=require_vision,
+                           prefer_cost=prefer_cost)[0]
+
+    def decide(self, intent: str, domain: str,
+               require_vision: bool = False,
+               prefer_cost: bool = False) -> Tuple[ModelAdapter, str]:
+        """返回 (适配器, 决策来源)。
+
+        来源：explicit（显式路由）/ default（迁移默认模型）/ cheap（成本优先）
+        / score（评分）/ fallback（无可用候选，回退默认适配器）。
+        评测用来源判断“回退率”，不靠适配器对象身份猜。
+        """
         profiles = self.registry.all()
         # 显式路由优先
         model_id = self._routes.get(intent) or self._routes.get(domain)
@@ -73,14 +85,14 @@ class ModelRouter:
             if prof and (not require_vision or prof.supports_vision):
                 adapter = self.resolve(model_id)
                 if adapter is not None:
-                    return adapter
+                    return adapter, "explicit"
         # 迁移受控启用：默认模型优先于评分；解析失败则继续评分
         if self.default_model_id:
             adapter = self.resolve(self.default_model_id)
             if adapter is not None and (
                     not require_vision
                     or self.registry.get(self.default_model_id).supports_vision):
-                return adapter
+                return adapter, "default"
         # 否则按能力过滤 + 质量/成本/时延评分（Arch 7 / PRD 19）
         candidates = [p for p in profiles if p.available
                       and (not require_vision or p.supports_vision)]
@@ -88,13 +100,13 @@ class ModelRouter:
             best = min(candidates, key=lambda p: p.price_per_1k_input)
             adapter = self.resolve(best.model_id)
             if adapter is not None:
-                return adapter
+                return adapter, "cheap"
         if candidates:
             best = max(candidates, key=lambda p: self.score(p, candidates))
             adapter = self.resolve(best.model_id)
             if adapter is not None:
-                return adapter
-        return self.default_adapter
+                return adapter, "score"
+        return self.default_adapter, "fallback"
 
     def score(self, profile: ModelProfile,
               pool: Optional[List[ModelProfile]] = None) -> float:

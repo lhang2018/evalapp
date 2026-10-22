@@ -402,6 +402,160 @@ class RoutingEvaluator:
         }
 
 
+# ---------------------------------------------------------------- 模型层评测
+
+#: 模型路由用例类型：显式路由 / 默认模型 / 评分 / 成本优先 / 视觉约束
+MODEL_ROUTE_KINDS = ("explicit", "default", "score", "cost", "vision")
+
+
+@dataclass
+class ModelRoutingCase:
+    """模型层路由用例：期望 `ModelRouter.route` 选中哪个模型。"""
+
+    case_id: str
+    expected_model: str
+    intent: str = ""
+    domain: str = ""
+    require_vision: bool = False
+    prefer_cost: bool = False
+    kind: str = "score"
+    tags: List[str] = field(default_factory=list)
+
+
+@dataclass
+class ModelRoutingCaseResult:
+    case_id: str
+    ok: bool
+    expected_model: str
+    predicted_model: str
+    kind: str
+    #: 决策来源：explicit/default/cheap/score/fallback
+    source: str = ""
+    #: 是否回退到 default_adapter（回退率高说明评分/解析没命中）
+    is_default: bool = False
+    vision_ok: bool = True
+    error: str = ""
+
+
+@dataclass
+class ModelRoutingReport:
+    """模型层路由报告；cost 对账来自 UsageLedger，不臆造费用。"""
+
+    case_count: int = 0
+    route_accuracy: float = 0.0
+    fallback_rate: float = 0.0
+    vision_violations: int = 0
+    by_kind: Dict[str, Dict[str, int]] = field(default_factory=dict)
+    by_source: Dict[str, int] = field(default_factory=dict)
+    per_model: Dict[str, Dict[str, int]] = field(default_factory=dict)
+    usage: Dict[str, Any] = field(default_factory=dict)
+    case_results: List[ModelRoutingCaseResult] = field(default_factory=list)
+
+    def summary(self) -> Dict[str, Any]:
+        return {
+            "case_count": self.case_count,
+            "route_accuracy": round(self.route_accuracy, 4),
+            "fallback_rate": round(self.fallback_rate, 4),
+            "vision_violations": self.vision_violations,
+            "by_kind": dict(self.by_kind),
+            "by_source": dict(self.by_source),
+            "usage_actual_cost": self.usage.get("actual_cost"),
+            "usage_unknown_calls": self.usage.get("unknown_calls"),
+        }
+
+
+class ModelRoutingEvaluator:
+    """模型层路由评测：走与运行时相同的 `ModelRouter.route` 入口。"""
+
+    def __init__(self, router: Any):
+        self.router = router
+
+    def evaluate_case(self, case: ModelRoutingCase) -> ModelRoutingCaseResult:
+        if case.kind not in MODEL_ROUTE_KINDS:
+            return ModelRoutingCaseResult(
+                case_id=case.case_id, ok=False,
+                expected_model=case.expected_model, predicted_model="",
+                kind=case.kind, error=f"未知用例类型: {case.kind}")
+        try:
+            decide = getattr(self.router, "decide", None)
+            if callable(decide):
+                adapter, source = decide(
+                    case.intent, case.domain,
+                    require_vision=case.require_vision,
+                    prefer_cost=case.prefer_cost)
+            else:  # 兼容只有 route() 的注入实现
+                adapter = self.router.route(
+                    case.intent, case.domain,
+                    require_vision=case.require_vision,
+                    prefer_cost=case.prefer_cost)
+                source = "unknown"
+            profile = adapter.profile()
+            predicted = getattr(profile, "model_id", "") or ""
+            vision_ok = (not case.require_vision
+                         or bool(getattr(profile, "supports_vision", False)))
+        except Exception as exc:  # noqa: BLE001 —— 单条失败不中断整批
+            return ModelRoutingCaseResult(
+                case_id=case.case_id, ok=False,
+                expected_model=case.expected_model, predicted_model="",
+                kind=case.kind, error=f"{type(exc).__name__}: {exc}")
+        return ModelRoutingCaseResult(
+            case_id=case.case_id,
+            ok=bool(predicted == case.expected_model and vision_ok),
+            expected_model=case.expected_model,
+            predicted_model=predicted,
+            kind=case.kind,
+            source=source,
+            is_default=source == "fallback",
+            vision_ok=vision_ok)
+
+    def run(self, cases: Iterable[ModelRoutingCase], *,
+            usage: Optional[Any] = None) -> ModelRoutingReport:
+        rows = list(cases)
+        report = ModelRoutingReport(case_count=len(rows))
+        by_kind: Dict[str, Dict[str, int]] = {}
+        by_source: Dict[str, int] = {}
+        per_model: Dict[str, Dict[str, int]] = {}
+        correct = fallback = violations = 0
+        for case in rows:
+            res = self.evaluate_case(case)
+            report.case_results.append(res)
+            if res.source:
+                by_source[res.source] = by_source.get(res.source, 0) + 1
+            bucket = by_kind.setdefault(case.kind, {"cases": 0, "correct": 0})
+            bucket["cases"] += 1
+            model_bucket = per_model.setdefault(
+                case.expected_model, {"cases": 0, "correct": 0})
+            model_bucket["cases"] += 1
+            if res.ok:
+                correct += 1
+                bucket["correct"] += 1
+                model_bucket["correct"] += 1
+            if res.is_default:
+                fallback += 1
+            if not res.vision_ok:
+                violations += 1
+        if rows:
+            report.route_accuracy = correct / len(rows)
+            report.fallback_rate = fallback / len(rows)
+        report.vision_violations = violations
+        report.by_kind = by_kind
+        report.by_source = by_source
+        report.per_model = per_model
+        if usage is not None:
+            try:
+                totals = usage.totals() if callable(
+                    getattr(usage, "totals", None)) else dict(usage)
+                report.usage = {
+                    "calls": totals.get("calls", 0),
+                    "actual_cost": totals.get("actual_cost", 0.0),
+                    "unknown_calls": totals.get("unknown_calls", 0),
+                    "pending_estimates": totals.get("pending_estimates", 0),
+                }
+            except Exception:  # noqa: BLE001 —— 费用对账失败不伪造数值
+                report.usage = {"error": "计量账本不可读"}
+        return report
+
+
 # ---------------------------------------------------------------- 五层覆盖复核
 
 #: ALN-08 要求的五层路由决策
@@ -466,10 +620,14 @@ def routing_coverage() -> List[Dict[str, Any]]:
             "layer": "model",
             "implementation": "models/router.py::ModelRouter.route",
             "entry": "controller._route_model → runtime_manifest.model_route",
-            "evaluated": False,
-            "metrics": [],
-            "evidence": "路由结果记录 model_id/provider/source，但未被 routing_eval 评测",
-            "gap": "缺模型层评测指标与实测费用对账；调用尚未回填 task/run 关联",
+            "evaluated": True,
+            "metrics": ["route_accuracy", "fallback_rate", "vision_violations",
+                        "by_kind", "per_model", "usage.actual_cost",
+                        "usage.unknown_calls"],
+            "evidence": "ModelRoutingEvaluator 走同一 ModelRouter.route 入口；"
+                        "UsageLedger.totals 提供实测/未知成本对账",
+            "gap": "运行时 model_call 尚未回填 task/run 关联；"
+                   "实测成本尚未写入预算记账",
         },
     ]
 

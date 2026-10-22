@@ -97,6 +97,62 @@ def run_routing_eval(ctx):
     })
 
 
+@post("/routing/model-eval")
+def run_model_routing_eval(ctx):
+    """模型层路由评测：调用方给出期望模型，服务端走真实 ModelRouter。
+
+    请求体：{"cases": [{"case_id","expected_model","intent","domain",
+                        "require_vision","prefer_cost","kind"}]}
+    期望值必须由调用方提供 —— 评测器不拿路由自己的评分结果当答案。
+    """
+    from ..evolution.routing_eval import (MODEL_ROUTE_KINDS,
+                                         ModelRoutingCase,
+                                         ModelRoutingEvaluator)
+
+    router = getattr(ctx.app, "router", None)
+    if router is None:
+        ctx.json(503, {"error": "模型路由未装配"})
+        return
+    body = ctx.body or {}
+    raw = body.get("cases")
+    if not isinstance(raw, list) or not raw:
+        ctx.json(400, {"error": "cases 必须是非空数组"})
+        return
+    cases = []
+    for i, item in enumerate(raw):
+        if not isinstance(item, dict):
+            ctx.json(400, {"error": f"cases[{i}] 必须是对象"})
+            return
+        expected = str(item.get("expected_model") or "")
+        kind = str(item.get("kind") or "score")
+        if not expected:
+            ctx.json(400, {"error": f"cases[{i}] 缺少 expected_model"})
+            return
+        if kind not in MODEL_ROUTE_KINDS:
+            ctx.json(400, {"error": f"cases[{i}] 未知 kind: {kind}"})
+            return
+        cases.append(ModelRoutingCase(
+            case_id=str(item.get("case_id") or f"case_{i + 1}"),
+            expected_model=expected,
+            intent=str(item.get("intent") or ""),
+            domain=str(item.get("domain") or ""),
+            require_vision=bool(item.get("require_vision", False)),
+            prefer_cost=bool(item.get("prefer_cost", False)),
+            kind=kind))
+    report = ModelRoutingEvaluator(router).run(cases)
+    ctx.json(200, {
+        "report": report.summary(),
+        "by_kind": report.by_kind,
+        "by_source": report.by_source,
+        "per_model": report.per_model,
+        "failures": [
+            {"case_id": r.case_id, "expected_model": r.expected_model,
+             "predicted_model": r.predicted_model, "source": r.source,
+             "error": r.error}
+            for r in report.case_results if not r.ok],
+    })
+
+
 @get("/routing/coverage")
 def routing_coverage_layers(ctx):
     """五层路由覆盖复核：哪些层有真实入口/评测，哪些仍是缺口。"""

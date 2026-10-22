@@ -23,6 +23,8 @@ from evoagent.core.persistence import Database  # noqa: E402
 from evoagent.evolution.routing_eval import (  # noqa: E402
     FALLBACK_METHODS,
     ROUTING_LAYERS,
+    ModelRoutingCase,
+    ModelRoutingEvaluator,
     RoutingCase,
     RoutingDataset,
     RoutingEvaluator,
@@ -32,6 +34,14 @@ from evoagent.evolution.routing_eval import (  # noqa: E402
     save_report,
 )
 from evoagent.experts.builtin import builtin_experts  # noqa: E402
+from evoagent.models.base import ModelProfile, ModelRegistry  # noqa: E402
+from evoagent.models.metering import (  # noqa: E402
+    COST_PROVIDER,
+    TOKEN_PROVIDER,
+    ModelUsage,
+    UsageLedger,
+)
+from evoagent.models.router import ModelRouter  # noqa: E402
 from evoagent.planning.intent import (  # noqa: E402
     _DESCRIPTIONS,
     _KEYWORDS,
@@ -264,20 +274,146 @@ class TestFiveLayerCoverage(unittest.TestCase):
 
     def test_missing_layers_are_explicit(self):
         rows = {r["layer"]: r for r in routing_coverage()}
-        for name in ("workflow", "execution_mode", "model"):
+        for name in ("workflow", "execution_mode"):
             self.assertFalse(rows[name]["evaluated"],
                              f"{name} 当前没有评测，不能标成已覆盖")
             self.assertTrue(rows[name]["gap"], f"{name} 必须写明缺口")
         self.assertIsNone(rows["workflow"]["entry"])
         self.assertIsNone(rows["execution_mode"]["entry"])
 
-    def test_model_layer_has_route_entry_but_no_eval(self):
+    def test_model_layer_is_evaluated_with_honest_gap(self):
         rows = {r["layer"]: r for r in routing_coverage()}
         model = rows["model"]
         self.assertIn("ModelRouter.route", model["implementation"])
         self.assertIn("runtime_manifest", model["entry"])
-        self.assertFalse(model["evaluated"])
-        self.assertIn("实测费用", model["gap"])
+        self.assertTrue(model["evaluated"])
+        self.assertIn("route_accuracy", model["metrics"])
+        self.assertIn("usage.actual_cost", model["metrics"])
+        # 预算接线仍是缺口，不能因为有了评测就说链路完整
+        self.assertIn("预算记账", model["gap"])
+
+
+class _FakeAdapter:
+    """只提供路由所需的 profile；不执行真实模型调用。"""
+
+    def __init__(self, profile):
+        self._profile = profile
+
+    def profile(self):
+        return self._profile
+
+    def suggest_action(self, messages, available_tools):
+        raise NotImplementedError
+
+    def generate(self, messages):
+        raise NotImplementedError
+
+    def estimate_cost(self, input_chars, output_chars):
+        return 0.0
+
+
+class TestModelRoutingEvaluation(unittest.TestCase):
+    """模型层路由评测：走真实 ModelRouter 决策，不伪造命中。"""
+
+    def setUp(self):
+        profiles = [
+            ModelProfile(model_id="cheap", quality_score=0.5,
+                         price_per_1k_input=0.1, price_per_1k_output=0.1,
+                         avg_latency_s=0.2),
+            ModelProfile(model_id="strong", quality_score=0.95,
+                         price_per_1k_input=0.2, price_per_1k_output=0.2,
+                         avg_latency_s=0.5),
+            ModelProfile(model_id="vision", quality_score=0.9,
+                         price_per_1k_input=0.5, price_per_1k_output=0.5,
+                         avg_latency_s=0.8, supports_vision=True),
+            ModelProfile(model_id="off", quality_score=1.0, available=False),
+        ]
+        self.registry = ModelRegistry()
+        self.adapters = {}
+        for p in profiles:
+            self.registry.register(p)
+            self.adapters[p.model_id] = _FakeAdapter(p)
+        self.router = ModelRouter(self.registry, self.adapters["cheap"])
+        self.router.setup(lambda mid: self.adapters.get(mid))
+        self.evaluator = ModelRoutingEvaluator(self.router)
+
+    def _cases(self):
+        self.router.bind_route("coding", "strong")
+        return [
+            ModelRoutingCase(case_id="explicit", intent="coding",
+                             expected_model="strong", kind="explicit"),
+            ModelRoutingCase(case_id="score", intent="travel",
+                             expected_model="strong", kind="score"),
+            ModelRoutingCase(case_id="cost", intent="travel",
+                             expected_model="cheap", kind="cost",
+                             prefer_cost=True),
+            ModelRoutingCase(case_id="vision", intent="travel",
+                             expected_model="vision", kind="vision",
+                             require_vision=True),
+            ModelRoutingCase(case_id="unavailable", intent="time_query",
+                             expected_model="strong", kind="score"),
+        ]
+
+    def test_default_model_takes_precedence(self):
+        self.router.set_default_model("strong")
+        report = self.evaluator.run([
+            ModelRoutingCase(case_id="default", intent="travel",
+                             expected_model="strong", kind="default")])
+        self.assertEqual(report.route_accuracy, 1.0)
+        self.assertEqual(report.fallback_rate, 0.0)
+
+    def test_route_accuracy_and_breakdown(self):
+        report = self.evaluator.run(self._cases())
+        self.assertEqual(report.case_count, 5)
+        self.assertEqual(report.route_accuracy, 1.0)
+        self.assertEqual(report.fallback_rate, 0.0)
+        self.assertEqual(report.vision_violations, 0)
+        self.assertEqual(report.by_kind["explicit"], {"cases": 1, "correct": 1})
+        self.assertEqual(report.by_kind["cost"], {"cases": 1, "correct": 1})
+        self.assertEqual(report.by_source["explicit"], 1)
+        self.assertEqual(report.by_source["cheap"], 1)
+        self.assertEqual(report.by_source["score"], 3)
+        self.assertEqual(report.per_model["strong"]["cases"], 3)
+        self.assertEqual(report.per_model["strong"]["correct"], 3)
+
+    def test_wrong_expectation_is_detected(self):
+        cases = self._cases() + [ModelRoutingCase(
+            case_id="bad", intent="travel", expected_model="cheap",
+            kind="score")]
+        report = self.evaluator.run(cases)
+        self.assertEqual(report.case_count, 6)
+        self.assertAlmostEqual(report.route_accuracy, 5 / 6, places=6)
+        bad = [r for r in report.case_results if r.case_id == "bad"][0]
+        self.assertFalse(bad.ok)
+        self.assertEqual(bad.predicted_model, "strong")
+
+    def test_fallback_to_default_adapter_is_visible(self):
+        router = ModelRouter(ModelRegistry(), self.adapters["cheap"])
+        report = ModelRoutingEvaluator(router).run([
+            ModelRoutingCase(case_id="empty", expected_model="strong")])
+        self.assertEqual(report.fallback_rate, 1.0)
+        self.assertEqual(report.route_accuracy, 0.0)
+        self.assertTrue(report.case_results[0].is_default)
+
+    def test_vision_requirement_never_violated(self):
+        report = self.evaluator.run([
+            ModelRoutingCase(case_id="v", expected_model="vision",
+                             require_vision=True, kind="vision")])
+        self.assertEqual(report.vision_violations, 0)
+        self.assertEqual(report.case_results[0].predicted_model, "vision")
+
+    def test_usage_reconciliation_is_attached(self):
+        ledger = UsageLedger()
+        ledger.record(ModelUsage(model_id="strong", cost=0.02,
+                                 cost_source=COST_PROVIDER,
+                                 token_source=TOKEN_PROVIDER))
+        ledger.record(ModelUsage(model_id="strong", cost=None,
+                                 cost_source="unknown"))
+        report = self.evaluator.run(self._cases()[:1], usage=ledger)
+        self.assertEqual(report.usage["calls"], 2)
+        self.assertEqual(report.usage["actual_cost"], 0.02)
+        self.assertEqual(report.usage["unknown_calls"], 1)
+        self.assertEqual(report.summary()["usage_actual_cost"], 0.02)
 
 
 class TestBaselineComparison(unittest.TestCase):

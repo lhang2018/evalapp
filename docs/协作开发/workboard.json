@@ -306,9 +306,9 @@
       "evidence": [
         {
           "date": "2026-10-22",
-          "scope": "五层覆盖复核 + 实测/预估/未知费用计量 + 确定性故障夹具",
+          "scope": "五层覆盖复核 + 实测/预估/未知费用计量 + 模型层路由评测与费用对账",
           "command": "python -m pytest tests -q",
-          "result": "696 passed, 1 skipped",
+          "result": "784 passed, 1 skipped",
           "delivery": "docs/协作开发/交付/ALN-08-M-路由与计量.md"
         }
       ],

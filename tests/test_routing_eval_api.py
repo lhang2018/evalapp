@@ -13,6 +13,7 @@ import shutil
 import tempfile
 import threading
 import unittest
+import urllib.error
 import urllib.request
 
 from evoagent.app import App
@@ -87,8 +88,38 @@ class TestRoutingEvalApiEndToEnd(unittest.TestCase):
                           "execution_mode", "model"])
         layers = {r["layer"]: r for r in out["layers"]}
         self.assertTrue(layers["intent"]["evaluated"])
+        self.assertTrue(layers["model"]["evaluated"])
+        self.assertIn("route_accuracy", layers["model"]["metrics"])
+        self.assertTrue(layers["model"]["gap"],
+                        "模型层仍有预算接线缺口，必须如实保留")
         self.assertFalse(layers["execution_mode"]["evaluated"])
         self.assertTrue(layers["execution_mode"]["gap"])
+
+    def test_model_eval_endpoint(self):
+        """POST /routing/model-eval 走真实 ModelRouter 并返回路由指标。"""
+        status, out = self._post("/routing/model-eval", {"cases": [
+            {"case_id": "m1", "expected_model": "mock-1", "kind": "score"},
+            {"case_id": "m2", "expected_model": "unavailable-model",
+             "kind": "score"},
+        ]})
+        self.assertEqual(status, 200)
+        rep = out["report"]
+        self.assertEqual(rep["case_count"], 2)
+        self.assertAlmostEqual(rep["route_accuracy"], 0.5)
+        self.assertEqual(len(out["failures"]), 1)
+        self.assertEqual(out["failures"][0]["case_id"], "m2")
+        self.assertEqual(out["by_source"]["score"], 2)
+
+    def test_model_eval_rejects_incomplete_cases(self):
+        """缺期望值必须 400 —— 不允许把路由自己的输出当答案。"""
+        try:
+            self._post("/routing/model-eval", {"cases": [{"intent": "x"}]})
+        except urllib.error.HTTPError as e:
+            self.assertEqual(e.code, 400)
+            body = json.loads(e.read().decode())
+            self.assertIn("expected_model", body["error"])
+            return
+        self.fail("缺少 expected_model 应返回 400")
 
     def test_run_eval_reports_misclassified(self):
         """错分样本必须被列出（这是「纠错」的输入）。"""
