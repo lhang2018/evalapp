@@ -1,0 +1,136 @@
+{
+  "source_file": "C:\\Users\\lhang\\AppData\\Local\\Temp\\evalapp-opencode-review-jyz7vxn4\\evoagent\\evolution\\controller.py",
+  "baseline": {
+    "current_release_id": "37fdb7a74d",
+    "candidate_baseline": "stable-v1",
+    "rollback": "stable-v1",
+    "deploy": {
+      "ok": false,
+      "error": "稳定基线或回滚目标不一致，请基于当前版本重新评测"
+    }
+  },
+  "live_recovery": {
+    "attempted_recovery_of_live_candidate": true,
+    "round": {
+      "converted": [],
+      "skipped_unknown": [],
+      "already_converted": 0,
+      "proposed": [],
+      "evaluated": [],
+      "errors": [
+        "cand_001: IllegalCandidateTransition: 非法候选转换: APPROVAL_PENDING -> TESTING"
+      ],
+      "stop_reasons": [
+        "no_pending_evidence",
+        "evaluation_error"
+      ]
+    },
+    "candidate_status": "APPROVAL_PENDING"
+  },
+  "recovery_budget": {
+    "limits": {
+      "calls": 2,
+      "cost": 0.25
+    },
+    "usage": {
+      "model_calls": 4,
+      "tool_calls": 0,
+      "cost": 0.4,
+      "seconds": 0.0
+    },
+    "candidate_status": "EVALUATING",
+    "rounds": [
+      {
+        "converted": [],
+        "skipped_unknown": [],
+        "already_converted": 0,
+        "proposed": [],
+        "evaluated": [],
+        "errors": [
+          "cand_001: RuntimeError: evaluation interrupted after a charged call"
+        ],
+        "stop_reasons": [
+          "no_pending_evidence",
+          "evaluation_error"
+        ]
+      },
+      {
+        "converted": [],
+        "skipped_unknown": [],
+        "already_converted": 0,
+        "proposed": [],
+        "evaluated": [],
+        "errors": [
+          "cand_001: RuntimeError: evaluation interrupted after a charged call"
+        ],
+        "stop_reasons": [
+          "no_pending_evidence",
+          "evaluation_error"
+        ]
+      },
+      {
+        "converted": [],
+        "skipped_unknown": [],
+        "already_converted": 0,
+        "proposed": [],
+        "evaluated": [],
+        "errors": [
+          "cand_001: RuntimeError: evaluation interrupted after a charged call"
+        ],
+        "stop_reasons": [
+          "no_pending_evidence",
+          "evaluation_error"
+        ]
+      },
+      {
+        "converted": [],
+        "skipped_unknown": [],
+        "already_converted": 0,
+        "proposed": [],
+        "evaluated": [],
+        "errors": [
+          "cand_001: RuntimeError: evaluation interrupted after a charged call"
+        ],
+        "stop_reasons": [
+          "no_pending_evidence",
+          "evaluation_error"
+        ]
+      }
+    ]
+  },
+  "duplicate_audit": {
+    "audit_count": 2,
+    "round": {
+      "converted": [],
+      "skipped_unknown": [],
+      "already_converted": 0,
+      "proposed": [],
+      "evaluated": [],
+      "errors": [
+        "cand_001: RuntimeError: evaluation unavailable"
+      ],
+      "stop_reasons": [
+        "no_pending_evidence",
+        "evaluation_error"
+      ]
+    },
+    "summaries": [
+      "{\"converted\": [], \"errors\": [\"cand_001: RuntimeError: evaluation unavailable\"], \"evaluated\": [], \"proposed\": [], \"stop_reasons\": [\"no_pending_evidence\", \"evaluation_error\"]}",
+      "{\"converted\": [], \"errors\": [\"cand_001: RuntimeError: evaluation unavailable\"], \"evaluated\": [], \"proposed\": [], \"stop_reasons\": [\"no_pending_evidence\", \"evaluation_error\"]}"
+    ]
+  },
+  "audit_failure": {
+    "round": {
+      "converted": [],
+      "skipped_unknown": [],
+      "already_converted": 0,
+      "proposed": [],
+      "evaluated": [],
+      "errors": [],
+      "stop_reasons": [
+        "no_pending_evidence"
+      ]
+    },
+    "persisted_round_audits": 0
+  }
+}

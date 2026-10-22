@@ -949,7 +949,15 @@
       "stream": "assets",
       "owner": "opencode-evo",
       "delivery_state": "needs_recheck",
-      "next_step": "先复核同期队列/信号实现，补真实候选资产隔离与故障恢复"
+      "next_step": "修复恢复预算重置、活跃评测误恢复及轮审计丢失/重复；与发布线对齐自动提案精确基线，再补真实候选资产隔离与故障恢复",
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-22-OpenCode认领验收.md",
+      "review_evidence": {
+        "reviewed_commit": "31d540313bb707c5d365b6eacf5aef679b02def4",
+        "existing_tests": "134 passed",
+        "acceptance_probes": "5 failed，5个问题，详见独立报告",
+        "probes": ".planning/2026-10-22-opencode-review/acceptance_checks.py"
+      }
     },
     {
       "id": "ALN-10",

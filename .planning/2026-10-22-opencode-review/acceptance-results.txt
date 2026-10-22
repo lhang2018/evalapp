@@ -1,0 +1,40 @@
+Python version is above 3.10, patching the collections module.
+FFFFF                                                                    [100%]
+================================== FAILURES ===================================
+_____ test_signal_generated_candidate_can_follow_current_release_contract _____
+E:\evalapp\.planning\2026-10-22-opencode-review\acceptance_checks.py:83: in test_signal_generated_candidate_can_follow_current_release_contract
+    assert result["ok"], result
+E   AssertionError: {'error': '稳定基线或回滚目标不一致，请基于当前版本重新评测', 'ok': False}
+E   assert False
+___________ test_live_evaluation_is_not_recovered_by_another_round ____________
+E:\evalapp\.planning\2026-10-22-opencode-review\acceptance_checks.py:118: in test_live_evaluation_is_not_recovered_by_another_round
+    assert not report["errors"], report
+E   AssertionError: {'already_converted': 0, 'converted': [], 'errors': ['cand_001: IllegalCandidateTransition: 非法候选转换: APPROVAL_PENDING -> TESTING'], 'evaluated': [], ...}
+E   assert not ['cand_001: IllegalCandidateTransition: 非法候选转换: APPROVAL_PENDING -> TESTING']
+________ test_recovery_retains_candidate_budget_after_partial_failure _________
+E:\evalapp\.planning\2026-10-22-opencode-review\acceptance_checks.py:139: in test_recovery_retains_candidate_budget_after_partial_failure
+    assert usage["model_calls"] <= 2 and usage["cost"] <= .25, usage
+E   AssertionError: {'cost': 0.4, 'model_calls': 4, 'seconds': 0.0, 'tool_calls': 0}
+E   assert (4 <= 2)
+_______________ test_failed_evaluation_creates_one_round_audit ________________
+E:\evalapp\.planning\2026-10-22-opencode-review\acceptance_checks.py:154: in test_failed_evaluation_creates_one_round_audit
+    assert len(rows) == 1
+E   AssertionError: assert 2 == 1
+E    +  where 2 = len([{'authorized': False, 'created_at': 1792665405.9128163, 'evidence_id': 'round_26121105f7fc', 'kind': 'evolution_round...orized': False, 'created_at': 1792665405.9118178, 'evidence_id': 'round_317580aa6cb5', 'kind': 'evolution_round', ...}])
+____________ test_audit_storage_failure_is_visible_in_round_result ____________
+E:\evalapp\.planning\2026-10-22-opencode-review\acceptance_checks.py:166: in test_audit_storage_failure_is_visible_in_round_result
+    assert report["errors"] or report.get("audit_error") or report.get("audit_persisted") is False
+E   AssertionError: assert ([] or None or None is False)
+E    +  where None = <built-in method get of dict object at 0x000002D7FB52CC80>('audit_error')
+E    +    where <built-in method get of dict object at 0x000002D7FB52CC80> = {'already_converted': 0, 'converted': [], 'errors': [], 'evaluated': [], ...}.get
+E    +  and   None = <built-in method get of dict object at 0x000002D7FB52CC80>('audit_persisted')
+E    +    where <built-in method get of dict object at 0x000002D7FB52CC80> = {'already_converted': 0, 'converted': [], 'errors': [], 'evaluated': [], ...}.get
+=========================== short test summary info ===========================
+FAILED ::test_signal_generated_candidate_can_follow_current_release_contract
+FAILED ::test_live_evaluation_is_not_recovered_by_another_round - AssertionEr...
+FAILED ::test_recovery_retains_candidate_budget_after_partial_failure - Asser...
+FAILED ::test_failed_evaluation_creates_one_round_audit - AssertionError: ass...
+FAILED ::test_audit_storage_failure_is_visible_in_round_result - AssertionErr...
+5 failed in 0.38s
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
