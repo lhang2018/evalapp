@@ -1,0 +1,146 @@
+{
+  "source_file": "C:\\Users\\lhang\\AppData\\Local\\Temp\\evalapp-opencode-fixes-clean-007itv0c\\evoagent\\evolution\\controller.py",
+  "baseline": {
+    "current_release_id": "b2b922049d",
+    "candidate_baseline": "c9fa6954da",
+    "rollback": "c9fa6954da",
+    "deploy": {
+      "ok": true,
+      "candidate_id": "cand_001",
+      "release_id": "b2b922049d",
+      "status": "MONITORING",
+      "gray_percent": 100
+    }
+  },
+  "live_recovery": {
+    "attempted_recovery_of_live_candidate": false,
+    "round": {
+      "round_id": "round_3c3cf325551049d0a2b0e955d7a1d928",
+      "converted": [],
+      "skipped_unknown": [],
+      "already_converted": 0,
+      "proposed": [],
+      "evaluated": [],
+      "errors": [],
+      "stop_reasons": [
+        "concurrency_limit_reached"
+      ],
+      "audit_persisted": true
+    },
+    "candidate_status": "APPROVAL_PENDING"
+  },
+  "recovery_budget": {
+    "limits": {
+      "calls": 2,
+      "cost": 0.25
+    },
+    "usage": {
+      "model_calls": 2,
+      "tool_calls": 0,
+      "cost": 0.2,
+      "seconds": 0.0
+    },
+    "candidate_status": "REJECTED",
+    "rounds": [
+      {
+        "round_id": "round_efe3270320d749f581a5c3fd592f040e",
+        "converted": [],
+        "skipped_unknown": [],
+        "already_converted": 0,
+        "proposed": [],
+        "evaluated": [],
+        "errors": [
+          "cand_001: RuntimeError: evaluation interrupted after a charged call"
+        ],
+        "stop_reasons": [
+          "no_pending_evidence",
+          "evaluation_error"
+        ],
+        "audit_persisted": true
+      },
+      {
+        "round_id": "round_81837ff1a23f4c3f9b93d2a91e689d64",
+        "converted": [],
+        "skipped_unknown": [],
+        "already_converted": 0,
+        "proposed": [],
+        "evaluated": [],
+        "errors": [
+          "cand_001: RuntimeError: evaluation interrupted after a charged call"
+        ],
+        "stop_reasons": [
+          "no_pending_evidence",
+          "evaluation_error"
+        ],
+        "audit_persisted": true
+      },
+      {
+        "round_id": "round_40c1d14db9074bf7933cdeb8ac93f70b",
+        "converted": [],
+        "skipped_unknown": [],
+        "already_converted": 0,
+        "proposed": [],
+        "evaluated": [
+          "cand_001"
+        ],
+        "errors": [],
+        "stop_reasons": [
+          "no_pending_evidence"
+        ],
+        "audit_persisted": true
+      },
+      {
+        "round_id": "round_d5a5d55938dd41438866dbabe707d83f",
+        "converted": [],
+        "skipped_unknown": [],
+        "already_converted": 0,
+        "proposed": [],
+        "evaluated": [],
+        "errors": [],
+        "stop_reasons": [
+          "no_pending_evidence"
+        ],
+        "audit_persisted": true
+      }
+    ]
+  },
+  "duplicate_audit": {
+    "audit_count": 1,
+    "round": {
+      "round_id": "round_34b7dfe401374fde8001f27265591dd5",
+      "converted": [],
+      "skipped_unknown": [],
+      "already_converted": 0,
+      "proposed": [],
+      "evaluated": [],
+      "errors": [
+        "cand_001: RuntimeError: evaluation unavailable"
+      ],
+      "stop_reasons": [
+        "no_pending_evidence",
+        "evaluation_error"
+      ],
+      "audit_persisted": true
+    },
+    "summaries": [
+      "{\"already_converted\": 0, \"converted\": [], \"errors\": [\"cand_001: RuntimeError: evaluation unavailable\"], \"evaluated\": [], \"proposed\": [], \"round_id\": \"round_34b7dfe401374fde8001f27265591dd5\", \"skipped_unknown\": [], \"stop_reasons\": [\"no_pending_evidence\", \"evaluation_error\"]}"
+    ]
+  },
+  "audit_failure": {
+    "round": {
+      "round_id": "round_da6d63547d274341a6a6b719ae00bfd1",
+      "converted": [],
+      "skipped_unknown": [],
+      "already_converted": 0,
+      "proposed": [],
+      "evaluated": [],
+      "errors": [],
+      "stop_reasons": [
+        "no_pending_evidence"
+      ],
+      "audit_persisted": false,
+      "audit_error": "轮审计写入失败: IntegrityError"
+    },
+    "persisted_round_audits": 0
+  }
+}

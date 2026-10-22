@@ -17,31 +17,31 @@
       "source": "当前未提交共享工作区；不是历史候选快照或纯 HEAD"
     },
     "last_verified_candidate": {
-      "commit": "8218ed056555d313c6809fff68bc1351ed63e560",
-      "source_tree": "68a8e97902b26c2be6efec6426e571b8dbedf010",
-      "python_passed": 956,
+      "commit": "5b0cc085560aa222d86d4fd4c2527e6988bbb145",
+      "source_tree": "ff3a7dd05e471850d8e0988f02d72cf3460d4e27",
+      "python_passed": 979,
       "python_skipped": 1,
       "client_passed": 136,
       "typecheck": "passed",
       "client_evidence_source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
-      "log": ".planning/2026-10-22-cxr-hardening/clean-backend-tests.txt",
-      "scope": "8218ed0独立干净克隆后端956/1；客户端tree与d77b241相同，136/typecheck沿用既有证据；CXR-01/02/03修复待独立复核，排除他人在途修改"
+      "log": ".planning/2026-10-22-opencode-fixes/clean-backend-tests.txt",
+      "scope": "精确5b0cc08干净克隆后端979/1，已包含CA源码修复；原5个OC探针复验5 passed。客户端同tree沿用136/typecheck；新补丁和其他修复仍待独立复核"
     },
     "initial_head_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
     "prepared_candidate": {
-      "commit": "8218ed056555d313c6809fff68bc1351ed63e560",
-      "source_tree": "68a8e97902b26c2be6efec6426e571b8dbedf010",
+      "commit": "5b0cc085560aa222d86d4fd4c2527e6988bbb145",
+      "source_tree": "ff3a7dd05e471850d8e0988f02d72cf3460d4e27",
       "status": "verified_pending_independent_review",
       "clean_before_and_after": true,
-      "python_passed": 956,
+      "python_passed": 979,
       "python_skipped": 1,
       "client_passed": 136,
       "typecheck": "passed",
-      "dependency_scope": "本轮后端精确源码提交干净克隆全量；客户端tree与d77b241相同，136/typecheck沿用既有证据，本轮未重跑客户端",
+      "dependency_scope": "精确5b0cc08干净克隆后端全量，包含已提交CA修复；客户端tree与d77b241相同，136/typecheck沿用既有证据，本轮未重跑客户端",
       "evidence": [
         {
-          "path": ".planning/2026-10-22-cxr-hardening/clean-backend-tests.txt",
-          "sha256": "fd8356bc79d80032425c34cd32b4b8a1a6a8f07bc342e29d4aa5be226a25e00d"
+          "path": ".planning/2026-10-22-opencode-fixes/clean-backend-tests.txt",
+          "sha256": "2a9f237f0f0adcfd33851e1e746c9b1cdbbc194b4cbe4d385badc872b8cd9177"
         },
         {
           "path": ".planning/2026-10-22-cross-review/clean-client-tests.txt",
@@ -63,6 +63,7 @@
         ".workbuddy/"
       ],
       "remaining_review": [
+        "ALN-09-F",
         "ALN-10-H",
         "ALN-04-UI",
         "ALN-06-A",
@@ -841,6 +842,39 @@
       "working_basis": "用户要求核对并修复本人交付问题，确认CXR-01/02/03属实；保留原独立验收及其他会话在途内容",
       "review_result": "pending",
       "next_step": "独立复核8218ed0的CXR补丁；不继承旧ALN-10-Q/R的accepted结论"
+    },
+    {
+      "id": "ALN-09-F",
+      "workpackage": "ALN-09",
+      "title": "编排恢复与审计五项修复",
+      "stream": "assets",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "21e6d2fb0e3c780f22d040a648c64d4348498022",
+      "status": "review",
+      "blocker": null,
+      "delivered_commit": "5b0cc085560aa222d86d4fd4c2527e6988bbb145",
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "新增16项；OC-09-01/02/03/04、OC-INT-01五项复验、真实数据库重启与旧账本跨日迁移",
+          "command": "clean clone: python -m pytest -q --tb=short; original acceptance probes",
+          "result": "979 passed, 1 skipped；联合188 passed；原五探针5 passed",
+          "source_commit": "5b0cc085560aa222d86d4fd4c2527e6988bbb145",
+          "source_tree": "ff3a7dd05e471850d8e0988f02d72cf3460d4e27",
+          "log": ".planning/2026-10-22-opencode-fixes/clean-backend-tests.txt"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/09-编排恢复修复.md",
+      "delivery": "docs/协作开发/交付/ALN-09-F-编排恢复修复.md",
+      "shared_files": [
+        "evoagent/evolution/controller.py",
+        "evoagent/evolution/candidates.py"
+      ],
+      "working_basis": "用户明确要求修复检视发现的五项问题；保留opencode-evo整包协调，CA/Android及其他在途文件不混入",
+      "review_result": "pending",
+      "next_step": "独立复核精确5b0cc08；真实候选隔离宿主、持久问题队列与多进程租约仍按整包前置实施"
     }
   ],
   "workpackages": [
@@ -969,7 +1003,7 @@
       "stream": "assets",
       "owner": "opencode-evo",
       "delivery_state": "needs_recheck",
-      "next_step": "修复恢复预算重置、活跃评测误恢复及轮审计丢失/重复；与发布线对齐自动提案精确基线，再补真实候选资产隔离与故障恢复",
+      "next_step": "五项问题已由ALN-09-F修复并复验，待独立审阅；后续补真实候选资产隔离、持久问题队列和故障恢复验收",
       "review_result": "changes_requested",
       "review_report": "docs/协作开发/验收/2026-10-22-OpenCode认领验收.md",
       "review_evidence": {
@@ -977,7 +1011,10 @@
         "existing_tests": "134 passed",
         "acceptance_probes": "5 failed，5个问题，详见独立报告",
         "probes": ".planning/2026-10-22-opencode-review/acceptance_checks.py"
-      }
+      },
+      "fix_status": "delivered_pending_independent_review",
+      "fix_delivery": "docs/协作开发/交付/ALN-09-F-编排恢复修复.md",
+      "supplemented_by": "codex-runtime"
     },
     {
       "id": "ALN-10",
@@ -1188,5 +1225,5 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "最新精确源码3b7ef62全量963/1；CXR三项与CA三项均已提交修复，均待原验收方独立复验；原五张accepted卡结论保留。Android真机仍待原线处理；基线candidate，未发布，不混入在途文件。"
+  "execution_note": "最新精确源码5b0cc08干净克隆979/1，客户端同tree沿用136/typecheck。OC五项已修复，原探针5 passed，ALN-09-F待独立复核；CXR与CA修复仍按各卡待审；原accepted结论保留。Android真机与正式发布未完成，基线candidate，不混入在途文件。"
 }
