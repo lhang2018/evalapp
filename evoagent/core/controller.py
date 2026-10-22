@@ -411,6 +411,7 @@ class RuntimeController:
             # 写侧同键），专家域记忆真正隔离在专属蜂巢内
             scope_key=(expert.memory_scope_key if expert and
                        expert.memory_scope_key else task.domain),
+            include_memory=task.runtime_manifest.get("source") != "evaluation",
             max_chars=self._context_limit_chars(model))
         task.runtime_manifest["context"] = ctx.stats()
         quality = ctx.quality or {}
@@ -1135,6 +1136,8 @@ class RuntimeController:
 
     def _remember(self, task: Task, verified: bool) -> None:
         """执行结果沉淀为记忆（凭证据决定可信状态；原始日志不自动成为经验）。"""
+        if task.runtime_manifest.get("source") == "evaluation":
+            return  # Holdout answers must never become production/tuning memory.
         # GAP 死字段修复③：写侧 key 与专家 memory_scope_key 对齐
         # （读侧 _run_react 同键检索；mobile_operation 专家键=mobile）
         expert = self.experts.get(task.domain)

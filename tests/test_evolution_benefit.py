@@ -119,7 +119,9 @@ class TestBenefit(unittest.TestCase):
             dims(none)["long_term"]["status"], "insufficient_evidence")
         b = evaluate_benefit(
             make_report(), make_report(),
-            monitor={"metrics": {"samples": 20, "success_rate": 0.9}})
+            monitor={"metrics": {"samples": 20, "success_rate": 0.9,
+                "source": "runtime", "window_complete": True,
+                "comparison_valid": True, "attribution": "release"}})
         self.assertEqual(dims(b)["long_term"]["status"], "observed")
 
     def test_safety_failure_rejects(self):
@@ -234,10 +236,17 @@ class TestMonitor(unittest.TestCase):
 
     def test_healthy_promotes(self):
         now = time.time()
-        tasks = [make_task(TaskStatus.SUCCEEDED, now - 5 - i)
+        tasks = [make_task(TaskStatus.SUCCEEDED, now - 40 - i)
                  for i in range(6)]
+        for task in tasks:
+            task.version_manifest["release_id"] = "new"
+        previous = [make_task(TaskStatus.SUCCEEDED, now - 120 - i) for i in range(6)]
+        for task in previous:
+            task.version_manifest["release_id"] = "v1"
+        tasks += previous
         c, cand, _ = self._controller(tasks)
-        out = c.monitor(cand)
+        cand.deployed_release_id = "new"
+        out = c.monitor(cand, policy=MonitorPolicy(window_seconds=90))
         self.assertEqual(out["decision"], "promote")
         self.assertEqual(cand.status, CandidateStatus.PROMOTED)
 
@@ -277,7 +286,7 @@ class TestMonitor(unittest.TestCase):
         c, cand, _ = self._controller([])
         out = c.monitor(cand, {"success_rate": 0.95, "error_rate": 0.01,
                                "cost_ratio": 1.0})
-        self.assertEqual(out["decision"], "promote")
+        self.assertEqual(out["decision"], "hold")
         self.assertEqual(out["metrics"]["source"], "manual")
 
     def test_auto_rollback_can_be_disabled(self):

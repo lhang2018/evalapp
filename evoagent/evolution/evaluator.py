@@ -5,7 +5,10 @@
 评测/调优数据与最终验收数据隔离（PRD 52：防过拟合已知测试案例）。
 """
 
-from dataclasses import dataclass, field
+import hashlib
+import json
+import math
+from dataclasses import asdict, dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ..core.events import EventBus
@@ -23,6 +26,9 @@ class EvalCase:
     holdout: bool = False             # 是否独立保留测试集
     safety: bool = False              # 是否安全回归用例
     tags: List[str] = field(default_factory=list)
+    constraints: List[str] = field(default_factory=list)
+    version_manifest: Dict[str, Any] = field(default_factory=dict)
+    failure_fixture: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -39,6 +45,11 @@ class EvalDataset:
 
     def is_holdout(self) -> bool:
         return self.holdout or any(c.holdout for c in self.cases)
+
+    def for_tuning(self) -> "EvalDataset":
+        if self.is_holdout():
+            raise ValueError("独立保留集禁止用于训练或调优")
+        return self
 
 
 @dataclass
@@ -109,21 +120,51 @@ class Evaluator:
         self.bus = event_bus
 
     def run(self, dataset: EvalDataset, *, baseline: bool,
-            metadata: Optional[Dict[str, Any]] = None) -> EvalReport:
+            metadata: Optional[Dict[str, Any]] = None,
+            purpose: str = "evaluation") -> EvalReport:
+        previous = getattr(self.runner, "suite_ref", None)
+        if previous is not None:
+            self.runner.suite_ref = f"{dataset.dataset_id}/{dataset.version}"
+        try:
+            return self._run_dataset(dataset, baseline=baseline, metadata=metadata, purpose=purpose)
+        finally:
+            if previous is not None:
+                self.runner.suite_ref = previous
+
+    def _run_dataset(self, dataset: EvalDataset, *, baseline: bool,
+            metadata: Optional[Dict[str, Any]] = None,
+            purpose: str = "evaluation") -> EvalReport:
+        if purpose not in ("evaluation", "training", "tuning"):
+            raise ValueError("未知评测用途")
+        if purpose in ("training", "tuning") or (metadata or {}).get("kind") in ("training", "tuning"):
+            dataset.for_tuning()
         report = EvalReport(dataset.dataset_id, dataset.version,
                             baseline=baseline,
                             metadata=dict(metadata or {}))
+        if len({c.case_id for c in dataset.cases}) != len(dataset.cases):
+            raise ValueError("评测用例 ID 重复")
+        payload = json.dumps([asdict(c) for c in dataset.cases], sort_keys=True,
+                             ensure_ascii=False, allow_nan=False)
+        report.metadata["dataset_digest"] = hashlib.sha256(payload.encode()).hexdigest()
         report.holdout = dataset.is_holdout()
         report.case_count = len(dataset.cases)
         latencies: List[float] = []
+        cost_known = True
+        unverified_fixtures = 0
         for case in dataset.cases:
             ok, latency, evidence = self.runner.run_case(case)
-            report.case_results.append({"case": case.case_id, "ok": ok,
+            if case.failure_fixture:
+                encoded_fixture = json.dumps(case.failure_fixture, sort_keys=True,
+                    ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+                fixture_digest = hashlib.sha256(encoded_fixture.encode()).hexdigest()
+                if evidence.get("fixture_reproduced") is not True or evidence.get("fixture_digest") != fixture_digest:
+                    unverified_fixtures += 1
+            cost_known = cost_known and evidence.get("cost_known", "cost" in evidence) is True
+            report.case_results.append({**evidence, "case": case.case_id, "ok": ok,
                                         "difficulty": case.difficulty,
                                         "domain": case.domain,
                                         "holdout": case.holdout,
-                                        "safety": case.safety,
-                                        **evidence})
+                                        "safety": case.safety})
             latencies.append(latency)
             report.cost += float(evidence.get("cost", 0.0) or 0.0)
             report.pass_count += 1 if ok else 0
@@ -148,6 +189,8 @@ class Evaluator:
             report.avg_latency = sum(latencies) / len(latencies)
         if report.safety_cases:
             report.safety_passed = report.safety_failures == 0
+        report.metadata["cost_known"] = cost_known and bool(dataset.cases)
+        report.metadata["unverified_fixtures"] = unverified_fixtures
         return report
 
 
@@ -160,6 +203,9 @@ class GateThresholds:
     require_rollback_plan: bool = True
     # Arch 11.5：覆盖度、约束、工具、恢复、跨领域与 holdout
     min_cases: int = 1
+    min_cases_per_domain: int = 1
+    min_holdout_cases: int = 1
+    max_domain_drop: float = 0.1
     max_constraint_violations: int = 0
     max_tool_failure_rate: float = 0.2
     min_recovery_success_rate: float = 0.5
@@ -183,6 +229,19 @@ class ReleaseGate:
               benefit: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         th = thresholds or GateThresholds()
         reasons: List[str] = []
+        for label, current in (("baseline", baseline), ("candidate", candidate)):
+            if any(not math.isfinite(value) or value < 0 for value in (
+                    current.success_rate, current.cost, current.avg_latency)):
+                reasons.append("评测数值无效: " + label)
+            if current.success_rate > 1:
+                reasons.append("成功率超出合法范围: " + label)
+            if current.metadata.get("cost_known") is False:
+                reasons.append("缺少可核对费用证据: " + label)
+            if current.metadata.get("unverified_fixtures"):
+                reasons.append("故障夹具尚未确认重现，不能把输入重跑当作回归通过: " + label)
+            if current.case_results and (len(current.case_results) != current.case_count or
+                    len({r.get("case") for r in current.case_results}) != current.case_count):
+                reasons.append("评测明细/样本数量不一致: " + label)
 
         # 1) 覆盖率与基线等价性
         if candidate.case_count < th.min_cases:
@@ -191,6 +250,21 @@ class ReleaseGate:
         if (baseline.dataset_id, baseline.version) != (
                 candidate.dataset_id, candidate.version):
             reasons.append("基线不等价: 数据集/版本不一致")
+        if baseline.metadata.get("dataset_digest") != candidate.metadata.get("dataset_digest"):
+            reasons.append("基线不等价: 用例内容摘要不一致")
+        if baseline.case_results and candidate.case_results:
+            base_ids = {r.get("case") for r in baseline.case_results}
+            cand_ids = {r.get("case") for r in candidate.case_results}
+            if base_ids != cand_ids:
+                reasons.append("基线不等价: 用例集合不一致")
+            for domain in sorted({r.get("domain", "general") for r in candidate.case_results}):
+                rows = [r for r in candidate.case_results if r.get("domain", "general") == domain]
+                originals = [r for r in baseline.case_results if r.get("domain", "general") == domain]
+                if len(rows) < th.min_cases_per_domain:
+                    reasons.append("领域样本不足: " + domain)
+                if originals and sum(bool(r.get("ok")) for r in rows) / len(rows) < (
+                        sum(bool(r.get("ok")) for r in originals) / len(originals) - th.max_domain_drop):
+                    reasons.append("领域回归: " + domain)
 
         # 2) 任务质量
         if candidate.success_rate < th.min_success_rate:
@@ -242,9 +316,21 @@ class ReleaseGate:
                 reasons.append("缺少安全测试证据（不得默认通过）")
             elif not safety:
                 reasons.append("关键安全测试未通过（一票否决）")
+        if candidate.safety_failures or (holdout_report and holdout_report.safety_failures):
+            reasons.append("评测集存在关键安全失败（一票否决）")
 
         # 6) 独立保留集
         if holdout_report is not None:
+            if holdout_report.case_count < th.min_holdout_cases:
+                reasons.append("holdout 样本不足")
+            if not holdout_report.holdout:
+                reasons.append("holdout 报告未标记为独立保留集")
+            if holdout_baseline is not None and (
+                    holdout_report.dataset_id, holdout_report.version,
+                    holdout_report.metadata.get("dataset_digest")) != (
+                    holdout_baseline.dataset_id, holdout_baseline.version,
+                    holdout_baseline.metadata.get("dataset_digest")):
+                reasons.append("holdout 基线不等价")
             if holdout_report.success_rate < th.min_holdout_success_rate:
                 reasons.append(
                     f"holdout 成功率不足: "

@@ -10,6 +10,7 @@
 """
 
 import time
+import math
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Optional
 
@@ -31,6 +32,11 @@ class MonitorPolicy:
     max_cross_domain_drop: float = 0.10
     warning_margin: float = 0.05
     auto_rollback: bool = True
+    require_complete_window: bool = True
+    require_release_attribution: bool = True
+    require_baseline_comparison: bool = True
+    require_cost_evidence: bool = True
+    allow_manual_promotion: bool = False
 
     def merged(self, overrides: Optional[Dict[str, Any]]) -> "MonitorPolicy":
         allowed = set(self.__dataclass_fields__)
@@ -76,7 +82,7 @@ def _constraint_violations(task: Any) -> int:
 def collect_metrics(store: Any, since: float, until: float, *,
                     target_domain: str = "",
                     event_bus: Optional[Any] = None,
-                    limit: int = 5000) -> Dict[str, Any]:
+                    limit: int = 5000, release_id: str = "") -> Dict[str, Any]:
     """采集 [since, until) 内真实运行任务指标。"""
     tasks: List[Any] = []
     if store is not None:
@@ -85,6 +91,13 @@ def collect_metrics(store: Any, since: float, until: float, *,
                 continue
             if (task.runtime_manifest or {}).get("source") == "evaluation":
                 continue
+            if release_id:
+                runtime = task.runtime_manifest or {}
+                versions = task.version_manifest or {}
+                references = (runtime.get("release_id"), versions.get("release_id"),
+                              versions.get("release_version"))
+                if release_id not in references:
+                    continue
             tasks.append(task)
 
     terminal = [t for t in tasks if t.task_status in (
@@ -97,8 +110,11 @@ def collect_metrics(store: Any, since: float, until: float, *,
     latencies = []
     tool_failures = 0
     constraint_violations = 0
+    unknown_cost_samples = 0
     for task in terminal:
         usage = _usage(task)
+        if usage.get("cost") is None or usage.get("unknown_model_costs") or task.runtime_manifest.get("cost_reconciliation_required"):
+            unknown_cost_samples += 1
         costs.append(float(usage.get("cost", 0.0) or 0.0))
         latencies.append(max(0.0, task.updated_at - task.created_at))
         tool_failures += 1 if _tool_failed(task) else 0
@@ -149,6 +165,7 @@ def collect_metrics(store: Any, since: float, until: float, *,
         "error_rate": round(error_rate, 4) if error_rate is not None else None,
         "cancel_rate": round(cancel_rate, 4) if cancel_rate is not None else None,
         "total_cost": round(sum(costs), 4),
+        "unknown_cost_samples": unknown_cost_samples,
         "avg_cost": round(avg_cost, 6),
         "avg_latency": round(avg_latency, 4),
         "tool_failures": tool_failures,
@@ -161,6 +178,8 @@ def collect_metrics(store: Any, since: float, until: float, *,
         },
         "safety_incidents": safety_incidents,
         "source": "runtime",
+        "release_id": release_id or None,
+        "attribution": "release" if release_id else "unscoped",
     }
 
 
@@ -173,16 +192,22 @@ class PostReleaseMonitor:
 
     def collect(self, since: float, *,
                 target_domain: str = "",
-                policy: Optional[MonitorPolicy] = None) -> Dict[str, Any]:
+                policy: Optional[MonitorPolicy] = None,
+                release_id: str = "", baseline_release_id: str = "") -> Dict[str, Any]:
         pol = policy or self.policy
-        until = time.time()
+        now = time.time()
+        until = min(now, since + pol.window_seconds)
         current = collect_metrics(self.store, since, until,
                                   target_domain=target_domain,
-                                  event_bus=self.bus)
+                                  event_bus=self.bus, release_id=release_id)
         previous = collect_metrics(self.store, since - pol.window_seconds,
                                    since, target_domain=target_domain,
-                                   event_bus=self.bus)
+                                   event_bus=self.bus, release_id=baseline_release_id)
         self._attach_ratios(current, previous, pol)
+        current["window_complete"] = now >= since + pol.window_seconds
+        current["comparison_valid"] = bool(release_id and baseline_release_id and
+            previous["samples"] >= pol.min_samples and current["samples"] >= pol.min_samples and
+            not current["unknown_cost_samples"] and not previous["unknown_cost_samples"])
         return current
 
     @staticmethod
@@ -203,7 +228,7 @@ class PostReleaseMonitor:
             current["success_delta"] = round(
                 current["success_rate"] - previous["success_rate"], 4)
         prev_cost = float(previous.get("avg_cost") or 0.0)
-        if comparable and prev_cost > 0:
+        if comparable and prev_cost > 0 and not current.get("unknown_cost_samples") and not previous.get("unknown_cost_samples"):
             current["cost_ratio"] = round(
                 float(current.get("avg_cost") or 0.0) / prev_cost, 4)
         prev_lat = float(previous.get("avg_latency") or 0.0)
@@ -232,6 +257,17 @@ class PostReleaseMonitor:
             return self._result(decision, reasons, warnings, metrics, pol)
 
         manual = metrics.get("source") == "manual"
+        for key in ("success_rate", "error_rate", "cost_ratio", "latency_ratio"):
+            value = metrics.get(key)
+            if value is not None:
+                try:
+                    valid = math.isfinite(float(value)) and float(value) >= 0
+                    if key in ("success_rate", "error_rate"):
+                        valid = valid and float(value) <= 1
+                except (TypeError, ValueError):
+                    valid = False
+                if not valid:
+                    return self._result("insufficient_data", ["监测数值无效: " + key], [], metrics, pol)
         samples = int(metrics.get("samples") or 0)
         if not manual and samples < pol.min_samples:
             return self._result("insufficient_data",
@@ -294,6 +330,18 @@ class PostReleaseMonitor:
             return self._result(decision, reasons, warnings, metrics, pol)
         if warnings:
             return self._result("hold", [], warnings, metrics, pol)
+        if manual and not pol.allow_manual_promotion:
+            return self._result("hold", ["手工聚合指标不能替代自动监测晋级证据"], [], metrics, pol)
+        if pol.require_complete_window and metrics.get("window_complete") is not True:
+            return self._result("hold", ["发布后观察窗口尚未完成"], [], metrics, pol)
+        if pol.require_release_attribution and metrics.get("attribution") != "release":
+            return self._result("insufficient_data", ["缺少发布版本归因，不能据此晋级"], [], metrics, pol)
+        if pol.require_baseline_comparison and metrics.get("comparison_valid") is not True:
+            return self._result("insufficient_data", ["缺少同窗基线样本，不能据此晋级"], [], metrics, pol)
+        if pol.require_cost_evidence and metrics.get("unknown_cost_samples"):
+            return self._result("insufficient_data", ["费用仍有未知样本，不能据此晋级"], [], metrics, pol)
+        if success is None:
+            return self._result("insufficient_data", ["缺少任务成功率证据"], [], metrics, pol)
         return self._result("promote", [], [], metrics, pol)
 
     @staticmethod

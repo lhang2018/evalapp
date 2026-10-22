@@ -125,6 +125,7 @@ class ContextAssembler:
                  tool_docs: List[str] | None = None,
                  evidence_refs: List[str] | None = None,
                  scope_key: str = "",
+                 include_memory: bool = True,
                  max_chars: Optional[int] = None) -> AssembledContext:
         limit = int(max_chars or self.budget.max_chars)
         ctx = AssembledContext(
@@ -142,7 +143,7 @@ class ContextAssembler:
         untrusted = 0
         untrusted_excluded = 0
 
-        if self.memory is not None:
+        if self.memory is not None and include_memory:
             mems = self.memory.search(goal, domains=[domain], scope_key=scope_key)
             ctx.memory_candidates = len(mems)
             selected_candidates = []

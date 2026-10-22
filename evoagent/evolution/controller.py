@@ -8,6 +8,7 @@
 import json
 import time
 import uuid
+import threading
 from collections import deque
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
@@ -74,6 +75,7 @@ class EvolutionController:
                  max_concurrent_evaluations: Optional[int] = None):
         self.evaluator = evaluator
         self.gate = gate or ReleaseGate()
+        self._evaluation_lock = threading.RLock()
         # 生产路径要求安全证据与独立保留集（Arch 11.2 / 11.5）
         self.gate_thresholds = GateThresholds(require_safety_pass=True,
                                               require_holdout=True)
@@ -155,6 +157,18 @@ class EvolutionController:
             limits, ledger=self.budget,
             ledger_scope=f"candidate:{cand.candidate_id}",
             extra_scopes=["evolution"])
+
+    # ---- ALN-10 回归用例默认消费（门禁证据链）------------------------
+    def _regression_supplement(self, cand: EvolutionCandidate, *, evaluated=None
+                               ) -> Dict[str, Any]:
+        """回归子集补跑对比：基线 vs 候选在真实失败案例上的表现。
+
+        门禁独立裁决（ALN-10 扩散回归范围）：候选在已知失败案例上
+        相对基线退化 → 追加门禁失败理由。运行受候选实验预算约束
+        （调用方处于预算作用域内，评测器共用同一 runner）。
+        """
+        from .regression_gate import evaluate_regressions
+        return evaluate_regressions(self, cand, evaluated=evaluated)
 
     def _persist(self, cand: EvolutionCandidate) -> None:
         self.candidates[cand.candidate_id] = cand
@@ -360,7 +374,8 @@ class EvolutionController:
         if self.experts is None:
             return None
         try:
-            result = self.experts.impact_analysis(target_component)
+            from .regression_gate import component_impact
+            result = component_impact(self.experts, target_component, self.store)
             return result if isinstance(result, dict) else None
         except Exception:  # noqa: BLE001 —— 影响分析故障不阻断候选流程
             return None
@@ -437,8 +452,8 @@ class EvolutionController:
         """
         ds = self.datasets.get(dataset_id
                                or getattr(cand, "eval_dataset_id", ""))
-        if ds is None and (getattr(cand, "impact_result", None) or {}).get(
-                "affected_closure") and "builtin_holdout" in self.datasets:
+        impact = getattr(cand, "impact_result", None) or {}
+        if ds is None and impact.get("affected_closure") and impact.get("mapping_status") != "conservative_all" and "builtin_holdout" in self.datasets:
             ds = self.datasets["builtin_holdout"]
         return ds or next(iter(self.datasets.values()), None)
 
@@ -455,19 +470,19 @@ class EvolutionController:
         if ds is None:
             raise ValueError("没有可用评测集")
         cand.eval_dataset_id = ds.dataset_id
-        # GAP ⑤c：评测套件引用传入执行链（run_case → manifest_extras）
-        _runner = getattr(self.evaluator, "runner", None)
-        if _runner is not None and hasattr(_runner, "suite_ref"):
-            _runner.suite_ref = f"{ds.dataset_id}/{ds.version}"
-        baseline_report = None
-        if baseline:
-            baseline_report = self.evaluator.run(
-                ds, baseline=True, metadata={"kind": "baseline"})
-        return self.run_evaluation(cand, ds, baseline_report)
+        return self.run_evaluation(cand, ds, baseline_requested=baseline)
 
-    def run_evaluation(self, cand: EvolutionCandidate,
+    def run_evaluation(self, cand: EvolutionCandidate, dataset: EvalDataset,
+                       baseline_report: Optional[EvalReport] = None, *,
+                       baseline_requested: bool = False) -> Dict[str, Any]:
+        with self._evaluation_lock:
+            return self._run_evaluation(cand, dataset, baseline_report,
+                                        baseline_requested=baseline_requested)
+
+    def _run_evaluation(self, cand: EvolutionCandidate,
                        dataset: EvalDataset,
-                       baseline_report: Optional[EvalReport] = None
+                       baseline_report: Optional[EvalReport] = None, *,
+                       baseline_requested: bool = False
                        ) -> Dict[str, Any]:
         if self.evaluator is None:
             raise RuntimeError("评测器未装配：无法运行候选评测")
@@ -479,6 +494,21 @@ class EvolutionController:
                             {"dataset": dataset.dataset_id})
         if cand.status == CandidateStatus.TESTING:
             cand.transition(CandidateStatus.EVALUATING, "对比基线与候选")
+
+        current_impact = self._impact_for(cand.target_component)
+        if current_impact is not None:
+            previous_impact = cand.impact_result or {}
+            for key in ("must_rerun_tests", "required_domains"):
+                current_impact[key] = sorted(set(current_impact.get(key, [])) |
+                                             set(previous_impact.get(key, [])))
+            cand.impact_result = current_impact
+
+        from .regression_gate import isolation_problems
+        problems = isolation_problems(dataset, self.holdout_dataset)
+        if problems:
+            cand.transition(CandidateStatus.REJECTED, "; ".join(problems))
+            self._persist(cand)
+            return {"passed": False, "reasons": problems, "safety": {}}
 
         # 进化预算池与正式任务隔离（PRD 55-56 / Arch 12.4）
         pool_problem = self._evolution_pool_problem()
@@ -496,14 +526,18 @@ class EvolutionController:
                     "budget_exhausted": pool_problem, "safety": {}}
 
         runner = getattr(self.evaluator, "runner", None)
+        previous_budget = getattr(runner, "budget", None)
         candidate_budget = self._make_candidate_budget(cand)
         if candidate_budget is not None and hasattr(runner, "set_budget"):
             runner.set_budget(candidate_budget)
+        regression_block: Dict[str, Any] = {}
         try:
             # 安全证据由确定性套件给出，缺失时门禁 fail-closed（Arch 11.5）
             safety = self.safety.run()
             cand.safety_result = safety
 
+            if baseline_requested and baseline_report is None:
+                baseline_report = self.evaluator.run(dataset, baseline=True, metadata={"kind": "baseline"})
             report = self.evaluator.run(
                 dataset, baseline=False,
                 metadata={"candidate": cand.candidate_id,
@@ -523,9 +557,15 @@ class EvolutionController:
                     metadata={"candidate": cand.candidate_id,
                               "kind": "holdout"})
                 cand.holdout_result = holdout_report.summary()
+            # ALN-10 默认消费：影响域回归子集补跑（在候选预算作用域内；
+            # 子集为空则无此步——回归是证据的结果，不是评测的副作用）
+            evaluated = {dataset.dataset_id: (baseline_report, report)}
+            if holdout_report is not None:
+                evaluated[holdout_report.dataset_id] = (holdout_baseline, holdout_report)
+            regression_block = self._regression_supplement(cand, evaluated=evaluated)
         finally:
             if candidate_budget is not None and hasattr(runner, "set_budget"):
-                runner.set_budget(None)
+                runner.set_budget(previous_budget)
 
         budget_problem = (candidate_budget.exceeded()
                           if candidate_budget is not None else None)
@@ -544,17 +584,18 @@ class EvolutionController:
             safety=safety, monitor=cand.monitor_result,
             target_domain=cand.target_domain)
         cand.benefit_result = benefit
-        if self.store is not None:
-            self.store.save_eval_report(
-                f"eval_{cand.candidate_id}_{int(time.time())}",
-                dataset.dataset_id, cand.candidate_id,
-                {"baseline": baseline_report.summary() if baseline_report else None,
-                 "candidate": report.summary(),
-                 "holdout": holdout_report.summary()
-                 if holdout_report is not None else None,
-                 "safety": safety,
-                 "benefit": benefit,
-                 "experiment_budget": experiment_budget})
+        def save_report(gate):
+            if self.store is not None:
+                self.store.save_eval_report(
+                    f"eval_{cand.candidate_id}_{uuid.uuid4().hex}",
+                    dataset.dataset_id, cand.candidate_id,
+                    {"baseline": baseline_report.summary() if baseline_report else None,
+                     "candidate": report.summary(), "candidate_cases": report.case_results,
+                     "baseline_cases": baseline_report.case_results if baseline_report else [],
+                     "holdout": holdout_report.summary() if holdout_report is not None else None,
+                     "holdout_baseline": holdout_baseline.summary() if holdout_baseline else None,
+                     "safety": safety, "benefit": benefit, "regression": regression_block,
+                     "experiment_budget": experiment_budget, "gate": gate})
         if baseline_report is not None:
             gate = self.gate.judge(
                 baseline_report, report,
@@ -564,10 +605,24 @@ class EvolutionController:
                 holdout_report=holdout_report,
                 holdout_baseline=holdout_baseline,
                 benefit=benefit)
+            independent = ReleaseGate().judge(
+                baseline_report, report, thresholds=self.gate_thresholds,
+                safety_ok=safety["passed"], rollback_available=bool(cand.rollback_version),
+                holdout_report=holdout_report, holdout_baseline=holdout_baseline, benefit=benefit)
+            gate["passed"] = gate.get("passed") is True and independent["passed"]
+            gate["reasons"] = list(dict.fromkeys(list(gate.get("reasons") or []) + independent["reasons"]))
+            gate["independent_gate"] = independent
             if budget_problem:
                 gate["passed"] = False
                 gate["reasons"] = list(gate.get("reasons") or []) + [
                     f"候选实验预算耗尽: {budget_problem}"]
+            # ALN-10 扩散回归范围：回归子集退化是独立于主阈值的失败理由
+            # （门禁不因主集达标而放行已知失败案例上的倒退）
+            if regression_block.get("passed") is False:
+                gate["passed"] = False
+                gate["reasons"] = list(gate.get("reasons") or []) + [
+                    regression_block["reason"]]
+            save_report(gate)
             cand.publish_suggestion = "release_ready" if gate["passed"] else "rejected"
             if not gate["passed"]:
                 cand.transition(CandidateStatus.REJECTED,
@@ -588,7 +643,9 @@ class EvolutionController:
                     "holdout": holdout_report.summary()
                     if holdout_report is not None else None,
                     "safety": safety, "benefit": benefit,
+                    "regression": regression_block,
                     "experiment_budget": experiment_budget}
+        save_report({"passed": None, "reasons": ["未执行基线比较，不具备发布结论"]})
         self._persist(cand)
         return {"passed": None, "report": report.summary(), "safety": safety,
                 "benefit": benefit,
@@ -637,6 +694,7 @@ class EvolutionController:
         if not out.get("ok"):
             return out
         cand.deployed_at = time.time()
+        cand.deployed_release_id = manifest.release_id
         cand.transition(CandidateStatus.DEPLOYING,
                         "签名制品生成，受控开始部署",
                         {"release_id": manifest.release_id,
@@ -668,7 +726,7 @@ class EvolutionController:
         if metrics:
             metrics = dict(metrics)
             # 手工聚合指标视为单次人工观测，不参与样本量门槛
-            metrics.setdefault("source", "manual")
+            metrics["source"] = "manual"  # caller labels cannot turn supplied aggregates into runtime evidence
         else:
             if self.store is None:
                 return {"decision": "no_data_source",
@@ -677,6 +735,8 @@ class EvolutionController:
             since = cand.deployed_at or (time.time() - pol.window_seconds)
             metrics = monitor.collect(since,
                                       target_domain=cand.target_domain,
+                                      release_id=cand.deployed_release_id,
+                                      baseline_release_id=cand.baseline_version,
                                       policy=pol)
 
         result = monitor.assess(metrics, pol)

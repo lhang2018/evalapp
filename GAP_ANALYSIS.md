@@ -147,7 +147,7 @@
 - 实际：
   - `MemoryKind` 8 类 ✅、`Scope` 5 值（task/project/expert/model/shared）✅、独立表 ✅、隐私级别 ✅。
   - **但 `memory_scope_key` 是纯死字段**：定义 `experts/registry.py:22`，赋值 `experts/builtin.py:28/40/49/60`，**全仓零读取点**。`controller.py:352-357` 装配时传 `scope_key=task.task_id`、`:808` 写记忆时传 `scope_key=task.domain`——与专家的 `memory_scope_key`（如 `"coding"`）**语义不同、值不同**。
-  - 更隐蔽：`store.py:248` 检索过滤条件含 `or not m.scope_key` → 空 key 直接放行，**即使接上也无隔离能力**。
+  - 更隐蔽：`evoagent/memory/store.py:248` 检索过滤条件含 `or not m.scope_key` → 空 key 直接放行，**即使接上也无隔离能力**。
   - `Scope` 枚举**无 `session` 值**（契约要求 user/project/domain/session/task 分层）。
   - `MemoryKind` 与 `Scope` 交叉不校验（可写 `kind=DOMAIN_KNOWLEDGE + scope=SHARED`）。
 

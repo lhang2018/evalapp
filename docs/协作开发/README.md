@@ -1,12 +1,14 @@
 # 协作开发入口
 
+ALN-10 接续更新：按用户要求补齐完整回归资产、逐套依赖回归、独立门禁及上线窗口/归因；详见 [ALN-10 补全交付](交付/ALN-10-Q-回归资产与独立门禁补全.md)。完整回归验证及真实候选/故障夹具边界以交付记录为准，不据本地夹具关闭整包验收。
+
 更新时间：2026-10-22。面向新加入的开发者与其他开发助手。实际负责人和进度以 workboard.json 为准，推荐角色不等于认领。
 
 本轮 codex-runtime 已认领并交付 [ALN-04-R 运行租约与中断接管](交付/ALN-04-R-运行租约与中断接管.md) 和 [ALN-04-UI 管理员审批页面](交付/ALN-04-UI-管理员审批页面.md)，均进入 review。当前工作区服务端 764 passed / 1 skipped，客户端 144 passed/typecheck 通过。两卡的独立审阅、Android 真机路径与整包组合验收仍待完成；认领、实现、发布和验收是不同状态。
 
 ## 先看当前进度
 
-项目已有可运行的服务端和 Android 客户端，设计目标仍未全量实现。最近完成两类工作：
+项目已有可运行的服务端和 Android 客户端，设计目标仍未全量实现。已交付的基础能力包括：
 
 | 范围 | 已有交付 | 仍未关闭 |
 |---|---|---|
@@ -97,3 +99,5 @@ python tools/check_gap_closure.py
 ## 本轮提交候选验证
 
 基于父提交 `a957fe8` 导出的提交候选：后端全量 766 passed / 1 skipped，另 1 项 Git 读取测试因导出副本不含 Git 元数据失败；在验证副本初始化 Git 元数据后该项补验通过，共 767 项通过。客户端候选 136 passed/typecheck 通过；工作区额外 8 项通知测试未纳入本次提交。日志见 `.planning/2026-10-22-design-alignment/commit-candidate-*.txt`。独立审阅和真机验收仍待完成，共同基线发布状态保持 candidate。
+
+ALN-10-Q 提交候选验证：后端 **831 passed / 1 skipped**，新增39项专项；子卡 review，整包 partial_verified，前置依赖和真实发布验收保留。详见交付记录与 workboard.json 的 last_verified_candidate。

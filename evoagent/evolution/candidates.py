@@ -68,6 +68,7 @@ class EvolutionCandidate:
     # PRD 82：发布后监测结论
     monitor_result: Optional[Dict[str, Any]] = None
     deployed_at: Optional[float] = None
+    deployed_release_id: str = ""
     target_domain: str = ""
     cost_delta: Optional[float] = None
     latency_delta: Optional[float] = None

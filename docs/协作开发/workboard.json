@@ -15,6 +15,14 @@
       "freshly_rerun_for_this_documentation_change": true,
       "evidence": ".planning/2026-10-22-design-alignment/claimed-backend-final.txt",
       "source": "当前未提交共享工作区；不是历史候选快照或纯 HEAD"
+    },
+    "last_verified_candidate": {
+      "parent_commit": "4065d523e35cb61abac239db02d8136834501d06",
+      "source_tree": "da3fc18a901b3999d8f47ca71a3eb97e5183eab2",
+      "python_passed": 831,
+      "python_skipped": 1,
+      "log": ".planning/2026-10-22-aln10-completion/commit-candidate-tests.txt",
+      "scope": "本轮提交候选；未纳入在途通知；客户端本轮未改动且未重跑"
     }
   },
   "streams": [
@@ -163,6 +171,42 @@
     {
       "path": "GAP_ANALYSIS.md",
       "stream": "integration"
+    },
+    {
+      "path": "evoagent/evolution/controller.py",
+      "stream": "assets"
+    },
+    {
+      "path": "evoagent/evolution/evaluator.py",
+      "stream": "assets"
+    },
+    {
+      "path": "evoagent/evolution/regression.py",
+      "stream": "assets"
+    },
+    {
+      "path": "evoagent/evolution/runner.py",
+      "stream": "assets"
+    },
+    {
+      "path": "evoagent/evolution/candidates.py",
+      "stream": "assets"
+    },
+    {
+      "path": "evoagent/evolution/monitor.py",
+      "stream": "assets"
+    },
+    {
+      "path": "evoagent/evolution/benefit.py",
+      "stream": "assets"
+    },
+    {
+      "path": "evoagent/experts/registry.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/memory/context.py",
+      "stream": "runtime"
     }
   ],
   "dispatches": [
@@ -364,6 +408,45 @@
       "working_basis": "用户明确要求认领并开发；在当前共享候选工作区增量实现，base_commit 不代表候选基线已发布。",
       "delivery": "docs/协作开发/交付/ALN-04-UI-管理员审批页面.md",
       "next_step": "分配独立审阅人；补 Android 真机批准、拒绝、断网和过期验收"
+    },
+    {
+      "id": "ALN-10-Q",
+      "workpackage": "ALN-10",
+      "title": "回归资产与独立门禁补全",
+      "stream": "assets",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "54f80588bfee03dfffefbfe21c2f0d15666a0ce6",
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "ALN-10 完整快照、逐套/独立门禁、保留集与上线归因；新增39项专项",
+          "command": "python -m pytest -q",
+          "result": "831 passed, 1 skipped (96.28s)",
+          "source": "父提交 4065d523e35cb61abac239db02d8136834501d06 + 本次源码；候选导出 tree da3fc18a901b3999d8f47ca71a3eb97e5183eab2；源码与本记录同次提交",
+          "log": ".planning/2026-10-22-aln10-completion/commit-candidate-tests.txt",
+          "delivery": "docs/协作开发/交付/ALN-10-Q-回归资产与独立门禁补全.md"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/10-回归门禁补全.md",
+      "delivery": "docs/协作开发/交付/ALN-10-Q-回归资产与独立门禁补全.md",
+      "shared_files": [
+        "evoagent/evolution/controller.py",
+        "evoagent/evolution/evaluator.py",
+        "evoagent/evolution/regression.py",
+        "evoagent/evolution/runner.py",
+        "evoagent/evolution/candidates.py",
+        "evoagent/evolution/monitor.py",
+        "evoagent/evolution/benefit.py",
+        "evoagent/experts/registry.py",
+        "evoagent/core/controller.py",
+        "evoagent/memory/context.py"
+      ],
+      "working_basis": "用户明确指定接续编号10的半成品；保留 opencode-evo 首段与整包协调归属，本轮补充开发和接线。",
+      "next_step": "独立审阅；真实候选/隔离夹具宿主与 ALN-05/07/09 前置整合；补真实上线观察数据"
     }
   ],
   "workpackages": [
@@ -505,8 +588,9 @@
       ],
       "stream": "assets",
       "owner": "opencode-evo",
-      "delivery_state": "needs_recheck",
-      "next_step": "先复核已提交回归持久化/默认消费，再补独立门禁和覆盖"
+      "delivery_state": "partial_verified",
+      "next_step": "ALN-10-Q 已补全并待审：39项新专项，候选全量831/1；整合真实候选/隔离夹具及ALN-05/07/09，补真实上线观察证据后整包验收",
+      "supplemented_by": "codex-runtime"
     },
     {
       "id": "ALN-11",

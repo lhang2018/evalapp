@@ -96,7 +96,7 @@ def dataset(case_ids, holdout: bool = False, version: str = "1.0.0",
             dataset_id: str = "ds"):
     return EvalDataset(
         dataset_id=dataset_id, version=version, holdout=holdout,
-        cases=[EvalCase(case_id=i, input_goal="g", holdout=holdout)
+        cases=[EvalCase(case_id=i, input_goal="goal-" + i, holdout=holdout)
                for i in case_ids])
 
 

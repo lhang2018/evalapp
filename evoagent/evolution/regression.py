@@ -51,55 +51,48 @@ class FailureRegressionBuilder:
                                "already": 0}
         if store is None:
             return out
-        cases = store.list_diagnostic_cases(limit=200)
-        # ALN-10 持久化：已转换标记来自证据登记簿（实例重启后仍有效）；
-        # 数据集被清空时按标记确定性重建内容
-        try:
-            markers = {row["evidence_id"]
-                       for row in (store.list_evidence(limit=2000)
-                                   if hasattr(store, "list_evidence") else [])
-                       if row.get("kind") == REGRESSION_EVIDENCE_KIND}
-        except Exception:  # noqa: BLE001 —— 登记簿故障不阻断扫描
-            markers = set()
-        # 惰性落点：没有任何可转换案例时不留空数据集（转换是证据的结果，
-        # 不是扫描的副作用）
+        from .regression_store import RegressionStore, digest
+        snapshots = RegressionStore(store)
+        frozen = snapshots.all()
         dataset = self.controller.datasets.get(C.REGRESSION_DATASET_ID)
         in_dataset = {c.case_id for c in dataset.cases} if dataset else set()
+        # The snapshot is authoritative even if its Task/diagnostic is later removed.
+        for asset in frozen:
+            if dataset is None:
+                dataset = self.regression_dataset()
+            existing = next((c for c in dataset.cases if c.case_id == asset.case_id), None)
+            if existing is not None:
+                from dataclasses import asdict
+                if digest(asdict(existing)) != digest(asdict(asset)):
+                    dataset.cases.remove(existing)
+                    existing = None
+            if existing is None:
+                dataset.cases.append(asset)
+            in_dataset.add(asset.case_id)
+        cases = store.list_diagnostic_cases(limit=2147483647)
+        out["already"] = len(frozen)
         for case in cases:
             raw_status = getattr(case, "status", "")
             status = str(getattr(raw_status, "value", raw_status) or "").upper()
             cid = getattr(case, "case_id", "")
-            if status in C.REGRESSION_UNKNOWN_STATUSES:
-                out["skipped_unknown"].append(cid)
-                continue
-            if status not in C.REGRESSION_SOURCE_STATUSES:
-                continue
             reg_id = f"reg_{cid}"
             if reg_id in in_dataset:
-                out["already"] += 1
                 continue
-            if reg_id in markers:
-                # 标记在库：确定重建内容（重启/数据集重置恢复路径）
-                asset = self._to_case(case)
-                if asset is None:
+            if status not in C.REGRESSION_SOURCE_STATUSES:
+                if status in C.REGRESSION_UNKNOWN_STATUSES:
                     out["skipped_unknown"].append(cid)
-                    continue
-                if dataset is None:
-                    dataset = self.regression_dataset()
-                dataset.cases.append(asset)
-                out["already"] += 1
                 continue
             asset = self._to_case(case)
             if asset is None:
-                # 源任务缺失 = 无法复现目标（证据不足，不转换）
                 out["skipped_unknown"].append(cid)
                 continue
+            # Write the entire immutable case before publishing it to consumers.
+            snapshots.freeze(asset)
             if dataset is None:
                 dataset = self.regression_dataset()
             dataset.cases.append(asset)
-            self._record_marker(store, asset,
-                                f"reg_{cid}", getattr(case, "case_id", ""),
-                                getattr(case, "task_id", ""))
+            in_dataset.add(asset.case_id)
+            self._record_marker(store, asset, reg_id, cid, getattr(case, "task_id", ""))
             out["converted"].append(reg_id)
         return out
 
@@ -126,6 +119,9 @@ class FailureRegressionBuilder:
         if task is None:
             # 源任务缺失 = 无法复现目标（证据不足，不转换）
             return None
+        if (getattr(task, "runtime_manifest", {}) or {}).get("source") == "evaluation":
+            # Benchmark/holdout failures must never flow back into tuning assets.
+            return None
         acceptance = list(getattr(task, "acceptance_criteria", None) or [])
         if not acceptance:
             acceptance = [{"type": "result_nonempty"}]
@@ -144,4 +140,16 @@ class FailureRegressionBuilder:
             holdout=False,
             safety=False,
             tags=tags,
+            constraints=list(getattr(task, "constraints", []) or []),
+            version_manifest=dict(getattr(case, "version_manifest", {}) or
+                                  getattr(task, "version_manifest", {}) or {}),
+            failure_fixture={
+                "source_task_id": task.task_id,
+                "source_run_id": getattr(case, "run_id", ""),
+                "diagnostic_case_id": getattr(case, "case_id", ""),
+                "symptom": getattr(case, "symptom", ""),
+                "evidence": getattr(case, "evidence_snapshot", {}) or {},
+                "reproduction": "recorded_evidence_and_input_replay",
+                "acceptance_source": "task" if task.acceptance_criteria else "fallback_result_nonempty",
+            },
         )

@@ -1,0 +1,61 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  8%]
+........................................................................ [ 17%]
+........................................................................ [ 26%]
+........................................................................ [ 34%]
+........................................................................ [ 43%]
+........................................................................ [ 52%]
+..............F................F........................................ [ 60%]
+........................................................................ [ 69%]
+........................................................................ [ 78%]
+........................................................................ [ 86%]
+...................................................s.................... [ 95%]
+....................................                                     [100%]
+================================== FAILURES ===================================
+_________________ TestNoDrift.test_all_ledgers_have_no_drift __________________
+
+self = <test_ledger_drift.TestNoDrift testMethod=test_all_ledgers_have_no_drift>
+
+    def test_all_ledgers_have_no_drift(self):
+        rep = sal.scan(DOCS)
+>       self.assertEqual(
+            rep["problems"], [],
+            f"台账存在 {len(rep['problems'])} 处引用问题："
+            f"{[(p['doc'], p['doc_line'], p['kind']) for p in rep['problems'][:5]]}")
+E       AssertionError: Lists differ: [{'doc': 'FEATURES.md', 'doc_line': 780, '[199 chars]行）'}] != []
+E
+E       First list contains 2 additional elements.
+E       First extra element 0:
+E       {'doc': 'FEATURES.md', 'doc_line': 780, 'kind': 'bare_line_out_of_range', 'detail': '裸引用 `store.py:248` 越界（文件只有 47 行）'}
+E
+E       + []
+E       - [{'detail': '裸引用 `store.py:248` 越界（文件只有 47 行）',
+E       -   'doc': 'FEATURES.md',
+E       -   'doc_line': 780,
+E       -   'kind': 'bare_line_out_of_range'},
+E       -  {'detail': '裸引用 `store.py:248` 越界（文件只有 47 行）',
+E       -   'doc': 'GAP_ANALYSIS.md',
+E       -   'doc_line': 150,
+E       -   'kind': 'bare_line_out_of_range'}] : 台账存在 2 处引用问题：[('FEATURES.md', 780, 'bare_line_out_of_range'), ('GAP_ANALYSIS.md', 150, 'bare_line_out_of_range')]
+
+tests\test_ledger_drift.py:30: AssertionError
+_________ TestManifestContract.test_evaluate_candidate_sets_suite_ref _________
+
+self = <test_manifest_contract.TestManifestContract testMethod=test_evaluate_candidate_sets_suite_ref>
+
+    def test_evaluate_candidate_sets_suite_ref(self):
+        cand = self.app.evolution.propose_candidate(
+            "1.0.0", "expert/general", "p", "h")
+        self.app.evolution.evaluate_candidate(cand.candidate_id)
+>       self.assertEqual(self.app.evaluator.runner.suite_ref,
+                         "builtin_smoke/1.0.0")
+E       AssertionError: '' != 'builtin_smoke/1.0.0'
+E       + builtin_smoke/1.0.0
+
+tests\test_manifest_contract.py:124: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_ledger_drift.py::TestNoDrift::test_all_ledgers_have_no_drift
+FAILED tests/test_manifest_contract.py::TestManifestContract::test_evaluate_candidate_sets_suite_ref
+2 failed, 825 passed, 1 skipped in 95.43s (0:01:35)

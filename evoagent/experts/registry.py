@@ -67,6 +67,9 @@ class ExpertRegistry:
     def all(self) -> List[Expert]:
         return list(self._experts.values())
 
+    def capabilities(self) -> List[CapabilityEntry]:
+        return list(self._capabilities.values())
+
     def register_capability(self, cap: CapabilityEntry, depends_on: List[str] | None = None) -> None:
         self._capabilities[cap.capability_id] = cap
         if depends_on:

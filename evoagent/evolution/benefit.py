@@ -161,11 +161,16 @@ def _maintenance_complexity(change_scope: str) -> Dict[str, Any]:
 
 def _long_term(monitor: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     samples = int((monitor or {}).get("metrics", {}).get("samples", 0) or 0)
-    if samples < LONG_TERM_MIN_SAMPLES:
+    metrics = (monitor or {}).get("metrics") or {}
+    attributable = (metrics.get("source") == "runtime" and
+                    metrics.get("window_complete") is True and
+                    metrics.get("comparison_valid") is True and
+                    metrics.get("attribution") == "release")
+    if samples < LONG_TERM_MIN_SAMPLES or not attributable:
         return {"status": "insufficient_evidence",
                 "value": {"samples": samples,
                           "required_samples": LONG_TERM_MIN_SAMPLES},
-                "reason": "长期收益需要发布后持续观测（PRD 82）"}
+                "reason": "长期收益需要完整观察窗口、版本归因及等价基线样本（PRD 82）"}
     metrics = monitor.get("metrics") or {}
     return {"status": "observed",
             "value": {"samples": samples,

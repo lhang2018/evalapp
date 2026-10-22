@@ -118,11 +118,16 @@ class TestManifestContract(unittest.TestCase):
                          "builtin_smoke/1.0.0")
 
     def test_evaluate_candidate_sets_suite_ref(self):
+        previous = self.app.evaluator.runner.suite_ref
         cand = self.app.evolution.propose_candidate(
             "1.0.0", "expert/general", "p", "h")
         self.app.evolution.evaluate_candidate(cand.candidate_id)
-        self.assertEqual(self.app.evaluator.runner.suite_ref,
-                         "builtin_smoke/1.0.0")
+        tasks = [task for task in self.app.db.list_tasks(limit=1000)
+                 if task.runtime_manifest.get("source") == "evaluation"]
+        refs = {task.version_manifest.get("evaluation_suite_ref") for task in tasks}
+        self.assertIn("builtin_smoke/1.0.0", refs)
+        self.assertIn("builtin_holdout/1.0.0", refs)
+        self.assertEqual(self.app.evaluator.runner.suite_ref, previous)
 
     def test_workflow_ref_object_shape(self):
         if "wf_man5c" not in self.app._workflows:
