@@ -4,7 +4,7 @@
   "purpose": "协作认领；不替代正式契约、原始 ALN 依赖或功能验收",
   "baseline": {
     "status": "candidate",
-    "head_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
+    "head_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
     "published_commit": null,
     "snapshot": ".planning/2026-10-22-design-alignment/collaboration-baseline.json",
     "last_verified_workspace": {
@@ -17,12 +17,63 @@
       "source": "当前未提交共享工作区；不是历史候选快照或纯 HEAD"
     },
     "last_verified_candidate": {
-      "parent_commit": "3713a9ef2ebde582b9016ae26168dcee805ba68a",
-      "source_tree": "b149d53d904cd3185ee71873e9174ff4432c02b6",
-      "python_passed": 875,
+      "commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+      "source_tree": "3b180c76591ea65bec2ee840238fe01b3e8cacbd",
+      "python_passed": 909,
       "python_skipped": 1,
-      "log": ".planning/2026-10-22-release-evidence/commit-candidate-tests.txt",
-      "scope": "本轮提交候选；未纳入在途通知；客户端本轮未改动且未重跑"
+      "client_passed": 136,
+      "typecheck": "passed",
+      "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
+      "scope": "精确提交d77b241的独立干净克隆；客户端136/typecheck通过，未纳入通知在途改动；历史764/144与831/875为前序记录"
+    },
+    "initial_head_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
+    "prepared_candidate": {
+      "commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+      "source_tree": "3b180c76591ea65bec2ee840238fe01b3e8cacbd",
+      "status": "verified_pending_independent_review",
+      "clean_before_and_after": true,
+      "python_passed": 909,
+      "python_skipped": 1,
+      "client_passed": 136,
+      "typecheck": "passed",
+      "dependency_scope": "客户端复用已有node_modules；未重装依赖；源码及依赖清单来自精确提交",
+      "evidence": [
+        {
+          "path": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
+          "sha256": "cb11d9fbf1bfc7a7eb0d2b2265cab0a5ba8b0d06066665f92cfb4bfbea36c129"
+        },
+        {
+          "path": ".planning/2026-10-22-cross-review/clean-client-tests.txt",
+          "sha256": "d67aabd2d12d32cd989b2cfe595214badfea3f0bb29dcf821a5116eb40757296"
+        },
+        {
+          "path": ".planning/2026-10-22-cross-review/clean-client-typecheck.txt",
+          "sha256": "a7a02ccf05c0de54c157dc82e4d624f0b0bf1ba107625d8d1f94d4ed4da19c19"
+        }
+      ],
+      "excluded_paths": [
+        "android-app/android/app/src/main/java/com/evoagent/DevicePackage.kt",
+        "android-app/src/offline/backgroundRunner.ts",
+        "android-app/android/app/src/main/java/com/evoagent/NotificationModule.kt",
+        "android-app/src/device/nativeNotifications.ts",
+        "android-app/src/device/notifications.ts",
+        "android-app/test/device/notifications.test.ts",
+        "tests/test_e12_e13.py",
+        ".workbuddy/"
+      ],
+      "remaining_review": [
+        "ALN-04-R",
+        "ALN-04-UI",
+        "ALN-10-Q",
+        "ALN-10-R",
+        "ALN-00-V"
+      ],
+      "tools": {
+        "python": "3.10.11",
+        "node": "v24.16.0",
+        "git": "git version 2.43.0.windows.1",
+        "platform": "Windows-10-10.0.19045-SP0"
+      }
     }
   },
   "streams": [
@@ -207,6 +258,10 @@
     {
       "path": "evoagent/memory/context.py",
       "stream": "runtime"
+    },
+    {
+      "path": "tools/check_collaboration_plan.py",
+      "stream": "integration"
     }
   ],
   "dispatches": [
@@ -219,9 +274,19 @@
       "reviewer": null,
       "branch": null,
       "base_commit": null,
-      "status": "blocked",
-      "blocker": "ALN-04 运行身份/问答/异步审批在途改动尚未由运行内核线提交，工作区不稳定；待其落库后在干净工作树核验并发布基线 commit",
-      "evidence": [],
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "codex-runtime完成干净开发候选准备，未替集成人发布",
+          "source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+          "command": "python -m pytest -q --tb=short; npm run test:offline; npm run typecheck",
+          "result": "909 passed/1 skipped; client136/typecheck passed",
+          "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
+          "delivery": "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/00-基线发布.md",
       "shared_files": [
         "evoagent/core/controller.py",
@@ -255,7 +320,9 @@
         "FEATURE_SPLIT.md",
         "IMPLEMENTATION.md",
         "GAP_ANALYSIS.md"
-      ]
+      ],
+      "preparation_status": "verified_pending_review",
+      "next_step": "干净准备候选d77b241及日志已就绪；完成独立审阅后由集成人正式发布，不再等待ALN-04提交"
     },
     {
       "id": "ALN-04-R",
@@ -302,7 +369,8 @@
       ],
       "working_basis": "用户明确要求认领并开发；在当前共享候选工作区增量实现，base_commit 不代表候选基线已发布。",
       "delivery": "docs/协作开发/交付/ALN-04-R-运行租约与中断接管.md",
-      "next_step": "分配独立审阅人，合入共同基线；保留整包组合验收"
+      "next_step": "分配独立审阅人，合入共同基线；保留整包组合验收",
+      "delivered_commit": "72d20f026ad0623ab1828341f88f290ed06f6006"
     },
     {
       "id": "ALN-06-A",
@@ -310,10 +378,10 @@
       "title": "不可变资产基础",
       "stream": "assets",
       "owner": "claude-main",
-      "reviewer": null,
+      "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
       "evidence": [
         {
@@ -322,6 +390,15 @@
           "command": "python -m pytest tests -q",
           "result": "776 passed, 1 skipped（含并行修复的 E-12/E-13；仅运行租约线 teardown 线程告警）",
           "delivery": "docs/协作开发/交付/ALN-06-A-不可变资产基础.md"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "交叉审阅复现与修复，原作者和本轮修复作者分离登记",
+          "command": "python -m pytest tests/test_cross_review_regressions.py; clean commit full suite",
+          "result": "新增34专项通过；干净提交全量909 passed/1 skipped",
+          "source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+          "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
+          "delivery": "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md"
         }
       ],
       "card": "docs/协作开发/任务卡/06-资产基础.md",
@@ -334,7 +411,10 @@
         "evoagent/release/delivery.py",
         "evoagent/api/server.py",
         "evoagent/app.py"
-      ]
+      ],
+      "review_result": "changes_requested_fixed_pending_peer_recheck",
+      "review_note": "已交叉审阅claude-main原交付并修复复现缺陷；本轮修复由codex-runtime实现，须其他审阅人复核，未标accepted",
+      "next_step": "其他审阅人复核d77b241修复；按交叉审阅交付保留真实运行/Android或供应商验收"
     },
     {
       "id": "ALN-08-M",
@@ -342,10 +422,10 @@
       "title": "路由与计量",
       "stream": "models",
       "owner": "claude-main",
-      "reviewer": null,
+      "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
       "evidence": [
         {
@@ -354,6 +434,15 @@
           "command": "python -m pytest tests -q",
           "result": "816 passed, 1 skipped；2 failed 均为并行会话在途（ALN-10 completion、台账引用漂移），非本卡范围",
           "delivery": "docs/协作开发/交付/ALN-08-M-路由与计量.md"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "交叉审阅复现与修复，原作者和本轮修复作者分离登记",
+          "command": "python -m pytest tests/test_cross_review_regressions.py; clean commit full suite",
+          "result": "新增34专项通过；干净提交全量909 passed/1 skipped",
+          "source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+          "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
+          "delivery": "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md"
         }
       ],
       "card": "docs/协作开发/任务卡/08-模型与计量.md",
@@ -366,7 +455,10 @@
         "evoagent/app.py",
         "evoagent/cli.py",
         "evoagent/react/engine.py"
-      ]
+      ],
+      "review_result": "changes_requested_fixed_pending_peer_recheck",
+      "review_note": "已交叉审阅claude-main原交付并修复复现缺陷；本轮修复由codex-runtime实现，须其他审阅人复核，未标accepted",
+      "next_step": "其他审阅人复核d77b241修复；按交叉审阅交付保留真实运行/Android或供应商验收"
     },
     {
       "id": "ALN-04-UI",
@@ -407,7 +499,8 @@
       ],
       "working_basis": "用户明确要求认领并开发；在当前共享候选工作区增量实现，base_commit 不代表候选基线已发布。",
       "delivery": "docs/协作开发/交付/ALN-04-UI-管理员审批页面.md",
-      "next_step": "分配独立审阅人；补 Android 真机批准、拒绝、断网和过期验收"
+      "next_step": "分配独立审阅人；补 Android 真机批准、拒绝、断网和过期验收",
+      "delivered_commit": "72d20f026ad0623ab1828341f88f290ed06f6006"
     },
     {
       "id": "ALN-10-Q",
@@ -446,7 +539,8 @@
         "evoagent/memory/context.py"
       ],
       "working_basis": "用户明确指定接续编号10的半成品；保留 opencode-evo 首段与整包协调归属，本轮补充开发和接线。",
-      "next_step": "独立审阅；真实候选/隔离夹具宿主与 ALN-05/07/09 前置整合；补真实上线观察数据"
+      "next_step": "独立审阅；真实候选/隔离夹具宿主与 ALN-05/07/09 前置整合；补真实上线观察数据",
+      "delivered_commit": "3713a9ef2ebde582b9016ae26168dcee805ba68a"
     },
     {
       "id": "ALN-10-R",
@@ -480,7 +574,42 @@
         "evoagent/api/server.py"
       ],
       "working_basis": "用户继续下一步，接续ALN-10发布衔接；保留其他人在途通知及ALN-09测试修改。",
-      "next_step": "独立审阅；真实候选隔离执行宿主、精确候选制品应用/装载、可信身份和跨进程发布仲裁仍待整合"
+      "next_step": "独立审阅；真实候选隔离执行宿主、精确候选制品应用/装载、可信身份和跨进程发布仲裁仍待整合",
+      "delivered_commit": "bd33f5664d16ddaf42040893eec6d9a0614ab464"
+    },
+    {
+      "id": "ALN-00-V",
+      "workpackage": "ALN-00",
+      "related_workpackages": [
+        "ALN-06",
+        "ALN-08"
+      ],
+      "title": "交叉审阅修复与干净基线核验",
+      "stream": "integration",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "bd33f5664d16ddaf42040893eec6d9a0614ab464",
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+          "command": "clean clone: python -m pytest -q --tb=short; npm run test:offline; npm run typecheck",
+          "result": "909 passed/1 skipped; client136/typecheck passed",
+          "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/00-交叉审阅与基线核验.md",
+      "delivery": "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md",
+      "shared_files": [
+        "evoagent/api/server.py",
+        "evoagent/api/auth.py",
+        "tools/check_collaboration_plan.py"
+      ],
+      "working_basis": "用户要求检查并解决并行线问题；交叉审阅非本人原交付，修复和基线准备单独待审",
+      "next_step": "其他审阅人复核本轮修复及ALN-04/10；集成人据精确准备提交完成正式基线发布"
     }
   ],
   "workpackages": [
@@ -492,7 +621,7 @@
       "stream": "integration",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "发布包括未提交 ALN-04 的可共享基线，复验源码快照"
+      "next_step": "d77b241干净准备候选909/1、客户端136/typecheck已验证；补独立审阅后发布精确提交"
     },
     {
       "id": "ALN-01",
@@ -567,7 +696,7 @@
       "stream": "assets",
       "owner": "claude-main",
       "delivery_state": "planned",
-      "next_step": "统一资产身份、不可变内容、依赖与最小消费接口"
+      "next_step": "06-A已交叉审阅并修复API/完整性/依赖/GC缺陷；待修复复核，继续运行时资产消费和Android验签安装回执"
     },
     {
       "id": "ALN-07",
@@ -595,7 +724,7 @@
       "stream": "models",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "先复核 F-53 五层覆盖，补真实计量和未知费用处理"
+      "next_step": "08-M已交叉审阅并修复并发计量/非法用量/路由/脱敏；待修复复核，补工作流/执行模式、生产评测与真实价格账单"
     },
     {
       "id": "ALN-09",
@@ -820,5 +949,5 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "基线发布前默认只准备协议与夹具；用户本轮明确授权 ALN-04-R/UI 在共享候选工作区开发与接线，现已进入 review。共同基线仍待发布，状态不等于整包验收。"
+  "execution_note": "ALN-04/10及06/08原交付均已提交；干净准备候选d77b241已验证，准备工作可推进。独立审阅与正式基线发布仍待完成；当前candidate不等于功能整包验收，修复作者不自批。"
 }

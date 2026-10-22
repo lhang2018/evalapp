@@ -4,7 +4,9 @@ ALN-10 接续更新：按用户要求补齐完整回归资产、逐套依赖回�
 
 更新时间：2026-10-22。面向新加入的开发者与其他开发助手。实际负责人和进度以 workboard.json 为准，推荐角色不等于认领。
 
-本轮 codex-runtime 已认领并交付 [ALN-04-R 运行租约与中断接管](交付/ALN-04-R-运行租约与中断接管.md) 和 [ALN-04-UI 管理员审批页面](交付/ALN-04-UI-管理员审批页面.md)，均进入 review。当前工作区服务端 764 passed / 1 skipped，客户端 144 passed/typecheck 通过。两卡的独立审阅、Android 真机路径与整包组合验收仍待完成；认领、实现、发布和验收是不同状态。
+当前干净准备候选为 `d77b2412bbec021828f737eb8cd2a31e7ea5470e`：后端 **909 passed / 1 skipped**、客户端 **136 passed**、TypeScript通过。它来自该精确提交的独立干净克隆，不含通知在途改动。详见[交叉审阅与基线准备](交付/ALN-06-08-X-交叉审阅与基线准备.md)。baseline仍candidate，尚未正式发布。
+
+ALN-04-R/UI 和 ALN-10-Q/R 已提交待独立审阅；ALN-06-A/08-M 原交付已由 codex-runtime 交叉审阅并修复问题，修复本身待其他人复核。运行线未提交不再是基线准备阻塞；真机/供应商/真实候选验收继续保留。
 
 ## 先看当前进度
 
@@ -15,14 +17,14 @@ ALN-10 接续更新：按用户要求补齐完整回归资产、逐套依赖回�
 | 执行安全与发布校验 | 工具允许列表、工作流确认、调用前副作用记账、unknown 阻断、服务端制品正文完整性 | 完整对象授权、真实外部回执、完整补偿和端侧验签装载 |
 | ALN-04 运行与人工交互 | 独立 Run/父链、问答持久化与续跑、工作流暂停、实际组件清单、异步审批原动作恢复、运行租约/强杀接管与审批 UI | 独立审阅、节点取消组合路径、指定检查点恢复、真机验收 |
 
-此前工作区验证：**Python 764 passed / 1 skipped；客户端 144 passed；TypeScript 通过**。这些是包含未提交改动的工作区结果，不是仅拉取 HEAD 就能复现的承诺。跳过项为台账负向样本检查；未执行真实模型、真机 UI 或生产部署验收。
+历史工作区验证：Python 764 passed / 1 skipped、客户端144，含当时未提交改动；后续831/875为前序候选结果。当前以顶部909/136的精确提交证据为准。跳过项为台账负向样本检查；未执行真实模型、真机 UI 或生产部署验收。
 
 已有提交：`83c25e6` 为执行安全与发布修复；本次整理起点 `23d3950` 为同期路由/回归等变更，后续其他开发者继续独立提交。运行身份、问答、异步审批和本轮租约/UI 已随本次提交交付；独立 Android 通知改动仍在途。共同源码基线仍需集成人发布，历史候选快照不代表最新 HEAD 或完整可复现版本。
 
 ## 认领与开工
 
 1. 读本页及[开发任务认领表](开发任务认领表.md)，选定一个任务卡。
-2. 集成人处理[ALN-00 基线发布](任务卡/00-基线发布.md)，把实际 commit 写入 workboard.json。默认此前只准备接口、夹具和独立草稿；本轮用户已明确授权 ALN-04-R/UI 在共享候选工作区开发与接线，该授权记录在 working_basis。
+2. 集成人处理[ALN-00 基线发布](任务卡/00-基线发布.md)。精确准备提交和干净验证已登记，开发准备可基于该提交推进；正式公布基线前完成独立审阅，不能把candidate写成published。
 3. 在 [workboard.json](workboard.json) 对应任务卡填写 owner、reviewer、branch、状态。ALN-04-R/UI 已由 codex-runtime 认领并进入 review；其他负责人的状态保留其实际登记，不代替他们宣布完成。
 4. 从公布的同一个基线 commit 建自己的分支/工作树；读任务卡中的独占路径与共享文件规则。
 5. 先提交接口约定和最小行为测试，再实现本卡；超出边界的改动由集成人协调。不要在同一工作目录同时开发多个相互覆盖的任务。
@@ -74,6 +76,7 @@ git worktree add -b codex/aln-06-assets ../evalapp-aln06 BASELINE_COMMIT
 $env:PYTHONUTF8='1'
 $env:PYTHONIOENCODING='utf-8'
 python tools/check_collaboration_plan.py
+python tools/check_collaboration_plan.py --verify-prepared
 python .planning/2026-10-22-design-alignment/verify_alignment_plan.py
 python tools/verify_claims.py
 python tools/scan_all_ledgers.py

@@ -1,10 +1,12 @@
 # ALN-06-A 交付记录：统一不可变资产身份与最小消费接口
 
 负责人：claude-main（本会话）
-审阅人：待定（未编造）
+审阅人：codex-runtime（对 claude-main 原交付交叉审阅；本轮审阅修复仍需其他人复核）
 基线 commit：尚未发布（workboard baseline=candidate）；资产域已随 `f9c3f7e` 提交
 分支与最终 commit：本卡后续提交为发布生产端边界
-认领状态：in_progress（首轮基础与生产端边界已实现，待审阅；整包 ALN-06 未关闭）
+认领状态：review（原交付已审出问题并修复，待修复复核；整包 ALN-06 未关闭）
+
+交叉审阅续记：生产 API 注册/写鉴权、正文摘要、传递 pin 与回滚/发布/运行引用的 GC 保护已在 `d77b241` 修复。下文首轮记录保留历史范围；当前状态以[交叉审阅记录](ALN-06-08-X-交叉审阅与基线准备.md)为准。
 
 ## 触发场景与行为变化
 
@@ -46,10 +48,10 @@
   - `tests/test_release_assets.py`（8 项）。
 - 复用未改：`core/contracts.py` 的 `ASSET_TYPE` / `ASSET_NAMESPACE` / `ASSET_LIFECYCLE` 作为枚举唯一权威；`core/persistence.py` 未改（schema 域自动发现）。
 - 未接线（按任务卡单列合入）：
-  - `evoagent/api/server.py` 增加 `from . import assets_api` 一行后端点才对生产服务可见；测试中显式导入模块完成注册。
+  - 生产 API 注册与管理员写鉴权已在 `d77b241` 接线，并由全新子进程 HTTP 测试验证，不再依赖测试导入。
   - `core/contracts.py`、共享持久化公开方法、controller、Task Manifest 资产引用由整合角色处理。
   - Android 端字节验签/解包由 android 线负责；本卡只提供服务端字节格式与摘要。
-  - `release/manager.py`、`release/delivery.py` 的生产端边界首轮未实现。
+  - `release/manager.py`、`release/delivery.py` 的生产端边界已在 `54f8058` 实现；端侧安装不在此结论内。
 - 数据迁移：无。新表由 `CREATE TABLE IF NOT EXISTS` 幂等建出；老库直接可用。
 
 ## 验证证据
@@ -68,16 +70,16 @@
 
 ## 回滚与未完成事项
 
-- 回滚：删除上述新增文件即可；`assets` / `asset_events` 为空表，无迁移、无存量格式变更。
+- 回滚：按提交范围回退代码，保留 `assets` / `asset_events` 数据与审计；已有资产、发布或运行引用时不能删表/删内容。必要时先停新消费者，再设计兼容迁移。
 - 保留限制：
-  - API 端点尚需 `server.py` 一行导入才能由生产服务分派（共享文件，按卡单列合入）；
+  - API 端点已注册；资产写操作由统一鉴权要求 admin；
   - 运行 Manifest 尚未接线到 `refs.manifest_asset_ref`；冻结运行仍使用组件版本字符串（引用形状与摘要校验已提供）；
   - Android 侧字节验签、安装/退役回执未实现；
   - 服务端 HMAC 签名与端侧公钥验签职责分离：本卡未向客户端传递任何服务端签名秘密，也未实现端侧验签；
-  - 能力目录（`CapabilityEntry`）映射需要持有方补充精确版本；无公开的 capability 枚举接口；
+  - 能力目录（`CapabilityEntry`）映射需要持有方补充精确版本；ALN-10 已补 capabilities() 枚举接口；
   - 生产端边界已接入发布清单，但发布通道的端侧字节验签、安装/退役回执仍未实现（android 线）；
   - “别名/最新指针”被刻意不实现；未来若引入别名，必须保证冻结运行仍读精确版本。
 - 影响主题：ALN-06（整包未关闭）、F-11（Capability Asset 实体）、ALN-09/ALN-11 不因本卡关闭。
 
-审阅结论：待审
+审阅结论：原交付交叉审阅已完成并发现缺陷；修复待其他审阅人复核，不自批修复。
 整包结论：仍实现中（本卡首轮基础完成，不关闭 ALN-06）

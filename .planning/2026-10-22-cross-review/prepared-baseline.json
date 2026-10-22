@@ -1,0 +1,48 @@
+{
+  "commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+  "source_tree": "3b180c76591ea65bec2ee840238fe01b3e8cacbd",
+  "status": "verified_pending_independent_review",
+  "clean_before_and_after": true,
+  "python_passed": 909,
+  "python_skipped": 1,
+  "client_passed": 136,
+  "typecheck": "passed",
+  "dependency_scope": "客户端复用已有node_modules；未重装依赖；源码及依赖清单来自精确提交",
+  "evidence": [
+    {
+      "path": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
+      "sha256": "cb11d9fbf1bfc7a7eb0d2b2265cab0a5ba8b0d06066665f92cfb4bfbea36c129"
+    },
+    {
+      "path": ".planning/2026-10-22-cross-review/clean-client-tests.txt",
+      "sha256": "d67aabd2d12d32cd989b2cfe595214badfea3f0bb29dcf821a5116eb40757296"
+    },
+    {
+      "path": ".planning/2026-10-22-cross-review/clean-client-typecheck.txt",
+      "sha256": "a7a02ccf05c0de54c157dc82e4d624f0b0bf1ba107625d8d1f94d4ed4da19c19"
+    }
+  ],
+  "excluded_paths": [
+    "android-app/android/app/src/main/java/com/evoagent/DevicePackage.kt",
+    "android-app/src/offline/backgroundRunner.ts",
+    "android-app/android/app/src/main/java/com/evoagent/NotificationModule.kt",
+    "android-app/src/device/nativeNotifications.ts",
+    "android-app/src/device/notifications.ts",
+    "android-app/test/device/notifications.test.ts",
+    "tests/test_e12_e13.py",
+    ".workbuddy/"
+  ],
+  "remaining_review": [
+    "ALN-04-R",
+    "ALN-04-UI",
+    "ALN-10-Q",
+    "ALN-10-R",
+    "ALN-00-V"
+  ],
+  "tools": {
+    "python": "3.10.11",
+    "node": "v24.16.0",
+    "git": "git version 2.43.0.windows.1",
+    "platform": "Windows-10-10.0.19045-SP0"
+  }
+}

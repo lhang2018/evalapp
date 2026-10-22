@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import re
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,12 +24,19 @@ def render(board):
     result = board["baseline"]["last_verified_workspace"]
     lines = ["# 开发任务认领表", "", "本表由 workboard.json 生成；认领先改 JSON，再运行检查器的 --render。",
         "角色是建议职责，负责人以 workboard.json 认领为准，审阅人未分配时保留待定；认领状态不等于功能验收状态。", "",
-        "## 基线", "", f"当前 HEAD：`{board['baseline']['head_commit']}`。",
+        "## 基线", "", f"基线记录锚点：`{board['baseline']['head_commit']}`（记录时的提交，不是动态 HEAD）。",
         f"基线状态：`{board['baseline']['status']}`；已发布 commit：{board['baseline']['published_commit'] or '尚未发布'}。",
-        f"工作区最近验证为服务端 {result['python_passed']} passed / {result['python_skipped']} skipped、"
+        f"历史共享工作区验证为服务端 {result['python_passed']} passed / {result['python_skipped']} skipped、"
         f"客户端 {result['client_passed']} passed；不是纯 HEAD 的复现结果。", "",
         "## 首轮认领", "", "| 子任务 | 建议开发线 | 负责人 | 审阅人 | 状态 | 接手卡 |",
         "|---|---|---|---|---|---|"]
+    candidate = board["baseline"].get("last_verified_candidate")
+    if candidate:
+        index = lines.index("## 首轮认领")
+        lines[index:index] = [f"最近独立候选验证：服务端 **{candidate['python_passed']} passed / "
+            f"{candidate['python_skipped']} skipped**；源码提交/父提交："
+            f"`{candidate.get('commit') or candidate.get('parent_commit')}`，tree：`{candidate['source_tree']}`。",
+            candidate.get("scope", ""), ""]
     for card in board["dispatches"]:
         lines.append(f"| {card['id']} | {roles[card['stream']]} | {card['owner'] or '待认领'} | "
             f"{card['reviewer'] or '待定'} | {card['status']} | [{card['title']}]({card['card'].split('docs/协作开发/', 1)[1]}) |")
@@ -120,6 +128,8 @@ def validate(board):
             errors.append("merged/accepted task requires evidence: " + item["id"])
         if item["status"] == "accepted" and not item["reviewer"]:
             errors.append("accepted task requires a reviewer: " + item["id"])
+        if item["reviewer"] and item["reviewer"] == item["owner"]:
+            errors.append("task author cannot be their own reviewer: " + item["id"])
         if not set(item["shared_files"]).issubset(paths):
             errors.append("undeclared shared-file handoff: " + item["id"])
     baseline = board["baseline"]
@@ -144,10 +154,31 @@ def verify_snapshot(board):
     return errors
 
 
+def verify_prepared(board):
+    """Verify the pinned Git object and evidence files, independent of dirty workspaces."""
+    prepared = board["baseline"].get("prepared_candidate") or {}
+    commit, tree = prepared.get("commit", ""), prepared.get("source_tree", "")
+    if not all(isinstance(value, str) and re.fullmatch(r"[0-9a-f]{40}", value) for value in (commit, tree)):
+        return ["prepared candidate requires exact commit and tree"]
+    result = subprocess.run(["git", "rev-parse", commit + "^{tree}"], cwd=ROOT,
+                            capture_output=True, text=True)
+    errors = []
+    if result.returncode or result.stdout.strip() != tree:
+        errors.append("prepared candidate Git tree does not match commit")
+    for evidence in prepared.get("evidence", []):
+        path = ROOT / evidence["path"]
+        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != evidence["sha256"]:
+            errors.append("prepared evidence changed: " + evidence["path"])
+    if not prepared.get("evidence"):
+        errors.append("prepared candidate is missing verification evidence")
+    return errors
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--render", action="store_true")
     parser.add_argument("--verify-snapshot", action="store_true")
+    parser.add_argument("--verify-prepared", action="store_true")
     args = parser.parse_args()
     board = json.loads(BOARD.read_text(encoding="utf-8"))
     if args.render:
@@ -155,6 +186,8 @@ def main():
     errors = validate(board)
     if args.verify_snapshot:
         errors.extend(verify_snapshot(board))
+    if args.verify_prepared:
+        errors.extend(verify_prepared(board))
     print(json.dumps({"scope": "collaboration metadata only", "workpackages": len(board["workpackages"]),
         "dispatches": len(board["dispatches"]), "baseline": board["baseline"]["status"],
         "errors": errors, "ok": not errors}, ensure_ascii=False, indent=2))

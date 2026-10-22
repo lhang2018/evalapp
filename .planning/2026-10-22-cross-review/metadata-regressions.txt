@@ -1,0 +1,6 @@
+current board: passed
+latest candidate and historical workspace are distinct: passed
+self review is rejected: passed
+exact commit/tree and evidence digests: passed
+wrong Git tree is rejected: passed
+wrong evidence digest is rejected: passed
