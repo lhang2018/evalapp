@@ -4,7 +4,11 @@
 负责人：claude-main
 审阅人：待定（须为作者之外的独立复核）
 基线 commit：未发布基线；在当前共享候选工作区增量开发（同 ALN-06-A/08-M/11-A 方式），不用旧 HEAD 冒充
-分支与最终 commit：main / 本次提交
+分支与最终 commit：main。**提交归属需注意**：任务卡与 workboard 登记经并行会话提交 `af6ef48` 扫入；
+代码（`planner.py` +128 / `engine.py` +3）、`tests/test_plan_revision.py`（+206）、本交付文档、
+.planning 验证日志与四份台账联动经并行会话提交 `6d55756` 扫入。`6d55756` 标题为「再认领 ALN-17/20」，
+ALN-07-P 内容不在其标题所述范围内，系我方暂存文件被扫入；已用 `git show <commit> -- <file>` 逐项
+核对上述改动均在内。审阅时请直接核对这两个 commit 的文件内容，勿按提交标题检索。
 认领状态：review（待独立复核）
 
 ## 触发场景与行为变化
