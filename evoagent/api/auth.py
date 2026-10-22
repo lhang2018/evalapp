@@ -6,8 +6,9 @@
 令牌只从配置/环境读取，不写入日志与响应。
 """
 
+import hmac
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 HIGH_RISK_POST = (
     "/releases/rollback",
@@ -28,13 +29,15 @@ class AuthResult:
 
 class ApiAuth:
     def __init__(self, token: Optional[str] = None,
-                 admin_token: Optional[str] = None):
+                 admin_token: Optional[str] = None,
+                 token_ring: Optional[Any] = None):
         self.token = token or None
         self.admin_token = admin_token or None
+        self.token_ring = token_ring
 
     @property
     def enabled(self) -> bool:
-        return bool(self.token or self.admin_token)
+        return bool(self.token or self.admin_token or self.token_ring)
 
     def check(self, authorization: Optional[str], method: str,
               path: str) -> AuthResult:
@@ -45,9 +48,13 @@ class ApiAuth:
         if not presented:
             return AuthResult(False, "anonymous", 401, "缺少 Bearer 令牌")
         role = ""
-        if self.admin_token and presented == self.admin_token:
+        if self.token_ring is not None:
+            role = self.token_ring.role_for(presented) or ""
+        if not role and self.admin_token and hmac.compare_digest(
+                presented, self.admin_token):
             role = "admin"
-        elif self.token and presented == self.token:
+        elif not role and self.token and hmac.compare_digest(
+                presented, self.token):
             role = "operator"
         if not role:
             return AuthResult(False, "anonymous", 403, "令牌无效")

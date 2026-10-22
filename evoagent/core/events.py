@@ -40,6 +40,13 @@ class RunEvent:
     # 契约 §3：payload_ref = local-uri-or-inline-small-payload。
     # 内联 payload 继续走 payload 字段；大附件/远端引用走这里。
     payload_ref: Optional[str] = None
+    # ALN-16 统一跨端观测字段：来源、信任、故障等级与决策链引用。
+    origin: str = "server"                   # device | server
+    trust: str = "trusted"                   # trusted | untrusted
+    fault_level: str = "none"                # none | transient | degraded | fatal
+    untrusted_origin: Optional[str] = None
+    refs: Dict[str, str] = field(default_factory=dict)
+    redacted: bool = False
 
     # 契约 §3 privacy_level 四值映射（core/contracts.py 裁定：spec 为准）。
     # 内部字段 privacy_classification 迁移期保留：证据层/追溯层的红去逻辑
@@ -77,6 +84,12 @@ class RunEvent:
             "attachment_refs": self.attachment_refs,
             "schema_version": self.schema_version,
             "payload_ref": self.payload_ref,
+            "origin": self.origin,
+            "trust": self.trust,
+            "fault_level": self.fault_level,
+            "untrusted_origin": self.untrusted_origin,
+            "refs": dict(self.refs),
+            "redacted": self.redacted,
         }
 
 
@@ -92,13 +105,20 @@ _EXTRA_COLUMNS = {
     "attachment_refs": "TEXT",
     "schema_version": "TEXT DEFAULT '1.0'",
     "payload_ref": "TEXT",
+    "origin": "TEXT DEFAULT 'server'",
+    "trust": "TEXT DEFAULT 'trusted'",
+    "fault_level": "TEXT DEFAULT 'none'",
+    "untrusted_origin": "TEXT",
+    "refs": "TEXT",
+    "redacted": "INTEGER DEFAULT 0",
 }
 
 _EVENT_COLUMNS = (
     "event_id, task_id, run_id, severity, event_type, component_id, timestamp,"
     " payload, component_version, correlation_id, causation_id,"
     " privacy_classification, sync_status, sequence_no, runtime_manifest_id,"
-    " clock_source, attachment_refs, schema_version, payload_ref")
+    " clock_source, attachment_refs, schema_version, payload_ref,"
+    " origin, trust, fault_level, untrusted_origin, refs, redacted")
 
 
 def _row_to_event(row) -> RunEvent:
@@ -112,7 +132,16 @@ def _row_to_event(row) -> RunEvent:
         sequence_no=row[13], runtime_manifest_id=row[14],
         clock_source=row[15] or "server",
         schema_version=row[17] or "1.0",
-        payload_ref=row[18])
+        payload_ref=row[18],
+        origin=row[19] or "server",
+        trust=row[20] or "trusted",
+        fault_level=row[21] or "none",
+        untrusted_origin=row[22],
+        redacted=bool(row[24]))
+    try:
+        evt.refs = json.loads(row[23]) if row[23] else {}
+    except Exception:
+        evt.refs = {}
     try:
         evt.payload = json.loads(row[7])
     except Exception:
@@ -159,7 +188,7 @@ class EventBus:
         with self._lock:
             cur = self._conn.execute(
                 f"INSERT {mode} INTO runtime_events ({_EVENT_COLUMNS})"
-                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (evt.event_id, evt.task_id, evt.run_id, evt.severity,
                  evt.event_type, evt.component_id, evt.timestamp,
                  evt.json_payload(), evt.component_version,
@@ -167,7 +196,10 @@ class EventBus:
                  evt.privacy_classification, evt.sync_status,
                  evt.sequence_no, evt.runtime_manifest_id,
                  evt.clock_source, json.dumps(evt.attachment_refs),
-                 evt.schema_version, evt.payload_ref))
+                 evt.schema_version, evt.payload_ref,
+                 evt.origin, evt.trust, evt.fault_level,
+                 evt.untrusted_origin, json.dumps(evt.refs),
+                 1 if evt.redacted else 0))
             self._conn.commit()
             return cur.rowcount > 0
 

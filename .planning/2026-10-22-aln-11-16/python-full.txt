@@ -1,0 +1,145 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  6%]
+........................................................................ [ 13%]
+........................................................................ [ 20%]
+........................................................................ [ 26%]
+........................................................................ [ 33%]
+........................................................................ [ 40%]
+........................................................................ [ 46%]
+........................................................................ [ 53%]
+........................................................................ [ 60%]
+........................................................................ [ 66%]
+........................................................................ [ 73%]
+........................................................................ [ 80%]
+........................................................................ [ 86%]
+........................................................................ [ 93%]
+............s........................................................    [100%]
+============================== warnings summary ===============================
+tests/test_evo_signals.py::TestSignalContract::test_four_signal_spec_complete
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-440 (execute)
+  
+  Traceback (most recent call last):
+    File "E:\evalapp\evoagent\core\controller.py", line 249, in execute
+      task = self._run(task, budget)
+    File "E:\evalapp\evoagent\core\controller.py", line 431, in _run
+      return self._run_react(task, budget)
+    File "E:\evalapp\evoagent\core\controller.py", line 535, in _run_react
+      return self._finalize(task, verdict, outcome.answer, budget=budget,
+    File "E:\evalapp\evoagent\core\controller.py", line 669, in _finalize
+      self.db.save_task(task)
+    File "E:\evalapp\evoagent\core\persistence.py", line 39, in save_task
+      guard_write(self)
+    File "E:\evalapp\evoagent\core\leases.py", line 63, in guard_write
+      db._conn.execute("BEGIN IMMEDIATE")
+  sqlite3.ProgrammingError: Cannot operate on a closed database.
+  
+  During handling of the above exception, another exception occurred:
+  
+  Traceback (most recent call last):
+    File "E:\evalapp\evoagent\core\controller.py", line 264, in execute
+      self.db.save_task(task)
+    File "E:\evalapp\evoagent\core\persistence.py", line 39, in save_task
+      guard_write(self)
+    File "E:\evalapp\evoagent\core\leases.py", line 63, in guard_write
+      db._conn.execute("BEGIN IMMEDIATE")
+  sqlite3.ProgrammingError: Cannot operate on a closed database.
+  
+  During handling of the above exception, another exception occurred:
+  
+  Traceback (most recent call last):
+    File "E:\evalapp\evoagent\core\runs.py", line 52, in finish
+      self.freeze(task)
+    File "E:\evalapp\evoagent\core\runs.py", line 41, in freeze
+      self.db.save_runtime_manifest(identity, task.task_id,
+    File "E:\evalapp\evoagent\core\persistence.py", line 649, in save_runtime_manifest
+      guard_write(self)
+    File "E:\evalapp\evoagent\core\leases.py", line 63, in guard_write
+      db._conn.execute("BEGIN IMMEDIATE")
+  sqlite3.ProgrammingError: Cannot operate on a closed database.
+  
+  During handling of the above exception, another exception occurred:
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "E:\evalapp\evoagent\core\controller.py", line 270, in execute
+      self.runs.finish(task, run_id, started)
+    File "E:\evalapp\evoagent\core\runs.py", line 64, in finish
+      self.leases.release(token)
+    File "E:\evalapp\evoagent\core\leases.py", line 179, in release
+      conn.execute("BEGIN IMMEDIATE")
+  sqlite3.ProgrammingError: Cannot operate on a closed database.
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_evo_signals.py::TestSignalContract::test_four_signal_spec_complete
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-451 (execute)
+  
+  Traceback (most recent call last):
+    File "E:\evalapp\evoagent\core\controller.py", line 249, in execute
+      task = self._run(task, budget)
+    File "E:\evalapp\evoagent\core\controller.py", line 431, in _run
+      return self._run_react(task, budget)
+    File "E:\evalapp\evoagent\core\controller.py", line 526, in _run_react
+      task = self._move(task, TaskStatus.VERIFYING)
+    File "E:\evalapp\evoagent\core\controller.py", line 1182, in _move
+      self.checkpoint(task, target.value)
+    File "E:\evalapp\evoagent\core\controller.py", line 748, in checkpoint
+      previous = self.cp_mgr.latest(task.task_id)
+    File "E:\evalapp\evoagent\core\checkpoint.py", line 59, in latest
+      snap = self.db.get_latest_checkpoint(task_id)
+    File "E:\evalapp\evoagent\core\persistence.py", line 197, in get_latest_checkpoint
+      row = self._conn.execute(
+  sqlite3.ProgrammingError: Cannot operate on a closed database.
+  
+  During handling of the above exception, another exception occurred:
+  
+  Traceback (most recent call last):
+    File "E:\evalapp\evoagent\core\controller.py", line 264, in execute
+      self.db.save_task(task)
+    File "E:\evalapp\evoagent\core\persistence.py", line 39, in save_task
+      guard_write(self)
+    File "E:\evalapp\evoagent\core\leases.py", line 63, in guard_write
+      db._conn.execute("BEGIN IMMEDIATE")
+  sqlite3.ProgrammingError: Cannot operate on a closed database.
+  
+  During handling of the above exception, another exception occurred:
+  
+  Traceback (most recent call last):
+    File "E:\evalapp\evoagent\core\runs.py", line 52, in finish
+      self.freeze(task)
+    File "E:\evalapp\evoagent\core\runs.py", line 41, in freeze
+      self.db.save_runtime_manifest(identity, task.task_id,
+    File "E:\evalapp\evoagent\core\persistence.py", line 649, in save_runtime_manifest
+      guard_write(self)
+    File "E:\evalapp\evoagent\core\leases.py", line 63, in guard_write
+      db._conn.execute("BEGIN IMMEDIATE")
+  sqlite3.ProgrammingError: Cannot operate on a closed database.
+  
+  During handling of the above exception, another exception occurred:
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "E:\evalapp\evoagent\core\controller.py", line 270, in execute
+      self.runs.finish(task, run_id, started)
+    File "E:\evalapp\evoagent\core\runs.py", line 64, in finish
+      self.leases.release(token)
+    File "E:\evalapp\evoagent\core\leases.py", line 179, in release
+      conn.execute("BEGIN IMMEDIATE")
+  sqlite3.ProgrammingError: Cannot operate on a closed database.
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1076 passed, 1 skipped, 2 warnings in 145.80s (0:02:25)
