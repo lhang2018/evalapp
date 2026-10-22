@@ -129,6 +129,17 @@ class ReleaseDelivery:
             check("artifact_integrity", bool(verdict.get("ok")),
                   "签名与制品摘要校验通过" if verdict.get("ok")
                   else verdict.get("error") or "签名或制品摘要校验失败")
+            if manifest.artifact_url:
+                # 声明了可下载制品就必须同时给出端侧可独立验签的完整
+                # envelope；缺任一项则不得下发为可更新目标。
+                complete = bool(
+                    manifest.artifact_sha256
+                    and manifest.artifact_size is not None
+                    and manifest.artifact_signature
+                    and manifest.artifact_signing_key_id)
+                check("artifact_envelope", complete,
+                      "制品 URL/摘要/大小/签名/密钥齐全" if complete
+                      else "制品交付 envelope 不完整")
 
         gray_percent = self._gray_percent(manifest)
         eligible = manifest is not None and \
@@ -170,7 +181,21 @@ class ReleaseDelivery:
                 "asset_refs": list(manifest.asset_refs or []),
                 "asset_refs_require_client_verification": bool(
                     manifest.asset_refs),
+                "required_permissions": list(
+                    manifest.permission_requirements or []),
+                "required_tool_contracts": list(
+                    manifest.required_tool_contracts or []),
             }
+            if manifest.artifact_url:
+                target.update({
+                    "artifact_url": manifest.artifact_url,
+                    "artifact_size": manifest.artifact_size,
+                    "artifact_sha256": manifest.artifact_sha256,
+                    "artifact_signature": manifest.artifact_signature,
+                    "signing_key_id": manifest.artifact_signing_key_id,
+                    "signature_schema": (manifest.signature_schema
+                                         or "evoagent.release.signing/1"),
+                })
 
         data = dict(previous_data)
         data.update({

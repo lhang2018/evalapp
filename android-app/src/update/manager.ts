@@ -361,8 +361,12 @@ export class UpdateManager {
       };
       const verified = this.trustedKeys.verifyDigest(
         envelope, result.sha256, result.size);
-      const declaredDigest = (target.artifact_digest ?? "")
-        .toLowerCase().replace(/^sha256:/, "");
+      // 有独立 artifact_sha256 时以真实字节 + envelope 为准；
+      // artifact_digest 是服务端元数据签名摘要，不能当作字节摘要比对。
+      const declaredDigest = target.artifact_sha256
+        ? ""
+        : (target.artifact_digest ?? "")
+          .toLowerCase().replace(/^sha256:/, "");
       if (!verified.ok
           || (declaredDigest && declaredDigest !== result.sha256)) {
         await this.removeArtifact(finalPath);

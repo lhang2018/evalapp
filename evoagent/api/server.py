@@ -267,6 +267,44 @@ def make_handler(app: App):
                 m = app.release_manifest
                 return self._json(200, {**m.to_dict(),
                                         "current": app.releases.current_release_id})
+            if path.startswith("/artifacts/"):
+                # 制品按不可变 release_id 提供分块下载；端侧必须自行验签，
+                # 服务端不把本地文件路径或签名秘密下发给客户端。
+                release_id = path.split("/", 2)[2]
+                if (not re.fullmatch(r"[A-Za-z0-9._-]{1,128}", release_id)
+                        or release_id not in app.releases.manifests
+                        or app.releases.artifact_dir is None):
+                    return self._json(404, {"error": "制品不存在"})
+                artifact = (Path(app.releases.artifact_dir)
+                            / f"{release_id}.bundle")
+                if not artifact.is_file():
+                    return self._json(404, {"error": "制品不存在"})
+                data = artifact.read_bytes()
+                total = len(data)
+                start, end = 0, total - 1
+                match = re.fullmatch(
+                    r"bytes=(\d*)-(\d*)",
+                    (self.headers.get("Range") or "").strip())
+                if match and (match.group(1) or match.group(2)):
+                    if match.group(1):
+                        start = int(match.group(1))
+                        end = (int(match.group(2))
+                               if match.group(2) else total - 1)
+                    else:
+                        start = max(0, total - int(match.group(2)))
+                        end = total - 1
+                    if start >= total or start > end:
+                        return self._bytes(
+                            416, b"", "application/octet-stream",
+                            {"Content-Range": f"bytes */{total}"})
+                    end = min(end, total - 1)
+                    return self._bytes(
+                        206, data[start:end + 1], "application/octet-stream",
+                        {"Accept-Ranges": "bytes",
+                         "Content-Range": f"bytes {start}-{end}/{total}"})
+                return self._bytes(
+                    200, data, "application/octet-stream",
+                    {"Accept-Ranges": "bytes"})
             if path.startswith("/runs/"):
                 parts = [p for p in path.split("/") if p]
                 if len(parts) == 3 and parts[2] == "manifest":

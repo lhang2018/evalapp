@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  AppState,
   Button,
   KeyboardAvoidingView,
   Linking,
@@ -68,6 +69,17 @@ import { NativeDeviceTransport } from "./src/device/nativeTransport.ts";
 import type { NativeDeviceModuleLike } from "./src/device/nativeTransport.ts";
 import { UpdateManager } from "./src/update/manager.ts";
 import { ApiUpdateTransport } from "./src/update/apiTransport.ts";
+import { TrustedKeyRing } from "./src/update/trust.ts";
+import { DEV_RELEASE_KEY } from "./src/update/devTrust.ts";
+import {
+  FetchArtifactSource,
+  NativeArtifactFiles,
+} from "./src/update/nativeArtifact.ts";
+import {
+  loadActiveBundle,
+  WorkflowBundleApplier,
+} from "./src/update/workflowBundle.ts";
+import type { InstalledBundle } from "./src/update/workflowBundle.ts";
 import type { UpdateState } from "./src/update/types.ts";
 import {
   detectPermissionDialog,
@@ -178,6 +190,7 @@ export default function App(): React.JSX.Element {
   const [centerError, setCenterError] = useState<string | null>(null);
   const [updateState, setUpdateState] = useState<UpdateState | null>(null);
   const [updateBusy, setUpdateBusy] = useState(false);
+  const [activeBundle, setActiveBundle] = useState<InstalledBundle | null>(null);
   const [exportPreview, setExportPreview] = useState<ExportPreview | null>(null);
   const [exporting, setExporting] = useState(false);
   const [exportSensitive, setExportSensitive] = useState(false);
@@ -230,10 +243,22 @@ export default function App(): React.JSX.Element {
     const broker = new DeviceBroker(deviceTransport, {
       confirm: confirmHighRisk,
     });
+    const updateFiles = new NativeArtifactFiles();
     const update = new UpdateManager(
       new ApiUpdateTransport(client),
       asyncStorageStore,
-      { appVersion: APP_VERSION }
+      {
+        appVersion: APP_VERSION,
+        toolContracts: ["open_app"],
+        stagingDir: "updates",
+        artifactSource: new FetchArtifactSource(),
+        artifactFiles: updateFiles,
+        trustedKeys: new TrustedKeyRing([DEV_RELEASE_KEY]),
+        bundleApplier: new WorkflowBundleApplier(
+          updateFiles, asyncStorageStore),
+        grantedPermissions: () => [],
+        activationAllowed: () => AppState.currentState === "active",
+      }
     );
     return {
       client,
@@ -503,6 +528,12 @@ export default function App(): React.JSX.Element {
       } catch {
         // 安装实例初始化失败不阻断离线队列
       }
+      try {
+        const bundle = await loadActiveBundle(asyncStorageStore);
+        if (mounted) setActiveBundle(bundle);
+      } catch {
+        // 已安装包读取失败不阻断主流程
+      }
       await services.tasks.recoverInterrupted();
       const available = await services.deviceTransport.isAvailable();
       if (mounted) setDeviceAvailable(available);
@@ -701,6 +732,7 @@ export default function App(): React.JSX.Element {
       try {
         setUpdateState(await op());
         setCenterError(null);
+        setActiveBundle(await loadActiveBundle(asyncStorageStore));
       } catch (e: unknown) {
         setCenterError(e instanceof Error ? e.message : String(e));
         setUpdateState(await services.update.status());
@@ -1723,17 +1755,41 @@ export default function App(): React.JSX.Element {
                     />
                   </View>
                   {updateState?.phase === "available" && (
-                    <View style={s.action}>
-                      <Button
-                        title="校验候选"
-                        onPress={() => void runUpdate(() => services.update.verify())}
-                        disabled={updateBusy}
-                      />
-                    </View>
+                    <>
+                      <View style={s.action}>
+                        <Button
+                          title="下载并验签"
+                          onPress={() =>
+                            void runUpdate(() => services.update.prepare())
+                          }
+                          disabled={updateBusy}
+                        />
+                      </View>
+                      <View style={s.action}>
+                        <Button
+                          title="校验候选"
+                          onPress={() => void runUpdate(() => services.update.verify())}
+                          disabled={updateBusy}
+                        />
+                      </View>
+                    </>
                   )}
                 </View>
+                {updateState?.artifact && (
+                  <Text style={s.hint}>
+                    已下载验签：{updateState.artifact.version} ·{" "}
+                    {updateState.artifact.size} B ·{" "}
+                    {updateState.artifact.digest.slice(0, 12)}…
+                  </Text>
+                )}
                 {updateState?.phase === "verified" && (
                   <Button title="激活候选版本" onPress={activateUpdate} />
+                )}
+                {activeBundle && (
+                  <Text style={s.hint}>
+                    当前能力包：{activeBundle.bundle.workflow as string} ·
+                    {" "}{activeBundle.version} · 槽 {activeBundle.slot}
+                  </Text>
                 )}
                 {updateState?.phase === "active" && (
                   <>

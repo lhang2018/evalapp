@@ -18,6 +18,7 @@ class MainApplication : Application(), ReactApplication {
             override fun getPackages(): List<ReactPackage> =
                 PackageList(this).packages.apply {
                     add(DevicePackage())
+                    add(UpdatePackage())
                 }
 
             override fun getJSMainModuleName(): String = "index"

@@ -28,6 +28,10 @@ _CHANNELS = ("stable", "draft", "internal")
 _SIGNING_FIELDS = frozenset({
     "artifact_digest", "signed_by", "signing_payload_digest",
     "signature_version", "signing_key_id",
+    # 制品 envelope 由端侧按真实字节单独验签，不进入元数据签名，
+    # 避免给历史清单新增字段导致旧签名无法复验。
+    "artifact_url", "artifact_sha256", "artifact_size",
+    "artifact_signature", "artifact_signing_key_id", "signature_schema",
 })
 # ALN-03 之前的 v1 签名只覆盖这些字段；迁移时按原字节重建以验证旧签名。
 _LEGACY_SIGNED_FIELDS = (
@@ -153,6 +157,14 @@ class ReleaseManifest:
     rollback_target: Optional[str] = None
     rollback_supported: Optional[bool] = None
     artifact_digest: Optional[str] = None
+    # 真实制品交付 envelope：客户端按 url 分块下载后，用受信公钥验证
+    # 实际字节的 sha256/大小与签名；与元数据 HMAC 签名分开命名，互不覆盖。
+    artifact_url: Optional[str] = None
+    artifact_sha256: Optional[str] = None
+    artifact_size: Optional[int] = None
+    artifact_signature: Optional[str] = None
+    artifact_signing_key_id: Optional[str] = None
+    signature_schema: Optional[str] = None
     signed_by: Optional[str] = None
     signing_key_id: Optional[str] = None
     signing_payload_digest: Optional[str] = None

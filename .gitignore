@@ -12,3 +12,6 @@ android-app/android/.gradle/
 android-app/android/build/
 android-app/android/app/build/
 android-app/.expo/
+
+# Local update-delivery test data
+.evoagent-update/
