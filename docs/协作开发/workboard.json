@@ -17,31 +17,31 @@
       "source": "当前未提交共享工作区；不是历史候选快照或纯 HEAD"
     },
     "last_verified_candidate": {
-      "commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
-      "source_tree": "616520516106b8c5130979f8fb320a5ccf751bc7",
-      "python_passed": 915,
+      "commit": "8218ed056555d313c6809fff68bc1351ed63e560",
+      "source_tree": "68a8e97902b26c2be6efec6426e571b8dbedf010",
+      "python_passed": 956,
       "python_skipped": 1,
       "client_passed": 136,
       "typecheck": "passed",
       "client_evidence_source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
-      "log": ".planning/2026-10-22-router-rejection/clean-backend-tests.txt",
-      "scope": "24cd524独立干净克隆后端915/1；客户端tree与d77b241相同，136/typecheck沿用d77b241证据，非本轮新测；排除在途通知/ALN-09修改"
+      "log": ".planning/2026-10-22-cxr-hardening/clean-backend-tests.txt",
+      "scope": "8218ed0独立干净克隆后端956/1；客户端tree与d77b241相同，136/typecheck沿用既有证据；CXR-01/02/03修复待独立复核，排除他人在途修改"
     },
     "initial_head_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
     "prepared_candidate": {
-      "commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
-      "source_tree": "616520516106b8c5130979f8fb320a5ccf751bc7",
+      "commit": "8218ed056555d313c6809fff68bc1351ed63e560",
+      "source_tree": "68a8e97902b26c2be6efec6426e571b8dbedf010",
       "status": "verified_pending_independent_review",
       "clean_before_and_after": true,
-      "python_passed": 915,
+      "python_passed": 956,
       "python_skipped": 1,
       "client_passed": 136,
       "typecheck": "passed",
-      "dependency_scope": "本轮后端干净克隆全量；客户端目录tree与d77b241相同，136/typecheck沿用该提交既有证据，本轮未重跑客户端",
+      "dependency_scope": "本轮后端精确源码提交干净克隆全量；客户端tree与d77b241相同，136/typecheck沿用既有证据，本轮未重跑客户端",
       "evidence": [
         {
-          "path": ".planning/2026-10-22-router-rejection/clean-backend-tests.txt",
-          "sha256": "2728f8121f62fc2773818cb7492da7bf99a519317f423a7f8170978c65414f89"
+          "path": ".planning/2026-10-22-cxr-hardening/clean-backend-tests.txt",
+          "sha256": "fd8356bc79d80032425c34cd32b4b8a1a6a8f07bc342e29d4aa5be226a25e00d"
         },
         {
           "path": ".planning/2026-10-22-cross-review/clean-client-tests.txt",
@@ -63,12 +63,10 @@
         ".workbuddy/"
       ],
       "remaining_review": [
-        "ALN-04-R",
+        "ALN-10-H",
         "ALN-04-UI",
-        "ALN-10-Q",
-        "ALN-10-R",
-        "ALN-00-V",
-        "ALN-08-R"
+        "ALN-06-A",
+        "ALN-08-M"
       ],
       "tools": {
         "python": "3.10.11",
@@ -791,6 +789,38 @@
       "review_note": "2026-10-22 claude-main 独立审阅：控制器在显式/默认/评分/视觉约束拒绝时均不静默回退，失败持久化并抛错；6 项专项与真实 App 路径通过",
       "review_report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md",
       "next_step": "整包 ALN-08 的工作流/执行模式路由入口与生产评测集/价格账单另计"
+    },
+    {
+      "id": "ALN-10-H",
+      "workpackage": "ALN-10",
+      "title": "CXR-01/02/03 验收证据加固",
+      "stream": "assets",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "b34cd788bf90d007457f0b21671dcec4f9c98e89",
+      "status": "review",
+      "blocker": null,
+      "delivered_commit": "8218ed056555d313c6809fff68bc1351ed63e560",
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "新增41项：资产不可核验/四种报告明细及保留集证据/故障夹具费用显式声明",
+          "command": "python -m pytest -q --tb=short",
+          "result": "干净克隆 956 passed, 1 skipped；联合专项186 passed；修复前26 failed/15 passed",
+          "source_commit": "8218ed056555d313c6809fff68bc1351ed63e560",
+          "source_tree": "68a8e97902b26c2be6efec6426e571b8dbedf010",
+          "log": ".planning/2026-10-22-cxr-hardening/clean-backend-tests.txt"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/10-验收证据加固.md",
+      "delivery": "docs/协作开发/交付/ALN-10-H-验收证据加固.md",
+      "shared_files": [
+        "evoagent/evolution/evaluator.py"
+      ],
+      "working_basis": "用户要求核对并修复本人交付问题，确认CXR-01/02/03属实；保留原独立验收及其他会话在途内容",
+      "review_result": "pending",
+      "next_step": "独立复核8218ed0的CXR补丁；不继承旧ALN-10-Q/R的accepted结论"
     }
   ],
   "workpackages": [
@@ -933,7 +963,7 @@
       "stream": "assets",
       "owner": "opencode-evo",
       "delivery_state": "partial_verified",
-      "next_step": "ALN-10-Q/R已局部验证待审，R新增44项专项、候选全量875/1；整合真实候选宿主、制品装载与ALN-05/07/09，补真实线上观察后验收",
+      "next_step": "ALN-10-Q/R已独立接受；CXR-01/02/03加固交付ALN-10-H待审；整合真实候选隔离宿主、制品装载与ALN-05/07/09后验收",
       "supplemented_by": "codex-runtime"
     },
     {
@@ -1130,5 +1160,5 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "普通tests历史基线915/1，客户端同tree沿用136/typecheck；本次Claude验收新增4失败/1通过，对应3个根因，06/08需修改后复验。基线仍candidate，未发布；不自批本线修复、不混入在途文件。"
+  "execution_note": "最新精确源码8218ed0干净克隆956/1，客户端同tree沿用136/typecheck。CXR三项已修复，ALN-10-H待独立复核；原五张accepted卡结论保留。CA三个根因及Android真机仍待原线处理；基线candidate，未发布，不混入在途文件。"
 }

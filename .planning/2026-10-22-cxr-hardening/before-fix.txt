@@ -1,0 +1,140 @@
+Python version is above 3.10, patching the collections module.
+FFFFF..FFFF..FF..FFFFFFFFFFFFFFF.........                                [100%]
+================================== FAILURES ===================================
+_ test_missing_asset_store_blocks_regression_even_without_required_suites[None] _
+tests\test_cxr_hardening.py:34: in test_missing_asset_store_blocks_regression_even_without_required_suites
+    assert impact["asset_scope_errors"]
+E   assert []
+_ test_missing_asset_store_blocks_regression_even_without_required_suites[store1] _
+tests\test_cxr_hardening.py:34: in test_missing_asset_store_blocks_regression_even_without_required_suites
+    assert impact["asset_scope_errors"]
+E   assert []
+_ test_legacy_unverifiable_scope_with_empty_errors_cannot_bypass_gate[unavailable] _
+tests\test_cxr_hardening.py:41: in test_legacy_unverifiable_scope_with_empty_errors_cannot_bypass_gate
+    assert not result["passed"]
+E   assert not True
+_ test_legacy_unverifiable_scope_with_empty_errors_cannot_bypass_gate[invalid] _
+tests\test_cxr_hardening.py:41: in test_legacy_unverifiable_scope_with_empty_errors_cannot_bypass_gate
+    assert not result["passed"]
+E   assert not True
+_____ test_missing_store_component_mapping_propagates_to_regression_gate ______
+tests\test_cxr_hardening.py:50: in test_missing_store_component_mapping_propagates_to_regression_gate
+    assert any("资产" in reason for reason in result["reasons"])
+E   assert False
+E    +  where False = any(<generator object test_missing_store_component_mapping_propagates_to_regression_gate.<locals>.<genexpr> at 0x0000029897D63D10>)
+___ test_each_report_requires_complete_unique_case_details[empty-baseline] ____
+tests\test_cxr_hardening.py:109: in test_each_report_requires_complete_unique_case_details
+    assert not result["passed"]
+E   assert not True
+___ test_each_report_requires_complete_unique_case_details[empty-candidate] ___
+tests\test_cxr_hardening.py:109: in test_each_report_requires_complete_unique_case_details
+    assert not result["passed"]
+E   assert not True
+_ test_each_report_requires_complete_unique_case_details[empty-holdout_report] _
+tests\test_cxr_hardening.py:109: in test_each_report_requires_complete_unique_case_details
+    assert not result["passed"]
+E   assert not True
+_ test_each_report_requires_complete_unique_case_details[empty-holdout_baseline] _
+tests\test_cxr_hardening.py:109: in test_each_report_requires_complete_unique_case_details
+    assert not result["passed"]
+E   assert not True
+_ test_each_report_requires_complete_unique_case_details[duplicate-holdout_report] _
+tests\test_cxr_hardening.py:109: in test_each_report_requires_complete_unique_case_details
+    assert not result["passed"]
+E   assert not True
+_ test_each_report_requires_complete_unique_case_details[duplicate-holdout_baseline] _
+tests\test_cxr_hardening.py:109: in test_each_report_requires_complete_unique_case_details
+    assert not result["passed"]
+E   assert not True
+_ test_each_report_requires_complete_unique_case_details[missing-holdout_report] _
+tests\test_cxr_hardening.py:109: in test_each_report_requires_complete_unique_case_details
+    assert not result["passed"]
+E   assert not True
+_ test_each_report_requires_complete_unique_case_details[missing-holdout_baseline] _
+tests\test_cxr_hardening.py:109: in test_each_report_requires_complete_unique_case_details
+    assert not result["passed"]
+E   assert not True
+_ test_each_report_requires_complete_unique_case_details[no_case_id-baseline] _
+tests\test_cxr_hardening.py:110: in test_each_report_requires_complete_unique_case_details
+    assert any("评测明细" in reason for reason in result["reasons"])
+E   assert False
+E    +  where False = any(<generator object test_each_report_requires_complete_unique_case_details.<locals>.<genexpr> at 0x0000029897EFC900>)
+_ test_each_report_requires_complete_unique_case_details[no_case_id-candidate] _
+tests\test_cxr_hardening.py:110: in test_each_report_requires_complete_unique_case_details
+    assert any("评测明细" in reason for reason in result["reasons"])
+E   assert False
+E    +  where False = any(<generator object test_each_report_requires_complete_unique_case_details.<locals>.<genexpr> at 0x0000029897D62F10>)
+_ test_each_report_requires_complete_unique_case_details[no_case_id-holdout_report] _
+tests\test_cxr_hardening.py:109: in test_each_report_requires_complete_unique_case_details
+    assert not result["passed"]
+E   assert not True
+_ test_each_report_requires_complete_unique_case_details[no_case_id-holdout_baseline] _
+tests\test_cxr_hardening.py:109: in test_each_report_requires_complete_unique_case_details
+    assert not result["passed"]
+E   assert not True
+______________ test_summary_only_review_reproduction_is_rejected ______________
+tests\test_cxr_hardening.py:119: in test_summary_only_review_reproduction_is_rejected
+    assert not ReleaseGate().judge(baseline, candidate)["passed"]
+E   assert not True
+_ test_holdout_evidence_uses_same_validation_as_primary[unknown_cost-holdout_report] _
+tests\test_cxr_hardening.py:133: in test_holdout_evidence_uses_same_validation_as_primary
+    assert not judge(current)["passed"]
+E   assert not True
+_ test_holdout_evidence_uses_same_validation_as_primary[unknown_cost-holdout_baseline] _
+tests\test_cxr_hardening.py:133: in test_holdout_evidence_uses_same_validation_as_primary
+    assert not judge(current)["passed"]
+E   assert not True
+_ test_holdout_evidence_uses_same_validation_as_primary[nan_cost-holdout_report] _
+tests\test_cxr_hardening.py:133: in test_holdout_evidence_uses_same_validation_as_primary
+    assert not judge(current)["passed"]
+E   assert not True
+_ test_holdout_evidence_uses_same_validation_as_primary[nan_cost-holdout_baseline] _
+tests\test_cxr_hardening.py:133: in test_holdout_evidence_uses_same_validation_as_primary
+    assert not judge(current)["passed"]
+E   assert not True
+_ test_holdout_evidence_uses_same_validation_as_primary[unverified_fixture-holdout_report] _
+tests\test_cxr_hardening.py:133: in test_holdout_evidence_uses_same_validation_as_primary
+    assert not judge(current)["passed"]
+E   assert not True
+_ test_holdout_evidence_uses_same_validation_as_primary[unverified_fixture-holdout_baseline] _
+tests\test_cxr_hardening.py:133: in test_holdout_evidence_uses_same_validation_as_primary
+    assert not judge(current)["passed"]
+E   assert not True
+_ test_reproduced_fixture_requires_explicit_known_cost_independently_of_attestation[None-task_runner] _
+tests\test_cxr_hardening.py:152: in test_reproduced_fixture_requires_explicit_known_cost_independently_of_attestation
+    assert candidate.metadata["cost_known"] is (known is True)
+E   assert True is (None is True)
+_ test_reproduced_fixture_requires_explicit_known_cost_independently_of_attestation[None-controller_fixture_hook] _
+tests\test_cxr_hardening.py:152: in test_reproduced_fixture_requires_explicit_known_cost_independently_of_attestation
+    assert candidate.metadata["cost_known"] is (known is True)
+E   assert True is (None is True)
+=========================== short test summary info ===========================
+FAILED tests/test_cxr_hardening.py::test_missing_asset_store_blocks_regression_even_without_required_suites[None]
+FAILED tests/test_cxr_hardening.py::test_missing_asset_store_blocks_regression_even_without_required_suites[store1]
+FAILED tests/test_cxr_hardening.py::test_legacy_unverifiable_scope_with_empty_errors_cannot_bypass_gate[unavailable]
+FAILED tests/test_cxr_hardening.py::test_legacy_unverifiable_scope_with_empty_errors_cannot_bypass_gate[invalid]
+FAILED tests/test_cxr_hardening.py::test_missing_store_component_mapping_propagates_to_regression_gate
+FAILED tests/test_cxr_hardening.py::test_each_report_requires_complete_unique_case_details[empty-baseline]
+FAILED tests/test_cxr_hardening.py::test_each_report_requires_complete_unique_case_details[empty-candidate]
+FAILED tests/test_cxr_hardening.py::test_each_report_requires_complete_unique_case_details[empty-holdout_report]
+FAILED tests/test_cxr_hardening.py::test_each_report_requires_complete_unique_case_details[empty-holdout_baseline]
+FAILED tests/test_cxr_hardening.py::test_each_report_requires_complete_unique_case_details[duplicate-holdout_report]
+FAILED tests/test_cxr_hardening.py::test_each_report_requires_complete_unique_case_details[duplicate-holdout_baseline]
+FAILED tests/test_cxr_hardening.py::test_each_report_requires_complete_unique_case_details[missing-holdout_report]
+FAILED tests/test_cxr_hardening.py::test_each_report_requires_complete_unique_case_details[missing-holdout_baseline]
+FAILED tests/test_cxr_hardening.py::test_each_report_requires_complete_unique_case_details[no_case_id-baseline]
+FAILED tests/test_cxr_hardening.py::test_each_report_requires_complete_unique_case_details[no_case_id-candidate]
+FAILED tests/test_cxr_hardening.py::test_each_report_requires_complete_unique_case_details[no_case_id-holdout_report]
+FAILED tests/test_cxr_hardening.py::test_each_report_requires_complete_unique_case_details[no_case_id-holdout_baseline]
+FAILED tests/test_cxr_hardening.py::test_summary_only_review_reproduction_is_rejected
+FAILED tests/test_cxr_hardening.py::test_holdout_evidence_uses_same_validation_as_primary[unknown_cost-holdout_report]
+FAILED tests/test_cxr_hardening.py::test_holdout_evidence_uses_same_validation_as_primary[unknown_cost-holdout_baseline]
+FAILED tests/test_cxr_hardening.py::test_holdout_evidence_uses_same_validation_as_primary[nan_cost-holdout_report]
+FAILED tests/test_cxr_hardening.py::test_holdout_evidence_uses_same_validation_as_primary[nan_cost-holdout_baseline]
+FAILED tests/test_cxr_hardening.py::test_holdout_evidence_uses_same_validation_as_primary[unverified_fixture-holdout_report]
+FAILED tests/test_cxr_hardening.py::test_holdout_evidence_uses_same_validation_as_primary[unverified_fixture-holdout_baseline]
+FAILED tests/test_cxr_hardening.py::test_reproduced_fixture_requires_explicit_known_cost_independently_of_attestation[None-task_runner]
+FAILED tests/test_cxr_hardening.py::test_reproduced_fixture_requires_explicit_known_cost_independently_of_attestation[None-controller_fixture_hook]
+26 failed, 15 passed in 0.41s
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
