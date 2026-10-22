@@ -35,6 +35,16 @@ export interface UpdateTarget {
   gray_percent: number;
   created_at?: number;
   eval_report_available?: boolean;
+  /** 真实制品交付：缺任一项都不得进入下载/激活路径。 */
+  artifact_url?: string | null;
+  artifact_size?: number | null;
+  artifact_sha256?: string | null;
+  artifact_signature?: string | null;
+  signing_key_id?: string | null;
+  signature_schema?: string | null;
+  bundle_ref?: string | null;
+  required_permissions?: string[];
+  required_tool_contracts?: string[];
 }
 
 export interface ReconcileResponse {
@@ -58,6 +68,7 @@ export interface UpdateSlot {
   version: string;
   digest: string;
   activated_at: number;
+  signing_key_id?: string;
 }
 
 /** 服务端候选改进阶段（仅评测之后的状态会下发）。 */
@@ -90,6 +101,30 @@ export interface CandidateSyncResponse {
   server_time: number;
 }
 
+export interface ArtifactState {
+  release_id: string;
+  version: string;
+  path: string;
+  size: number;
+  digest: string;
+  signing_key_id: string;
+  verified_at: number;
+}
+
+export interface PendingReceipt {
+  apply_id: string;
+  action: ApplyResultRequest["action"];
+  release_id: string;
+  version?: string;
+  artifact_digest?: string;
+  signing_key_id?: string;
+  outcome: string;
+  reason: string;
+  to_release_id?: string;
+  attempts: number;
+  last_attempt_at: number;
+}
+
 export interface UpdateState {
   version: 1;
   installation_id: string;
@@ -99,6 +134,10 @@ export interface UpdateState {
   last_known_good: UpdateSlot | null;
   /** 已下载校验、尚未切换的候选 */
   pending: UpdateSlot | null;
+  /** 已下载并通过真实字节验签的制品引用 */
+  artifact: ArtifactState | null;
+  /** 未确认回执；按 apply_id 幂等重放 */
+  receipts: PendingReceipt[];
   phase: UpdatePhase;
   target: UpdateTarget | null;
   checks: UpdateCheckEntry[];
@@ -134,6 +173,10 @@ export interface ApplyResultRequest {
   outcome?: string;
   reason?: string;
   apply_id: string;
+  /** 回执绑定实际版本与制品，不从对账目标推断 */
+  version?: string;
+  artifact_digest?: string;
+  signing_key_id?: string;
 }
 
 export interface UpdateTransport {

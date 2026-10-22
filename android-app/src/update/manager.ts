@@ -9,9 +9,28 @@
 import type { KeyValueStore } from "../offline/storage.ts";
 import { createId } from "../offline/ids.ts";
 import { getInstallationId } from "./identity.ts";
-import type { ApplyResultRequest, ReconcileResponse, UpdateSlot, UpdateState, UpdateTarget, UpdateTransport } from "./types.ts";
+import { ArtifactDownloader } from "./artifact.ts";
+import type { ArtifactFileSystem, ArtifactSource } from "./artifact.ts";
+import { TrustedKeyRing } from "./trust.ts";
+import type {
+  ApplyResultRequest, PendingReceipt, ReconcileResponse, UpdateSlot,
+  UpdateState, UpdateTarget, UpdateTransport,
+} from "./types.ts";
 
 export const UPDATE_STATE_KEY = "update_state_v1";
+
+export interface BundleApplyRequest {
+  release_id: string;
+  version: string;
+  path: string;
+  digest: string;
+  slot: "a" | "b";
+  bundle_ref?: string | null;
+}
+
+export interface BundleApplier {
+  apply(request: BundleApplyRequest): Promise<void>;
+}
 
 export interface UpdateManagerOptions {
   appVersion: string;
@@ -22,6 +41,29 @@ export interface UpdateManagerOptions {
   freeBytes?: () => number;
   minFreeBytes?: number;
   storeKey?: string;
+  artifactSource?: ArtifactSource;
+  artifactFiles?: ArtifactFileSystem;
+  downloader?: ArtifactDownloader;
+  trustedKeys?: TrustedKeyRing;
+  bundleApplier?: BundleApplier;
+  grantedPermissions?: string[] | (() => string[] | Promise<string[]>);
+  activationAllowed?: () => boolean | Promise<boolean>;
+  stagingDir?: string;
+  maxArtifactBytes?: number;
+}
+
+function versionAtLeast(current: string, minimum: string): boolean {
+  const parse = (value: string): number[] =>
+    value.trim().replace(/^v/i, "").split(/[.-]/)
+      .slice(0, 3)
+      .map((part) => Number.parseInt(part, 10) || 0);
+  const left = parse(current);
+  const right = parse(minimum);
+  for (let index = 0; index < 3; index += 1) {
+    if (left[index] > right[index]) return true;
+    if (left[index] < right[index]) return false;
+  }
+  return true;
 }
 
 function emptyState(installationId: string): UpdateState {
@@ -32,6 +74,8 @@ function emptyState(installationId: string): UpdateState {
     slots: { a: null, b: null },
     last_known_good: null,
     pending: null,
+    artifact: null,
+    receipts: [],
     phase: "idle",
     target: null,
     checks: [],
@@ -64,6 +108,8 @@ function parseState(raw: string | null, fallbackId: string): UpdateState {
       reasons: Array.isArray(data.reasons) ? data.reasons : [],
       candidates: Array.isArray(data.candidates) ? data.candidates : [],
       candidates_synced_at: data.candidates_synced_at ?? null,
+      artifact: data.artifact ?? null,
+      receipts: Array.isArray(data.receipts) ? data.receipts : [],
       last_error: data.last_error ?? null,
     };
   } catch {
@@ -82,6 +128,14 @@ export class UpdateManager {
   private readonly freeBytes: () => number;
   private readonly minFreeBytes: number;
   private readonly storeKey: string;
+  private readonly downloader: ArtifactDownloader | null;
+  private readonly trustedKeys: TrustedKeyRing | null;
+  private readonly bundleApplier: BundleApplier | null;
+  private readonly permissions: string[] | (() => string[] | Promise<string[]>) | null;
+  private readonly activationAllowed: (() => boolean | Promise<boolean>) | null;
+  private readonly stagingDir: string;
+  private readonly maxArtifactBytes: number | undefined;
+  private readonly artifactFiles: ArtifactFileSystem | null;
   private chain: Promise<unknown> = Promise.resolve();
 
   constructor(
@@ -99,6 +153,17 @@ export class UpdateManager {
     this.freeBytes = options.freeBytes ?? (() => Number.MAX_SAFE_INTEGER);
     this.minFreeBytes = options.minFreeBytes ?? 1024 * 1024;
     this.storeKey = options.storeKey ?? UPDATE_STATE_KEY;
+    this.artifactFiles = options.artifactFiles ?? null;
+    this.downloader = options.downloader
+      ?? (options.artifactSource && options.artifactFiles
+        ? new ArtifactDownloader(options.artifactSource, options.artifactFiles)
+        : null);
+    this.trustedKeys = options.trustedKeys ?? null;
+    this.bundleApplier = options.bundleApplier ?? null;
+    this.permissions = options.grantedPermissions ?? null;
+    this.activationAllowed = options.activationAllowed ?? null;
+    this.stagingDir = options.stagingDir ?? "updates";
+    this.maxArtifactBytes = options.maxArtifactBytes;
   }
 
   init(): Promise<UpdateState> {
@@ -156,10 +221,25 @@ export class UpdateManager {
         } else if (!this.hasRollbackPath(state, target)) {
           decision = "blocked";
           reasons.push("没有可用的回滚目标或恢复路径");
+        } else if (!versionAtLeast(this.appVersion, target.min_app_version)) {
+          decision = "blocked";
+          reasons.push("当前 App 版本低于目标最低版本");
+        } else {
+          const missing = (target.required_tool_contracts ?? [])
+            .filter((name) => !this.toolContracts.includes(name));
+          if (missing.length) {
+            decision = "blocked";
+            reasons.push("缺少工具契约: " + missing.join(", "));
+          }
         }
       }
 
       state.target = decision === "update_available" ? target : null;
+      if (state.target && state.artifact
+          && state.artifact.release_id !== state.target.release_id) {
+        state.artifact = null;
+        state.pending = null;
+      }
       state.checks = response.checks ?? [];
       state.reasons = reasons;
       state.last_checked_at = this.now();
@@ -197,6 +277,122 @@ export class UpdateManager {
         throw error;
       }
       await this.save(state);
+      return state;
+    });
+  }
+
+  /**
+   * 真实制品路径：断点下载到暂存文件 → 受信公钥验证真实字节 →
+   * 记录版本绑定的制品引用。任一步失败都不进入可激活状态。
+   */
+  prepare(): Promise<UpdateState> {
+    return this.queue(async () => {
+      const state = await this.load();
+      if (state.phase !== "available" || !state.target) {
+        throw new Error("没有可下载的候选版本");
+      }
+      const target = state.target;
+      const fail = async (message: string): Promise<never> => {
+        state.phase = "failed";
+        state.last_error = message;
+        state.artifact = null;
+        state.pending = null;
+        await this.save(state);
+        throw new Error(message);
+      };
+
+      if (!versionAtLeast(this.appVersion, target.min_app_version)) {
+        return fail("当前 App 版本低于目标最低版本");
+      }
+      const missingContracts = (target.required_tool_contracts ?? [])
+        .filter((name) => !this.toolContracts.includes(name));
+      if (missingContracts.length) {
+        return fail("缺少工具契约: " + missingContracts.join(", "));
+      }
+      const required = target.required_permissions ?? [];
+      if (required.length) {
+        const granted = await this.grantedPermissions();
+        if (granted === null) {
+          return fail("无法确认所需权限");
+        }
+        const missing = required.filter((name) => !granted.includes(name));
+        if (missing.length) {
+          return fail("缺少权限: " + missing.join(", "));
+        }
+      }
+      if (!target.artifact_url || !target.artifact_sha256
+          || !target.artifact_signature || !target.signing_key_id) {
+        return fail("候选版本缺少制品地址、摘要、签名或签名密钥");
+      }
+      if (!this.downloader || !this.trustedKeys) {
+        return fail("客户端未配置下载器或受信公钥");
+      }
+
+      const expectedSize = target.artifact_size ?? 0;
+      const free = await this.freeBytes();
+      if (free < this.minFreeBytes + expectedSize) {
+        return fail("存储空间不足，拒绝准备激活");
+      }
+      const stagingPath = `${this.stagingDir}/${target.release_id}.part`;
+      const finalPath = `${this.stagingDir}/${target.release_id}.bundle`;
+      let result;
+      try {
+        result = await this.downloader.download({
+          url: target.artifact_url,
+          sha256: target.artifact_sha256,
+          sizeBytes: target.artifact_size ?? undefined,
+          stagingPath,
+          finalPath,
+          maxBytes: this.maxArtifactBytes,
+        });
+      } catch (error) {
+        await this.removeArtifact(finalPath);
+        return fail(`制品下载失败: ${messageOf(error)}`);
+      }
+
+      const envelope = {
+        schema: target.signature_schema ?? "evoagent.release.signing/1",
+        release_id: target.release_id,
+        version: target.version,
+        artifact_sha256: target.artifact_sha256,
+        artifact_size: target.artifact_size ?? result.size,
+        signing_key_id: target.signing_key_id,
+        signature: target.artifact_signature,
+      };
+      const verified = this.trustedKeys.verifyDigest(
+        envelope, result.sha256, result.size);
+      const declaredDigest = (target.artifact_digest ?? "")
+        .toLowerCase().replace(/^sha256:/, "");
+      if (!verified.ok
+          || (declaredDigest && declaredDigest !== result.sha256)) {
+        await this.removeArtifact(finalPath);
+        const detail = verified.reasons.length
+          ? verified.reasons.join("; ")
+          : "制品摘要与对账声明不符";
+        return fail(`制品验签失败: ${detail}`);
+      }
+
+      state.artifact = {
+        release_id: target.release_id,
+        version: target.version,
+        path: result.path,
+        size: result.size,
+        digest: result.sha256,
+        signing_key_id: target.signing_key_id,
+        verified_at: this.now(),
+      };
+      state.pending = {
+        release_id: target.release_id,
+        version: target.version,
+        digest: result.sha256,
+        activated_at: 0,
+      };
+      state.phase = "verified";
+      state.last_error = null;
+      await this.save(state);
+      await this.report(state, "verified", target.release_id, "ok", "", undefined,
+        { version: target.version, digest: result.sha256,
+          keyId: target.signing_key_id });
       return state;
     });
   }
@@ -244,19 +440,66 @@ export class UpdateManager {
         throw new Error("候选版本尚未通过校验，不能激活");
       }
       const candidate = state.pending;
-      await this.report(state, "activation_pending", candidate.release_id);
-      const previous = state.slots[state.active_slot];
+      if (this.activationAllowed
+          && !(await this.activationAllowed())) {
+        state.last_error = "当前时机不允许激活";
+        await this.save(state);
+        return state;
+      }
       const inactive = state.active_slot === "a" ? "b" : "a";
+      const artifact = state.artifact
+        && state.artifact.release_id === candidate.release_id
+        ? state.artifact : null;
+      await this.report(state, "activation_pending", candidate.release_id,
+        "ok", "", undefined, {
+          version: candidate.version, digest: candidate.digest,
+          keyId: artifact?.signing_key_id,
+        });
+      if (artifact) {
+        if (!this.bundleApplier) {
+          state.phase = "failed";
+          state.last_error = "缺少能力包装载器，不能激活";
+          await this.save(state);
+          throw new Error(state.last_error);
+        }
+        try {
+          await this.bundleApplier.apply({
+            release_id: candidate.release_id,
+            version: candidate.version,
+            path: artifact.path,
+            digest: artifact.digest,
+            slot: inactive,
+            bundle_ref: state.target?.bundle_ref ?? null,
+          });
+        } catch (error) {
+          state.phase = "failed";
+          state.last_error = `能力包装载失败: ${messageOf(error)}`;
+          await this.report(state, "activation_failed", candidate.release_id,
+            "failed", state.last_error, undefined, {
+              version: candidate.version, digest: candidate.digest,
+              keyId: artifact.signing_key_id,
+            });
+          await this.save(state);
+          throw new Error(state.last_error);
+        }
+      }
+      const previous = state.slots[state.active_slot];
       state.slots[inactive] = {
         ...candidate,
         activated_at: this.now(),
+        signing_key_id: artifact?.signing_key_id,
       };
       state.active_slot = inactive;
       state.last_known_good = previous;
       state.pending = null;
+      state.artifact = null;
       state.phase = "active";
       await this.save(state);
-      await this.report(state, "activated", candidate.release_id);
+      await this.report(state, "activated", candidate.release_id, "ok", "",
+        undefined, {
+          version: candidate.version, digest: candidate.digest,
+          keyId: artifact?.signing_key_id,
+        });
       return state;
     });
   }
@@ -269,7 +512,10 @@ export class UpdateManager {
       throw new Error("当前没有已激活的版本");
     }
     await this.report(state, "health_check", active.release_id,
-      ok ? "ok" : "unhealthy", ok ? "" : "健康检查失败");
+      ok ? "ok" : "unhealthy", ok ? "" : "健康检查失败", undefined, {
+        version: active.version, digest: active.digest,
+        keyId: active.signing_key_id,
+      });
     if (ok) {
       return this.queue(async () => {
         const current = await this.load();
@@ -293,11 +539,15 @@ export class UpdateManager {
       }
       state.active_slot = inactive;
       state.pending = null;
+      state.artifact = null;
       state.phase = "rolled_back";
       state.reasons = [...state.reasons, `回滚: ${reason}`];
       await this.save(state);
       await this.report(state, "rolled_back", target.release_id, "ok",
-        reason, target.release_id);
+        reason, target.release_id, {
+          version: target.version, digest: target.digest,
+          keyId: target.signing_key_id,
+        });
       return state;
     });
   }
@@ -332,23 +582,96 @@ export class UpdateManager {
     outcome = "ok",
     reason = "",
     toReleaseId?: string,
+    meta: { version?: string; digest?: string; keyId?: string } = {},
   ): Promise<void> {
-    const payload: ApplyResultRequest = {
-      installation_id: state.installation_id,
+    const receipt: PendingReceipt = {
+      apply_id: createId("apply"),
       action,
       release_id: releaseId,
+      version: meta.version,
+      artifact_digest: meta.digest,
+      signing_key_id: meta.keyId,
       outcome,
       reason,
-      apply_id: createId("apply"),
+      to_release_id: toReleaseId,
+      attempts: 0,
+      last_attempt_at: 0,
     };
-    if (toReleaseId) payload.to_release_id = toReleaseId;
+    state.receipts = [...state.receipts, receipt].slice(-50);
+    await this.save(state);
+    const error = await this.deliver(state, receipt);
+    if (!error) {
+      state.receipts = state.receipts.filter(
+        (item) => item.apply_id !== receipt.apply_id);
+    } else {
+      // 回执失败不回滚本地已完成的原子切换，留待补传
+      state.last_error = `回执上传失败: ${error}`;
+    }
+    await this.save(state);
+  }
+
+  /** 重放未确认回执；同一 apply_id 重复上报由服务端幂等吸收。 */
+  flushReceipts(): Promise<UpdateState> {
+    return this.queue(async () => {
+      const state = await this.load();
+      const remaining: PendingReceipt[] = [];
+      for (const receipt of state.receipts) {
+        const error = await this.deliver(state, receipt);
+        if (error) {
+          remaining.push(receipt);
+          state.last_error = `回执上传失败: ${error}`;
+        }
+      }
+      state.receipts = remaining;
+      await this.save(state);
+      return state;
+    });
+  }
+
+  private async deliver(state: UpdateState,
+                        receipt: PendingReceipt): Promise<string | null> {
+    receipt.attempts += 1;
+    receipt.last_attempt_at = this.now();
+    const payload: ApplyResultRequest = {
+      installation_id: state.installation_id,
+      action: receipt.action,
+      release_id: receipt.release_id,
+      outcome: receipt.outcome,
+      reason: receipt.reason,
+      apply_id: receipt.apply_id,
+    };
+    if (receipt.to_release_id) payload.to_release_id = receipt.to_release_id;
+    if (receipt.version) payload.version = receipt.version;
+    if (receipt.artifact_digest) {
+      payload.artifact_digest = receipt.artifact_digest;
+    }
+    if (receipt.signing_key_id) {
+      payload.signing_key_id = receipt.signing_key_id;
+    }
     try {
       await this.transport.applyResult(payload);
+      return null;
     } catch (error) {
-      // 回执失败不回滚本地已完成的原子切换，留待下次对账补传
-      const current = await this.load();
-      current.last_error = `回执上传失败: ${messageOf(error)}`;
-      await this.save(current);
+      return messageOf(error);
+    }
+  }
+
+  private async grantedPermissions(): Promise<string[] | null> {
+    if (this.permissions === null) return null;
+    if (typeof this.permissions === "function") {
+      return this.permissions();
+    }
+    return this.permissions;
+  }
+
+  private async removeArtifact(path: string): Promise<void> {
+    if (!this.artifactFiles) return;
+    try {
+      if (await this.artifactFiles.stat(path)) {
+        await this.artifactFiles.remove(path);
+      }
+    } catch {
+      // 清理失败不掩盖原始验签/下载错误
     }
   }
 

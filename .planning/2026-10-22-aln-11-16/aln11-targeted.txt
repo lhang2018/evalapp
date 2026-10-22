@@ -1,0 +1,22 @@
+(node:104888) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/update/artifact.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ downloader resumes from the staged offset and renames after digest check (2.0826ms)
+✔ downloader rejects bad digest and truncated sources without renaming (0.7541ms)
+✔ downloader refuses when free space is below the next chunk (0.2263ms)
+✔ trusted key ring verifies real artifact bytes and rejects tampering (145.381ms)
+✔ prepare downloads and verifies before allowing activation (29.0765ms)
+✔ prepare blocks missing permissions, incompatible app and bad signature (45.6248ms)
+✔ low free space and store failures never reach activation (34.799ms)
+✔ bundle apply failure keeps the active slot and reports activation_failed (15.858ms)
+✔ a restart before activation does not switch slots without a verifier/applier (19.8829ms)
+✔ failed receipts persist and flush with the same apply id (68.7194ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 482.7389
