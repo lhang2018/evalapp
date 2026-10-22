@@ -1214,15 +1214,26 @@
       "reviewer": null,
       "branch": null,
       "base_commit": null,
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "分级修订原语与不变量校验：completed_work 单调不减、已完成步骤不得丢弃/降级、修订后计划结构校验、违约抛 PlanRevisionError 且计划保持原状、修订留痕可往返；引擎恢复路径按 append 级接线",
+          "command": "python -m pytest tests/test_plan_revision.py -q; python -m pytest tests/test_planning.py tests/test_control.py tests/test_workflow.py tests/test_process_recovery.py -q; python -m pytest tests -q",
+          "result": "新增14 passed；定向回归36 passed；全量1109 passed/1 skipped（共享候选工作区含他人在途改动，非干净克隆复现）",
+          "log": ".planning/2026-10-22-aln07/revision-tests.txt; .planning/2026-10-22-aln07/regression-targeted.txt",
+          "delivery": "docs/协作开发/交付/ALN-07-P-计划修订与证据保持.md",
+          "source": "当前共享候选工作区增量开发；修复前用复现脚本实证四个违约（证据丢失/降级/悬空依赖/空计划均被静默接受）"
+        }
+      ],
       "card": "docs/协作开发/任务卡/07-计划修订与证据保持.md",
       "shared_files": [
         "evoagent/react/engine.py"
       ],
       "working_basis": "用户要求按优先级认领未开发工作包：ALN-07 为首个未认领 P1；在当前共享候选工作区增量开发（同 ALN-06-A/08-M/11-A 方式），基线未正式发布，不用旧 HEAD 冒充 base_commit",
-      "next_step": "先交修订分级语义与不变量夹具（证明 completed_work 丢失与约束可被改写），再实现四级原语并接连续失败恢复路径"
+      "delivery": "docs/协作开发/交付/ALN-07-P-计划修订与证据保持.md",
+      "next_step": "待作者之外的独立复核；剩余 _risks_for 可执行恢复策略、修订与副作用账本 submitted/unknown 对账接线、ALN-07 工作流匹配与轨迹编译两项待拆卡"
     },
     {
       "id": "ALN-13-A",
@@ -1296,6 +1307,42 @@
       ],
       "working_basis": "用户要求认领剩余未认领的 P1 工作包；core/budget.py 为集成共享文件，由集成线串行小改；基线 candidate 未发布，不用旧 HEAD 冒充 base_commit",
       "next_step": "先交预留—结算—退款—unknown 对账契约与夹具，复用 BudgetLedger；不改 Goal 域与 ALN-08 计量实现"
+    },
+    {
+      "id": "ALN-17-A",
+      "workpackage": "ALN-17",
+      "title": "备份/恢复闭环加固与迁移回退契约",
+      "stream": "integration",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "claimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/17-宿主部署与灾难恢复.md",
+      "shared_files": [
+        "evoagent/core/schema/migrations.py"
+      ],
+      "working_basis": "用户要求在剩余未认领工作包中再认领两个；ALN-17 的数据面备份/恢复可先于版本资产组合恢复独立验证，基线 candidate 未发布不用旧 HEAD 冒充 base_commit",
+      "next_step": "先交 schema_version 兼容判定、损坏拒绝、行数核对、迁移失败回退与 RTO/RPO 测量；空机器部署与制品恢复另卡"
+    },
+    {
+      "id": "ALN-20-A",
+      "workpackage": "ALN-20",
+      "title": "Runtime 适配协议与固定版本 PoC 设计",
+      "stream": "runtime",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "claimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/20-Runtime适配与Harness PoC.md",
+      "shared_files": [],
+      "working_basis": "用户要求在剩余未认领工作包中再认领两个；ALN-20 先交协议/兼容矩阵，不接管执行路径，基线 candidate 未发布不用旧 HEAD 冒充 base_commit",
+      "next_step": "先交五类能力协议、Mock/现有运行时两路契约夹具与兼容矩阵；固定外部 Harness commit 的 PoC 与 ADR 正式条目另卡"
     }
   ],
   "workpackages": [
@@ -1399,7 +1446,7 @@
       "stream": "runtime",
       "owner": "claude-main",
       "delivery_state": "planned",
-      "next_step": "ALN-07-P 计划修订与证据保持已认领开发中（依赖 ALN-02-A/ALN-04-R 已交付接口）；工作流匹配与轨迹编译待后续拆卡"
+      "next_step": "ALN-07-P 计划修订与证据保持已交付待独立复核（分级修订+证据不变量，1109/1）；工作流匹配与轨迹编译待后续拆卡"
     },
     {
       "id": "ALN-08",
@@ -1550,9 +1597,9 @@
         "ALN-16"
       ],
       "stream": "assets",
-      "owner": null,
+      "owner": "claude-main",
       "delivery_state": "planned",
-      "next_step": "依赖版本资产和运行恢复，补可演练部署/备份/升级"
+      "next_step": "ALN-17-A 已认领：先交备份/恢复闭环加固与迁移回退契约；空机器部署与版本资产组合恢复待 ALN-03/06/16"
     },
     {
       "id": "ALN-18",
@@ -1595,9 +1642,9 @@
         "ALN-16"
       ],
       "stream": "runtime",
-      "owner": null,
+      "owner": "claude-main",
       "delivery_state": "planned",
-      "next_step": "依赖安全与观测，先定义保持内核权威的适配协议"
+      "next_step": "ALN-20-A 已认领：先交 Runtime 适配协议、兼容矩阵与两路契约夹具；固定版本 Harness PoC 另卡"
     },
     {
       "id": "ALN-21",
@@ -1648,5 +1695,5 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "ALN-01-A/02-A代码完成并进入review；精确22c50ca干净全量1065/1，新增49项；客户端同tree沿用136/typecheck。01传递影响19包、02影响17包，原依赖未改；03/05等同期交付继续各自独立审阅。基线candidate未发布，不自批、不混入他人在途内容。 2026-10-22 ALN-11-A/ALN-16-A 已交付，状态 review，等待 codex-runtime 独立复核。 2026-10-22 ALN-07-P（首个未认领 P1 工作包的第一项）已认领并标注 in_progress，先交分级语义与不变量夹具。 2026-10-22 ALN-12/14/15（剩余未认领 P1）已由 claude-main 认领协调：12-A 开始协议与离线故障矩阵，14-A 因 ALN-13 在途 blocked，15-A 先交预留/结算/对账契约；P2 与 ALN-22 因依赖未满足暂不认领。"
+  "execution_note": "ALN-01-A/02-A代码完成并进入review；精确22c50ca干净全量1065/1，新增49项；客户端同tree沿用136/typecheck。01传递影响19包、02影响17包，原依赖未改；03/05等同期交付继续各自独立审阅。基线candidate未发布，不自批、不混入他人在途内容。 2026-10-22 ALN-11-A/ALN-16-A 已交付，状态 review，等待 codex-runtime 独立复核。 2026-10-22 ALN-07-P（首个未认领 P1 工作包的第一项）已交付分级修订与证据不变量（completed_work 单调不减、结构校验、违约拒收且计划保持原状），状态 review，待作者之外的独立复核。 2026-10-22 ALN-12/14/15（剩余未认领 P1）已由 claude-main 认领协调：12-A 开始协议与离线故障矩阵，14-A 因 ALN-13 在途 blocked，15-A 先交预留/结算/对账契约。 2026-10-22 按用户指示再从剩余未认领包中认领 ALN-17-A（备份/恢复闭环与迁移回退）与 ALN-20-A（Runtime 适配协议），均先交契约与夹具；ALN-18/19/21/22 依赖未满足，暂不认领。"
 }

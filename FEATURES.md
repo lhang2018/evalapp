@@ -784,7 +784,7 @@ cd android-app && npm run test:offline
 | **审批记录实体** ✅**已修** | A-01 | ~~`approval_id` 零命中；瞬时 `confirm_callback -> bool`，无动作摘要绑定/有效期/一次性语义~~ → **已由 `084d71d` 实装**（`core/approvals.py` + `core/schema/approvals.py`，A-01 五项绑定全落字段） | WP-0.3 / F-12 |
 | **工作流审批节点** | R-06 | `workflow_node_confirm` 不在 `high_risk_ops` → `check_op`（`evoagent/core/permissions.py::check_op`）恒 ALLOW，**审批节点生产链路永不阻塞**；`evoagent/workflows/engine.py:80` 使 `WAITING_AUTH` 重跑时被永久跳过 → 任务卡死 | WP-0.3 / F-12 |
 | **人工接管 / 等待审批** | R-10 | `request_user` 被转成失败 check（任务 FAILED 而非挂起）；`WAITING_USER` 在 API 零命中 | WP-0.4 / F-12 |
-| **Planner 计划修订** | R-04 | 无 replan/revise；`ExecutionPlan.adjust` 唯一调用方是「同工具连续失败 ≥3 次」追加固定模板；`_risks_for` 返回静态文案非可执行恢复策略 | **WP-6.4 / F-54** |
+| **Planner 计划修订** | R-04 | **ALN-07-P 已补分级修订与证据不变量**（2026-10-22）：`adjust` 增 append/replace/replan 分级，`completed_work` 单调不减、已完成步骤不得丢弃/降级、修订后计划须过结构校验，违约抛 `PlanRevisionError` 且计划保持原状；剩余缺口：`_risks_for` 静态文案未转为可执行恢复策略，工作流匹配与轨迹编译未做 | **WP-6.4 / F-54** |
 | **进化并发与停止条件** | E-13 | 进化侧无 Semaphore；`react/engine.py` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关（概念混淆） | WP-3.3 / F-08 |
 | **候选证据门禁（手工入口）** | C-11 | `evoagent/api/server.py:1141` 接受调用方自述的任意证据字符串数组（`evidence=body.get("evidence") or []`）→ 可零证据建候选 | WP-3.4 / F-14 |
 | **Capability Asset 实体** | C-05/C-08 | 无打包实体（`class *Pack` 零命中）；`CapabilityEntry.status`（`evoagent/experts/registry.py:33`）只 3 值 vs 契约八态（`evoagent/core/contracts.py:117` 的 `ASSET_LIFECYCLE`）；`namespace` 缺失 | WP-1.5 / F-11 |
@@ -816,7 +816,7 @@ LLM 辅助诊断假设（证据绑定+置信度封顶+探针门禁）、候选�
 | 主题 | 缺什么 | 补入 |
 |---|---|---|
 | R-03 路由质量评测 | 无路由评测集/指标，零个路由分类用例 | WP-6.3 / F-53 |
-| R-04 Planner 计划修订 | 无 replan/revise，风险文案非可执行策略 | WP-6.4 / F-54 |
+| R-04 Planner 计划修订 | 分级修订与证据不变量已补（ALN-07-P）；风险文案未可执行化 | WP-6.4 / F-54 |
 | E-01 运行事件与 Trace | 时延缺失静默计 0，聚合被无声低估 | WP-6.1 / F-51 |
 | E-06 评测集版本/覆盖 | 4 个用例，无注册/版本演进/覆盖率台账 | WP-6.2 / F-52 |
 | S-02 隐私与敏感数据 | 隐私分级口径与契约不一致，跨端有误判风险 | WP-6.5 / F-55 |

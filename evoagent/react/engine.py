@@ -290,7 +290,8 @@ def _mark_step_failed(plan: ExecutionPlan, tool: Optional[str]) -> None:
         description=f"失败恢复：核验 {tool or '当前工具'} 的副作用，安全降级或结束",
         deps=[cur.step_id])
     plan.adjust(list(plan.steps) + [recovery],
-                reason=f"步骤 {cur.step_id} 连续失败（{tool or 'unknown'}）")
+                reason=f"步骤 {cur.step_id} 连续失败（{tool or 'unknown'}）",
+                level="append")
 
 
 def _insert_plan_message(messages: List[ChatMessage],

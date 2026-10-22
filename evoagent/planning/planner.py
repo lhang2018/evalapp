@@ -48,6 +48,22 @@ class PlanStep:
                    state=str(d.get("state") or "pending"))
 
 
+class PlanRevisionError(ValueError):
+    """修订违反不变量时抛出；计划保持修订前状态（ALN-07-P）。
+
+    不变量违约不是可恢复的执行失败，而是规划层的契约违反：
+    放行它意味着续跑可能重放成功副作用，因此一律拒绝并留痕。
+    """
+
+
+# 修订分级（任务卡 07-计划修订与证据保持的第一份交付）：
+#   append      —— 只允许追加（如连续失败后的恢复步骤）
+#   replace     —— 可替换**未开始**步骤，已完成证据必须原样保留
+#   replan      —— 重规划未开始子图，同样不得动已完成子图
+#   reauthorize —— 目标/约束变更，必须走人工授权，adjust 不静默接受
+REVISION_LEVELS = ("append", "replace", "replan", "reauthorize")
+
+
 @dataclass
 class ExecutionPlan:
     plan_id: str
@@ -62,13 +78,116 @@ class ExecutionPlan:
     risks: List[str] = field(default_factory=list)
     acceptance_criteria: List[Dict[str, Any]] = field(default_factory=list)
     created_at: float = field(default_factory=time.time)
+    revisions: List[Dict[str, Any]] = field(default_factory=list)
 
-    def adjust(self, new_steps: List[PlanStep], reason: str) -> List[str]:
-        """动态调整：保留原始目标/约束/已完成工作/变更记录。"""
+    def adjust(self, new_steps: List[PlanStep], reason: str,
+               *, level: str = "replace") -> List[str]:
+        """动态调整（PRD 11.2 / ALN-07-P）：分级修订，不变量违约即拒绝。
+
+        不变量（违反即抛 PlanRevisionError，计划保持修订前状态）：
+        1. 本方法不改写 original_goal / immutable_constraints / acceptance_criteria；
+        2. completed_work 单调不减——已完成步骤不得被丢弃或降级
+           （否则续跑会重放成功副作用）；
+        3. 修订后的步骤集合必须结构合法（无重复 id、deps 存在、无环、非空）；
+        4. append 级别只允许追加，不得删除既有步骤；
+        5. 每次修订留痕（级别/原因/增删/时间），供崩溃恢复后读取。
+
+        引擎在步骤成功时把 step_id 追加进 completed_work；此处**合并**而非
+        重算，就是为了不让修订抹掉那份证据。
+        """
+        if level not in REVISION_LEVELS:
+            raise PlanRevisionError(f"未知修订级别: {level}")
+        if level == "reauthorize":
+            raise PlanRevisionError(
+                "目标/约束变更必须走人工授权接口，adjust 不静默接受")
+        new_steps = list(new_steps or [])
+        if not new_steps:
+            raise PlanRevisionError("修订后计划不能为空")
+
+        # —— 先校验，全部通过才提交变更 ——
+        problems = self._structural_problems(new_steps)
+        if problems:
+            raise PlanRevisionError(
+                "修订后计划结构不合法: " + "; ".join(problems))
+
+        new_by_id: Dict[str, PlanStep] = {}
+        for s in new_steps:
+            if s.step_id in new_by_id:
+                raise PlanRevisionError(f"修订后 step_id 重复: {s.step_id}")
+            new_by_id[s.step_id] = s
+
+        for sid in self.completed_work:
+            nxt = new_by_id.get(sid)
+            if nxt is None:
+                raise PlanRevisionError(
+                    f"修订丢弃已完成步骤 {sid}——已完成证据只增不减")
+            if nxt.state != "done":
+                raise PlanRevisionError(
+                    f"修订把已完成步骤 {sid} 降级为 {nxt.state}"
+                    "——不允许重跑成功副作用")
+
+        if level == "append":
+            for s in self.steps:
+                if s.step_id not in new_by_id:
+                    raise PlanRevisionError(
+                        f"append 修订删除既有步骤 {s.step_id}——只允许追加")
+
+        old_ids = [s.step_id for s in self.steps]
+        added = [s.step_id for s in new_steps if s.step_id not in
+                 set(old_ids)]
+        removed = [sid for sid in old_ids if sid not in new_by_id]
+
+        # —— 提交 ——
         self.steps = new_steps
+        merged = list(self.completed_work)
+        for s in new_steps:
+            if s.state == "done" and s.step_id not in merged:
+                merged.append(s.step_id)
+        self.completed_work = merged
         self.change_reasons.append(reason)
-        self.completed_work = [s.step_id for s in new_steps if s.state == "done"]
+        self.revisions.append({
+            "level": level,
+            "reason": reason,
+            "added": added,
+            "removed": removed,
+            "completed_work": list(self.completed_work),
+            "at": time.time(),
+        })
         return self.change_reasons
+
+    @staticmethod
+    def _structural_problems(steps: List[PlanStep]) -> List[str]:
+        """结构校验：非空、id 唯一、deps 存在、无环。"""
+        problems: List[str] = []
+        if not steps:
+            return ["计划为空"]
+        ids = {s.step_id for s in steps}
+        if len(ids) != len(steps):
+            problems.append("step_id 重复")
+        for s in steps:
+            for d in s.deps:
+                if d not in ids:
+                    problems.append(f"步骤 {s.step_id} 依赖不存在的 {d}")
+        visiting: set = set()
+        visited: set = set()
+
+        def dfs(sid: str) -> None:
+            if sid in visiting:
+                problems.append(f"存在依赖环: {sid}")
+                return
+            if sid in visited:
+                return
+            visiting.add(sid)
+            step = next((x for x in steps if x.step_id == sid), None)
+            if step:
+                for d in step.deps:
+                    dfs(d)
+            visiting.remove(sid)
+            visited.add(sid)
+
+        for s in steps:
+            dfs(s.step_id)
+        return problems
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -82,6 +201,7 @@ class ExecutionPlan:
             "risks": list(self.risks),
             "acceptance_criteria": list(self.acceptance_criteria),
             "created_at": self.created_at,
+            "revisions": [dict(r) for r in self.revisions],
         }
 
     @classmethod
@@ -99,6 +219,8 @@ class ExecutionPlan:
             risks=list(d.get("risks") or []),
             acceptance_criteria=list(d.get("acceptance_criteria") or []),
             created_at=float(d.get("created_at") or time.time()),
+            revisions=[dict(r) for r in (d.get("revisions") or [])
+                       if isinstance(r, dict)],
         )
 
     def validate(self) -> List[str]:

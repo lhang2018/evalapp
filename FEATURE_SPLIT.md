@@ -146,7 +146,7 @@
 | **F-51** | 事件与 Trace 结构化 | WP-6.1 | E-01 | `core/events.py` 新增显式列 | `core/schema/` 加列迁移、`core/persistence.py` |
 | **F-52** | 评测集版本演进与覆盖率台账 | WP-6.2 | E-06 | `evolution/datasets.py` | — |
 | **F-53** ✅**已落地** | 路由质量评测与纠错 | WP-6.3 | R-03 | `evolution/routing_eval.py`、`core/schema/routing.py` | `planning/intent.py`（幽灵意图修正）、`core/persistence.py`（+2 具名方法）、`api/server.py`（+1 行 import） | ✅ **2026-10-22 完成**。评测器首次运行即查出两个真实路由缺陷：幽灵意图 `programming`（从未注册）与 `coding`/`travel` 无关键词 → 已修，内置集意图与专家准确率 78.95% → 100%。测试 30 项（含真实 HTTP 端到端） |
-| **F-54** | Planner 计划修订与可执行恢复策略 | WP-6.4 | R-04 | `planning/revise.py` | `planning/planner.py`、`react/engine.py` |
+| **F-54** 🔹**ALN-07-P 已交付分级修订部分** | Planner 计划修订与可执行恢复策略 | WP-6.4 | R-04 | `planning/planner.py::ExecutionPlan.adjust`（分级原语实落于此，未新建 revise.py） | `react/engine.py`（append 级接线） | 🔹 **2026-10-22 部分完成**：分级修订（append/replace/replan，reauthorize 拒收）与不变量校验落地——`completed_work` 单调不减、已完成步骤不得丢弃/降级、修订后计划须过结构校验、违约抛 `PlanRevisionError` 且计划保持原状、修订留痕可往返；14 项夹具（先证缺陷后锁行为）。**剩余**：`_risks_for` 可执行恢复策略、工作流匹配、轨迹编译 |
 | **F-55** | 隐私分级口径统一 | WP-6.5 | S-02 | `core/privacy.py` 映射表 | `core/contracts.py`（枚举裁定） |
 | **F-56** | 模型输出不可信检测 | WP-6.6 | S-03 | `core/untrusted.py` | `core/controller.py`（接线） |
 | **F-57** | 独立 E2E 与兼容性测试目录 | WP-6.7 | S-07 | `tests/e2e/` | `tests/` 现有文件重构 |
@@ -274,7 +274,7 @@ F-13(检查点) → F-03(副作用埋点) → F-04(审计埋点) → F-10(Manife
 | **F-51** | WP-6.1 | E-01 | — |
 | **F-52** | WP-6.2 | E-06 | — |
 | **F-53** ✅ | WP-6.3 | R-03 | — |
-| **F-54** | WP-6.4 | R-04 | — |
+| **F-54** 🔹 | WP-6.4 | R-04 | — |
 | **F-55** | WP-6.5 | S-02 | — |
 | **F-56** | WP-6.6 | S-03 | — |
 | **F-57** | WP-6.7 | S-07 | — |
