@@ -94,6 +94,32 @@ class TestE12RegressionAssets(Base):
         self.assertIn("ghost", out["skipped_unknown"])
         self.assertNotIn(C.REGRESSION_DATASET_ID, self.evolution.datasets)
 
+    def test_conversion_marker_persists_and_rebuilds(self):
+        """ALN-10 持久化：标记在证据登记簿；重启/数据集重置后确定性重建。"""
+        case, task = self._failed_diag_case("t_e12m")
+        out = self.evolution.regression_builder.convert_pending()
+        self.assertEqual(out["converted"], [f"reg_{case.case_id}"])
+        markers = [row for row in self.app.db.list_evidence(limit=100)
+                   if row["kind"] == "regression_asset"]
+        self.assertEqual(len(markers), 1)
+        self.assertEqual(markers[0]["evidence_id"], f"reg_{case.case_id}")
+        self.assertEqual(markers[0]["task_id"], task.task_id)
+        self.assertEqual(markers[0]["ref"],
+                         f"{C.REGRESSION_DATASET_ID}/reg_{case.case_id}")
+        # 模拟重启：数据集被清空后，按标记确定性重建内容（不重复登记）
+        self.evolution.datasets.pop(C.REGRESSION_DATASET_ID, None)
+        out2 = self.evolution.regression_builder.convert_pending()
+        self.assertEqual(out2["converted"], [])
+        self.assertEqual(out2["already"], 1)
+        ds = self.evolution.datasets[C.REGRESSION_DATASET_ID]
+        self.assertEqual(len(ds.cases), 1)
+        self.assertEqual(ds.cases[0].case_id, f"reg_{case.case_id}")
+        self.assertEqual(ds.cases[0].input_goal, task.user_goal)
+        self.assertEqual(
+            len([row for row in self.app.db.list_evidence(limit=100)
+                 if row["kind"] == "regression_asset"]), 1,
+            "重建不产生重复标记")
+
 
 class TestE13EvolutionRound(Base):
     def test_full_round_converts_proposes_evaluates(self):
@@ -128,15 +154,21 @@ class TestE13EvolutionRound(Base):
         self.assertEqual(report["evaluated"], [])
 
     def test_concurrency_cap_blocks_new_evaluation(self):
-        # 两个进行中候选占满默认并发额度（=1）
+        # 残留（崩溃态）候选会被恢复续跑；超额残留仍占并发位，
+        # 新就绪候选被并发上限阻断
         for comp in ("expert/a", "expert/b"):
             cand = self.evolution.propose_candidate("1.0.0", comp, "p", "h")
-            cand.transition(CandidateStatus.TESTING, "构造占位进行中")
-        self.assertEqual(self.evolution.max_concurrent_evaluations, 1)
-        report = self.evolution.run_evolution_round(max_evaluations=2)
+            cand.transition(CandidateStatus.TESTING, "构造占位残留")
+        blocked = self.evolution.propose_candidate(
+            "1.0.0", "expert/c", "p", "h")  # 保持 CANDIDATE_CREATED
+        # 默认并发额度 1；恢复优先级只处理轮额度内（1 个）残留，
+        # 另一残留仍占并发位 → 新候选不得启动
+        report = self.evolution.run_evolution_round(max_evaluations=1)
         self.assertIn(C.EVOLUTION_STOP_CONCURRENCY_LIMIT,
                       report["stop_reasons"])
-        self.assertEqual(report["evaluated"], [])
+        self.assertNotIn(blocked.candidate_id, report["evaluated"])
+        recovered = report["evaluated"]
+        self.assertEqual(len(recovered), 1, "轮额度内恢复 1 个残留")
 
     def test_clean_round_reports_no_pending_evidence(self):
         report = self.evolution.run_evolution_round()
@@ -145,6 +177,35 @@ class TestE13EvolutionRound(Base):
         self.assertEqual(report["converted"], [])
         self.assertEqual(report["proposed"], [])
         self.assertEqual(report["evaluated"], [])
+
+    def test_round_writes_audit_evidence_rows(self):
+        self._failed_diag_case("t_e13audit")
+        self.evolution.run_evolution_round()
+        audits = [row for row in self.app.db.list_evidence(limit=100)
+                  if row["kind"] == "evolution_round"]
+        self.assertTrue(audits, "编排轮应落审计证据行")
+        first = audits[0]
+        self.assertTrue(first["summary"])
+        self.assertEqual(first["ref"], "evolution_round")
+
+    def test_crash_residue_candidate_recovers_in_next_round(self):
+        """崩溃残留 EVALUATING 候选：下一轮从当前态正向续跑至终态。"""
+        cand = self.evolution.propose_candidate(
+            "1.0.0", "expert/photo_edit", "p", "h")
+        cand.transition(CandidateStatus.TESTING, "构造崩溃前态")
+        cand.transition(CandidateStatus.EVALUATING, "构造崩溃中态")
+        stuck_before = [c for c in self.evolution.candidates.values()
+                        if c.status in (CandidateStatus.TESTING,
+                                        CandidateStatus.EVALUATING)]
+        self.assertEqual(len(stuck_before), 1)
+        report = self.evolution.run_evolution_round()
+        self.assertIn(stuck_before[0].candidate_id, report["evaluated"],
+                      "残留候选应被恢复并重新评测")
+        recovered = self.evolution.candidates[
+            stuck_before[0].candidate_id]
+        self.assertNotIn(recovered.status, (CandidateStatus.TESTING,
+                                            CandidateStatus.EVALUATING),
+                         "恢复后不应再残留中间态")
 
 
 if __name__ == "__main__":

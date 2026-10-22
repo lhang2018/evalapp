@@ -1604,3 +1604,14 @@
   - 未填 branch/base_commit——基线未发布，按 README 规则不冒充；接线/合并等 ALN-00 基线发布（claude-main）
 - 边界：docs/协作开发/ 整目录未入库（仅工作树内编辑 workboard.json + 认领表渲染），不动他人 .planning/ 证据文件；未提交 core/controller.py 大 diff（ALN-04 在途归属运行内核线）
 
+
+### ALN-09/10 认领后第一批增量 完成（2026-10-22，基线前独立实现）
+- ALN-10 回归资产持久化：复用 db.save_evidence 通用登记簿行（kind=regression_asset，行主键 reg_<case_id>=幂等键）；转换=确定性重生成（源任务+诊断案→用例），标记只证明已转换→实例重启/数据集重置后按标记重建内容且不重复登记
+- ALN-10 语义修正：无可转换案例时不再创建空 failures_regression 数据集（转换是证据的结果，不是扫描的副作用）
+- ALN-09 故障恢复：run_evaluation 从崩溃残留态（TESTING/EVALUATING）正向续跑（状态机不倒退，按现状跳过已完成转移）；编排轮把残留候选视为死锁优先续跑（不受并发占位阻断、受轮额度约束）；恢复后存活进行中计数→新评测受并发上限约束
+- ALN-09 编排轮审计：run_evolution_round 结果（converted/proposed/evaluated/errors/stop_reasons）落证据登记簿行（kind=evolution_round）——即恢复的接续依据；所有停止出口均先落审计
+- ALN-09 审计常量暂置 evolution/controller.py（EVOLUTION_ROUND_AUDIT_KIND）+ regression.py（REGRESSION_EVIDENCE_KIND）——contracts.py 已被协作在途占用（集成流），集成时并入 contracts
+- +3 测试（test_e12_e13 共 10）：审计行落库/崩溃残留续跑到终态/标记持久化+重建不重复；并发测试语义随恢复修正（残留被恢复≠新候选放开）
+- 全量 775 passed 0 failed
+- 下一步（ALN-09/10 复核剩余范围）：回归用例默认消费进门禁证据（消费者接线）；候选真实资产隔离方案稿（ALN-06 依赖）；等 ALN-00 基线发布后接线 server/cli 入口
+

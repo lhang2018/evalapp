@@ -5,7 +5,9 @@
 进化控制器本身也在版本管理和评测范围内（Arch 22.4）。
 """
 
+import json
 import time
+import uuid
 from collections import deque
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
@@ -26,6 +28,9 @@ from .safety import SafetySuite
 
 # PRD 80 风险分级 L0-L4
 RISK_ORDER = {"L0": 0, "L1": 1, "L2": 2, "L3": 3, "L4": 4}
+
+# E-13 轮次审计登记簿行类别（ALN-09；contracts.py 在途占用，集成时并入）
+EVOLUTION_ROUND_AUDIT_KIND = "evolution_round"
 
 # PRD 81 发布规则
 PUBLISH_RULES: Dict[str, str] = {
@@ -243,6 +248,7 @@ class EvolutionController:
         if problem:
             report["stop_reasons"].append(
                 f"{_contracts.EVOLUTION_STOP_BUDGET_EXHAUSTED}: {problem}")
+            self._audit_round(report)
             return report
         # E-12：失败案例先固化（转换在提案之前，证据先行）
         converted = self.regression_builder.convert_pending()
@@ -254,7 +260,32 @@ class EvolutionController:
         if not report["proposed"]:
             report["stop_reasons"].append(
                 _contracts.EVOLUTION_STOP_NO_PENDING_EVIDENCE)
-        # 停止条件②：并发上限（TESTING/EVALUATING 计进行中）
+        # E-13 故障恢复（ALN-09）：崩溃残留 TESTING/EVALUATING 的候选是
+        # 死锁（不再有进程持有评测），必须先正向续跑（run_evaluation 从
+        # 当前态接续），否则永远不会前进——恢复不受并发占位阻断，受
+        # 轮额度约束
+        stuck = [c for c in self.candidates.values()
+                 if c.status in (CandidateStatus.TESTING,
+                                 CandidateStatus.EVALUATING)]
+        for cand in stuck[:max(1, int(max_evaluations))]:
+            later_problem = self._evolution_pool_problem()
+            if later_problem:
+                report["stop_reasons"].append(
+                    f"{_contracts.EVOLUTION_STOP_BUDGET_EXHAUSTED}: "
+                    f"{later_problem}")
+                self._audit_round(report)
+                return report
+            try:
+                self.evaluate_candidate(cand.candidate_id)
+                report["evaluated"].append(cand.candidate_id)
+            except Exception as e:  # noqa: BLE001 —— 记因则止，不静默
+                report["errors"].append(
+                    f"{cand.candidate_id}: {type(e).__name__}: {e}")
+                report["stop_reasons"].append(
+                    _contracts.EVOLUTION_STOP_EVALUATION_ERROR)
+                self._audit_round(report)
+                return report
+        # 停止条件②：并发上限（恢复后的存活进行中计数；新评测受其约束）
         in_flight = [c for c in self.candidates.values()
                      if c.status in (CandidateStatus.TESTING,
                                      CandidateStatus.EVALUATING)]
@@ -262,17 +293,21 @@ class EvolutionController:
         if slots <= 0:
             report["stop_reasons"].append(
                 _contracts.EVOLUTION_STOP_CONCURRENCY_LIMIT)
+            self._audit_round(report)
             return report
-        # 评测就绪候选（CANDIDATE_CREATED），受并发余量与轮额度双约束
+        # 评测就绪候选（CANDIDATE_CREATED），受并发余量与轮剩余额度约束
         ready = [c for c in self.candidates.values()
                  if c.status == CandidateStatus.CANDIDATE_CREATED]
-        for cand in ready[:min(slots, max(1, int(max_evaluations)))]:
+        remaining = max(0, max(1, int(max_evaluations))
+                        - len(report["evaluated"]))
+        for cand in ready[:min(slots, remaining)]:
             # 每次评测前重查预算池（评测本身消耗预算）
             later_problem = self._evolution_pool_problem()
             if later_problem:
                 report["stop_reasons"].append(
                     f"{_contracts.EVOLUTION_STOP_BUDGET_EXHAUSTED}: "
                     f"{later_problem}")
+                self._audit_round(report)
                 break
             try:
                 self.evaluate_candidate(cand.candidate_id)
@@ -282,8 +317,35 @@ class EvolutionController:
                     f"{cand.candidate_id}: {type(e).__name__}: {e}")
                 report["stop_reasons"].append(
                     _contracts.EVOLUTION_STOP_EVALUATION_ERROR)
+                self._audit_round(report)
                 break
+        self._audit_round(report)
         return report
+
+    # ---- E-13 轮次审计与恢复证据（ALN-09）---------------------------
+    def _audit_round(self, report: Dict[str, Any]) -> None:
+        """编排轮结果落证据登记簿（即故障恢复的接续依据；故障不阻断）。"""
+        store = getattr(self, "store", None)
+        if store is None or not hasattr(store, "save_evidence"):
+            return
+        try:
+            payload = {
+                "converted": report.get("converted", []),
+                "proposed": report.get("proposed", []),
+                "evaluated": report.get("evaluated", []),
+                "errors": report.get("errors", []),
+                "stop_reasons": report.get("stop_reasons", []),
+            }
+            store.save_evidence(
+                evidence_id=f"round_{uuid.uuid4().hex[:12]}",
+                task_id=None,
+                kind=EVOLUTION_ROUND_AUDIT_KIND,
+                ref="evolution_round",
+                summary=json.dumps(payload, ensure_ascii=False,
+                                   sort_keys=True),
+            )
+        except Exception:  # noqa: BLE001
+            pass
 
     def _next_candidate_id(self) -> str:
         self._seq += 1
@@ -405,12 +467,18 @@ class EvolutionController:
 
     def run_evaluation(self, cand: EvolutionCandidate,
                        dataset: EvalDataset,
-                       baseline_report: Optional[EvalReport] = None) -> Dict[str, Any]:
+                       baseline_report: Optional[EvalReport] = None
+                       ) -> Dict[str, Any]:
         if self.evaluator is None:
             raise RuntimeError("评测器未装配：无法运行候选评测")
-        cand.transition(CandidateStatus.TESTING, "进入隔离实验环境测试",
-                        {"dataset": dataset.dataset_id})
-        cand.transition(CandidateStatus.EVALUATING, "对比基线与候选")
+        # E-13 故障恢复（ALN-09）：崩溃残留 TESTING/EVALUATING 的候选从
+        # 当前态正向续跑（状态机不允许倒退，故按现状跳过已完成转移）
+        if cand.status not in (CandidateStatus.TESTING,
+                               CandidateStatus.EVALUATING):
+            cand.transition(CandidateStatus.TESTING, "进入隔离实验环境测试",
+                            {"dataset": dataset.dataset_id})
+        if cand.status == CandidateStatus.TESTING:
+            cand.transition(CandidateStatus.EVALUATING, "对比基线与候选")
 
         # 进化预算池与正式任务隔离（PRD 55-56 / Arch 12.4）
         pool_problem = self._evolution_pool_problem()
