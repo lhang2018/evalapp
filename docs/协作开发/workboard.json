@@ -916,6 +916,46 @@
       ],
       "preparation_status": "claimed",
       "next_step": "先定五类身份作用域与 ContextManifest 字段，再实现可追溯装配、冲突裁决与删除失效传播"
+    },
+    {
+      "id": "ALN-01-A",
+      "workpackage": "ALN-01",
+      "title": "统一动作授权与资源范围",
+      "stream": "runtime",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "a3a39a1f24c91d6e79131f20eaf9a6ad6628aefb",
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/01-任务范围授权.md",
+      "shared_files": [
+        "evoagent/tools/registry.py",
+        "evoagent/core/controller.py",
+        "evoagent/workflows/engine.py"
+      ],
+      "working_basis": "用户明确要求完成01/02，接续既有安全网关基础实现"
+    },
+    {
+      "id": "ALN-02-A",
+      "workpackage": "ALN-02",
+      "title": "回执对账与验证补偿",
+      "stream": "runtime",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "a3a39a1f24c91d6e79131f20eaf9a6ad6628aefb",
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/02-回执对账与验证补偿.md",
+      "shared_files": [
+        "evoagent/tools/registry.py",
+        "evoagent/core/controller.py",
+        "evoagent/workflows/engine.py"
+      ],
+      "working_basis": "用户明确要求完成01/02，接续既有安全网关基础实现"
     }
   ],
   "workpackages": [
@@ -937,9 +977,9 @@
         "ALN-00"
       ],
       "stream": "runtime",
-      "owner": null,
+      "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "补对象/路径/设备范围策略与撤销传播，复核既有网关"
+      "next_step": "由ALN-01-A补齐资源范围授权/撤销与回执/补偿，联合验证后交独立审阅"
     },
     {
       "id": "ALN-02",
@@ -949,9 +989,9 @@
         "ALN-01"
       ],
       "stream": "runtime",
-      "owner": null,
+      "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "真实外部回执/产物恢复、补偿与进程隔离"
+      "next_step": "由ALN-02-A补齐资源范围授权/撤销与回执/补偿，联合验证后交独立审阅"
     },
     {
       "id": "ALN-03",
