@@ -316,7 +316,7 @@
 
 - `core/task.py:64` 有 `goal_id: Optional[str]`，`core/persistence.py:32-35` `tasks` 表有可空列 + `list_tasks_by_goal()`（`:218`）——这是 Session 29 落的**契约前置**，不是 G 组本体。
 - `core/task.py:25` 有 `GoalOrigin.OPPORTUNITY` 枚举，**无任何产生该值的代码路径**。
-- `Task.parent_task_id` + `_build_retry()`（`core/controller.py:723`）只有 1 层父子关系。
+- `Task.parent_task_id` + `_build_retry()`（`core/controller.py:937`）只有 1 层父子关系。
 - 全仓 `class Goal` 零命中。
 
 ### 6.2 G 组可实现契约来源
