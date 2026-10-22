@@ -867,6 +867,36 @@ class Database:
         return json.loads(row["data"]) if row else None
 
     # ---- evaluation reports ----
+    def save_routing_report(self, dataset_id: str, version: str,
+                             report: Dict[str, Any]) -> None:
+        """落库路由评测报告（F-53 / R-03）。
+
+        独立表 `routing_reports`（core/schema/routing.py）——
+        路由评测关注分类决策质量，与任务级评测报告语义不同，混表会让基线对比失真。
+        """
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO routing_reports"
+                " (dataset_id, version, created_at, report_json)"
+                " VALUES (?,?,?,?)",
+                (dataset_id, version, time.time(),
+                 json.dumps(report, ensure_ascii=False, default=str)))
+            self._conn.commit()
+
+    def list_routing_reports(self, limit: int = 20
+                             ) -> List[Dict[str, Any]]:
+        """最近 N 条路由评测报告（按时间倒序）。"""
+        rows = self._conn.execute(
+            "SELECT report_json FROM routing_reports"
+            " ORDER BY created_at DESC LIMIT ?", (int(limit),)).fetchall()
+        out: List[Dict[str, Any]] = []
+        for r in rows:
+            try:
+                out.append(json.loads(r["report_json"]))
+            except (TypeError, ValueError):
+                continue
+        return out
+
     def save_eval_report(self, report_id: str, dataset_id: str,
                          candidate_id: Optional[str],
                          data: Dict[str, Any]) -> None:

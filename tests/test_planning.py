@@ -130,12 +130,35 @@ class TestIntentClassifier(unittest.TestCase):
         self.assertEqual(method, "heuristic_fallback")
 
     def test_model_error_falls_back(self):
+        """模型出错时必须走启发式兜底。
+
+        期望意图原写作 `programming` —— 那是**从未注册的幽灵意图**
+        （描述表与专家表都用 `coding`），导致兜底结果无法路由到任何专家。
+        F-53 路由评测查出此缺陷并修正为 `coding`（见 planning/intent.py）。
+        本测试锁的核心行为是「回退到启发式且置信度 < 1.0」。
+        """
         clf = IntentClassifier(FakeAdapter(exc=RuntimeError("boom")),
                                known_intents=["general"])
         intent, _, conf, method = clf.classify("帮我写代码")
-        self.assertEqual(intent, "programming")
+        self.assertEqual(intent, "coding")
         self.assertEqual(method, "heuristic_fallback")
         self.assertLess(conf, 1.0)
+
+    def test_fallback_intent_is_registered(self):
+        """兜底得到的意图必须是**已注册**意图 —— 否则路由不到任何专家。
+
+        这是 F-53 修掉的幽灵意图问题的回归锁：任何关键词表里的意图
+        都必须存在于 `IntentClassifier._DESCRIPTIONS`。
+        """
+        from evoagent.planning.intent import _DESCRIPTIONS
+        clf = IntentClassifier(FakeAdapter(exc=RuntimeError("boom")),
+                               known_intents=["general"])
+        for goal in ("帮我写代码", "现在几点", "记个笔记", "规划出行程",
+                     "查天气", "做个漫剧", "打开手机", "计算 1+1"):
+            intent, _, _, method = clf.classify(goal)
+            self.assertIn(intent, _DESCRIPTIONS,
+                          f"兜底意图 {intent} 未注册（goal={goal}）")
+            self.assertIn(method, ("heuristic", "heuristic_fallback"))
 
     def test_low_confidence_marked(self):
         fake = FakeAdapter('{"intent":"general","confidence":0.2}')

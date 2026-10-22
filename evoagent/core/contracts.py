@@ -352,3 +352,45 @@ COST_ANOMALY_MIN_RECENT: Final[int] = 5     # 近窗样本少于此数 → 证�
 #: 能力缺口判据参数
 CAPABILITY_GAP_MIN_FALLBACKS: Final[int] = 3
 CAPABILITY_GAP_WINDOW_SECONDS: Final[int] = 86400
+
+# ---------------------------------------------------------------------------
+# E-12 失败案例 → 回归资产（04 卷 E-12，代码侧补写转换规则）
+# ---------------------------------------------------------------------------
+
+#: 转换资格：仅已诊断（有故障分类与假设）的诊断案可固化为回归用例
+REGRESSION_SOURCE_STATUSES: Final[Tuple[str, ...]] = ("DIAGNOSED",)
+
+#: 证据不足不转换（保持未知，04 卷 E-07/E-12 设计决策：不把假设写成事实）：
+#: OPEN=尚未诊断；INCONCLUSIVE=诊断未收敛
+REGRESSION_UNKNOWN_STATUSES: Final[Tuple[str, ...]] = ("OPEN", "INCONCLUSIVE")
+
+#: 回归资产落地：运行时数据集（EvolutionController.datasets 内惰性建）
+REGRESSION_DATASET_ID: Final[str] = "failures_regression"
+REGRESSION_TAG: Final[str] = "regression"
+
+#: 转换规则（一案一案幂等，case_id → reg_<case_id>）：
+#:   input_goal = 源任务 user_goal（转换时任务缺失 → 记 unknown 不转换）
+#:   expected   = 源任务 acceptance_criteria（回归即重验原验收），
+#:                为空时退回 result_nonempty
+#:   intent/domain 沿源任务；holdout=False（真实失败不是独立保留集来源）；
+#:   tags = [regression, auto, diagnostic_case/<id>, task/<task_id>]
+
+# ---------------------------------------------------------------------------
+# E-13 实验编排：队列 / 预算 / 并发 / 停止条件（04 卷 E-13，代码侧补写）
+# ---------------------------------------------------------------------------
+
+#: 停止条件取值域（一轮编排的停止原因；预算耗尽/无证据即停止）
+EVOLUTION_STOP_BUDGET_EXHAUSTED: Final[str] = "budget_exhausted"
+EVOLUTION_STOP_NO_PENDING_EVIDENCE: Final[str] = "no_pending_evidence"
+EVOLUTION_STOP_CONCURRENCY_LIMIT: Final[str] = "concurrency_limit_reached"
+EVOLUTION_STOP_EVALUATION_ERROR: Final[str] = "evaluation_error"
+
+EVOLUTION_STOP_REASONS: Final[Tuple[str, ...]] = (
+    EVOLUTION_STOP_BUDGET_EXHAUSTED,
+    EVOLUTION_STOP_NO_PENDING_EVIDENCE,
+    EVOLUTION_STOP_CONCURRENCY_LIMIT,
+    EVOLUTION_STOP_EVALUATION_ERROR,
+)
+
+#: 并发评测上限默认值；「进行中评测」= 候选处于 TESTING/EVALUATING
+EVOLUTION_MAX_CONCURRENT_EVALUATIONS: Final[int] = 1

@@ -237,7 +237,7 @@
 ### 轨道 T3｜进化闭环补齐（P1）
 
 #### WP-3.1 进化候选自动生成（E-07）—— **最高优先**
-- **现状**：`propose_candidate` 六参数全必填，四类信号在 `evoagent/` 全目录**零匹配**；全部靠 `cli.py:235`/`server.py:1100` 手工传字符串；`register_problem()` 写的 deque 永不读取。**"自主进化"叙事建立在这个空壳上。**
+- **现状**：`propose_candidate` 六参数全必填，四类信号在 `evoagent/` 全目录**零匹配**；全部靠 `cli.py:235`/`evoagent/api/server.py`（API 手工入口）、`evoagent/evolution/controller.py::propose_candidate`（定义） 手工传字符串；`register_problem()` 写的 deque 永不读取。**"自主进化"叙事建立在这个空壳上。**
 - **交付**：四类信号检测器（失败聚集、成本异常、质量退化、能力缺口）→ 自动产出候选提案；问题队列真正被消费；候选须绑定真实运行证据。
 - **边界**：`evoagent/evolution/controller.py`、`diagnostics.py`
 - **验收**：无人工输入时，构造劣化场景能自动产出候选；候选证据来自真实运行记录。
@@ -301,7 +301,7 @@
 |---|---|---|---|
 | WP-6.1 | E-01 | 运行事件与 Trace 结构化：补 `node` 级字段；把成本/时延/结果从 `payload` 自由字典提到**显式列**，`payload.get("latency_s")` 缺失时不得静默计 0 | `events.py:275-279` 靠 `payload.get("latency_s")` 取值，**缺失静默计 0 → 时延聚合被无声低估**，任何依赖它做门禁或收益判定的结论都不可靠 |
 | WP-6.2 | E-06 | 评测集版本演进与覆盖率台账：数据集注册/版本演进机制；按意图/难度/领域的覆盖矩阵；防泄漏检查（评测来源任务不得进调优集） | `evolution/datasets.py` 全文 47 行仅 4 个用例（全是 time_query/computation 通用任务），无注册、无版本演进、无覆盖率台账 |
-| WP-6.3 | R-03 | 路由质量评测与纠错：建**路由/分类评测集**（含歧义样本、低置信样本），产出准确率/混淆矩阵/top-k/回退率/弃权率；低置信样本回流为路由回归用例 | 无任何路由评测集或指标；`evolution/datasets.py` 零个路由/分类用例 |
+| WP-6.3 | R-03 | 路由质量评测与纠错：建**路由/分类评测集**（含歧义样本、低置信样本），产出准确率/混淆矩阵/top-k/回退率/弃权率；低置信样本回流为路由回归用例 ✅ **已完成（F-53）** | 原缺口：无任何路由评测集或指标；`evolution/datasets.py` 零个路由/分类用例。**实现后即查出两个真实路由缺陷**：关键词表含幽灵意图 `programming`（从未注册，描述表与专家表用 `coding`）+ `coding`/`travel` 无任何关键词 → 无 hint 的代码类任务全部误落 general 专家。已修，内置集意图与专家准确率 78.95% → 100% |
 | WP-6.4 | R-04 | Planner 计划修订：`ExecutionPlan.adjust` 从「同工具连续失败 ≥3 次追加固定模板步骤」升级为**基于风险的恢复策略**；`_risks_for` 的静态文案转为可执行恢复动作；补 `replan`/`revise` 方法 | `ExecutionPlan.adjust` 全库唯一调用方是失败计数追加固定模板；`_risks_for` 返回静态文案非可执行策略 |
 | WP-6.5 | S-02 | 隐私分级口径统一：实现侧 `standard/sensitive/secret/private` 与契约 §3 `public/internal/sensitive/restricted` **建立映射表**（不强制改名，但要能互相转换）；`MemoryItem` 补隐私级别字段 | 数量相同语义不同，跨端有误判风险；`MemoryItem` 无隐私级别字段（`core/privacy.py:6`） |
 | WP-6.6 | S-03 | 模型输出与外部内容不可信：`_looks_untrusted()` 覆盖**模型输出本身**（现只覆盖记忆与执行结果两路）；补归一化/编码变体处理（base64/零宽/同形字）、分级、审计告警 | 现为 13 条正则黑名单，**不覆盖模型输出**，无归一化/编码变体处理、无分级、无审计告警 |
@@ -435,6 +435,7 @@ DoD「连续 3 次全绿」的 flaky 用例，且工作量最小、无契约依�
 > - **F-13 检查点写入有序化**（WP-0.1 **部分**完成）：写入有序性已修（`2c0515d`），**恢复游标仍未做**
 > - **F-03 副作用账本**（WP-0.2 完成，提交 `ad5709e`）：`core/side_effects.py` 六态状态机（planned/submitted/confirmed/failed/unknown/compensated）+ `core/schema/effects.py` 独立域表；`unknown` 强制 reconcile；resume 门禁改账本投影直读。**达成系统级验收用例 4**
 > - **F-12 审批记录实体**（WP-0.3 的一半，提交 `084d71d`）：`core/approvals.py` + `core/schema/approvals.py`，A-01 五项绑定（动作摘要/目标对象/范围/有效期/一次性语义）全落字段；`approval_id` 从零命中变为有产生路径。**注意：WP-0.6「执行环节审计」（S-05）仍未做**——`084d71d` 的提交标题写作「F-04」属误标，其内容属 F-12
+> - **F-53 路由质量评测与纠错**（WP-6.3 完成）：`evoagent/evolution/routing_eval.py` 路由评测集 + 评估器（准确率/混淆矩阵/top-k/兜底率/弃权率）+ 低置信样本回流 + 基线对比；API `GET/POST /routing/eval`、`GET /routing/reports`。**首次运行即查出并修复两个真实路由缺陷**（幽灵意图 `programming`；`coding`/`travel` 无关键词）→ 内置集准确率 78.95% → 100%
 
 | 编号 | 名称 | 优先级 | 轨道 | 关键依赖 |
 |---|---|---|---|---|

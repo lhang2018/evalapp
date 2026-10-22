@@ -21,7 +21,7 @@
 |---|---|
 | **名义覆盖率** | IMPLEMENTATION.md 记 ✅59 / 🔹15 / ⬜15（66%） |
 | **核验后** | 59 个 ✅ 中 **18 项名不副实**（死字段 / 零调用方 / 恒真分支 / 绕过门禁）；**逐行统计实为 ✅34 / 🔹36 / ⬜19（38%）** |
-| **最严重的一条** | **E-07 进化候选生成**：标 ✅「失败/成本异常/质量退化/能力缺口→候选提案」，但四类信号在 `evoagent/` 全目录**零匹配**，全部靠调用方手工传字符串。`register_problem()` 往 deque 里塞完再无人读取。**整个"自主进化"叙事建立在这个空壳上** |
+| **最严重的一条** | **E-07 进化候选生成**：标 ✅「失败/成本异常/质量退化/能力缺口→候选提案」，但四类信号在 `evoagent/` 全目录**零匹配**，全部靠调用方手工传字符串。`register_problem()` 往 deque 里塞完再无人读取。**整个"自主进化"叙事建立在这个空壳上**。（▸ 2026-10-22 演进：四类信号采集器与自动提案链已落地，E-07 转 ✅，见 IMPLEMENTATION.md） |
 | **整组空白** | G 组（G-01..G-10）9/10 未实现，系统级验收用例 19 因此永远无法通过 |
 | **更根本的发现** | **设计文档本身缺契约**：8 个专项卷 79 个主题中 **79 个（100%）是模板填空**——无字段名、无 JSON schema、无接口路径、无状态枚举、无数值阈值。全部可编码契约只集中在 1 个补充设计文件（19 实体）+ 09 卷契约规范 + ADR/术语表。**"G 组空白"不能靠照文档实现解决，必须先补写契约** |
 | **契约层缺口** | 10 类契约中 **Goal、Side-effect Ledger、Capability Asset 三份整份缺失**；统一错误对象 7 个字段 **0 实现**；Event/Tool/Manifest 合计 **17 个字段缺失或形态不符** |
@@ -90,9 +90,10 @@
 
 - 判定：标 ✅「失败/成本异常/质量退化/能力缺口→候选提案」
 - 实际：`evoagent/evolution/controller.py:152-180` `propose_candidate()` 六个参数全部必填，**无任何信号检测代码**。四类信号在 `evoagent/` 全目录**零匹配**（`grep "capability_gap|质量退化|成本异常"` → 0 命中）。
-- 全部调用点均为人工/外部传入：`cli.py:235`、`api/server.py:1100`（HTTP body 直传 `target_component`/`hypothesis`）。
+- 全部调用点均为人工/外部传入：`evoagent/cli.py:235`、`evoagent/api/server.py`（API 手工入口）、`evoagent/evolution/controller.py::propose_candidate`（定义）（HTTP body 直传 `target_component`/`hypothesis`）。
 - `register_problem()`（`:144-145`）向 deque 追加后**永不读取**——问题队列本身也是死的。
 - 后果：PRD 46-54 的"从真实运行证据自动发现改进点"未实现；E-11 收益评估、E-09 门禁都建立在无自动候选来源之上。
+- **▸ 演进（2026-10-22）**：上述指控已闭合——`SignalCollector` 订阅真实运行事件判定四类信号并登记票据，`run_signal_pipeline` 消费票据自动提案（`evoagent/evolution/signals.py::SignalCollector`、`evoagent/evolution/controller.py::run_signal_pipeline`）。本段保留为历史基线。
 
 ### 3.2 R-12 外部副作用账本
 
@@ -104,6 +105,7 @@
   - `tests/test_control.py:149` 是**测试自己塞值**才让该分支变绿 —— 自证式测试
 - `ToolResult.side_effect_uncertain` 只是 bool，不是账本状态。
 - 直接违反 ADR-006「事件、检查点与副作用账本分离」。
+- **▸ 演进（2026-10-22）**：六态持久化账本已落地并接线（`evoagent/core/side_effects.py::SideEffectLedger`），`pending_side_effects` 改为由账本投影；本段保留为历史基线。
 
 ### 3.3 R-11 检查点与恢复
 
@@ -163,6 +165,7 @@
   - `can_reuse_evidence` 是布尔翻转
   - **全代码库零调用方、零测试**（`grep -rn impact_analysis evoagent/ tests/` 只命中 def 本身）
 - 依赖图本身也只有 `builtin.py:64-73` 手工写的 2 节点 1 边。
+- **▸ 演进（2026-10-22）**：`impact_analysis` 已改为传递闭包 + 分层回归范围，并被候选创建与 `GET /impact` 消费（`evoagent/experts/registry.py::impact_analysis`、`evoagent/api/impact_api.py`）；依赖图数据仍偏少。本段保留为历史基线。
 
 ### 3.10 C-11 经验来源与晋升证据：存在可绕过的门禁
 
@@ -313,7 +316,7 @@
 
 - `core/task.py:64` 有 `goal_id: Optional[str]`，`core/persistence.py:32-35` `tasks` 表有可空列 + `list_tasks_by_goal()`（`:218`）——这是 Session 29 落的**契约前置**，不是 G 组本体。
 - `core/task.py:25` 有 `GoalOrigin.OPPORTUNITY` 枚举，**无任何产生该值的代码路径**。
-- `Task.parent_task_id` + `_build_retry()`（`core/controller.py:633`）只有 1 层父子关系。
+- `Task.parent_task_id` + `_build_retry()`（`core/controller.py:723`）只有 1 层父子关系。
 - 全仓 `class Goal` 零命中。
 
 ### 6.2 G 组可实现契约来源

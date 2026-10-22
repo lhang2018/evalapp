@@ -27,9 +27,20 @@ _KEYWORDS: List[Tuple[str, Tuple[str, ...]]] = [
     ("note_taking", ("笔记", "记录", "备忘", "note", "todo")),
     ("weather", ("天气", "气温", "下雨", "weather")),
     ("comic_drama", ("漫剧", "漫画", "分镜", "配音", "comic", "drama")),
-    ("programming", ("代码", "编程", "调试", "报错", "python", "bug", "code")),
+    # 意图名必须与 _DESCRIPTIONS / 已注册专家一致。
+    # 原写作 "programming" —— 该意图**从未注册**（描述表与专家表都用 "coding"），
+    # 导致无 hint 的代码类任务全部落到 general 专家。F-53 路由评测查出此缺陷。
+    ("coding", ("代码", "编程", "调试", "报错", "python", "bug", "code")),
+    ("travel", ("行程", "旅游", "旅行", "出差", "路线", "攻略", "签证", "机票", "酒店")),
     ("mobile_operation", ("手机", "应用", "打开", "点击", "app", "android")),
 ]
+
+#: 关键词表与描述表的一致性自检 —— 两者一旦漂移就会出现"幽灵意图"
+#: （如曾经的 "programming"）或"永远无法命中的意图"（如曾经的 travel）。
+#: 由 tests/test_routing_eval.py 锁定。
+assert {intent for intent, _ in _KEYWORDS} <= set(_DESCRIPTIONS), (
+    "关键词表含未注册意图（幽灵意图），会导致该意图无法路由到对应专家："
+    f"{sorted({i for i, _ in _KEYWORDS} - set(_DESCRIPTIONS))}")
 
 
 class IntentClassifier:

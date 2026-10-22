@@ -129,57 +129,68 @@ class TestGapClosureCatchesGaps(unittest.TestCase):
         cgc.ROADMAP = roadmap_path
 
     def test_detects_theme_dropped_from_feature_table(self):
-        """把认领 R-03 的特性**整条删掉** → 必须报为未认领。
+        """把认领某主题的特性**整条删掉** → 必须报为未认领。
 
-        注意 F-53 在特性表里出现两次（波次 4.5 明细表 + §7 映射表），
-        两条路径都要删，否则 §7 删了但明细表还在，间接路径仍会掩盖断裂。
+        用 **F-55**（认领 S-02，S-02 仍为 ⬜ 未实现）做样本 ——
+        不能用已完成的特性（如 F-53/R-03）做样本：主题状态已 ✅ 时
+        它根本不在"缺口集合"里，删掉认领方自然不会报未认领（这是正确行为）。
+        删法按「行内含 F-55」匹配，不依赖具体文本 —— 特性行会随落地情况变化。
         """
         self._install()
         with open(self.orig_split, encoding="utf-8") as fh:
             split_text = fh.read()
-        lines = [ln for ln in split_text.split("\n")
-                 if "F-53" not in ln]
+        lines = [ln for ln in split_text.split("\n") if "F-55" not in ln]
         stripped = "\n".join(lines)
-        self.assertNotEqual(stripped, split_text, "F-53 未被删除")
+        self.assertNotEqual(stripped, split_text, "F-55 未被删除")
         self._install(split_text=stripped)
 
         unclaimed = compute_unclaimed()
-        self.assertIn("R-03", unclaimed,
-                      f"删除 F-53 后 R-03 应变为未认领，实际未认领：{unclaimed}")
+        self.assertIn("S-02", unclaimed,
+                      f"删除 F-55 后 S-02 应变为未认领，实际未认领：{unclaimed}")
 
-    def test_duplicate_claim_masks_single_path_removal(self):
-        """**已知局限，必须被记录**：同一主题被多条路径认领时，删掉一条仍闭合。
+    def test_section_45_detail_rows_do_not_claim_topics(self):
+        """口径边界：只有 §7 映射表算认领，波次明细表不算。
 
-        R-03 同时被 §7 直接关联（F-53）与经 WP-6.3 间接关联认领。
-        删掉 §7 那一条后，间接路径仍让 R-03 保持闭合 —— 校验器**看不出**。
-        这不是 bug 而是"多路径冗余"的正常表现，但意味着：
-        单点删除某个特性**不必然**产生漏项告警，
-        真正会暴露的是「主题与其所有路径同时消失」。
-        本测试把这个局限显式钉住，避免以后误以为校验器有更强判别力。
+        F-55 同时出现在波次 4.5 明细表（6 数据列）与 §7 映射表（4 数据列）。
+        删掉 §7 那一行后 S-02 必须变为未认领 —— 明细表残留的 F-55 行
+        **不构成**主题认领（check_gap_closure 只解析 §7）。
+        这条测试把「明细表不是计划承诺」这一口径显式钉住。
         """
         self._install()
         with open(self.orig_split, encoding="utf-8") as fh:
             split_text = fh.read()
-        # 只删 §7 映射表那一行（`| F-53 | WP-6.3 | R-03 | — |`），
-        # 保留波次 4.5 明细表里的 F-53
-        lines = [ln for ln in split_text.split("\n")
-                 if ln.strip() != "| F-53 | WP-6.3 | R-03 | — |"]
-        self._install(split_text="\n".join(lines))
+        # 只删 §7 映射表那一行 —— 它是 4 数据列（`F-55 | WP | 主题 | 验收`，
+        # 5 个竖线），波次 4.5 明细表是 6 数据列（7 个竖线）。按列数区分。
+        lines = []
+        removed = 0
+        for ln in split_text.split("\n"):
+            stripped = ln.strip()
+            if stripped.startswith("|") and "F-55" in stripped \
+                    and stripped.count("|") == 5:
+                removed += 1
+                continue
+            lines.append(ln)
+        self.assertEqual(removed, 1,
+                         f"应只删掉 §7 映射表的 1 行，实际删了 {removed} 行")
+        remaining = "\n".join(lines)
+        self.assertIn("F-55", remaining, "波次明细表的 F-55 行应仍保留")
+        self._install(split_text=remaining)
 
         unclaimed = compute_unclaimed()
-        self.assertNotIn(
-            "R-03", unclaimed,
-            "本测试断言的是已知局限：间接路径仍在，故 R-03 仍闭合。"
-            "若此断言失败，说明校验器行为变了，需重新评估其判别力边界")
+        self.assertIn(
+            "S-02", unclaimed,
+            "§7 认领行删除后 S-02 应变为未认领：明细表行不参与认领，"
+            f"实际未认领：{unclaimed}")
 
     def test_detects_theme_marked_done_but_no_feature(self):
         """一个 🔹 主题被误标 ✅ → 缺口集合变小，但映射不闭合仍应被发现。"""
         self._install()
         with open(self.orig_ledger, encoding="utf-8") as fh:
             ledger_text = fh.read()
-        # 把 R-12 从 ⬜ 改成 🔹（状态仍为未完成，不影响判定）—— 验证状态机本身工作正常
+        # 把 C-10 从 ⬜ 改成 🔹（状态仍为未完成，不影响判定）—— 验证状态机本身工作正常
         modified = ledger_text.replace(
-            "| R-12 外部副作用账本 | ⬜ |", "| R-12 外部副作用账本 | 🔹 |")
+            "| C-10 能力去重、别名与合并 | ⬜ |", "| C-10 能力去重、别名与合并 | 🔹 |")
+        self.assertNotEqual(modified, ledger_text, "C-10 状态锚点未命中")
         self._install(ledger_text=modified)
         unclaimed = compute_unclaimed()
         self.assertEqual(unclaimed, [],
@@ -204,24 +215,27 @@ class TestGapClosureCatchesGaps(unittest.TestCase):
     def test_detects_broken_feature_row(self):
         """特性表某行被写坏（列数不对）→ 该主题应失去认领。
 
-        F-53 在特性表出现两次（波次 4.5 明细表 6 列 + §7 映射表 4 列），
-        两处都要破坏，否则另一处仍能认领 R-03。
+        F-55 在特性表出现两次（波次 4.5 明细表 + §7 映射表），
+        两处都要破坏，否则另一处仍能认领 S-02。
+        破坏方式：把含 F-55 的行替换成单列残行（模拟列数写错）。
         """
         self._install()
         with open(self.orig_split, encoding="utf-8") as fh:
             split_text = fh.read()
-        broken = split_text.replace(
-            "| **F-53** | WP-6.3 | R-03 | — |", "| **F-53** 坏了")
-        broken = broken.replace(
-            "| **F-53** | 路由质量评测与纠错 | WP-6.3 | R-03 | "
-            "`evolution/routing_eval.py` | `experts/registry.py`（转发） |",
-            "| **F-53** 坏了")
-        self.assertNotEqual(broken, split_text, "破坏未命中任何 F-53 行")
-        self.assertNotIn("F-53** | WP-6.3", broken, "§7 映射表行未破坏")
-        self._install(split_text=broken)
+        lines = []
+        hit = 0
+        for ln in split_text.split("\n"):
+            if "F-55" in ln and ln.strip().startswith("|"):
+                lines.append("| F-55 坏了")
+                hit += 1
+            else:
+                lines.append(ln)
+        self.assertGreaterEqual(hit, 2,
+                                f"应命中 2 处 F-55 特性行，实际 {hit}")
+        self._install(split_text="\n".join(lines))
         unclaimed = compute_unclaimed()
-        self.assertIn("R-03", unclaimed,
-                      f"特性行写坏后 R-03 应变为未认领：{unclaimed}")
+        self.assertIn("S-02", unclaimed,
+                      f"特性行写坏后 S-02 应变为未认领：{unclaimed}")
 
 
 class TestParserEdgeCases(unittest.TestCase):

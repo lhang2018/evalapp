@@ -171,9 +171,9 @@
 
 | 状态 | 数量 | 占比 | 口径 |
 |---|---|---|---|
-| ✅ 已实现 | 34 | 38% | 有实现逻辑、有产生它的代码路径、有走通该路径的测试 |
+| ✅ 已实现 | 37 | 42% | 有实现逻辑、有产生它的代码路径、有走通该路径的测试 |
 | 🔹 部分/接口已留 | 36 | 40% | 主路径可用，但关键分支缺失 / 字段无读取点 / 依赖未接线 |
-| ⬜ 未实现 | 19 | 21% | 无对应物，或仅有纯占位 |
+| ⬜ 未实现 | 16 | 18% | 无对应物，或仅有纯占位 |
 
 > 计数说明：分组表共 84 行，其中 `P-01/02` 合 1 行覆盖 2 主题、`M-01..05` 合 1 行覆盖 5 主题，
 > 展开后为 89 主题。上表数字由脚本对分组表逐行统计得出（见文末复核命令）。
@@ -225,7 +225,7 @@ R 任务执行内核（12）：
 |---|---|---|
 | R-01 统一入口与 Task of Record | ✅ | 幂等键防重复创建；统一目标/约束/验收/预算接收。证据：`submit_task`（`evoagent/core/controller.py::submit_task`），refs=5/test=7）、`Task`（`evoagent/core/task.py::Task`），refs=50/test=17）|
 | R-02 意图理解与多层路由 | ✅ | 意图/领域/复杂度/风险分层路由；低置信回退 general。证据：`classify`（`evoagent/planning/intent.py::classify`），test=6）、`route`（`evoagent/experts/registry.py::route`）|
-| R-03 路由质量评测与纠错 | ⬜ | **无任何路由评测集或指标**。`evolution/datasets.py` 两个内置集共 4 用例全为 time_query/computation 通用任务，零个路由/分类评测用例；无准确率、混淆矩阵、top-k、回退率、弃权率 |
+| R-03 路由质量评测与纠错 | ✅ | **F-53 已落地**（2026-10-22）：`evoagent/evolution/routing_eval.py` 提供路由专用评测集（覆盖全部已注册意图，含歧义用例 + 独立保留集）与评估器，产出**意图准确率/专家准确率/混淆矩阵/top-1·top-3 命中率/兜底率/弃权率/平均置信度**；`regression_cases()` 把失败与低置信样本回流为回归用例（保留集不回流，避免污染验收数据）；`compare()` 做基线对比并判定退化。API：`GET/POST /routing/eval`、`GET /routing/reports`（注册表路由，`server.py` 仅 +1 行 import）。**评测器首次运行即查出两个真实路由缺陷并已修复**：`intent.py` 关键词表含**幽灵意图** `programming`（从未注册，描述表与专家表用 `coding`）→ 无 hint 的代码类任务全部误落 general 专家；`coding` 与 `travel` 原本**无任何关键词** → 这两个领域永远无法被启发式命中。修复后内置集意图与专家准确率均为 100%（修复前 78.95%）。证据：`RoutingEvaluator`（`evoagent/evolution/routing_eval.py::RoutingEvaluator`），test=24）、`builtin_routing_datasets`（`evoagent/evolution/routing_eval.py::builtin_routing_datasets`），test=24 |
 | R-04 Planner 与计划修订 | 🔹 | 目标拆解/依赖校验/验收齐备；**但无 replan/revise 方法**，`ExecutionPlan.adjust` 全库唯一调用方是「同工具连续失败 ≥3 次」追加固定模板步骤；`_risks_for` 返回的是静态风险文案，非可执行恢复策略 |
 | R-05 ReAct 执行循环 | ✅ | 单动作提议+Schema/权限/预算检查；防循环。证据：`ModelAdapter`（`evoagent/models/base.py::ModelAdapter`）、`MockModel`（`evoagent/models/mock.py::MockModel`），test=2）、`check_tool_call`（`evoagent/core/budget.py::check_tool_call`）|
 | R-06 DAG/工作流运行时 | 🔹 | 条件跳过/并发/重试/检查点续跑 4 项真实现；**审批节点在生产链路恒放行**（`workflow_node_confirm` 不在 `evoagent/core/permissions.py:41-44` 的 `high_risk_ops` 名单 → `check_op`（`evoagent/core/permissions.py::check_op`）恒返回 ALLOW），且 `evoagent/workflows/engine.py:80` 使 `WAITING_AUTH` 节点重跑时被永久跳过 → 任务卡死；**补偿是空壳**（`_try_compensate` 空参执行、ctx 未用、异常全吞、只处理失败单节点，内置漫剧的补偿动作 `fs_list` 是只读列目录，物理上不可能回滚） |
@@ -234,7 +234,7 @@ R 任务执行内核（12）：
 | R-09 Action Guard 动作授权 | ✅ | 授权绑定对象/范围/摘要；高风险默认 confirm。证据：`PermissionController`（`evoagent/core/permissions.py::PermissionController`），refs=5/test=3）、`ToolContract`（`evoagent/tools/contract.py::ToolContract`）。**注：`check_tool`（`:49`）与 `check_op`（`:64`）本身无直接测试调用，测试经 `ToolRegistry` 间接覆盖**|
 | R-10 取消、暂停、等待与人工接管 | 🔹 | 取消/暂停/恢复真实现，双 flag 传播正确；**但"等待审批"与"人工接管"未实现** —— `react/engine.py:110` 收到 `request_user` 立即返回并被转成失败 check（任务判 FAILED 而非挂起），`WAITING_USER` 在 `api/server.py` 零命中（无接口提交澄清答案）；工作流任务连暂停都不支持 |
 | R-11 检查点与恢复管理 | 🔹 | 恢复前核验副作用的思路正确（`_resume_suspended`（`evoagent/core/controller.py::_resume_suspended`）检查 pending_side_effects 并要求 force）；**但无恢复游标**（`CheckpointManager` 只有 `save`（`evoagent/core/checkpoint.py::save`）/`latest`（`:55`），只能取最新一条）；ReAct 路径检查点不写节点级状态；**"恢复前强制安全备份"完全未接线**（`backup` 符号在 `evoagent/core/controller.py` 零命中 —— 备份能力在 `evoagent/core/backup.py` 有实现，但恢复路径没调用它）。**F-13 已修写入有序性**（先落 paused 检查点再持久化 SUSPENDED），原 50% flaky 已消 |
-| R-12 外部副作用账本 | ⬜ | **整份缺失**：无实体、无持久化表、无状态机。最接近的 `Checkpoint.pending_side_effects` 是**恒空死字段** —— 唯一写入点 `evoagent/core/controller.py:549` 依赖 `extras`，而唯一传 extras 的 `evoagent/core/controller.py:395` 只传 budget/plan → 生产环境恒为 `[]` → 恢复门禁恒不触发。`tests/test_control.py:149` 是测试自己塞值才让该分支变绿（自证式测试）。违反 ADR-006 |
+| R-12 外部副作用账本 | ✅ | 六态持久化账本（`evoagent/core/side_effects.py::SideEffectLedger`，`task_side_effects` 表）：`planned→submitted→confirmed\|failed\|unknown`，unknown 必须先 `reconcile` 才能继续；工具执行前 `begin` 预记账、结果经 `record_from_tool_result` 落态，重复提交/待对账重放被阻断；恢复时 `pending_side_effects` 由账本 `pending` 投影（`evoagent/core/controller.py::_resume_suspended`）而非检查点自持，未知副作用需显式 force。test=12 |
 
 M 记忆上下文（10）：
 
@@ -259,7 +259,7 @@ C 专家能力与工作流（14）：
 | C-06 轨迹到工作流编译 | ✅ | 重复支持+人工批准+失败注入回归。证据：`extract`（`evoagent/workflows/extraction.py::extract`），test=13）、`publish`（`evoagent/workflows/extraction.py::publish`）|
 | C-07 工作流适用性匹配 | ✅ | 输入契约/工具/预算/权限匹配。证据：`node`（`evoagent/workflows/models.py::node`），refs=61/test=2）、`WorkflowEngine`（`evoagent/workflows/engine.py::WorkflowEngine`）|
 | C-08 能力资产生命周期 | 🔹 | 候选工作流有状态机；**但 `CapabilityEntry.status`（`evoagent/experts/registry.py:33`）只有 active/experimental/disabled 三值**，与契约 §6 的八态（`evoagent/core/contracts.py:117` 的 `ASSET_LIFECYCLE`：draft/candidate/validating/approved/active/degraded/deprecated/retired）无语义对应 |
-| C-09 能力依赖图与影响分析 | 🔹 | `impact_analysis` **全代码库零调用方、零测试**（`evoagent/experts/registry.py:89`）→ 台账原写"确定回归范围"没有任何代码在依赖它。函数共 9 行：**只查一层直接下游，无传递闭包**（A→B→C 改 A 只报 B）；`must_rerun_tests` 硬编码 `["capability_eval"]`；`can_reuse_evidence` 是布尔翻转。依赖图本身也只有 2 节点 1 边 |
+| C-09 能力依赖图与影响分析 | 🔹 | `impact_analysis` 已补齐上下游传递闭包与分层回归范围（`evoagent/experts/registry.py::impact_analysis`）：shared 内核变更全量回归、仅领域层受影响走领域回归、无受影响能力则复用证据；被候选创建（`evoagent/evolution/controller.py::_impact_for`）与 `GET /impact`（`evoagent/api/impact_api.py`）真实消费，test=7。**剩余缺口**：依赖图数据仍少（`evoagent/experts/builtin.py` 手工边），`shared` 判定依赖 `domain=="shared"` 约定 |
 | C-10 能力去重、别名与合并 | ⬜ | 未实现 |
 | C-11 经验来源与晋升证据 | 🔹 | `promote_to_candidate` 的证据门禁是真的（无证据直接 raise、模型假设须先过探针）；**但只覆盖失败证据**（成功运行→进化候选的路径不存在），且**手工入口可零证据建候选**（`evoagent/api/server.py:1141` 接受调用方自述的任意字符串数组，`propose_candidate` 原样存入不校验） |
 | C-12 编程专家 AST/LSP | ⬜ | 全仓 grep `AST\|LSP` 在 evoagent 下零命中（仅 node_modules）；`experts/builtin.py` 无编程专家 |
@@ -276,7 +276,7 @@ E 观测诊断评测与进化（13）：
 | E-04 工具健康与 Agent 能力分离 | 🔹 | tool_health 探针与质量指标分开（设计正确）；**工具健康探针已实装**（并行工作流 `ae54291`）：六工具真探针 + 三值语义（`True`=健康 / `False`=不健康 / `None`=未声明，未声明不再被算作健康）→ **实际分离度现在可验证**。**剩余缺口：`quality_metrics` 仍零消费点**（C-03），无按专家维度跑的评测 |
 | E-05 QEEG 评测治理 | ✅ | 独立评测+基线+保留集；门槛受保护，安全证据缺失时 fail-closed。证据：`judge`（`evoagent/evolution/evaluator.py::judge`），test=8）、`Evaluator`（`evoagent/evolution/evaluator.py::Evaluator`），test=11）|
 | E-06 评测集版本/覆盖/防泄漏 | 🔹 | `EvalDataset` 有 version/source/holdout，隐藏保留集独立于调优 ✅；**但 `datasets.py` 全文 47 行仅 4 个用例**，无数据集注册/版本演进机制，无覆盖率台账 |
-| E-07 进化候选生成 | ⬜ | **名为实现、实为空壳**。`propose_candidate()` 六参数全必填，**四类信号（失败/成本异常/质量退化/能力缺口）在 `evoagent/` 全目录零匹配**（`grep "capability_gap\|质量退化\|成本异常"` → 0 命中）；全部调用点均为人工/外部传入（`cli.py:235`、`api/server.py:1100`）；`register_problem` **永不读取**（`evoagent/evolution/controller.py:144`：向 deque 追加后无人再取）—— 问题队列本身也是死的。台账原写"失败/成本异常/退化/缺口→候选提案"与代码不符 |
+| E-07 进化候选生成 | ✅ | 四类信号→`register_problem` 登记→`run_signal_pipeline` 消费→`propose_candidate` 自动提案链已落地：`SignalCollector`（`evoagent/evolution/signals.py::SignalCollector`）订阅总线——诊断建案→失败、`task_finalized`→成本异常（近窗中位数判据）、`expert_fallback`→能力缺口、`evolution_monitored`→质量退化；判据/冷却由 `EVOLUTION_SIGNAL_SPEC` 契约化，评测流量不回流（ADR-007）；`run_signal_pipeline`（`evoagent/evolution/controller.py::run_signal_pipeline`）组件级节流后自动提案，是否晋级仍由 evaluator/gate 独立裁决。test=10 |
 | E-08 隔离实验环境 | ✅ | `evoagent/evolution/sandbox.py`（网络/子进程/凭据/读写阻断）；容器级隔离明确不做，边界已注明。证据：`run_code`（`evoagent/evolution/sandbox.py::run_code`），test=10）、`SandboxRunner`（`evoagent/evolution/sandbox.py::SandboxRunner`）|
 | E-09 发布晋级门禁 | ✅ | fail-closed 安全一票否决+人工批准；`deploy_candidate` 真实检查 L4 禁发布、L2/L3 拒绝 auto。证据：`build_manifest`（`evoagent/release/manager.py::build_manifest`），test=10）、`deploy`（`evoagent/release/manager.py::deploy`），test=9）。**注：`deploy_candidate`（`evoagent/evolution/controller.py::deploy_candidate`）的 L4/L2/L3 分支目前只有 `PUBLISH_RULES` 常量级测试（`tests/test_evolution.py:104`），门禁分支本身无直接测试调用**|
 | E-10 稳定/候选轨道隔离 | ✅ | 生产绑定稳定资产；候选不能触碰稳定指针。证据：`build_manifest`（`evoagent/release/manager.py::build_manifest`）、`deploy`（`evoagent/release/manager.py::deploy`）|
@@ -365,7 +365,7 @@ SV-04 🔹（ContextManifest/删除传播/冲突识别缺）；SV-08 🔹（制�
 - **Side-effect Ledger ⬜** —— 十字段零实现，六态枚举零匹配（见 R-12）
 - **Capability Asset 🔹** —— 只有 `CapabilityEntry`：`asset_type` 被 `domain` 取代、`lifecycle_state` 只 3 值（契约八态）、`namespace` 完全缺失
 
-**统一错误对象 ✅（F-01 已落地，2026-10-21）**：7 字段（`error_code`/`message`/`retryable`/`correlation_id`/`related_event_id`/`required_action`/`safe_to_repeat`）全部实现于 `evoagent/core/errors.py`（`error_payload`/`normalize_error_payload`/`ApiError`），并在 `evoagent/api/server.py:66` 的 `_json` 单点接入（4xx/5xx 且无显式 `error_code` 时补齐，成功负载原样）。**契约不变量已代码化**：`safe_to_repeat=unknown` 时强制 `required_action=reconcile`（`errors.py:114`），不再只是散文。
+**统一错误对象 ✅（F-01 已落地，2026-10-21）**：7 字段（`error_code`/`message`/`retryable`/`correlation_id`/`related_event_id`/`required_action`/`safe_to_repeat`）全部实现于 `evoagent/core/errors.py`（`error_payload`/`normalize_error_payload`/`ApiError`），并在 `evoagent/api/server.py::_json` 单点接入（4xx/5xx 且无显式 `error_code` 时补齐，成功负载原样）。**契约不变量已代码化**：`safe_to_repeat=unknown` 时强制 `required_action=reconcile`（`errors.py:114`），不再只是散文。
 
 其余字段级缺口：
 - Task：`acceptance_contract_ref`、`authorization_ref`、`runtime_manifest_id`（实体上）、**Task 级 `idempotency_key`**（键散落三处且不同名：`client_request_id`/`idem_key`/`ToolResult.idempotency_key`）；`created_at` 为 float 而非 RFC3339；`constraints` 为 `List[str]` 而非对象；`status` 缺 `waiting_approval`

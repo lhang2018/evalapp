@@ -71,6 +71,8 @@ class SignalCollector:
         bus.subscribe(self.on_event)
 
     def on_event(self, event: Any) -> Optional[Any]:
+        if self._is_evaluation_traffic(event):
+            return None
         et = getattr(event, "event_type", "")
         if et == "diagnostic_case_created":
             return self.on_failure_signal(getattr(event, "payload", None) or {})
@@ -84,6 +86,22 @@ class SignalCollector:
             return self.on_quality_regression(
                 getattr(event, "payload", None) or {})
         return None
+
+    def _is_evaluation_traffic(self, event: Any) -> bool:
+        """评测任务产生的事件不回流进化信号。
+
+        稳定轨道与进化轨道隔离（ADR-007）：评测本身会跑工具、兜底和记账，
+        若把这些当成新证据，就会形成「评测 → 新信号 → 新候选 → 再评测」
+        的自激循环，E-13 的「无待处理证据」停止条件永远不成立。
+        """
+        task_id = getattr(event, "task_id", None)
+        if not task_id or self.task_loader is None:
+            return False
+        task = self.task_loader(task_id)
+        if task is None:
+            return False
+        return (getattr(task, "runtime_manifest", None) or {}).get(
+            "source") == "evaluation"
 
     # ---- 1) 失败信号：诊断建案即出 -------------------------------------
     def on_failure_signal(self, payload: Dict[str, Any]) -> Optional[Any]:

@@ -51,12 +51,23 @@ class TestRealLedgerPasses(unittest.TestCase):
         self.assertTrue(all(r["theme"] for r in self.rows))
 
     def test_status_counts_expand_to_89_themes(self):
+        """主题展开后必须是 89 个，且各状态数与台账声明一致。
+
+        注意：**具体数字不硬编码** —— 主题状态会随特性落地而变
+        （如 R-03 由 ⬜ 升 ✅，总数恒为 89）。
+        硬编码数字会让每次落地特性都要改测试，且会诱导人"改测试让它过"
+        而不是改台账。这里断言的是**结构性质**：
+        总数 89 + 声明与实际一致（后者由 verify_claims 自己判定）。
+        """
         counts = vc.count_statuses(self.rows)
         total = sum(counts.values())
         self.assertEqual(total, 89, f"展开后主题数应为 89，实际 {total}")
-        self.assertEqual(counts.get(vc.OK, 0), 34)
-        self.assertEqual(counts.get(vc.PART, 0), 36)
-        self.assertEqual(counts.get(vc.MISS, 0), 19)
+        self.assertEqual(set(counts) - {vc.OK, vc.PART, vc.MISS}, set(),
+                         "出现了 OK/PART/MISS 之外的状态标记")
+        # 台账声明的数字必须与实际统计一致
+        problems = vc.check_status_ledger(self.rows, self.text)
+        self.assertEqual(problems, [],
+                         f"台账声明的计数与实际不符：{problems}")
 
     def test_citations_resolve(self):
         problems = vc.check_citations(self.text)
@@ -115,8 +126,8 @@ class TestCheckerCatchesFalseClaims(unittest.TestCase):
 
     def test_catches_missing_path(self):
         bad = self.text.replace(
-            "| R-12 外部副作用账本 | ⬜ |",
-            "| R-12 外部副作用账本 | ⬜ | 见 nonexistent/file.py:9999 |", 1)
+            "| C-10 能力去重、别名与合并 | ⬜ |",
+            "| C-10 能力去重、别名与合并 | ⬜ | 见 nonexistent/file.py:9999 |", 1)
         kinds = {p["kind"] for p in self._problems(bad)}
         self.assertIn("citation_path_missing", kinds)
 
@@ -224,7 +235,19 @@ class TestCheckerCatchesFalseClaims(unittest.TestCase):
         self.assertIn("absent_claim_but_present", kinds)
 
     def test_catches_status_count_mismatch(self):
-        bad = self.text.replace("| ✅ 已实现 | 34 |", "| ✅ 已实现 | 40 |", 1)
+        """台账声明的计数与实际表格不符，必须被抓住。
+
+        注入方式不依赖具体数字（状态数会随特性落地变化），
+        而是把声明值改成一个**必然不等于实际值**的数。
+        """
+        rows = vc.parse_ledger(self.text)
+        counts = vc.count_statuses(rows)
+        actual_ok = counts.get(vc.OK, 0)
+        bad_value = actual_ok + 7
+        import re as _re
+        bad = _re.sub(r"(\| ✅ 已实现[^|]*\|\s*)\d+",
+                      lambda m: f"{m.group(1)}{bad_value}",
+                      self.text, count=1)
         self.assertNotEqual(bad, self.text, "注入失败")
         kinds = {p["kind"] for p in self._problems(bad)}
         self.assertIn("status_count_mismatch", kinds)
@@ -253,13 +276,13 @@ class TestSymbolIndex(unittest.TestCase):
                     "impact_analysis", "register_problem"):
             self.assertIn(sym, self.index, f"{sym} 未被索引")
 
-    def test_impact_analysis_has_no_reference(self):
-        """C-09 的核心指控：影响分析零调用方。"""
-        self.assertEqual(self.index["impact_analysis"]["refs"], 0)
+    def test_impact_analysis_is_referenced(self):
+        """C-09 已闭合：影响分析有真实调用方。"""
+        self.assertGreater(self.index["impact_analysis"]["refs"], 0)
 
-    def test_register_problem_has_no_reference(self):
-        """E-07 的核心指控：问题队列永不读取。"""
-        self.assertEqual(self.index["register_problem"]["refs"], 0)
+    def test_register_problem_is_referenced(self):
+        """E-07 已闭合：问题票据被信号消费链读取。"""
+        self.assertGreater(self.index["register_problem"]["refs"], 0)
 
     def test_submit_task_has_path_and_test(self):
         """R-01 的正面证据：既有代码路径也有测试调用。"""
@@ -354,8 +377,12 @@ class TestClaimExtraction(unittest.TestCase):
         claims = vc.extract_dead_claims(self.rows)
         syms = {c["symbol"] for c in claims}
         self.assertIn("link", syms, "M-08 的 link 零调用声明未被抽出")
-        self.assertIn("register_problem", syms,
-                      "E-07 的 register_problem 永不读取声明未被抽出")
+        # E-07 已闭合：台账不应再保留「register_problem 永不读取」的指控，
+        # 否则抽取器会把已修复的事实当成现行声明。
+        self.assertNotIn("register_problem", syms,
+                         "E-07 已闭合，台账仍抽到 register_problem 零调用声明")
+        self.assertNotIn("impact_analysis", syms,
+                         "C-09 已闭合，台账仍抽到 impact_analysis 零调用声明")
         # 不得把字典键/字段名当成主体
         self.assertNotIn("contradicts", syms,
                          "contradicts 是关系名字符串，不是可验证的主体")

@@ -19,7 +19,9 @@ from .candidates import (ALLOWED, CandidateStatus, EvolutionCandidate,
                          TERMINAL_CANDIDATE_STATES)
 from .evaluator import (EvalDataset, Evaluator, EvalReport, GateThresholds,
                         ReleaseGate)
+from ..core import contracts as _contracts
 from .monitor import MonitorPolicy, PostReleaseMonitor
+from .regression import FailureRegressionBuilder
 from .safety import SafetySuite
 
 # PRD 80 风险分级 L0-L4
@@ -63,7 +65,8 @@ class EvolutionController:
                  releases: Optional[Any] = None,
                  datasets: Optional[Dict[str, EvalDataset]] = None,
                  budget_config: Optional[Any] = None,
-                 experts: Optional[Any] = None):
+                 experts: Optional[Any] = None,
+                 max_concurrent_evaluations: Optional[int] = None):
         self.evaluator = evaluator
         self.gate = gate or ReleaseGate()
         # 生产路径要求安全证据与独立保留集（Arch 11.2 / 11.5）
@@ -82,6 +85,13 @@ class EvolutionController:
         self.candidates: Dict[str, EvolutionCandidate] = {}
         self.tickets: deque = deque()
         self._seq = 0
+        # E-13（GAP 第二批第 9 项）：并发评测上限；「进行中评测」=
+        # TESTING/EVALUATING 状态候选（04 卷 E-13 实验编排）
+        self.max_concurrent_evaluations = max(1, int(
+            max_concurrent_evaluations
+            or _contracts.EVOLUTION_MAX_CONCURRENT_EVALUATIONS))
+        # E-12（GAP 第二批第 8 项）：失败案例 → 回归资产转换器
+        self.regression_builder = FailureRegressionBuilder(self)
         if store is not None:
             loaded = store.list_candidates(limit=1000)
             for cand in loaded:
@@ -215,6 +225,65 @@ class EvolutionController:
         self.tickets = deque(
             t for t in self.tickets if not (t.signal_type and t.consumed))
         return proposed
+
+    # ---- E-13 实验编排轮（队列 / 预算 / 并发 / 停止条件）--------------
+    def run_evolution_round(self, max_evaluations: int = 1) -> Dict[str, Any]:
+        """一轮进化实验编排：失败固化 → 信号提案 → 受评测。
+
+        不拥有发布权：评测与门禁决策交给 evaluator/gate；停止条件
+        （contracts EVOLUTION_STOP_*）只停止本轮，绝不静默丢证据。
+        """
+        report: Dict[str, Any] = {
+            "converted": [], "skipped_unknown": [], "already_converted": 0,
+            "proposed": [], "evaluated": [], "errors": [],
+            "stop_reasons": [],
+        }
+        # 停止条件①：实验预算池耗尽（日/月池与正式任务隔离）
+        problem = self._evolution_pool_problem()
+        if problem:
+            report["stop_reasons"].append(
+                f"{_contracts.EVOLUTION_STOP_BUDGET_EXHAUSTED}: {problem}")
+            return report
+        # E-12：失败案例先固化（转换在提案之前，证据先行）
+        converted = self.regression_builder.convert_pending()
+        report["converted"] = converted.get("converted", [])
+        report["skipped_unknown"] = converted.get("skipped_unknown", [])
+        report["already_converted"] = converted.get("already", 0)
+        # 提案（无未决证据 → 记停止原因）
+        report["proposed"] = self.run_signal_pipeline(max_candidates=1)
+        if not report["proposed"]:
+            report["stop_reasons"].append(
+                _contracts.EVOLUTION_STOP_NO_PENDING_EVIDENCE)
+        # 停止条件②：并发上限（TESTING/EVALUATING 计进行中）
+        in_flight = [c for c in self.candidates.values()
+                     if c.status in (CandidateStatus.TESTING,
+                                     CandidateStatus.EVALUATING)]
+        slots = self.max_concurrent_evaluations - len(in_flight)
+        if slots <= 0:
+            report["stop_reasons"].append(
+                _contracts.EVOLUTION_STOP_CONCURRENCY_LIMIT)
+            return report
+        # 评测就绪候选（CANDIDATE_CREATED），受并发余量与轮额度双约束
+        ready = [c for c in self.candidates.values()
+                 if c.status == CandidateStatus.CANDIDATE_CREATED]
+        for cand in ready[:min(slots, max(1, int(max_evaluations)))]:
+            # 每次评测前重查预算池（评测本身消耗预算）
+            later_problem = self._evolution_pool_problem()
+            if later_problem:
+                report["stop_reasons"].append(
+                    f"{_contracts.EVOLUTION_STOP_BUDGET_EXHAUSTED}: "
+                    f"{later_problem}")
+                break
+            try:
+                self.evaluate_candidate(cand.candidate_id)
+                report["evaluated"].append(cand.candidate_id)
+            except Exception as e:  # noqa: BLE001 —— 记因则止，不静默
+                report["errors"].append(
+                    f"{cand.candidate_id}: {type(e).__name__}: {e}")
+                report["stop_reasons"].append(
+                    _contracts.EVOLUTION_STOP_EVALUATION_ERROR)
+                break
+        return report
 
     def _next_candidate_id(self) -> str:
         self._seq += 1

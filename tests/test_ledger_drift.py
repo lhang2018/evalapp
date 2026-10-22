@@ -156,21 +156,21 @@ class TestCriticalClaimsStillHold(unittest.TestCase):
         self.assertIn("normalize_error_payload", src,
                       "server.py 未接入统一错误对象")
 
-    def test_impact_analysis_still_unreferenced(self):
-        """C-09 的核心指控：影响分析零调用方。"""
+    def test_impact_analysis_is_now_consumed(self):
+        """C-09 已闭合：影响分析被候选创建与 /impact 真实消费。"""
         from verify_claims import build_symbol_index
         idx = build_symbol_index()
         self.assertIn("impact_analysis", idx)
-        self.assertEqual(idx["impact_analysis"]["refs"], 0,
-                         "impact_analysis 现在有引用了 —— C-09 判定需更新")
+        self.assertGreater(idx["impact_analysis"]["refs"], 0,
+                           "impact_analysis 又变成零引用 —— C-09 可能回归")
 
-    def test_register_problem_still_unreferenced(self):
-        """E-07 的核心指控：问题队列永不读取。"""
+    def test_register_problem_is_now_consumed(self):
+        """E-07 已闭合：问题票据由 run_signal_pipeline 消费。"""
         from verify_claims import build_symbol_index
         idx = build_symbol_index()
         self.assertIn("register_problem", idx)
-        self.assertEqual(idx["register_problem"]["refs"], 0,
-                         "register_problem 现在有引用了 —— E-07 判定需更新")
+        self.assertGreater(idx["register_problem"]["refs"], 0,
+                           "register_problem 又变成零引用 —— E-07 可能回归")
 
     def test_builtin_tools_now_set_real_health_probes(self):
         """R-08/E-04 死字段已修（提交 ae54291）—— 台账若还写「恒真」就是错的。

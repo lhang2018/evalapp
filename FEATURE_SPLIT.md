@@ -143,7 +143,7 @@
 |---|---|---|---|---|---|
 | **F-51** | 事件与 Trace 结构化 | WP-6.1 | E-01 | `core/events.py` 新增显式列 | `core/schema/` 加列迁移、`core/persistence.py` |
 | **F-52** | 评测集版本演进与覆盖率台账 | WP-6.2 | E-06 | `evolution/datasets.py` | — |
-| **F-53** | 路由质量评测与纠错 | WP-6.3 | R-03 | `evolution/routing_eval.py` | `experts/registry.py`（转发） |
+| **F-53** ✅**已落地** | 路由质量评测与纠错 | WP-6.3 | R-03 | `evolution/routing_eval.py`、`core/schema/routing.py` | `planning/intent.py`（幽灵意图修正）、`core/persistence.py`（+2 具名方法）、`api/server.py`（+1 行 import） | ✅ **2026-10-22 完成**。评测器首次运行即查出两个真实路由缺陷：幽灵意图 `programming`（从未注册）与 `coding`/`travel` 无关键词 → 已修，内置集意图与专家准确率 78.95% → 100%。测试 30 项（含真实 HTTP 端到端） |
 | **F-54** | Planner 计划修订与可执行恢复策略 | WP-6.4 | R-04 | `planning/revise.py` | `planning/planner.py`、`react/engine.py` |
 | **F-55** | 隐私分级口径统一 | WP-6.5 | S-02 | `core/privacy.py` 映射表 | `core/contracts.py`（枚举裁定） |
 | **F-56** | 模型输出不可信检测 | WP-6.6 | S-03 | `core/untrusted.py` | `core/controller.py`（接线） |
@@ -271,7 +271,7 @@ F-13(检查点) → F-03(副作用埋点) → F-04(审计埋点) → F-10(Manife
 | F-31..F-42 | WP-5.x | S/O/A/P | — |
 | **F-51** | WP-6.1 | E-01 | — |
 | **F-52** | WP-6.2 | E-06 | — |
-| **F-53** | WP-6.3 | R-03 | — |
+| **F-53** ✅ | WP-6.3 | R-03 | — |
 | **F-54** | WP-6.4 | R-04 | — |
 | **F-55** | WP-6.5 | S-02 | — |
 | **F-56** | WP-6.6 | S-03 | — |

@@ -211,6 +211,7 @@ Python 服务端（标准库，SQLite）
 | EV-10 | 候选实验预算 | 🔹 | `evolution/controller.py`, `evolution/runner.py` | 双记账 `candidate:<id>` + `evolution`、耗尽记失败不中断批次 ✅；**但进化侧无实验并发控制**（任务侧 `BoundedSemaphore` 不覆盖进化实验），且**无「重复失败即停止」条件**——ReAct 的 `repeated_failure` 是单任务停止，与进化实验无关 |
 | EV-11 | 候选代码隔离沙箱 | ✅ | `evolution/sandbox.py`, `api/server.py`, `cli.py` | 一次性目录 + 环境白名单；审计钩子阻断网络/子进程/动态库/沙箱外读写；超时强杀、输出截断；`POST /evolution/sandbox/run`（admin）、`sandbox-run` CLI；非恶意代码强安全边界，文档已注明 |
 | EV-12 | 发布后监测采集与判定 | ✅ | `evolution/monitor.py`, `evolution/controller.py` | 时间窗采样、上窗对比、评估任务剔除、安全事件即时回滚、warning hold、`auto_rollback` 可关 |
+| **EV-14** | **路由质量评测与纠错** | ✅ | `evolution/routing_eval.py`, `api/routing_eval_api.py` | **F-53 新增**。路由专用评测集（覆盖全部已注册意图 + 歧义用例 + 独立保留集）与评估器；产出**意图准确率/专家准确率/混淆矩阵/top-1·top-3 命中率/兜底率/弃权率/平均置信度**；`regression_cases()` 把失败与低置信样本回流为回归用例（保留集不回流）；`compare()` 做基线对比并判定退化。API：`GET/POST /routing/eval`、`GET /routing/reports`。**首次运行即查出两个真实路由缺陷并修复**（幽灵意图 `programming` + `coding`/`travel` 无关键词） |
 
 ### 2.11 发布管理（PRD 59-63 / 80-82）
 
@@ -777,7 +778,7 @@ cd android-app && npm run test:offline
 | **工具健康检查** ✅**已修** | R-08/E-04 | ~~`builtin.py` 零设置 `health_check` → `health()` 恒返回 True~~ → **已由 `ae54291` 实装真探针**（六工具真探针 + `None=unknown` 三值语义 + 探针故障 fail-closed） | WP-0.5 / F-02 |
 | **专家独立评测** | C-03 | `quality_metrics` 只被赋值、**零消费点** | WP-0.7 / F-05 |
 | **专家记忆命名空间隔离** | M-01..05 | `memory_scope_key` 全仓零读取；`store.py:248` 的 `or not m.scope_key` 使空 key 放行，**即使接上也无隔离能力** | WP-0.7 / F-05 |
-| **路由质量评测** | R-03 | 无任何路由评测集或指标；`datasets.py` 4 个内置用例全为通用任务，零个路由/分类用例 | **WP-6.3 / F-53** |
+| **路由质量评测** ✅**已修** | R-03 | ~~无任何路由评测集或指标~~ → **已由 F-53 实装**（`evoagent/evolution/routing_eval.py`：意图准确率/专家准确率/混淆矩阵/top-1·top-3/兜底率/弃权率 + 低置信样本回流 + 基线对比）；**评测器首次运行即查出两个真实路由缺陷**：关键词表含幽灵意图 `programming`（从未注册）+ `coding`/`travel` 无关键词 → 已修，准确率 78.95% → 100% | **WP-6.3 / F-53** |
 | **记忆冲突识别** | M-08 | `link()` 的 `contradicts` 关系**零调用点**；无置信合并与用户确认流 | WP-5.2 / F-05 |
 | **失败案例转回归资产** | E-12 | 无 `DiagnosticCase → EvalCase` 转换，案例进不了 `datasets` | WP-3.2 / F-08 |
 | **审批记录实体** ✅**已修** | A-01 | ~~`approval_id` 零命中；瞬时 `confirm_callback -> bool`，无动作摘要绑定/有效期/一次性语义~~ → **已由 `084d71d` 实装**（`core/approvals.py` + `core/schema/approvals.py`，A-01 五项绑定全落字段） | WP-0.3 / F-12 |
