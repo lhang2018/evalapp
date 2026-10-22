@@ -48,8 +48,8 @@ class ReactEngine:
         self.bus = event_bus
         self.max_iterations = max_iterations
         self.max_repeat_failures = max_repeat_failures
-        # F-03：副作用账本（SideEffectLedger 或等价 sink），可选；
-        # 每次工具结果返回后回传 (task_id, tool_id, result) 记账。
+        # Optional ledger is passed to the tool gateway, which writes before
+        # execution. ReAct must not create a second, post-hoc ledger entry.
         self.effects = effects
 
     def run(self, base_messages: List[ChatMessage],
@@ -97,6 +97,10 @@ class ReactEngine:
             budget.record_model_call(
                 _estimate_cost(adapter, messages, suggestion), model_id)
 
+            if _flag(cancel_flag, "cancelled"):
+                outcome.stop_reason = "cancel"
+                return outcome
+
             # 暂停在模型返回后生效：不执行新的工具调用，避免暂停后仍有副作用
             if _flag(cancel_flag, "paused"):
                 outcome.steps.append(TraceStep(i, suggestion))
@@ -127,23 +131,15 @@ class ReactEngine:
             try:
                 budget.check_tool_call(tool)
                 result = self.tools.execute(tool or "", suggestion.args,
-                                            budget=budget)
+                                            budget=budget,
+                                            allowed_tools=allowed_tools,
+                                            task_id=run_id, run_id=run_id,
+                                            effects=self.effects)
             except BudgetExceeded as e:
                 outcome.stop_reason = f"budget:{e.dimension}"
                 return outcome
 
             step.tool_result = result
-            # F-03：副作用记账（有账本时按 ToolResult 映射六态）
-            if self.effects is not None:
-                try:
-                    self.effects.record_from_tool_result(
-                        run_id, tool, result, run_id=run_id)
-                except Exception:  # noqa: BLE001 —— 账本故障不阻断执行
-                    if self.bus:
-                        self.bus.emit(
-                            event_type="side_effect_ledger_error",
-                            task_id=run_id, run_id=run_id,
-                            payload={"tool": tool}, severity="warn")
             payload = result.to_dict()
             messages.append(ChatMessage(
                 role="assistant",
@@ -156,6 +152,10 @@ class ReactEngine:
                               run_id=run_id,
                               payload={"tool": tool, "ok": result.ok,
                                        "error_class": result.error_class})
+
+            if result.side_effect_uncertain:
+                outcome.stop_reason = "side_effect_unknown"
+                return outcome
 
             if plan is not None and result.ok and _advance_plan(plan, tool):
                 messages.append(ChatMessage(

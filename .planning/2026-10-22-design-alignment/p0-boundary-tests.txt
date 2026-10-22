@@ -1,0 +1,14 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+..............F..........                                                [100%]
+================================== FAILURES ===================================
+___ test_runtime_waits_for_workflow_authorization_and_preserves_definition ____
+tests\test_execution_boundaries.py:239: in test_runtime_waits_for_workflow_authorization_and_preserves_definition
+    task = app.submit("read", intent="general", workflow_ref=wf.workflow_id)
+evoagent\app.py:295: in submit
+    return self.controller.submit_task(goal, **kwargs)
+E   TypeError: RuntimeController.submit_task() got an unexpected keyword argument 'workflow_ref'
+=========================== short test summary info ===========================
+FAILED tests/test_execution_boundaries.py::test_runtime_waits_for_workflow_authorization_and_preserves_definition
+1 failed, 24 passed in 0.57s

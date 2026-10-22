@@ -1,0 +1,19 @@
+{
+  "checked": 2,
+  "bare_checked": 67,
+  "anchor_checked": 84,
+  "problems": [
+    {
+      "doc": "GAP_ANALYSIS.md",
+      "doc_line": 316,
+      "kind": "bare_points_to_blank",
+      "detail": "������ `core/controller.py:633` ָ�����"
+    },
+    {
+      "doc": "IMPLEMENTATION.md",
+      "doc_line": 237,
+      "kind": "bare_points_to_blank",
+      "detail": "������ `evoagent/core/controller.py:549` ָ�����"
+    }
+  ]
+}

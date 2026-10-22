@@ -128,6 +128,22 @@ class Database:
             self._conn.commit()
         return effect_id
 
+    def claim_side_effect(self, effect_id: str, task_id: str, run_id: str,
+                          tool_id: str, idempotency_key: str,
+                          summary: str) -> bool:
+        """Atomic operation claim; duplicate claims never leave an open transaction."""
+        now = time.time()
+        with self._lock:
+            cursor = self._conn.execute(
+                "INSERT OR IGNORE INTO task_side_effects"
+                " (effect_id,task_id,run_id,tool_id,idempotency_key,"
+                "effect_summary,status,created_at,updated_at)"
+                " VALUES (?,?,?,?,?,?,'planned',?,?)",
+                (effect_id, task_id, run_id, tool_id, idempotency_key,
+                 summary, now, now))
+            self._conn.commit()
+        return cursor.rowcount == 1
+
     def update_side_effect_status(self, effect_id: str, status: str, *,
                                   receipt_ref: Optional[str] = None,
                                   reconciled_at: Optional[float] = None

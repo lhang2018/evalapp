@@ -12,17 +12,18 @@ unknown 必须**先对账**（reconcile）才能继续（PRD 35 / GAP §7 第 2 
 - 待定副作用（planned/submitted/unknown）是 resume 的投影源
   （GAP §7：「pending_side_effects 由账本投影而来而非检查点自持」）。
 
-从 ToolResult 到状态的映射（`record_command_result`）：
+从 ToolResult 到状态的映射（`finish` / legacy `record_from_tool_result`）：
 - 工具契约 side_effect_level in (none,) 不参与账本；
 - ok/executed → confirmed（外部世界已变更且结果明确）
 - 未 ok 但 side_effect_uncertain（注册表对 external/local/destructive
   失败置位）→ **unknown**（已发生或可能发生，未收到确认）
 - 未 ok、未执行、非不确定 → failed（无副作用发生）
 
-**运行期从注册表回传**：ReactEngine 通过可选的 `effects` 回调在每次
-工具结果返回时记账（run_id 即 task_id，与控制器一致）。
+工具注册表在调用前通过 begin 持久化操作意图，调用后 finish 落结果；
+ReAct/DAG 共用该边界。legacy 结果映射只作兼容，不替代执行前记账。
 """
 
+import hashlib
 import time
 import uuid
 from typing import Any, Dict, List, Optional
@@ -58,6 +59,58 @@ class SideEffectLedger:
 
     # ---- 记账 ----
 
+    def begin(self, task_id: str, tool_id: str, key: str,
+              summary: str, *, run_id: str = ""):
+        """Claim a logical operation durably before invoking its runner.
+
+        The primary key arbitrates concurrent callers, including separate
+        registry instances after restart. Only a proven failed/compensated
+        attempt permits a new attempt; pending and confirmed never replay.
+        """
+        attempt = 0
+        for row in self.history(task_id):
+            if (len(row["effect_id"]) == 16 and row["tool_id"] == tool_id
+                    and row["idempotency_key"] == key
+                    and row["status"] not in _TERMINAL):
+                # Existing post-hoc records from the previous format must
+                # not disappear just because operation IDs now use a hash.
+                return row["effect_id"], False
+        while True:
+            identity = f"{task_id}\0{tool_id}\0{key}\0{attempt}"
+            effect_id = "eff_" + hashlib.sha256(identity.encode()).hexdigest()[:32]
+            claimed = self.db.claim_side_effect(
+                effect_id, task_id, run_id or task_id, tool_id, key, summary)
+            if not claimed:
+                row = self.get(effect_id)
+                if row is None or row["effect_summary"] != summary:
+                    raise ValueError("副作用幂等键与操作参数不匹配")
+                if row["status"] in _TERMINAL:
+                    attempt += 1
+                    continue
+                return effect_id, False
+            if not self.transition(effect_id, "submitted"):
+                raise RuntimeError("副作用提交状态未持久化")
+            return effect_id, True
+
+    def finish(self, effect_id: str, result) -> None:
+        """Persist the result before releasing an operation as confirmed."""
+        if result.side_effect_uncertain:
+            status = "unknown"
+        elif result.ok and result.executed:
+            # A crash before the confirmed transition remains submitted and
+            # blocks replay. A confirmed operation always has its result.
+            self.db.save_tool_execution(
+                "effect:" + effect_id, result.evidence.get("tool", ""),
+                result.to_dict())
+            status = "confirmed"
+        elif result.side_effect_uncertain or result.executed:
+            result.side_effect_uncertain = True
+            status = "unknown"
+        else:
+            status = "failed"
+        if not self.transition(effect_id, status):
+            raise RuntimeError("副作用结果状态未持久化")
+
     def record(self, task_id: str, tool_id: str, *,
                run_id: Optional[str] = None,
                idempotency_key: Optional[str] = None,
@@ -83,19 +136,18 @@ class SideEffectLedger:
         level = (result.evidence or {}).get("side_effect_level")
         if level not in LEDGER_LEVELS:
             return None
+        existing = (result.evidence or {}).get("effect_id")
+        if existing:
+            row = self.get(existing)
+            if row and row["task_id"] == task_id and row["tool_id"] == tool_id:
+                return existing
         eff_id = self.record(task_id, tool_id, run_id=run_id,
                              idempotency_key=result.idempotency_key,
                              summary=summary or f"tool={tool_id}",
                              status="submitted")
-        if result.ok and result.executed:
-            self.transition(eff_id, "confirmed")
-        elif result.side_effect_uncertain:
-            self.transition(eff_id, "unknown")
-        elif result.executed:
-            # 已执行但未成功：结果不确定程度未知 → 走 unknown 保守口径
-            self.transition(eff_id, "unknown")
-        else:
-            self.transition(eff_id, "failed")
+        result.evidence["effect_id"] = eff_id
+        result.evidence.setdefault("tool", tool_id)
+        self.finish(eff_id, result)
         return eff_id
 
     # ---- 状态机 ----

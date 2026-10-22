@@ -1,0 +1,115 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [ 12%]
+........................................................................ [ 24%]
+..................FF...F................................................ [ 36%]
+........................................F............................... [ 48%]
+..........F............FF............................................... [ 60%]
+........................................................................ [ 72%]
+........................................................................ [ 84%]
+.............................F.......s.....FF........................... [ 96%]
+......................                                                   [100%]
+================================== FAILURES ===================================
+_______ TestE12RegressionAssets.test_missing_source_task_not_converted ________
+tests\test_e12_e13.py:95: in test_missing_source_task_not_converted
+    self.assertNotIn(C.REGRESSION_DATASET_ID, self.evolution.datasets)
+E   AssertionError: 'failures_regression' unexpectedly found in {'builtin_smoke': EvalDataset(dataset_id='builtin_smoke', version='1.0.0', task_category='general', source='builtin', privacy='standard', applicable_models=['mock', 'openai_compat'], applicable_capabilities=['time_query', 'computation'], holdout=False, cases=[EvalCase(case_id='smoke_time', input_goal='���ڼ�����', intent='time_query', domain='general', expected=[{'type': 'tool_succeeded'}], difficulty='easy', holdout=False, safety=False, tags=[]), EvalCase(case_id='smoke_calc', input_goal='���� 2024 + 2000 + 500', intent='computation', domain='general', expected=[{'type': 'tool_goal_reached'}], difficulty='easy', holdout=False, safety=False, tags=[]), EvalCase(case_id='smoke_time_2', input_goal='�����ҵ�ǰʱ��', intent='time_query', domain='general', expected=[{'type': 'result_nonempty'}], difficulty='easy', holdout=False, safety=False, tags=[])]), 'builtin_holdout': EvalDataset(dataset_id='builtin_holdout', version='1.0.0', task_category='general', source='builtin_holdout', privacy='standard', applicable_models=['mock', 'openai_compat'], applicable_capabilities=['computation'], holdout=True, cases=[EvalCase(case_id='holdout_calc', input_goal='���� 7 * 8', intent='computation', domain='general', expected=[{'type': 'tool_goal_reached'}], difficulty='easy', holdout=True, safety=False, tags=[])]), 'failures_regression': EvalDataset(dataset_id='failures_regression', version='1.0.0', task_category='general', source='runtime', privacy='standard', applicable_models=[], applicable_capabilities=[], holdout=False, cases=[])}
+_________ TestE12RegressionAssets.test_unknown_evidence_not_converted _________
+tests\test_e12_e13.py:80: in test_unknown_evidence_not_converted
+    self.assertEqual(case.status, CaseStatus.INCONCLUSIVE)
+E   AssertionError: <CaseStatus.DIAGNOSED: 'diagnosed'> != <CaseStatus.INCONCLUSIVE: 'inconclusive'>
+______ TestE13EvolutionRound.test_full_round_converts_proposes_evaluates ______
+tests\test_e12_e13.py:111: in test_full_round_converts_proposes_evaluates
+    self.assertIn(C.EVOLUTION_STOP_NO_PENDING_EVIDENCE,
+E   AssertionError: 'no_pending_evidence' not found in []
+__ TestGapClosureCatchesGaps.test_duplicate_claim_masks_single_path_removal ___
+tests\test_gap_closure.py:180: in test_duplicate_claim_masks_single_path_removal
+    self.assertNotIn(
+E   AssertionError: 'S-02' unexpectedly found in ['S-02'] : �����Զ��Ե�����֪���ޣ����·�����ڣ��� S-02 �Ապϡ����˶���ʧ�ܣ�˵��У������Ϊ���ˣ��������������б����߽�
+_________________ TestNoDrift.test_all_ledgers_have_no_drift __________________
+tests\test_ledger_drift.py:30: in test_all_ledgers_have_no_drift
+    self.assertEqual(
+E   AssertionError: Lists differ: [{'doc': 'IMPLEMENTATION.md', 'doc_line': [212 chars]����'}] != []
+E
+E   First list contains 2 additional elements.
+E   First extra element 0:
+E   {'doc': 'IMPLEMENTATION.md', 'doc_line': 237, 'kind': 'bare_points_to_blank', 'detail': '������ `evoagent/core/controller.py:549` ָ�����'}
+E
+E   + []
+E   - [{'detail': '������ `evoagent/core/controller.py:549` ָ�����',
+E   -   'doc': 'IMPLEMENTATION.md',
+E   -   'doc_line': 237,
+E   -   'kind': 'bare_points_to_blank'},
+E   -  {'detail': '������ `core/controller.py:633` ָ�����',
+E   -   'doc': 'GAP_ANALYSIS.md',
+E   -   'doc_line': 316,
+E   -   'kind': 'bare_points_to_blank'}] : ̨�˴��� 2 ���������⣺[('IMPLEMENTATION.md', 237, 'bare_points_to_blank'), ('GAP_ANALYSIS.md', 316, 'bare_points_to_blank')]
+_____ TestCriticalClaimsStillHold.test_impact_analysis_still_unreferenced _____
+tests\test_ledger_drift.py:164: in test_impact_analysis_still_unreferenced
+    self.assertEqual(idx["impact_analysis"]["refs"], 0,
+E   AssertionError: 2 != 0 : impact_analysis ������������ ���� C-09 �ж������
+____ TestCriticalClaimsStillHold.test_register_problem_still_unreferenced _____
+tests\test_ledger_drift.py:172: in test_register_problem_still_unreferenced
+    self.assertEqual(idx["register_problem"]["refs"], 0,
+E   AssertionError: 1 != 0 : register_problem ������������ ���� E-07 �ж������
+_________________ TestRealLedgerPasses.test_full_check_passes _________________
+tests\test_verify_claims.py:104: in test_full_check_passes
+    self.assertEqual(problems, [],
+E   AssertionError: Lists differ: [{'kind': 'dead_claim_but_referenced', 'th[333 chars]279}] != []
+E
+E   First list contains 2 additional elements.
+E   First extra element 0:
+E   {'kind': 'dead_claim_but_referenced', 'theme': 'C-09', 'symbol': 'impact_analysis', 'detail': '̨�˳� `impact_analysis` ����ã��� evoagent/experts/registry.py:131 �� 2 ������', 'ledger_line': 262}
+E
+E   + []
+E   - [{'detail': '̨�˳� `impact_analysis` ����ã��� evoagent/experts/registry.py:131 �� 2 '
+E   -             '������',
+E   -   'kind': 'dead_claim_but_referenced',
+E   -   'ledger_line': 262,
+E   -   'symbol': 'impact_analysis',
+E   -   'theme': 'C-09'},
+E   -  {'detail': '̨�˳� `register_problem` ����ã��� evoagent/evolution/controller.py:167 '
+E   -             '�� 1 ������',
+E   -   'kind': 'dead_claim_but_referenced',
+E   -   'ledger_line': 279,
+E   -   'symbol': 'register_problem',
+E   -   'theme': 'E-07'}] : ̨������δͨ������У�飺[{'kind': 'dead_claim_but_referenced', 'theme': 'C-09', 'symbol': 'impact_analysis', 'detail': '̨�˳� `impact_analysis` ����ã��� evoagent/experts/registry.py:131 �� 2 ������', 'ledger_line': 262}, {'kind': 'dead_claim_but_referenced', 'theme': 'E-07', 'symbol': 'register_problem', 'detail': '̨�˳� `register_problem` ����ã��� evoagent/evolution/controller.py:167 �� 1 ������', 'ledger_line': 279}]
+____________ TestSymbolIndex.test_impact_analysis_has_no_reference ____________
+tests\test_verify_claims.py:281: in test_impact_analysis_has_no_reference
+    self.assertEqual(self.index["impact_analysis"]["refs"], 0)
+E   AssertionError: 2 != 0
+___________ TestSymbolIndex.test_register_problem_has_no_reference ____________
+tests\test_verify_claims.py:285: in test_register_problem_has_no_reference
+    self.assertEqual(self.index["register_problem"]["refs"], 0)
+E   AssertionError: 1 != 0
+============================== warnings summary ===============================
+tests/test_memory_router_diag.py::TestWorkflowLibraryAndGit::test_git_read_tool
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-435 (_readerthread)
+
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+  UnicodeDecodeError: 'gbk' codec can't decode byte 0x80 in position 48: illegal multibyte sequence
+
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_e12_e13.py::TestE12RegressionAssets::test_missing_source_task_not_converted
+FAILED tests/test_e12_e13.py::TestE12RegressionAssets::test_unknown_evidence_not_converted
+FAILED tests/test_e12_e13.py::TestE13EvolutionRound::test_full_round_converts_proposes_evaluates
+FAILED tests/test_gap_closure.py::TestGapClosureCatchesGaps::test_duplicate_claim_masks_single_path_removal
+FAILED tests/test_ledger_drift.py::TestNoDrift::test_all_ledgers_have_no_drift
+FAILED tests/test_ledger_drift.py::TestCriticalClaimsStillHold::test_impact_analysis_still_unreferenced
+FAILED tests/test_ledger_drift.py::TestCriticalClaimsStillHold::test_register_problem_still_unreferenced
+FAILED tests/test_verify_claims.py::TestRealLedgerPasses::test_full_check_passes
+FAILED tests/test_verify_claims.py::TestSymbolIndex::test_impact_analysis_has_no_reference
+FAILED tests/test_verify_claims.py::TestSymbolIndex::test_register_problem_has_no_reference
+10 failed, 587 passed, 1 skipped, 1 warning in 73.65s (0:01:13)

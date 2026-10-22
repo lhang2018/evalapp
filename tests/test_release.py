@@ -14,7 +14,7 @@ class TestRelease(unittest.TestCase):
         # 篡改检测：签名绑定内容摘要
         m2 = rm.build_manifest(version="v2")
         m2.version = "v3-tampered"
-        self.assertTrue(rm.verify(m2.release_id)["ok"] or True)  # version 不参与摘要
+        self.assertFalse(rm.verify(m2.release_id)["ok"])
         m3 = rm.build_manifest(version="v3")
         m3.artifact_digest = "deadbeef-tampered"
         self.assertFalse(rm.verify(m3.release_id)["ok"])

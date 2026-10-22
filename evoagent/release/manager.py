@@ -5,6 +5,7 @@
 """
 
 import hashlib
+import hmac
 import json
 import secrets
 import time
@@ -15,8 +16,19 @@ from typing import Any, Dict, List, Optional
 
 
 def _sign(payload: Dict[str, Any], secret: str) -> str:
-    blob = json.dumps(payload, sort_keys=True, ensure_ascii=False)
-    return hashlib.sha256((secret + blob).encode()).hexdigest()
+    return hmac.new(secret.encode(), _canonical(payload), hashlib.sha256).hexdigest()
+
+
+def _canonical(payload: Dict[str, Any]) -> bytes:
+    return json.dumps(payload, sort_keys=True, ensure_ascii=False,
+                      separators=(",", ":"), allow_nan=False).encode("utf-8")
+
+
+def _digest(manifest: "ReleaseManifest") -> str:
+    payload = manifest.to_dict()
+    payload.pop("artifact_digest", None)
+    payload.pop("signed_by", None)
+    return hashlib.sha256(_canonical(payload)).hexdigest()
 
 
 @dataclass
@@ -33,7 +45,8 @@ class ReleaseManifest:
     eval_dataset_version: str = ""
     eval_report: Optional[Dict[str, Any]] = None
     compatible_requirements: List[str] = field(default_factory=list)
-    # 下发范围与兼容条件（双端协同 Arch 5.1）：缺失时按“不限制”处理
+    # Compatibility is signed content. Legacy manifests lacking declarations
+    # remain readable for history but cannot enter a stable channel.
     target_platforms: List[str] = field(default_factory=list)
     min_app_version: str = "0.0.0"
     required_tool_contracts: List[str] = field(default_factory=list)
@@ -43,12 +56,19 @@ class ReleaseManifest:
     artifact_digest: Optional[str] = None
     signed_by: Optional[str] = None
     created_at: float = field(default_factory=time.time)
+    signature_version: str = "hmac-sha256-v1"
+    permission_requirements: Optional[List[str]] = None
+    data_schema: Optional[str] = None
+    model_capabilities: Optional[List[str]] = None
+    offline_support: Optional[bool] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return self.__dict__.copy()
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "ReleaseManifest":
+        d = dict(d)
+        d.setdefault("signature_version", "legacy")
         return cls(**{k: v for k, v in d.items()
                       if k in cls.__dataclass_fields__})
 
@@ -85,9 +105,16 @@ class ReleaseManager:
 
     # ---- 发布组合 ----
     def build_manifest(self, **kwargs: Any) -> ReleaseManifest:
-        m = ReleaseManifest(**kwargs) if kwargs else ReleaseManifest()
-        blob = json.dumps(m.to_dict(), sort_keys=True, default=str)
-        m.artifact_digest = hashlib.sha256(blob.encode()).hexdigest()[:16]
+        # These explicit defaults describe the metadata-only built-in bundle.
+        # Real capability builders must supply their additional requirements.
+        defaults = dict(target_platforms=["android", "ios"],
+                        permission_requirements=[], data_schema="evoagent/1",
+                        model_capabilities=[], offline_support=False)
+        defaults.update(kwargs)
+        m = ReleaseManifest(**defaults)
+        if m.release_id in self.manifests:
+            raise ValueError("发布 ID 已存在，禁止覆盖不可变制品")
+        m.artifact_digest = _digest(m)
         m.signed_by = _sign({"digest": m.artifact_digest},
                             self.secret)
         self.manifests[m.release_id] = m
@@ -95,9 +122,9 @@ class ReleaseManager:
             self.store.save_release_manifest(m)
         if self.artifact_dir is not None:
             artifact = self.artifact_dir / f"{m.release_id}.json"
-            artifact.write_text(json.dumps(m.to_dict(), ensure_ascii=False,
-                                           indent=1, default=str),
-                                encoding="utf-8")
+            temporary = artifact.with_suffix(".tmp")
+            temporary.write_bytes(_canonical(m.to_dict()))
+            temporary.replace(artifact)
         return m
 
     # ---- 门禁之后的部署（PRD 62）----
@@ -112,6 +139,8 @@ class ReleaseManager:
             return {"ok": False, "error": "核心安全边界的改动不允许普通发布流程"}
         if not gate_passed:
             return {"ok": False, "error": "门禁未通过，拒绝部署"}
+        if m.channel == "stable" and not self.compatibility_complete(m):
+            return {"ok": False, "error": "稳定通道缺少完整兼容声明"}
         check = self.verify(m.release_id)
         if not check.get("ok"):
             return {"ok": False, "error": "制品签名/完整性校验失败", **check}
@@ -133,7 +162,8 @@ class ReleaseManager:
         m = self.manifests.get(target) if target else None
         if m is None:
             return {"ok": False, "error": "回滚目标缺失"}
-        self.verify(target)
+        if not self.verify(target).get("ok"):
+            return {"ok": False, "error": "回滚目标完整性校验失败"}
         self.current_release_id = target
         rec = {"from": last["release_id"], "to": target,
                "reason": reason, "at": time.time()}
@@ -151,19 +181,39 @@ class ReleaseManager:
         m = self.manifests.get(release_id)
         if not m:
             return {"ok": False, "error": "manifest 不存在"}
-        expected_sig = _sign({"digest": m.artifact_digest}, self.secret)
-        sig_ok = expected_sig == m.signed_by
+        try:
+            digest_ok = (isinstance(m.artifact_digest, str)
+                         and hmac.compare_digest(_digest(m), m.artifact_digest))
+            expected_sig = _sign({"digest": m.artifact_digest}, self.secret)
+            sig_ok = (m.signature_version == "hmac-sha256-v1"
+                      and isinstance(m.signed_by, str)
+                      and hmac.compare_digest(expected_sig, m.signed_by))
+        except (TypeError, ValueError):
+            digest_ok = sig_ok = False
         artifact_ok = True
         if self.artifact_dir is not None:
             artifact = self.artifact_dir / f"{release_id}.json"
-            if artifact.exists():
-                try:
-                    data = json.loads(artifact.read_text(encoding="utf-8"))
-                    artifact_ok = data.get("artifact_digest") == m.artifact_digest
-                except Exception:  # noqa: BLE001
-                    artifact_ok = False
+            try:
+                data = json.loads(artifact.read_text(encoding="utf-8"))
+                artifact_ok = (isinstance(data, dict)
+                               and hmac.compare_digest(
+                                   _canonical(data), _canonical(m.to_dict())))
+            except (OSError, ValueError, TypeError):
+                artifact_ok = False
         # 签名只证明来源与完整性，制品本身安全仍需测试与门禁（Arch 18.4）
-        return {"ok": sig_ok and artifact_ok,
+        return {"ok": digest_ok and sig_ok and artifact_ok,
                 "artifact_digest": m.artifact_digest,
+                "digest_ok": digest_ok,
                 "artifact_ok": artifact_ok,
                 "note": "签名仅证明来源与完整性，安全结论依赖于评测与门禁"}
+
+    @staticmethod
+    def compatibility_complete(m: ReleaseManifest) -> bool:
+        arrays = (m.target_platforms, m.required_tool_contracts,
+                  m.permission_requirements, m.model_capabilities)
+        return (all(isinstance(a, list) and all(isinstance(v, str) and v
+                                               for v in a) for a in arrays)
+                and bool(m.target_platforms)
+                and isinstance(m.min_app_version, str) and bool(m.min_app_version)
+                and isinstance(m.data_schema, str) and bool(m.data_schema)
+                and isinstance(m.offline_support, bool))

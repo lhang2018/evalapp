@@ -13,6 +13,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from ..core.budget import BudgetController
 from ..core.permissions import PermissionController, PermissionDecision
+from ..core.side_effects import SideEffectLedger
 from ..core.task import RiskLevel
 from .contract import ToolContract, ToolResult, class_error, validate_against_schema
 
@@ -36,6 +37,7 @@ class ToolRegistry:
                  store: Optional[Any] = None):
         self.permissions = permissions
         self.store = store
+        self.effects = SideEffectLedger(store) if store is not None else None
         self._tools: Dict[str, RegisteredTool] = {}
 
     # ---- 生命周期: 注册 ----
@@ -47,6 +49,10 @@ class ToolRegistry:
         # 契约 §4（GAP ⑤b）：risk_class 声明与执行同源——未声明时在
         # 注册单点按副作用级推导；显式声明走 fail-closed 抬升裁决
         risk_declared = bool(contract.risk_class)
+        if contract.side_effect_level not in _SIDE_EFFECT_RANK:
+            raise ValueError("未知副作用等级")
+        if risk_declared and contract.declared_risk() is None:
+            raise ValueError("未知工具风险等级")
         if not risk_declared:
             contract.risk_class = self._RISK_DERIVED.get(
                 contract.side_effect_level, "medium")
@@ -92,8 +98,16 @@ class ToolRegistry:
     # ---- 生命周期: 执行 ----
     def execute(self, tool_id: str, args: Dict,
                 budget: Optional[BudgetController] = None,
-                idempotency_key: Optional[str] = None) -> ToolResult:
-        result = self._execute_direct(tool_id, args, budget, idempotency_key)
+                idempotency_key: Optional[str] = None, *,
+                allowed_tools: Optional[List[str]] = None,
+                task_id: str = "", run_id: str = "",
+                effects: Optional[Any] = None,
+                timeout_seconds: Optional[float] = None) -> ToolResult:
+        context = dict(allowed_tools=allowed_tools, task_id=task_id,
+                       run_id=run_id, effects=effects,
+                       timeout_seconds=timeout_seconds)
+        result = self._execute_direct(tool_id, args, budget, idempotency_key,
+                                      **context)
         if result.ok or result.executed or result.side_effect_uncertain:
             return result
         if result.error_class not in SUBSTITUTABLE_ERRORS:
@@ -114,7 +128,8 @@ class ToolRegistry:
                 attempts.append({"tool": sub_id, "status": "rejected",
                                  "reason": reason})
                 continue
-            sub_result = self._execute_direct(sub_id, args, budget)
+            sub_result = self._execute_direct(sub_id, args, budget,
+                                              idempotency_key, **context)
             attempts.append({
                 "tool": sub_id,
                 "status": "ok" if sub_result.ok else "failed",
@@ -137,7 +152,16 @@ class ToolRegistry:
 
     def _execute_direct(self, tool_id: str, args: Dict,
                         budget: Optional[BudgetController] = None,
-                        idempotency_key: Optional[str] = None) -> ToolResult:
+                        idempotency_key: Optional[str] = None, *,
+                        allowed_tools: Optional[List[str]] = None,
+                        task_id: str = "", run_id: str = "",
+                        effects: Optional[Any] = None,
+                        timeout_seconds: Optional[float] = None) -> ToolResult:
+        # The model's visible schema is advisory; enforce its scope here for
+        # the primary tool and every substitute before any runner is invoked.
+        if allowed_tools is not None and tool_id not in allowed_tools:
+            return ToolResult.error_result(
+                f"工具不在当前任务允许列表: {tool_id}", "auth_or_permission")
         rt = self._tools.get(tool_id)
         if rt is None:
             return ToolResult.error_result(f"工具未注册: {tool_id}", "tool_not_found")
@@ -156,8 +180,8 @@ class ToolRegistry:
         if self.permissions:
             decision = self.permissions.check_tool(
                 tool_id, args, risk, side_effect=c.side_effect_level,
-                lifted=lifted)
-            if decision == PermissionDecision.DENY:
+                lifted=lifted, task_id=task_id)
+            if decision != PermissionDecision.ALLOW:
                 return ToolResult.error_result(f"工具被权限拒绝: {tool_id}",
                                                "auth_or_permission")
 
@@ -175,8 +199,46 @@ class ToolRegistry:
 
         # 幂等键（PRD 16 / Arch 6.5）：键幂等工具命中日志时直接返回原结果
         key = idempotency_key or _default_idem_key(tool_id, args)
+        ledger = effects if effects is not None else self.effects
+        effect_id = None
+        if ledger is not None and c.side_effect_level != "none":
+            operation_task = task_id or ("tool_" + key if idempotency_key
+                                        else "tool_" + uuid.uuid4().hex)
+            try:
+                pending = ledger.pending(operation_task)
+                if any(row["status"] == "unknown"
+                       or row["idempotency_key"] != key
+                       or row["tool_id"] != tool_id for row in pending):
+                    blocked = ToolResult.error_result(
+                        "任务存在未对账副作用，禁止创建新副作用", "side_effect_unknown")
+                    blocked.side_effect_uncertain = True
+                    return blocked
+                effect_id, claimed = ledger.begin(
+                    operation_task, tool_id, key,
+                    _default_idem_key(tool_id, args), run_id=run_id)
+                if not claimed:
+                    row = ledger.get(effect_id)
+                    cached = ledger.db.get_tool_execution("effect:" + effect_id)
+                    if row["status"] == "confirmed" and cached:
+                        replay = ToolResult(**cached)
+                        replay.evidence["replayed"] = True
+                        return replay
+                    blocked = ToolResult.error_result(
+                        "副作用已提交或结果待对账，禁止重放", "side_effect_unknown")
+                    blocked.side_effect_uncertain = True
+                    blocked.idempotency_key = key
+                    blocked.evidence.update(tool=tool_id, effect_id=effect_id,
+                                            side_effect_level=c.side_effect_level)
+                    return blocked
+            except Exception as e:
+                return ToolResult.error_result(
+                    f"副作用预记账失败，拒绝执行: {type(e).__name__}",
+                    "side_effect_ledger")
         if self.store is not None and c.idempotency_policy == "key":
-            cached = self.store.get_tool_execution(key)
+            # Task-bound operations replay from their own ledger; never use
+            # another task's cached result just because its arguments match.
+            cached = (self.store.get_tool_execution(key)
+                      if effect_id is None else None)
             if cached:
                 replay = ToolResult(**cached)
                 replay.idempotency_key = key
@@ -187,15 +249,20 @@ class ToolRegistry:
         started = time.time()
         attempts = 0
         max_attempts = 1 + max(0, int(c.retry_policy))
+        timeout = c.timeout_policy
+        if timeout_seconds is not None and timeout_seconds > 0:
+            timeout = min(timeout, timeout_seconds) if timeout > 0 else timeout_seconds
         while True:
             attempts += 1
+            counted = False
             try:
                 result = self._run_with_timeout(rt.runner, args,
-                                                c.timeout_policy)
+                                                timeout)
                 break
             except Exception as e:  # noqa: BLE001
                 if budget:
                     budget.record_tool_call(tool_id)
+                    counted = True
                 err_class = class_error(e)
                 failed = ToolResult.error_result(
                     f"{type(e).__name__}: {e}", err_class)
@@ -203,13 +270,14 @@ class ToolRegistry:
                     c.side_effect_level in ("external", "local", "destructive"))
                 failed.evidence["attempts"] = attempts
                 if (attempts >= max_attempts or err_class not in RETRYABLE_ERRORS
-                        or not _retry_safe(c)):
-                    failed.error = f"工具超时({c.timeout_policy}s)" \
+                        or failed.side_effect_uncertain or not _retry_safe(c)):
+                    failed.error = f"工具超时({timeout}s)" \
                         if err_class == "timeout" else failed.error
-                    return failed
+                    result = failed
+                    break
                 time.sleep(min(0.05 * attempts, 0.5))
         elapsed = time.time() - started
-        if budget:
+        if budget and not counted:
             budget.record_tool_call(tool_id)
 
         # 输出契约校验（Arch 6.2）：返回成功不等于符合契约
@@ -226,15 +294,27 @@ class ToolRegistry:
         result.evidence["attempts"] = attempts
         result.evidence["duration_s"] = round(elapsed, 3)
         result.evidence["side_effect_level"] = c.side_effect_level
+        if effect_id is not None:
+            result.evidence["effect_id"] = effect_id
+            try:
+                ledger.finish(effect_id, result)
+            except Exception as e:
+                result.ok = False
+                result.side_effect_uncertain = True
+                result.error_class = "side_effect_unknown"
+                result.error = f"副作用结果未可靠落账: {type(e).__name__}"
 
-        if (self.store is not None and c.idempotency_policy == "key"
+        if (self.store is not None and effect_id is None and c.idempotency_policy == "key"
                 and result.ok and result.executed):
             self.store.save_tool_execution(key, tool_id, result.to_dict())
         return result
 
     def _run_with_timeout(self, runner, args, timeout: float) -> ToolResult:
         if not timeout or timeout <= 0:
-            return runner(args)
+            result = runner(args)
+            if not isinstance(result, ToolResult):
+                raise TypeError("工具执行器必须返回 ToolResult")
+            return result
         holder: Dict[str, Any] = {}
 
         def target() -> None:

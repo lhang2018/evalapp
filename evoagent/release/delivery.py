@@ -100,6 +100,9 @@ class ReleaseDelivery:
         check("release_available", manifest is not None,
               "" if manifest else "尚未发布任何版本")
         if manifest is not None:
+            check("compatibility_declared",
+                  self.releases.compatibility_complete(manifest),
+                  "发布兼容声明必须完整")
             allowed = list(manifest.target_platforms or [])
             check("platform_compatible", not allowed or platform in allowed,
                   f"适用平台 {allowed or ['全部']}，当前 {platform}")

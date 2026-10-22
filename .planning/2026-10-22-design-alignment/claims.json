@@ -1,0 +1,33 @@
+{
+  "count_warnings": [],
+  "ledger": "IMPLEMENTATION.md",
+  "rows_parsed": 84,
+  "status_counts": {
+    "✅": 35,
+    "⬜": 18,
+    "🔹": 36
+  },
+  "symbols_indexed": 838,
+  "claims_checked": {
+    "dead_claims": 3,
+    "absent_claims": 2
+  },
+  "weak_positive_rows": 0,
+  "problems": [
+    {
+      "kind": "dead_claim_but_referenced",
+      "theme": "C-09",
+      "symbol": "impact_analysis",
+      "detail": "台账称 `impact_analysis` 零调用，但 evoagent/experts/registry.py:131 有 2 处引用",
+      "ledger_line": 262
+    },
+    {
+      "kind": "dead_claim_but_referenced",
+      "theme": "E-07",
+      "symbol": "register_problem",
+      "detail": "台账称 `register_problem` 零调用，但 evoagent/evolution/controller.py:167 有 1 处引用",
+      "ledger_line": 279
+    }
+  ],
+  "ok": false
+}

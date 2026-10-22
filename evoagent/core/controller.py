@@ -6,6 +6,7 @@
 - Planning/ReAct/工作流不得绕过它直接获得不受约束的执行能力。
 """
 
+import copy
 import datetime
 import hashlib
 import json
@@ -67,8 +68,9 @@ class RuntimeController:
         self.memory = memory
         self.assembler = assembler
         self.cp_mgr = checkpoints
-        self.side_fx = SideEffectLedger(db)  # F-03 副作用账本
-        self.react.effects = self.side_fx  # 工具结果回传记账（可选 sink）
+        self.side_fx = self.tools.effects or SideEffectLedger(db)
+        self.tools.effects = self.side_fx
+        self.react.effects = self.side_fx  # ReAct/DAG 共用执行前记账网关
         self.permissions = permissions
         self.releases = releases
         self.wf_lookup = wf_lookup or (lambda wid: None)
@@ -434,7 +436,7 @@ class RuntimeController:
             if task.task_status != TaskStatus.CANCELLED:
                 task = self._move(task, TaskStatus.CANCELLED)
             return task
-        if outcome.stop_reason == "paused":
+        if outcome.stop_reason in ("paused", "side_effect_unknown"):
             # F-13 检查点有序化（GAP §1.3）：必须先落 paused 检查点、最后才
             # 把 SUSPENDED 状态写库。否则观察者一看到 SUSPENDED 状态就读
             # latest()，拿到的仍是旧 running 检查点（丢失预算/计划），
@@ -467,7 +469,7 @@ class RuntimeController:
                               stop_reason=outcome.stop_reason)
 
     def _run_workflow(self, task: Task, budget: BudgetController) -> Task:
-        wf = self.wf_lookup(task.workflow_ref or "")
+        wf = copy.deepcopy(self.wf_lookup(task.workflow_ref or ""))
         if wf is None:
             task = self._move(task, TaskStatus.VERIFYING)
             verdict = Verdict(passed=False, checks=[{"type": "workflow",
@@ -475,10 +477,22 @@ class RuntimeController:
                             "error": f"工作流不存在: {task.workflow_ref}"}])
             return self._finalize(task, verdict, None, budget=budget)
         wf.created_from_task = task.task_id
+        # Registered workflow definitions are shared assets, not mutable run
+        # state. Restore only this task's completed outputs below.
+        for node in wf.nodes:
+            node.state = WorkflowNodeState.PENDING
+            node.attempt, node.output, node.error = 0, None, None
 
         def _confirm(node_id: str) -> bool:
-            decision = self.permissions.check_op("workflow_node_confirm",
-                                                 {"node": node_id})
+            node = wf.node(node_id)
+            action = {"workflow": wf.workflow_id, "version": wf.version,
+                      "node": node_id, "tool": node.tool, "args": node.args}
+            digest = hashlib.sha256(json.dumps(
+                action, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
+            decision = self.permissions.check_op(
+                "workflow_node_confirm", {**action, "task_id": task.task_id,
+                                          "target": node_id,
+                                          "action_digest": digest})
             return str(decision.value) == "allow"
 
         # 断点续跑：同一任务存在本版本工作流检查点时复用已完成节点输出
@@ -501,14 +515,18 @@ class RuntimeController:
         result = self.workflows.run(
             wf, {"goal": task.user_goal}, budget=wf_budget,
             cancel_flag=self._active.get(task.task_id), confirm=_confirm,
-            completed=completed)
+            completed=completed,
+            allowed_tools=(self.experts.get(task.domain).tool_whitelist
+                           if self.experts.get(task.domain) else None))
         task.runtime_manifest["workflow_budget"] = wf_budget.snapshot()
         # GAP ⑤d：node_run_id（契约统一标识）入任务清单——DAG 节点执行实体
         task.runtime_manifest["node_runs"] = [
             {"node": s.get("node"), "node_run_id": s.get("node_run_id"),
              "state": s.get("state")} for s in result.node_stats
             if s.get("node_run_id")]
-        if result.status == WorkflowNodeState.PAUSED:
+        if result.status in (WorkflowNodeState.PAUSED,
+                             WorkflowNodeState.WAITING_AUTH,
+                             WorkflowNodeState.WAITING_EXTERNAL):
             task = self._move(task, TaskStatus.SUSPENDED)
             self.db.save_task(task)
             self._audit("task_paused", target=task.task_id,
@@ -646,8 +664,12 @@ class RuntimeController:
             # F-03：未决副作用以账本投影为准（GAP §7：不再是检查点自持）；
             # 无账本记录的旧任务回落读检查点（向后兼容）。
             cp = self.cp_mgr.latest(task_id)
-            pending = self.side_fx.pending(task_id) \
-                or (cp.pending_side_effects if cp else [])
+            # Once the ledger has facts, it is authoritative. A checkpoint
+            # is a historical projection and must not resurrect reconciled
+            # effects. Only pre-ledger tasks need the legacy fallback.
+            pending = (self.side_fx.pending(task_id)
+                       if self.side_fx.history(task_id)
+                       else (cp.pending_side_effects if cp else []))
             if pending and not force:
                 self._emit(task, "side_effect_state_unknown",
                            {"side_effects": pending}, severity="warn")
@@ -675,6 +697,8 @@ class RuntimeController:
                              args=(task, budget, force), daemon=True).start()
             return task
         if task.task_status == TaskStatus.FAILED:
+            if self.side_fx.pending(task_id):
+                raise PermissionError("失败任务仍有未决副作用，必须先对账再重跑")
             retry = self._build_retry(task)
             if wait:
                 return self.execute(retry, intent_hint=task.intent or None,

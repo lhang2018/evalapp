@@ -1,0 +1,13 @@
+{
+  "checked": 2,
+  "bare_checked": 61,
+  "anchor_checked": 93,
+  "problems": [
+    {
+      "doc": "GAP_ANALYSIS.md",
+      "doc_line": 115,
+      "kind": "bare_points_to_blank",
+      "detail": "裸引用 `controller.py:833` 指向空行"
+    }
+  ]
+}

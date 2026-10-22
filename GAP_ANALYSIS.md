@@ -110,7 +110,7 @@
 - 判定：标 ✅「节点状态/恢复游标；恢复前强制安全备份」
 - 实际：
   - **无恢复游标**：`CheckpointManager`（`evoagent/core/checkpoint.py:45-61`）只有 `save`/`latest`，每次生成新 `checkpoint_id` 且只保留 latest，无法回到任意中间断点。
-  - **无节点级检查点（ReAct 路径）**：`controller.py:801` 的 `self.checkpoint(task, target.value)` 只写 `task_state` + 硬编码 `next_candidate_actions=[{"action":"resume"}]`，不写 `completed_nodes`/`pending_nodes`。节点级快照只有工作流引擎 `evoagent/workflows/engine.py:254-271` 在写。
+  - **无节点级检查点（ReAct 路径）**：`evoagent/core/controller.py::_move` 的 `self.checkpoint(task, target.value)` 只写 `task_state` + 硬编码 `next_candidate_actions=[{"action":"resume"}]`，不写 `completed_nodes`/`pending_nodes`。节点级快照由 `evoagent/workflows/engine.py::_snapshot` 保存。
   - **"恢复前强制安全备份"完全未接线**：`grep -c backup evoagent/core/controller.py` = **0**。`BackupManager.restore` 的 `safety_backup`（`evoagent/core/backup.py::safety_backup`）只服务数据库恢复，与任务恢复是两条独立路径。
   - 两个关键限定语（"恢复游标""强制安全备份"）在说明文字里都找不到对应代码。
 

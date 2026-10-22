@@ -1,0 +1,23 @@
+{
+  "workflow_confirmation_decision_in_deny_mode": "deny",
+  "tool_outside_empty_allowlist_executed": false,
+  "timeout_result": {
+    "uncertain": true,
+    "evidence": {
+      "attempts": 1,
+      "tool": "audit_external_timeout",
+      "duration_s": 0.003,
+      "side_effect_level": "external",
+      "effect_id": "eff_3a9c74272f1d511551f0fefbb080a46a"
+    },
+    "ledger_id": "eff_3a9c74272f1d511551f0fefbb080a46a",
+    "pending": 1
+  },
+  "workflow_unknown_side_effect": {
+    "attempts": 1,
+    "status": "waiting_external",
+    "ledger_rows": 1
+  },
+  "modified_artifact_accepted": false,
+  "missing_artifact_accepted": false
+}

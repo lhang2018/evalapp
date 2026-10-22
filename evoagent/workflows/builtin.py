@@ -12,10 +12,10 @@ from .models import WorkflowDef, WorkflowNode
 
 def register_comic_drama_tools(registry: ToolRegistry) -> None:
     # 生成服务适配器（Mock）：真实接入时替换为带有任务状态/费用/错误码的服务适配器
-    registry.register_mock_tool("mock_script_gen", lambda a: f"第1幕: {a.get('theme','剧本')}")
-    registry.register_mock_tool("mock_video_clip", lambda a: f"clip_{a.get('scene', 1)}.mp4")
-    registry.register_mock_tool("mock_dubbing", lambda a: "dubbing_track_01.wav")
-    registry.register_mock_tool("mock_compose", lambda a: "final_30s.mp4")
+    registry.register_mock_tool("mock_script_gen", lambda a: f"第1幕: {a.get('theme','剧本')}", side_effect_level="none")
+    registry.register_mock_tool("mock_video_clip", lambda a: f"clip_{a.get('scene', 1)}.mp4", side_effect_level="none")
+    registry.register_mock_tool("mock_dubbing", lambda a: "dubbing_track_01.wav", side_effect_level="none")
+    registry.register_mock_tool("mock_compose", lambda a: "final_30s.mp4", side_effect_level="none")
 
 
 def comic_drama_workflow(theme: str, out_path: str = "outputs/final_30s.mp4") -> WorkflowDef:

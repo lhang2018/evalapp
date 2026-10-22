@@ -1,0 +1,19 @@
+{
+  "workflow_confirmation_decision_in_deny_mode": "allow",
+  "tool_outside_empty_allowlist_executed": true,
+  "timeout_result": {
+    "uncertain": true,
+    "evidence": {
+      "attempts": 1
+    },
+    "ledger_id": null,
+    "pending": 0
+  },
+  "workflow_unknown_side_effect": {
+    "attempts": 2,
+    "status": "failed",
+    "ledger_rows": 0
+  },
+  "modified_artifact_accepted": true,
+  "missing_artifact_accepted": true
+}

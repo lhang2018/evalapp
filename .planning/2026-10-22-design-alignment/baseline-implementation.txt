@@ -1,0 +1,82 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [ 12%]
+........................................................................ [ 24%]
+........................................................................ [ 36%]
+........................................F............................... [ 48%]
+..........F............FF............................................... [ 60%]
+........................................................................ [ 72%]
+........................................................................ [ 84%]
+.............................F.......s.....FF........................... [ 96%]
+......................                                                   [100%]
+================================== FAILURES ===================================
+__ TestGapClosureCatchesGaps.test_duplicate_claim_masks_single_path_removal ___
+tests\test_gap_closure.py:180: in test_duplicate_claim_masks_single_path_removal
+    self.assertNotIn(
+E   AssertionError: 'S-02' unexpectedly found in ['S-02'] : 本测试断言的是已知局限：间接路径仍在，故 S-02 仍闭合。若此断言失败，说明校验器行为变了，需重新评估其判别力边界
+_________________ TestNoDrift.test_all_ledgers_have_no_drift __________________
+tests\test_ledger_drift.py:30: in test_all_ledgers_have_no_drift
+    self.assertEqual(
+E   AssertionError: Lists differ: [{'doc': 'IMPLEMENTATION.md', 'doc_line': [212 chars]空行'}] != []
+E
+E   First list contains 2 additional elements.
+E   First extra element 0:
+E   {'doc': 'IMPLEMENTATION.md', 'doc_line': 237, 'kind': 'bare_points_to_blank', 'detail': '裸引用 `evoagent/core/controller.py:549` 指向空行'}
+E
+E   + []
+E   - [{'detail': '裸引用 `evoagent/core/controller.py:549` 指向空行',
+E   -   'doc': 'IMPLEMENTATION.md',
+E   -   'doc_line': 237,
+E   -   'kind': 'bare_points_to_blank'},
+E   -  {'detail': '裸引用 `core/controller.py:633` 指向空行',
+E   -   'doc': 'GAP_ANALYSIS.md',
+E   -   'doc_line': 316,
+E   -   'kind': 'bare_points_to_blank'}] : 台账存在 2 处引用问题：[('IMPLEMENTATION.md', 237, 'bare_points_to_blank'), ('GAP_ANALYSIS.md', 316, 'bare_points_to_blank')]
+_____ TestCriticalClaimsStillHold.test_impact_analysis_still_unreferenced _____
+tests\test_ledger_drift.py:164: in test_impact_analysis_still_unreferenced
+    self.assertEqual(idx["impact_analysis"]["refs"], 0,
+E   AssertionError: 2 != 0 : impact_analysis 现在有引用了 —— C-09 判定需更新
+____ TestCriticalClaimsStillHold.test_register_problem_still_unreferenced _____
+tests\test_ledger_drift.py:172: in test_register_problem_still_unreferenced
+    self.assertEqual(idx["register_problem"]["refs"], 0,
+E   AssertionError: 1 != 0 : register_problem 现在有引用了 —— E-07 判定需更新
+_________________ TestRealLedgerPasses.test_full_check_passes _________________
+tests\test_verify_claims.py:104: in test_full_check_passes
+    self.assertEqual(problems, [],
+E   AssertionError: Lists differ: [{'kind': 'dead_claim_but_referenced', 'th[333 chars]279}] != []
+E
+E   First list contains 2 additional elements.
+E   First extra element 0:
+E   {'kind': 'dead_claim_but_referenced', 'theme': 'C-09', 'symbol': 'impact_analysis', 'detail': '台账称 `impact_analysis` 零调用，但 evoagent/experts/registry.py:131 有 2 处引用', 'ledger_line': 262}
+E
+E   + []
+E   - [{'detail': '台账称 `impact_analysis` 零调用，但 evoagent/experts/registry.py:131 有 2 '
+E   -             '处引用',
+E   -   'kind': 'dead_claim_but_referenced',
+E   -   'ledger_line': 262,
+E   -   'symbol': 'impact_analysis',
+E   -   'theme': 'C-09'},
+E   -  {'detail': '台账称 `register_problem` 零调用，但 evoagent/evolution/controller.py:167 '
+E   -             '有 1 处引用',
+E   -   'kind': 'dead_claim_but_referenced',
+E   -   'ledger_line': 279,
+E   -   'symbol': 'register_problem',
+E   -   'theme': 'E-07'}] : 台账声明未通过机器校验：[{'kind': 'dead_claim_but_referenced', 'theme': 'C-09', 'symbol': 'impact_analysis', 'detail': '台账称 `impact_analysis` 零调用，但 evoagent/experts/registry.py:131 有 2 处引用', 'ledger_line': 262}, {'kind': 'dead_claim_but_referenced', 'theme': 'E-07', 'symbol': 'register_problem', 'detail': '台账称 `register_problem` 零调用，但 evoagent/evolution/controller.py:167 有 1 处引用', 'ledger_line': 279}]
+____________ TestSymbolIndex.test_impact_analysis_has_no_reference ____________
+tests\test_verify_claims.py:281: in test_impact_analysis_has_no_reference
+    self.assertEqual(self.index["impact_analysis"]["refs"], 0)
+E   AssertionError: 2 != 0
+___________ TestSymbolIndex.test_register_problem_has_no_reference ____________
+tests\test_verify_claims.py:285: in test_register_problem_has_no_reference
+    self.assertEqual(self.index["register_problem"]["refs"], 0)
+E   AssertionError: 1 != 0
+=========================== short test summary info ===========================
+FAILED tests/test_gap_closure.py::TestGapClosureCatchesGaps::test_duplicate_claim_masks_single_path_removal
+FAILED tests/test_ledger_drift.py::TestNoDrift::test_all_ledgers_have_no_drift
+FAILED tests/test_ledger_drift.py::TestCriticalClaimsStillHold::test_impact_analysis_still_unreferenced
+FAILED tests/test_ledger_drift.py::TestCriticalClaimsStillHold::test_register_problem_still_unreferenced
+FAILED tests/test_verify_claims.py::TestRealLedgerPasses::test_full_check_passes
+FAILED tests/test_verify_claims.py::TestSymbolIndex::test_impact_analysis_has_no_reference
+FAILED tests/test_verify_claims.py::TestSymbolIndex::test_register_problem_has_no_reference
+7 failed, 590 passed, 1 skipped in 54.44s

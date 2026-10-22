@@ -1,0 +1,26 @@
+{
+  "head": "fed7e6b6f1ccee6dea0a237878c1dbcf8930d835",
+  "files": {
+    "evoagent/core/controller.py": "dd65d59709708f003097c191249108172ee0027970ecf3117eaa00cc4fd46260",
+    "evoagent/core/permissions.py": "7b006f0b41ee714d5e52ed51a51d75aabc290cac54d95dab994d8a6bb2c9f86c",
+    "evoagent/core/persistence.py": "8a04e79e1c7944316c9624b12931ae4ecb22db350d30073d45cf7004187882df",
+    "evoagent/core/side_effects.py": "e773485568e6d1c0a51c10e247c3a5fae9599cdefd912f0af02685588c1ed927",
+    "evoagent/react/engine.py": "0b961da8cdb10deb032175da345459de49816a2b8f4c2d32d9a43f2cbbbc403e",
+    "evoagent/tools/registry.py": "74efaaa057f489f88918fa28bdaba68f9834ef18dea72fdf4fc510f76c033a53",
+    "evoagent/workflows/engine.py": "a0057c0eecf203e170acb228395b26be19fee39aee18d29139f3e8402d529b54",
+    "evoagent/workflows/builtin.py": "c76ccd626418340f1bcea740e71f525f1afd6bd686fe5181ee4c812cf6708bee",
+    "evoagent/release/manager.py": "23b608c73ca0ffcdab61641ad70e56f97d2222f765598f176043ae6cbcde0ae2",
+    "evoagent/release/delivery.py": "0976efa1b603fe261f13d95bc766d02b866b7e2ae561ebaee53c26146de18117",
+    "tests/test_execution_boundaries.py": "d662236372fe1027138d73ca8ab92b66583632e6783ab1cb3d783b2b4c9c5b6e",
+    "tests/test_release.py": "ada2fcd6af5569423bd80babcd411fb035da036a19796b1f29eff106c640b9bc"
+  },
+  "link_issues": [],
+  "validation": {
+    "python_passed": 630,
+    "python_failed": 0,
+    "python_skipped": 1,
+    "client_passed": 128,
+    "typecheck": "passed",
+    "new_boundary_cases": 33
+  }
+}
