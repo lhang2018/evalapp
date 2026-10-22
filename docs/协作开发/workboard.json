@@ -458,6 +458,16 @@
           "log": ".planning/2026-10-22-claude-acceptance/acceptance-results.txt",
           "observations": ".planning/2026-10-22-claude-acceptance/observations.json",
           "report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "修复验收阻断项 CA-06-01：已回收资版本写入摘要墓碑，拒绝同身份改文复用",
+          "command": "python -m pytest .planning/2026-10-22-claude-acceptance/acceptance_checks.py -q --tb=short; python -m pytest tests -q",
+          "result": "验收脚本5 passed；新增墓碑拒绝/重启持久化回归；全量963 passed/1 skipped",
+          "source_commit": "3b7ef62",
+          "observations": ".planning/2026-10-22-claude-acceptance/observations-after-fix.json",
+          "report": "docs/协作开发/验收/2026-10-22-验收问题与复现.md",
+          "fix_status": "owner_fixed_pending_independent_review"
         }
       ],
       "card": "docs/协作开发/任务卡/06-资产基础.md",
@@ -473,7 +483,7 @@
       ],
       "review_result": "changes_requested",
       "review_note": "2026-10-22独立干净提交验收有未解决缺陷，需修改后复验；旧修复回归通过，不自批本线补丁",
-      "next_step": "修复CA-06-01并按验收脚本复验；另保留原真实环境/整包验收",
+      "next_step": "CA-06-01 已修复（3b7ef62），待 codex-runtime 独立复验；另保留原真实环境/整包验收",
       "acceptance_findings": [
         {
           "id": "CA-06-01",
@@ -521,6 +531,16 @@
           "log": ".planning/2026-10-22-claude-acceptance/acceptance-results.txt",
           "observations": ".planning/2026-10-22-claude-acceptance/observations.json",
           "report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "修复验收阻断项 CA-08-01/CA-08-02：分类与规划结算实测/未知成本，账本按来源分列成本",
+          "command": "python -m pytest .planning/2026-10-22-claude-acceptance/acceptance_checks.py -q --tb=short; python -m pytest tests -q",
+          "result": "验收脚本5 passed；新增7项回归；定向116 passed；全量963 passed/1 skipped",
+          "source_commit": "3b7ef62",
+          "observations": ".planning/2026-10-22-claude-acceptance/observations-after-fix.json",
+          "report": "docs/协作开发/验收/2026-10-22-验收问题与复现.md",
+          "fix_status": "owner_fixed_pending_independent_review"
         }
       ],
       "card": "docs/协作开发/任务卡/08-模型与计量.md",
@@ -536,7 +556,7 @@
       ],
       "review_result": "changes_requested",
       "review_note": "2026-10-22独立干净提交验收有未解决缺陷，需修改后复验；旧修复回归通过，不自批本线补丁",
-      "next_step": "修复CA-08-01,CA-08-02并按验收脚本复验；另保留原真实环境/整包验收",
+      "next_step": "CA-08-01/CA-08-02 已修复（3b7ef62），待 codex-runtime 独立复验；另保留原真实环境/整包验收",
       "acceptance_findings": [
         {
           "id": "CA-08-01",
@@ -1168,5 +1188,5 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "最新精确源码8218ed0干净克隆956/1，客户端同tree沿用136/typecheck。CXR三项已修复，ALN-10-H待独立复核；原五张accepted卡结论保留。CA三个根因及Android真机仍待原线处理；基线candidate，未发布，不混入在途文件。"
+  "execution_note": "最新精确源码3b7ef62全量963/1；CXR三项与CA三项均已提交修复，均待原验收方独立复验；原五张accepted卡结论保留。Android真机仍待原线处理；基线candidate，未发布，不混入在途文件。"
 }

@@ -1,0 +1,66 @@
+{
+  "actual_cost_task": {
+    "status": "FAILED",
+    "provider_calls": 3,
+    "provider_recorded_cost": 0.6000000000000001,
+    "provider_unknown_calls": 0,
+    "recorded_budget": {
+      "model_calls": 3,
+      "tool_calls": 0,
+      "cost": 0.6000000000000001,
+      "seconds": 0.11000000000058208,
+      "unknown_model_costs": 0,
+      "tool_usage": {},
+      "model_usage": {
+        "acceptance-model": {
+          "calls": 3,
+          "cost": 0.6000000000000001
+        }
+      }
+    },
+    "configured_task_max_cost": 0.3
+  },
+  "unknown_cost_task": {
+    "status": "SUCCEEDED",
+    "provider_calls": 3,
+    "provider_recorded_cost": 0,
+    "provider_unknown_calls": 3,
+    "recorded_budget": {
+      "model_calls": 3,
+      "tool_calls": 0,
+      "cost": 0.0,
+      "seconds": 0.09399999999732245,
+      "unknown_model_costs": 3,
+      "tool_usage": {},
+      "model_usage": {
+        "acceptance-model": {
+          "calls": 3,
+          "cost": 0.0,
+          "unknown_costs": 3
+        }
+      }
+    },
+    "configured_task_max_cost": 0.3
+  },
+  "estimated_vs_actual": {
+    "calls": 1,
+    "actual_cost": 0.0,
+    "estimated_cost": 0.5,
+    "unknown_calls": 0,
+    "free_calls": 0,
+    "provider_usage_calls": 0,
+    "estimated_usage_calls": 1,
+    "pending_estimates": 0,
+    "estimated_cost_pending": 0.0,
+    "by_model": {
+      "priced": {
+        "calls": 1,
+        "actual_cost": 0.0,
+        "estimated_cost": 0.5,
+        "unknown_calls": 0,
+        "free_calls": 0,
+        "pending_estimates": 0
+      }
+    }
+  }
+}
