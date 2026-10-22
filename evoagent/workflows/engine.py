@@ -252,10 +252,16 @@ class WorkflowEngine:
                    ) -> List[Tuple[str, Any, Optional[str], int]]:
         if not nodes:
             return []
-        if len(nodes) == 1 or self.max_parallel == 1:
-            return [self._run_node(n, ctx_input, snapshot, budget,
-                                   workflow_id, execution_context)
-                    for n in nodes]
+        mutating = any(n.tool and self.tools.contract(n.tool) and
+                       self.tools.contract(n.tool).side_effect_level != "none" for n in nodes)
+        if len(nodes) == 1 or self.max_parallel == 1 or mutating:
+            outcomes = []
+            for node in nodes:
+                outcome = self._run_node(node, ctx_input, snapshot, budget, workflow_id, execution_context)
+                outcomes.append(outcome)
+                if outcome[0] in (WorkflowNodeState.WAITING_EXTERNAL, WorkflowNodeState.PAUSED, WorkflowNodeState.FAILED):
+                    break
+            return outcomes
         workers = min(self.max_parallel, len(nodes))
         with ThreadPoolExecutor(max_workers=workers) as pool:
             futures = [pool.submit(copy_context().run, self._run_node, n, ctx_input, snapshot,

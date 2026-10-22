@@ -7,6 +7,7 @@ from pathlib import Path
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
@@ -353,3 +354,38 @@ def test_compensation_verification_budget_exhaustion_pauses_instead_of_claiming_
     assert result.status == WorkflowNodeState.PAUSED
     assert not result.compensations[0]['verified']
     assert next(e for e in gateway.effects.history('task') if e['tool_id']=='write')['status'] == 'confirmed'
+
+
+def test_same_task_mutating_nodes_do_not_race_pending_ledger(gateway):
+    entered, release, second = threading.Event(), threading.Event(), threading.Event()
+    calls = []
+    def runner(args):
+        calls.append(args['n'])
+        if args['n'] == 1:
+            entered.set(); assert release.wait(3)
+        else:
+            second.set()
+        return ok()
+    gateway.register(ToolContract('send', side_effect_level='external'), runner)
+    wf = WorkflowDef('serial-effects', created_from_task='task', nodes=[
+        WorkflowNode('first', tool='send', args={'n': 1}), WorkflowNode('second', tool='send', args={'n': 2})])
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(WorkflowEngine(gateway, max_parallel=2).run, wf, {})
+        try:
+            assert entered.wait(2)
+            assert not second.wait(.05)
+        finally:
+            release.set()
+        result = future.result(timeout=3)
+    assert result.ok and calls == [1, 2]
+
+
+def test_unknown_effect_stops_remaining_nodes_in_mutating_batch(gateway):
+    calls = []
+    gateway.register(ToolContract('send', side_effect_level='external'),
+        lambda args: calls.append(args['n']) or ToolResult(False, side_effect_uncertain=True))
+    wf = WorkflowDef('unknown-stops-batch', created_from_task='task', nodes=[
+        WorkflowNode('first', tool='send', args={'n': 1}), WorkflowNode('second', tool='send', args={'n': 2})])
+    result = WorkflowEngine(gateway, max_parallel=2).run(wf, {})
+    assert result.status == WorkflowNodeState.WAITING_EXTERNAL
+    assert calls == [1] and wf.node('second').state == WorkflowNodeState.PENDING
