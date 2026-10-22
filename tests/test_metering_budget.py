@@ -10,6 +10,7 @@
 """
 from __future__ import annotations
 
+import json
 import shutil
 import tempfile
 import unittest
@@ -20,7 +21,7 @@ from evoagent.core.budget import (BudgetController, BudgetLimits,
 from evoagent.core.permissions import PermissionController
 from evoagent.core.task import Task
 from evoagent.models.base import Action, ChatMessage, ModelProfile
-from evoagent.models.metering import MeteredModel
+from evoagent.models.metering import MeteredModel, UsageLedger
 from evoagent.react.engine import ReactEngine
 from evoagent.tools.registry import ToolRegistry
 
@@ -121,6 +122,112 @@ class TestMeteredBudgetSettlement(unittest.TestCase):
         self.assertEqual(parent.usage.unknown_model_costs, 1)
         self.assertEqual(
             parent.snapshot()["usage"]["unknown_model_costs"], 1)
+
+
+class _ThreeStageModel:
+    """分类、规划、ReAct 共用；每次调用都回报提供方用量。"""
+
+    def __init__(self, pricing_known: bool):
+        self._profile = ModelProfile(
+            model_id="three-stage", provider="feature-fixture",
+            pricing_known=pricing_known,
+            price_per_1k_input=1.0, price_per_1k_output=2.0)
+        self.last_usage = None
+        self.calls = 0
+
+    def profile(self):
+        return self._profile
+
+    def estimate_cost(self, _input_chars, _output_chars):
+        return 0.000001
+
+    def _mark_usage(self):
+        self.calls += 1
+        # 100 输入 + 50 输出 → 0.1 + 0.1 = 0.2
+        self.last_usage = {"input_tokens": 100, "output_tokens": 50}
+
+    def generate(self, messages):
+        self._mark_usage()
+        if "意图分类器" in messages[0].content:
+            return json.dumps({"intent": "general", "domain": "general",
+                               "confidence": 1.0})
+        return json.dumps({"steps": [{"step_id": "s1",
+                                      "description": "answer the goal",
+                                      "deps": []}]})
+
+    def suggest_action(self, _messages, _tools):
+        self._mark_usage()
+        return Action(kind="finish", answer="three-stage answer")
+
+
+class TestAllModelPhasesSettle(unittest.TestCase):
+    """CA-08-01：分类与规划也必须结算真实计量，不能只让 ReAct 记账。"""
+
+    def _run(self, pricing_known: bool):
+        tmp = tempfile.mkdtemp(prefix="evoagent_phases_")
+        self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
+        app = App(data_dir=tmp)
+        self.addCleanup(app.db.close)
+        ledger = UsageLedger()
+        model = MeteredModel(_ThreeStageModel(pricing_known), app.bus,
+                             ledger=ledger)
+        app.model_registry.register(model.profile())
+        app.classifier.model = model
+        app.router.bind_route("general", "three-stage")
+        app.router.setup(
+            lambda identity: model if identity == "three-stage" else None)
+        task = app.controller.submit_task(
+            "settlement goal", wait=True,
+            acceptance=[{"type": "result_nonempty"}],
+            budget_overrides={"max_cost": 1.0,
+                              "max_cost_per_model_call": 1.0,
+                              "max_model_calls": 10})
+        usage = app.db.get_execution_budget(task.task_id)["usage"]
+        return task, usage, ledger
+
+    def test_known_price_settles_classification_planning_and_react(self):
+        task, usage, ledger = self._run(pricing_known=True)
+        self.assertEqual(task.task_status.value, "SUCCEEDED")
+        self.assertEqual(usage["model_calls"], 3)
+        self.assertAlmostEqual(usage["cost"], 0.6)
+        self.assertEqual(usage["unknown_model_costs"], 0)
+        self.assertAlmostEqual(
+            usage["model_usage"]["three-stage"]["cost"], 0.6)
+        totals = ledger.totals()
+        self.assertEqual(totals["calls"], 3)
+        self.assertAlmostEqual(totals["actual_cost"], 0.6)
+        self.assertEqual(totals["unknown_calls"], 0)
+
+    def test_unknown_price_counts_each_phase_not_once(self):
+        task, usage, ledger = self._run(pricing_known=False)
+        self.assertEqual(task.task_status.value, "SUCCEEDED")
+        self.assertEqual(usage["model_calls"], 3)
+        self.assertEqual(usage["cost"], 0.0)
+        self.assertEqual(usage["unknown_model_costs"], 3)
+        self.assertEqual(ledger.totals()["unknown_calls"], 3)
+
+    def test_cumulative_actual_cost_stops_task_over_budget(self):
+        tmp = tempfile.mkdtemp(prefix="evoagent_phases_budget_")
+        self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
+        app = App(data_dir=tmp)
+        self.addCleanup(app.db.close)
+        model = MeteredModel(_ThreeStageModel(True), app.bus)
+        app.model_registry.register(model.profile())
+        app.classifier.model = model
+        app.router.bind_route("general", "three-stage")
+        app.router.setup(
+            lambda identity: model if identity == "three-stage" else None)
+        task = app.controller.submit_task(
+            "budget goal", wait=True,
+            acceptance=[{"type": "result_nonempty"}],
+            budget_overrides={"max_cost": 0.3,
+                              "max_cost_per_model_call": 1.0,
+                              "max_model_calls": 10})
+        usage = app.db.get_execution_budget(task.task_id)["usage"]
+        # 三阶段累计 0.6 超过 0.3：记账必须完整，任务不得记成功
+        self.assertEqual(usage["model_calls"], 3)
+        self.assertAlmostEqual(usage["cost"], 0.6)
+        self.assertEqual(task.task_status.value, "FAILED")
 
 
 class TestRuntimeMeteringAssociation(unittest.TestCase):

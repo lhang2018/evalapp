@@ -180,13 +180,49 @@ class ModelUsage:
         }
 
 
+def adapter_model_id(adapter: Any) -> Optional[str]:
+    """取适配器档案里的模型标识；无档案返回 None。"""
+    try:
+        return getattr(adapter.profile(), "model_id", None)
+    except Exception:  # noqa: BLE001 —— 无档案不阻断调用
+        return None
+
+
+def settle_adapter_cost(budget: Any, adapter: Any,
+                        model_id: Optional[str],
+                        *, fallback_cost: Optional[float] = None) -> None:
+    """把适配器最近一次调用的成本结算到**已预登记**的预算调用。
+
+    调用方必须先 `budget.record_model_call(0.0, model_id)` 预登记次数，
+    再调用适配器；本函数只补金额，不重复计数。顺序不能反：只有先预登记，
+    调用前后的次数与金额才对得上。
+
+    - 有计量结果且成本已知 → 按实测/预估金额结算；
+    - 有计量结果但成本未知 → 只记未知计数，绝不按 0 元结算；
+    - 旧适配器不暴露计量结果 → 用 `fallback_cost`；没有预估则记未知。
+    """
+    usage = getattr(adapter, "last_usage", None)
+    if usage is not None and hasattr(usage, "cost") \
+            and getattr(usage, "call_id", None):
+        if usage.cost is None:
+            budget.mark_unknown_model_cost(model_id)
+        else:
+            budget.settle_model_cost(float(usage.cost), model_id)
+        return
+    if fallback_cost is None:
+        budget.mark_unknown_model_cost(model_id)
+    else:
+        budget.settle_model_cost(float(fallback_cost), model_id)
+
+
 class UsageLedger:
     """计量对账账本：预估与实测分离，重复记录不重复计费。
 
     - `begin_estimate()` 预登记一次调用；
     - `record()` 写入实测结果；同一 `call_id` 覆盖预估值，不叠加；
-    - `totals()` 的 `actual_cost` 只汇总**已知**实测成本，
-      未知成本的调用单独计入 `unknown_calls`。
+    - `totals()` 的 `actual_cost` 只汇总提供方**实测**金额；
+      已完成估算单列 `estimated_cost`，待结算预估单列
+      `estimated_cost_pending`，未知成本计入 `unknown_calls`。
     """
 
     def __init__(self) -> None:
@@ -217,9 +253,16 @@ class UsageLedger:
             entry.setdefault("estimate_cost", None)
 
     def totals(self) -> Dict[str, Any]:
+        """按来源分列成本，避免把估算金额冒充实测支出。
+
+        实测（provider）、已完成估算（estimate）、待结算预估（pending）、
+        未知（unknown）与已知免费（free）各自独立；`actual_cost` 只汇总
+        提供方实测金额。
+        """
         with self._lock:
             calls = len(self._calls)
             actual_cost = 0.0
+            estimated_cost = 0.0
             unknown_calls = 0
             free_calls = 0
             provider_usage_calls = 0
@@ -233,31 +276,42 @@ class UsageLedger:
                             else entry.get("model_id")) or "unknown"
                 bucket = by_model.setdefault(
                     model_id, {"calls": 0, "actual_cost": 0.0,
-                               "unknown_calls": 0})
+                               "estimated_cost": 0.0, "unknown_calls": 0,
+                               "free_calls": 0, "pending_estimates": 0})
                 bucket["calls"] += 1
                 if usage is None:
                     pending_estimates += 1
+                    bucket["pending_estimates"] += 1
                     estimate = entry.get("estimate_cost")
                     if estimate is not None:
                         estimated_cost_pending += float(estimate)
                     continue
-                if usage.cost is None:
+                source = usage.cost_source
+                if usage.cost is None or source not in (
+                        COST_PROVIDER, COST_ESTIMATE, COST_FREE):
                     unknown_calls += 1
                     bucket["unknown_calls"] += 1
-                else:
+                elif source == COST_PROVIDER:
                     actual_cost += float(usage.cost)
                     bucket["actual_cost"] += float(usage.cost)
-                if usage.cost_source == COST_FREE:
+                elif source == COST_ESTIMATE:
+                    estimated_cost += float(usage.cost)
+                    bucket["estimated_cost"] += float(usage.cost)
+                else:  # COST_FREE
                     free_calls += 1
+                    bucket["free_calls"] += 1
                 if usage.token_source == TOKEN_PROVIDER:
                     provider_usage_calls += 1
                 elif usage.token_source == TOKEN_ESTIMATE:
                     estimated_usage_calls += 1
             for bucket in by_model.values():
                 bucket["actual_cost"] = round(bucket["actual_cost"], 6)
+                bucket["estimated_cost"] = round(
+                    bucket["estimated_cost"], 6)
             return {
                 "calls": calls,
                 "actual_cost": round(actual_cost, 6),
+                "estimated_cost": round(estimated_cost, 6),
                 "unknown_calls": unknown_calls,
                 "free_calls": free_calls,
                 "provider_usage_calls": provider_usage_calls,

@@ -98,6 +98,21 @@ class AssetRepository:
                     f"（库 {existing.content_digest} / 新 {digest}）—— "
                     f"同一版本禁止覆盖；请登记新版本")
 
+            # 已回收版本在事件账本里留下墓碑：身份不可改文复用，否则同一
+            # AssetRef 会在不同时间指向不同正文，破坏不可变语义。
+            tombstone_row = self._conn.execute(
+                "SELECT detail_json FROM asset_events"
+                " WHERE asset_id=? AND version=? AND action='collect'"
+                " ORDER BY event_id DESC LIMIT 1",
+                (asset_id, version)).fetchone()
+            if tombstone_row is not None:
+                detail = self._load(tombstone_row["detail_json"])
+                tombstone = (detail.get("content_digest")
+                             if isinstance(detail, dict) else None)
+                raise AssetConflict(
+                    f"{asset_id}@{version} 已被回收，版本身份不可改文复用"
+                    f"（原摘要 {tombstone or 'unknown'}）—— 请登记新版本")
+
             self._conn.execute(
                 "INSERT INTO assets (asset_id, version, asset_type, namespace,"
                 " lifecycle_state, content_digest, content_json,"
@@ -319,7 +334,8 @@ class AssetRepository:
             self._conn.execute(
                 "DELETE FROM assets WHERE asset_id=? AND version=?",
                 (asset_id, version))
-            self._event(asset.ref, "collect", "retired", None, {})
+            self._event(asset.ref, "collect", "retired", None,
+                        {"content_digest": asset.content_digest})
             self._conn.commit()
             return True
 

@@ -460,6 +460,7 @@ class ModelRoutingReport:
             "by_kind": dict(self.by_kind),
             "by_source": dict(self.by_source),
             "usage_actual_cost": self.usage.get("actual_cost"),
+            "usage_estimated_cost": self.usage.get("estimated_cost"),
             "usage_unknown_calls": self.usage.get("unknown_calls"),
         }
 
@@ -548,8 +549,12 @@ class ModelRoutingEvaluator:
                 report.usage = {
                     "calls": totals.get("calls", 0),
                     "actual_cost": totals.get("actual_cost", 0.0),
+                    "estimated_cost": totals.get("estimated_cost", 0.0),
                     "unknown_calls": totals.get("unknown_calls", 0),
+                    "free_calls": totals.get("free_calls", 0),
                     "pending_estimates": totals.get("pending_estimates", 0),
+                    "estimated_cost_pending": totals.get(
+                        "estimated_cost_pending", 0.0),
                 }
             except Exception:  # noqa: BLE001 —— 费用对账失败不伪造数值
                 report.usage = {"error": "计量账本不可读"}

@@ -363,6 +363,21 @@ class TestUsageLedgerReconciliation(unittest.TestCase):
         self.assertEqual(totals["pending_estimates"], 0)
         self.assertAlmostEqual(totals["estimated_cost_pending"], 0.0)
 
+    def test_estimate_is_reported_separately_from_actual(self):
+        ledger = UsageLedger()
+        ledger.record(ModelUsage(model_id="m4", cost=0.5,
+                                 cost_source=COST_ESTIMATE,
+                                 token_source=TOKEN_ESTIMATE))
+        totals = ledger.totals()
+        self.assertEqual(totals["actual_cost"], 0.0,
+                         "估算金额不得命名为 actual_cost")
+        self.assertAlmostEqual(totals["estimated_cost"], 0.5)
+        self.assertEqual(totals["unknown_calls"], 0)
+        self.assertAlmostEqual(
+            totals["by_model"]["m4"]["actual_cost"], 0.0)
+        self.assertAlmostEqual(
+            totals["by_model"]["m4"]["estimated_cost"], 0.5)
+
     def test_pending_estimate_is_kept_separate(self):
         ledger = UsageLedger()
         ledger.begin_estimate("c2", 0.2, model_id="m2")

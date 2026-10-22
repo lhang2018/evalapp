@@ -11,7 +11,8 @@ from types import SimpleNamespace
 import pytest
 
 from evoagent.api.auth import ApiAuth
-from evoagent.assets.entity import AssetValidationError, DependencyError
+from evoagent.assets.entity import (AssetConflict, AssetValidationError,
+                                    DependencyError)
 from evoagent.assets.repository import AssetRepository
 from evoagent.assets.refs import manifest_asset_ref, verify_manifest_ref
 from evoagent.models.base import ChatMessage, ModelProfile, ModelRegistry
@@ -103,6 +104,43 @@ def test_gc_keeps_exact_rollback_target_until_referencing_asset_is_collected(rep
     repo.transition("new", "1", "retired")
     repo.collect("new", "1")
     assert repo.collect("old", "1")
+
+
+@pytest.mark.parametrize("content", [{"name": "immutable"},
+                                     {"name": "replacement"}])
+def test_collected_asset_identity_is_never_reissued(repo, content):
+    first = register(repo, "immutable")
+    repo.transition("immutable", "1", "retired")
+    repo.collect("immutable", "1")
+
+    with pytest.raises(AssetConflict):
+        repo.register(asset_id="immutable", version="1", asset_type="skill",
+                      namespace="domain_private", content=content,
+                      source_refs=["test:cross-review"])
+    collected = [e for e in repo.events("immutable", "1")
+                 if e["action"] == "collect"]
+    assert collected[-1]["detail"]["content_digest"] == first.content_digest
+
+
+def test_collected_asset_tombstone_survives_repository_restart(tmp_path):
+    path = tmp_path / "assets.db"
+    conn = sqlite3.connect(path)
+    repo = AssetRepository(conn)
+    register(repo, "immutable")
+    repo.transition("immutable", "1", "retired")
+    repo.collect("immutable", "1")
+    conn.close()
+
+    reopened = sqlite3.connect(path)
+    try:
+        repo = AssetRepository(reopened, ensure_schema=False)
+        with pytest.raises(AssetConflict):
+            repo.register(asset_id="immutable", version="1",
+                          asset_type="skill", namespace="domain_private",
+                          content={"name": "replacement"},
+                          source_refs=["test:cross-review"])
+    finally:
+        reopened.close()
 
 
 def test_transitive_dependency_pins_are_checked_before_root_promotion(repo):

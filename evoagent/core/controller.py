@@ -21,6 +21,7 @@ from ..experts.registry import Expert, ExpertRegistry
 from ..memory.context import AssembledContext, ContextAssembler
 from ..memory.store import Credibility, MemoryItem, MemoryKind, MemoryStore, Scope
 from ..models.base import ChatMessage, ModelAdapter
+from ..models.metering import adapter_model_id, settle_adapter_cost
 from ..models.router import ModelRouter
 from ..planning.planner import ExecutionPlan, PlanningEngine
 from ..react.engine import ReactEngine, ReactOutcome
@@ -263,6 +264,8 @@ class RuntimeController:
             task = self._move(task, TaskStatus.CLASSIFYING)
         if self.classifier is not None:
             # 显式 hint 短路不调用模型；无 hint 时先做预算闸门
+            adapter = getattr(self.classifier, "model", None)
+            model_id = None
             if not intent_hint:
                 try:
                     budget.check_model_call()
@@ -271,13 +274,17 @@ class RuntimeController:
                     self._emit(task, "task_budget_exhausted",
                                {"dimension": e.dimension}, severity="warn")
                     return self._move(task, TaskStatus.FAILED)
+                if adapter is not None:
+                    # 与 ReAct 一致：调用前预登记次数，调用后按实测结算
+                    model_id = adapter_model_id(adapter)
+                    budget.record_model_call(0.0, model_id)
             goal = task.user_goal
             if task.user_answers:
                 goal += "\n用户补充：\n" + "\n".join(a["answer"] for a in task.user_answers)
             intent, domain, conf, method = self.classifier.classify(
                 goal, hint=intent_hint, domain_hint=domain_hint)
-            if method in ("model", "heuristic_fallback"):
-                budget.record_model_call(0.0)
+            if method in ("model", "heuristic_fallback") and adapter is not None:
+                settle_adapter_cost(budget, adapter, model_id)
             task.confidence = conf
             task.runtime_manifest["intent_classification"] = {
                 "method": method, "confidence": conf}

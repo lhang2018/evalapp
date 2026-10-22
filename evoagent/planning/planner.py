@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional
 
 from ..core.budget import BudgetController, BudgetExceeded
 from ..models.base import ChatMessage
+from ..models.metering import adapter_model_id, settle_adapter_cost
 
 
 INTENT_TOOL_HINTS: Dict[str, str] = {
@@ -189,17 +190,24 @@ class PlanningEngine:
             f"constraints:{json.dumps(constraints, ensure_ascii=False)}\n"
             f"acceptance:{json.dumps(acceptance, ensure_ascii=False)}"))
         adapter = model or self.model
+        model_id = adapter_model_id(adapter)
         if budget is not None:
             budget.check_model_call()
-        raw = adapter.generate([system, user])
+            # 先预登记次数，再按计量结果结算金额；预估只作旧适配器兜底，
+            # 有提供方实测时不会顶替实测成本。
+            budget.record_model_call(0.0, model_id)
+        try:
+            raw = adapter.generate([system, user])
+        except Exception:
+            if budget is not None:
+                settle_adapter_cost(budget, adapter, model_id)
+            raise
         if budget is not None:
-            try:
-                model_id = adapter.profile().model_id
-            except Exception:  # noqa: BLE001
-                model_id = None
-            budget.record_model_call(_estimate_cost(
-                adapter, len(system.content) + len(user.content), len(raw)),
-                model_id)
+            settle_adapter_cost(
+                budget, adapter, model_id,
+                fallback_cost=_estimate_cost(
+                    adapter, len(system.content) + len(user.content),
+                    len(raw)))
         data = _parse_json(raw)
         steps_raw = data.get("steps")
         if not isinstance(steps_raw, list) or not steps_raw:
