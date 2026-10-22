@@ -345,6 +345,9 @@ export class UpdateManager {
       if (!this.downloader || !this.trustedKeys) {
         return fail("客户端未配置下载器或受信公钥");
       }
+      if (!this.trustedKeys.hasUsableKey(target.signing_key_id)) {
+        return fail("签名密钥未受信或已失效，拒绝下载");
+      }
 
       const expectedSize = target.artifact_size ?? 0;
       const free = await this.freeBytes();
@@ -512,7 +515,13 @@ export class UpdateManager {
         } catch (error) {
           state.phase = "failed";
           state.last_error = messageOf(error);
-          await this.save(state);
+          state.artifact = null;
+          state.pending = null;
+          await this.report(state, "activation_failed", candidate.release_id,
+            "failed", state.last_error, undefined, {
+              version: candidate.version, digest: candidate.digest,
+              keyId: artifact?.signing_key_id,
+            });
           throw error;
         }
       }

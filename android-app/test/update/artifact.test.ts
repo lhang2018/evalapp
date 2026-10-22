@@ -190,6 +190,7 @@ function setup(target: UpdateTarget, body: Uint8Array, keys: {
   permissions?: string[];
   appVersion?: string;
   now?: () => number;
+  trustedKeys?: TrustedKeyRing;
 } = {}) {
   const kv = new MemoryStore();
   const transport = new FakeTransport();
@@ -205,7 +206,8 @@ function setup(target: UpdateTarget, body: Uint8Array, keys: {
     toolContracts: ["open_app"],
     artifactSource: source,
     artifactFiles: fs,
-    trustedKeys: new TrustedKeyRing([keys.publicKey], options.now ?? (() => 100)),
+    trustedKeys: options.trustedKeys
+      ?? new TrustedKeyRing([keys.publicKey], options.now ?? (() => 100)),
     grantedPermissions: options.permissions ?? [],
     stagingDir: "updates",
     bundleApplier: applier
@@ -347,6 +349,18 @@ test("prepare downloads and verifies before allowing activation", async () => {
   assert.equal(activated?.version, "v9.1.0");
 });
 
+test("prepare rejects an untrusted signing key before downloading", async () => {
+  const keys = rsaKeys(), body = payload();
+  const source = new FakeSource(body);
+  const ctx = setup(makeTargetWithArtifact(body, {}, keys), body, keys, {
+    source, trustedKeys: new TrustedKeyRing([]),
+  });
+  await ctx.manager.check();
+  await assert.rejects(() => ctx.manager.prepare(), /未受信|失效/);
+  assert.equal(source.starts.length, 0);
+  assert.equal((await ctx.manager.status()).phase, "failed");
+});
+
 test("prepare blocks missing permissions, incompatible app and bad signature", async () => {
   const keys = rsaKeys();
   const body = payload();
@@ -467,6 +481,10 @@ test("activation rechecks actual bytes before calling the applier", async () => 
   await assert.rejects(() => ctx.manager.activate(), /摘要|制品|校验/);
   assert.equal(applier.calls.length, 0);
   assert.equal((await ctx.manager.status()).active_slot, "a");
+  const failed = ctx.transport.reports.filter(
+    (receipt) => receipt.action === "activation_failed");
+  assert.equal(failed.length, 1);
+  assert.equal(failed[0].outcome, "failed");
 });
 
 test("activation rechecks permission revocation", async () => {

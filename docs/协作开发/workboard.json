@@ -1240,7 +1240,6 @@
       "shared_files": [
         "evoagent/app.py",
         "evoagent/core/controller.py",
-        "evoagent/core/authorization.py",
         "evoagent/api/server.py"
       ],
       "next_step": "按09卷十态实现Goal注册/授权与最终动作守卫；保留正式基线及独立审阅条件"

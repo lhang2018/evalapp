@@ -54,6 +54,16 @@ export class TrustedKeyRing {
     this.now = now;
   }
 
+  /** 预检密钥是否可验签，避免为必然失败的下载付出流量。 */
+  hasUsableKey(keyId: string): boolean {
+    const key = this.keys.get(keyId);
+    if (!key || key.revoked) return false;
+    const now = this.now();
+    if (key.not_before !== undefined && now < key.not_before) return false;
+    if (key.not_after !== undefined && now >= key.not_after) return false;
+    return true;
+  }
+
   verifyArtifact(envelope: ArtifactEnvelope, bytes: Uint8Array): VerifyResult {
     return this.verifyDigest(
       envelope, sha256Hex(bytes), bytes.length);
