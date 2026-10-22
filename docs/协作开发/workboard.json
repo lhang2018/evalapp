@@ -1204,6 +1204,46 @@
         }
       ],
       "next_step": "由修复作者之外的reviewer复核；通过后再补端到端与真机验收"
+    },
+    {
+      "id": "ALN-07-P",
+      "workpackage": "ALN-07",
+      "title": "计划修订与已完成证据保持",
+      "stream": "runtime",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/07-计划修订与证据保持.md",
+      "shared_files": [
+        "evoagent/react/engine.py"
+      ],
+      "working_basis": "用户要求按优先级认领未开发工作包：ALN-07 为首个未认领 P1；在当前共享候选工作区增量开发（同 ALN-06-A/08-M/11-A 方式），基线未正式发布，不用旧 HEAD 冒充 base_commit",
+      "next_step": "先交修订分级语义与不变量夹具（证明 completed_work 丢失与约束可被改写），再实现四级原语并接连续失败恢复路径"
+    },
+    {
+      "id": "ALN-13-A",
+      "workpackage": "ALN-13",
+      "title": "Goal十态、持久授权与任务接线",
+      "stream": "runtime",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "1ad71bc9d3b2d920cd8028d59765194941fd50c7",
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/13-Goal与自主授权.md",
+      "shared_files": [
+        "evoagent/app.py",
+        "evoagent/core/controller.py",
+        "evoagent/core/authorization.py",
+        "evoagent/api/server.py"
+      ],
+      "next_step": "按09卷十态实现Goal注册/授权与最终动作守卫；保留正式基线及独立审阅条件"
     }
   ],
   "workpackages": [
@@ -1305,9 +1345,9 @@
         "ALN-08"
       ],
       "stream": "runtime",
-      "owner": null,
+      "owner": "claude-main",
       "delivery_state": "planned",
-      "next_step": "等资产/路由/恢复接口后补匹配、修订和轨迹编译"
+      "next_step": "ALN-07-P 计划修订与证据保持已认领开发中（依赖 ALN-02-A/ALN-04-R 已交付接口）；工作流匹配与轨迹编译待后续拆卡"
     },
     {
       "id": "ALN-08",
@@ -1400,9 +1440,9 @@
         "ALN-04"
       ],
       "stream": "runtime",
-      "owner": null,
+      "owner": "codex-runtime",
       "delivery_state": "planned",
-      "next_step": "先定十态 Goal/授权接口，等待运行恢复接入"
+      "next_step": "ALN-13-A已认领，交付Goal十态、持久授权、期限/撤销传播及Task接线；整包验收仍待前置与独立复核"
     },
     {
       "id": "ALN-14",
@@ -1556,5 +1596,5 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "ALN-01-A/02-A代码完成并进入review；精确22c50ca干净全量1065/1，新增49项；客户端同tree沿用136/typecheck。01传递影响19包、02影响17包，原依赖未改；03/05等同期交付继续各自独立审阅。基线candidate未发布，不自批、不混入他人在途内容。 2026-10-22 ALN-11-A/ALN-16-A 已交付，状态 review，等待 codex-runtime 独立复核。"
+  "execution_note": "ALN-01-A/02-A代码完成并进入review；精确22c50ca干净全量1065/1，新增49项；客户端同tree沿用136/typecheck。01传递影响19包、02影响17包，原依赖未改；03/05等同期交付继续各自独立审阅。基线candidate未发布，不自批、不混入他人在途内容。 2026-10-22 ALN-11-A/ALN-16-A 已交付，状态 review，等待 codex-runtime 独立复核。 2026-10-22 ALN-07-P（首个未认领 P1 工作包的第一项）已认领并标注 in_progress，先交分级语义与不变量夹具。"
 }
