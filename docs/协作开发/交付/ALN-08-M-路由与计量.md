@@ -25,7 +25,12 @@
   - 模型层补上评测：`ModelRoutingEvaluator` 走真实 `ModelRouter.decide`，产出
     路由准确率/回退率/视觉违规/by_kind/by_source/per_model，并可附 `UsageLedger`
     的实测与未知成本对账；`POST /routing/model-eval` 由调用方提供期望模型，
-    不允许把路由自己的评分输出当答案。
+    不允许把路由自己的评分输出当答案；
+  - 实测成本接入任务预算：ReAct 运行内核优先读取本次调用的 `ModelUsage.cost`
+    结算（预登记不重复计费），成本未知时只累加 `unknown_model_costs`，
+    **不按 0 元记账**；无计量结果的旧适配器保留字符数预估回退；
+  - `BudgetUsage` 新增 `unknown_model_costs`（随用量持久化/恢复），
+    `CostReporter` 在总计与按任务明细中如实暴露该计数。
 
 ## 范围
 
@@ -38,10 +43,19 @@
   - `evoagent/models/__init__.py`（导出）
   - `evoagent/evolution/routing_eval.py`（五层覆盖复核、模型层评测）
   - `evoagent/api/routing_eval_api.py`（覆盖矩阵与模型层评测端点）
-  - `tests/test_model_metering.py`、`tests/test_routing_eval.py`、`tests/test_routing_eval_api.py`
-- 共享文件补丁与整合角色：无。`core/budget.py`、`react/engine.py`、`core/contracts.py`、持久化与装配均未改动。
-- 新增/修改契约：`ModelUsage` / `cost_source` / `token_source` / `pricing_known`。提供方为 models 线；消费方为运行账单（待接线）与路由报告。
-- 数据迁移：无 schema 变更；事件负载为增量字段；旧档案缺省 `pricing_known=False`，行为从“隐式免费”收紧为“未知”。
+  - `evoagent/core/budget.py`（共享 integration 补丁：未知成本计数与报告字段）
+  - `evoagent/react/engine.py`（共享 runtime 补丁：按计量结果结算）
+  - `tests/test_model_metering.py`、`tests/test_routing_eval.py`、
+    `tests/test_routing_eval_api.py`、`tests/test_metering_budget.py`
+- 共享文件补丁与整合角色：`core/budget.py`（integration）与 `react/engine.py`
+  （runtime）为跨线补丁，**需对应领域 reviewer 审阅**；补丁均为增量字段/
+  分支，未改动既有方法签名与默认行为。`core/contracts.py`、持久化与装配未改动。
+- 新增/修改契约：`ModelUsage` / `cost_source` / `token_source` / `pricing_known`；
+  `BudgetUsage.unknown_model_costs` / `BudgetController.mark_unknown_model_cost`。
+  提供方为 models 线；消费方为运行账单与路由报告。
+- 数据迁移：无 schema 变更；事件负载与预算用量均为增量字段；旧档案缺省
+  `pricing_known=False`，行为从“隐式免费”收紧为“未知”；旧用量记录缺省
+  `unknown_model_costs=0`。
 
 ## 验证证据
 
@@ -49,20 +63,27 @@
 - 拒绝/失败：同文件覆盖 429 限流（3 次有界重试）、超时（有界）、400 供应商错误（不重试）、失败调用不产生伪造用量；事件总线故障不影响调用。
 - 覆盖矩阵：`tests/test_routing_eval.py::TestFiveLayerCoverage` 锁定五层顺序、已评测层有指标、缺失层必须写明缺口；`tests/test_routing_eval_api.py` 覆盖 `GET /routing/coverage` 与评测响应中的 `coverage`。
 - 模型层：`TestModelRoutingEvaluation`（6 项）覆盖显式/默认/评分/成本优先/视觉约束/无候选回退与费用对账；`/routing/model-eval` 端到端验证准确率、失败清单与缺期望值的 400 拒绝。
+- 预算接线：`tests/test_metering_budget.py`（5 项）锁定实测成本优先于预估、
+  未知成本只计数不按 0 元记账、旧适配器回退预估、预登记不重复计数、
+  未知计数随用量恢复并在作用域预算向上传播。
 - 命令与结果：
   - `python -m pytest tests/test_model_metering.py -q` → 20 passed
   - `python -m pytest tests/test_routing_eval.py tests/test_routing_eval_api.py -q` → 43 passed
-  - `python -m pytest tests -q` → **784 passed, 1 skipped**（含并行会话已合入的 E-12/E-13/ALN-04 测试）
+  - `python -m pytest tests/test_metering_budget.py tests/test_budget.py tests/test_budget_hierarchy.py tests/test_execution_boundaries.py -q` → 55 passed
+  - `python -m pytest tests -q` → **788 passed, 1 skipped, 1 failed**；
+    唯一失败为 `test_ledger_drift`（FEATURES/GAP 中 `store.py:248` 行号越界），
+    属并行文档会话的台账漂移，不在本卡改动范围。
 - 验证边界：全部为本地确定性夹具与 Mock；**未**调用真实供应商、未验证真实计费单、未做真机/生产部署验收。
 
 ## 回滚与未完成事项
 
-- 回滚：还原上述 models/routing 文件与测试即可；无迁移、无持久化格式变更。事件字段为增量，旧消费者不受影响。
+- 回滚：还原上述 models/routing/budget 文件与测试即可；无迁移、无持久化格式变更。
+  事件与预算字段均为增量，旧消费者与旧用量记录不受影响。
 - 保留限制：
   - 工作流层、执行模式层当前没有路由入口，覆盖矩阵已显式标为缺口；
   - 模型层已有确定性评测与费用对账，但评测用例需调用方提供期望模型，尚无生产评测集；
-  - 实测成本尚未写入 `BudgetController`/任务账单：`react/engine.py` 与
-    `core/budget.py` 仍有运行内核线未提交改动，需待其合入后按接口串行接线；
+  - 实测成本已进入任务预算与 `CostReporter`，但未知成本只做计数，
+    尚未按估算区间写入预算池（不臆造金额）；
   - 调用尚未回填 `task_id`/`run_id`；`ModelUsage` 已预留字段与 `call_id`；
   - 真实供应商价格档案未配置，生产默认仍为 unknown（这是刻意的诚实缺省）。
 - 影响主题：ALN-08（整包未关闭）、R-03/F-53（路由评测）、ALN-15（预留/结算接口待评审）。

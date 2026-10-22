@@ -36,6 +36,9 @@ class BudgetUsage:
     tool_calls: int = 0
     cost: float = 0.0
     seconds: float = 0.0
+    #: 成本未知的模型调用次数（价格档案缺失）。**不并入 cost**：
+    #: 未知不是免费，按 0 元记账会系统性低估支出。
+    unknown_model_costs: int = 0
     # 按工具/模型的归因，用于单工具预算与成本报告（PRD 55/58）
     tool_usage: Dict[str, Dict[str, float]] = field(default_factory=dict)
     model_usage: Dict[str, Dict[str, float]] = field(default_factory=dict)
@@ -47,6 +50,7 @@ class BudgetUsage:
             tool_calls=int(d.get("tool_calls", 0) or 0),
             cost=float(d.get("cost", 0.0) or 0.0),
             seconds=float(d.get("seconds", 0.0) or 0.0),
+            unknown_model_costs=int(d.get("unknown_model_costs", 0) or 0),
             tool_usage=dict(d.get("tool_usage") or {}),
             model_usage=dict(d.get("model_usage") or {}))
 
@@ -273,6 +277,22 @@ class BudgetController:
             if cost > self.limits.max_cost_per_model_call:
                 self._violations["model_call_cost"] = f"单次模型调用成本 {cost} > {self.limits.max_cost_per_model_call}"
 
+    def mark_unknown_model_cost(self, model_id: Optional[str] = None) -> None:
+        """标记一次调用的成本未知；不计入 cost，也不视为免费。
+
+        价格档案缺失时，提供方用量可能可用但无法折算金额。此时既不能
+        按 0 元结算（低估支出），也不能丢弃这条调用（无法对账），
+        因此单独计数并随用量持久化。
+        """
+        with self._lock:
+            self.usage.unknown_model_costs += 1
+            if model_id:
+                bucket = self.usage.model_usage.setdefault(
+                    model_id, {"calls": 0, "cost": 0.0})
+                bucket["unknown_costs"] = int(
+                    bucket.get("unknown_costs", 0)) + 1
+            self.persist_usage()
+
     def record_tool_call(self, tool_id: Optional[str] = None,
                          cost: float = 0.0) -> None:
         cost = max(0.0, float(cost))
@@ -458,6 +478,17 @@ class ScopedBudget:
                 self._violations["model_call_cost"] = f"{self.name} 单次模型调用成本 {cost} > {self.limits.max_cost_per_model_call}"
             self.parent.persist_usage()
 
+    def mark_unknown_model_cost(self, model_id: Optional[str] = None) -> None:
+        with self.parent._lock:
+            self.parent.mark_unknown_model_cost(model_id)
+            self.usage.unknown_model_costs += 1
+            if model_id:
+                bucket = self.usage.model_usage.setdefault(
+                    model_id, {"calls": 0, "cost": 0.0})
+                bucket["unknown_costs"] = int(
+                    bucket.get("unknown_costs", 0)) + 1
+            self.parent.persist_usage()
+
     def record_tool_call(self, tool_id: Optional[str] = None,
                          cost: float = 0.0) -> None:
         with self.parent._lock:
@@ -503,7 +534,8 @@ class CostReporter:
     def report(self, limit: int = 500) -> Dict[str, Any]:
         tasks = self.db.list_tasks(limit=limit)
         totals = {"tasks": len(tasks), "model_calls": 0, "tool_calls": 0,
-                  "cost": 0.0, "successful_tasks": 0, "failed_tasks": 0,
+                  "cost": 0.0, "unknown_model_costs": 0,
+                  "successful_tasks": 0, "failed_tasks": 0,
                   "successful_cost": 0.0, "failed_cost": 0.0}
         by_task: List[Dict[str, Any]] = []
         by_domain: Dict[str, Dict[str, Any]] = {}
@@ -514,6 +546,7 @@ class CostReporter:
             cost = float(usage.get("cost", 0.0) or 0.0)
             model_calls = int(usage.get("model_calls", 0) or 0)
             tool_calls = int(usage.get("tool_calls", 0) or 0)
+            unknown_costs = int(usage.get("unknown_model_costs", 0) or 0)
             model = ((t.runtime_manifest or {}).get("model_route") or {}
                      ).get("model_id") or "unrouted"
             version = (t.version_manifest or {}).get("version") or "unreleased"
@@ -522,6 +555,7 @@ class CostReporter:
             totals["model_calls"] += model_calls
             totals["tool_calls"] += tool_calls
             totals["cost"] += cost
+            totals["unknown_model_costs"] += unknown_costs
             if ok:
                 totals["successful_tasks"] += 1
                 totals["successful_cost"] += cost
@@ -533,6 +567,7 @@ class CostReporter:
                 "model": model, "version": version,
                 "status": t.task_status.value, "cost": round(cost, 6),
                 "model_calls": model_calls, "tool_calls": tool_calls,
+                "unknown_model_costs": unknown_costs,
                 "success": ok, "failure_reason": t.failure_reason})
             for bucket, key in ((by_domain, t.domain or "general"),
                                 (by_model, model), (by_version, version)):

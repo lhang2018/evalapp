@@ -142,7 +142,8 @@ class ReactEngine:
                     outcome.stop_reason = f"budget:{e.dimension}"
                     return capture()
                 assert_current_lease()
-                budget.settle_model_cost(_estimate_cost(adapter, messages, suggestion), model_id)
+                _settle_model_cost(budget, adapter, messages, suggestion,
+                                   model_id)
                 model_call_inflight = False
             next_iteration = i + 1
 
@@ -320,6 +321,29 @@ def _plan_progress_message(plan: ExecutionPlan) -> str:
         return f"plan_update: 已完成步骤={done}；没有待执行步骤。"
     return (f"plan_update: 已完成步骤={done}；"
             f"当前步骤={cur.step_id}: {cur.description}")
+
+
+def _settle_model_cost(budget: BudgetController, model: ModelAdapter,
+                       messages: List[ChatMessage], suggestion: Action,
+                       model_id: Optional[str]) -> None:
+    """按本次调用已产生的计量结果结算，预登记不重复计费。
+
+    - 实测/预估成本可用：按该金额结算；
+    - 成本未知（价格档案缺失）：只记未知计数，**绝不按 0 元结算**；
+    - 适配器未暴露计量结果（旧适配器）：退回字符数预估。
+    """
+    usage = getattr(model, "last_usage", None)
+    if usage is not None and hasattr(usage, "cost") \
+            and getattr(usage, "call_id", None):
+        if usage.cost is None:
+            marker = getattr(budget, "mark_unknown_model_cost", None)
+            if callable(marker):
+                marker(model_id)
+            return
+        budget.settle_model_cost(float(usage.cost), model_id)
+        return
+    budget.settle_model_cost(_estimate_cost(model, messages, suggestion),
+                             model_id)
 
 
 def _estimate_cost(model: ModelAdapter, messages: List[ChatMessage],

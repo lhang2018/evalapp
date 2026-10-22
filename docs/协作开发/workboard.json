@@ -306,9 +306,9 @@
       "evidence": [
         {
           "date": "2026-10-22",
-          "scope": "五层覆盖复核 + 实测/预估/未知费用计量 + 模型层路由评测与费用对账",
+          "scope": "五层覆盖复核 + 实测/预估/未知费用计量 + 模型层路由评测与费用对账 + 实测成本接入任务预算（未知成本单独计数）",
           "command": "python -m pytest tests -q",
-          "result": "784 passed, 1 skipped",
+          "result": "788 passed, 1 skipped；1 failed 为并行文档会话台账漂移（FEATURES/GAP 引用越界），非本卡范围",
           "delivery": "docs/协作开发/交付/ALN-08-M-路由与计量.md"
         }
       ],
@@ -320,7 +320,8 @@
         "evoagent/core/events.py",
         "evoagent/core/controller.py",
         "evoagent/app.py",
-        "evoagent/cli.py"
+        "evoagent/cli.py",
+        "evoagent/react/engine.py"
       ]
     },
     {
