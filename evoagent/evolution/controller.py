@@ -13,7 +13,7 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
-from ..core.budget import BudgetController, BudgetExceeded, BudgetLimits
+from ..core.budget import BudgetController, BudgetExceeded
 from ..core.events import EventBus
 from ..tools.registry import ToolRegistry
 from .benefit import evaluate_benefit
@@ -78,6 +78,7 @@ class EvolutionController:
         self.evaluator = evaluator
         self.gate = gate or ReleaseGate()
         self._evaluation_lock = threading.RLock()
+        self._active_evaluations = set()
         # 生产路径要求安全证据与独立保留集（Arch 11.2 / 11.5）
         self.gate_thresholds = GateThresholds(require_safety_pass=True,
                                               require_holdout=True)
@@ -145,20 +146,8 @@ class EvolutionController:
     def _make_candidate_budget(self, cand: EvolutionCandidate
                                ) -> Optional[BudgetController]:
         """单候选实验预算；用量同时计入进化日/月池。"""
-        if self.budget is None:
-            return None
-        cfg = self.budget_config
-        limits = BudgetLimits()
-        if cfg is not None:
-            limits = BudgetLimits(
-                max_model_calls=cfg.candidate_max_model_calls,
-                max_tool_calls=cfg.candidate_max_tool_calls,
-                max_cost=cfg.candidate_max_cost,
-                max_seconds=cfg.candidate_max_seconds)
-        return BudgetController(
-            limits, ledger=self.budget,
-            ledger_scope=f"candidate:{cand.candidate_id}",
-            extra_scopes=["evolution"])
+        from .experiment_budget import make_candidate_budget
+        return make_candidate_budget(self, cand)
 
     # ---- ALN-10 回归用例默认消费（门禁证据链）------------------------
     def _regression_supplement(self, cand: EvolutionCandidate, *, evaluated=None
@@ -190,11 +179,11 @@ class EvolutionController:
 
     # ---- E-07 消费链：问题票据 → 自动候选提案（GAP 第二批第 7 项）----
     def _baseline_version(self) -> str:
-        """候选基线=当前稳定版本：来自发布清单，无发布时 unreleased。"""
+        """固定精确发布身份；展示版本不能作为回滚/评测基线。"""
         if self.releases and getattr(self.releases, "current_release_id", None):
             m = self.releases.manifests.get(self.releases.current_release_id)
             if m is not None:
-                return m.version
+                return self.releases.current_release_id
         return "unreleased"
 
     def _has_open_candidate_for(self, target_component: str) -> bool:
@@ -255,16 +244,38 @@ class EvolutionController:
         （contracts EVOLUTION_STOP_*）只停止本轮，绝不静默丢证据。
         """
         report: Dict[str, Any] = {
+            "round_id": f"round_{uuid.uuid4().hex}",
             "converted": [], "skipped_unknown": [], "already_converted": 0,
             "proposed": [], "evaluated": [], "errors": [],
             "stop_reasons": [],
         }
+        # The evaluator shares a mutable runner. Never wait on an active run
+        # then recover the candidate from a stale TESTING/EVALUATING snapshot.
+        if not self._evaluation_lock.acquire(blocking=False):
+            report["stop_reasons"].append(_contracts.EVOLUTION_STOP_CONCURRENCY_LIMIT)
+            self._audit_round(report)
+            return report
+        try:
+            if self._active_evaluations:  # Also covers reentrant runner callbacks.
+                report["stop_reasons"].append(_contracts.EVOLUTION_STOP_CONCURRENCY_LIMIT)
+                return report
+            return self._run_evolution_round(max_evaluations, report)
+        except Exception as exc:
+            report["errors"].append(f"编排轮失败: {type(exc).__name__}: {exc}")
+            report["stop_reasons"].append(_contracts.EVOLUTION_STOP_EVALUATION_ERROR)
+            return report
+        finally:
+            try:
+                self._audit_round(report)
+            finally:
+                self._evaluation_lock.release()
+
+    def _run_evolution_round(self, max_evaluations, report):
         # 停止条件①：实验预算池耗尽（日/月池与正式任务隔离）
         problem = self._evolution_pool_problem()
         if problem:
             report["stop_reasons"].append(
                 f"{_contracts.EVOLUTION_STOP_BUDGET_EXHAUSTED}: {problem}")
-            self._audit_round(report)
             return report
         # E-12：失败案例先固化（转换在提案之前，证据先行）
         converted = self.regression_builder.convert_pending()
@@ -276,10 +287,8 @@ class EvolutionController:
         if not report["proposed"]:
             report["stop_reasons"].append(
                 _contracts.EVOLUTION_STOP_NO_PENDING_EVIDENCE)
-        # E-13 故障恢复（ALN-09）：崩溃残留 TESTING/EVALUATING 的候选是
-        # 死锁（不再有进程持有评测），必须先正向续跑（run_evaluation 从
-        # 当前态接续），否则永远不会前进——恢复不受并发占位阻断，受
-        # 轮额度约束
+        # 已持有评测锁且无活跃执行者，才能把中间态视为待恢复残留。
+        # 恢复从当前态正向续跑，仍受本轮额度与原候选累计预算约束。
         stuck = [c for c in self.candidates.values()
                  if c.status in (CandidateStatus.TESTING,
                                  CandidateStatus.EVALUATING)]
@@ -289,7 +298,6 @@ class EvolutionController:
                 report["stop_reasons"].append(
                     f"{_contracts.EVOLUTION_STOP_BUDGET_EXHAUSTED}: "
                     f"{later_problem}")
-                self._audit_round(report)
                 return report
             try:
                 self.evaluate_candidate(cand.candidate_id)
@@ -299,7 +307,6 @@ class EvolutionController:
                     f"{cand.candidate_id}: {type(e).__name__}: {e}")
                 report["stop_reasons"].append(
                     _contracts.EVOLUTION_STOP_EVALUATION_ERROR)
-                self._audit_round(report)
                 return report
         # 停止条件②：并发上限（恢复后的存活进行中计数；新评测受其约束）
         in_flight = [c for c in self.candidates.values()
@@ -309,7 +316,6 @@ class EvolutionController:
         if slots <= 0:
             report["stop_reasons"].append(
                 _contracts.EVOLUTION_STOP_CONCURRENCY_LIMIT)
-            self._audit_round(report)
             return report
         # 评测就绪候选（CANDIDATE_CREATED），受并发余量与轮剩余额度约束
         ready = [c for c in self.candidates.values()
@@ -323,7 +329,6 @@ class EvolutionController:
                 report["stop_reasons"].append(
                     f"{_contracts.EVOLUTION_STOP_BUDGET_EXHAUSTED}: "
                     f"{later_problem}")
-                self._audit_round(report)
                 break
             try:
                 self.evaluate_candidate(cand.candidate_id)
@@ -333,16 +338,17 @@ class EvolutionController:
                     f"{cand.candidate_id}: {type(e).__name__}: {e}")
                 report["stop_reasons"].append(
                     _contracts.EVOLUTION_STOP_EVALUATION_ERROR)
-                self._audit_round(report)
                 break
-        self._audit_round(report)
         return report
 
     # ---- E-13 轮次审计与恢复证据（ALN-09）---------------------------
     def _audit_round(self, report: Dict[str, Any]) -> None:
-        """编排轮结果落证据登记簿（即故障恢复的接续依据；故障不阻断）。"""
+        """使用稳定轮 ID 幂等落库；缺失审计必须在返回值中可见。"""
+        report.setdefault("round_id", f"round_{uuid.uuid4().hex}")
+        report["audit_persisted"] = False
         store = getattr(self, "store", None)
         if store is None or not hasattr(store, "save_evidence"):
+            report["audit_error"] = "轮审计存储未装配"
             return
         try:
             payload = {
@@ -351,17 +357,22 @@ class EvolutionController:
                 "evaluated": report.get("evaluated", []),
                 "errors": report.get("errors", []),
                 "stop_reasons": report.get("stop_reasons", []),
+                "round_id": report["round_id"],
+                "skipped_unknown": report.get("skipped_unknown", []),
+                "already_converted": report.get("already_converted", 0),
             }
             store.save_evidence(
-                evidence_id=f"round_{uuid.uuid4().hex[:12]}",
+                evidence_id=report["round_id"],
                 task_id=None,
                 kind=EVOLUTION_ROUND_AUDIT_KIND,
                 ref="evolution_round",
                 summary=json.dumps(payload, ensure_ascii=False,
                                    sort_keys=True),
             )
-        except Exception:  # noqa: BLE001
-            pass
+            report["audit_persisted"] = True
+            report.pop("audit_error", None)
+        except Exception as exc:
+            report["audit_error"] = "轮审计写入失败: " + type(exc).__name__
 
     def _next_candidate_id(self) -> str:
         self._seq += 1
@@ -471,15 +482,25 @@ class EvolutionController:
         ds = self._pick_dataset(cand, dataset_id)
         if ds is None:
             raise ValueError("没有可用评测集")
-        cand.eval_dataset_id = ds.dataset_id
         return self.run_evaluation(cand, ds, baseline_requested=baseline)
 
     def run_evaluation(self, cand: EvolutionCandidate, dataset: EvalDataset,
                        baseline_report: Optional[EvalReport] = None, *,
                        baseline_requested: bool = False) -> Dict[str, Any]:
         with self._evaluation_lock:
-            return self._run_evaluation(cand, dataset, baseline_report,
-                                        baseline_requested=baseline_requested)
+            if self._active_evaluations:
+                raise RuntimeError("评测执行器正在使用，禁止重入")
+            self._active_evaluations.add(cand.candidate_id)
+            try:
+                return self._run_evaluation(cand, dataset, baseline_report,
+                                            baseline_requested=baseline_requested)
+            except BudgetExceeded as exc:
+                if cand.status == CandidateStatus.EVALUATING:
+                    cand.transition(CandidateStatus.REJECTED, str(exc))
+                    self._persist(cand)
+                return {"passed": False, "reasons": [str(exc)], "budget_exhausted": str(exc)}
+            finally:
+                self._active_evaluations.discard(cand.candidate_id)
 
     def _run_evaluation(self, cand: EvolutionCandidate,
                        dataset: EvalDataset,
@@ -545,6 +566,11 @@ class EvolutionController:
             runner.set_budget(candidate_budget)
         regression_block: Dict[str, Any] = {}
         try:
+            if candidate_budget is not None:
+                candidate_budget.check_alive()
+                for dimension in ("model_calls", "tool_calls"):
+                    if getattr(candidate_budget.usage, dimension) >= getattr(candidate_budget.limits, "max_" + dimension):
+                        raise BudgetExceeded(dimension, "候选累计预算已耗尽")
             # 安全证据由确定性套件给出，缺失时门禁 fail-closed（Arch 11.5）
             safety = self.safety.run()
             cand.safety_result = safety
@@ -577,8 +603,13 @@ class EvolutionController:
                 evaluated[holdout_report.dataset_id] = (holdout_baseline, holdout_report)
             regression_block = self._regression_supplement(cand, evaluated=evaluated)
         finally:
-            if candidate_budget is not None and hasattr(runner, "set_budget"):
-                runner.set_budget(previous_budget)
+            try:
+                if candidate_budget is not None:
+                    from .experiment_budget import finish_candidate_budget
+                    finish_candidate_budget(self, cand, candidate_budget)
+            finally:
+                if candidate_budget is not None and hasattr(runner, "set_budget"):
+                    runner.set_budget(previous_budget)
 
         budget_problem = (candidate_budget.exceeded()
                           if candidate_budget is not None else None)

@@ -72,6 +72,7 @@ class EvolutionCandidate:
     evaluation_report_id: str = ""
     evaluation_report_digest: str = ""
     approval_result: Optional[Dict[str, Any]] = None
+    experiment_budget: Optional[Dict[str, Any]] = None
     target_domain: str = ""
     cost_delta: Optional[float] = None
     latency_delta: Optional[float] = None
