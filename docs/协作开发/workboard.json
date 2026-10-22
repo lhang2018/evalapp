@@ -1030,6 +1030,87 @@
       "review_result": "pending",
       "delivery": "docs/协作开发/交付/ALN-02-A-回执对账与验证补偿.md",
       "next_step": "独立复核精确22c50ca及关闭标准；通过后由集成人关闭父包/推进共同基线，不能作者自批"
+    },
+    {
+      "id": "ALN-11-A",
+      "workpackage": "ALN-11",
+      "title": "端侧真实制品下载、验签、装载与回执",
+      "stream": "android",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "branch": "main",
+      "base_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "新增10项端侧专项：断点续传与原子改名、坏摘要/截断不落正式文件、空间不足拒绝、真实RSA字节验签与篡改/撤销/过期密钥、prepare→activate与回执绑定、缺权限/低版本/坏签名拦截、装载失败保持活动槽、重启未装载拒绝切槽、失败回执按同一 apply_id 重放",
+          "command": "cd android-app && node --test test/update/artifact.test.ts && npm run test:offline && npm run typecheck",
+          "result": "专项 10 passed；客户端全量 154 passed；typecheck 通过",
+          "log": ".planning/2026-10-22-aln-11-16/aln11-targeted.txt; .planning/2026-10-22-aln-11-16/client-full.txt; .planning/2026-10-22-aln-11-16/typecheck.txt",
+          "delivery": "docs/协作开发/交付/ALN-11-A-端侧制品下载验签装载.md",
+          "source_commit": "10ec664c2804b4485b8c60ac8f053c1b6b10e8ae"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "服务端全量回归，确认端侧新增模块未影响既有路径",
+          "command": "PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python -m pytest -q",
+          "result": "1076 passed, 1 skipped",
+          "log": ".planning/2026-10-22-aln-11-16/python-full.txt",
+          "delivery": "docs/协作开发/交付/ALN-11-A-端侧制品下载验签装载.md",
+          "source_commit": "10ec664c2804b4485b8c60ac8f053c1b6b10e8ae"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/11-真实制品装载.md",
+      "delivery": "docs/协作开发/交付/ALN-11-A-端侧制品下载验签装载.md",
+      "shared_files": [
+        "evoagent/release/delivery.py"
+      ],
+      "preparation_status": "delivered",
+      "next_step": "独立复核断点下载/真实字节验签/装载与回执幂等；真机 RN 文件系统/Range/装载器适配与服务端 envelope 下发转后续接线",
+      "delivered_commit": "10ec664c2804b4485b8c60ac8f053c1b6b10e8ae"
+    },
+    {
+      "id": "ALN-16-A",
+      "workpackage": "ALN-16",
+      "title": "跨端观测契约、决策链、隐私与凭证治理",
+      "stream": "models",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "branch": "main",
+      "base_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "新增11项观测专项：旧事件四等级映射与非法值/缺来源/受限未脱敏/凭证样式拒绝、RunEvent 新字段落库回读、决策链引用与缺失引用、效果/因果未决、链 digest 与索引稳定、外部来源保留与清洗、导出角色最小化与正文排除及确定性、密钥清洗、删除计划、凭证分级/轮换/撤销/状态解释、上下文泄漏拦截、TokenRing 轮换与 ApiAuth 角色",
+          "command": "PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python -m pytest tests/test_observability_evidence.py tests/test_event_contract.py tests/test_event_sync.py tests/test_control_plane.py -q",
+          "result": "41 passed",
+          "log": ".planning/2026-10-22-aln-11-16/aln16-targeted.txt",
+          "delivery": "docs/协作开发/交付/ALN-16-A-观测证据隐私与凭证.md",
+          "source_commit": "bc7eb65050ca5a704918e739cb9596ca4caf8b30"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "服务端全量回归，确认事件表增量与鉴权改动无回退",
+          "command": "PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python -m pytest -q",
+          "result": "1076 passed, 1 skipped",
+          "log": ".planning/2026-10-22-aln-11-16/python-full.txt",
+          "delivery": "docs/协作开发/交付/ALN-16-A-观测证据隐私与凭证.md",
+          "source_commit": "bc7eb65050ca5a704918e739cb9596ca4caf8b30"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/16-观测隐私凭证.md",
+      "delivery": "docs/协作开发/交付/ALN-16-A-观测证据隐私与凭证.md",
+      "shared_files": [
+        "evoagent/core/events.py",
+        "evoagent/api/auth.py"
+      ],
+      "preparation_status": "delivered",
+      "next_step": "独立复核跨端契约/决策链/导出最小化/凭证分级轮换；端侧 EvidenceEvent 产出、业务仓储自动装配与生产密钥托管转后续接线",
+      "delivered_commit": "bc7eb65050ca5a704918e739cb9596ca4caf8b30"
     }
   ],
   "workpackages": [
@@ -1198,9 +1279,9 @@
         "ALN-10"
       ],
       "stream": "android",
-      "owner": null,
-      "delivery_state": "planned",
-      "next_step": "依赖资产与门禁，补真实字节下载/验签/装载和健康回滚"
+      "owner": "claude-main",
+      "delivery_state": "partial_verified",
+      "next_step": "ALN-11-A 端侧下载/验签/装载内核已交付待审；真机适配器与服务端制品 envelope 下发未完成"
     },
     {
       "id": "ALN-12",
@@ -1269,9 +1350,9 @@
         "ALN-04"
       ],
       "stream": "models",
-      "owner": null,
-      "delivery_state": "planned",
-      "next_step": "先定跨域引用、隐私与凭证契约，按运行/网关前置整合"
+      "owner": "claude-main",
+      "delivery_state": "partial_verified",
+      "next_step": "ALN-16-A 观测契约/决策链/隐私与凭证治理已交付待审；端侧事件产出、业务装配与密钥托管未完成"
     },
     {
       "id": "ALN-17",
@@ -1382,5 +1463,5 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "ALN-01-A/02-A代码完成并进入review；精确22c50ca干净全量1065/1，新增49项；客户端同tree沿用136/typecheck。01传递影响19包、02影响17包，原依赖未改；03/05等同期交付继续各自独立审阅。基线candidate未发布，不自批、不混入他人在途内容。"
+  "execution_note": "ALN-01-A/02-A代码完成并进入review；精确22c50ca干净全量1065/1，新增49项；客户端同tree沿用136/typecheck。01传递影响19包、02影响17包，原依赖未改；03/05等同期交付继续各自独立审阅。基线candidate未发布，不自批、不混入他人在途内容。 2026-10-22 ALN-11-A/ALN-16-A 已交付，状态 review，等待 codex-runtime 独立复核。"
 }

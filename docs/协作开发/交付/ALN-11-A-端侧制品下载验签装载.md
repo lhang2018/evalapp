@@ -29,6 +29,7 @@
 - 既有 `test/update/manager.test.ts` **19 passed**，无回归。
 - 客户端全量 `npm run test:offline` **154 passed**；`npm run typecheck` 无错误。日志 `.planning/2026-10-22-aln-11-16/client-full.txt`、`typecheck.txt`。
 - 服务端全量 `python -m pytest -q` **1076 passed / 1 skipped**，日志 `.planning/2026-10-22-aln-11-16/python-full.txt`。
+- 源码提交：`10ec664c2804b4485b8c60ac8f053c1b6b10e8ae`。
 
 ## 回滚与未完成事项
 

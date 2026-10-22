@@ -25,6 +25,7 @@
 - 新增 `tests/test_observability_evidence.py` **11 passed**：旧事件映射与非法等级/缺来源/受限未脱敏/凭证样式拒绝、RunEvent 新字段落库回读、决策链引用与缺失引用、效果/因果未决、链 digest 与索引稳定、外部来源保留与清洗、导出角色最小化/正文排除/确定性、密钥清洗、删除计划、凭证分级/轮换/撤销/状态解释、上下文泄漏拦截、TokenRing 轮换与 ApiAuth 角色。
 - 联合专项（含既有事件契约、事件同步、控制面）**41 passed**，日志 `.planning/2026-10-22-aln-11-16/aln16-targeted.txt`。
 - 服务端全量 `python -m pytest -q` **1076 passed / 1 skipped**，日志 `.planning/2026-10-22-aln-11-16/python-full.txt`。
+- 源码提交：`bc7eb65050ca5a704918e739cb9596ca4caf8b30`。
 
 ## 回滚与未完成事项
 
