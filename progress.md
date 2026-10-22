@@ -1584,3 +1584,23 @@
 - ⚠️ 台账校验器断言再过时 3 个（同 ④ 族）：register_problem 零引用断言 ×2（test_ledger_drift/test_verify_claims）+ test_all_ledgers_have_no_drift——契约路线图第 7 项落地使断言失效，消费方已存在；文件属 WorkBuddy 在途区，由持有人刷新
 - 全量 583 passed（本批 +10）；下一项：E-12 失败案例→回归资产转换规则、E-13 进化并发与停止条件
 
+
+### E-12 失败案例→回归资产 + E-13 实验编排 完成（2026-10-22）
+- E-12 契约补写（contracts）：REGRESSION_SOURCE_STATUSES（仅 DIAGNOSED 可转换）/ REGRESSION_UNKNOWN_STATUSES（OPEN/INCONCLUSIVE 证据不足不转换）/ REGRESSION_DATASET_ID=failures_regression / 转换规则注释（一案一案 reg_<case_id> 幂等；input_goal=源任务 user_goal；expected=源任务验收，回归即重验；holdout=False——真实失败不是保留集来源；tags 带 diagnostic_case/task 溯源）
+- E-12 实现：evolution/regression.py FailureRegressionBuilder——扫描诊断案登记簿→固化为 EvalCase 入运行时回归数据集（惰性建，无可转换不留空集）；源任务缺失/未诊断→skip unknown 不转换
+- E-13 契约补写（contracts）：EVOLUTION_STOP_REASONS 四停止原因（budget_exhausted/no_pending_evidence/concurrency_limit_reached/evaluation_error）+ EVOLUTION_MAX_CONCURRENT_EVALUATIONS=1（进行中评测=TESTING/EVALUATING）
+- E-13 实现：EvolutionController.run_evolution_round 编排轮——失败固化 → 信号提案 → 受并发余量与轮额度约束的评测；预算池耗尽立即停止；评测异常记因则止不静默；不拥有发布权（门禁独立裁决）；__init__ 增 max_concurrent_evaluations 可注入
+- 测试 +7(test_e12_e13.py)：DIAGNOSED 案→幂等固化（含 second call already）+INCONCLUSIVE 不转换+幽灵案不转换；全链轮（转换→提案→受评→二轮 no_pending_evidence）+预算耗尽即停+并发上限阻断+干净轮空报
+- 全量 742 passed 0 failed（WorkBuddy 已刷新 register_problem/零引用断言；基线推进至 742）
+- 下一项：响应协作认领（README → docs/协作开发 workboard.json 认领）
+
+
+### E-12/E-13 归档 + 协作认领（2026-10-22）
+- ⚠️ 工作区归属核对：WorkBuddy 提交 `23d3950`（feat: E-12/E-13 收尾 + F-53 路由评测，台账闭合）已把我方的 E-12/E-13 收尾（contracts/regression.py/run_evolution_round/test_e12_e13.py）连同其 ALN-08 路由评测一并入库——E-12/E-13 批代码已随台 closed；本会话不再重复提交该批
+- 台账校验器已由持有人刷新：全量 **742 passed / 1 skipped / 0 failed**（此前 4+3 个在途区断言过时全部闭合）
+- **协作认领**（README → docs/协作开发/workboard.json，owner 置 opencode-evo，认领表 --render 已跑、check ok）：
+  - **ALN-09 真实候选变更、持久队列与实验隔离**（资产与发布/进化线，needs_recheck）——与同期实现（E-07 信号链/草拟队列/E-13 编排轮：fed7e6b + 23d3950）直接对应；下一步=复核同期队列/信号实现，补真实候选资产隔离与故障恢复
+  - **ALN-10 回归资产、依赖范围与独立门禁**（同线，needs_recheck）——与同期 E-12 失败→回归资产转换对应；依赖 ALN-05/07/09，先复核回归持久化/默认消费，再补独立门禁和覆盖
+  - 未填 branch/base_commit——基线未发布，按 README 规则不冒充；接线/合并等 ALN-00 基线发布（claude-main）
+- 边界：docs/协作开发/ 整目录未入库（仅工作树内编辑 workboard.json + 认领表渲染），不动他人 .planning/ 证据文件；未提交 core/controller.py 大 diff（ALN-04 在途归属运行内核线）
+
