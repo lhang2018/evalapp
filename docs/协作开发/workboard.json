@@ -1343,6 +1343,32 @@
       "shared_files": [],
       "working_basis": "用户要求在剩余未认领工作包中再认领两个；ALN-20 先交协议/兼容矩阵，不接管执行路径，基线 candidate 未发布不用旧 HEAD 冒充 base_commit",
       "next_step": "先交五类能力协议、Mock/现有运行时两路契约夹具与兼容矩阵；固定外部 Harness commit 的 PoC 与 ADR 正式条目另卡"
+    },
+    {
+      "id": "ALN-18-A",
+      "workpackage": "ALN-18",
+      "title": "编程工具包：符号定位、受约束改写与检查/测试执行",
+      "stream": "runtime",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "编程工具包第一切片：AST 符号定位、唯一命中改写与语法门禁、compileall 语法检查、mypy 适配（不可用不判成功）、真实 pytest 执行；能力包清单含版本/回滚声明；新增14项负向优先专测",
+          "command": "python -m pytest tests/test_coding_tools.py tests/test_tool_contract_fields.py tests/test_tool_health.py tests/test_tools.py -q",
+          "result": "36 passed（其中新增14 passed）；全量日志 .planning/2026-10-22-aln18/full-suite.txt",
+          "log": ".planning/2026-10-22-aln18/targeted.txt",
+          "delivery": "docs/协作开发/交付/ALN-18-A-编程工具包.md"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/18-真实编程能力包.md",
+      "shared_files": [],
+      "working_basis": "用户要求继续做 ALN-18；ALN-06 工具契约已可声明离线/成本/风险，ALN-07 计划修订已在 review，本卡先做不依赖执行路径的编程工具包切片",
+      "next_step": "待 runtime 线独立复验；后续：AST 引用/调用图、LSP 适配、专家与 App 接线（共享文件串行）、注册表提供卸载语义后的能力包升级/回滚"
     }
   ],
   "workpackages": [
@@ -1612,9 +1638,9 @@
         "ALN-16"
       ],
       "stream": "assets",
-      "owner": null,
+      "owner": "claude-main",
       "delivery_state": "planned",
-      "next_step": "资产/计划/门禁就绪后接真实项目编程工具"
+      "next_step": "ALN-18-A 已交第一切片（review，待独立复验）：符号定位/改写/语法/类型/测试工具与能力包清单；引用解析、LSP、专家接线与制品级回滚另卡"
     },
     {
       "id": "ALN-19",
