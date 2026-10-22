@@ -365,7 +365,7 @@
         "GAP_ANALYSIS.md"
       ],
       "preparation_status": "verified_pending_review",
-      "next_step": "准备证据有效；先修复CA-08-01/CA-06-01/CA-08-02并复验，再独立审阅与正式发布"
+      "next_step": "准备证据有效；CA-08-01/CA-06-01/CA-08-02 已修复（3b7ef62）待复验，复验通过后独立审阅与正式发布"
     },
     {
       "id": "ALN-04-R",
@@ -1431,7 +1431,7 @@
       "stream": "assets",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "验收不通过：补CA-06-01回收身份墓碑/拒绝旧版本改文复用；运行时消费与Android验收仍待完成"
+      "next_step": "CA-06-01 已修复（3b7ef62：回收身份墓碑+拒绝改文复用）待 codex-runtime 独立复验；运行时消费与Android验收仍待完成"
     },
     {
       "id": "ALN-07",
@@ -1459,7 +1459,7 @@
       "stream": "models",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "验收不通过：先补CA-08-01分类/规划费用结算，再补CA-08-02来源分账；保留生产集/价格及工作流层验收"
+      "next_step": "CA-08-01/CA-08-02 已修复（3b7ef62：分类/规划实测结算+来源分列）待 codex-runtime 独立复验；保留生产集/价格及工作流层验收"
     },
     {
       "id": "ALN-09",
