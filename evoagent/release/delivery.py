@@ -165,6 +165,11 @@ class ReleaseDelivery:
                 "gray_percent": gray_percent,
                 "created_at": manifest.created_at,
                 "eval_report_available": manifest.eval_report is not None,
+                # 冻结资产引用只下发给端侧做字节/摘要验签；服务端不宣称
+                # 端侧已完成安装，也不把服务端 HMAC 秘密交给客户端。
+                "asset_refs": list(manifest.asset_refs or []),
+                "asset_refs_require_client_verification": bool(
+                    manifest.asset_refs),
             }
 
         data = dict(previous_data)

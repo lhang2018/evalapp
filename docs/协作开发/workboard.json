@@ -274,9 +274,9 @@
       "evidence": [
         {
           "date": "2026-10-22",
-          "scope": "Asset 十一字段/八态/五 namespace + 不可变仓储 + 依赖/证据门禁 + Pack 字节夹具 + 旧实体映射",
+          "scope": "Asset 十一字段/八态/五 namespace + 不可变仓储 + 依赖/证据门禁 + Pack 字节夹具 + 旧实体映射 + 发布清单冻结引用边界",
           "command": "python -m pytest tests -q",
-          "result": "748 passed, 1 failed, 1 skipped（唯一失败为运行内核线在途改动导致的 test_ledger_drift 台账漂移，与资产域无关）",
+          "result": "776 passed, 1 skipped（含并行修复的 E-12/E-13；仅运行租约线 teardown 线程告警）",
           "delivery": "docs/协作开发/交付/ALN-06-A-不可变资产基础.md"
         }
       ],

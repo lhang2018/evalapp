@@ -7,12 +7,50 @@
 import hashlib
 import hmac
 import json
+import re
 import secrets
 import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional, Tuple
+
+from ..assets.entity import AssetError, AssetRef, AssetValidationError
+from ..assets.refs import verify_manifest_ref
+
+_DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _normalize_asset_refs(refs: Any) -> List[Dict[str, str]]:
+    """把发布清单里的资产引用规范成冻结形状（三字段、无别名）。"""
+    if refs is None:
+        return []
+    if isinstance(refs, (str, bytes)) or not isinstance(refs, (list, tuple)):
+        raise ValueError("asset_refs 必须是资产引用对象数组")
+    out: List[Dict[str, str]] = []
+    seen: Dict[Tuple[str, str], str] = {}
+    for item in refs:
+        if not isinstance(item, Mapping):
+            raise ValueError("asset_refs 元素必须是对象")
+        try:
+            ref = AssetRef(str(item.get("asset_id") or ""),
+                           str(item.get("version") or ""))
+        except AssetValidationError as exc:
+            raise ValueError(f"非法资产引用: {exc}") from exc
+        digest = item.get("content_digest")
+        if not isinstance(digest, str) or not _DIGEST_RE.match(digest):
+            raise ValueError(
+                f"资产引用 {ref} 缺少合法 content_digest（64 位小写十六进制）")
+        key = (ref.asset_id, ref.version)
+        if key in seen:
+            if seen[key] != digest:
+                raise ValueError(
+                    f"同一资产版本出现不同摘要: {ref}")
+            continue
+        seen[key] = digest
+        out.append({"asset_id": ref.asset_id, "version": ref.version,
+                    "content_digest": digest})
+    return sorted(out, key=lambda r: (r["asset_id"], r["version"]))
 
 
 def _sign(payload: Dict[str, Any], secret: str) -> str:
@@ -24,8 +62,16 @@ def _canonical(payload: Dict[str, Any]) -> bytes:
                       separators=(",", ":"), allow_nan=False).encode("utf-8")
 
 
-def _digest(manifest: "ReleaseManifest") -> str:
+def _artifact_payload(manifest: "ReleaseManifest") -> Dict[str, Any]:
+    """制品载荷；空 asset_refs 不下发，保证旧清单摘要不因新字段漂移。"""
     payload = manifest.to_dict()
+    if not payload.get("asset_refs"):
+        payload.pop("asset_refs", None)
+    return payload
+
+
+def _digest(manifest: "ReleaseManifest") -> str:
+    payload = _artifact_payload(manifest)
     payload.pop("artifact_digest", None)
     payload.pop("signed_by", None)
     return hashlib.sha256(_canonical(payload)).hexdigest()
@@ -52,6 +98,8 @@ class ReleaseManifest:
     required_tool_contracts: List[str] = field(default_factory=list)
     channel: str = "stable"
     bundle_kind: str = "capability"
+    # 冻结资产引用：asset_id + version + content_digest，永不写“最新版本”。
+    asset_refs: List[Dict[str, str]] = field(default_factory=list)
     rollback_target: Optional[str] = None
     artifact_digest: Optional[str] = None
     signed_by: Optional[str] = None
@@ -112,6 +160,7 @@ class ReleaseManager:
                         model_capabilities=[], offline_support=False)
         defaults.update(kwargs)
         m = ReleaseManifest(**defaults)
+        m.asset_refs = _normalize_asset_refs(m.asset_refs)
         if m.release_id in self.manifests:
             raise ValueError("发布 ID 已存在，禁止覆盖不可变制品")
         m.artifact_digest = _digest(m)
@@ -123,14 +172,15 @@ class ReleaseManager:
         if self.artifact_dir is not None:
             artifact = self.artifact_dir / f"{m.release_id}.json"
             temporary = artifact.with_suffix(".tmp")
-            temporary.write_bytes(_canonical(m.to_dict()))
+            temporary.write_bytes(_canonical(_artifact_payload(m)))
             temporary.replace(artifact)
         return m
 
     # ---- 门禁之后的部署（PRD 62）----
     def deploy(self, release_id: str, *, gate_passed: bool,
                scope: str = "normal",
-               gray_percent: int = 100) -> Dict[str, Any]:
+               gray_percent: int = 100,
+               asset_repo: Optional[Any] = None) -> Dict[str, Any]:
         m = self.manifests.get(release_id)
         if not m:
             return {"ok": False, "error": "manifest 不存在"}
@@ -144,6 +194,14 @@ class ReleaseManager:
         check = self.verify(m.release_id)
         if not check.get("ok"):
             return {"ok": False, "error": "制品签名/完整性校验失败", **check}
+        if m.asset_refs:
+            # 含资产引用的发布必须先按精确版本与摘要复核；不给仓储就不放行。
+            if asset_repo is None:
+                return {"ok": False,
+                        "error": "发布含资产引用，但未提供资产仓储，无法完成精确版本校验"}
+            assets = self.verify_assets(release_id, asset_repo)
+            if not assets.get("ok"):
+                return {"ok": False, "error": "资产引用校验失败", **assets}
         self.current_release_id = release_id
         rec = {"release_id": release_id, "at": time.time(),
                "gray_percent": max(0, min(100, int(gray_percent))),
@@ -197,7 +255,8 @@ class ReleaseManager:
                 data = json.loads(artifact.read_text(encoding="utf-8"))
                 artifact_ok = (isinstance(data, dict)
                                and hmac.compare_digest(
-                                   _canonical(data), _canonical(m.to_dict())))
+                                   _canonical(data),
+                                   _canonical(_artifact_payload(m))))
             except (OSError, ValueError, TypeError):
                 artifact_ok = False
         # 签名只证明来源与完整性，制品本身安全仍需测试与门禁（Arch 18.4）
@@ -207,10 +266,54 @@ class ReleaseManager:
                 "artifact_ok": artifact_ok,
                 "note": "签名仅证明来源与完整性，安全结论依赖于评测与门禁"}
 
+    def verify_assets(self, release_id: str, repo: Any, *,
+                      required_states: Tuple[str, ...] = ("approved", "active")
+                      ) -> Dict[str, Any]:
+        """按发布清单的冻结引用逐项精确读取资产。
+
+        这是服务端的发布门禁，不替代端侧公钥验签；也不会把服务端签名
+        秘密下发给客户端。清单无资产引用时视为元数据包，直接通过。
+        """
+        m = self.manifests.get(release_id)
+        if not m:
+            return {"ok": False, "error": "manifest 不存在"}
+        if not m.asset_refs:
+            return {"ok": True, "refs": [],
+                    "note": "清单无资产引用（元数据包）"}
+        verified: List[Dict[str, str]] = []
+        errors: List[Dict[str, str]] = []
+        for ref in m.asset_refs:
+            if not isinstance(ref, Mapping):
+                errors.append({"ref": repr(ref), "error": "资产引用必须是对象",
+                               "error_class": "AssetValidationError"})
+                continue
+            try:
+                asset = verify_manifest_ref(ref, repo)
+            except AssetError as exc:
+                errors.append({"ref": f"{ref.get('asset_id')}@{ref.get('version')}",
+                               "error": str(exc),
+                               "error_class": type(exc).__name__})
+                continue
+            if required_states and asset.lifecycle_state not in required_states:
+                errors.append({
+                    "ref": str(asset.ref),
+                    "error": f"生命周期 {asset.lifecycle_state} 不允许进入发布"
+                             f"（要求 {list(required_states)}）",
+                    "error_class": "LifecycleError"})
+                continue
+            verified.append({"asset_id": asset.asset_id,
+                             "version": asset.version,
+                             "content_digest": asset.content_digest})
+        return {"ok": not errors, "refs": verified, "errors": errors}
+
     @staticmethod
     def compatibility_complete(m: ReleaseManifest) -> bool:
         arrays = (m.target_platforms, m.required_tool_contracts,
                   m.permission_requirements, m.model_capabilities)
+        try:
+            _normalize_asset_refs(m.asset_refs)
+        except ValueError:
+            return False
         return (all(isinstance(a, list) and all(isinstance(v, str) and v
                                                for v in a) for a in arrays)
                 and bool(m.target_platforms)

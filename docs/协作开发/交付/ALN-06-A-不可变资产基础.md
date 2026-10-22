@@ -2,9 +2,9 @@
 
 负责人：claude-main（本会话）
 审阅人：待定（未编造）
-基线 commit：尚未发布（workboard baseline=candidate，当前 HEAD `23d3950`）
-分支与最终 commit：工作区改动，未提交
-认领状态：in_progress（本卡首轮基础已实现，待审阅；整包 ALN-06 未关闭）
+基线 commit：尚未发布（workboard baseline=candidate）；资产域已随 `f9c3f7e` 提交
+分支与最终 commit：本卡后续提交为发布生产端边界
+认领状态：in_progress（首轮基础与生产端边界已实现，待审阅；整包 ALN-06 未关闭）
 
 ## 触发场景与行为变化
 
@@ -22,7 +22,10 @@
   - 登记/迁移/回收写入 `asset_events` 台账；GC 只回收 retired 且无精确引用的版本；
   - Pack 用真实字节（sha256 + size）验证，`LoadedPack.installed=False` 诚实标记未安装；
   - Manifest 引用形状固定为 `asset_id + version + content_digest`，读取时三者必须一致；
-  - 旧专家/工作流/模型/能力条目有确定性的只读映射，缺失信息逐条列出。
+  - 旧专家/工作流/模型/能力条目有确定性的只读映射，缺失信息逐条列出；
+  - 发布生产端边界：`ReleaseManifest` 增加冻结 `asset_refs` 并纳入签名摘要；
+    含资产引用的发布必须携带资产仓储才能通过精确版本/摘要/生命周期校验；
+    下发载荷包含引用并标记需端侧验签，不宣称端侧已安装。
 
 ## 范围
 
@@ -36,6 +39,11 @@
   - `evoagent/core/schema/assets.py`（`assets` / `asset_events`，域名 `assets`）
   - `evoagent/api/assets_api.py`
   - `tests/test_asset_identity.py`（53 项）
+- 本线整合（生产端边界）：
+  - `evoagent/release/manager.py`：`asset_refs` 字段、构建期形状校验、
+    `verify_assets()` 精确读取门禁、`deploy(asset_repo=...)` 资产校验；
+  - `evoagent/release/delivery.py`：对账载荷下发冻结引用，标记端侧验签责任；
+  - `tests/test_release_assets.py`（8 项）。
 - 复用未改：`core/contracts.py` 的 `ASSET_TYPE` / `ASSET_NAMESPACE` / `ASSET_LIFECYCLE` 作为枚举唯一权威；`core/persistence.py` 未改（schema 域自动发现）。
 - 未接线（按任务卡单列合入）：
   - `evoagent/api/server.py` 增加 `from . import assets_api` 一行后端点才对生产服务可见；测试中显式导入模块完成注册。
@@ -46,15 +54,16 @@
 
 ## 验证证据
 
-- 正常路径：`tests/test_asset_identity.py`（53 项）覆盖登记/精确读取/幂等/生命周期/依赖/引用/回滚/GC/Pack 字节/映射/HTTP 端点。
+- 正常路径：`tests/test_asset_identity.py`（53 项）覆盖登记/精确读取/幂等/生命周期/依赖/引用/回滚/GC/Pack 字节/映射/HTTP 端点；`tests/test_release_assets.py`（8 项）覆盖发布清单签名/部署门禁/下发载荷。
 - 拒绝路径：
   - 同版本不同内容 → 409 / `AssetConflict`；初始 approved/active → 拒绝；
   - 依赖缺失、成环、pin 不兼容 → `DependencyError`；
   - 证据或来源缺失 → `LifecycleError`；
-  - Pack 篡改、缺文件、多余文件、绝对路径/`..`/反斜杠 → 拒绝。
+  - Pack 篡改、缺文件、多余文件、绝对路径/`..`/反斜杠 → 拒绝；
+  - 发布引用缺摘要/重复版本摘要冲突 → 构建即拒绝；引用不存在、摘要不符、未晋升、缺仓储 → 部署拒绝。
 - 命令与结果：
-  - `python -m pytest tests/test_asset_identity.py -q` → **53 passed**
-  - `python -m pytest tests -q` → **748 passed, 1 failed, 1 skipped**（新增 53 项；唯一失败是 `test_ledger_drift`：运行内核线在途改动使 `react/engine.py:160` 变空行，与资产域无关）
+  - `python -m pytest tests/test_asset_identity.py tests/test_release_assets.py tests/test_release.py -q` → **66 passed**
+  - `python -m pytest tests -q` → **776 passed, 1 skipped**（含另一会话并行修复的 E-12/E-13；仅 1 条运行租约线 teardown 线程告警）
 - 验证边界：全部为本地 SQLite 与确定性字节夹具；**未**验证真实 Skill/Pack 端侧装载、未做 Android 公钥验签、未接入运行 Manifest、未做真实发布流程验收。
 
 ## 回滚与未完成事项
@@ -66,7 +75,7 @@
   - Android 侧字节验签、安装/退役回执未实现；
   - 服务端 HMAC 签名与端侧公钥验签职责分离：本卡未向客户端传递任何服务端签名秘密，也未实现端侧验签；
   - 能力目录（`CapabilityEntry`）映射需要持有方补充精确版本；无公开的 capability 枚举接口；
-  - `release/manager.py` / `delivery.py` 的生产端边界与发布清单资产校验未实现；
+  - 生产端边界已接入发布清单，但发布通道的端侧字节验签、安装/退役回执仍未实现（android 线）；
   - “别名/最新指针”被刻意不实现；未来若引入别名，必须保证冻结运行仍读精确版本。
 - 影响主题：ALN-06（整包未关闭）、F-11（Capability Asset 实体）、ALN-09/ALN-11 不因本卡关闭。
 
