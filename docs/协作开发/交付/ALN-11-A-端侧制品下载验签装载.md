@@ -15,6 +15,9 @@
 ## 接口与兼容
 
 - 新增 `android-app/src/update/artifact.ts`：`ArtifactSource`、`ArtifactFileSystem`、`ArtifactDownloader`、`ArtifactDownloadError`。
+- 真机适配：`rangeSource.ts`（XHR `arraybuffer` + `Range`/`If-Range` + `Content-Range` 解析，服务端忽略 Range 时按偏移裁剪）、`nativeArtifact.ts`（`NativeArtifactFiles` 桥接原生命令）、`base64.ts`（无 Buffer 的 base64/UTF-8 编解码）、`workflowBundle.ts`（双槽写入 `update_bundle_v1:<slot>` 与 `update_bundle_active_v1`，校验 JSON 对象且含 `workflow` 字符串）、`devTrust.ts`（内置开发公钥 JWK）。
+- 原生桥：`UpdateModule.kt` 提供 `stat/append/read/rename/remove/freeBytes`，路径限定在应用私有 `filesDir` 内；`UpdatePackage.kt` 注册到 `MainApplication`（未改动并行会话的 `DevicePackage.kt`）。
+- 服务端：`ReleaseManifest` 新增 `artifact_url/artifact_sha256/artifact_size/artifact_signature/artifact_signing_key_id/signature_schema`（不并入元数据 HMAC 签名字段，避免历史发布验签失败）；`delivery.reconcile` 在声明 `artifact_url` 时校验 envelope 完整性并在目标中下发；`GET /artifacts/<release_id>` 支持 206/416/full 三种响应；`tools/seed_update_release.py` 用本机私钥生成真实 envelope 并落盘制品（私钥不入库/日志/提交，客户端只内置公钥）。
 - 新增 `android-app/src/update/trust.ts`：`TrustedPublicKey`、`ArtifactEnvelope`、`canonicalArtifactMessage`、`TrustedKeyRing`。
 - 新增 `android-app/src/update/rsa.ts`：JWK `n/e` 公钥、PKCS#1 v1.5 SHA-256 验签、hex/base64url 签名解码。
 - `types.ts`：`UpdateTarget` 增量可选制品/权限/工具契约字段；`UpdateState` 新增 `artifact`、`receipts`；`UpdateSlot.signing_key_id`；`ApplyResultRequest.version/artifact_digest/signing_key_id`。
@@ -29,14 +32,17 @@
 - 既有 `test/update/manager.test.ts` **19 passed**，无回归。
 - 客户端全量 `npm run test:offline` **154 passed**；`npm run typecheck` 无错误。日志 `.planning/2026-10-22-aln-11-16/client-full.txt`、`typecheck.txt`。
 - 服务端全量 `python -m pytest -q` **1076 passed / 1 skipped**，日志 `.planning/2026-10-22-aln-11-16/python-full.txt`。
-- 源码提交：`10ec664c2804b4485b8c60ac8f053c1b6b10e8ae`。
+- 新增 `android-app/test/update/nativeArtifact.test.ts` **4 passed**、`tests/test_update_artifact_delivery.py` **5 passed**：base64/UTF-8 往返、槽位与 active 标记、非法 bundle 拒绝、Range 206/200 裁剪、envelope 完整性拦截、`/artifacts` 206/416/404、新增字段不破坏元数据签名。客户端全量复跑 **158 passed**。
+- **真机联调（Xiaomi 24018RPACC / HyperOS）**：服务端以 `.evoagent-update` 启动，`seed_update_release.py` 生成 `rel_dev_v2`（v9.1.0，bundle 205 B，sha256 `c60b8ada…`，key `dev-release-1`）并灰度 100% 部署；debug APK `adb install -r` 成功。设备 UI 依次：检查更新 → `available`；下载并验签 → `verified`（205 B，摘要 `c60b8ada…`）；应用私有目录 `files/updates/rel_dev_v2.bundle` 大小 205、`sha256sum` 与服务端一致；激活候选版本 → `active · 活动槽位 B`，AsyncStorage 写入 `update_bundle_v1:b` 与 `update_bundle_active_v1`（`demo/v2`）；健康检查通过 → `已知良好 v9.1.0`。服务端 `device_installations.inst_mvgemk5601b3r1lded2g` 状态 `healthy`，`device_deployments` 依次记录 `verified → activation_pending → activated → health_check`（均 `ok`）。杀进程重启后仍显示 `当前能力包：demo/v2 · v9.1.0 · 槽 b`。取证：`.planning/2026-10-22-aln-11-16/ui5.xml`（available）、`ui6.xml`（verified）、`ui8.xml`（active）、`ui9.xml`（healthy）、`ui11.xml`（重启后）、`screen-active.png`、`RKStorage.db`。
+- 源码提交：`10ec664c2804b4485b8c60ac8f053c1b6b10e8ae`（客户端内核）；`26aad1b56512364d0cdb3b616eeec6a781703532`（真机适配、服务端 envelope/Range、联调工具）。
 
 ## 回滚与未完成事项
 
 1. 回滚触发：真机下载/装载路径出现不可恢复失败。回滚操作：恢复 `android-app/src/update/` 与 `android-app/test/update/` 至上一提交；持久化状态多出的 `artifact`/`receipts` 为可选字段，旧代码读取时忽略，无需数据迁移。
-2. **真机适配尚未接线**：`App.tsx` 仍只传 `appVersion`，RN 侧文件系统（分块 append/rename/freeBytes）、HTTP Range、系统时钟安全窗口与 bundle 装载器适配器未实现；当前交付是端口完备、可注入、Node 测试覆盖的客户端内核，真机默认不会自动下载制品。这是 ALN-11 剩余主要工作。
-3. 服务端尚未下发带 `artifact_url/artifact_signature` 的发布 envelope，联调需 `release/delivery.py` 侧补齐签名输出；本卡未改该文件。
-4. 未做多设备灰度、真实弱网/断电注入与系统级健康探测；健康判定仍由调用方以 `healthCheck(ok)` 上报。
-5. 未认领/未改动并行会话文件与共享台账。
+2. 真机联调只覆盖 205 B 单块完整下载（服务端返回 206）；中途断连续传、弱网、断电与磁盘写满是 Node 测试覆盖，未在真机上做故障注入。
+3. 回滚路径未在真机触发：本次已知良好版本与候选同为 `v9.1.0`，仅在单测中覆盖“装载失败保持活动槽 / 自动回滚”。
+4. 内置的是开发公钥（`dev-release-1`），生产公钥分发、轮换与吊销流程仍待接入；私钥仅存在于本机 `.planning` 下且被 `.gitignore` 排除。
+5. 未做多设备灰度与系统级健康探测；健康判定仍由调用方以 `healthCheck(ok)` 上报。
+6. 未认领/未改动并行会话文件与共享台账（`DevicePackage.kt`、通知模块、`backgroundRunner.ts`、`test_e12_e13.py` 等保持原状）。
 
 审阅结论：待审（owner `claude-main`，reviewer `codex-runtime`，不得自审自收）。

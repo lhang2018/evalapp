@@ -1060,6 +1060,15 @@
           "log": ".planning/2026-10-22-aln-11-16/python-full.txt",
           "delivery": "docs/协作开发/交付/ALN-11-A-端侧制品下载验签装载.md",
           "source_commit": "10ec664c2804b4485b8c60ac8f053c1b6b10e8ae"
+        },
+        {
+          "date": "2026-10-22",
+          "scope": "真机适配与服务端下发：原生文件系统桥、XHR Range 下载、bundle 双槽装载、开发公钥验签；服务端 envelope 字段与 GET /artifacts Range 端点；真机 24018RPACC 跑通下载(205B, sha256 c60b8ada…)→RSA验签→槽B装载→激活→健康检查→回执",
+          "command": "adb install -r app-debug.apk; 设备 UI 检查更新/下载并验签/激活候选版本/健康检查通过; adb shell run-as com.evoagent sha256sum files/updates/rel_dev_v2.bundle; sqlite3 evoagent.db device_installations/device_deployments",
+          "result": "client 158 passed; tests/test_update_artifact_delivery.py 5 passed; 设备 state active slot B, installation healthy, deployments verified→activation_pending→activated→health_check 均 ok, 重启后能力包 demo/v2 仍激活",
+          "log": ".planning/2026-10-22-aln-11-16/ui5.xml; ui6.xml; ui8.xml; ui9.xml; ui10.xml; ui11.xml; screen-active.png; RKStorage.db",
+          "delivery": "docs/协作开发/交付/ALN-11-A-端侧制品下载验签装载.md",
+          "source_commit": "26aad1b56512364d0cdb3b616eeec6a781703532"
         }
       ],
       "card": "docs/协作开发/任务卡/11-真实制品装载.md",
@@ -1068,8 +1077,8 @@
         "evoagent/release/delivery.py"
       ],
       "preparation_status": "delivered",
-      "next_step": "独立复核断点下载/真实字节验签/装载与回执幂等；真机 RN 文件系统/Range/装载器适配与服务端 envelope 下发转后续接线",
-      "delivered_commit": "10ec664c2804b4485b8c60ac8f053c1b6b10e8ae"
+      "next_step": "独立复核断点下载/真实字节验签/装载与回执幂等，以及 26aad1b 的真机 Range/原生IO/服务端 envelope；生产公钥轮换、弱网断电注入与多设备灰度未覆盖",
+      "delivered_commit": "26aad1b56512364d0cdb3b616eeec6a781703532"
     },
     {
       "id": "ALN-16-A",
@@ -1281,7 +1290,7 @@
       "stream": "android",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "ALN-11-A 端侧下载/验签/装载内核已交付待审；真机适配器与服务端制品 envelope 下发未完成"
+      "next_step": "ALN-11-A 内核与真机适配（26aad1b）已交付待审；真机下载→验签→槽B装载→激活→健康回执跑通，生产公钥轮换与弱网/断电/多设备灰度未覆盖"
     },
     {
       "id": "ALN-12",
