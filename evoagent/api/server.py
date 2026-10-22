@@ -1212,6 +1212,7 @@ def make_handler(app: App):
                         cand, approver=body.get("approver") or actor)
                     app.audit.record(actor, "evolution.approve",
                                      target=candidate_id,
+                                     outcome="ok" if out.get("ok") else "blocked",
                                      detail={"approver": body.get("approver") or actor})
                     return self._json(200, out)
                 if action == "deploy":

@@ -17,11 +17,11 @@
       "source": "当前未提交共享工作区；不是历史候选快照或纯 HEAD"
     },
     "last_verified_candidate": {
-      "parent_commit": "4065d523e35cb61abac239db02d8136834501d06",
-      "source_tree": "da3fc18a901b3999d8f47ca71a3eb97e5183eab2",
-      "python_passed": 831,
+      "parent_commit": "3713a9ef2ebde582b9016ae26168dcee805ba68a",
+      "source_tree": "b149d53d904cd3185ee71873e9174ff4432c02b6",
+      "python_passed": 875,
       "python_skipped": 1,
-      "log": ".planning/2026-10-22-aln10-completion/commit-candidate-tests.txt",
+      "log": ".planning/2026-10-22-release-evidence/commit-candidate-tests.txt",
       "scope": "本轮提交候选；未纳入在途通知；客户端本轮未改动且未重跑"
     }
   },
@@ -447,6 +447,40 @@
       ],
       "working_basis": "用户明确指定接续编号10的半成品；保留 opencode-evo 首段与整包协调归属，本轮补充开发和接线。",
       "next_step": "独立审阅；真实候选/隔离夹具宿主与 ALN-05/07/09 前置整合；补真实上线观察数据"
+    },
+    {
+      "id": "ALN-10-R",
+      "workpackage": "ALN-10",
+      "title": "评测批准与发布证据衔接",
+      "stream": "assets",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "3713a9ef2ebde582b9016ae26168dcee805ba68a",
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-22",
+          "scope": "发布报告/候选/批准绑定、风险和当前基线复核、HTTP拒绝审计；新增44项专项",
+          "command": "python -m pytest -q --tb=short",
+          "result": "875 passed, 1 skipped (100.88s)",
+          "source": "父提交 3713a9ef2ebde582b9016ae26168dcee805ba68a + 本轮源码；隔离候选 tree b149d53d904cd3185ee71873e9174ff4432c02b6；本轮源码与证据同次提交",
+          "log": ".planning/2026-10-22-release-evidence/commit-candidate-tests.txt",
+          "delivery": "docs/协作开发/交付/ALN-10-R-发布证据衔接.md"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/10-发布证据衔接.md",
+      "delivery": "docs/协作开发/交付/ALN-10-R-发布证据衔接.md",
+      "shared_files": [
+        "evoagent/evolution/controller.py",
+        "evoagent/evolution/candidates.py",
+        "evoagent/core/persistence.py",
+        "IMPLEMENTATION.md",
+        "evoagent/api/server.py"
+      ],
+      "working_basis": "用户继续下一步，接续ALN-10发布衔接；保留其他人在途通知及ALN-09测试修改。",
+      "next_step": "独立审阅；真实候选隔离执行宿主、精确候选制品应用/装载、可信身份和跨进程发布仲裁仍待整合"
     }
   ],
   "workpackages": [
@@ -589,7 +623,7 @@
       "stream": "assets",
       "owner": "opencode-evo",
       "delivery_state": "partial_verified",
-      "next_step": "ALN-10-Q 已补全并待审：39项新专项，候选全量831/1；整合真实候选/隔离夹具及ALN-05/07/09，补真实上线观察证据后整包验收",
+      "next_step": "ALN-10-Q/R已局部验证待审，R新增44项专项、候选全量875/1；整合真实候选宿主、制品装载与ALN-05/07/09，补真实线上观察后验收",
       "supplemented_by": "codex-runtime"
     },
     {

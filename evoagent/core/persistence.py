@@ -1137,6 +1137,15 @@ class Database:
                  json.dumps(data, ensure_ascii=False, default=str)))
             self._conn.commit()
 
+    def get_eval_report(self, report_id: str) -> Optional[Dict[str, Any]]:
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT report_id, dataset_id, candidate_id, created_at, data"
+                " FROM eval_reports WHERE report_id=?", (report_id,)).fetchone()
+        return ({"report_id": row["report_id"], "dataset_id": row["dataset_id"],
+                 "candidate_id": row["candidate_id"], "created_at": row["created_at"],
+                 "data": json.loads(row["data"])} if row else None)
+
     def list_eval_reports(self, limit: int = 50) -> List[Dict[str, Any]]:
         rows = self._conn.execute(
             "SELECT report_id, dataset_id, candidate_id, created_at, data"

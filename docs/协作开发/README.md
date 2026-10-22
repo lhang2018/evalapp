@@ -101,3 +101,5 @@ python tools/check_gap_closure.py
 基于父提交 `a957fe8` 导出的提交候选：后端全量 766 passed / 1 skipped，另 1 项 Git 读取测试因导出副本不含 Git 元数据失败；在验证副本初始化 Git 元数据后该项补验通过，共 767 项通过。客户端候选 136 passed/typecheck 通过；工作区额外 8 项通知测试未纳入本次提交。日志见 `.planning/2026-10-22-design-alignment/commit-candidate-*.txt`。独立审阅和真机验收仍待完成，共同基线发布状态保持 candidate。
 
 ALN-10-Q 提交候选验证：后端 **831 passed / 1 skipped**，新增39项专项；子卡 review，整包 partial_verified，前置依赖和真实发布验收保留。详见交付记录与 workboard.json 的 last_verified_candidate。
+
+ALN-10-R 发布证据衔接提交候选：后端 **875 passed / 1 skipped**，新增44项专项，含HTTP批准成功/拒绝审计；子卡 review，真实候选隔离执行与制品装载仍待整合。详见[交付记录](交付/ALN-10-R-发布证据衔接.md)。

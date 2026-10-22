@@ -26,6 +26,8 @@ from ..core import contracts as _contracts
 from .monitor import MonitorPolicy, PostReleaseMonitor
 from .regression import FailureRegressionBuilder
 from .safety import SafetySuite
+from .release_evidence import (candidate_spec, context_digest, digest, save_evaluation,
+                               verified_evaluation)
 
 # PRD 80 风险分级 L0-L4
 RISK_ORDER = {"L0": 0, "L1": 1, "L2": 2, "L3": 3, "L4": 4}
@@ -495,6 +497,14 @@ class EvolutionController:
         if cand.status == CandidateStatus.TESTING:
             cand.transition(CandidateStatus.EVALUATING, "对比基线与候选")
 
+        # A recovery or retry must not retain an earlier release decision.
+        cand.publish_suggestion = ""
+        cand.evaluation_report_id = ""
+        cand.evaluation_report_digest = ""
+        cand.approval_result = None
+        cand.eval_dataset_id = dataset.dataset_id
+        self._persist(cand)
+
         current_impact = self._impact_for(cand.target_component)
         if current_impact is not None:
             previous_impact = cand.impact_result or {}
@@ -525,6 +535,9 @@ class EvolutionController:
             return {"passed": False, "reasons": [reason],
                     "budget_exhausted": pool_problem, "safety": {}}
 
+        self.regression_builder.convert_pending()
+        evaluated_spec_digest = digest(candidate_spec(cand))
+        evaluated_context_digest = context_digest(self)
         runner = getattr(self.evaluator, "runner", None)
         previous_budget = getattr(runner, "budget", None)
         candidate_budget = self._make_candidate_budget(cand)
@@ -571,6 +584,11 @@ class EvolutionController:
                           if candidate_budget is not None else None)
         experiment_budget = (candidate_budget.snapshot()
                              if candidate_budget is not None else None)
+        if (digest(candidate_spec(cand)) != evaluated_spec_digest or
+                context_digest(self) != evaluated_context_digest):
+            cand.transition(CandidateStatus.REJECTED, "评测期间候选内容或门禁输入发生改变")
+            self._persist(cand)
+            return {"passed": False, "reasons": ["评测期间候选内容或门禁输入发生改变"]}
         cand.quality_result = report.summary()
         # PRD 50：收益按相对基线的增量记录，而不是候选绝对值
         base_cost = baseline_report.cost if baseline_report is not None else 0.0
@@ -585,10 +603,9 @@ class EvolutionController:
             target_domain=cand.target_domain)
         cand.benefit_result = benefit
         def save_report(gate):
-            if self.store is not None:
-                self.store.save_eval_report(
+            save_evaluation(self, cand,
                     f"eval_{cand.candidate_id}_{uuid.uuid4().hex}",
-                    dataset.dataset_id, cand.candidate_id,
+                    dataset.dataset_id,
                     {"baseline": baseline_report.summary() if baseline_report else None,
                      "candidate": report.summary(), "candidate_cases": report.case_results,
                      "baseline_cases": baseline_report.case_results if baseline_report else [],
@@ -622,6 +639,10 @@ class EvolutionController:
                 gate["passed"] = False
                 gate["reasons"] = list(gate.get("reasons") or []) + [
                     regression_block["reason"]]
+            if (digest(candidate_spec(cand)) != evaluated_spec_digest or
+                    context_digest(self) != evaluated_context_digest):
+                gate["passed"] = False
+                gate["reasons"].append("门禁判定期间候选内容或门禁输入发生改变")
             save_report(gate)
             cand.publish_suggestion = "release_ready" if gate["passed"] else "rejected"
             if not gate["passed"]:
@@ -652,11 +673,30 @@ class EvolutionController:
                 "experiment_budget": experiment_budget}
 
     def approve(self, cand: EvolutionCandidate, approver: str = "auto") -> Dict[str, Any]:
+        with self._evaluation_lock:
+            return self._approve(cand, approver)
+
+    def _approve(self, cand: EvolutionCandidate, approver: str) -> Dict[str, Any]:
         rule = PUBLISH_RULES.get(cand.risk_level, "strict_review")
-        if cand.status == CandidateStatus.APPROVAL_PENDING:
-            cand.transition(CandidateStatus.RELEASE_READY, f"批准({approver}); 风险{cand.risk_level} 规则 {rule}")
-            self._persist(cand)
-        return {"candidate_id": cand.candidate_id, "status": cand.status.value,
+        if cand.status != CandidateStatus.APPROVAL_PENDING:
+            return {"ok": False, "error": "候选不在待批准状态"}
+        approver = str(approver or "").strip()
+        if cand.risk_level not in PUBLISH_RULES or cand.risk_level == "L4":
+            return {"ok": False, "error": "核心或未知风险等级不允许普通流程批准"}
+        if not approver or (cand.risk_level in ("L2", "L3") and approver.casefold() == "auto"):
+            return {"ok": False, "error": "该风险等级需要具名批准"}
+        try:
+            row = verified_evaluation(self, cand)
+        except (ValueError, TypeError, KeyError) as exc:
+            return {"ok": False, "error": str(exc)}
+        cand.approval_result = {"report_id": row["report_id"],
+            "report_digest": cand.evaluation_report_digest,
+            "candidate_digest": row["data"]["binding"]["candidate_digest"],
+            "approver": approver, "at": time.time()}
+        cand.transition(CandidateStatus.RELEASE_READY, f"批准({approver}); 风险{cand.risk_level} 规则 {rule}",
+                        dict(cand.approval_result))
+        self._persist(cand)
+        return {"ok": True, "candidate_id": cand.candidate_id, "status": cand.status.value,
                 "publish_rule": rule}
 
     def deploy_candidate(self, cand: EvolutionCandidate, *,
@@ -664,27 +704,52 @@ class EvolutionController:
                          gray_percent: int = 100,
                          gate_passed: Optional[bool] = None) -> Dict[str, Any]:
         """候选发布：必须已批准，且按 L0-L4 规则决定能否由流程发布。"""
+        with self._evaluation_lock:
+            return self._deploy_candidate(cand, actor=actor, gray_percent=gray_percent,
+                                          gate_passed=gate_passed)
+
+    def _deploy_candidate(self, cand: EvolutionCandidate, *, actor: str,
+                          gray_percent: int, gate_passed: Optional[bool]) -> Dict[str, Any]:
         rule = PUBLISH_RULES.get(cand.risk_level, "strict_review")
         if cand.status != CandidateStatus.RELEASE_READY:
             return {"ok": False, "error": f"候选状态 {cand.status.value} 不可发布"}
-        if cand.risk_level == "L4":
+        if cand.risk_level not in PUBLISH_RULES or cand.risk_level == "L4":
             return {"ok": False,
                     "error": "L4 核心/安全边界改动不允许普通进化流程发布"}
-        if cand.risk_level in ("L2", "L3") and actor == "auto":
+        actor = str(actor or "").strip()
+        if not actor or (cand.risk_level in ("L2", "L3") and actor.casefold() == "auto"):
             return {"ok": False,
                     "error": f"{cand.risk_level} 需要具名授权发布（rule={rule}）"}
         if self.releases is None:
             return {"ok": False, "error": "发布管理器未装配"}
-        gate_ok = (cand.publish_suggestion == "release_ready"
-                   if gate_passed is None else bool(gate_passed))
-        if not gate_ok:
+        if gate_passed is False:
             return {"ok": False, "error": "评测门禁未通过"}
+        try:
+            row = verified_evaluation(self, cand)
+            approval = cand.approval_result or {}
+            if (approval.get("report_id") != row["report_id"] or
+                    approval.get("report_digest") != cand.evaluation_report_digest or
+                    approval.get("candidate_digest") != row["data"]["binding"]["candidate_digest"] or
+                    not str(approval.get("approver") or "").strip() or
+                    (cand.risk_level in ("L2", "L3") and
+                     str(approval.get("approver")).strip().casefold() == "auto")):
+                raise ValueError("缺少与当前评测一致的批准记录")
+        except (ValueError, TypeError, KeyError) as exc:
+            return {"ok": False, "error": str(exc)}
+        baseline_id = self.releases.current_release_id
+        if (not baseline_id or cand.baseline_version != baseline_id or
+                cand.rollback_version != baseline_id):
+            return {"ok": False, "error": "稳定基线或回滚目标不一致，请基于当前版本重新评测"}
+        if not self.releases.verify(baseline_id).get("ok"):
+            return {"ok": False, "error": "稳定基线或回滚制品完整性校验失败"}
         manifest = self.releases.build_manifest(
             version=f"candidate-{cand.candidate_id}",
             model_adapter_version=cand.baseline_version,
             workflow_versions=[],
             eval_dataset_version=cand.eval_dataset_id or "",
-            eval_report=cand.quality_result,
+            eval_report={"report_id": row["report_id"],
+                         "report_digest": cand.evaluation_report_digest,
+                         "approval": dict(approval), "evidence": row["data"]},
             rollback_target=self.releases.current_release_id,
             compatible_requirements=cand.compatible_requirements)
         out = self.releases.deploy(manifest.release_id, gate_passed=True,

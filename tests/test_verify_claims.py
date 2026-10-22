@@ -290,15 +290,9 @@ class TestSymbolIndex(unittest.TestCase):
         self.assertGreater(v["refs"], 0)
         self.assertGreater(v["test_calls"], 0)
 
-    def test_deploy_candidate_lacks_direct_test(self):
-        """E-09 的已知缺口：门禁分支本身无直接测试调用。
-
-        这个断言是**回归锁** —— 一旦有人补了测试，这条会失败，
-        提醒更新台账里 E-09 的说明。
-        """
-        self.assertEqual(self.index["deploy_candidate"]["test_calls"], 0,
-                         "deploy_candidate 现在有直接测试调用了 —— "
-                         "请更新 IMPLEMENTATION.md 中 E-09 的说明")
+    def test_deploy_candidate_has_direct_release_evidence_tests(self):
+        """E-09 发布入口的风险、报告绑定和批准分支必须保持直接覆盖。"""
+        self.assertGreater(self.index["deploy_candidate"]["test_calls"], 0)
 
 
 class TestTestCountCheck(unittest.TestCase):
