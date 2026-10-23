@@ -5,6 +5,7 @@
 """
 
 import hashlib
+import json
 import shutil
 import sys
 import tempfile
@@ -14,9 +15,9 @@ from unittest import mock
 
 from evoagent.tools.coding import (
     CODING_PACK, CODING_TOOL_IDS, build_coding_pack, coding_edit_tool,
-    coding_patch_tool, coding_references_tool, coding_symbols_tool,
-    coding_syntax_check_tool, coding_test_tool, coding_typecheck_tool,
-    install_coding_pack,
+    coding_patch_recover_tool, coding_patch_tool, coding_references_tool,
+    coding_symbols_tool, coding_syntax_check_tool, coding_test_tool,
+    coding_typecheck_tool, install_coding_pack,
 )
 from evoagent.tools.registry import ToolRegistry
 
@@ -369,6 +370,7 @@ class TestCodingTools(unittest.TestCase):
         self.assertTrue(result.independently_verified)
         self.assertFalse(result.data["dry_run"])
         self.assertEqual(result.data["applied"], ["a.py", "b.txt"])
+        self.assertFalse((root / ".evoagent_patch_journal").exists())
         self.assertEqual((root / "a.py").read_text(encoding="utf-8"), "x = 2\n")
         self.assertEqual((root / "b.txt").read_text(encoding="utf-8"),
                          "world\n")
@@ -530,6 +532,8 @@ class TestCodingTools(unittest.TestCase):
         self.assertFalse(result.goal_reached)
         self.assertTrue(result.evidence["rolled_back"])
         self.assertFalse(result.side_effect_uncertain)
+        self.assertIsNone(result.evidence["journal"])
+        self.assertFalse((root / ".evoagent_patch_journal").exists())
         self.assertEqual(first.read_text(encoding="utf-8"), "x = 1\n")
         self.assertEqual(second.read_text(encoding="utf-8"), "y = 2\n")
 
@@ -558,7 +562,117 @@ class TestCodingTools(unittest.TestCase):
         self.assertTrue(result.side_effect_uncertain)
         self.assertFalse(result.independently_verified)
         self.assertIn("b.py", result.evidence["restore_failed"])
+        self.assertIsNotNone(result.evidence["journal"])
+        journals = list((root / ".evoagent_patch_journal").glob("*.json"))
+        self.assertEqual(len(journals), 1)
         self.assertEqual(first.read_text(encoding="utf-8"), "x = 1\n")
+
+    # ---- 事务日志与中断恢复 ----
+
+    def _plant_journal(self, root, files, status="pending",
+                       name="patch-test-0001.json"):
+        jdir = root / ".evoagent_patch_journal"
+        jdir.mkdir(exist_ok=True)
+        path = jdir / name
+        path.write_text(json.dumps({
+            "version": 1, "created": "2026-10-23T00:00:00",
+            "status": status, "files": files}), encoding="utf-8")
+        return path
+
+    def _palette(self, rel="a.py", content="x = 2\n"):
+        before = "x = 1\n"
+        return {"path": rel,
+                "sha256_before": hashlib.sha256(
+                    before.encode("utf-8")).hexdigest(),
+                "sha256_after": hashlib.sha256(
+                    content.encode("utf-8")).hexdigest(),
+                "original": before}
+
+    def test_recover_restores_interrupted_patch(self):
+        root = self._project()
+        path = root / "a.py"
+        path.write_text("x = 2\n", encoding="utf-8")
+        self._plant_journal(root, [self._palette()])
+        _, run = coding_patch_recover_tool(str(root))
+
+        result = run({})
+
+        self.assertTrue(result.ok)
+        self.assertTrue(result.goal_reached)
+        self.assertEqual(result.data["restored"], 1)
+        self.assertEqual(result.data["conflicts"], 0)
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 1\n")
+        self.assertFalse((root / ".evoagent_patch_journal").exists())
+
+        again = run({})
+        self.assertTrue(again.ok)
+        self.assertEqual(again.data["journals"], [])
+
+    def test_recover_conflict_is_not_overwritten(self):
+        root = self._project()
+        path = root / "a.py"
+        path.write_text("someone else\n", encoding="utf-8")
+        self._plant_journal(root, [self._palette()])
+        _, run = coding_patch_recover_tool(str(root))
+
+        result = run({})
+
+        self.assertFalse(result.ok)
+        self.assertFalse(result.goal_reached)
+        self.assertEqual(result.data["conflicts"], 1)
+        self.assertEqual(
+            result.data["journals"][0]["files"][0]["action"], "conflict")
+        self.assertEqual(path.read_text(encoding="utf-8"), "someone else\n")
+        self.assertTrue((root / ".evoagent_patch_journal").is_dir())
+
+    def test_recover_dry_run_does_not_touch(self):
+        root = self._project()
+        path = root / "a.py"
+        path.write_text("x = 2\n", encoding="utf-8")
+        self._plant_journal(root, [self._palette()])
+        _, run = coding_patch_recover_tool(str(root))
+
+        result = run({"dry_run": True})
+
+        self.assertTrue(result.ok)
+        self.assertEqual(result.data["restored"], 1)
+        self.assertTrue(result.data["dry_run"])
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 2\n")
+        self.assertTrue((root / ".evoagent_patch_journal").is_dir())
+
+    def test_recover_committed_keeps_result_and_corrupt_skipped(self):
+        root = self._project()
+        path = root / "a.py"
+        path.write_text("x = 2\n", encoding="utf-8")
+        self._plant_journal(root, [self._palette()], status="committed",
+                            name="patch-committed.json")
+        bad = root / ".evoagent_patch_journal" / "patch-bad.json"
+        bad.write_text("{not json", encoding="utf-8")
+        _, run = coding_patch_recover_tool(str(root))
+
+        result = run({})
+
+        self.assertFalse(result.ok)
+        self.assertEqual(len(result.data["errors"]), 1)
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 2\n")
+        self.assertFalse(
+            (root / ".evoagent_patch_journal" / "patch-committed.json").exists())
+        self.assertTrue(bad.exists())
+
+    def test_recover_already_before_clears_journal(self):
+        root = self._project()
+        path = root / "a.py"
+        path.write_text("x = 1\n", encoding="utf-8")
+        self._plant_journal(root, [self._palette()])
+        _, run = coding_patch_recover_tool(str(root))
+
+        result = run({})
+
+        self.assertTrue(result.ok)
+        self.assertEqual(
+            result.data["journals"][0]["files"][0]["action"], "already_before")
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 1\n")
+        self.assertFalse((root / ".evoagent_patch_journal").exists())
 
     # ---- 契约与能力包 ----
 
@@ -579,6 +693,9 @@ class TestCodingTools(unittest.TestCase):
         self.assertEqual(pack["coding_edit"][0].risk_class, "high")
         self.assertEqual(pack["coding_patch"][0].side_effect_level, "local")
         self.assertEqual(pack["coding_patch"][0].risk_class, "high")
+        self.assertEqual(pack["coding_patch_recover"][0].side_effect_level,
+                         "local")
+        self.assertEqual(pack["coding_patch_recover"][0].risk_class, "high")
         self.assertEqual(pack["coding_symbols"][0].side_effect_level, "none")
 
     def test_install_pack_and_manifest(self):
@@ -587,10 +704,11 @@ class TestCodingTools(unittest.TestCase):
         manifest = install_coding_pack(registry, str(root))
 
         self.assertEqual(manifest.pack_id, "coding_pack")
-        self.assertEqual(manifest.version, "1.2.0")
-        self.assertEqual(manifest.rollback_version, "1.1.0")
-        self.assertEqual(len(manifest.tool_ids), 7)
+        self.assertEqual(manifest.version, "1.3.0")
+        self.assertEqual(manifest.rollback_version, "1.2.0")
+        self.assertEqual(len(manifest.tool_ids), 8)
         self.assertIn("coding_patch", manifest.tool_ids)
+        self.assertIn("coding_patch_recover", manifest.tool_ids)
         self.assertEqual(set(manifest.as_dict()["tool_ids"]),
                          set(CODING_TOOL_IDS))
         self.assertEqual(CODING_PACK, manifest)
