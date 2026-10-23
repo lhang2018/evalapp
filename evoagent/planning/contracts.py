@@ -11,14 +11,31 @@
 本模块只定义数据契约。候选集合由调用方按意图/领域预筛（Router 决定候选路径），
 匹配服务只做五项检查与模式选择，**不引入第二套授权或预算权威、不扣账**。
 """
-from dataclasses import dataclass, field
-from typing import Any, Dict, FrozenSet, Iterable, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict, FrozenSet, Iterable, Tuple
 
 #: 三种执行模式（与设计 §6 一一对应）
 EXECUTION_MODES = ("stable_workflow", "hybrid_agent", "dynamic_planning")
 
 #: 稳定工作流必须通过的检查（顺序固定，便于逐项留痕与比较）
 CHECK_NAMES = ("inputs", "permissions", "dependencies", "versions", "budget")
+
+
+def _string_items(value: Iterable[str], name: str) -> Tuple[str, ...]:
+    if isinstance(value, (str, bytes)):
+        raise ValueError(f"{name} must be a collection of nonempty strings")
+    try:
+        items = tuple(value)
+    except TypeError as exc:
+        raise ValueError(f"{name} must be a collection of nonempty strings") from exc
+    if any(not isinstance(item, str) or not item.strip() for item in items):
+        raise ValueError(f"{name} must contain nonempty strings")
+    return items
+
+
+def _nonnegative_integer(value: int, name: str) -> None:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ValueError(f"{name} must be a nonnegative integer")
 
 
 @dataclass(frozen=True)
@@ -41,9 +58,19 @@ class WorkflowCandidate:
     budget_ref: str = ""
     #: 需要动态判断的节点（混合模式使用）
     dynamic_nodes: Tuple[str, ...] = ()
-    #: 允许在运行时动态补齐的检查项（混合模式的适用条件）
+    #: 可声明 inputs 由动态节点补齐；其他硬门禁不能被此字段放宽
     dynamic_tolerates: Tuple[str, ...] = ()
     description: str = ""
+
+    def __post_init__(self) -> None:
+        for name in ("workflow_id", "version"):
+            value = getattr(self, name)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{name} must be a nonempty string")
+        _nonnegative_integer(self.cost_estimate, "cost_estimate")
+        for name in ("required_inputs", "required_permissions", "dependencies",
+                     "supported_model_versions", "dynamic_nodes", "dynamic_tolerates"):
+            object.__setattr__(self, name, _string_items(getattr(self, name), name))
 
     def key(self) -> Tuple[str, str]:
         return (self.workflow_id, self.version)
@@ -64,6 +91,13 @@ class MatchContext:
     #: 预算是否可知；不可知时不得假设充足
     budget_known: bool = True
 
+    def __post_init__(self) -> None:
+        _nonnegative_integer(self.remaining_budget, "remaining_budget")
+        if not isinstance(self.budget_known, bool):
+            raise ValueError("budget_known must be a boolean")
+        for name in ("available_inputs", "granted_permissions", "available_dependencies"):
+            object.__setattr__(self, name, frozenset(_string_items(getattr(self, name), name)))
+
     @staticmethod
     def build(goal: str = "", intent: str = "", *,
               inputs: Iterable[str] = (),
@@ -74,11 +108,11 @@ class MatchContext:
               budget_known: bool = True) -> "MatchContext":
         return MatchContext(
             goal=goal, intent=intent,
-            available_inputs=frozenset(inputs),
-            granted_permissions=frozenset(permissions),
-            available_dependencies=frozenset(dependencies),
+            available_inputs=_string_items(inputs, "inputs"),
+            granted_permissions=_string_items(permissions, "permissions"),
+            available_dependencies=_string_items(dependencies, "dependencies"),
             model_version=model_version,
-            remaining_budget=int(remaining_budget),
+            remaining_budget=remaining_budget,
             budget_known=budget_known)
 
 

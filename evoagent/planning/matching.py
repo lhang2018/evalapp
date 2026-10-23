@@ -6,9 +6,9 @@
 
 模式规则（与《总体架构》§6 一致）：
 
-1. 有候选**五项全过** → ``stable_workflow``；多个候选时取成本最低者，
+1. 有候选**五项全过** → 无动态节点选稳定模式，否则选混合模式；多个候选时取成本最低者，
    同成本按 (workflow_id, version) 字典序，保证与候选顺序无关；
-2. 无全过候选，但存在**只差一项**且该项在候选声明的 ``dynamic_tolerates`` 内
+2. 无全过候选，但存在**只缺输入**且声明由非空动态节点补齐的候选
    → ``hybrid_agent``，主流程取该候选，需动态判断的节点写入理由；
 3. 其余 → ``dynamic_planning``，理由列出最接近候选缺了什么。
 
@@ -138,13 +138,17 @@ class WorkflowMatcher:
                        key=lambda v: (v.cost_estimate, v.workflow_id, v.version))
             candidate = by_key[(best.workflow_id, best.version)]
             rationale = (
-                f"稳定工作流 {best.workflow_id}@{best.version} 五项检查全部通过"
+                f"{'混合 Agent 工作流' if best.dynamic_nodes else '稳定工作流'} "
+                f"{best.workflow_id}@{best.version} 五项检查全部通过"
                 f"（成本 {best.cost_estimate}）"
+                + (f"；需动态判断节点: {', '.join(best.dynamic_nodes)}"
+                   if best.dynamic_nodes else "")
                 + (f"；{candidate.description}" if candidate.description else ""))
             return ModeSelection(
-                mode="stable_workflow", workflow_id=best.workflow_id,
+                mode="hybrid_agent" if best.dynamic_nodes else "stable_workflow",
+                workflow_id=best.workflow_id,
                 version=best.version, rationale=rationale,
-                checks=best.checks, verdicts=verdicts)
+                checks=best.checks, verdicts=verdicts, dynamic_nodes=best.dynamic_nodes)
 
         partial = [v for v in verdicts if v.dynamic_gap]
         if partial:
@@ -159,7 +163,7 @@ class WorkflowMatcher:
             return ModeSelection(
                 mode="hybrid_agent", workflow_id=best.workflow_id,
                 version=best.version, rationale=rationale,
-                checks=tuple(c for c in best.checks if not c.ok),
+                checks=best.checks,
                 verdicts=verdicts, dynamic_nodes=tuple(candidate.dynamic_nodes))
 
         nearest = None

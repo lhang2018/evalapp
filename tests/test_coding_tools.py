@@ -1151,8 +1151,8 @@ class TestCodingTools(unittest.TestCase):
         manifest = install_coding_pack(registry, str(root))
 
         self.assertEqual(manifest.pack_id, "coding_pack")
-        self.assertEqual(manifest.version, "1.5.1")
-        self.assertEqual(manifest.rollback_version, "1.5.0")
+        self.assertEqual(manifest.version, "1.5.2")
+        self.assertEqual(manifest.rollback_version, "1.5.1")
         self.assertEqual(len(manifest.tool_ids), 8)
         self.assertIn("coding_patch", manifest.tool_ids)
         self.assertIn("coding_patch_recover", manifest.tool_ids)

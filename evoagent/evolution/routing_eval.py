@@ -653,16 +653,16 @@ class WorkflowModeCase:
     """工作流匹配与执行模式评测用例。
 
     评测的是**匹配决策**对不对：给定候选工作流与上下文，是否选出正确的
-    执行模式（以及稳定工作流时是否命中正确的工作流）。不真正执行工作流。
+    执行模式（以及稳定/混合模式时是否命中正确的工作流）。不真正执行工作流。
     """
 
     case_id: str
     context: MatchContext
     expected_mode: str
-    #: 仅当期望 stable_workflow 时校验命中工作流；"" = 不校验
+    #: 稳定/混合模式的期望工作流；"" = 不校验
     expected_workflow_id: str = ""
-    #: 若声明，则用本用例自带的候选集（覆盖 evaluator 共享候选）
-    candidates: List[WorkflowCandidate] = field(default_factory=list)
+    #: None沿用共享候选；显式空列表表示无候选
+    candidates: Optional[List[WorkflowCandidate]] = None
     difficulty: str = "easy"
     holdout: bool = False
     tags: List[str] = field(default_factory=list)
@@ -692,7 +692,7 @@ class WorkflowModeReport:
     case_count: int = 0
     #: 执行模式选择准确率（stable/hybrid/dynamic 选对）
     mode_accuracy: float = 0.0
-    #: 稳定工作流命中准确率（仅对期望 stable_workflow 的用例）
+    #: 工作流命中准确率（仅对声明expected_workflow_id的用例）
     workflow_accuracy: float = 0.0
     workflow_case_count: int = 0
     #: 各执行模式：样本数 / 正确数
@@ -715,7 +715,7 @@ class WorkflowModeReport:
 class WorkflowModeEvaluator:
     """工作流匹配与执行模式评测器（ALN-07-W）。
 
-    走与运行时相同的 `WorkflowMatcher.select` 入口；用例自带候选时可覆盖共享候选。
+    走与显式规划调用相同的 `WorkflowMatcher.select` 入口；主运行时尚未自动接线。
     """
 
     def __init__(self, candidates: Optional[Sequence[WorkflowCandidate]] = None):
@@ -725,9 +725,9 @@ class WorkflowModeEvaluator:
         self._matcher = WorkflowMatcher(candidates)
 
     def evaluate_case(self, case: WorkflowModeCase) -> WorkflowModeCaseResult:
-        matcher = (WorkflowMatcher(case.candidates)
-                   if case.candidates else self._matcher)
         try:
+            matcher = (WorkflowMatcher(case.candidates)
+                       if case.candidates is not None else self._matcher)
             sel = matcher.select(case.context)
         except Exception as exc:  # noqa: BLE001 —— 单条失败不中断整批
             return WorkflowModeCaseResult(
@@ -841,8 +841,11 @@ def builtin_workflow_mode_dataset() -> List[WorkflowModeCase]:
                         "wf_stable", candidates=list(base_candidates),
                         difficulty="easy", tags=["builtin", "stable"]),
         WorkflowModeCase("wm_hybrid", ctx_hybrid, "hybrid_agent",
-                        "", candidates=list(base_candidates),
+                        "wf_hybrid", candidates=list(base_candidates),
                         difficulty="medium", tags=["builtin", "hybrid"]),
+        WorkflowModeCase("wm_hybrid_ready", ctx_full, "hybrid_agent",
+                        "wf_hybrid", candidates=[base_candidates[1]],
+                        difficulty="medium", tags=["builtin", "hybrid", "dynamic_nodes"]),
         WorkflowModeCase("wm_dynamic", ctx_dynamic, "dynamic_planning",
                         "", candidates=list(base_candidates),
                         difficulty="easy", tags=["builtin", "dynamic"]),

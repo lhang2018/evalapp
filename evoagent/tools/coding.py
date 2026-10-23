@@ -27,8 +27,8 @@ from typing import Callable, Dict, List, Optional, Tuple
 from .contract import ToolContract, ToolResult, class_error
 
 _PACK_ID = "coding_pack"
-_PACK_VERSION = "1.5.1"
-_ROLLBACK_VERSION = "1.5.0"
+_PACK_VERSION = "1.5.2"
+_ROLLBACK_VERSION = "1.5.1"
 _CONTRACT_TEST_REF = "tests/test_coding_tools.py"
 _JOURNAL_DIR = ".evoagent_patch_journal"
 _LOCK_NAME = ".evoagent_patch.lock"
@@ -607,7 +607,11 @@ def _rollback_files(prepared: List[Dict[str, object]]) -> List[str]:
                 if path.exists():
                     failed.append(str(item["rel"]))
                 continue
-            path.write_text(original, encoding="utf-8")
+            if item.get("deleted"):
+                with path.open("x", encoding="utf-8") as handle:
+                    handle.write(original)
+            else:
+                path.write_text(original, encoding="utf-8")
             if path.read_text(encoding="utf-8") != original:
                 failed.append(str(item["rel"]))
         except (OSError, ValueError):
@@ -750,7 +754,8 @@ def _recover_journals(rootp: Path, dry_run: bool):
                     if not target.exists():
                         if not dry_run:
                             attempted_write = True
-                            target.write_text(original, encoding="utf-8")
+                            with target.open("x", encoding="utf-8") as handle:
+                                handle.write(original)
                             if _sha_file(target) != before:
                                 raise OSError("恢复后摘要不符")
                         action = "restored"
@@ -773,6 +778,9 @@ def _recover_journals(rootp: Path, dry_run: bool):
                 else:
                     action = "conflict"
                     conflicts += 1
+            except FileExistsError:
+                action = "conflict"
+                conflicts += 1
             except (ValueError, OSError) as exc:
                 action = "error"
                 uncertain = uncertain or attempted_write
@@ -1306,7 +1314,7 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
 
     contract = ToolContract(
         tool_id="coding_patch",
-        description="原子多文件补丁：edits 或统一 diff（含新增/删除文件、行号消歧与上下文容错），全量预检、失败全量回滚、dry-run 预览",
+        description="带事务日志的多文件补丁：edits 或统一 diff（含新增/删除文件、行号消歧与上下文容错），全量预检、失败保守回滚、dry-run 预览",
         tool_version=_PACK_VERSION,
         permission_requirements=["fs.read", "fs.write"],
         input_schema={"type": "object", "properties": {
