@@ -71,7 +71,8 @@ class ControllerTaskRunner(TaskRunner):
             return False, time.time() - started, {
                 "error": f"{type(e).__name__}: {e}", "cost": 0.0}
         latency = time.time() - started
-        usage = _task_usage(task)
+        from ..core.budget import task_budget_usage
+        usage = task_budget_usage(task, getattr(self.controller, "db", None))
         self._record_usage(usage)
         ok = task.task_status == TaskStatus.SUCCEEDED
         progress = (task.runtime_manifest or {}).get("plan_progress") or {}

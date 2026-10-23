@@ -15,6 +15,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Optional
 
 from ..core.task import TaskStatus
+from ..core.budget import task_budget_usage
 
 
 @dataclass
@@ -112,7 +113,7 @@ def collect_metrics(store: Any, since: float, until: float, *,
     constraint_violations = 0
     unknown_cost_samples = 0
     for task in terminal:
-        usage = _usage(task)
+        usage = task_budget_usage(task, store)
         if (usage.get("cost") is None or usage.get("unknown_model_costs") or
                 usage.get("unknown_tool_costs") or task.runtime_manifest.get("cost_reconciliation_required")):
             unknown_cost_samples += 1

@@ -226,6 +226,35 @@ def test_budget_denial_is_not_swallowed_by_classifier_fallback(app):
     assert any(e.event_type == "task_budget_exhausted" for e in app.bus.query(task_id=task.task_id))
 
 
+def test_classification_unknown_cost_remains_visible_without_verdict_evidence(app):
+    from evoagent.core.budget import CostReporter
+    from evoagent.evolution.monitor import collect_metrics
+    app.config.budget.unknown_model_reservation_cost = .1
+    provider = Provider(unknown=True)
+    install(app, provider)
+    task = app.controller.submit_task("answer", wait=True)
+    assert task.task_status == TaskStatus.FAILED
+    assert provider.calls == 1
+    assert not task.result_evidence
+    report = CostReporter(app.db).report()
+    assert report["totals"]["model_calls"] == 1
+    assert report["totals"]["unknown_model_costs"] == 1
+    assert report["totals"]["cost_complete"] is False
+    assert collect_metrics(app.db, 0, time.time() + 10)["unknown_cost_samples"] == 1
+
+
+def test_durable_usage_overrides_older_verdict_snapshot(app):
+    from evoagent.core.budget import CostReporter
+    provider = install(app, Provider())
+    task, budget = bound(app)
+    task.result_evidence = [{"budget": {"usage": {"cost": 0, "model_calls": 0}}}]
+    app.db.save_task(task)
+    call(budget, provider)
+    report = CostReporter(app.db).report()
+    assert report["totals"]["cost"] == pytest.approx(.002)
+    assert report["totals"]["model_calls"] == 1
+
+
 def test_revocation_between_hold_and_dispatch_refunds_without_calling_provider(app):
     metered = install(app, Provider(free=True))
     g = goal(app)

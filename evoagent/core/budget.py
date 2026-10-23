@@ -593,7 +593,7 @@ class CostReporter:
         by_model: Dict[str, Dict[str, Any]] = {}
         by_version: Dict[str, Dict[str, Any]] = {}
         for t in tasks:
-            usage = _usage_of(t)
+            usage = task_budget_usage(t, self.db)
             cost = float(usage.get("cost", 0.0) or 0.0)
             model_calls = int(usage.get("model_calls", 0) or 0)
             tool_calls = int(usage.get("tool_calls", 0) or 0)
@@ -674,7 +674,13 @@ class CostReporter:
                 "candidates": candidates}
 
 
-def _usage_of(task: Any) -> Dict[str, Any]:
+def task_budget_usage(task: Any, store: Any = None) -> Dict[str, Any]:
+    """Read durable consumption even if classification failed before a verdict."""
+    reader = getattr(store, "get_execution_budget", None)
+    if reader is not None:
+        state = reader(task.task_id)
+        if isinstance(state, dict) and isinstance(state.get("usage"), dict):
+            return state["usage"]
     for ev in reversed(task.result_evidence or []):
         if isinstance(ev, dict) and isinstance(ev.get("budget"), dict):
             return ev["budget"].get("usage") or {}
