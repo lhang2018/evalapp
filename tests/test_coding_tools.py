@@ -12,8 +12,8 @@ from pathlib import Path
 
 from evoagent.tools.coding import (
     CODING_PACK, CODING_TOOL_IDS, build_coding_pack, coding_edit_tool,
-    coding_symbols_tool, coding_syntax_check_tool, coding_test_tool,
-    coding_typecheck_tool, install_coding_pack,
+    coding_references_tool, coding_symbols_tool, coding_syntax_check_tool,
+    coding_test_tool, coding_typecheck_tool, install_coding_pack,
 )
 from evoagent.tools.registry import ToolRegistry
 
@@ -63,6 +63,9 @@ class TestCodingTools(unittest.TestCase):
         method = next(s for s in data["symbols"] if s["qualname"] == "A.m")
         self.assertEqual(method["file"], "pkg/mod.py")
         self.assertEqual(method["line"], 2)
+        self.assertEqual(method["signature"], "(self)")
+        outer = next(s for s in data["symbols"] if s["qualname"] == "outer")
+        self.assertEqual(outer["signature"], "()")
         self.assertEqual(contract.contract_test_ref,
                          "tests/test_coding_tools.py")
 
@@ -77,6 +80,65 @@ class TestCodingTools(unittest.TestCase):
         self.assertEqual(len(result.data["errors"]), 1)
         self.assertEqual(result.data["errors"][0]["file"], "broken.py")
         self.assertIn("good", {s["name"] for s in result.data["symbols"]})
+
+    # ---- 引用/调用点 ----
+
+    def test_references_distinguish_linked_and_unlinked_names(self):
+        root = self._project()
+        (root / "pkg").mkdir()
+        (root / "pkg" / "__init__.py").write_text("", encoding="utf-8")
+        (root / "pkg" / "a.py").write_text(
+            "def target(x):\n    return x\n", encoding="utf-8")
+        (root / "pkg" / "b.py").write_text(
+            "from pkg.a import target\n"
+            "\n"
+            "def run():\n"
+            "    return target(1)\n", encoding="utf-8")
+        (root / "loose.py").write_text(
+            "def unrelated():\n"
+            "    target()\n", encoding="utf-8")
+
+        _, run = coding_references_tool(str(root))
+        result = run({"name": "target"})
+
+        self.assertTrue(result.ok)
+        self.assertTrue(result.goal_reached)
+        definitions = result.data["definitions"]
+        self.assertEqual([d["file"] for d in definitions], ["pkg/a.py"])
+        refs = result.data["references"]
+        linked = [r for r in refs if r["file"] == "pkg/b.py"]
+        self.assertEqual(len(linked), 1)
+        self.assertEqual(linked[0]["kind"], "call")
+        self.assertEqual(linked[0]["context"], "run")
+        self.assertEqual(linked[0]["confidence"], "high")
+        loose = [r for r in refs if r["file"] == "loose.py"]
+        self.assertEqual(len(loose), 1)
+        self.assertEqual(loose[0]["confidence"], "low")
+        self.assertEqual(result.data["import_edges"],
+                         [{"file": "pkg/b.py", "module": "pkg.a"}])
+
+    def test_references_attribute_and_same_file(self):
+        root = self._project()
+        (root / "pkg").mkdir()
+        (root / "pkg" / "__init__.py").write_text("", encoding="utf-8")
+        (root / "pkg" / "a.py").write_text(
+            "def target():\n    return 1\n"
+            "\n"
+            "def local_call():\n"
+            "    return target()\n", encoding="utf-8")
+        (root / "user.py").write_text(
+            "import pkg.a\n"
+            "\n"
+            "def go():\n"
+            "    return pkg.a.target()\n", encoding="utf-8")
+
+        _, run = coding_references_tool(str(root))
+        result = run({"name": "target"})
+
+        kinds = {(r["file"], r["kind"], r["confidence"])
+                 for r in result.data["references"]}
+        self.assertIn(("pkg/a.py", "call", "high"), kinds)
+        self.assertIn(("user.py", "call", "medium"), kinds)
 
     # ---- 受约束改写 ----
 
@@ -153,6 +215,30 @@ class TestCodingTools(unittest.TestCase):
         self.assertFalse(result.evidence["written"])
         self.assertIn("syntax_error", result.evidence)
         self.assertEqual(path.read_text(encoding="utf-8"), original)
+
+    def test_edit_expected_sha_rejects_concurrent_change(self):
+        import hashlib
+        root = self._project()
+        path = root / "app.py"
+        path.write_text("value = 1\n", encoding="utf-8")
+        stale = hashlib.sha256(b"value = 0\n").hexdigest()
+        _, run = coding_edit_tool(str(root))
+
+        rejected = run({"path": "app.py", "old_text": "value = 1",
+                        "new_text": "value = 2",
+                        "expected_sha256": stale})
+        self.assertFalse(rejected.ok)
+        self.assertFalse(rejected.goal_reached)
+        self.assertEqual(rejected.evidence["expected_sha256"], stale)
+        self.assertEqual(path.read_text(encoding="utf-8"), "value = 1\n")
+
+        current = hashlib.sha256(b"value = 1\n").hexdigest()
+        accepted = run({"path": "app.py", "old_text": "value = 1",
+                        "new_text": "value = 2",
+                        "expected_sha256": current[:12]})
+        self.assertTrue(accepted.ok)
+        self.assertEqual(accepted.evidence["sha256_before"], current)
+        self.assertEqual(path.read_text(encoding="utf-8"), "value = 2\n")
 
     # ---- 语法检查 ----
 
@@ -288,8 +374,8 @@ class TestCodingTools(unittest.TestCase):
         manifest = install_coding_pack(registry, str(root))
 
         self.assertEqual(manifest.pack_id, "coding_pack")
-        self.assertEqual(manifest.version, "1.0.0")
-        self.assertIsNone(manifest.rollback_version)
+        self.assertEqual(manifest.version, "1.1.0")
+        self.assertEqual(manifest.rollback_version, "1.0.0")
         self.assertEqual(set(manifest.as_dict()["tool_ids"]),
                          set(CODING_TOOL_IDS))
         self.assertEqual(CODING_PACK, manifest)

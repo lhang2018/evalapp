@@ -24,7 +24,8 @@ from typing import Callable, Dict, List, Optional, Tuple
 from .contract import ToolContract, ToolResult, class_error
 
 _PACK_ID = "coding_pack"
-_PACK_VERSION = "1.0.0"
+_PACK_VERSION = "1.1.0"
+_ROLLBACK_VERSION = "1.0.0"
 _CONTRACT_TEST_REF = "tests/test_coding_tools.py"
 _SKIP_DIRS = {
     ".git", ".hg", ".svn", "node_modules", "__pycache__", ".venv", "venv",
@@ -80,12 +81,25 @@ def _check_targets(rootp: Path, targets: List[str]) -> List[Path]:
 
 
 def _signature(rel: str, node: ast.AST) -> Dict[str, object]:
-    return {
+    entry = {
         "name": node.name,
         "file": rel,
         "line": node.lineno,
         "end_line": getattr(node, "end_lineno", None),
     }
+    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        entry["signature"] = f"({ast.unparse(node.args)})"
+        if node.returns is not None:
+            entry["returns"] = ast.unparse(node.returns)
+    return entry
+
+
+def _module_name(rel: str) -> str:
+    name = rel[:-3] if rel.endswith(".py") else rel
+    name = name.replace("/", ".")
+    if name == "__init__" or name.endswith(".__init__"):
+        name = name[: -len(".__init__")]
+    return name
 
 
 def analyze_project(root: str = ".", subdir: str = "", name_filter: str = "",
@@ -176,6 +190,158 @@ def analyze_project(root: str = ".", subdir: str = "", name_filter: str = "",
     }
 
 
+def find_references(root: str = ".", name: str = "", subdir: str = "",
+                    limit: int = 500) -> Dict[str, object]:
+    """静态引用/调用启发式：类型未解析，按导入关系区分置信度。"""
+    rootp = _resolve_root(root)
+    if not name:
+        raise ValueError("name 不能为空")
+    target = rootp if not subdir else _resolve_within(rootp, subdir)
+    if not target.is_dir():
+        raise ValueError(f"不是目录: {subdir}")
+    limit = max(1, min(5000, int(limit)))
+
+    analysis = analyze_project(str(rootp), subdir=subdir, name_filter=name,
+                               limit=5000)
+    definitions = [s for s in analysis["symbols"] if s["name"] == name]
+    def_files = {str(s["file"]) for s in definitions}
+    def_prefixes = set()
+    for rel in def_files:
+        parts = _module_name(rel).split(".")
+        for i in range(1, len(parts) + 1):
+            def_prefixes.add(".".join(parts[:i]))
+    imports_map = analysis["imports"]
+
+    references: List[Dict[str, object]] = []
+    import_edges: List[Dict[str, str]] = []
+    truncated = False
+    for dirpath, dirnames, filenames in os.walk(target):
+        dirnames[:] = sorted(
+            d for d in dirnames
+            if d not in _SKIP_DIRS and not d.startswith(".")
+            and (Path(dirpath) / d).resolve().is_relative_to(rootp))
+        for fn in sorted(filenames):
+            if not fn.endswith(".py"):
+                continue
+            path = Path(dirpath) / fn
+            if not path.resolve().is_relative_to(rootp):
+                continue
+            rel = path.relative_to(rootp).as_posix()
+            try:
+                if path.stat().st_size > _MAX_SOURCE_BYTES:
+                    continue
+                source = path.read_text(encoding="utf-8")
+                tree = ast.parse(source, filename=rel)
+            except (OSError, UnicodeDecodeError, SyntaxError):
+                continue
+
+            imported = set(imports_map.get(rel, []))
+            matched = sorted(m for m in imported if m in def_prefixes)
+            for module in matched:
+                import_edges.append({"file": rel, "module": module})
+            linked = rel in def_files or bool(matched)
+            name_conf = "high" if linked else "low"
+            attr_conf = "medium" if linked else "low"
+
+            parents = {}
+            for parent in ast.walk(tree):
+                for child in ast.iter_child_nodes(parent):
+                    parents[id(child)] = parent
+
+            stack: List[str] = []
+
+            def visit(node: ast.AST) -> None:
+                nonlocal truncated
+                for child in ast.iter_child_nodes(node):
+                    if isinstance(child, (ast.ClassDef, ast.FunctionDef,
+                                          ast.AsyncFunctionDef)):
+                        stack.append(child.name)
+                        visit(child)
+                        stack.pop()
+                        continue
+                    kind = None
+                    confidence = None
+                    if isinstance(child, ast.Name) and child.id == name:
+                        kind, confidence = "name", name_conf
+                    elif isinstance(child, ast.Attribute) and child.attr == name:
+                        kind, confidence = "attribute", attr_conf
+                    if kind:
+                        parent = parents.get(id(child))
+                        if isinstance(parent, ast.Call) and parent.func is child:
+                            kind = "call"
+                        if len(references) >= limit:
+                            truncated = True
+                        else:
+                            references.append({
+                                "file": rel,
+                                "line": child.lineno,
+                                "kind": kind,
+                                "context": ".".join(stack) or None,
+                                "confidence": confidence,
+                            })
+                    visit(child)
+
+            visit(tree)
+
+    return {
+        "name": name,
+        "definitions": definitions,
+        "references": references,
+        "import_edges": import_edges,
+        "files_scanned": analysis["files_scanned"],
+        "errors": analysis["errors"],
+        "truncated": truncated,
+    }
+
+
+def coding_references_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
+    def run(args: Dict) -> ToolResult:
+        name = str(args.get("name") or "").strip()
+        if not name:
+            return ToolResult.error_result("name 不能为空", "invalid_arguments")
+        try:
+            data = find_references(
+                root, name=name,
+                subdir=str(args.get("subdir") or ""),
+                limit=max(1, min(5000, int(args.get("limit") or 500))),
+            )
+        except (ValueError, TypeError) as exc:
+            return ToolResult.error_result(str(exc), "invalid_arguments")
+        except OSError as exc:
+            return ToolResult.error_result(str(exc), "tool_defect_or_env")
+        return ToolResult(
+            ok=True, data=data, submitted=True, executed=True,
+            contract_valid=True, goal_reached=True,
+            independently_verified=True,
+            evidence={"definitions": len(data["definitions"]),
+                      "references": len(data["references"]),
+                      "import_edges": len(data["import_edges"]),
+                      "parse_errors": len(data["errors"]),
+                      "truncated": data["truncated"]})
+
+    contract = ToolContract(
+        tool_id="coding_references",
+        description="符号引用/调用点静态定位（导入关系区分置信度）",
+        tool_version=_PACK_VERSION,
+        permission_requirements=["fs.read"],
+        input_schema={"type": "object", "required": ["name"], "properties": {
+            "name": {"type": "string"},
+            "subdir": {"type": "string"},
+            "limit": {"type": "integer"},
+        }},
+        side_effect_level="none",
+        idempotency_policy="none",
+        timeout_policy=60.0,
+        health_check=lambda: Path(root or ".").is_dir(),
+        risk_class="low",
+        offline_capable=True,
+        requires_network=False,
+        cost_model={"unit": "files", "varies": "project_size"},
+        contract_test_ref=_CONTRACT_TEST_REF,
+    )
+    return contract, run
+
+
 def coding_symbols_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
     def run(args: Dict) -> ToolResult:
         try:
@@ -258,6 +424,24 @@ def coding_edit_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
         except (OSError, UnicodeDecodeError) as exc:
             return ToolResult.error_result(str(exc), class_error(exc))
 
+        digest_before = hashlib.sha256(original.encode("utf-8")).hexdigest()
+        expected = args.get("expected_sha256")
+        if expected is not None:
+            expected = str(expected).strip().lower()
+            if len(expected) < 8:
+                return ToolResult.error_result(
+                    "expected_sha256 至少 8 位", "invalid_arguments")
+            if not digest_before.startswith(expected):
+                return ToolResult(
+                    ok=False, data=None,
+                    error="文件摘要与期望不一致（可能已被并发修改），未写盘",
+                    error_class="invalid_arguments",
+                    submitted=True, executed=True, contract_valid=True,
+                    goal_reached=False, independently_verified=True,
+                    evidence={"written": False, "path": rel,
+                              "expected_sha256": expected,
+                              "actual_sha256": digest_before})
+
         hits = original.count(old_text)
         if hits == 0:
             return ToolResult.error_result("old_text 未命中，未写盘",
@@ -297,10 +481,9 @@ def coding_edit_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
             "line": original.count("\n", 0, original.index(old_text)) + 1,
             "replacements": 1,
             "written": True,
-            "sha256_before": hashlib.sha256(
-                original.encode("utf-8")).hexdigest()[:16],
+            "sha256_before": digest_before,
             "sha256_after": hashlib.sha256(
-                new_content.encode("utf-8")).hexdigest()[:16],
+                new_content.encode("utf-8")).hexdigest(),
             "syntax_checked": path.suffix == ".py",
         }
         if not verified:
@@ -332,7 +515,8 @@ def coding_edit_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
         input_schema={"type": "object", "required": ["path", "old_text", "new_text"],
                       "properties": {"path": {"type": "string"},
                                      "old_text": {"type": "string"},
-                                     "new_text": {"type": "string"}}},
+                                     "new_text": {"type": "string"},
+                                     "expected_sha256": {"type": "string"}}},
         side_effect_level="local",
         idempotency_policy="state-check",
         timeout_policy=10.0,
@@ -616,8 +800,8 @@ def coding_test_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
 
 
 CODING_TOOL_IDS = (
-    "coding_symbols", "coding_edit", "coding_syntax_check",
-    "coding_typecheck", "coding_test",
+    "coding_symbols", "coding_references", "coding_edit",
+    "coding_syntax_check", "coding_typecheck", "coding_test",
 )
 
 
@@ -626,7 +810,7 @@ class CodingPackManifest:
     pack_id: str = _PACK_ID
     version: str = _PACK_VERSION
     tool_ids: Tuple[str, ...] = CODING_TOOL_IDS
-    rollback_version: Optional[str] = None
+    rollback_version: Optional[str] = _ROLLBACK_VERSION
     contract_test_ref: str = _CONTRACT_TEST_REF
 
     def as_dict(self) -> Dict[str, object]:
@@ -646,6 +830,7 @@ def build_coding_pack(root: str = "."
                       ) -> Dict[str, Tuple[ToolContract, Callable]]:
     return {
         "coding_symbols": coding_symbols_tool(root),
+        "coding_references": coding_references_tool(root),
         "coding_edit": coding_edit_tool(root),
         "coding_syntax_check": coding_syntax_check_tool(root),
         "coding_typecheck": coding_typecheck_tool(root),
