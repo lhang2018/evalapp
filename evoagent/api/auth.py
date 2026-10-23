@@ -7,6 +7,7 @@
 """
 
 import hmac
+import hashlib
 from dataclasses import dataclass
 from typing import Any, Optional, Tuple
 
@@ -25,6 +26,7 @@ class AuthResult:
     role: str = "anonymous"
     status: int = 200
     error: str = ""
+    principal_id: str = ""
 
 
 class ApiAuth:
@@ -42,30 +44,35 @@ class ApiAuth:
     def check(self, authorization: Optional[str], method: str,
               path: str) -> AuthResult:
         if not self.enabled:
-            return AuthResult(True, "admin")
+            return AuthResult(True, "admin", principal_id="local:host")
         raw = (authorization or "").strip()
         presented = raw[7:].strip() if raw.lower().startswith("bearer ") else ""
         if not presented:
             return AuthResult(False, "anonymous", 401, "缺少 Bearer 令牌")
         role = ""
+        principal = ""
         if self.token_ring is not None:
             role = self.token_ring.role_for(presented) or ""
+            if role:
+                principal = "api:ring:" + hashlib.sha256(presented.encode()).hexdigest()
             if not role and self.token_ring.knows_secret(presented):
                 return AuthResult(False, "anonymous", 403, "令牌已撤销或过期")
         if not role and self.admin_token and hmac.compare_digest(
                 presented, self.admin_token):
             role = "admin"
+            principal = "api:admin"
         elif not role and self.token and hmac.compare_digest(
                 presented, self.token):
             role = "operator"
+            principal = "api:operator"
         if not role:
             return AuthResult(False, "anonymous", 403, "令牌无效")
         if method != "POST":
-            return AuthResult(True, role)
+            return AuthResult(True, role, principal_id=principal)
         if path in HIGH_RISK_POST:
             if role != "admin":
                 return AuthResult(False, role, 403, "该操作需要 admin 权限")
-            return AuthResult(True, role)
+            return AuthResult(True, role, principal_id=principal)
         parts = [p for p in path.split("/") if p]
         if parts and parts[0] == "assets" and role != "admin":
             return AuthResult(False, role, 403, "资产写操作需要 admin 权限")
@@ -79,4 +86,4 @@ class ApiAuth:
                 and parts[3] in ADMIN_ONLY_ACTIONS
                 and role != "admin"):
             return AuthResult(False, role, 403, "该操作需要 admin 权限")
-        return AuthResult(True, role)
+        return AuthResult(True, role, principal_id=principal)

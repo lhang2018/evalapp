@@ -59,7 +59,7 @@ class RuntimeController:
                  wf_lookup: Optional[Callable[[str], Optional[WorkflowDef]]] = None,
                  diagnostics: Any = None, classifier: Any = None,
                  ledger: Optional[Any] = None,
-                 audit: Any = None):
+                 audit: Any = None, memory_bindings=None):
         self.cfg = config
         self.db = db
         self.bus = bus
@@ -71,6 +71,8 @@ class RuntimeController:
         self.router = models
         self.memory = memory
         self.assembler = assembler
+        from ..memory.binding import MemoryBindingAuthority
+        self.memory_bindings = memory_bindings or MemoryBindingAuthority(db, config.memory_bindings)
         self.cp_mgr = checkpoints
         self.runs = RunManager(db)
         self.side_fx = self.tools.effects or SideEffectLedger(db)
@@ -132,7 +134,10 @@ class RuntimeController:
                     goal_action: str = "execute",
                     goal_command_id: Optional[str] = None,
                     authorization_scope: Optional[Dict[str, Any]] = None,
-                    manifest_extras: Optional[Dict[str, Any]] = None) -> Task:
+                    manifest_extras: Optional[Dict[str, Any]] = None,
+                    principal_id: str = "local:host",
+                    memory_context: Optional[Dict[str, str]] = None,
+                    memory_grant_ref: Optional[str] = None) -> Task:
         if origin not in ORIGIN_VALUES:
             raise ValueError(
                 f"非法 origin: {origin}（契约 §2: user|scheduled|derived|opportunity）")
@@ -167,11 +172,17 @@ class RuntimeController:
         # 保存并在 execute 快照 merge 时并入 run manifest
         if manifest_extras:
             task.runtime_manifest.update(manifest_extras)
+        self.memory_bindings.bind_new(task, principal_id, memory_context, memory_grant_ref)
         if goal_id:
             from ..goals import GoalStore
             bound = GoalStore(self.db).bind_task(task, goal_action,
                 command_id=goal_command_id, request_policy=authorization_scope)
             if bound.task_id != task.task_id:
+                self.memory_bindings.assert_principal(bound, principal_id)
+                identity, _ = self.memory_bindings.resolve(bound)
+                requested = self.memory_bindings.submission_identity(principal_id, memory_context)
+                if any(getattr(identity, k) != getattr(requested, k) for k in ("user_id", "project_id", "session_id")):
+                    raise PermissionError("重放Goal任务的记忆身份不一致")
                 return bound
         elif origin != GoalOrigin.USER.value:
             raise PermissionError("自主来源任务必须关联已授权Goal")
@@ -200,6 +211,7 @@ class RuntimeController:
                 domain_hint: Optional[str] = None) -> Task:
         if task.task_status != TaskStatus.CREATED:
             raise ValueError("仅新任务可执行；已有任务请使用恢复入口")
+        self.memory_bindings.resolve(task)
         self._register_active(task)
         version_manifest = self._version_manifest()
         device = task.runtime_manifest.get("device") or {}
@@ -468,6 +480,8 @@ class RuntimeController:
         self._freeze_execution_manifest(task, expert=expert, model=model)
         self._bind_model_pool(budget, model)
         whitelist = expert.tool_whitelist if expert else None
+        hive_key = (expert.memory_scope_key if expert and expert.memory_scope_key else task.domain)
+        identity, grant = self.memory_bindings.resolve(task, hive_key)
         ctx = self.assembler.assemble(
             task.user_goal, intent=task.intent, domain=task.domain,
             constraints=task.constraints, acceptance=task.acceptance_criteria,
@@ -475,11 +489,16 @@ class RuntimeController:
             tool_docs=self._tool_docs(whitelist),
             # GAP 死字段修复③：读侧用专家 memory_scope_key（与 _remember
             # 写侧同键），专家域记忆真正隔离在专属蜂巢内
-            scope_key=(expert.memory_scope_key if expert and
-                       expert.memory_scope_key else task.domain),
+            identity=identity, grant=grant,
             include_memory=task.runtime_manifest.get("source") != "evaluation",
             max_chars=self._context_limit_chars(model))
         task.runtime_manifest["context"] = ctx.stats()
+        self.db.save_context_manifest(task.task_id, task.current_run_id, ctx.manifest)
+        task.runtime_manifest["context_manifest_ref"] = ctx.manifest.manifest_id
+        self._emit(task, "context_assembled", {
+            "manifest_id":ctx.manifest.manifest_id, "digest":ctx.manifest.digest,
+            "memory_binding_ref":task.memory_binding_ref,
+            "memory_candidates":ctx.memory_candidates, "memory_used":ctx.memory_used})
         quality = ctx.quality or {}
         if quality.get("overflow") or quality.get("untrusted_instructions") \
                 or quality.get("constraint_retention", 1.0) < 1.0:
@@ -810,6 +829,7 @@ class RuntimeController:
         task = self.db.get_task(task_id)
         if task is None:
             return None
+        self.memory_bindings.resolve(task)
         if task.runtime_manifest.get("recovery_blocked"):
             raise ValueError(task.runtime_manifest["recovery_blocked"])
         if task.task_status == TaskStatus.CREATED and task.goal_id:
@@ -969,6 +989,7 @@ class RuntimeController:
                      intent=task.intent, domain=task.domain)
         retry.parent_task_id = task.task_id
         retry.parent_run_id = task.current_run_id
+        self.memory_bindings.inherit(task, retry)
         retry.runtime_manifest["resumed_from"] = task.task_id
         if task.goal_id:
             from ..goals import GoalStore
@@ -1026,6 +1047,12 @@ class RuntimeController:
                 for key, value in (limits or {}).items():
                     setattr(budget.limits, key, min(getattr(budget.limits, key), value))
             budget.authority_check = check_goal_authority
+        goal_check = budget.authority_check
+        def check_identity_authority():
+            self.memory_bindings.resolve(task)
+            if goal_check:
+                goal_check()
+        budget.authority_check = check_identity_authority
         if self.runtime_budgets is not None:
             budget.runtime_binding = self.runtime_budgets.bind(task, budget)
             task.runtime_manifest["aggregate_budget"] = dict(budget.runtime_binding.data)
@@ -1241,6 +1268,7 @@ class RuntimeController:
         expert = self.experts.get(task.domain)
         hive_key = (expert.memory_scope_key if expert and
                     expert.memory_scope_key else "") or task.domain
+        identity, _ = self.memory_bindings.resolve(task, hive_key)
         content = f"任务<{task.intent}>: {task.user_goal} -> " + \
                   (task.result or task.failure_reason or "")
         item = MemoryItem(
@@ -1255,10 +1283,11 @@ class RuntimeController:
                       "verdict": verdict_of(task)},
             valid_until=(time.time() + 7 * 86400) if not verified else None,
         )
-        self.memory.write(item)
+        item = self.memory.write(item, identity=identity)
         # S-05：记忆沉淀审计（记录可信状态与证据引用）
         self._audit("memory_remembered", target=task.task_id,
-                    verified=verified, status=item.status.value)
+                    verified=verified, status=item.status.value,
+                    memory_id=item.memory_id, memory_binding_ref=task.memory_binding_ref)
 
     def _audit(self, action: str, *, target: str = "", outcome: str = "ok",
                **detail: Any) -> None:

@@ -9,6 +9,7 @@
 """
 
 import re
+import hashlib
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
@@ -297,8 +298,8 @@ class ContextAssembler:
                         "results": ctx.dropped_results,
                         "tool_docs": ctx.dropped_tool_docs,
                         "evidence": ctx.dropped_evidence},
-            "hard_constraints_retained": list(ctx.hard_constraints),
-            "acceptance_retained": list(ctx.acceptance_criteria),
+            "hard_constraints_retained": [e.entry_id for e in entries if e.kind == "constraint" and e.included],
+            "acceptance_retained": [e.entry_id for e in entries if e.kind == "acceptance" and e.included],
         }
         assembly = {
             "intent": intent, "domain": domain, "scope_key": scope_key,
@@ -306,7 +307,10 @@ class ContextAssembler:
             "memory_share": self.budget.memory_share,
             "result_share": self.budget.result_share,
             "identity": identity.to_dict() if identity is not None else {},
-            "grant": grant.to_dict() if grant is not None else None,
+            "grant": {"scopes":list(grant.scopes), "identity":grant.identity.to_dict(),
+                      "actor":grant.actor,
+                      "reason_digest":hashlib.sha256(grant.reason.encode("utf-8")).hexdigest()}
+                     if grant is not None else None,
             "memory_candidates": ctx.memory_candidates,
             "memory_used": ctx.memory_used,
         }

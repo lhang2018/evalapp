@@ -68,6 +68,8 @@ class Task:
     # G-01 前置（契约 §2）：任务与长期 Goal 通过 goal_id 引用关联，不共享万能状态字段
     goal_id: Optional[str] = None
     authorization_ref: Optional[str] = None
+    memory_binding_ref: Optional[str] = None
+    memory_identity: Dict[str, str] = field(default_factory=dict)
     origin: str = GoalOrigin.USER.value
     user_goal: str = ""
     intent: str = "general"
@@ -114,6 +116,8 @@ class Task:
             "user_answers": list(self.user_answers),
             "goal_id": self.goal_id,
             "authorization_ref": self.authorization_ref,
+            "memory_binding_ref": self.memory_binding_ref,
+            "memory_identity": dict(self.memory_identity),
             "origin": self.origin,
             "user_goal": self.user_goal,
             "intent": self.intent,

@@ -34,9 +34,24 @@ class Database:
             c.commit()
 
     # ---- tasks ----
+    def _assert_memory_binding(self, task: Task) -> None:
+        row = self._conn.execute("SELECT binding_ref,data FROM task_memory_bindings WHERE task_id=?",
+                                 (task.task_id,)).fetchone()
+        if row is None:
+            if task.memory_binding_ref or task.memory_identity:
+                raise PermissionError("Task记忆绑定不存在")
+        elif (task.memory_binding_ref != row["binding_ref"] or
+              task.memory_identity != json.loads(row["data"])["identity"]):
+            raise PermissionError("Task记忆身份不可改写或省略")
+
     def save_task(self, task: Task) -> None:
         with self._lock:
             guard_write(self)
+            try:
+                self._assert_memory_binding(task)
+            except BaseException:
+                self._conn.rollback()
+                raise
             self._conn.execute(
                 "INSERT OR REPLACE INTO tasks"
                 " (task_id, status, intent, domain, risk_level, user_goal,"
@@ -77,6 +92,7 @@ class Database:
             self._conn.execute("BEGIN IMMEDIATE")
             try:
                 assert_connection_lease(self._conn, self)
+                self._assert_memory_binding(task)
                 row = self._conn.execute(
                     "SELECT data FROM tasks WHERE task_id=?", (task.task_id,)).fetchone()
                 if row:
@@ -181,6 +197,50 @@ class Database:
         return out
 
     # ---- checkpoints ----
+    def save_context_manifest(self, task_id, run_id, manifest) -> None:
+        from ..memory.manifest import ContextManifest
+        data = manifest.to_dict()
+        rebuilt = ContextManifest.build(assembly=data["assembly"], budget_tokens=data["budget_tokens"],
+                                        entries=manifest.entries, compression=data["compression"])
+        if rebuilt.digest != manifest.digest or rebuilt.manifest_id != manifest.manifest_id:
+            raise ValueError("ContextManifest摘要与实际内容不一致")
+        if data["assembly"].get("identity", {}).get("task_id") != task_id:
+            raise PermissionError("ContextManifest任务身份不一致")
+        encoded = json.dumps(data, ensure_ascii=False, sort_keys=True)
+        with self._lock:
+            guard_write(self)
+            try:
+                run = self._conn.execute("SELECT task_id FROM task_runs WHERE run_id=?", (run_id,)).fetchone()
+                if run is None or run["task_id"] != task_id:
+                    raise PermissionError("ContextManifest运行身份不一致")
+                existing = self._conn.execute(
+                    "SELECT data FROM context_manifests WHERE task_id=? AND run_id=? AND manifest_id=?",
+                    (task_id, run_id, manifest.manifest_id)).fetchone()
+                if existing:
+                    if json.loads(existing["data"]) != data:
+                        # Assembly time is incidental; the canonical digest fixes provenance.
+                        old = json.loads(existing["data"])
+                        if {k:v for k,v in old.items() if k != "created_at"} != {k:v for k,v in data.items() if k != "created_at"}:
+                            raise ValueError("ContextManifest不可改写")
+                    self._conn.commit()
+                    return
+                self._conn.execute("INSERT INTO context_manifests VALUES (?,?,?,?,?)",
+                    (task_id, run_id, manifest.manifest_id, manifest.digest, encoded))
+                self._conn.commit()
+            except BaseException:
+                self._conn.rollback()
+                raise
+
+    def list_context_manifests(self, task_id, run_id=None):
+        with self._lock:
+            sql = "SELECT run_id,data FROM context_manifests WHERE task_id=?"
+            args = [task_id]
+            if run_id:
+                sql += " AND run_id=?"
+                args.append(run_id)
+            rows = self._conn.execute(sql + " ORDER BY rowid", args).fetchall()
+        return [{"run_id":r["run_id"], "manifest":json.loads(r["data"])} for r in rows]
+
     def save_checkpoint(self, checkpoint_id: str, task_id: str,
                         created_at: float, snapshot: Dict[str, Any]) -> None:
         with self._lock:

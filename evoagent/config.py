@@ -98,6 +98,8 @@ class Config:
     api_port: int = 8300
     api_token: Optional[str] = os.environ.get("EVOAGENT_API_TOKEN")
     api_admin_token: Optional[str] = os.environ.get("EVOAGENT_ADMIN_TOKEN")
+    # Trusted host policy; request bodies cannot add principals or identity choices.
+    memory_bindings: dict = field(default_factory=dict)
     release_signing_secret: Optional[str] = os.environ.get(
         "EVOAGENT_RELEASE_SECRET")
 
@@ -106,6 +108,8 @@ class Config:
         cfg = cls()
         if path and Path(path).exists():
             data = json.loads(Path(path).read_text(encoding="utf-8"))
+            if "memory_bindings" in data:
+                cfg.memory_bindings = data["memory_bindings"]
             if "provider" in data:
                 for k, v in data["provider"].items():
                     if hasattr(cfg.provider, k):

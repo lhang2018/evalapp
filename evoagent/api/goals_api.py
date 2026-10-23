@@ -44,7 +44,9 @@ def list_tasks(ctx):
     def load():
         goal_id = ctx.path.split("/")[2]
         ctx.app.goals.get(goal_id)
-        return {"tasks": [task.to_dict() for task in ctx.app.db.list_tasks_by_goal(goal_id)]}
+        tasks = ctx.app.db.list_tasks_by_goal(goal_id)
+        return {"tasks": [task.to_dict() for task in tasks if ctx.auth.role == "admin" or
+                          ctx.app.memory_bindings.owns(task.task_id, ctx.auth.principal_id)]}
     _call(ctx, load)
 
 
@@ -87,7 +89,7 @@ def submit_goal_task(ctx):
             raise ValueError("任务goal不能为空")
         task = ctx.app.submit(title, goal_id=ctx.path.split("/")[2],
                               goal_action=action, goal_command_id=command_id,
-                              origin="derived", wait=False, **body)
+                              origin="derived", wait=False, principal_id=ctx.auth.principal_id, **body)
         return {"task_id": task.task_id, "goal_id": task.goal_id}
     _call(ctx, submit, 202)
 

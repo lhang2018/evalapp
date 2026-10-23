@@ -183,12 +183,14 @@ class MemoryStore:
             if previous is not None and identity is not None and not _identity_visible(previous, _access_keys(identity, None)):
                 raise MemoryAccessError("不可覆盖其他身份的记忆")
             # 简单冲突处理：同 scope+kind 相同内容 → 跳过重复
-            dup = self._conn.execute(
+            duplicates = self._conn.execute(
                 "SELECT * FROM memory_items WHERE scope=? AND kind=? AND scope_key=?"
                 " AND content=? AND status!='revoked'",
-                (item.scope.value, item.kind.value, item.scope_key, item.content)).fetchone()
-            if dup:
-                return self._row_to_item(dup)
+                (item.scope.value, item.kind.value, item.scope_key, item.content)).fetchall()
+            for row in duplicates:
+                duplicate = self._row_to_item(row)
+                if _owner_partition(duplicate) == _owner_partition(item):
+                    return duplicate
             if item.fact_key:
                 existing = self._find_fact(item)
             self._conn.execute(
@@ -211,7 +213,8 @@ class MemoryStore:
             (item.scope.value, item.scope_key, item.memory_id)).fetchall()
         for row in rows:
             candidate = self._row_to_item(row)
-            if candidate.fact_key and candidate.fact_key == item.fact_key:
+            if (candidate.fact_key and candidate.fact_key == item.fact_key
+                    and _owner_partition(candidate) == _owner_partition(item)):
                 return candidate
         return None
 
@@ -578,10 +581,17 @@ def _apply_identity(item: MemoryItem, identity: MemoryIdentity) -> None:
         item.scope_key = getattr(identity, field_name, "") or ""
 
 
+class _IdentityKeys(dict):
+    """Keep coherent grant targets; never combine owners from unrelated grants."""
+    pass
+
+
 def _access_keys(identity: MemoryIdentity,
                  grant: Optional[AccessGrant]) -> Dict[str, set]:
     """身份自带作用域 + 显式授权作用域；授权只增加可见键，不扩大默认范围。"""
-    keys: Dict[str, set] = {}
+    keys = _IdentityKeys()
+    keys.primary = identity
+    keys.identities = {scope: [identity] for scope in _SCOPE_IDENTITY_FIELDS}
     for scope, field_name in _SCOPE_IDENTITY_FIELDS.items():
         value = getattr(identity, field_name, "") or ""
         if value:
@@ -589,6 +599,7 @@ def _access_keys(identity: MemoryIdentity,
     if grant is not None:
         for scope, value in grant.scope_map().items():
             keys.setdefault(scope, set()).add(value)
+            keys.identities[scope].append(grant.identity)
     return keys
 
 
@@ -599,6 +610,20 @@ def _all_keys(keys: Dict[str, set]) -> set:
     return out
 
 
+def _owner_fields(scope):
+    return {
+        "user": ("user_id",), "project": ("user_id", "project_id"),
+        "session": ("user_id", "project_id", "session_id"),
+        "task": ("user_id", "project_id", "session_id", "task_id"),
+        "expert": ("user_id", "project_id", "session_id", "expert_id"),
+        "shared": ("user_id",), "model": ("user_id", "project_id", "session_id"),
+    }.get(scope, ())
+
+
+def _owner_partition(item):
+    return tuple(getattr(item, field, "") for field in _owner_fields(item.scope.value))
+
+
 def _identity_visible(item: MemoryItem, keys: Dict[str, set]) -> bool:
     """作用域隔离：只读当前身份链上的键；shared 无 owner 时横切可见。"""
     scope = item.scope.value
@@ -607,9 +632,23 @@ def _identity_visible(item: MemoryItem, keys: Dict[str, set]) -> bool:
         return not owner or owner in keys.get("user", set())
     field_name = _SCOPE_IDENTITY_FIELDS.get(scope)
     if field_name is None:
-        return True  # model 等非五类身份作用域沿用原有键隔离口径
+        return all(not getattr(item, field, "") or
+                   getattr(item, field) == getattr(keys.primary, field)
+                   for field in _owner_fields(scope))
     item_key = getattr(item, field_name, "") or item.scope_key
-    return bool(item_key) and item_key in keys.get(scope, set())
+    if not item_key or item_key not in keys.get(scope, set()):
+        return False
+    for identity in keys.identities.get(scope, ()):
+        if getattr(identity, field_name) != item_key:
+            continue
+        # An unowned private hive is historical data, not a public expert.
+        if scope != "user" and identity.user_id and not item.user_id:
+            continue
+        if all(not getattr(item, field, "") or
+               getattr(item, field) == getattr(identity, field)
+               for field in _owner_fields(scope)):
+            return True
+    return False
 
 
 def _require_scope_access(scope: Scope, scope_key: str,

@@ -73,6 +73,8 @@ class App:
         self.bus = EventBus(str(d / "events.db"))
         self.memory = MemoryStore(str(d / "memory.db"),
                                   embedder=build_embedder(self.config))
+        from .memory.binding import MemoryBindingAuthority
+        self.memory_bindings = MemoryBindingAuthority(self.db, self.config.memory_bindings)
         self.ledger = BudgetLedger(self.db)
         self.audit = AuditLog(self.db, self.bus)
         # 日志分层：执行轨迹 + 诊断证据 + 保留策略（PRD 38-39 / Arch 9.2）
@@ -194,7 +196,7 @@ class App:
             CheckpointManager(self.db), self.permissions, self.releases,
             wf_lookup=self._wf_lookup, diagnostics=self.diagnostics,
             classifier=self.classifier, ledger=self.ledger,
-            audit=self.audit)  # S-05 执行环节审计
+            audit=self.audit, memory_bindings=self.memory_bindings)  # S-05 执行环节审计
         from .goals.governance import GoalGovernor
         from .goals.opportunities import OpportunityService
         self.goal_governor = GoalGovernor(self.db, controller=self.controller)

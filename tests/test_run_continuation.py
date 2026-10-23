@@ -39,10 +39,10 @@ def app(tmp_path):
     instance.db.close()
 
 
-def waiting_task(app):
+def waiting_task(app, **kwargs):
     use_clarifying_model(app)
     return app.submit("现在几点了", intent="time_query",
-                      acceptance=[{"type": "tool_succeeded"}])
+                      acceptance=[{"type": "tool_succeeded"}], **kwargs)
 
 
 def test_answer_continues_history_and_preserves_tool_evidence(app):
@@ -251,7 +251,7 @@ def test_workflow_pause_restart_keeps_completed_outputs_and_budget(tmp_path):
 
 
 def test_answer_api_status_validation_auth_and_run_history(app):
-    task = waiting_task(app)
+    task = waiting_task(app, principal_id="api:operator")
     app.config.api_token = "operator"
     app.config.api_admin_token = "admin"
     server = ApiServer(app, host="127.0.0.1", port=0)

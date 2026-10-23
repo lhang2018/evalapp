@@ -39,6 +39,7 @@ from . import goals_api  # ALN-13 Goal治理入口
 from . import assets_api  # ALN-06 资产端点；由生产入口注册，不能依赖测试导入
 from . import impact_api  # GAP 子步④ 能力影响分析端点（注册表路由）
 from . import routing_eval_api  # F-53 路由质量评测端点（注册表路由）
+from . import memory_context_api  # ALN-05-I task/run context provenance
 from . import task_control_api  # 用户补充信息与独立运行历史
 from .routes import RouteContext
 from .diagnostics_import import (
@@ -110,6 +111,21 @@ def make_handler(app: App):
             if not res.ok:
                 self._drain_rejected_body()
                 self._json(res.status, {"error": res.error})
+                return None
+            parts = path.strip("/").split("/")
+            if len(parts) >= 2 and parts[0] == "tasks":
+                task = app.db.get_task(parts[1])
+                if task is not None:
+                    try:
+                        app.memory_bindings.assert_principal(task, res.principal_id, admin=res.role == "admin")
+                    except PermissionError as exc:
+                        self._drain_rejected_body()
+                        self._json(403, {"error": str(exc)})
+                        return None
+            # Global memory management is an administrator plane, not a tenant read API.
+            if parts[0] == "memory" and res.role != "admin":
+                self._drain_rejected_body()
+                self._json(403, {"error": "全局记忆管理需要admin权限"})
                 return None
             return res
 
@@ -231,6 +247,8 @@ def make_handler(app: App):
                 return self._json(200, app.health())
             if path == "/tasks":
                 tasks = app.db.list_tasks()
+                if auth.role != "admin":
+                    tasks = [t for t in tasks if app.memory_bindings.owns(t.task_id, auth.principal_id)]
                 return self._json(200, {"tasks": [t.to_dict() for t in tasks]})
             if path.startswith("/tasks/"):
                 parts = [p for p in path.split("/") if p]  # ['tasks', tid, ...]
@@ -510,6 +528,9 @@ def make_handler(app: App):
                     and parts[2] == "complete"):
                 return self._attachment_complete(parts[1], auth.role)
             if path == "/tasks":
+                if any(key in body for key in ("identity", "grant", "memory_identity", "memory_binding_ref",
+                        "principal_id", "user_id", "project_id", "session_id", "task_id", "expert_id", "memory_grant")):
+                    return self._json(403, {"error": "身份由服务端绑定，只能使用memory_context及已签发grant_ref"})
                 goal = body.get("goal", "").strip()
                 if not goal:
                     return self._json(400, {"error": "缺少 goal"})
@@ -553,6 +574,11 @@ def make_handler(app: App):
                     if request_id:
                         existing = app.db.get_request_task_id(request_id)
                         if existing:
+                            try:
+                                app.memory_bindings.check_replay(app.db.get_task(existing), auth.principal_id,
+                                    body.get("memory_context"), body.get("memory_grant_ref"))
+                            except PermissionError as exc:
+                                return self._json(403, {"error": str(exc)})
                             return self._json(202, {
                                 "task_id": existing, "status": "CREATED",
                                 "deduplicated": True})
@@ -573,6 +599,9 @@ def make_handler(app: App):
                             app_version=app_version,
                             goal_id=goal_id,
                             origin=origin,
+                            principal_id=auth.principal_id,
+                            memory_context=body.get("memory_context"),
+                            memory_grant_ref=body.get("memory_grant_ref"),
                             **parsed)
                     except PermissionError as exc:
                         return self._json(403, {"error": str(exc)})
