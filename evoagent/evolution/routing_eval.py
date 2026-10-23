@@ -739,7 +739,7 @@ class WorkflowModeEvaluator:
                 error=f"{type(exc).__name__}: {exc}")
         mode_ok = sel.mode == case.expected_mode
         wf_ok = (not case.expected_workflow_id) or (
-            sel.mode == "stable_workflow"
+            sel.mode in {"stable_workflow", "hybrid_agent"}
             and sel.workflow_id == case.expected_workflow_id)
         return WorkflowModeCaseResult(
             case_id=case.case_id, ok=bool(mode_ok and wf_ok),
@@ -762,12 +762,13 @@ class WorkflowModeEvaluator:
             bucket = by_mode.setdefault(res.predicted_mode,
                                         {"cases": 0, "correct": 0})
             bucket["cases"] += 1
-            if res.ok:
+            if res.predicted_mode == res.expected_mode and not res.error:
                 mode_ok += 1
                 bucket["correct"] += 1
             if case.expected_workflow_id:
                 wf_total += 1
-                if res.ok:
+                if (not res.error and res.predicted_mode in {"stable_workflow", "hybrid_agent"}
+                        and res.predicted_workflow_id == res.expected_workflow_id):
                     wf_ok += 1
         if rows:
             report.mode_accuracy = mode_ok / len(rows)

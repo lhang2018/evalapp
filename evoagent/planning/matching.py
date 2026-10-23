@@ -25,6 +25,9 @@ class WorkflowMatcher:
 
     def __init__(self, candidates: Iterable[WorkflowCandidate] = ()):
         self._candidates: Tuple[WorkflowCandidate, ...] = tuple(candidates)
+        keys = [candidate.key() for candidate in self._candidates]
+        if len(keys) != len(set(keys)):
+            raise ValueError("duplicate workflow identity")
 
     @property
     def candidates(self) -> Tuple[WorkflowCandidate, ...]:
@@ -79,11 +82,11 @@ class WorkflowMatcher:
     def _check_budget(candidate: WorkflowCandidate,
                       context: MatchContext) -> CheckResult:
         need = int(candidate.cost_estimate or 0)
-        if need <= 0:
-            return CheckResult("budget", True, (), "未声明成本")
         if not context.budget_known:
             return CheckResult("budget", False, (),
                                f"预算不可知，无法确认 {need} 的额度")
+        if need <= 0:
+            return CheckResult("budget", True, (), "未声明成本")
         remaining = int(context.remaining_budget)
         if need > remaining:
             return CheckResult("budget", False, (),
@@ -109,7 +112,11 @@ class WorkflowMatcher:
             else:
                 missing.append(f"{check.name}:{check.detail}")
         dynamic_gap = ""
-        if len(failed) == 1 and failed[0].name in candidate.dynamic_tolerates:
+        # Only missing inputs can be obtained by declared dynamic nodes.
+        # Permissions, compatibility, dependencies and budget remain hard gates.
+        if (len(failed) == 1 and failed[0].name == "inputs"
+                and "inputs" in candidate.dynamic_tolerates
+                and candidate.dynamic_nodes):
             dynamic_gap = failed[0].name
         return CandidateVerdict(
             workflow_id=candidate.workflow_id, version=candidate.version,
