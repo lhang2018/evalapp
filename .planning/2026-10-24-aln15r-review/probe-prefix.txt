@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "E:\evalapp\.planning\2026-10-24-aln15r-review\probe_15r.py", line 200, in <module>
+    probe("B1 unknown-price-rejected-before-send", b1_unknown_price_rejected_before_send)
+  File "E:\evalapp\.planning\2026-10-24-aln15r-review\probe_15r.py", line 22, in probe
+    fn()
+  File "E:\evalapp\.planning\2026-10-24-aln15r-review\probe_15r.py", line 105, in b1_unknown_price_rejected_before_send
+    from evoagent.core.runtime_budget import model_call
+ModuleNotFoundError: No module named 'evoagent.core.runtime_budget'

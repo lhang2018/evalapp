@@ -1,0 +1,7 @@
+========================================================
+PASS     B1 unknown-price-rejected-before-send
+PASS     B2 free-call-still-counts
+PASS     B3 forged-manifest-ignored
+PASS     B5 failed-reservation-rolled-back
+========================================================
+total=4 pass=4 fail=0
