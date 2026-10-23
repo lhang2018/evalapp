@@ -1,0 +1,16 @@
+PASS CR16-01 RunEvent 转换拒绝无来源的 untrusted 事件
+PASS CR16-01b RunEvent 转换拒绝非法隐私等级
+PASS CR16-01c dict 路径校验未被削弱（回归）
+PASS CR16-02 severity=error 推断为 degraded | fault_level=degraded
+PASS CR16-02b severity=critical 推断为 fatal | fault_level=fatal
+PASS CR16-02c 普通事件仍为 none | fault_level=none
+PASS CR16-03a 轮换失败不得退役旧凭证 | failed=True status=active not_after=1000.0
+PASS CR16-03b 宽限期不得延长原截止时间 | not_after=1000.0
+PASS CR16-03c client_trust 公钥可轮换（无需私钥）
+PASS CR16-04a 已撤销令牌不得回退静态配置复活 | ok=False role=anonymous status=403
+PASS CR16-04b 同一秘密不得重复登记
+PASS CR16-05 其他任务的审批记录不得混入链 | nodes=['A1', 'e1', 'e2']
+PASS CR16-06a digest 与输入顺序无关 | c533a8c91402 vs c533a8c91402
+PASS CR16-06b 缺失因果引用必须报告 | ({'kind': 'event', 'id': 'missing-event', 'referenced_by': 'e1'},)
+
+==== 14/14 passed ====

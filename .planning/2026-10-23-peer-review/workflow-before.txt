@@ -1,0 +1,72 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFF                                                                [100%]
+================================== FAILURES ===================================
+_____ test_hybrid_does_not_waive_hard_preconditions[permissions-fields0] ______
+tests\test_peer_workflow_review.py:16: in test_hybrid_does_not_waive_hard_preconditions
+    assert result.mode == "dynamic_planning"
+E   AssertionError: assert 'hybrid_agent' == 'dynamic_planning'
+E     
+E     - dynamic_planning
+E     + hybrid_agent
+_____ test_hybrid_does_not_waive_hard_preconditions[dependencies-fields1] _____
+tests\test_peer_workflow_review.py:16: in test_hybrid_does_not_waive_hard_preconditions
+    assert result.mode == "dynamic_planning"
+E   AssertionError: assert 'hybrid_agent' == 'dynamic_planning'
+E     
+E     - dynamic_planning
+E     + hybrid_agent
+_______ test_hybrid_does_not_waive_hard_preconditions[versions-fields2] _______
+tests\test_peer_workflow_review.py:16: in test_hybrid_does_not_waive_hard_preconditions
+    assert result.mode == "dynamic_planning"
+E   AssertionError: assert 'hybrid_agent' == 'dynamic_planning'
+E     
+E     - dynamic_planning
+E     + hybrid_agent
+________ test_hybrid_does_not_waive_hard_preconditions[budget-fields3] ________
+tests\test_peer_workflow_review.py:16: in test_hybrid_does_not_waive_hard_preconditions
+    assert result.mode == "dynamic_planning"
+E   AssertionError: assert 'hybrid_agent' == 'dynamic_planning'
+E     
+E     - dynamic_planning
+E     + hybrid_agent
+_______________ test_unknown_budget_even_when_cost_not_declared _______________
+tests\test_peer_workflow_review.py:22: in test_unknown_budget_even_when_cost_not_declared
+    assert result.mode == "dynamic_planning"
+E   AssertionError: assert 'stable_workflow' == 'dynamic_planning'
+E     
+E     - dynamic_planning
+E     + stable_workflow
+_____ test_duplicate_identity_rejected_instead_of_order_dependent_binding _____
+tests\test_peer_workflow_review.py:28: in test_duplicate_identity_rejected_instead_of_order_dependent_binding
+    with pytest.raises(ValueError, match="duplicate"):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_______________ test_tolerated_input_gap_requires_dynamic_node ________________
+tests\test_peer_workflow_review.py:34: in test_tolerated_input_gap_requires_dynamic_node
+    assert WorkflowMatcher([c]).select(MatchContext.build()).mode == "dynamic_planning"
+E   AssertionError: assert 'hybrid_agent' == 'dynamic_planning'
+E     
+E     - dynamic_planning
+E     + hybrid_agent
+______________ test_workflow_accuracy_includes_hybrid_selection _______________
+tests\test_peer_workflow_review.py:41: in test_workflow_accuracy_includes_hybrid_selection
+    assert report.mode_accuracy == 1.0
+E   AssertionError: assert 0.0 == 1.0
+E    +  where 0.0 = WorkflowModeReport(dataset_id='workflow_mode', version='1.0.0', holdout=False, case_count=1, mode_accuracy=0.0, workfl...kflow_id='w', rationale='混合 Agent 工作流 w@1：主流程可用，仅缺 inputs（允许运行时动态补齐），需动态判断节点: get', holdout=False, tags=[], error='')]).mode_accuracy
+_______________ test_mode_metric_independent_of_wrong_workflow ________________
+tests\test_peer_workflow_review.py:49: in test_mode_metric_independent_of_wrong_workflow
+    assert report.mode_accuracy == 1.0
+E   AssertionError: assert 0.0 == 1.0
+E    +  where 0.0 = WorkflowModeReport(dataset_id='workflow_mode', version='1.0.0', holdout=False, case_count=1, mode_accuracy=0.0, workfl...pected', predicted_workflow_id='actual', rationale='稳定工作流 actual@1 五项检查全部通过（成本 0）', holdout=False, tags=[], error='')]).mode_accuracy
+=========================== short test summary info ===========================
+FAILED tests/test_peer_workflow_review.py::test_hybrid_does_not_waive_hard_preconditions[permissions-fields0]
+FAILED tests/test_peer_workflow_review.py::test_hybrid_does_not_waive_hard_preconditions[dependencies-fields1]
+FAILED tests/test_peer_workflow_review.py::test_hybrid_does_not_waive_hard_preconditions[versions-fields2]
+FAILED tests/test_peer_workflow_review.py::test_hybrid_does_not_waive_hard_preconditions[budget-fields3]
+FAILED tests/test_peer_workflow_review.py::test_unknown_budget_even_when_cost_not_declared
+FAILED tests/test_peer_workflow_review.py::test_duplicate_identity_rejected_instead_of_order_dependent_binding
+FAILED tests/test_peer_workflow_review.py::test_tolerated_input_gap_requires_dynamic_node
+FAILED tests/test_peer_workflow_review.py::test_workflow_accuracy_includes_hybrid_selection
+FAILED tests/test_peer_workflow_review.py::test_mode_metric_independent_of_wrong_workflow
+9 failed in 0.25s

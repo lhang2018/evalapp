@@ -1,0 +1,560 @@
+[
+  {
+    "id": "ALN-06-A",
+    "workpackage": "ALN-06",
+    "title": "不可变资产基础",
+    "stream": "assets",
+    "owner": "claude-main",
+    "reviewer": "codex-runtime",
+    "branch": null,
+    "base_commit": null,
+    "status": "review",
+    "blocker": null,
+    "evidence": [
+      {
+        "date": "2026-10-22",
+        "scope": "Asset 十一字段/八态/五 namespace + 不可变仓储 + 依赖/证据门禁 + Pack 字节夹具 + 旧实体映射 + 发布清单冻结引用边界",
+        "command": "python -m pytest tests -q",
+        "result": "776 passed, 1 skipped（含并行修复的 E-12/E-13；仅运行租约线 teardown 线程告警）",
+        "delivery": "docs/协作开发/交付/ALN-06-A-不可变资产基础.md"
+      },
+      {
+        "date": "2026-10-22",
+        "scope": "交叉审阅复现与修复，原作者和本轮修复作者分离登记",
+        "command": "python -m pytest tests/test_cross_review_regressions.py; clean commit full suite",
+        "result": "新增34专项通过；干净提交全量909 passed/1 skipped",
+        "source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+        "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
+        "delivery": "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md"
+      },
+      {
+        "date": "2026-10-22",
+        "scope": "Claude认领专项验收：既有相关测试+新增跨阶段/生命周期检查",
+        "reviewed_commit": "8692637064389736695f433337c8d09e0bdcdafb",
+        "command": "python -m pytest acceptance_checks.py -q --tb=short; related tests",
+        "result": "新增显式验收4 failed/1 passed，归为3个根因；既有178 passed",
+        "log": ".planning/2026-10-22-claude-acceptance/acceptance-results.txt",
+        "observations": ".planning/2026-10-22-claude-acceptance/observations.json",
+        "report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md"
+      },
+      {
+        "date": "2026-10-22",
+        "scope": "修复验收阻断项 CA-06-01：已回收资版本写入摘要墓碑，拒绝同身份改文复用",
+        "command": "python -m pytest .planning/2026-10-22-claude-acceptance/acceptance_checks.py -q --tb=short; python -m pytest tests -q",
+        "result": "验收脚本5 passed；新增墓碑拒绝/重启持久化回归；全量963 passed/1 skipped",
+        "source_commit": "3b7ef62",
+        "observations": ".planning/2026-10-22-claude-acceptance/observations-after-fix.json",
+        "report": "docs/协作开发/验收/2026-10-22-验收问题与复现.md",
+        "fix_status": "owner_fixed_pending_independent_review"
+      }
+    ],
+    "card": "docs/协作开发/任务卡/06-资产基础.md",
+    "shared_files": [
+      "evoagent/core/contracts.py",
+      "evoagent/core/persistence.py",
+      "evoagent/core/schema/migrations.py",
+      "evoagent/core/controller.py",
+      "evoagent/release/manager.py",
+      "evoagent/release/delivery.py",
+      "evoagent/api/server.py",
+      "evoagent/app.py"
+    ],
+    "review_result": "changes_requested",
+    "review_note": "2026-10-22独立干净提交验收有未解决缺陷，需修改后复验；旧修复回归通过，不自批本线补丁",
+    "next_step": "CA-06-01 已修复（3b7ef62），待 codex-runtime 独立复验；另保留原真实环境/整包验收",
+    "acceptance_findings": [
+      {
+        "id": "CA-06-01",
+        "priority": "P2",
+        "card": "ALN-06-A",
+        "title": "GC后可复用旧资产版本绑定新正文"
+      }
+    ],
+    "acceptance_report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md"
+  },
+  {
+    "id": "ALN-08-M",
+    "workpackage": "ALN-08",
+    "title": "路由与计量",
+    "stream": "models",
+    "owner": "claude-main",
+    "reviewer": "codex-runtime",
+    "branch": null,
+    "base_commit": null,
+    "status": "review",
+    "blocker": null,
+    "evidence": [
+      {
+        "date": "2026-10-22",
+        "scope": "五层覆盖复核 + 实测/预估/未知费用计量 + 模型层路由评测与费用对账 + 实测成本接入任务预算（未知成本单独计数） + model_call 按执行租约回填 task/run",
+        "command": "python -m pytest tests -q",
+        "result": "816 passed, 1 skipped；2 failed 均为并行会话在途（ALN-10 completion、台账引用漂移），非本卡范围",
+        "delivery": "docs/协作开发/交付/ALN-08-M-路由与计量.md"
+      },
+      {
+        "date": "2026-10-22",
+        "scope": "交叉审阅复现与修复，原作者和本轮修复作者分离登记",
+        "command": "python -m pytest tests/test_cross_review_regressions.py; clean commit full suite",
+        "result": "新增34专项通过；干净提交全量909 passed/1 skipped",
+        "source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+        "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
+        "delivery": "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md"
+      },
+      {
+        "date": "2026-10-22",
+        "scope": "Claude认领专项验收：既有相关测试+新增跨阶段/生命周期检查",
+        "reviewed_commit": "8692637064389736695f433337c8d09e0bdcdafb",
+        "command": "python -m pytest acceptance_checks.py -q --tb=short; related tests",
+        "result": "新增显式验收4 failed/1 passed，归为3个根因；既有178 passed",
+        "log": ".planning/2026-10-22-claude-acceptance/acceptance-results.txt",
+        "observations": ".planning/2026-10-22-claude-acceptance/observations.json",
+        "report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md"
+      },
+      {
+        "date": "2026-10-22",
+        "scope": "修复验收阻断项 CA-08-01/CA-08-02：分类与规划结算实测/未知成本，账本按来源分列成本",
+        "command": "python -m pytest .planning/2026-10-22-claude-acceptance/acceptance_checks.py -q --tb=short; python -m pytest tests -q",
+        "result": "验收脚本5 passed；新增7项回归；定向116 passed；全量963 passed/1 skipped",
+        "source_commit": "3b7ef62",
+        "observations": ".planning/2026-10-22-claude-acceptance/observations-after-fix.json",
+        "report": "docs/协作开发/验收/2026-10-22-验收问题与复现.md",
+        "fix_status": "owner_fixed_pending_independent_review"
+      }
+    ],
+    "card": "docs/协作开发/任务卡/08-模型与计量.md",
+    "shared_files": [
+      "evoagent/core/contracts.py",
+      "evoagent/core/persistence.py",
+      "evoagent/core/budget.py",
+      "evoagent/core/events.py",
+      "evoagent/core/controller.py",
+      "evoagent/app.py",
+      "evoagent/cli.py",
+      "evoagent/react/engine.py"
+    ],
+    "review_result": "changes_requested",
+    "review_note": "2026-10-22独立干净提交验收有未解决缺陷，需修改后复验；旧修复回归通过，不自批本线补丁",
+    "next_step": "CA-08-01/CA-08-02 已修复（3b7ef62），待 codex-runtime 独立复验；另保留原真实环境/整包验收",
+    "acceptance_findings": [
+      {
+        "id": "CA-08-01",
+        "priority": "P1",
+        "card": "ALN-08-M",
+        "title": "分类/规划未结算实测与未知费用"
+      },
+      {
+        "id": "CA-08-02",
+        "priority": "P2",
+        "card": "ALN-08-M",
+        "title": "估算金额混入actual_cost"
+      }
+    ],
+    "acceptance_report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md"
+  },
+  {
+    "id": "ALN-03-S",
+    "workpackage": "ALN-03",
+    "title": "发布正文签名与完整兼容声明",
+    "stream": "assets",
+    "owner": "claude-main",
+    "reviewer": "codex-runtime",
+    "branch": null,
+    "base_commit": null,
+    "status": "review",
+    "blocker": null,
+    "delivered_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+    "evidence": [
+      {
+        "date": "2026-10-22",
+        "scope": "新增22项签名专项：规范化字节、载荷绑定、真实文件摘要、缺失/多余/自改写、未知密钥、轮换、稳定通道缺项、证据持久化、旧格式迁移",
+        "command": "python -m pytest tests/test_release_signing.py tests/test_release*.py tests/test_version_sync.py tests/test_memory*.py tests/test_governance.py -q --tb=short",
+        "result": "151 passed",
+        "source_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+        "source_tree": "0fcfe0e9ee750647ddc853f66b42ac18142042e3",
+        "log": ".planning/2026-10-22-aln-03-05/targeted.txt"
+      },
+      {
+        "date": "2026-10-22",
+        "scope": "全量回归；另发现共享台账 M-07 陈旧声明与行号位移、异步审批用例偶发",
+        "command": "python -m pytest -q",
+        "result": "首轮1051 passed/1 skipped（含2项IMPLEMENTATION.md台账陈旧/行号位移、1项异步审批偶发）；复跑1055 passed/1 skipped，仅余同样2项台账失败，审批用例通过",
+        "source_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+        "source_tree": "0fcfe0e9ee750647ddc853f66b42ac18142042e3",
+        "log": ".planning/2026-10-22-aln-03-05/full-rerun.txt"
+      }
+    ],
+    "card": "docs/协作开发/任务卡/03-发布签名.md",
+    "delivery": "docs/协作开发/交付/ALN-03-S-发布正文签名与兼容声明.md",
+    "shared_files": [
+      "evoagent/release/manager.py",
+      "evoagent/release/delivery.py",
+      "evoagent/core/contracts.py"
+    ],
+    "preparation_status": "delivered",
+    "next_step": "独立复核53fc7bb的规范化签名/真实文件验签/兼容声明与旧格式迁移；端侧公钥验签、制品下载装载与真实回执转 ALN-11/Android 线"
+  },
+  {
+    "id": "ALN-05-M",
+    "workpackage": "ALN-05",
+    "title": "多维记忆、ContextManifest 与冲突/删除",
+    "stream": "models",
+    "owner": "claude-main",
+    "reviewer": "codex-runtime",
+    "branch": null,
+    "base_commit": null,
+    "status": "review",
+    "blocker": null,
+    "delivered_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+    "evidence": [
+      {
+        "date": "2026-10-22",
+        "scope": "新增15项：五类身份隔离/继承、专家蜂巢、AccessGrant 显式授权与越权拒绝、ContextManifest 可复现与正文不入清单、冲突三条裁决路径与人工审计、墓碑级联与冲突失效、压缩保留约束/验收",
+        "command": "python -m pytest tests/test_memory*.py tests/test_governance.py tests/test_release*.py tests/test_version_sync.py -q --tb=short",
+        "result": "151 passed",
+        "source_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+        "source_tree": "0fcfe0e9ee750647ddc853f66b42ac18142042e3",
+        "log": ".planning/2026-10-22-aln-03-05/targeted.txt"
+      },
+      {
+        "date": "2026-10-22",
+        "scope": "全量回归；共享台账 M-07 仍称 ContextManifest 零命中且行号位移",
+        "command": "python -m pytest -q",
+        "result": "首轮1051 passed/1 skipped（含2项IMPLEMENTATION.md台账陈旧/行号位移、1项异步审批偶发）；复跑1055 passed/1 skipped，仅余同样2项台账失败，审批用例通过",
+        "source_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+        "source_tree": "0fcfe0e9ee750647ddc853f66b42ac18142042e3",
+        "log": ".planning/2026-10-22-aln-03-05/full-rerun.txt"
+      }
+    ],
+    "card": "docs/协作开发/任务卡/05-记忆与上下文.md",
+    "delivery": "docs/协作开发/交付/ALN-05-M-多维记忆与上下文清单.md",
+    "shared_files": [
+      "evoagent/memory/context.py",
+      "evoagent/core/persistence.py"
+    ],
+    "preparation_status": "delivered",
+    "next_step": "独立复核53fc7bb的身份隔离/ContextManifest/冲突与删除传播；Task 身份字段、共享持久化与 controller 装配由集成角色合入，端侧离线记忆与隐私治理转 ALN-12/ALN-16"
+  },
+  {
+    "id": "ALN-11-A",
+    "workpackage": "ALN-11",
+    "title": "端侧真实制品下载、验签、装载与回执",
+    "stream": "android",
+    "owner": "claude-main",
+    "reviewer": "codex-runtime",
+    "branch": "main",
+    "base_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+    "status": "review",
+    "blocker": null,
+    "evidence": [
+      {
+        "date": "2026-10-22",
+        "scope": "新增10项端侧专项：断点续传与原子改名、坏摘要/截断不落正式文件、空间不足拒绝、真实RSA字节验签与篡改/撤销/过期密钥、prepare→activate与回执绑定、缺权限/低版本/坏签名拦截、装载失败保持活动槽、重启未装载拒绝切槽、失败回执按同一 apply_id 重放",
+        "command": "cd android-app && node --test test/update/artifact.test.ts && npm run test:offline && npm run typecheck",
+        "result": "专项 10 passed；客户端全量 154 passed；typecheck 通过",
+        "log": ".planning/2026-10-22-aln-11-16/aln11-targeted.txt; .planning/2026-10-22-aln-11-16/client-full.txt; .planning/2026-10-22-aln-11-16/typecheck.txt",
+        "delivery": "docs/协作开发/交付/ALN-11-A-端侧制品下载验签装载.md",
+        "source_commit": "10ec664c2804b4485b8c60ac8f053c1b6b10e8ae"
+      },
+      {
+        "date": "2026-10-22",
+        "scope": "服务端全量回归，确认端侧新增模块未影响既有路径",
+        "command": "PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python -m pytest -q",
+        "result": "1076 passed, 1 skipped",
+        "log": ".planning/2026-10-22-aln-11-16/python-full.txt",
+        "delivery": "docs/协作开发/交付/ALN-11-A-端侧制品下载验签装载.md",
+        "source_commit": "10ec664c2804b4485b8c60ac8f053c1b6b10e8ae"
+      },
+      {
+        "date": "2026-10-22",
+        "scope": "真机适配与服务端下发：原生文件系统桥、XHR Range 下载、bundle 双槽装载、开发公钥验签；服务端 envelope 字段与 GET /artifacts Range 端点；真机 24018RPACC 跑通下载(205B, sha256 c60b8ada…)→RSA验签→槽B装载→激活→健康检查→回执",
+        "command": "adb install -r app-debug.apk; 设备 UI 检查更新/下载并验签/激活候选版本/健康检查通过; adb shell run-as com.evoagent sha256sum files/updates/rel_dev_v2.bundle; sqlite3 evoagent.db device_installations/device_deployments",
+        "result": "client 158 passed; tests/test_update_artifact_delivery.py 5 passed; 设备 state active slot B, installation healthy, deployments verified→activation_pending→activated→health_check 均 ok, 重启后能力包 demo/v2 仍激活",
+        "log": ".planning/2026-10-22-aln-11-16/ui5.xml; ui6.xml; ui8.xml; ui9.xml; ui10.xml; ui11.xml; screen-active.png; RKStorage.db",
+        "delivery": "docs/协作开发/交付/ALN-11-A-端侧制品下载验签装载.md",
+        "source_commit": "26aad1b56512364d0cdb3b616eeec6a781703532"
+      },
+      {
+        "date": "2026-10-22",
+        "scope": "独立验收与修复；源码隔离验证，未重跑真机",
+        "reviewed_commit": "03600e1982455b1d6c27992cb03023b6d40bccf2",
+        "source_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+        "result": "1095 passed/1 skipped; committed client165/typecheck passed; 29 new regressions",
+        "report": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+        "log": ".planning/2026-10-22-aln11-16-review/evidence.json",
+        "fix_status": "fixed_pending_independent_review"
+      }
+    ],
+    "card": "docs/协作开发/任务卡/11-真实制品装载.md",
+    "delivery": "docs/协作开发/交付/ALN-11-A-端侧制品下载验签装载.md",
+    "shared_files": [
+      "evoagent/release/delivery.py"
+    ],
+    "preparation_status": "delivered",
+    "next_step": "独立复核aae0f9b的ALN-11-R修复；补修复后真机故障回滚、自动健康探针及执行器消费活动workflow",
+    "delivered_commit": "26aad1b56512364d0cdb3b616eeec6a781703532",
+    "review_result": "changes_requested",
+    "review_note": "2026-10-22 codex-runtime独立验收发现边界缺陷，已以aae0f9b修复；因审阅人编写修复，交其他reviewer复核，不自批",
+    "acceptance_report": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+    "fix_status": "fixed_pending_independent_review"
+  },
+  {
+    "id": "ALN-16-A",
+    "workpackage": "ALN-16",
+    "title": "跨端观测契约、决策链、隐私与凭证治理",
+    "stream": "models",
+    "owner": "claude-main",
+    "reviewer": "codex-runtime",
+    "branch": "main",
+    "base_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+    "status": "review",
+    "blocker": null,
+    "evidence": [
+      {
+        "date": "2026-10-22",
+        "scope": "新增11项观测专项：旧事件四等级映射与非法值/缺来源/受限未脱敏/凭证样式拒绝、RunEvent 新字段落库回读、决策链引用与缺失引用、效果/因果未决、链 digest 与索引稳定、外部来源保留与清洗、导出角色最小化与正文排除及确定性、密钥清洗、删除计划、凭证分级/轮换/撤销/状态解释、上下文泄漏拦截、TokenRing 轮换与 ApiAuth 角色",
+        "command": "PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python -m pytest tests/test_observability_evidence.py tests/test_event_contract.py tests/test_event_sync.py tests/test_control_plane.py -q",
+        "result": "41 passed",
+        "log": ".planning/2026-10-22-aln-11-16/aln16-targeted.txt",
+        "delivery": "docs/协作开发/交付/ALN-16-A-观测证据隐私与凭证.md",
+        "source_commit": "bc7eb65050ca5a704918e739cb9596ca4caf8b30"
+      },
+      {
+        "date": "2026-10-22",
+        "scope": "服务端全量回归，确认事件表增量与鉴权改动无回退",
+        "command": "PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python -m pytest -q",
+        "result": "1076 passed, 1 skipped",
+        "log": ".planning/2026-10-22-aln-11-16/python-full.txt",
+        "delivery": "docs/协作开发/交付/ALN-16-A-观测证据隐私与凭证.md",
+        "source_commit": "bc7eb65050ca5a704918e739cb9596ca4caf8b30"
+      },
+      {
+        "date": "2026-10-22",
+        "scope": "独立验收与修复；源码隔离验证，未重跑真机",
+        "reviewed_commit": "03600e1982455b1d6c27992cb03023b6d40bccf2",
+        "source_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+        "result": "1095 passed/1 skipped; committed client165/typecheck passed; 29 new regressions",
+        "report": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+        "log": ".planning/2026-10-22-aln11-16-review/evidence.json",
+        "fix_status": "fixed_pending_independent_review"
+      }
+    ],
+    "card": "docs/协作开发/任务卡/16-观测隐私凭证.md",
+    "delivery": "docs/协作开发/交付/ALN-16-A-观测证据隐私与凭证.md",
+    "shared_files": [
+      "evoagent/core/events.py",
+      "evoagent/api/auth.py"
+    ],
+    "preparation_status": "delivered",
+    "next_step": "独立复核aae0f9b的ALN-16-R修复；端侧EvidenceEvent、仓储装配及实际导出删除仍待接线",
+    "delivered_commit": "bc7eb65050ca5a704918e739cb9596ca4caf8b30",
+    "review_result": "changes_requested",
+    "review_note": "2026-10-22 codex-runtime独立验收发现边界缺陷，已以aae0f9b修复；因审阅人编写修复，交其他reviewer复核，不自批",
+    "acceptance_report": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+    "fix_status": "fixed_pending_independent_review"
+  },
+  {
+    "id": "ALN-07-P",
+    "workpackage": "ALN-07",
+    "title": "计划修订与已完成证据保持",
+    "stream": "runtime",
+    "owner": "claude-main",
+    "reviewer": "codex-runtime",
+    "branch": null,
+    "base_commit": null,
+    "status": "review",
+    "blocker": null,
+    "evidence": [
+      {
+        "date": "2026-10-22",
+        "scope": "分级修订原语与不变量校验：completed_work 单调不减、已完成步骤不得丢弃/降级、修订后计划结构校验、违约抛 PlanRevisionError 且计划保持原状、修订留痕可往返；引擎恢复路径按 append 级接线",
+        "command": "python -m pytest tests/test_plan_revision.py -q; python -m pytest tests/test_planning.py tests/test_control.py tests/test_workflow.py tests/test_process_recovery.py -q; python -m pytest tests -q",
+        "result": "新增14 passed；定向回归36 passed；全量1109 passed/1 skipped（共享候选工作区含他人在途改动，非干净克隆复现）",
+        "log": ".planning/2026-10-22-aln07/revision-tests.txt; .planning/2026-10-22-aln07/regression-targeted.txt",
+        "delivery": "docs/协作开发/交付/ALN-07-P-计划修订与证据保持.md",
+        "source": "当前共享候选工作区增量开发；修复前用复现脚本实证四个违约（证据丢失/降级/悬空依赖/空计划均被静默接受）"
+      }
+    ],
+    "card": "docs/协作开发/任务卡/07-计划修订与证据保持.md",
+    "shared_files": [
+      "evoagent/react/engine.py"
+    ],
+    "working_basis": "用户要求按优先级认领未开发工作包：ALN-07 为首个未认领 P1；在当前共享候选工作区增量开发（同 ALN-06-A/08-M/11-A 方式），基线未正式发布，不用旧 HEAD 冒充 base_commit",
+    "delivery": "docs/协作开发/交付/ALN-07-P-计划修订与证据保持.md",
+    "next_step": "独立复核已请求并登记（2026-10-23-ALN-07-P独立复核请求.md，审阅人 codex-runtime）；剩余 _risks_for 可执行恢复策略、修订与副作用账本 submitted/unknown 对账接线、ALN-07 工作流匹配与轨迹编译两项待拆卡",
+    "delivered_commit": "6d55756ff14a3460f9fe75802bc9ac12fd91ead5",
+    "related_commits": [
+      {
+        "commit": "af6ef4896c93bef8b06c4201292219325f22f869",
+        "scope": "任务卡与认领登记；代码实际随6d55756入库"
+      }
+    ]
+  },
+  {
+    "id": "ALN-18-A",
+    "workpackage": "ALN-18",
+    "title": "编程工具包：符号定位、受约束改写与检查/测试执行",
+    "stream": "runtime",
+    "owner": "claude-main",
+    "reviewer": null,
+    "branch": null,
+    "base_commit": null,
+    "status": "review",
+    "blocker": null,
+    "evidence": [
+      {
+        "date": "2026-10-22",
+        "scope": "编程工具包第一切片：AST 符号定位、唯一命中改写与语法门禁、compileall 语法检查、mypy 适配（不可用不判成功）、真实 pytest 执行；能力包清单含版本/回滚声明；新增14项负向优先专测",
+        "command": "python -m pytest tests/test_coding_tools.py tests/test_tool_contract_fields.py tests/test_tool_health.py tests/test_tools.py -q",
+        "result": "新增14 passed；定向36 passed；全量1176 passed/1 skipped（共享工作区含并行在途改动）",
+        "log": ".planning/2026-10-22-aln18/targeted.txt",
+        "delivery": "docs/协作开发/交付/ALN-18-A-编程工具包.md",
+        "source_commit": "acbd22a"
+      }
+    ],
+    "card": "docs/协作开发/任务卡/18-真实编程能力包.md",
+    "shared_files": [],
+    "working_basis": "用户要求继续做 ALN-18；ALN-06 工具契约已可声明离线/成本/风险，ALN-07 计划修订已在 review，本卡先做不依赖执行路径的编程工具包切片",
+    "next_step": "待 runtime 线独立复验；后续：AST 引用/调用图、LSP 适配、专家与 App 接线（共享文件串行）、注册表提供卸载语义后的能力包升级/回滚",
+    "delivered_commit": "acbd22aacf647a3938fdafdd390f0b2e11d42977"
+  },
+  {
+    "id": "ALN-18-B",
+    "workpackage": "ALN-18",
+    "title": "跨文件引用/调用图与并发安全改写",
+    "stream": "runtime",
+    "owner": "claude-main",
+    "reviewer": null,
+    "branch": null,
+    "base_commit": null,
+    "status": "review",
+    "blocker": null,
+    "evidence": [
+      {
+        "date": "2026-10-23",
+        "scope": "coding_references 静态引用/调用点（导入关系分置信度）+ coding_edit expected_sha256 并发保护 + 符号签名/返回注解 + 能力包 1.1.0；新增3项专项，共17项",
+        "command": "python -m pytest tests/test_coding_tools.py tests/test_tool_contract_fields.py tests/test_tool_health.py tests/test_tools.py -q; python -m pytest tests -q",
+        "result": "定向39 passed（新增17）；全量1179 passed/1 skipped",
+        "log": ".planning/2026-10-22-aln18/b-targeted.txt; .planning/2026-10-22-aln18/b-full-suite.txt",
+        "delivery": "docs/协作开发/交付/ALN-18-B-引用与并发改写.md",
+        "source_commit": "48b4aba"
+      }
+    ],
+    "card": "docs/协作开发/任务卡/18-真实编程能力包-B.md",
+    "shared_files": [],
+    "working_basis": "承接 ALN-18-A 已交付首片（acbd22a）：补引用/调用图与 expected_sha256 并发保护；仅改 coding.py/测试，不碰共享注册表与执行路径",
+    "next_step": "待独立复验；后续：类型解析级引用、LSP 适配、专家/App 接线（共享文件串行）、注册表提供卸载语义后的包级回滚",
+    "delivered_commit": "48b4aba"
+  },
+  {
+    "id": "ALN-18-C",
+    "workpackage": "ALN-18",
+    "title": "原子多文件补丁与 dry-run 预览",
+    "stream": "runtime",
+    "owner": "claude-main",
+    "reviewer": null,
+    "branch": null,
+    "base_commit": null,
+    "status": "review",
+    "blocker": null,
+    "evidence": [
+      {
+        "date": "2026-10-23",
+        "scope": "coding_patch 原子多文件补丁：50 条上限/单文件一条、全量预检（边界/存在/唯一命中/摘要/no-op/语法）、写后逐文件核验与全量回滚、回滚失败 side_effect_uncertain、dry-run 统一 diff；能力包 1.2.0（rollback 1.1.0，七工具），新增 8 项负向专测（共 25 项）",
+        "command": "python -m pytest tests/test_coding_tools.py -q; python -m pytest tests/test_coding_tools.py tests/test_tools.py -q; python -m pytest tests -q",
+        "result": "专项 25 passed；联合 32 passed；全量 1226 passed/1 skipped（127.05s）",
+        "log": ".planning/2026-10-22-aln18/c-targeted.txt; .planning/2026-10-22-aln18/c-full-suite-final.txt",
+        "delivery": "docs/协作开发/交付/ALN-18-C-原子多文件补丁.md",
+        "source_commit": "2ebd9c0"
+      }
+    ],
+    "card": "docs/协作开发/任务卡/18-真实编程能力包-C.md",
+    "shared_files": [],
+    "working_basis": "承接 ALN-18-A/B（acbd22a/48b4aba）：单文件改写升级为多文件原子提交，避免第二处失败留下半套改动；仅改 coding.py 与测试，不碰共享注册表",
+    "next_step": "待独立复核（runtime 线）：原子性/回滚/dry-run 证据；后续：unified patch 输入、写盘中断事务日志、专家/App 接线、LSP、注册表级回滚",
+    "delivered_commit": "2ebd9c0"
+  },
+  {
+    "id": "ALN-18-D",
+    "workpackage": "ALN-18",
+    "title": "补丁事务日志与中断恢复",
+    "stream": "runtime",
+    "owner": "claude-main",
+    "reviewer": null,
+    "branch": null,
+    "base_commit": null,
+    "status": "review",
+    "blocker": null,
+    "evidence": [
+      {
+        "date": "2026-10-23",
+        "scope": "coding_patch 事务日志（写盘前原子落盘、成功标记 committed 再清理、回滚失败保留）+ coding_patch_recover（pending 按摘要恢复/冲突不覆盖/committed 仅清理/dry-run/损坏日志跳过）；能力包 1.3.0（rollback 1.2.0，八工具），新增 5 项恢复专测（共 30 项）",
+        "command": "python -m pytest tests/test_coding_tools.py -q; python -m pytest tests/test_coding_tools.py tests/test_tools.py tests/test_tool_contract_fields.py -q; python -m pytest tests -q",
+        "result": "专项 30 passed；联合 43 passed；全量 1268 passed/1 skipped（176.65s，含并行会话同期测试）",
+        "log": ".planning/2026-10-22-aln18/d-targeted.txt; .planning/2026-10-22-aln18/d-full-suite.txt",
+        "delivery": "docs/协作开发/交付/ALN-18-D-事务日志与中断恢复.md",
+        "source_commit": "3ea3772"
+      }
+    ],
+    "card": "docs/协作开发/任务卡/18-真实编程能力包-D.md",
+    "shared_files": [],
+    "working_basis": "承接 ALN-18-C（2ebd9c0）：进程内回滚无法覆盖写盘中途被杀的场景；用原子事务日志记录前后摘要与原文，新增恢复工具，仅改 coding.py/测试，不碰共享注册表",
+    "next_step": "待独立复核（runtime 线）：日志原子性/恢复/冲突保护证据；后续：unified patch 输入、日志压缩与跨平台锁、专家/App 接线、LSP、注册表级回滚",
+    "delivered_commit": "3ea3772"
+  },
+  {
+    "id": "ALN-18-E",
+    "workpackage": "ALN-18",
+    "title": "统一 diff 输入与原子应用",
+    "stream": "runtime",
+    "owner": "claude-main",
+    "reviewer": null,
+    "branch": null,
+    "base_commit": null,
+    "status": "review",
+    "blocker": null,
+    "evidence": [
+      {
+        "date": "2026-10-23",
+        "scope": "coding_patch 统一 diff（edits/diff 二选一，多文件/多 hunk/a-b 前缀，按 hunk 计数消费行，CRLF 归一化，多 hunk 合并单文件 prepared，复用预检/日志/回滚）；拒绝 /dev/null、无换行标记、空文件 diff、歧义输入；能力包 1.4.0（rollback 1.3.0，八工具），新增 7 项专测（共 37 项）",
+        "command": "python -m pytest tests/test_coding_tools.py -q; python -m pytest tests/test_coding_tools.py tests/test_tools.py tests/test_tool_contract_fields.py -q; python -m pytest tests -q",
+        "result": "专项 37 passed；联合 50 passed；全量 1313 passed/1 skipped（145.14s）；首跑 1 项 goals API 端口竞态，单跑与复跑均通过",
+        "log": ".planning/2026-10-22-aln18/e-targeted.txt; .planning/2026-10-22-aln18/e-full-suite-rerun.txt",
+        "delivery": "docs/协作开发/交付/ALN-18-E-统一diff输入.md",
+        "source_commit": "0ba45fc"
+      }
+    ],
+    "card": "docs/协作开发/任务卡/18-真实编程能力包-E.md",
+    "shared_files": [],
+    "working_basis": "承接 ALN-18-C/D（2ebd9c0/3ea3772）：原子提交与日志恢复已有，但标准 unified diff 需手工拆分；解析后并入同一 prepared 流水线，仅改 coding.py/测试",
+    "next_step": "待独立复核（runtime 线）：diff 解析/唯一命中/原子性与日志证据；后续：hunk 行号容错、新增删除文件、LSP、专家/App 接线、注册表级回滚",
+    "delivered_commit": "0ba45fc"
+  },
+  {
+    "id": "ALN-18-F",
+    "workpackage": "ALN-18",
+    "title": "新增/删除文件与 hunk 位置容错",
+    "stream": "runtime",
+    "owner": "claude-main",
+    "reviewer": null,
+    "branch": null,
+    "base_commit": null,
+    "status": "review",
+    "blocker": null,
+    "evidence": [
+      {
+        "date": "2026-10-23",
+        "scope": "coding_patch diff 支持 /dev/null 新建/删除文件（目标存在与父目录守卫、删除须覆盖全文、.py 语法门禁）；重复片段按新文件行号消歧，上下文零命中时首尾至多 2 行裁剪重试；创建/删除/改写同批原子回滚；日志记录 existed/deleted 并在恢复时移除创建、还原删除；证据新增 action；能力包 1.5.0（rollback 1.4.0，八工具），新增 14 项专测（共 51 项）",
+        "command": "python -m pytest tests/test_coding_tools.py -q; python -m pytest tests/test_coding_tools.py tests/test_tools.py tests/test_tool_contract_fields.py -q; python -m pytest tests -q",
+        "result": "专项 51 passed；联合 64 passed；全量 1331 passed/1 skipped（139.88s）",
+        "log": ".planning/2026-10-22-aln18/f-targeted.txt; .planning/2026-10-22-aln18/f-combined.txt; .planning/2026-10-22-aln18/f-full-suite.txt",
+        "delivery": "docs/协作开发/交付/ALN-18-F-新增删除文件与hunk容错.md",
+        "source_commit": "dbef120"
+      }
+    ],
+    "card": "docs/协作开发/任务卡/18-真实编程能力包-F.md",
+    "shared_files": [],
+    "working_basis": "承接 ALN-18-E（0ba45fc）：统一 diff 已可原子应用但拒绝 /dev/null，hunk 仅按内容唯一命中；本卡在 coding.py 内支持创建/删除并加入行号消歧与上下文裁剪，复用现有日志与回滚",
+    "next_step": "待独立复核（runtime 线）：创建/删除原子性、行号消歧与上下文裁剪边界、日志恢复证据；后续：二进制/权限位、重命名、LSP、专家/App 接线、注册表级回滚",
+    "delivered_commit": "dbef120"
+  }
+]

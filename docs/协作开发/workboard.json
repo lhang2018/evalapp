@@ -110,14 +110,42 @@
       "scope": "候选准备Git/日志证据有效；当前源码新增显式验收不通过，915/1仅为此前普通tests基线"
     },
     "latest_source_verification": {
-      "source_commit": "6837129d4f5ef2ccf442dd9b9d89b9426096155c",
-      "source_tree": "625457f47de3344c59ddc6559117334b43ea1951",
-      "python_passed": 1317,
+      "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+      "source_tree": "cad4939bbf8866857f5863aca99cd73befbd7e50",
+      "python_passed": 1390,
       "python_skipped": 1,
       "client_passed": 166,
       "typecheck": "passed",
-      "scope": "6837129 git archive后端1317/1，线程异常警告升级错误；包含同期已提交18-E，不包括后续在途；客户端同Git tree复用8c的166/typecheck；未重跑真机，不替代独立接受/发布候选",
-      "evidence": "../../.planning/2026-10-23-aln14/committed-evidence.json"
+      "scope": "固定Git archive后端1390/1；客户端同Git tree复用8c479b6的166/typecheck；35项独立探针修复前失败32项，修复后全过。元数据旧渲染差异另在文档提交修复；不替代真实环境、独立接受或发布候选",
+      "evidence": "../../.planning/2026-10-23-peer-review/committed-evidence.json"
+    },
+    "latest_peer_review": {
+      "date": "2026-10-23",
+      "reviewer": "codex-runtime",
+      "status": "complete",
+      "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+      "additional_reviewed_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+      "accepted": [
+        "ALN-06-A",
+        "ALN-11-A",
+        "ALN-16-A"
+      ],
+      "changes_requested": [
+        "ALN-08-M",
+        "ALN-03-S",
+        "ALN-05-M",
+        "ALN-07-P",
+        "ALN-18-A",
+        "ALN-18-B",
+        "ALN-18-C",
+        "ALN-18-D",
+        "ALN-18-E",
+        "ALN-18-F",
+        "ALN-07-W"
+      ],
+      "repair_source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+      "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+      "independence": "新修复由审阅人编写，11张卡保持review待其他审阅者复核；自己的14/15-R不在本轮接受范围"
     }
   },
   "streams": [
@@ -350,6 +378,22 @@
     {
       "path": "evoagent/api/goals_api.py",
       "stream": "integration"
+    },
+    {
+      "path": "evoagent/tools/coding.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/memory/store.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/release/signing.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/planning/matching.py",
+      "stream": "integration"
     }
   ],
   "dispatches": [
@@ -498,7 +542,7 @@
       "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -536,6 +580,15 @@
           "observations": ".planning/2026-10-22-claude-acceptance/observations-after-fix.json",
           "report": "docs/协作开发/验收/2026-10-22-验收问题与复现.md",
           "fix_status": "owner_fixed_pending_independent_review"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "既定切片accepted",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/06-资产基础.md",
@@ -549,9 +602,9 @@
         "evoagent/api/server.py",
         "evoagent/app.py"
       ],
-      "review_result": "changes_requested",
-      "review_note": "2026-10-22独立干净提交验收有未解决缺陷，需修改后复验；旧修复回归通过，不自批本线补丁",
-      "next_step": "CA-06-01 已修复（3b7ef62），待 codex-runtime 独立复验；另保留原真实环境/整包验收",
+      "review_result": "accepted",
+      "review_note": "2026-10-23 独立接受既定切片；06墓碑/证据门禁重验，11/16依赖R卡已有claude-main独立接受及第三方探针重放；不重批本人R修复，不表示整包或新增真机通过",
+      "next_step": "既定资产基础切片已接受；运行时精确选择/消费、Android安装/退役另验",
       "acceptance_findings": [
         {
           "id": "CA-06-01",
@@ -560,7 +613,9 @@
           "title": "GC后可复用旧资产版本绑定新正文"
         }
       ],
-      "acceptance_report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md"
+      "acceptance_report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+      "fix_status": "independently_verified_scoped_slice"
     },
     {
       "id": "ALN-08-M",
@@ -609,6 +664,15 @@
           "observations": ".planning/2026-10-22-claude-acceptance/observations-after-fix.json",
           "report": "docs/协作开发/验收/2026-10-22-验收问题与复现.md",
           "fix_status": "owner_fixed_pending_independent_review"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "changes_requested; repaired_pending_independent_review",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/08-模型与计量.md",
@@ -623,8 +687,8 @@
         "evoagent/react/engine.py"
       ],
       "review_result": "changes_requested",
-      "review_note": "2026-10-22独立干净提交验收有未解决缺陷，需修改后复验；旧修复回归通过，不自批本线补丁",
-      "next_step": "CA-08-01/CA-08-02 已修复（3b7ef62），待 codex-runtime 独立复验；另保留原真实环境/整包验收",
+      "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
+      "next_step": "由其他审阅者复核修复提交和负向探针（PR-05）；通过前保持review，原整包/真实环境缺口保留",
       "acceptance_findings": [
         {
           "id": "CA-08-01",
@@ -639,7 +703,14 @@
           "title": "估算金额混入actual_cost"
         }
       ],
-      "acceptance_report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md"
+      "acceptance_report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+      "fix_status": "reviewer_fixed_pending_independent_review",
+      "fix_author": "codex-runtime",
+      "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+      "peer_findings": [
+        "PR-05"
+      ]
     },
     {
       "id": "ALN-04-UI",
@@ -999,6 +1070,15 @@
           "source_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
           "source_tree": "0fcfe0e9ee750647ddc853f66b42ac18142042e3",
           "log": ".planning/2026-10-22-aln-03-05/full-rerun.txt"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "changes_requested; repaired_pending_independent_review",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/03-发布签名.md",
@@ -1009,7 +1089,16 @@
         "evoagent/core/contracts.py"
       ],
       "preparation_status": "delivered",
-      "next_step": "独立复核53fc7bb的规范化签名/真实文件验签/兼容声明与旧格式迁移；端侧公钥验签、制品下载装载与真实回执转 ALN-11/Android 线"
+      "next_step": "由其他审阅者复核修复提交和负向探针（PR-06）；通过前保持review，原整包/真实环境缺口保留",
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+      "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
+      "fix_status": "reviewer_fixed_pending_independent_review",
+      "fix_author": "codex-runtime",
+      "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+      "peer_findings": [
+        "PR-06"
+      ]
     },
     {
       "id": "ALN-05-M",
@@ -1041,6 +1130,15 @@
           "source_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
           "source_tree": "0fcfe0e9ee750647ddc853f66b42ac18142042e3",
           "log": ".planning/2026-10-22-aln-03-05/full-rerun.txt"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "changes_requested; repaired_pending_independent_review",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/05-记忆与上下文.md",
@@ -1050,7 +1148,16 @@
         "evoagent/core/persistence.py"
       ],
       "preparation_status": "delivered",
-      "next_step": "独立复核53fc7bb的身份隔离/ContextManifest/冲突与删除传播；Task 身份字段、共享持久化与 controller 装配由集成角色合入，端侧离线记忆与隐私治理转 ALN-12/ALN-16"
+      "next_step": "由其他审阅者复核修复提交和负向探针（PR-04）；通过前保持review，原整包/真实环境缺口保留",
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+      "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
+      "fix_status": "reviewer_fixed_pending_independent_review",
+      "fix_author": "codex-runtime",
+      "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+      "peer_findings": [
+        "PR-04"
+      ]
     },
     {
       "id": "ALN-01-A",
@@ -1129,7 +1236,7 @@
       "reviewer": "codex-runtime",
       "branch": "main",
       "base_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -1168,6 +1275,15 @@
           "report": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
           "log": ".planning/2026-10-22-aln11-16-review/evidence.json",
           "fix_status": "fixed_pending_independent_review"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "既定切片accepted",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/11-真实制品装载.md",
@@ -1176,12 +1292,13 @@
         "evoagent/release/delivery.py"
       ],
       "preparation_status": "delivered",
-      "next_step": "独立复核aae0f9b的ALN-11-R修复；补修复后真机故障回滚、自动健康探针及执行器消费活动workflow",
+      "next_step": "既定切片已接受，11-R独立接受保持；补真机故障回滚、自动健康探针、执行器消费活动workflow",
       "delivered_commit": "26aad1b56512364d0cdb3b616eeec6a781703532",
-      "review_result": "changes_requested",
-      "review_note": "2026-10-22 codex-runtime独立验收发现边界缺陷，已以aae0f9b修复；因审阅人编写修复，交其他reviewer复核，不自批",
+      "review_result": "accepted",
+      "review_note": "2026-10-23 独立接受既定切片；06墓碑/证据门禁重验，11/16依赖R卡已有claude-main独立接受及第三方探针重放；不重批本人R修复，不表示整包或新增真机通过",
       "acceptance_report": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
-      "fix_status": "fixed_pending_independent_review"
+      "fix_status": "independently_verified_scoped_slice",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md"
     },
     {
       "id": "ALN-16-A",
@@ -1192,7 +1309,7 @@
       "reviewer": "codex-runtime",
       "branch": "main",
       "base_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -1222,6 +1339,15 @@
           "report": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
           "log": ".planning/2026-10-22-aln11-16-review/evidence.json",
           "fix_status": "fixed_pending_independent_review"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "既定切片accepted",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/16-观测隐私凭证.md",
@@ -1231,12 +1357,13 @@
         "evoagent/api/auth.py"
       ],
       "preparation_status": "delivered",
-      "next_step": "独立复核aae0f9b的ALN-16-R修复；端侧EvidenceEvent、仓储装配及实际导出删除仍待接线",
+      "next_step": "既定契约切片已接受，16-R独立接受保持；端侧EvidenceEvent、实际仓储装配及导出删除另验",
       "delivered_commit": "bc7eb65050ca5a704918e739cb9596ca4caf8b30",
-      "review_result": "changes_requested",
-      "review_note": "2026-10-22 codex-runtime独立验收发现边界缺陷，已以aae0f9b修复；因审阅人编写修复，交其他reviewer复核，不自批",
+      "review_result": "accepted",
+      "review_note": "2026-10-23 独立接受既定切片；06墓碑/证据门禁重验，11/16依赖R卡已有claude-main独立接受及第三方探针重放；不重批本人R修复，不表示整包或新增真机通过",
       "acceptance_report": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
-      "fix_status": "fixed_pending_independent_review"
+      "fix_status": "independently_verified_scoped_slice",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md"
     },
     {
       "id": "ALN-11-R",
@@ -1332,6 +1459,15 @@
           "log": ".planning/2026-10-22-aln07/revision-tests.txt; .planning/2026-10-22-aln07/regression-targeted.txt",
           "delivery": "docs/协作开发/交付/ALN-07-P-计划修订与证据保持.md",
           "source": "当前共享候选工作区增量开发；修复前用复现脚本实证四个违约（证据丢失/降级/悬空依赖/空计划均被静默接受）"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "changes_requested; repaired_pending_independent_review",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/07-计划修订与证据保持.md",
@@ -1340,13 +1476,22 @@
       ],
       "working_basis": "用户要求按优先级认领未开发工作包：ALN-07 为首个未认领 P1；在当前共享候选工作区增量开发（同 ALN-06-A/08-M/11-A 方式），基线未正式发布，不用旧 HEAD 冒充 base_commit",
       "delivery": "docs/协作开发/交付/ALN-07-P-计划修订与证据保持.md",
-      "next_step": "独立复核已请求并登记（2026-10-23-ALN-07-P独立复核请求.md，审阅人 codex-runtime）；剩余 _risks_for 可执行恢复策略、修订与副作用账本 submitted/unknown 对账接线、ALN-07 工作流匹配与轨迹编译两项待拆卡",
+      "next_step": "由其他审阅者复核修复提交和负向探针（PR-01）；通过前保持review，原整包/真实环境缺口保留",
       "delivered_commit": "6d55756ff14a3460f9fe75802bc9ac12fd91ead5",
       "related_commits": [
         {
           "commit": "af6ef4896c93bef8b06c4201292219325f22f869",
           "scope": "任务卡与认领登记；代码实际随6d55756入库"
         }
+      ],
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+      "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
+      "fix_status": "reviewer_fixed_pending_independent_review",
+      "fix_author": "codex-runtime",
+      "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+      "peer_findings": [
+        "PR-01"
       ]
     },
     {
@@ -1368,6 +1513,15 @@
           "result": "新增 contracts/matching 与 WorkflowModeEvaluator；24 项匹配单测 + 既有覆盖断言更新；组合回归 123 passed；routing_coverage 两层改为已评测",
           "log": "tests/test_workflow_matching.py",
           "delivery": "docs/协作开发/交付/ALN-07-W-工作流匹配与执行模式选择.md"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "changes_requested; repaired_pending_independent_review",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/07-W工作流匹配与执行模式选择.md",
@@ -1376,8 +1530,8 @@
         "evoagent/evolution/routing_eval.py"
       ],
       "working_basis": "用户要求继续认领；本卡为 ALN-07 整包第一项「工作流匹配」，与 ALN-07-P 互补不改其语义；同时补 R-03 主题中工作流匹配/执行模式两项未覆盖的评测维度。基线未发布，base_commit 留空不使用旧 HEAD 冒充",
-      "next_step": "已交付待独立复核（codex-runtime）：匹配服务与评测维度已落，routing_coverage 两层改为已评测；真实运行时自动接线匹配层属后续范围，本卡不宣称主链已自动匹配；ALN-07 另两项（_risks_for 可执行恢复、轨迹编译）未开工",
-      "review_result": "pending",
+      "next_step": "由其他审阅者复核修复提交和负向探针（PR-07）；通过前保持review，原整包/真实环境缺口保留",
+      "review_result": "changes_requested",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1387,7 +1541,15 @@
         }
       ],
       "preparation_status": "claimed",
-      "delivery": "docs/协作开发/交付/ALN-07-W-工作流匹配与执行模式选择.md"
+      "delivery": "docs/协作开发/交付/ALN-07-W-工作流匹配与执行模式选择.md",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+      "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
+      "fix_status": "reviewer_fixed_pending_independent_review",
+      "fix_author": "codex-runtime",
+      "fix_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+      "peer_findings": [
+        "PR-07"
+      ]
     },
     {
       "id": "ALN-13-A",
@@ -1605,7 +1767,7 @@
       "title": "编程工具包：符号定位、受约束改写与检查/测试执行",
       "stream": "runtime",
       "owner": "claude-main",
-      "reviewer": null,
+      "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
       "status": "review",
@@ -1619,13 +1781,32 @@
           "log": ".planning/2026-10-22-aln18/targeted.txt",
           "delivery": "docs/协作开发/交付/ALN-18-A-编程工具包.md",
           "source_commit": "acbd22a"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "changes_requested; repaired_pending_independent_review",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/18-真实编程能力包.md",
       "shared_files": [],
       "working_basis": "用户要求继续做 ALN-18；ALN-06 工具契约已可声明离线/成本/风险，ALN-07 计划修订已在 review，本卡先做不依赖执行路径的编程工具包切片",
-      "next_step": "待 runtime 线独立复验；后续：AST 引用/调用图、LSP 适配、专家与 App 接线（共享文件串行）、注册表提供卸载语义后的能力包升级/回滚",
-      "delivered_commit": "acbd22aacf647a3938fdafdd390f0b2e11d42977"
+      "next_step": "由其他审阅者复核修复提交和负向探针（PR-02,PR-03）；通过前保持review，原整包/真实环境缺口保留",
+      "delivered_commit": "acbd22aacf647a3938fdafdd390f0b2e11d42977",
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+      "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
+      "fix_status": "reviewer_fixed_pending_independent_review",
+      "fix_author": "codex-runtime",
+      "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+      "peer_findings": [
+        "PR-02",
+        "PR-03"
+      ]
     },
     {
       "id": "ALN-05-I",
@@ -1675,7 +1856,7 @@
       "title": "跨文件引用/调用图与并发安全改写",
       "stream": "runtime",
       "owner": "claude-main",
-      "reviewer": null,
+      "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
       "status": "review",
@@ -1689,13 +1870,32 @@
           "log": ".planning/2026-10-22-aln18/b-targeted.txt; .planning/2026-10-22-aln18/b-full-suite.txt",
           "delivery": "docs/协作开发/交付/ALN-18-B-引用与并发改写.md",
           "source_commit": "48b4aba"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "changes_requested; repaired_pending_independent_review",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/18-真实编程能力包-B.md",
       "shared_files": [],
       "working_basis": "承接 ALN-18-A 已交付首片（acbd22a）：补引用/调用图与 expected_sha256 并发保护；仅改 coding.py/测试，不碰共享注册表与执行路径",
-      "next_step": "待独立复验；后续：类型解析级引用、LSP 适配、专家/App 接线（共享文件串行）、注册表提供卸载语义后的包级回滚",
-      "delivered_commit": "48b4aba"
+      "next_step": "由其他审阅者复核修复提交和负向探针（PR-02,PR-03）；通过前保持review，原整包/真实环境缺口保留",
+      "delivered_commit": "48b4aba",
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+      "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
+      "fix_status": "reviewer_fixed_pending_independent_review",
+      "fix_author": "codex-runtime",
+      "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+      "peer_findings": [
+        "PR-02",
+        "PR-03"
+      ]
     },
     {
       "id": "ALN-15-R",
@@ -1756,7 +1956,7 @@
       "title": "原子多文件补丁与 dry-run 预览",
       "stream": "runtime",
       "owner": "claude-main",
-      "reviewer": null,
+      "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
       "status": "review",
@@ -1770,13 +1970,32 @@
           "log": ".planning/2026-10-22-aln18/c-targeted.txt; .planning/2026-10-22-aln18/c-full-suite-final.txt",
           "delivery": "docs/协作开发/交付/ALN-18-C-原子多文件补丁.md",
           "source_commit": "2ebd9c0"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "changes_requested; repaired_pending_independent_review",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/18-真实编程能力包-C.md",
       "shared_files": [],
       "working_basis": "承接 ALN-18-A/B（acbd22a/48b4aba）：单文件改写升级为多文件原子提交，避免第二处失败留下半套改动；仅改 coding.py 与测试，不碰共享注册表",
-      "next_step": "待独立复核（runtime 线）：原子性/回滚/dry-run 证据；后续：unified patch 输入、写盘中断事务日志、专家/App 接线、LSP、注册表级回滚",
-      "delivered_commit": "2ebd9c0"
+      "next_step": "由其他审阅者复核修复提交和负向探针（PR-02,PR-03）；通过前保持review，原整包/真实环境缺口保留",
+      "delivered_commit": "2ebd9c0",
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+      "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
+      "fix_status": "reviewer_fixed_pending_independent_review",
+      "fix_author": "codex-runtime",
+      "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+      "peer_findings": [
+        "PR-02",
+        "PR-03"
+      ]
     },
     {
       "id": "ALN-18-D",
@@ -1784,7 +2003,7 @@
       "title": "补丁事务日志与中断恢复",
       "stream": "runtime",
       "owner": "claude-main",
-      "reviewer": null,
+      "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
       "status": "review",
@@ -1798,13 +2017,32 @@
           "log": ".planning/2026-10-22-aln18/d-targeted.txt; .planning/2026-10-22-aln18/d-full-suite.txt",
           "delivery": "docs/协作开发/交付/ALN-18-D-事务日志与中断恢复.md",
           "source_commit": "3ea3772"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "changes_requested; repaired_pending_independent_review",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/18-真实编程能力包-D.md",
       "shared_files": [],
       "working_basis": "承接 ALN-18-C（2ebd9c0）：进程内回滚无法覆盖写盘中途被杀的场景；用原子事务日志记录前后摘要与原文，新增恢复工具，仅改 coding.py/测试，不碰共享注册表",
-      "next_step": "待独立复核（runtime 线）：日志原子性/恢复/冲突保护证据；后续：unified patch 输入、日志压缩与跨平台锁、专家/App 接线、LSP、注册表级回滚",
-      "delivered_commit": "3ea3772"
+      "next_step": "由其他审阅者复核修复提交和负向探针（PR-02,PR-03）；通过前保持review，原整包/真实环境缺口保留",
+      "delivered_commit": "3ea3772",
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+      "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
+      "fix_status": "reviewer_fixed_pending_independent_review",
+      "fix_author": "codex-runtime",
+      "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+      "peer_findings": [
+        "PR-02",
+        "PR-03"
+      ]
     },
     {
       "id": "ALN-18-E",
@@ -1812,7 +2050,7 @@
       "title": "统一 diff 输入与原子应用",
       "stream": "runtime",
       "owner": "claude-main",
-      "reviewer": null,
+      "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
       "status": "review",
@@ -1826,13 +2064,32 @@
           "log": ".planning/2026-10-22-aln18/e-targeted.txt; .planning/2026-10-22-aln18/e-full-suite-rerun.txt",
           "delivery": "docs/协作开发/交付/ALN-18-E-统一diff输入.md",
           "source_commit": "0ba45fc"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "changes_requested; repaired_pending_independent_review",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/18-真实编程能力包-E.md",
       "shared_files": [],
       "working_basis": "承接 ALN-18-C/D（2ebd9c0/3ea3772）：原子提交与日志恢复已有，但标准 unified diff 需手工拆分；解析后并入同一 prepared 流水线，仅改 coding.py/测试",
-      "next_step": "待独立复核（runtime 线）：diff 解析/唯一命中/原子性与日志证据；后续：hunk 行号容错、新增删除文件、LSP、专家/App 接线、注册表级回滚",
-      "delivered_commit": "0ba45fc"
+      "next_step": "由其他审阅者复核修复提交和负向探针（PR-02,PR-03）；通过前保持review，原整包/真实环境缺口保留",
+      "delivered_commit": "0ba45fc",
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+      "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
+      "fix_status": "reviewer_fixed_pending_independent_review",
+      "fix_author": "codex-runtime",
+      "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+      "peer_findings": [
+        "PR-02",
+        "PR-03"
+      ]
     },
     {
       "id": "ALN-18-F",
@@ -1840,7 +2097,7 @@
       "title": "新增/删除文件与 hunk 位置容错",
       "stream": "runtime",
       "owner": "claude-main",
-      "reviewer": null,
+      "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
       "status": "review",
@@ -1854,13 +2111,32 @@
           "log": ".planning/2026-10-22-aln18/f-targeted.txt; .planning/2026-10-22-aln18/f-combined.txt; .planning/2026-10-22-aln18/f-full-suite.txt",
           "delivery": "docs/协作开发/交付/ALN-18-F-新增删除文件与hunk容错.md",
           "source_commit": "dbef120"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "其他作者原切片独立审核；新修复不自批",
+          "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+          "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "result": "changes_requested; repaired_pending_independent_review",
+          "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/18-真实编程能力包-F.md",
       "shared_files": [],
       "working_basis": "承接 ALN-18-E（0ba45fc）：统一 diff 已可原子应用但拒绝 /dev/null，hunk 仅按内容唯一命中；本卡在 coding.py 内支持创建/删除并加入行号消歧与上下文裁剪，复用现有日志与回滚",
-      "next_step": "待独立复核（runtime 线）：创建/删除原子性、行号消歧与上下文裁剪边界、日志恢复证据；后续：二进制/权限位、重命名、LSP、专家/App 接线、注册表级回滚",
-      "delivered_commit": "dbef120"
+      "next_step": "由其他审阅者复核修复提交和负向探针（PR-02,PR-03）；通过前保持review，原整包/真实环境缺口保留",
+      "delivered_commit": "dbef120",
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+      "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
+      "fix_status": "reviewer_fixed_pending_independent_review",
+      "fix_author": "codex-runtime",
+      "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+      "peer_findings": [
+        "PR-02",
+        "PR-03"
+      ]
     }
   ],
   "workpackages": [
@@ -1917,8 +2193,8 @@
       ],
       "stream": "assets",
       "owner": "claude-main",
-      "delivery_state": "partial_verified",
-      "next_step": "03-S正文签名/文件摘要/兼容实现已提交review；下一步独立复核及生产签名/客户端字节验签联合验收"
+      "delivery_state": "needs_recheck",
+      "next_step": "本轮独立审核发现问题已修复，待其他审阅者复核7132180/1ff11c1；既有后续接线与真实环境验收保留，不关闭整包"
     },
     {
       "id": "ALN-04",
@@ -1943,8 +2219,8 @@
       ],
       "stream": "models",
       "owner": "codex-runtime",
-      "delivery_state": "partial_verified",
-      "next_step": "05-M已交付review；新增05-I由codex排队接Task身份持久化、Controller读写与ContextManifest；端侧缓存与隐私另验",
+      "delivery_state": "needs_recheck",
+      "next_step": "本轮独立审核发现问题已修复，待其他审阅者复核7132180/1ff11c1；既有后续接线与真实环境验收保留，不关闭整包",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1965,7 +2241,7 @@
       "stream": "assets",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "CA-06-01 已修复（3b7ef62：回收身份墓碑+拒绝改文复用）待 codex-runtime 独立复验；运行时消费与Android验收仍待完成"
+      "next_step": "原A切片已独立接受；运行时消费、端侧接线与实际环境验收仍按原任务卡推进，整包未关闭"
     },
     {
       "id": "ALN-07",
@@ -1979,8 +2255,8 @@
       ],
       "stream": "runtime",
       "owner": "claude-main",
-      "delivery_state": "partial_verified",
-      "next_step": "07-P已交付review（代码6d55756）；07-W工作流匹配与执行模式选择已交付待 codex-runtime 独立复核（代码a2e08a3，评测维度已补、routing_coverage 两层改为已评测）；剩余 _risks_for 可执行恢复策略、轨迹编译与副作用账本对账接线待后续拆卡"
+      "delivery_state": "needs_recheck",
+      "next_step": "本轮独立审核发现问题已修复，待其他审阅者复核7132180/1ff11c1；既有后续接线与真实环境验收保留，不关闭整包"
     },
     {
       "id": "ALN-08",
@@ -1992,8 +2268,8 @@
       ],
       "stream": "models",
       "owner": "claude-main",
-      "delivery_state": "partial_verified",
-      "next_step": "CA-08-01/CA-08-02 已修复（3b7ef62：分类/规划实测结算+来源分列）待 codex-runtime 独立复验；保留生产集/价格及工作流层验收"
+      "delivery_state": "needs_recheck",
+      "next_step": "本轮独立审核发现问题已修复，待其他审阅者复核7132180/1ff11c1；既有后续接线与真实环境验收保留，不关闭整包"
     },
     {
       "id": "ALN-09",
@@ -2047,7 +2323,7 @@
       "stream": "android",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "11-R已由claude-main第三方复核通过（CR11-01..08前后对照确认）；新增11-W排队完成活动workflow执行消费和自动健康探针，补修复后真机故障回滚；整包不关闭",
+      "next_step": "原A切片已独立接受；运行时消费、端侧接线与实际环境验收仍按原任务卡推进，整包未关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -2151,7 +2427,7 @@
       "stream": "models",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "观测凭证模块及验收修复已由claude-main第三方复核通过（CR16-01..06逐条确认）；Android事件、仓储自动装配与实际导出删除待接线；整包不关闭"
+      "next_step": "原A切片已独立接受；运行时消费、端侧接线与实际环境验收仍按原任务卡推进，整包未关闭"
     },
     {
       "id": "ALN-17",
@@ -2188,8 +2464,8 @@
       ],
       "stream": "assets",
       "owner": "claude-main",
-      "delivery_state": "partial_verified",
-      "next_step": "18-A/B/C/D/E/F 六片 review 中（acbd22a/48b4aba/2ebd9c0/3ea3772/0ba45fc/dbef120）；专家接线、LSP 与包级回滚后续推进"
+      "delivery_state": "needs_recheck",
+      "next_step": "本轮独立审核发现问题已修复，待其他审阅者复核7132180/1ff11c1；既有后续接线与真实环境验收保留，不关闭整包"
     },
     {
       "id": "ALN-19",
@@ -2312,6 +2588,59 @@
         "state": "排队",
         "condition": "Runtime协议和同组夹具；固定外部Harness PoC另行验收"
       }
+    ]
+  },
+  "peer_review_batch": {
+    "date": "2026-10-23",
+    "reviewer": "codex-runtime",
+    "status": "complete",
+    "reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+    "additional_reviewed_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+    "cards": [
+      "ALN-06-A",
+      "ALN-08-M",
+      "ALN-03-S",
+      "ALN-05-M",
+      "ALN-11-A",
+      "ALN-16-A",
+      "ALN-07-P",
+      "ALN-18-A",
+      "ALN-18-B",
+      "ALN-18-C",
+      "ALN-18-D",
+      "ALN-18-E",
+      "ALN-18-F",
+      "ALN-07-W"
+    ],
+    "accepted": [
+      "ALN-06-A",
+      "ALN-11-A",
+      "ALN-16-A"
+    ],
+    "changes_requested": [
+      "ALN-08-M",
+      "ALN-03-S",
+      "ALN-05-M",
+      "ALN-07-P",
+      "ALN-18-A",
+      "ALN-18-B",
+      "ALN-18-C",
+      "ALN-18-D",
+      "ALN-18-E",
+      "ALN-18-F",
+      "ALN-07-W"
+    ],
+    "repair_source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+    "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+    "independence": "新修复由审阅人编写，11张卡保持review待其他审阅者复核；自己的14/15-R不在本轮接受范围",
+    "repair_paths": [
+      "evoagent/tools/coding.py",
+      "evoagent/planning/planner.py",
+      "evoagent/memory/store.py",
+      "evoagent/models/metering.py",
+      "evoagent/release/signing.py",
+      "evoagent/planning/matching.py",
+      "evoagent/evolution/routing_eval.py"
     ]
   }
 }

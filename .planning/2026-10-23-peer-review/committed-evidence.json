@@ -1,0 +1,82 @@
+{
+  "source_commit": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+  "source_tree": "cad4939bbf8866857f5863aca99cd73befbd7e50",
+  "scope": "git archive; excludes dirty working-tree files; typecheck reuses installed dependencies",
+  "snapshot": "E:\\evalapp\\outputs\\peer-1ff11c1",
+  "results": [
+    {
+      "name": "backend-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-W",
+        "error::pytest.PytestUnhandledThreadExceptionWarning"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-23-peer-review\\backend-committed.txt",
+      "sha256": "6d28844e35d55ca1bec8a8f30e352884f573bf506592633b821bb96a84dd3e07"
+    },
+    {
+      "name": "claims-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/verify_claims.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-23-peer-review\\claims-committed.txt",
+      "sha256": "bb7db200b392b8717020370e3cf045f24fb0d936d7604952908a70c282df9014"
+    },
+    {
+      "name": "ledgers-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/scan_all_ledgers.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-23-peer-review\\ledgers-committed.txt",
+      "sha256": "9fa62c2d9ca1778da4f82740c3e530edf1945b0f9d8306578d33a05154f73cb4"
+    },
+    {
+      "name": "board-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/check_collaboration_plan.py"
+      ],
+      "exit_code": 1,
+      "log": ".planning\\2026-10-23-peer-review\\board-committed.txt",
+      "sha256": "3be5db2a17cc213b7d7c126ad28fdf3cf340062c798ff3dd564d39ba203eb81d"
+    },
+    {
+      "name": "client-committed",
+      "command": [
+        "node",
+        "--test",
+        "test/offline/*.test.ts",
+        "test/device/*.test.ts",
+        "test/update/*.test.ts"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-23-aln15\\client-committed-8c479b6.txt",
+      "sha256": "cfe15f8c757be0ae08319800afa743d9058a9193ab9d5d7cdfc9574eeb09bb52",
+      "reused_from_source_commit": "8c479b6c9f01f342920e2f52a19d96a0e1700364",
+      "reuse_reason": "identical android-app Git tree"
+    },
+    {
+      "name": "typecheck-committed",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-23-aln15\\typecheck-committed-8c479b6.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reused_from_source_commit": "8c479b6c9f01f342920e2f52a19d96a0e1700364",
+      "reuse_reason": "identical android-app Git tree"
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFFFFFFFFF...FFF                                               [100%]
+================================== FAILURES ===================================
+_ test_completed_step_cannot_be_relabelled_as_another_completed_action[append] _
+tests\test_peer_review_regressions.py:23: in test_completed_step_cannot_be_relabelled_as_another_completed_action
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+_ test_completed_step_cannot_be_relabelled_as_another_completed_action[replace] _
+tests\test_peer_review_regressions.py:23: in test_completed_step_cannot_be_relabelled_as_another_completed_action
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+_ test_completed_step_cannot_be_relabelled_as_another_completed_action[replan] _
+tests\test_peer_review_regressions.py:23: in test_completed_step_cannot_be_relabelled_as_another_completed_action
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+_________ test_append_cannot_modify_existing_pending_or_running_steps _________
+tests\test_peer_review_regressions.py:30: in test_append_cannot_modify_existing_pending_or_running_steps
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+___________ test_revision_does_not_keep_mutable_caller_step_aliases ___________
+tests\test_peer_review_regressions.py:39: in test_revision_does_not_keep_mutable_caller_step_aliases
+    assert plan.steps[0].description == "replacement"
+E   AssertionError: assert 'changed after validation' == 'replacement'
+E     
+E     - replacement
+E     + changed after validation
+_________ test_patch_failed_commit_marker_is_not_reported_as_success __________
+tests\test_peer_review_regressions.py:50: in test_patch_failed_commit_marker_is_not_reported_as_success
+    assert not result.ok
+E   AssertionError: assert not True
+E    +  where True = ToolResult(ok=True, data={'dry_run': False, 'applied': ['file.txt'], 'files': [{'file': 'file.txt', 'line': 1, 'action...led_back': False, 'dry_run': False}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+____________ test_recovery_entry_error_cannot_report_full_success _____________
+tests\test_peer_review_regressions.py:60: in test_recovery_entry_error_cannot_report_full_success
+    assert not result.ok
+E   AssertionError: assert not True
+E    +  where True = ToolResult(ok=True, data={'dry_run': False, 'restored': 0, 'conflicts': 0, 'journals': [{'journal': 'bad.json', 'files...: 1, 'errors': 0, 'dry_run': False}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+_________ test_patch_rechecks_snapshot_after_preflight_before_writing _________
+tests\test_peer_review_regressions.py:76: in test_patch_rechecks_snapshot_after_preflight_before_writing
+    assert not result.ok
+E   AssertionError: assert not True
+E    +  where True = ToolResult(ok=True, data={'dry_run': False, 'applied': ['file.txt'], 'files': [{'file': 'file.txt', 'line': 1, 'action...led_back': False, 'dry_run': False}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+______ test_patch_new_file_cannot_overwrite_file_created_after_preflight ______
+tests\test_peer_review_regressions.py:90: in test_patch_new_file_cannot_overwrite_file_created_after_preflight
+    assert not result.ok
+E   AssertionError: assert not True
+E    +  where True = ToolResult(ok=True, data={'dry_run': False, 'applied': ['new.txt'], 'files': [{'file': 'new.txt', 'line': 1, 'action':...led_back': False, 'dry_run': False}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+__________ test_rollback_does_not_overwrite_concurrent_foreign_file ___________
+tests\test_peer_review_regressions.py:109: in test_rollback_does_not_overwrite_concurrent_foreign_file
+    assert b.read_text(encoding="utf-8") == "foreign content\n"
+E   AssertionError: assert 'two\n' == 'foreign content\n'
+E     
+E     - foreign content
+E     + two
+_________ test_unified_hunk_cannot_match_middle_of_an_unrelated_line __________
+tests\test_peer_review_regressions.py:117: in test_unified_hunk_cannot_match_middle_of_an_unrelated_line
+    assert not result.ok
+E   AssertionError: assert not True
+E    +  where True = ToolResult(ok=True, data={'dry_run': False, 'applied': ['file.txt'], 'files': [{'file': 'file.txt', 'line': 1, 'action...led_back': False, 'dry_run': False}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+__________ test_journal_directory_cannot_escape_project_through_link __________
+tests\test_peer_review_regressions.py:137: in test_journal_directory_cannot_escape_project_through_link
+    assert not result.ok
+E   AssertionError: assert not True
+E    +  where True = ToolResult(ok=True, data={'dry_run': False, 'applied': ['file.txt'], 'files': [{'file': 'file.txt', 'line': 1, 'action...led_back': False, 'dry_run': False}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+______ test_signing_key_identity_cannot_be_rebound_to_a_different_secret ______
+tests\test_peer_review_regressions.py:146: in test_signing_key_identity_cannot_be_rebound_to_a_different_secret
+    with pytest.raises((ValueError, SigningError)):
+E   Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'evoagent.release.signing.SigningError'>)
+_____________ test_deleted_memory_identity_cannot_be_resurrected ______________
+tests\test_peer_review_regressions.py:157: in test_deleted_memory_identity_cannot_be_resurrected
+    with pytest.raises((ValueError, PermissionError)):
+E   Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'PermissionError'>)
+__________ test_late_cached_memory_cannot_reintroduce_deleted_source __________
+tests\test_peer_review_regressions.py:170: in test_late_cached_memory_cannot_reintroduce_deleted_source
+    with pytest.raises((ValueError, PermissionError)):
+E   Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'PermissionError'>)
+________ test_duplicate_memory_write_returns_a_real_persisted_identity ________
+tests\test_peer_review_regressions.py:183: in test_duplicate_memory_write_returns_a_real_persisted_identity
+    assert replay.memory_id == first.memory_id
+E   AssertionError: assert 'bc3cedc3a264' == '1afc40679173'
+E     
+E     - 1afc40679173
+E     + bc3cedc3a264
+_____ test_identity_scoped_write_cannot_overwrite_another_users_memory_id _____
+tests\test_peer_review_regressions.py:195: in test_identity_scoped_write_cannot_overwrite_another_users_memory_id
+    with pytest.raises(PermissionError):
+E   Failed: DID NOT RAISE <class 'PermissionError'>
+_ test_metering_does_not_reuse_provider_usage_from_the_previous_response[False] _
+tests\test_peer_review_regressions.py:223: in test_metering_does_not_reuse_provider_usage_from_the_previous_response
+    assert metered.last_usage.cost_source != "provider"
+E   AssertionError: assert 'provider' != 'provider'
+E    +  where 'provider' = ModelUsage(call_id='51b87da8df38442591097e6943a6f52f', model_id='probe', provider='unknown', op='generate', ok=True, e...otal_tokens=20, cost=0.02, token_source='provider', cost_source='provider', request_id=None, task_id=None, run_id=None).cost_source
+E    +    where ModelUsage(call_id='51b87da8df38442591097e6943a6f52f', model_id='probe', provider='unknown', op='generate', ok=True, e...otal_tokens=20, cost=0.02, token_source='provider', cost_source='provider', request_id=None, task_id=None, run_id=None) = <evoagent.models.metering.MeteredModel object at 0x0000020E2D942140>.last_usage
+_ test_metering_does_not_reuse_provider_usage_from_the_previous_response[True] _
+tests\test_peer_review_regressions.py:223: in test_metering_does_not_reuse_provider_usage_from_the_previous_response
+    assert metered.last_usage.cost_source != "provider"
+E   AssertionError: assert 'provider' != 'provider'
+E    +  where 'provider' = ModelUsage(call_id='6992e961ae8942998bbf323f2d7bd12e', model_id='probe', provider='unknown', op='generate', ok=True, e...total_tokens=20, cost=0.02, token_source='provider', cost_source='provider', request_id='2', task_id=None, run_id=None).cost_source
+E    +    where ModelUsage(call_id='6992e961ae8942998bbf323f2d7bd12e', model_id='probe', provider='unknown', op='generate', ok=True, e...total_tokens=20, cost=0.02, token_source='provider', cost_source='provider', request_id='2', task_id=None, run_id=None) = <evoagent.models.metering.MeteredModel object at 0x0000020E2D9ADBA0>.last_usage
+___ test_typechecker_is_not_declared_a_side_effect_free_preparation_action ____
+tests\test_peer_review_regressions.py:229: in test_typechecker_is_not_declared_a_side_effect_free_preparation_action
+    assert contract.side_effect_level == "external"
+E   AssertionError: assert 'none' == 'external'
+E     
+E     - external
+E     + none
+_____________ test_live_patch_excludes_another_cooperating_editor _____________
+tests\test_peer_review_regressions.py:290: in test_live_patch_excludes_another_cooperating_editor
+    assert not other.ok
+E   AssertionError: assert not True
+E    +  where True = ToolResult(ok=True, data='C:\\Users\\lhang\\AppData\\Local\\Temp\\pytest-of-lhang\\pytest-279\\test_live_patch_exclude...72034f91', 'syntax_checked': False}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+________ test_malformed_recovery_payload_is_reported_without_crashing _________
+tests\test_peer_review_regressions.py:301: in test_malformed_recovery_payload_is_reported_without_crashing
+    result = coding.coding_patch_recover_tool(str(tmp_path))[1]({})
+evoagent\tools\coding.py:1258: in run
+    report, restored, conflicts, errors, uncertain = _recover_journals(
+evoagent\tools\coding.py:633: in _recover_journals
+    files = payload.get("files")
+E   AttributeError: 'list' object has no attribute 'get'
+________ test_single_file_partial_write_error_is_reported_as_uncertain ________
+tests\test_peer_review_regressions.py:316: in test_single_file_partial_write_error_is_reported_as_uncertain
+    assert not result.ok and result.side_effect_uncertain
+E   AssertionError: assert (not False and False)
+E    +  where False = ToolResult(ok=False, data=None, error='partial write then disk error', error_class='network_or_unavailable', submitted...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+E    +  and   False = ToolResult(ok=False, data=None, error='partial write then disk error', error_class='network_or_unavailable', submitted...effect_uncertain=False, evidence={}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).side_effect_uncertain
+=========================== short test summary info ===========================
+FAILED tests/test_peer_review_regressions.py::test_completed_step_cannot_be_relabelled_as_another_completed_action[append]
+FAILED tests/test_peer_review_regressions.py::test_completed_step_cannot_be_relabelled_as_another_completed_action[replace]
+FAILED tests/test_peer_review_regressions.py::test_completed_step_cannot_be_relabelled_as_another_completed_action[replan]
+FAILED tests/test_peer_review_regressions.py::test_append_cannot_modify_existing_pending_or_running_steps
+FAILED tests/test_peer_review_regressions.py::test_revision_does_not_keep_mutable_caller_step_aliases
+FAILED tests/test_peer_review_regressions.py::test_patch_failed_commit_marker_is_not_reported_as_success
+FAILED tests/test_peer_review_regressions.py::test_recovery_entry_error_cannot_report_full_success
+FAILED tests/test_peer_review_regressions.py::test_patch_rechecks_snapshot_after_preflight_before_writing
+FAILED tests/test_peer_review_regressions.py::test_patch_new_file_cannot_overwrite_file_created_after_preflight
+FAILED tests/test_peer_review_regressions.py::test_rollback_does_not_overwrite_concurrent_foreign_file
+FAILED tests/test_peer_review_regressions.py::test_unified_hunk_cannot_match_middle_of_an_unrelated_line
+FAILED tests/test_peer_review_regressions.py::test_journal_directory_cannot_escape_project_through_link
+FAILED tests/test_peer_review_regressions.py::test_signing_key_identity_cannot_be_rebound_to_a_different_secret
+FAILED tests/test_peer_review_regressions.py::test_deleted_memory_identity_cannot_be_resurrected
+FAILED tests/test_peer_review_regressions.py::test_late_cached_memory_cannot_reintroduce_deleted_source
+FAILED tests/test_peer_review_regressions.py::test_duplicate_memory_write_returns_a_real_persisted_identity
+FAILED tests/test_peer_review_regressions.py::test_identity_scoped_write_cannot_overwrite_another_users_memory_id
+FAILED tests/test_peer_review_regressions.py::test_metering_does_not_reuse_provider_usage_from_the_previous_response[False]
+FAILED tests/test_peer_review_regressions.py::test_metering_does_not_reuse_provider_usage_from_the_previous_response[True]
+FAILED tests/test_peer_review_regressions.py::test_typechecker_is_not_declared_a_side_effect_free_preparation_action
+FAILED tests/test_peer_review_regressions.py::test_live_patch_excludes_another_cooperating_editor
+FAILED tests/test_peer_review_regressions.py::test_malformed_recovery_payload_is_reported_without_crashing
+FAILED tests/test_peer_review_regressions.py::test_single_file_partial_write_error_is_reported_as_uncertain
+23 failed, 3 passed in 0.50s

@@ -1,0 +1,38 @@
+{
+  "original_reviewed_commit": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+  "additional_reviewed_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+  "test_sources": [
+    "tests/test_peer_review_regressions.py",
+    "tests/test_peer_workflow_review.py"
+  ],
+  "logs": [
+    {
+      "path": ".planning/2026-10-23-peer-review/before-fixed-source.txt",
+      "sha256": "984705b3529684417e28c4713b17a1e849a6abdf8e0774f936508a881b5a5e96"
+    },
+    {
+      "path": ".planning/2026-10-23-peer-review/original-related.txt",
+      "sha256": "73f0729829de7d1638e287c56d53ba0acc476d1bd413bbbc75c8b0db30e58716"
+    },
+    {
+      "path": ".planning/2026-10-23-peer-review/after-probes.txt",
+      "sha256": "c91c96b78f0d851af4bd61675ac580950ac1e80f36b434c3a6114bc6de187d52"
+    },
+    {
+      "path": ".planning/2026-10-23-peer-review/third-party-server-replay.txt",
+      "sha256": "142b37141b9b21578aa7c7fde18f0a4ef881de43c9eec05b9c65268271c876e6"
+    },
+    {
+      "path": ".planning/2026-10-23-peer-review/third-party-client-replay.txt",
+      "sha256": "f59adb4586ae690821edf26f59147a8cfb292975307ffc5d91a94cfdbb5de886"
+    },
+    {
+      "path": ".planning/2026-10-23-peer-review/workflow-before.txt",
+      "sha256": "2af29ba51a461c4b6e4cdfd2a388ff664bdb341836ce6865b330a448c72cd56c"
+    },
+    {
+      "path": ".planning/2026-10-23-peer-review/workflow-after.txt",
+      "sha256": "717e419f2b453590282ca24c9dcb18c0a1163eeb6a119f37826ea7147c75c331"
+    }
+  ]
+}
