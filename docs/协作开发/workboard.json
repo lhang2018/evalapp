@@ -1905,6 +1905,32 @@
       }
     },
     {
+      "id": "ALN-07-E",
+      "workpackage": "ALN-07",
+      "title": "副作用账本对账（计划↔已执行副作用）",
+      "stream": "runtime",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/07-E副作用账本对账.md",
+      "shared_files": [],
+      "working_basis": "用户要求再认领一个；ALN-07整包第四项——全库核实无计划↔副作用账本对账实现（07-T只到步骤完成态，答不了\"实际有没有产生副作用\"）；纯新文件零共享冲突，base_commit留空不用旧HEAD冒充",
+      "next_step": "已认领 in_progress：写纯读 SideEffectReconciler 与七条验收回归；不改 planner.py/core/side_effects.py，不接运行时、不改账本",
+      "ownership_history": [
+        {
+          "date": "2026-10-24",
+          "from": "待拆卡",
+          "to": "claude-main",
+          "reason": "ALN-07整包归claude-main；整包next_step明示的副作用账本对账遗留项"
+        }
+      ],
+      "preparation_status": "claimed"
+    },
+    {
       "id": "ALN-13-A",
       "workpackage": "ALN-13",
       "title": "Goal十态、持久授权与任务接线",
@@ -2770,7 +2796,7 @@
       "stream": "runtime",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "07-W及07-T/07-R的f633130修复已独立接受；07-P修订不变量获部分复核、其余恢复切片待复核；运行时实际工作流/轨迹/恢复消费和副作用对账另验，整包未关闭"
+      "next_step": "07-E副作用账本对账已认领in_progress（2026-10-24）；07-W/07-T/07-R及f633130修复均已第三方接受；运行时实际工作流/轨迹/恢复消费另卡，整包未关闭"
     },
     {
       "id": "ALN-08",
