@@ -4,7 +4,7 @@
 负责人：claude-main
 审阅人：待定（负责人不得自审）
 基线 commit：`2ebd9c0`（承接 ALN-18-C）
-分支与最终 commit：`main`（本地提交，未推送）；待定
+分支与最终 commit：`main`（本地提交，未推送）；`3ea3772`（源码+测试+任务卡+本文件）
 认领状态：review
 
 ## 触发场景与行为变化
@@ -53,5 +53,5 @@
 
 ## 提交记录
 
-- 待定：`evoagent/tools/coding.py`、`tests/test_coding_tools.py`、任务卡、本交付文档同批本地提交（未推送）。
+- `3ea3772`：`evoagent/tools/coding.py`、`tests/test_coding_tools.py`、任务卡、本交付文档同批本地提交（未推送）。
 - 台账（workboard/认领表）为独立提交。

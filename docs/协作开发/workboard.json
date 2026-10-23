@@ -1745,6 +1745,34 @@
       "working_basis": "承接 ALN-18-A/B（acbd22a/48b4aba）：单文件改写升级为多文件原子提交，避免第二处失败留下半套改动；仅改 coding.py 与测试，不碰共享注册表",
       "next_step": "待独立复核（runtime 线）：原子性/回滚/dry-run 证据；后续：unified patch 输入、写盘中断事务日志、专家/App 接线、LSP、注册表级回滚",
       "delivered_commit": "2ebd9c0"
+    },
+    {
+      "id": "ALN-18-D",
+      "workpackage": "ALN-18",
+      "title": "补丁事务日志与中断恢复",
+      "stream": "runtime",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-23",
+          "scope": "coding_patch 事务日志（写盘前原子落盘、成功标记 committed 再清理、回滚失败保留）+ coding_patch_recover（pending 按摘要恢复/冲突不覆盖/committed 仅清理/dry-run/损坏日志跳过）；能力包 1.3.0（rollback 1.2.0，八工具），新增 5 项恢复专测（共 30 项）",
+          "command": "python -m pytest tests/test_coding_tools.py -q; python -m pytest tests/test_coding_tools.py tests/test_tools.py tests/test_tool_contract_fields.py -q; python -m pytest tests -q",
+          "result": "专项 30 passed；联合 43 passed；全量 1268 passed/1 skipped（176.65s，含并行会话同期测试）",
+          "log": ".planning/2026-10-22-aln18/d-targeted.txt; .planning/2026-10-22-aln18/d-full-suite.txt",
+          "delivery": "docs/协作开发/交付/ALN-18-D-事务日志与中断恢复.md",
+          "source_commit": "3ea3772"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/18-真实编程能力包-D.md",
+      "shared_files": [],
+      "working_basis": "承接 ALN-18-C（2ebd9c0）：进程内回滚无法覆盖写盘中途被杀的场景；用原子事务日志记录前后摘要与原文，新增恢复工具，仅改 coding.py/测试，不碰共享注册表",
+      "next_step": "待独立复核（runtime 线）：日志原子性/恢复/冲突保护证据；后续：unified patch 输入、日志压缩与跨平台锁、专家/App 接线、LSP、注册表级回滚",
+      "delivered_commit": "3ea3772"
     }
   ],
   "workpackages": [
@@ -2073,7 +2101,7 @@
       "stream": "assets",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "18-A/B/C 三片已交付 review（acbd22a/48b4aba/2ebd9c0）；专家接线、LSP 与包级回滚后续推进"
+      "next_step": "18-A/B/C/D 四片已交付 review（acbd22a/48b4aba/2ebd9c0/3ea3772）；专家接线、LSP 与包级回滚后续推进"
     },
     {
       "id": "ALN-19",
