@@ -26,10 +26,17 @@ for c in b["dispatches"]:
         c.update(fix_commit=e["source_commit"],fix_author="codex-runtime",fix_status="reviewer_fixed_pending_independent_review",consumer_delivery=report,
                  next_step="独立复核原05-M、7132180及05-I的owner链/去重冲突分区/清单正文引用化修复；运行时消费者已交付，仍不自批或关闭整包")
         c["evidence"].append(dict(date="2026-10-23",scope="05-I实际消费暴露的owner链、分区及Manifest正文问题修复",source_commit=e["source_commit"],result="原接口固定基点4 failed，修复后通过；作者修复待独立审阅",log=prefix+"before-fixed.txt",delivery=report))
+        if c["status"]=="accepted" and c.get("third_party_review",{}).get("followup_fix_verified")=="5847f3f":
+            c["fix_commit"]="5847f3f0766279eacdda23162be82cb19f30da9f"
+            c["fix_status"]="independently_verified_through_5847f3f"
+            c["review_note"]="原切片独立审阅及第三方修复接受范围保留；05-I新消费者接线不一并接受"
+            c["next_step"]="05-M既定切片与覆盖修复已接受；05-I绑定/权限/迁移消费者另行review，整包未关闭"
+            c["consumer_review"]=dict(card="ALN-05-I",status="review",source_commit=e["source_commit"],report=report)
+
 for package in b["workpackages"]:
     if package["id"]=="ALN-05":
         package["delivery_state"]="needs_recheck"
-        package["next_step"]="05-I已交付Task身份/主链读写及真实清单，和05-M修复同待独立审阅；Android离线缓存/失效、隐私仓储与完整租户化另验，整包未关闭"
+        package["next_step"]="05-I已交付Task身份/主链读写及真实清单，和05-M修复按第三方范围接受，05-I待独立审阅；Android离线缓存/失效、隐私仓储与完整租户化另验，整包未关闭"
 queue=b["execution_queue"]
 queue["items"]=[item for item in queue["items"] if item["id"]!="ALN-05-I"]
 queue["active_task"]=None;queue["next_task"]="ALN-11-W"
