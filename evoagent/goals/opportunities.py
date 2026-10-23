@@ -117,7 +117,9 @@ class OpportunityService:
             command_id="opportunity-" + digest(candidate_id)[:40])
         with self.goals._write():
             current = self._get(candidate_id)
-            current["registered_goal_id"] = goal["goal_id"]
+            if not current["registered_goal_id"]:
+                current["registered_goal_id"] = goal["goal_id"]
+                current["registered_assessment"] = candidate["assessment"]
             self.db._conn.execute("UPDATE goal_opportunities SET data=? WHERE candidate_id=?", (_json(current), candidate_id))
         return goal
 
@@ -125,7 +127,7 @@ class OpportunityService:
         with self.db._lock:
             candidate = self._get(candidate_id)
             result = dict(candidate_id=candidate_id, source_ref=candidate["source_ref"],
-                expected=candidate["assessment"], goal_id=candidate["registered_goal_id"],
+                expected=candidate.get("registered_assessment", candidate["assessment"]), goal_id=candidate["registered_goal_id"],
                 observed=None, production_benefit_verified=False)
             if not candidate["registered_goal_id"]:
                 return result
@@ -134,9 +136,17 @@ class OpportunityService:
             task_ids = {task.task_id for task, _ in governor._tasks(candidate["registered_goal_id"])}
             calls = [json.loads(row[0]) for row in self.db._conn.execute("SELECT data FROM budget_reservations")]
             calls = [call for call in calls if call.get("context", {}).get("task_id") in task_ids]
+            receipts_complete = True
+            for task, _ in governor._tasks(candidate["registered_goal_id"]):
+                usage = task_budget_usage(task, self.db)
+                expected_calls = usage.get("model_calls", 0) + usage.get("tool_calls", 0)
+                actual_calls = sum(call["actual"].get("model_calls", 0) + call["actual"].get("tool_calls", 0)
+                    for call in calls if call.get("context", {}).get("task_id") == task.task_id and call.get("actual") is not None)
+                if actual_calls < expected_calls:
+                    receipts_complete = False
             result["observed"] = dict(task_refs=sorted(task_ids), fulfilled_objectives=report["fulfilled"],
                 settled_cost_usd=sum(call["actual"]["cost_micros"] for call in calls if call["state"] == "settled")/1_000_000,
-                cost_complete=not any(call["state"] in {"unknown", "reserved"} for call in calls) and
+                cost_complete=receipts_complete and not report["pending"] and not any(call["state"] in {"unknown", "reserved"} for call in calls) and
                     all(item["known"] for item in report["observations"]),
                 pending_tasks=report["pending"], stop_reason=report["reason"])
             return result

@@ -110,7 +110,7 @@ class GoalGovernor:
             self.goals._version(goal, expected_revision)
             self.goals._grants(goal_id, "advance", active=False)
             self.policy(goal["no_progress_policy_ref"])
-            if self.db._conn.execute("SELECT 1 FROM goal_tasks WHERE goal_id=?", (goal_id,)).fetchone():
+            if self._tasks(goal_id):
                 raise GoalConflict("objectives must be fixed before the first task")
             control = dict(objectives=objectives, excluded_tasks=[], seen_checks=[], epoch_started_at=self.clock(),
                            actor=actor, reason=reason)

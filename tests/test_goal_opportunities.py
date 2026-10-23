@@ -503,3 +503,31 @@ def test_unregistered_policy_fails_closed_and_finalizes_without_masking_task_fai
     report = app.goal_governor.reconcile(goal["goal_id"])[0]
     assert report["reason"] == "unregistered_policy"
     assert app.goals.get(goal["goal_id"])["status"] == "paused"
+
+
+def test_objective_registration_cannot_retroactively_count_child_evidence(app):
+    root = ready(app, title="root")
+    child = ready(app, title="child", parent=root["goal_id"])
+    finish(app, child, checks=[{"spec": objective(), "passed": True}])
+    with pytest.raises(GoalConflict, match="before the first task"):
+        configure(app, root, [objective()])
+
+
+def test_registered_expectation_is_not_rewritten_after_actual_outcome(app):
+    source = ready(app)
+    candidate = app.opportunities.discover("goal", source["goal_id"], actor="system", reason="source", expires_at=time.time()+300)
+    original = assessed(app.opportunities, candidate, expected_benefit=10)
+    app.opportunities.register(candidate["candidate_id"], actor="admin")
+    assessed(app.opportunities, original, expected_benefit=100)
+    assert app.opportunities.outcome(candidate["candidate_id"])["expected"]["expected_benefit"] == 10
+
+
+def test_missing_consumption_receipts_are_not_reported_as_zero_complete_cost(app):
+    source = ready(app)
+    candidate = app.opportunities.discover("goal", source["goal_id"], actor="system", reason="source", expires_at=time.time()+500)
+    goal = app.opportunities.register(candidate["candidate_id"], actor="admin")
+    goal = app.goals.authorize(goal["goal_id"], {"tools": [], "permissions": []}, level="continuous", actor="admin",
+        reason="grant", expires_at=time.time()+300, expected_revision=goal["revision"])
+    goal = app.goals.transition(goal["goal_id"], "ready", actor="admin", reason="ready", expected_revision=goal["revision"])
+    finish(app, goal)
+    assert not app.opportunities.outcome(candidate["candidate_id"])["observed"]["cost_complete"]
