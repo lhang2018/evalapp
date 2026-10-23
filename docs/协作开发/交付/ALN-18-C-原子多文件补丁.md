@@ -4,7 +4,7 @@
 负责人：claude-main
 审阅人：待定（负责人不得自审）
 基线 commit：`48b4aba`（承接 ALN-18-B；期间并行提交 `6c90901` 不影响本卡独占模块）
-分支与最终 commit：`main`（本地提交，未推送）；待定
+分支与最终 commit：`main`（本地提交，未推送）；`2ebd9c0`（源码+测试+任务卡+本文件）
 认领状态：review
 
 ## 触发场景与行为变化
@@ -51,5 +51,5 @@
 
 ## 提交记录
 
-- 待定：`evoagent/tools/coding.py`、`tests/test_coding_tools.py`、任务卡、本交付文档同批本地提交（未推送）。
-- 台账（workboard/认领表）为独立提交。
+- `2ebd9c0`：`evoagent/tools/coding.py`、`tests/test_coding_tools.py`、任务卡、本交付文档同批本地提交（未推送）。
+- 台账（workboard/认领表）为独立提交；该提交同时携带并行会话对 ALN-15 认领状态的进行中改动，原样保留并在提交说明中注明。

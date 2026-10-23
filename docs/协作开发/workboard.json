@@ -306,6 +306,22 @@
     {
       "path": "tools/check_collaboration_plan.py",
       "stream": "integration"
+    },
+    {
+      "path": "evoagent/models/metering.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/planning/intent.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/planning/planner.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/goals/store.py",
+      "stream": "integration"
     }
   ],
   "dispatches": [
@@ -1552,7 +1568,7 @@
       "reviewer": null,
       "branch": "main",
       "base_commit": "6976662b035af5d7d114f8e6e2bc160b91dc826a",
-      "status": "claimed",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/15-预算预留运行时接线.md",
@@ -1563,10 +1579,44 @@
         "evoagent/react/engine.py",
         "evoagent/tools/registry.py",
         "evoagent/core/persistence.py",
-        "evoagent/core/schema/migrations.py"
+        "evoagent/core/schema/migrations.py",
+        "evoagent/models/metering.py",
+        "evoagent/planning/intent.py",
+        "evoagent/planning/planner.py",
+        "evoagent/evolution/runner.py",
+        "evoagent/goals/store.py",
+        "evoagent/tools/contract.py"
       ],
       "working_basis": "15-A提供内部账户服务，后续实际调用须串行接线；base_commit为已核验源码而非发布基线；本卡仅认领未开工",
-      "next_step": "下一张：权威Goal/Task/实验账户绑定，分类/规划/ReAct/工具reserve-dispatch-settle/unknown接线；开工先补完整共享调用点声明"
+      "next_step": "开发权威账户绑定与分类/规划/ReAct/工具预留；覆盖未知费用、撤销、恢复与实验并发"
+    },
+    {
+      "id": "ALN-18-C",
+      "workpackage": "ALN-18",
+      "title": "原子多文件补丁与 dry-run 预览",
+      "stream": "runtime",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-23",
+          "scope": "coding_patch 原子多文件补丁：50 条上限/单文件一条、全量预检（边界/存在/唯一命中/摘要/no-op/语法）、写后逐文件核验与全量回滚、回滚失败 side_effect_uncertain、dry-run 统一 diff；能力包 1.2.0（rollback 1.1.0，七工具），新增 8 项负向专测（共 25 项）",
+          "command": "python -m pytest tests/test_coding_tools.py -q; python -m pytest tests/test_coding_tools.py tests/test_tools.py -q; python -m pytest tests -q",
+          "result": "专项 25 passed；联合 32 passed；全量 1226 passed/1 skipped（127.05s）",
+          "log": ".planning/2026-10-22-aln18/c-targeted.txt; .planning/2026-10-22-aln18/c-full-suite-final.txt",
+          "delivery": "docs/协作开发/交付/ALN-18-C-原子多文件补丁.md",
+          "source_commit": "2ebd9c0"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/18-真实编程能力包-C.md",
+      "shared_files": [],
+      "working_basis": "承接 ALN-18-A/B（acbd22a/48b4aba）：单文件改写升级为多文件原子提交，避免第二处失败留下半套改动；仅改 coding.py 与测试，不碰共享注册表",
+      "next_step": "待独立复核（runtime 线）：原子性/回滚/dry-run 证据；后续：unified patch 输入、写盘中断事务日志、专家/App 接线、LSP、注册表级回滚",
+      "delivered_commit": "2ebd9c0"
     }
   ],
   "workpackages": [
@@ -1895,7 +1945,7 @@
       "stream": "assets",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "18-A/18-B 两片已交付 review（acbd22a + 本卡）：工具/引用/并发保护/检查测试；专家接线、LSP 与包级回滚后续推进"
+      "next_step": "18-A/B/C 三片已交付 review（acbd22a/48b4aba/2ebd9c0）；专家接线、LSP 与包级回滚后续推进"
     },
     {
       "id": "ALN-19",
@@ -1984,18 +2034,18 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "2026-10-23 ALN-15-A持久账户/预留/结算对账服务已交付review；6976662固定源码后端1218/1，线程异常升级错误重验无警告；客户端166/typecheck同tree沿用8c。下一张15-R接真实账户与模型/工具调用，之后14持续目标；现有运行时未自动消费该服务。原review/accepted、31张子卡作者及准备候选保留，基线candidate未发布。",
+  "execution_note": "2026-10-23 codex-runtime正在当前项目串行开发15-R；15-A保持review，接线共享范围已登记，其他作者/审阅与原发布基线保持。",
   "execution_queue": {
     "updated_at": "2026-10-23",
     "mode": "当前项目单开发会话串行推进",
     "owner": "codex-runtime",
     "wip_limit": 1,
-    "active_task": null,
+    "active_task": "ALN-15-R",
     "next_task": "ALN-15-R",
     "items": [
       {
         "id": "ALN-15-R",
-        "state": "下一张/已认领未开工",
+        "state": "开发中",
         "condition": "15-A服务已交付，先把实际Goal/Task/实验及分类/规划/ReAct/工具调用接入预留，再启动14持续执行"
       },
       {
