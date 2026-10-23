@@ -346,6 +346,10 @@
     {
       "path": "evoagent/evolution/experiment_budget.py",
       "stream": "integration"
+    },
+    {
+      "path": "evoagent/api/goals_api.py",
+      "stream": "integration"
     }
   ],
   "dispatches": [
@@ -1449,13 +1453,18 @@
       "reviewer": null,
       "branch": "main",
       "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
-      "status": "claimed",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/14-机会排序与无进展停止.md",
-      "shared_files": [],
+      "shared_files": [
+        "evoagent/goals/store.py",
+        "evoagent/core/runs.py",
+        "evoagent/app.py",
+        "evoagent/api/goals_api.py"
+      ],
       "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
-      "next_step": "15-R已交付运行时接口待独立复核；可消费该接口实现机会排序、无进展停止、递归限制与归因。真实收益验收仍需09/10实际候选证据",
+      "next_step": "固定版本化排序/停止/递归规则；接入Goal权威门禁、真实推进及持久复盘，覆盖未知证据和并发恢复",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1773,6 +1782,34 @@
       "working_basis": "承接 ALN-18-C（2ebd9c0）：进程内回滚无法覆盖写盘中途被杀的场景；用原子事务日志记录前后摘要与原文，新增恢复工具，仅改 coding.py/测试，不碰共享注册表",
       "next_step": "待独立复核（runtime 线）：日志原子性/恢复/冲突保护证据；后续：unified patch 输入、日志压缩与跨平台锁、专家/App 接线、LSP、注册表级回滚",
       "delivered_commit": "3ea3772"
+    },
+    {
+      "id": "ALN-18-E",
+      "workpackage": "ALN-18",
+      "title": "统一 diff 输入与原子应用",
+      "stream": "runtime",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-23",
+          "scope": "coding_patch 统一 diff（edits/diff 二选一，多文件/多 hunk/a-b 前缀，按 hunk 计数消费行，CRLF 归一化，多 hunk 合并单文件 prepared，复用预检/日志/回滚）；拒绝 /dev/null、无换行标记、空文件 diff、歧义输入；能力包 1.4.0（rollback 1.3.0，八工具），新增 7 项专测（共 37 项）",
+          "command": "python -m pytest tests/test_coding_tools.py -q; python -m pytest tests/test_coding_tools.py tests/test_tools.py tests/test_tool_contract_fields.py -q; python -m pytest tests -q",
+          "result": "专项 37 passed；联合 50 passed；全量 1313 passed/1 skipped（145.14s）；首跑 1 项 goals API 端口竞态，单跑与复跑均通过",
+          "log": ".planning/2026-10-22-aln18/e-targeted.txt; .planning/2026-10-22-aln18/e-full-suite-rerun.txt",
+          "delivery": "docs/协作开发/交付/ALN-18-E-统一diff输入.md",
+          "source_commit": "0ba45fc"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/18-真实编程能力包-E.md",
+      "shared_files": [],
+      "working_basis": "承接 ALN-18-C/D（2ebd9c0/3ea3772）：原子提交与日志恢复已有，但标准 unified diff 需手工拆分；解析后并入同一 prepared 流水线，仅改 coding.py/测试",
+      "next_step": "待独立复核（runtime 线）：diff 解析/唯一命中/原子性与日志证据；后续：hunk 行号容错、新增删除文件、LSP、专家/App 接线、注册表级回滚",
+      "delivered_commit": "0ba45fc"
     }
   ],
   "workpackages": [
@@ -2101,7 +2138,7 @@
       "stream": "assets",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "18-A/B/C/D 四片已交付 review（acbd22a/48b4aba/2ebd9c0/3ea3772）；专家接线、LSP 与包级回滚后续推进"
+      "next_step": "18-A/B/C/D/E 五片已交付 review（acbd22a/48b4aba/2ebd9c0/3ea3772/0ba45fc）；专家接线、LSP 与包级回滚后续推进"
     },
     {
       "id": "ALN-19",
@@ -2190,19 +2227,19 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "2026-10-23 codex-runtime在当前项目完成15-R并交付review；下一张14-A，串行WIP=1。保留其他作者最新独立复核和发布候选状态，不自批、不发布。",
+  "execution_note": "2026-10-23 codex-runtime在当前项目开发ALN-14-A；15-R保留review，其他作者的卡和在途修改保留，共享路径仅按登记接线。",
   "execution_queue": {
     "updated_at": "2026-10-23",
     "mode": "当前项目单开发会话串行推进",
     "owner": "codex-runtime",
     "wip_limit": 1,
-    "active_task": null,
+    "active_task": "ALN-14-A",
     "next_task": "ALN-14-A",
     "items": [
       {
         "id": "ALN-14-A",
-        "state": "排队",
-        "condition": "消费15-R已提交预算入口开发持续Goal规则、无进展停止及递归限制；独立复核与真实09/10收益证据另验"
+        "state": "开发中",
+        "condition": "消费已交付15-R实现机会排序、进展停止、递归治理与显式有界推进"
       },
       {
         "id": "ALN-05-I",
