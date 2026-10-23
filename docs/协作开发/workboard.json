@@ -1211,7 +1211,7 @@
       "title": "计划修订与已完成证据保持",
       "stream": "runtime",
       "owner": "claude-main",
-      "reviewer": null,
+      "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
       "status": "review",
@@ -1233,7 +1233,7 @@
       ],
       "working_basis": "用户要求按优先级认领未开发工作包：ALN-07 为首个未认领 P1；在当前共享候选工作区增量开发（同 ALN-06-A/08-M/11-A 方式），基线未正式发布，不用旧 HEAD 冒充 base_commit",
       "delivery": "docs/协作开发/交付/ALN-07-P-计划修订与证据保持.md",
-      "next_step": "待作者之外的独立复核；剩余 _risks_for 可执行恢复策略、修订与副作用账本 submitted/unknown 对账接线、ALN-07 工作流匹配与轨迹编译两项待拆卡"
+      "next_step": "独立复核已请求并登记（2026-10-23-ALN-07-P独立复核请求.md，审阅人 codex-runtime）；剩余 _risks_for 可执行恢复策略、修订与副作用账本 submitted/unknown 对账接线、ALN-07 工作流匹配与轨迹编译两项待拆卡"
     },
     {
       "id": "ALN-13-A",
