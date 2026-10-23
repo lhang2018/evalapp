@@ -171,3 +171,102 @@ def plan_deletion(events: Iterable[Any], *, task_id: str, actor: str,
                    "reason": reason, "deleted_count": len(ids),
                    "digest": digest,
                    "at": time.time() if now is None else now})
+
+
+# ---------------------------------------------------------------- 实际执行（ALN-16-X）
+
+class DeletionScopeError(ValueError):
+    """删除计划与执行范围不一致（digest 不匹配/越 task），fail-closed。"""
+
+
+def _file_sha256(path: str) -> str:
+    import hashlib
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def export_to_file(exporter: EvidenceExporter, events: Iterable[Any], path: str,
+                   *, actor: str, reason: str, task_id: Optional[str] = None,
+                   allowed_root: Optional[str] = None,
+                   now: Optional[float] = None) -> Dict[str, Any]:
+    """把导出报告写入文件（含审计头），文件哈希入审计；路径逃逸即拒绝。
+
+    路径约束：绝对路径或相对 ``allowed_root``（默认当前工作目录）解析后
+    必须仍落在根内——``..`` 或 symlink 逃逸均拒绝（fail-closed）。
+    """
+    import json
+    import os
+
+    report = exporter.export(events, actor=actor, reason=reason,
+                             task_id=task_id, now=now)
+    root = os.path.realpath(allowed_root) if allowed_root \
+        else os.path.realpath(os.getcwd())
+    target = os.path.realpath(os.path.join(root, path))
+    if os.path.commonpath([root, target]) != root:
+        raise ExportDenied(f"导出路径越出授权根目录: {path}")
+    parent = os.path.dirname(target)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    with open(target, "w", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(report, ensure_ascii=False, indent=1,
+                           sort_keys=True))
+    file_digest = _file_sha256(target)
+    audit = {
+        "kind": "export_download",
+        "actor": actor, "reason": reason,
+        "task_id": task_id or "",
+        "path": target, "sha256": file_digest,
+        "events_digest": report["events_digest"],
+        "count": len(report["events"]),
+        "at": report["created_at"],
+    }
+    return {"report": report, "file": target,
+            "sha256": file_digest, "audit": audit}
+
+
+def execute_deletion(deleter, plan: DeletionPlan, *, actor: str,
+                     reason: str,
+                     verify_digest: bool = True) -> Dict[str, Any]:
+    """按删除计划实际执行逐层删除（fail-closed + 幂等，ALN-16-X）。
+
+    ``deleter`` 须提供 ``delete_task(task_id) -> Dict[str, int]``
+    （``core/log_layers.py::LogLayers.delete_task`` 即满足）。
+
+    fail-closed：
+    - 计划的 digest 与 event_ids 重算不一致 → 拒绝，不删任何数据；
+    - actor/reason 缺失 → 拒绝；
+    - 范围必须仍是单一 task（scope 非空）。
+    幂等：同一计划二次执行时已删数据计数为 0，不算失败。
+    """
+    import time as _time
+    if not actor or not reason:
+        raise DeletionScopeError("执行删除必须记录 actor 与 reason")
+    if not plan.scope:
+        raise DeletionScopeError("删除计划缺少 task 范围")
+    if verify_digest:
+        digest = canonical_digest(list(plan.event_ids))
+        if digest != plan.digest:
+            raise DeletionScopeError(
+                "删除计划 digest 校验失败——计划可能被篡改，拒绝执行")
+    counts = deleter.delete_task(plan.scope) if plan.event_ids \
+        else {k: 0 for k in
+              ("runtime_event", "execution_trace", "diagnostic_evidence",
+               "diagnostics")}
+    total = sum(int(v) for v in counts.values())
+    tombstone = dict(plan.tombstone)
+    tombstone["executed_at"] = _time.time()
+    tombstone["executed_by"] = actor
+    tombstone["execute_reason"] = reason
+    tombstone["executed_counts"] = dict(counts)
+    tombstone["executed_total"] = total
+    return {
+        "ok": True,
+        "scope": plan.scope,
+        "counts": dict(counts),
+        "total": total,
+        "tombstone": tombstone,
+        "digest": plan.digest,
+    }

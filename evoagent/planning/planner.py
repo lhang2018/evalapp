@@ -28,6 +28,34 @@ INTENT_TOOL_HINTS: Dict[str, str] = {
 }
 
 
+@dataclass(frozen=True)
+class RecoveryPolicy:
+    """结构化可执行恢复策略（ALN-07-R）。
+
+    只声明「这类风险失败时建议怎么恢复」，不执行动作；运行时接线属后续。
+    ``action`` 取值：require_approval / partial_retry / checkpoint / fallback_tool。
+    """
+
+    category: str            # side_effect_requires_approval | high_cost_partial_retry | ...
+    action: str
+    applies_to_intent: str = ""
+    params: Dict[str, Any] = field(default_factory=dict)
+    rationale: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"category": self.category, "action": self.action,
+                "applies_to_intent": self.applies_to_intent,
+                "params": dict(self.params), "rationale": self.rationale}
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "RecoveryPolicy":
+        return cls(category=str(d.get("category") or ""),
+                   action=str(d.get("action") or ""),
+                   applies_to_intent=str(d.get("applies_to_intent") or ""),
+                   params=dict(d.get("params") or {}),
+                   rationale=str(d.get("rationale") or ""))
+
+
 @dataclass
 class PlanStep:
     step_id: str
@@ -86,6 +114,8 @@ class ExecutionPlan:
     # 执行模式选择（ALN-07-W）：稳定工作流 / 混合 Agent 工作流 / 动态规划
     execution_mode: str = ""
     selection_rationale: str = ""
+    # 结构化恢复策略（ALN-07-R）；旧计划无该字段按空兼容
+    recovery_policies: List[RecoveryPolicy] = field(default_factory=list)
 
     def adjust(self, new_steps: List[PlanStep], reason: str,
                *, level: str = "replace") -> List[str]:
@@ -216,6 +246,9 @@ class ExecutionPlan:
             "revisions": [dict(r) for r in self.revisions],
             "execution_mode": self.execution_mode,
             "selection_rationale": self.selection_rationale,
+            "recovery_policies": [p.to_dict() if isinstance(p, RecoveryPolicy)
+                                  else dict(p)
+                                  for p in self.recovery_policies],
         }
 
     @classmethod
@@ -237,7 +270,21 @@ class ExecutionPlan:
                        if isinstance(r, dict)],
             execution_mode=str(d.get("execution_mode") or ""),
             selection_rationale=str(d.get("selection_rationale") or ""),
+            recovery_policies=[RecoveryPolicy.from_dict(p)
+                               for p in (d.get("recovery_policies") or [])
+                               if isinstance(p, dict)],
         )
+
+    def recovery_for_failure(self, step_id: str) -> List[RecoveryPolicy]:
+        """给定失败步骤，返回适用的恢复策略（纯读，ALN-07-R）。
+
+        只有 failed（且不在 completed_work）的步骤返回策略——done 步骤
+        不返回（不得重放成功副作用），未知步骤返回空。
+        """
+        step = next((s for s in self.steps if s.step_id == step_id), None)
+        if step is None or step.state != "failed" or step_id in self.completed_work:
+            return []
+        return list(self.recovery_policies)
 
     def validate(self) -> List[str]:
         """规划验收（PRD 11.3）：完整性/依赖顺序/资源可行性/风险覆盖/终止条件。"""
@@ -342,6 +389,7 @@ class PlanningEngine:
             else [{"type": "result_nonempty"}],
             change_reasons=change_reasons,
             risks=self._risks_for(intent),
+            recovery_policies=self._recovery_policies_for(intent),
             reserved_budget_hint={"max_model_calls": 10},
             execution_mode=(selection.mode if selection else ""),
             selection_rationale=(selection.rationale if selection else ""),
@@ -406,12 +454,27 @@ class PlanningEngine:
         return base
 
     @staticmethod
-    def _risks_for(intent: str) -> List[str]:
+    def _recovery_policies_for(intent: str) -> List["RecoveryPolicy"]:
+        """已知意图的结构化恢复策略（ALN-07-R）；未知意图返回空，不隐式默认。"""
         if intent in ("note_taking", "mobile_operation"):
-            return ["涉及本地/设备副作用，需权限确认"]
+            return [RecoveryPolicy(
+                category="side_effect_requires_approval",
+                action="require_approval",
+                applies_to_intent=intent,
+                rationale="涉及本地/设备副作用，需权限确认")]
         if intent == "comic_drama":
-            return ["生成成本较高，失败需局部重试而非整体重做"]
+            return [RecoveryPolicy(
+                category="high_cost_partial_retry",
+                action="partial_retry",
+                applies_to_intent=intent,
+                rationale="生成成本较高，失败需局部重试而非整体重做")]
         return []
+
+    @staticmethod
+    def _risks_for(intent: str) -> List[str]:
+        """兼容读法：风险文案由结构化策略渲染，单一来源（ALN-07-R）。"""
+        return [p.rationale
+                for p in PlanningEngine._recovery_policies_for(intent)]
 
 
 def _estimate_cost(model, input_chars: int, output_chars: int) -> float:
