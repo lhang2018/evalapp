@@ -110,14 +110,14 @@
       "scope": "候选准备Git/日志证据有效；当前源码新增显式验收不通过，915/1仅为此前普通tests基线"
     },
     "latest_source_verification": {
-      "source_commit": "6976662b035af5d7d114f8e6e2bc160b91dc826a",
-      "source_tree": "82fd2d501824a45880056c4cbcc02f8e0b92ac69",
-      "python_passed": 1218,
+      "source_commit": "550da09d0c6796d5d42b80ac26c0bc23d73f1e85",
+      "source_tree": "899ad35a9d7c53370edcba07ad0dfce2b9c13d76",
+      "python_passed": 1263,
       "python_skipped": 1,
       "client_passed": 166,
       "typecheck": "passed",
-      "scope": "后端6976662 git archive排除在途，线程异常警告升级错误；客户端及typecheck同android-app Git tree沿用8c；未重跑真机，不替代准备候选/独立接受",
-      "evidence": "../../.planning/2026-10-23-aln15/committed-evidence.json"
+      "scope": "后端550da09 git archive排除在途，线程异常警告升级错误；客户端及typecheck同android-app Git tree沿用8c；未重跑真机，不替代准备候选/独立接受",
+      "evidence": "../../.planning/2026-10-23-aln15-runtime/committed-evidence.json"
     }
   },
   "streams": [
@@ -1449,13 +1449,13 @@
       "reviewer": null,
       "branch": "main",
       "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
-      "status": "blocked",
-      "blocker": "15-A账本服务已交付review，13目录占用已解除；持续执行仍等待15-R权威账户绑定与实际运行时预留，真实收益归因还需09/10真实候选证据",
+      "status": "claimed",
+      "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/14-机会排序与无进展停止.md",
       "shared_files": [],
       "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
-      "next_step": "规则/不变量与夹具可消费15-A契约准备；15-R真实调用接线后实现受总额度约束的持续执行与归因",
+      "next_step": "15-R已交付运行时接口待独立复核；可消费该接口实现机会排序、无进展停止、递归限制与归因。真实收益验收仍需09/10实际候选证据",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1674,9 +1674,20 @@
       "reviewer": null,
       "branch": "main",
       "base_commit": "6976662b035af5d7d114f8e6e2bc160b91dc826a",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-23",
+          "scope": "实际分类/规划/ReAct/工具、Task/Goal祖先/日池/可信实验原子预留；固定源码归档排除在途",
+          "source_commit": "550da09d0c6796d5d42b80ac26c0bc23d73f1e85",
+          "functional_commit": "cc57ef63ba15cb3fe44e25f5ed5351d0e659e8ec",
+          "source_tree": "899ad35a9d7c53370edcba07ad0dfce2b9c13d76",
+          "result": "37 new consumers; backend1263 passed/1 skipped, thread warnings as errors; client166/typecheck reused identical 8c android-app Git tree; claims/ledgers/board passed",
+          "log": ".planning/2026-10-23-aln15-runtime/committed-evidence.json",
+          "delivery": "docs/协作开发/交付/ALN-15-R-运行时预算接线.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/15-预算预留运行时接线.md",
       "shared_files": [
         "evoagent/app.py",
@@ -1703,7 +1714,9 @@
         "ROADMAP.md"
       ],
       "working_basis": "15-A提供内部账户服务，后续实际调用须串行接线；base_commit为已核验源码而非发布基线；本卡仅认领未开工",
-      "next_step": "开发权威账户绑定与分类/规划/ReAct/工具预留；覆盖未知费用、撤销、恢复与实验并发"
+      "next_step": "独立复核四入口、多根占额、未知费用与历史迁移安全拒绝；14可消费已提交接口开发规则，真实账单/设备资源与整包另验",
+      "delivered_commit": "550da09d0c6796d5d42b80ac26c0bc23d73f1e85",
+      "delivery": "docs/协作开发/交付/ALN-15-R-运行时预算接线.md"
     },
     {
       "id": "ALN-18-C",
@@ -1978,7 +1991,7 @@
       "stream": "runtime",
       "owner": "codex-runtime",
       "delivery_state": "planned",
-      "next_step": "规则/不变量与夹具可消费15-A契约准备；15-R真实调用接线后实现受总额度约束的持续执行与归因",
+      "next_step": "15-R已交付运行时接口待独立复核；可消费该接口实现机会排序、无进展停止、递归限制与归因。真实收益验收仍需09/10实际候选证据",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -2000,7 +2013,7 @@
       "stream": "runtime",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "15-A已独立验收通过（claude-main探针43/43、联合141、固定源码1218/1，无阻断项）；下一张15-R接权威账户与实际模型/工具调用，APRO设备调度和真实账单仍待做；整包不关闭",
+      "next_step": "15-A原提交已独立接受；15-R四消费链及聚合账户接线交付review，固定550da09后端1263/1。真实账单、旧Goal批量迁移、provider/expert原子化、设备资源调度与整包另验",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -2149,24 +2162,19 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "2026-10-23 codex-runtime正在当前项目串行开发15-R；15-A保持review，接线共享范围已登记，其他作者/审阅与原发布基线保持。",
+  "execution_note": "2026-10-23 codex-runtime在当前项目完成15-R并交付review；下一张14-A，串行WIP=1。保留其他作者最新独立复核和发布候选状态，不自批、不发布。",
   "execution_queue": {
     "updated_at": "2026-10-23",
     "mode": "当前项目单开发会话串行推进",
     "owner": "codex-runtime",
     "wip_limit": 1,
-    "active_task": "ALN-15-R",
-    "next_task": "ALN-15-R",
+    "active_task": null,
+    "next_task": "ALN-14-A",
     "items": [
       {
-        "id": "ALN-15-R",
-        "state": "开发中",
-        "condition": "15-A服务已交付，先把实际Goal/Task/实验及分类/规划/ReAct/工具调用接入预留，再启动14持续执行"
-      },
-      {
         "id": "ALN-14-A",
-        "state": "依赖阻塞",
-        "condition": "15-A服务已有；持续执行等待15-R真实运行时预留，规则夹具可先准备，真实收益验收仍需09/10"
+        "state": "排队",
+        "condition": "消费15-R已提交预算入口开发持续Goal规则、无进展停止及递归限制；独立复核与真实09/10收益证据另验"
       },
       {
         "id": "ALN-05-I",

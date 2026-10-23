@@ -1,0 +1,26 @@
+{
+  "source_commit": "550da09d0c6796d5d42b80ac26c0bc23d73f1e85",
+  "python": "3.10.11",
+  "scope": "local single-process one account, warm cache, sequential settled history; no production concurrency/SLO claim",
+  "samples": [
+    {
+      "history": 10,
+      "reads": 50,
+      "median_ms": 0.08564999734517187,
+      "p95_ms": 0.10550001752562821
+    },
+    {
+      "history": 100,
+      "reads": 50,
+      "median_ms": 0.5630000086966902,
+      "p95_ms": 0.6890000076964498
+    },
+    {
+      "history": 1000,
+      "reads": 50,
+      "median_ms": 11.999399997876026,
+      "p95_ms": 14.426700014155358
+    }
+  ],
+  "elapsed_seconds": 16.780479500012007
+}
