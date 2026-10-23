@@ -1213,13 +1213,13 @@
         "evoagent/core/persistence.py"
       ],
       "preparation_status": "delivered",
-      "next_step": "独立复核原05-M、7132180及05-I的owner链/去重冲突分区/清单正文引用化修复；运行时消费者已交付，仍不自批或关闭整包",
+      "next_step": "05-M既定切片及已覆盖修复获第三方接受；05-I身份绑定/访问边界/迁移接线仍独立review，端侧缓存与隐私仓储另验，整包不关闭",
       "review_result": "accepted",
       "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
-      "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
-      "fix_status": "reviewer_fixed_pending_independent_review",
+      "review_note": "原切片由codex-runtime独立审核；审阅人所写修复由claude-main第三方复核，限定其报告覆盖范围（至5847f3f），不把05-I新消费者接线一并接受",
+      "fix_status": "independently_verified_through_5847f3f",
       "fix_author": "codex-runtime",
-      "fix_commit": "05a7cf43f599a25c6add290063e19f16ae942c49",
+      "fix_commit": "5847f3f0766279eacdda23162be82cb19f30da9f",
       "peer_findings": [
         "PR-04"
       ],
@@ -1240,7 +1240,13 @@
         "5847f3f0766279eacdda23162be82cb19f30da9f",
         "05a7cf43f599a25c6add290063e19f16ae942c49"
       ],
-      "consumer_delivery": "docs/协作开发/交付/ALN-05-I-记忆身份与清单运行时接线.md"
+      "consumer_delivery": "docs/协作开发/交付/ALN-05-I-记忆身份与清单运行时接线.md",
+      "consumer_review": {
+        "card": "ALN-05-I",
+        "status": "review",
+        "source_commit": "05a7cf43f599a25c6add290063e19f16ae942c49",
+        "report": "docs/协作开发/交付/ALN-05-I-记忆身份与清单运行时接线.md"
+      }
     },
     {
       "id": "ALN-01-A",
@@ -2463,7 +2469,7 @@
       "stream": "models",
       "owner": "codex-runtime",
       "delivery_state": "needs_recheck",
-      "next_step": "05-I已交付Task身份/主链读写及真实清单，和05-M修复同待独立审阅；Android离线缓存/失效、隐私仓储与完整租户化另验，整包未关闭",
+      "next_step": "05-M既定切片及覆盖修复已由第三方接受；05-I受信Task身份/主链读写/持久清单review，Android缓存/隐私仓储与完整租户化另验，整包未关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",

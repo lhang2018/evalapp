@@ -240,7 +240,7 @@ M 记忆上下文（10）：
 
 | 主题 | 状态 | 说明 |
 |---|---|---|
-| M-01..05 用户/项目/领域/会话/工作记忆 | 🔹 | ALN-05-I已接Task持久绑定、服务主体白名单及真实ReAct读写/恢复；`MemoryStore.search`（`evoagent/memory/store.py::search`）补owner链、去重及冲突分区，保留专家蜂巢。05-M/05-I和修复待独立复核，完整IAM与端侧缓存另验 |
+| M-01..05 用户/项目/领域/会话/工作记忆 | 🔹 | ALN-05-I已接Task持久绑定、服务主体白名单及真实ReAct读写/恢复；`MemoryStore.search`（`evoagent/memory/store.py::search`）补owner链、去重及冲突分区，保留专家蜂巢。05-M既定范围获第三方接受，05-I新接线待独立复核；完整IAM与端侧缓存另验 |
 | M-06 压缩与预算管理 | 🔹 | 共享压缩引擎+预算 ✅（硬约束保留有测试）；但保留是"结构化字段本来就不裁剪"的被动结果，非主动保全逻辑；领域压缩策略未分域 |
 | M-07 ContextManifest 来源追踪 | 🔹 | `ContextManifest`（`evoagent/memory/manifest.py::ContextManifest`）已由05-I实际装配并按task/run持久化引用、摘要与压缩前后信息；正文不入清单。独立审阅、端侧失效与隐私删除仍待验收 |
 | M-08 记忆冲突与事实更新 | ⬜ | **无冲突识别**。`evoagent/memory/store.py:148` 的 `write` 只做精确去重；`link` **生产代码零调用点**（`evoagent/memory/store.py::link`）（仅 `tests/test_memory_router_diag.py:48` 以 `refines` 调用一次）—— 它本可建立 `contradicts` 关系；无置信合并、无用户确认流 |
