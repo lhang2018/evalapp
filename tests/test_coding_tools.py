@@ -567,6 +567,166 @@ class TestCodingTools(unittest.TestCase):
         self.assertEqual(len(journals), 1)
         self.assertEqual(first.read_text(encoding="utf-8"), "x = 1\n")
 
+    # ---- 统一 diff 输入 ----
+
+    def test_patch_diff_multi_file_applies(self):
+        root = self._project()
+        (root / "a.py").write_text("x = 1\n", encoding="utf-8")
+        (root / "b.txt").write_text("hello\n", encoding="utf-8")
+        diff = (
+            "--- a/a.py\n"
+            "+++ b/a.py\n"
+            "@@ -1 +1 @@\n"
+            "-x = 1\n"
+            "+x = 2\n"
+            "--- a/b.txt\n"
+            "+++ b/b.txt\n"
+            "@@ -1 +1 @@\n"
+            "-hello\n"
+            "+world\n"
+        )
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff})
+
+        self.assertTrue(result.ok)
+        self.assertTrue(result.goal_reached)
+        self.assertEqual(result.data["applied"], ["a.py", "b.txt"])
+        self.assertEqual((root / "a.py").read_text(encoding="utf-8"), "x = 2\n")
+        self.assertEqual((root / "b.txt").read_text(encoding="utf-8"),
+                         "world\n")
+        for item in result.data["files"]:
+            self.assertEqual(len(item["sha256_before"]), 64)
+            self.assertEqual(item["line"], 1)
+        self.assertFalse((root / ".evoagent_patch_journal").exists())
+
+    def test_patch_diff_multiple_hunks_same_file(self):
+        root = self._project()
+        path = root / "a.py"
+        path.write_text("one = 1\nmid\nthree = 3\n", encoding="utf-8")
+        diff = (
+            "--- a/a.py\n"
+            "+++ b/a.py\n"
+            "@@ -1 +1 @@\n"
+            "-one = 1\n"
+            "+one = 10\n"
+            "@@ -3 +3 @@\n"
+            "-three = 3\n"
+            "+three = 30\n"
+        )
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff})
+
+        self.assertTrue(result.ok)
+        self.assertEqual(result.data["applied"], ["a.py"])
+        self.assertEqual(path.read_text(encoding="utf-8"),
+                         "one = 10\nmid\nthree = 30\n")
+
+    def test_patch_diff_context_mismatch_aborts_all(self):
+        root = self._project()
+        first = root / "a.py"
+        second = root / "b.py"
+        first.write_text("x = 1\n", encoding="utf-8")
+        second.write_text("y = 2\n", encoding="utf-8")
+        diff = (
+            "--- a/a.py\n"
+            "+++ b/a.py\n"
+            "@@ -1 +1 @@\n"
+            "-x = 1\n"
+            "+x = 2\n"
+            "--- a/b.py\n"
+            "+++ b/b.py\n"
+            "@@ -1 +1 @@\n"
+            "-absent\n"
+            "+y = 3\n"
+        )
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff})
+
+        self.assertFalse(result.ok)
+        self.assertIn("hunk", result.error)
+        self.assertEqual(first.read_text(encoding="utf-8"), "x = 1\n")
+        self.assertEqual(second.read_text(encoding="utf-8"), "y = 2\n")
+        self.assertFalse((root / ".evoagent_patch_journal").exists())
+
+    def test_patch_diff_rejects_malformed_inputs(self):
+        root = self._project()
+        path = root / "a.py"
+        path.write_text("x = 1\n", encoding="utf-8")
+        _, run = coding_patch_tool(str(root))
+
+        both = run({"edits": [{"path": "a.py", "old_text": "x = 1",
+                               "new_text": "x = 2"}],
+                    "diff": "--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n-x = 1\n+x = 2\n"})
+        self.assertFalse(both.ok)
+        self.assertIn("二选一", both.error)
+
+        neither = run({})
+        self.assertFalse(neither.ok)
+
+        devnull = run({"diff": "--- /dev/null\n+++ b/a.py\n@@ -0,0 +1 @@\n+x = 1\n"})
+        self.assertFalse(devnull.ok)
+        self.assertIn("/dev/null", devnull.error)
+
+        marker = run({"diff": "--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n-x = 1\n"
+                              "\\ No newline at end of file\n+x = 2\n"})
+        self.assertFalse(marker.ok)
+        self.assertIn("No newline", marker.error)
+
+        bad_header = run({"diff": "--- a/a.py\n+++ b/a.py\n@@ bad @@\n-x\n+y\n"})
+        self.assertFalse(bad_header.ok)
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 1\n")
+
+    def test_patch_diff_removed_line_resembling_header(self):
+        root = self._project()
+        path = root / "notes.txt"
+        path.write_text("-- note\nvalue = 1\n", encoding="utf-8")
+        diff = (
+            "--- a/notes.txt\n"
+            "+++ b/notes.txt\n"
+            "@@ -1,2 +1,2 @@\n"
+            "--- note\n"
+            "+// note\n"
+            " value = 1\n"
+        )
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff})
+
+        self.assertTrue(result.ok)
+        self.assertEqual(path.read_text(encoding="utf-8"),
+                         "// note\nvalue = 1\n")
+
+    def test_patch_diff_crlf_input_normalized(self):
+        root = self._project()
+        path = root / "a.py"
+        path.write_text("x = 1\n", encoding="utf-8")
+        diff = ("--- a/a.py\r\n+++ b/a.py\r\n@@ -1 +1 @@\r\n"
+                "-x = 1\r\n+x = 2\r\n")
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff})
+
+        self.assertTrue(result.ok)
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 2\n")
+
+    def test_patch_diff_dry_run_previews(self):
+        root = self._project()
+        path = root / "a.py"
+        path.write_text("x = 1\n", encoding="utf-8")
+        diff = ("--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n-x = 1\n+x = 2\n")
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff, "dry_run": True})
+
+        self.assertTrue(result.ok)
+        self.assertTrue(result.data["dry_run"])
+        self.assertIn("-x = 1", result.data["files"][0]["diff"])
+        self.assertIn("+x = 2", result.data["files"][0]["diff"])
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 1\n")
+
     # ---- 事务日志与中断恢复 ----
 
     def _plant_journal(self, root, files, status="pending",
@@ -704,8 +864,8 @@ class TestCodingTools(unittest.TestCase):
         manifest = install_coding_pack(registry, str(root))
 
         self.assertEqual(manifest.pack_id, "coding_pack")
-        self.assertEqual(manifest.version, "1.3.0")
-        self.assertEqual(manifest.rollback_version, "1.2.0")
+        self.assertEqual(manifest.version, "1.4.0")
+        self.assertEqual(manifest.rollback_version, "1.3.0")
         self.assertEqual(len(manifest.tool_ids), 8)
         self.assertIn("coding_patch", manifest.tool_ids)
         self.assertIn("coding_patch_recover", manifest.tool_ids)

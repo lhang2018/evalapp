@@ -27,8 +27,8 @@ from typing import Callable, Dict, List, Optional, Tuple
 from .contract import ToolContract, ToolResult, class_error
 
 _PACK_ID = "coding_pack"
-_PACK_VERSION = "1.3.0"
-_ROLLBACK_VERSION = "1.2.0"
+_PACK_VERSION = "1.4.0"
+_ROLLBACK_VERSION = "1.3.0"
 _CONTRACT_TEST_REF = "tests/test_coding_tools.py"
 _JOURNAL_DIR = ".evoagent_patch_journal"
 _SKIP_DIRS = {
@@ -680,20 +680,178 @@ def _recover_journals(rootp: Path, dry_run: bool):
     return report, restored, conflicts, errors, uncertain
 
 
+_HUNK_HEADER = re.compile(
+    r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
+_HUNK_LIMIT = 50
+
+
+def _parse_unified_diff(text: str):
+    lines = text.replace("\r\n", "\n").replace("\r", "\n") \
+        .splitlines(keepends=True)
+    files: List[Dict[str, object]] = []
+    index = 0
+    total = len(lines)
+    while index < total:
+        head = lines[index]
+        if not head.strip():
+            index += 1
+            continue
+        if not head.startswith("--- "):
+            return None, f"第 {index + 1} 行不是文件头: {head.rstrip()}"
+        if index + 1 >= total or not lines[index + 1].startswith("+++ "):
+            return None, f"第 {index + 1} 行缺少 +++ 文件头"
+        old_name = head[4:].split("\t")[0].strip()
+        new_name = lines[index + 1][4:].split("\t")[0].strip()
+        if "/dev/null" in (old_name, new_name):
+            return None, "不支持新增/删除文件的 diff（/dev/null）"
+        if old_name.startswith("a/"):
+            old_name = old_name[2:]
+        if new_name.startswith("b/"):
+            new_name = new_name[2:]
+        if old_name and new_name and old_name != new_name:
+            return None, f"文件头不一致: {old_name} -> {new_name}"
+        rel = new_name or old_name
+        index += 2
+        hunks: List[Dict[str, object]] = []
+        while index < total and lines[index].startswith("@@"):
+            match = _HUNK_HEADER.match(lines[index].rstrip("\r\n"))
+            if not match:
+                return None, f"第 {index + 1} 行 hunk 头非法: " \
+                             f"{lines[index].rstrip()}"
+            start_line = int(match.group(3) or 1)
+            old_left = int(match.group(2)) if match.group(2) is not None \
+                else 1
+            new_left = int(match.group(4)) if match.group(4) is not None \
+                else 1
+            index += 1
+            old_block: List[str] = []
+            new_block: List[str] = []
+            # 按 hunk 计数消费，避免把以 "--- " 开头的删除行误判为文件头
+            while index < total and (old_left > 0 or new_left > 0):
+                body = lines[index]
+                if body.startswith("\\"):
+                    return None, "不支持 \\ No newline at end of file 标记"
+                if body.startswith("+"):
+                    if new_left <= 0:
+                        return None, f"第 {index + 1} 行新增行超出 hunk 计数"
+                    new_block.append(body[1:])
+                    new_left -= 1
+                elif body.startswith("-"):
+                    if old_left <= 0:
+                        return None, f"第 {index + 1} 行删除行超出 hunk 计数"
+                    old_block.append(body[1:])
+                    old_left -= 1
+                elif body.startswith(" "):
+                    if old_left <= 0 or new_left <= 0:
+                        return None, f"第 {index + 1} 行上下文超出 hunk 计数"
+                    old_block.append(body[1:])
+                    new_block.append(body[1:])
+                    old_left -= 1
+                    new_left -= 1
+                elif not body.strip():
+                    if old_left <= 0 or new_left <= 0:
+                        return None, f"第 {index + 1} 行空行超出 hunk 计数"
+                    old_block.append(body)
+                    new_block.append(body)
+                    old_left -= 1
+                    new_left -= 1
+                else:
+                    return None, f"第 {index + 1} 行不是合法 diff 行: " \
+                                 f"{body.rstrip()}"
+                index += 1
+            if old_left > 0 or new_left > 0:
+                return None, f"{rel}: hunk 行数不足"
+            if not old_block and not new_block:
+                return None, f"{rel}: 第 {start_line} 行 hunk 为空"
+            hunks.append({"start": start_line,
+                          "old": "".join(old_block),
+                          "new": "".join(new_block)})
+        if not hunks:
+            return None, f"{rel}: 缺少 hunk"
+        files.append({"path": rel, "hunks": hunks})
+    if not files:
+        return None, "diff 为空"
+    return files, None
+
+
 def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
     def run(args: Dict) -> ToolResult:
         edits = args.get("edits")
+        diff_text = args.get("diff")
         dry_run = bool(args.get("dry_run"))
-        if not isinstance(edits, list) or not edits:
-            return ToolResult.error_result("edits 必须是非空数组",
-                                           "invalid_arguments")
-        if len(edits) > 50:
-            return ToolResult.error_result("单次最多 50 条编辑",
-                                           "invalid_arguments")
+        if (edits is None) == (diff_text is None):
+            return ToolResult.error_result(
+                "edits 与 diff 必须二选一", "invalid_arguments")
+        if edits is not None:
+            if not isinstance(edits, list) or not edits:
+                return ToolResult.error_result("edits 必须是非空数组",
+                                               "invalid_arguments")
+            if len(edits) > 50:
+                return ToolResult.error_result("单次最多 50 条编辑",
+                                               "invalid_arguments")
+        else:
+            if not isinstance(diff_text, str) or not diff_text.strip():
+                return ToolResult.error_result("diff 必须是非空字符串",
+                                               "invalid_arguments")
+            if len(diff_text) > _MAX_SOURCE_BYTES:
+                return ToolResult.error_result("diff 过大",
+                                               "invalid_arguments")
         try:
             rootp = _resolve_root(root)
         except ValueError as exc:
             return ToolResult.error_result(str(exc), "auth_or_permission")
+
+        if diff_text is not None:
+            parsed, parse_error = _parse_unified_diff(diff_text)
+            if parse_error:
+                return ToolResult.error_result(parse_error,
+                                               "invalid_arguments")
+            if len(parsed) > _HUNK_LIMIT:
+                return ToolResult.error_result("单次最多 50 个文件",
+                                               "invalid_arguments")
+            converted = []
+            for entry in parsed:
+                rel = str(entry["path"])
+                try:
+                    path = _resolve_within(rootp, rel)
+                except ValueError as exc:
+                    return ToolResult.error_result(str(exc),
+                                                   "auth_or_permission")
+                if not path.is_file():
+                    return ToolResult.error_result(
+                        f"文件不存在: {rel}", "invalid_arguments")
+                if path.stat().st_size > _MAX_SOURCE_BYTES:
+                    return ToolResult.error_result(
+                        f"文件过大: {rel}", "invalid_arguments")
+                try:
+                    original = path.read_text(encoding="utf-8")
+                except (OSError, UnicodeDecodeError) as exc:
+                    return ToolResult.error_result(str(exc), class_error(exc))
+                if not original:
+                    return ToolResult.error_result(
+                        f"{rel}: 空文件暂不支持 diff，请使用 edits",
+                        "invalid_arguments")
+                content = original
+                line_hint = None
+                for hidx, hunk in enumerate(entry["hunks"], 1):
+                    old_block = str(hunk["old"])
+                    new_block = str(hunk["new"])
+                    if not old_block:
+                        return ToolResult.error_result(
+                            f"{rel}: 第 {hidx} 个 hunk 缺少上下文/删除行",
+                            "invalid_arguments")
+                    hits = content.count(old_block)
+                    if hits != 1:
+                        return ToolResult.error_result(
+                            f"{rel}: 第 {hidx} 个 hunk 命中 {hits} 处，"
+                            f"要求唯一，未写盘", "invalid_arguments")
+                    if line_hint is None:
+                        line_hint = original.count(
+                            "\n", 0, original.find(old_block)) + 1
+                    content = content.replace(old_block, new_block, 1)
+                converted.append({"path": rel, "old_text": original,
+                                  "new_text": content, "_line": line_hint})
+            edits = converted
 
         prepared: List[Dict[str, object]] = []
         seen = set()
@@ -768,6 +926,10 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
                         goal_reached=False, independently_verified=True,
                         evidence={"written": [], "path": rel,
                                   "syntax_error": syntax_error})
+            line_hint = item.get("_line")
+            if not isinstance(line_hint, int) or line_hint < 1:
+                line_hint = original.count(
+                    "\n", 0, original.index(old_text)) + 1
             prepared.append({
                 "path": path,
                 "rel": rel,
@@ -776,7 +938,7 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
                 "sha256_before": digest_before,
                 "sha256_after": hashlib.sha256(
                     content.encode("utf-8")).hexdigest(),
-                "line": original.count("\n", 0, original.index(old_text)) + 1,
+                "line": line_hint,
             })
 
         if dry_run:
@@ -878,11 +1040,12 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
 
     contract = ToolContract(
         tool_id="coding_patch",
-        description="原子多文件补丁：全量预检、失败全量回滚、dry-run 预览",
+        description="原子多文件补丁：edits 或统一 diff，全量预检、失败全量回滚、dry-run 预览",
         tool_version=_PACK_VERSION,
         permission_requirements=["fs.read", "fs.write"],
-        input_schema={"type": "object", "required": ["edits"], "properties": {
+        input_schema={"type": "object", "properties": {
             "edits": {"type": "array"},
+            "diff": {"type": "string"},
             "dry_run": {"type": "boolean"},
         }},
         side_effect_level="local",
