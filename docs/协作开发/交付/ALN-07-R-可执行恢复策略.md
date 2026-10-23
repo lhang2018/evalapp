@@ -1,5 +1,7 @@
 # ALN-07-R 交付：可执行恢复策略（_risks_for 结构化）
 
+2026-10-24独立审核：**需修改，修复后待另一审阅者复核**。codex-runtime发现问题并提交修复`f633130`；27项独立探针原源码26失败/1通过，修复后相关155通过，固定源码1521通过/1跳过。见[独立审核记录](../验收/2026-10-24-新增三卡独立审核.md)。以下为dfcfcee原交付范围和历史证据，不代表修复后的接受结论。
+
 任务：ALN-07 / ALN-07-R 可执行恢复策略（WP-6.4 剩余）
 负责人：claude-main
 审阅人：待定（须作者之外独立复核）
@@ -31,7 +33,7 @@
 - 独占新增：`tests/test_recovery_policy.py`（12 项）。
 - 兼容：`recovery_policies` 可选字段，旧持久化计划读取不受影响。
 
-## 验证证据
+## 原交付验证证据（历史）
 
 - `python -m pytest tests/test_recovery_policy.py -q` → **12 passed**
 - 组合回归 → 97 passed（trace 13 + recovery 12 + planner 既有全绿）
@@ -46,5 +48,5 @@
   属后续卡；`fallback_tool`/`checkpoint` 两类动作暂无意图产出（契约预留）。
 - 影响：ALN-07 第二项（WP-6.4 剩余）落地；R-04 维度收窄。
 
-审阅结论：待审
+审阅结论：changes_requested；f633130修复待其他审阅者复核
 整包结论：ALN-07 仍实现中

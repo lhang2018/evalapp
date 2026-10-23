@@ -1,0 +1,11 @@
+{
+  "source_commit": "f633130b8968079654405461fc6df379267e3917",
+  "source_tree": "a4cbcaa3fc8215811e4be1280e5a667fbc70ff37",
+  "results": [
+    {
+      "log": ".planning\\2026-10-24-code-review\\related-final.txt",
+      "sha256": "e81e19767e3adefb6fb203cf5676deb1e79401781d5c2c8e21ed0d7d0e493345",
+      "result": "155 passed; original author test files unchanged"
+    }
+  ]
+}

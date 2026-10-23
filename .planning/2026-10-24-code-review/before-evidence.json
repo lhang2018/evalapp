@@ -1,0 +1,16 @@
+{
+  "source_commit": "3796f7ae072dab45b6fd8062ef4df18c511d7ced",
+  "injected_probe": "tests/test_peer_trace_export_review.py",
+  "probe_sha256": "b54ba921cbd0fa2a142d1d8eca5b0109d27eabeefff6b0335cb8087ff442ed1f",
+  "command": [
+    "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+    "-m",
+    "pytest",
+    "tests/test_peer_trace_export_review.py",
+    "-q",
+    "--tb=short"
+  ],
+  "exit_code": 1,
+  "log": ".planning\\2026-10-24-code-review\\before-committed.txt",
+  "sha256": "e5d9625e4944a1de447c5e11f4c0926bec3ef7253c0bca3ac3550380ef705197"
+}

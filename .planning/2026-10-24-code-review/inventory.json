@@ -1,0 +1,364 @@
+{
+  "source_commit": "f633130b8968079654405461fc6df379267e3917",
+  "counts": {
+    "blocked": 1,
+    "accepted": 24,
+    "review": 10,
+    "claimed": 4
+  },
+  "cards": [
+    {
+      "id": "ALN-00-B",
+      "status": "blocked",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "review_result": null,
+      "fix_status": null,
+      "next_step": "候选和交接整理可继续；独立接受前不修改published_commit，旧prepared_candidate保留历史证据"
+    },
+    {
+      "id": "ALN-04-R",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "review_result": "accepted",
+      "fix_status": null,
+      "next_step": "合入共同基线；整包 ALN-04 的运行时/Android 组合验收另计"
+    },
+    {
+      "id": "ALN-06-A",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "accepted",
+      "fix_status": "independently_verified_scoped_slice",
+      "next_step": "既定资产基础切片已接受；运行时精确选择/消费、Android安装/退役另验"
+    },
+    {
+      "id": "ALN-08-M",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "accepted",
+      "fix_status": "fix_verified_by_third_party",
+      "next_step": "claude-main 第三方复核通过（PR-05切片）；生产模型评测集、未知成本折算等原整包缺口另验，整包ALN-08不关闭"
+    },
+    {
+      "id": "ALN-04-UI",
+      "status": "review",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "review_result": "unit_accepted_device_pending",
+      "fix_status": null,
+      "next_step": "真机补批准、拒绝、断网和过期四路径；通过后再转 accepted"
+    },
+    {
+      "id": "ALN-10-Q",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "review_result": "accepted",
+      "fix_status": null,
+      "next_step": "真实候选/隔离夹具宿主与 ALN-05/07/09 前置整合；补真实上线观察数据"
+    },
+    {
+      "id": "ALN-10-R",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "review_result": "accepted",
+      "fix_status": null,
+      "next_step": "真实候选隔离执行宿主、精确候选制品应用/装载、可信身份和跨进程发布仲裁仍待整合"
+    },
+    {
+      "id": "ALN-00-V",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "review_result": "accepted",
+      "fix_status": null,
+      "next_step": "集成人据精确准备提交完成正式基线发布；另需处理并行验收提出的 CA-08-01/CA-06-01/CA-08-02"
+    },
+    {
+      "id": "ALN-08-R",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "review_result": "accepted",
+      "fix_status": null,
+      "next_step": "整包 ALN-08 的工作流/执行模式路由入口与生产评测集/价格账单另计"
+    },
+    {
+      "id": "ALN-10-H",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "opencode-evo",
+      "review_result": "accepted",
+      "fix_status": null,
+      "next_step": "复核通过（8218ed0）。ALN-10 整包保持按父卡跟踪：真实价格/账单、生产评测集、真实上线观察数据仍待真实环境"
+    },
+    {
+      "id": "ALN-09-F",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "opencode-evo",
+      "review_result": "accepted",
+      "fix_status": null,
+      "next_step": "复核通过（5b0cc08）。ALN-09 整包保持未关闭：真实候选隔离宿主、持久问题队列、多进程租约仍按整包前置实施（ALN-00 基线后）"
+    },
+    {
+      "id": "ALN-03-S",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "accepted",
+      "fix_status": "fix_verified_by_third_party",
+      "next_step": "claude-main 第三方复核通过（PR-06切片）；端侧公钥验签部署、生产信任根与真实环境验收另验，整包ALN-03不关闭"
+    },
+    {
+      "id": "ALN-05-M",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "accepted",
+      "fix_status": "independently_verified_through_5847f3f",
+      "next_step": "05-M既定切片及已覆盖修复获第三方接受；05-I身份绑定/访问边界/迁移接线仍独立review，端侧缓存与隐私仓储另验，整包不关闭"
+    },
+    {
+      "id": "ALN-01-A",
+      "status": "review",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "review_result": "pending",
+      "fix_status": null,
+      "next_step": "独立复核精确22c50ca及关闭标准；通过后由集成人关闭父包/推进共同基线，不能作者自批"
+    },
+    {
+      "id": "ALN-02-A",
+      "status": "review",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "review_result": "pending",
+      "fix_status": null,
+      "next_step": "独立复核精确22c50ca及关闭标准；通过后由集成人关闭父包/推进共同基线，不能作者自批"
+    },
+    {
+      "id": "ALN-11-A",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "accepted",
+      "fix_status": "independently_verified_scoped_slice",
+      "next_step": "既定切片已接受，11-R独立接受保持；补真机故障回滚、自动健康探针、执行器消费活动workflow"
+    },
+    {
+      "id": "ALN-16-A",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "accepted",
+      "fix_status": "independently_verified_scoped_slice",
+      "next_step": "既定契约切片已接受，16-R独立接受保持；端侧EvidenceEvent、实际仓储装配及导出删除另验"
+    },
+    {
+      "id": "ALN-11-R",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "review_result": "accepted",
+      "fix_status": null,
+      "next_step": "claude-main 第三方复核通过：CR11-01..08 修复经前后对照确认（修复前13项失败+1套件加载失败→修复后全绿）；真机失败回滚/弱网断电/多设备灰度与生产信任根分发仍未完成，整包ALN-11不关闭"
+    },
+    {
+      "id": "ALN-16-R",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "review_result": "accepted",
+      "fix_status": null,
+      "next_step": "claude-main 第三方复核通过：CR16-01..06 修复逐条确认（修复前探针12项失败→修复后14/14）；Android事件接线、决策链自动装配、实际导出下载与存储删除、生产密钥托管仍未完成，整包ALN-16不关闭；运行时接线前必须排查 restricted 且带未脱敏载荷的历史 RunEvent 路径（from_run_event 收紧校验后会从静默通过变为显式报错）"
+    },
+    {
+      "id": "ALN-07-P",
+      "status": "review",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "changes_requested",
+      "fix_status": "partial_fix_verified_by_third_party",
+      "next_step": "claude-main 已复核修复的 planner.py 修订不变量切片（探针P5/P6前后对照通过）；PR-01 其余切片（engine/恢复路径等）仍待复核，整卡保持review"
+    },
+    {
+      "id": "ALN-07-W",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "accepted",
+      "fix_status": "fix_verified_by_third_party",
+      "next_step": "claude-main 第三方复核通过（前后对照+8根独立探针）：修复人=审阅人问题闭环；真实运行时自动接线匹配层与生产评测集仍为后续范围，整包ALN-07不关闭"
+    },
+    {
+      "id": "ALN-07-T",
+      "status": "review",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "changes_requested",
+      "fix_status": "repaired_pending_independent_review",
+      "next_step": "独立复核f633130、27项探针的修复前后判别力与真实SQLite路径；运行时/API/真实环境消费仍按父包另验"
+    },
+    {
+      "id": "ALN-07-R",
+      "status": "review",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "changes_requested",
+      "fix_status": "repaired_pending_independent_review",
+      "next_step": "独立复核f633130、27项探针的修复前后判别力与真实SQLite路径；运行时/API/真实环境消费仍按父包另验"
+    },
+    {
+      "id": "ALN-16-X",
+      "status": "review",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "changes_requested",
+      "fix_status": "repaired_pending_independent_review",
+      "next_step": "独立复核f633130、27项探针的修复前后判别力与真实SQLite路径；运行时/API/真实环境消费仍按父包另验"
+    },
+    {
+      "id": "ALN-13-A",
+      "status": "review",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "review_result": "pending",
+      "fix_status": null,
+      "next_step": "独立复核c885cbd的53项Goal回归与1162/1提交源码全量；ALN-14/15消费Goal/授权/预算引用，不自批、不发布共同基线"
+    },
+    {
+      "id": "ALN-12-A",
+      "status": "claimed",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "review_result": null,
+      "fix_status": null,
+      "next_step": "排队：设备动作提议/回执契约、task/run/effect引用与离线故障矩阵；既有未提交通知/后台修改先核对依赖再独立处理，不覆盖"
+    },
+    {
+      "id": "ALN-14-A",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "review_result": "accepted",
+      "fix_status": null,
+      "next_step": "claude-main 独立复核通过（三时点对照7探针：cabf7752为0/7缺口证明、948b433与6837129均7/7；专项95、联合116、固定全量1317/1与声明一致；API写入口403断言真实锁定）；生产候选收益(09/10)、周期守护、前端与生产规模负载仍按交付保留范围另验，整包ALN-14不关闭"
+    },
+    {
+      "id": "ALN-15-A",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "review_result": "accepted",
+      "fix_status": null,
+      "next_step": "claude-main 独立验收通过（探针43/43、联合141、全量1218/1，无阻断项）：账本契约、并发与崩溃语义无违逆；运行时消费仍交15-R，4项非阻断观察项（recover_expired需调度、全新库并发初始化、余额聚合复杂度、镜像按预留日期归属）带入接线卡；整包ALN-15不关闭；审阅人替换（opencode-evo→claude-main）已按用户 2026-10-23 指示采用方案(a)留档，见验收报告§六裁决记录"
+    },
+    {
+      "id": "ALN-17-A",
+      "status": "claimed",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "review_result": null,
+      "fix_status": null,
+      "next_step": "排队：schema兼容、损坏拒绝、行数核对、迁移回退与RTO/RPO测量；版本资产组合恢复和空机器部署另行验收"
+    },
+    {
+      "id": "ALN-20-A",
+      "status": "claimed",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "review_result": null,
+      "fix_status": null,
+      "next_step": "排队：Runtime五类能力协议、Mock/现有运行时夹具和兼容矩阵；外部Harness固定版本PoC仍须另行实测"
+    },
+    {
+      "id": "ALN-18-A",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "accepted",
+      "fix_status": "fix_verified_by_third_party",
+      "next_step": "claude-main 第三方复核通过（PR-02/03切片）；AST引用/调用图、专家与App接线等原整包缺口另验"
+    },
+    {
+      "id": "ALN-05-I",
+      "status": "review",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "review_result": null,
+      "fix_status": null,
+      "next_step": "独立审阅主体白名单、Grant有效性/不扩域、旧任务竞争回填和实际清单；本卡不自批，不替代05-M原审阅及Android/隐私仓储验收"
+    },
+    {
+      "id": "ALN-11-W",
+      "status": "claimed",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "review_result": null,
+      "fix_status": null,
+      "next_step": "排队，按任务卡完成协议、最小主链接线与正反例；不得以模块测试替代真实消费者"
+    },
+    {
+      "id": "ALN-18-B",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "accepted",
+      "fix_status": "fix_verified_by_third_party",
+      "next_step": "claude-main 第三方复核通过（PR-02/03切片）；类型解析级引用、LSP适配等原整包缺口另验"
+    },
+    {
+      "id": "ALN-15-R",
+      "status": "review",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "review_result": null,
+      "fix_status": null,
+      "next_step": "独立复核四入口、多根占额、未知费用与历史迁移安全拒绝；14可消费已提交接口开发规则，真实账单/设备资源与整包另验"
+    },
+    {
+      "id": "ALN-18-C",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "accepted",
+      "fix_status": "fix_verified_by_third_party",
+      "next_step": "claude-main 第三方复核通过（PR-02/03切片）；unified patch、日志压缩、注册表级回滚等原整包缺口另验"
+    },
+    {
+      "id": "ALN-18-D",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "accepted",
+      "fix_status": "fix_verified_by_third_party",
+      "next_step": "claude-main 第三方复核通过（PR-02/03切片）；跨平台锁、专家/App接线等原整包缺口另验"
+    },
+    {
+      "id": "ALN-18-E",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "accepted",
+      "fix_status": "fix_verified_by_third_party",
+      "next_step": "claude-main 第三方复核通过（PR-02/03切片）；hunk行号容错、注册表级回滚等原整包缺口另验"
+    },
+    {
+      "id": "ALN-18-F",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "review_result": "accepted",
+      "fix_status": "fix_verified_by_third_party",
+      "next_step": "claude-main 第三方复核通过（PR-02/03切片）；二进制/重命名、LSP、注册表级回滚等原整包缺口另验"
+    }
+  ],
+  "published_commit": null,
+  "prepared_candidate": "22c50cabd3c432ca5f891efb633652a669fcb4a6"
+}

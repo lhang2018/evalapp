@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-23",
+  "updated_at": "2026-10-24",
   "purpose": "协作认领；不替代正式契约、原始 ALN 依赖或功能验收",
   "baseline": {
     "status": "candidate",
@@ -110,14 +110,14 @@
       "scope": "候选准备Git/日志证据有效；当前源码新增显式验收不通过，915/1仅为此前普通tests基线"
     },
     "latest_source_verification": {
-      "source_commit": "05a7cf43f599a25c6add290063e19f16ae942c49",
-      "source_tree": "0a0ea440ecc5a1a901b9544b1596f962ffaaff3a",
-      "python_passed": 1460,
+      "source_commit": "f633130b8968079654405461fc6df379267e3917",
+      "source_tree": "a4cbcaa3fc8215811e4be1280e5a667fbc70ff37",
+      "python_passed": 1521,
       "python_skipped": 1,
       "client_passed": 166,
       "typecheck": "passed",
-      "scope": "ALN-05-I固定Git archive后端1460/1；44项新增实际消费者/探针；线程异常警告升级错误，声明/台账/认领/缺口映射/对齐覆盖通过；客户端同Git tree沿用8c479b6的166/typecheck，未重跑真机，不替代独立接受或候选发布",
-      "evidence": "../../.planning/2026-10-23-aln05-integration/committed-evidence.json"
+      "scope": "新增三卡独立审查7组修复；固定git archive排除通知/旧日志在途；27探针及原作者回归全绿；客户端同tree复用8c479b6，不重跑真机；不发布基线",
+      "evidence": "../../.planning/2026-10-24-code-review/committed-evidence.json"
     },
     "latest_peer_review": {
       "date": "2026-10-23",
@@ -1698,6 +1698,15 @@
           "source_commit": "dfcfcee",
           "result": "新增专项 轨迹编译13项：全状态/恢复候选四分类/确定性/往返/纯读；三卡组合回归 97 passed（含既有 planning/observability）",
           "delivery": "docs/协作开发/交付/ALN-07-T-轨迹编译.md"
+        },
+        {
+          "date": "2026-10-24",
+          "reviewed_commit": "dfcfceede913b8c85d5333a6b1c6948f75653488",
+          "source_commit": "f633130b8968079654405461fc6df379267e3917",
+          "scope": "新增三卡独立审阅及修复，不自批修复",
+          "result": "独立27探针原源码26 failed/1 passed；修复后相关155 passed，固定全量1521 passed/1 skipped；客户端同tree复用166/typecheck",
+          "report": "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md",
+          "log": ".planning/2026-10-24-code-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/07-T轨迹编译.md",
@@ -1705,7 +1714,7 @@
         "evoagent/planning/planner.py"
       ],
       "working_basis": "用户要求继续认领三个；ALN-07 整包第三项，07-P/07-W 均已 accepted 复核范围；纯读编译器不接运行时。base_commit 留空不用旧 HEAD 冒充",
-      "next_step": "已交付待独立复核（代码dfcfcee）：纯读 compile_trace/PlanTrace；运行时消费轨迹与真实环境验收属后续，ALN-07整包不关闭",
+      "next_step": "独立复核f633130、27项探针的修复前后判别力与真实SQLite路径；运行时/API/真实环境消费仍按父包另验",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1716,7 +1725,17 @@
       ],
       "preparation_status": "delivered",
       "delivered_commit": "dfcfcee",
-      "delivery": "docs/协作开发/交付/ALN-07-T-轨迹编译.md"
+      "delivery": "docs/协作开发/交付/ALN-07-T-轨迹编译.md",
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md",
+      "peer_findings": [
+        "CR24-05",
+        "CR24-06"
+      ],
+      "fix_author": "codex-runtime",
+      "fix_commit": "f633130b8968079654405461fc6df379267e3917",
+      "fix_status": "repaired_pending_independent_review",
+      "review_note": "原claude-main交付经独立复核发现问题，codex-runtime修复；本轮修复须其他审阅者复核，不自批"
     },
     {
       "id": "ALN-07-R",
@@ -1736,6 +1755,15 @@
           "source_commit": "dfcfcee",
           "result": "新增专项 恢复策略12项：文案单一来源/done步骤不返回策略/旧计划兼容/纯读；三卡组合回归 97 passed（含既有 planning/observability）",
           "delivery": "docs/协作开发/交付/ALN-07-R-可执行恢复策略.md"
+        },
+        {
+          "date": "2026-10-24",
+          "reviewed_commit": "dfcfceede913b8c85d5333a6b1c6948f75653488",
+          "source_commit": "f633130b8968079654405461fc6df379267e3917",
+          "scope": "新增三卡独立审阅及修复，不自批修复",
+          "result": "独立27探针原源码26 failed/1 passed；修复后相关155 passed，固定全量1521 passed/1 skipped；客户端同tree复用166/typecheck",
+          "report": "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md",
+          "log": ".planning/2026-10-24-code-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/07-R可执行恢复策略.md",
@@ -1743,7 +1771,7 @@
         "evoagent/planning/planner.py"
       ],
       "working_basis": "用户要求继续认领三个；ALN-07 整包第二项（WP-6.4 剩余，07-P 交付明示遗留）；策略声明+纯读查询，不接运行时自动执行",
-      "next_step": "已交付待独立复核（代码dfcfcee）：RecoveryPolicy契约+recovery_for_failure纯读查询；运行时自动执行恢复属后续，ALN-07整包不关闭",
+      "next_step": "独立复核f633130、27项探针的修复前后判别力与真实SQLite路径；运行时/API/真实环境消费仍按父包另验",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1754,7 +1782,16 @@
       ],
       "preparation_status": "delivered",
       "delivered_commit": "dfcfcee",
-      "delivery": "docs/协作开发/交付/ALN-07-R-可执行恢复策略.md"
+      "delivery": "docs/协作开发/交付/ALN-07-R-可执行恢复策略.md",
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md",
+      "peer_findings": [
+        "CR24-07"
+      ],
+      "fix_author": "codex-runtime",
+      "fix_commit": "f633130b8968079654405461fc6df379267e3917",
+      "fix_status": "repaired_pending_independent_review",
+      "review_note": "原claude-main交付经独立复核发现问题，codex-runtime修复；本轮修复须其他审阅者复核，不自批"
     },
     {
       "id": "ALN-16-X",
@@ -1774,6 +1811,15 @@
           "source_commit": "dfcfcee",
           "result": "新增专项 执行器10项：digest篡改拒绝且零删除/symlink逃逸拒绝/幂等重放/审计头；三卡组合回归 97 passed（含既有 planning/observability）",
           "delivery": "docs/协作开发/交付/ALN-16-X-导出下载与删除执行.md"
+        },
+        {
+          "date": "2026-10-24",
+          "reviewed_commit": "dfcfceede913b8c85d5333a6b1c6948f75653488",
+          "source_commit": "f633130b8968079654405461fc6df379267e3917",
+          "scope": "新增三卡独立审阅及修复，不自批修复",
+          "result": "独立27探针原源码26 failed/1 passed；修复后相关155 passed，固定全量1521 passed/1 skipped；客户端同tree复用166/typecheck",
+          "report": "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md",
+          "log": ".planning/2026-10-24-code-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/16-X导出下载与删除执行.md",
@@ -1782,7 +1828,7 @@
         "evoagent/core/log_layers.py"
       ],
       "working_basis": "用户要求继续认领三个；ALN-16 遗留「实际导出下载与存储删除」，16-A/16-R 已 accepted；执行器 fail-closed + 幂等，不暴露 API 端点",
-      "next_step": "已交付待独立复核（代码dfcfcee）：execute_deletion fail-closed+幂等、export_to_file带审计与路径逃逸拒绝；API端点暴露、端侧EvidenceEvent与生产密钥托管仍归其它卡，ALN-16整包不关闭",
+      "next_step": "独立复核f633130、27项探针的修复前后判别力与真实SQLite路径；运行时/API/真实环境消费仍按父包另验",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1793,7 +1839,19 @@
       ],
       "preparation_status": "delivered",
       "delivered_commit": "dfcfcee",
-      "delivery": "docs/协作开发/交付/ALN-16-X-导出下载与删除执行.md"
+      "delivery": "docs/协作开发/交付/ALN-16-X-导出下载与删除执行.md",
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md",
+      "peer_findings": [
+        "CR24-01",
+        "CR24-02",
+        "CR24-03",
+        "CR24-04"
+      ],
+      "fix_author": "codex-runtime",
+      "fix_commit": "f633130b8968079654405461fc6df379267e3917",
+      "fix_status": "repaired_pending_independent_review",
+      "review_note": "原claude-main交付经独立复核发现问题，codex-runtime修复；本轮修复须其他审阅者复核，不自批"
     },
     {
       "id": "ALN-13-A",
@@ -2535,7 +2593,7 @@
       "stream": "integration",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "已修CA问题待独立复验；最新源码becfad7验证1176/1、客户端166/typecheck通过，仅为源码证据；正式发布按00-B独立审阅与干净候选条件推进",
+      "next_step": "00-V已接受；最新f633130固定源码1521/1及同tree客户端166/typecheck为源码证据。00-B仍需选定范围独立接受、04-UI真机及干净候选发布，不替换历史prepared_candidate",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -2581,7 +2639,7 @@
       "stream": "assets",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "本轮独立审核发现问题已修复，待其他审阅者复核7132180/1ff11c1；既有后续接线与真实环境验收保留，不关闭整包"
+      "next_step": "03-S既定切片及签名key_id修复已获第三方接受；生产信任材料和元数据/制品字节完整联验另验，整包未关闭"
     },
     {
       "id": "ALN-04",
@@ -2643,7 +2701,7 @@
       "stream": "runtime",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "07-T 轨迹编译、07-R 可执行恢复策略已交付 review（代码dfcfcee，待codex-runtime复核）；真实运行时接线与执行器消费另卡；整包未关闭"
+      "next_step": "07-W已接受；07-P修订不变量获部分复核、其余恢复切片待复核；07-T/07-R已独立审查并修复f633130，待另一审阅者接受修复。运行时实际消费另验，整包未关闭"
     },
     {
       "id": "ALN-08",
@@ -2656,7 +2714,7 @@
       "stream": "models",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "本轮独立审核发现问题已修复，待其他审阅者复核7132180/1ff11c1；既有后续接线与真实环境验收保留，不关闭整包"
+      "next_step": "08-M/08-R既定切片及计量修复已接受；工作流/执行模式主链路由、生产评测集、真实价格及未知费用后续对账另验，整包未关闭"
     },
     {
       "id": "ALN-09",
@@ -2670,7 +2728,7 @@
       "stream": "assets",
       "owner": "opencode-evo",
       "delivery_state": "needs_recheck",
-      "next_step": "五项问题已由ALN-09-F修复并复验，待独立审阅；后续补真实候选资产隔离、持久问题队列和故障恢复验收",
+      "next_step": "09-F五项修复已独立接受；真实候选资产隔离宿主、持久问题队列及多进程故障恢复仍待验，整包未关闭",
       "review_result": "changes_requested",
       "review_report": "docs/协作开发/验收/2026-10-22-OpenCode认领验收.md",
       "review_evidence": {
@@ -2695,7 +2753,7 @@
       "stream": "assets",
       "owner": "opencode-evo",
       "delivery_state": "partial_verified",
-      "next_step": "ALN-10-Q/R已独立接受；CXR-01/02/03加固交付ALN-10-H待审；整合真实候选隔离宿主、制品装载与ALN-05/07/09后验收",
+      "next_step": "10-Q/R/H均已独立接受；后续消费真实候选隔离宿主与制品版本并证明实际收益，整包未关闭",
       "supplemented_by": "codex-runtime"
     },
     {
@@ -2770,7 +2828,7 @@
       "stream": "runtime",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "14-A显式推进、机会/停止/递归与管理API已交付review（6837129）；生产候选收益仍需09/10，周期守护/前端与整包另验",
+      "next_step": "14-A由claude-main独立复核接受（0c501bf）；生产候选收益、周期守护、用户前端和规模负载仍另验，整包未关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -2814,7 +2872,7 @@
       "stream": "models",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "16-X 导出下载与删除实际执行已交付 review（代码dfcfcee，待codex-runtime复核）；API端点、端侧EvidenceEvent与生产密钥托管仍归其它卡；整包未关闭"
+      "next_step": "16-A/16-R已接受；16-X真实存储计数、范围/持久审计、导出防覆盖已由f633130修复，待其他审阅者复核；API/业务仓储、端侧EvidenceEvent及生产凭证另验，整包未关闭"
     },
     {
       "id": "ALN-17",
@@ -2852,7 +2910,7 @@
       "stream": "assets",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "7132180/1ff11c1及34b5fac后续修复均待其他审阅者复核；保留真实运行时接线、执行器消费/编程包集成与真实环境验收，整包未关闭"
+      "next_step": "18-A～F既定切片及覆盖修复均获第三方接受；App/编程专家实际消费、跨文件语义/LSP、包生命周期及真实环境另验，整包未关闭"
     },
     {
       "id": "ALN-19",
@@ -3023,6 +3081,19 @@
       "evoagent/release/signing.py",
       "evoagent/planning/matching.py",
       "evoagent/evolution/routing_eval.py"
-    ]
+    ],
+    "snapshot_semantics": "2026-10-23原审阅快照，非当前接受汇总；第三方修复接受见各card字段，2026-10-24新批次另列"
+  },
+  "peer_review_2026_10_24": {
+    "reviewer": "codex-runtime",
+    "cards": [
+      "ALN-07-T",
+      "ALN-07-R",
+      "ALN-16-X"
+    ],
+    "reviewed_commit": "dfcfceede913b8c85d5333a6b1c6948f75653488",
+    "fix_commit": "f633130b8968079654405461fc6df379267e3917",
+    "result": "changes_requested; repaired_pending_independent_review",
+    "report": "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md"
   }
 }
