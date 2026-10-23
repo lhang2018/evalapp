@@ -1,0 +1,10 @@
+========================================================
+PASS     M1 deleted-id-rewrite-rejected
+PASS     M2 derived-from-tombstone-rejected
+FAIL: AssertionError: 他人 memory_id 内容被换身份覆盖 M3 identity-overwrite-rejected
+PASS     M4 duplicate-write-real-id
+PASS     U1 stale-usage-not-rebilled
+PASS     K1 key-id-not-rekeyed
+PASS     K2 key-add-idempotent[guard]
+========================================================
+total=7 pass=6 fail=1

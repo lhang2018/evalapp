@@ -1,0 +1,10 @@
+========================================================
+FAIL: AssertionError: 已删除旧 ID 被直接回写复活 M1 deleted-id-rewrite-rejected
+FAIL: AssertionError: 引用已删记忆的派生项被落库（墓碑未检查派生链） M2 derived-from-tombstone-rejected
+FAIL: AssertionError: 他人 memory_id 内容被换身份覆盖 M3 identity-overwrite-rejected
+FAIL: AssertionError: 重复写返回的 fdff0971263b 是未落库的幽灵 ID（无法读取） M4 duplicate-write-real-id
+FAIL: AssertionError: 第二次请求复用了上一次的 provider 用量（100/50）当本次实测 U1 stale-usage-not-rebilled
+FAIL: AssertionError: 相同 key_id 换密被静默覆盖，历史签名不可验证 K1 key-id-not-rekeyed
+PASS     K2 key-add-idempotent[guard]
+========================================================
+total=7 pass=1 fail=6

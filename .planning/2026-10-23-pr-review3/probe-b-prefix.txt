@@ -1,0 +1,9 @@
+========================================================
+FAIL: AssertionError: hunk 在行中子串处命中并改写了错误内容 D1 hunk-line-boundary
+PASS     D1b exact-line-matches[guard]
+PASS     P1 exclusive-create-newfile
+PASS     P2 rollback-keeps-external
+PASS     P3 recover-invalid-log-reported
+FAIL: AssertionError: 类型检查器契约未声明 external 风险: {"tool_id": "coding_typecheck", "description": "python 类型检查（mypy 适配；不可用不判成功）", "tool_version": "1.5.0", "input_schema": {"type": "object", "properties": {"targets": {"type": "array"}}}, "output_schema P4 typecheck-declares-external-high
+========================================================
+total=6 pass=4 fail=2

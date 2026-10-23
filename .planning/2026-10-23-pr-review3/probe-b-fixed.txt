@@ -1,0 +1,9 @@
+========================================================
+PASS     D1 hunk-line-boundary
+PASS     D1b exact-line-matches[guard]
+PASS     P1 exclusive-create-newfile
+PASS     P2 rollback-keeps-external
+PASS     P3 recover-invalid-log-reported
+PASS     P4 typecheck-declares-external-high
+========================================================
+total=6 pass=6 fail=0
