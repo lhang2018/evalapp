@@ -1823,6 +1823,34 @@
       "working_basis": "承接 ALN-18-C/D（2ebd9c0/3ea3772）：原子提交与日志恢复已有，但标准 unified diff 需手工拆分；解析后并入同一 prepared 流水线，仅改 coding.py/测试",
       "next_step": "待独立复核（runtime 线）：diff 解析/唯一命中/原子性与日志证据；后续：hunk 行号容错、新增删除文件、LSP、专家/App 接线、注册表级回滚",
       "delivered_commit": "0ba45fc"
+    },
+    {
+      "id": "ALN-18-F",
+      "workpackage": "ALN-18",
+      "title": "新增/删除文件与 hunk 位置容错",
+      "stream": "runtime",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-23",
+          "scope": "coding_patch diff 支持 /dev/null 新建/删除文件（目标存在与父目录守卫、删除须覆盖全文、.py 语法门禁）；重复片段按新文件行号消歧，上下文零命中时首尾至多 2 行裁剪重试；创建/删除/改写同批原子回滚；日志记录 existed/deleted 并在恢复时移除创建、还原删除；证据新增 action；能力包 1.5.0（rollback 1.4.0，八工具），新增 14 项专测（共 51 项）",
+          "command": "python -m pytest tests/test_coding_tools.py -q; python -m pytest tests/test_coding_tools.py tests/test_tools.py tests/test_tool_contract_fields.py -q; python -m pytest tests -q",
+          "result": "专项 51 passed；联合 64 passed；全量 1331 passed/1 skipped（139.88s）",
+          "log": ".planning/2026-10-22-aln18/f-targeted.txt; .planning/2026-10-22-aln18/f-combined.txt; .planning/2026-10-22-aln18/f-full-suite.txt",
+          "delivery": "docs/协作开发/交付/ALN-18-F-新增删除文件与hunk容错.md",
+          "source_commit": "dbef120"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/18-真实编程能力包-F.md",
+      "shared_files": [],
+      "working_basis": "承接 ALN-18-E（0ba45fc）：统一 diff 已可原子应用但拒绝 /dev/null，hunk 仅按内容唯一命中；本卡在 coding.py 内支持创建/删除并加入行号消歧与上下文裁剪，复用现有日志与回滚",
+      "next_step": "待独立复核（runtime 线）：创建/删除原子性、行号消歧与上下文裁剪边界、日志恢复证据；后续：二进制/权限位、重命名、LSP、专家/App 接线、注册表级回滚",
+      "delivered_commit": "dbef120"
     }
   ],
   "workpackages": [
@@ -2151,7 +2179,7 @@
       "stream": "assets",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "18-A/B/C/D/E 五片已交付 review（acbd22a/48b4aba/2ebd9c0/3ea3772/0ba45fc）；专家接线、LSP 与包级回滚后续推进"
+      "next_step": "18-A/B/C/D/E/F 六片 review 中（acbd22a/48b4aba/2ebd9c0/3ea3772/0ba45fc/dbef120）；专家接线、LSP 与包级回滚后续推进"
     },
     {
       "id": "ALN-19",
