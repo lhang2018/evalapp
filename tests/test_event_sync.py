@@ -115,6 +115,20 @@ class TestEventSyncApi(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.srv.shutdown()
+        cls.thread.join(timeout=5)
+        # POST /tasks returns before its execution thread has finalized the run.
+        # Closing this DB early leaks a worker into the next test and masks its
+        # failure as an unrelated PytestUnhandledThreadExceptionWarning.
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            tasks = cls.app.db.list_tasks(limit=500)
+            with cls.app.controller._lock:
+                active = bool(cls.app.controller._active)
+            if not active and all(task.is_terminal() for task in tasks):
+                break
+            time.sleep(0.01)
+        else:
+            raise AssertionError("asynchronous test tasks did not finish before database teardown")
         cls.app.db.close()
         shutil.rmtree(cls.tmp, ignore_errors=True)
 
