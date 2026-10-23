@@ -16,7 +16,7 @@
         "error::pytest.PytestUnhandledThreadExceptionWarning"
       ],
       "exit_code": 0,
-      "log": ".planning\\2026-10-23-peer-review\\backend-committed.txt",
+      "log": ".planning\\2026-10-23-peer-review\\backend-committed-7132180.txt",
       "sha256": "149cb6e9c89a6572ae6a3f9dc044eb7344fdf0a1a07fe007dffcb2c152bcdc65"
     },
     {
@@ -27,7 +27,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "log": ".planning\\2026-10-23-peer-review\\claims-committed.txt",
+      "log": ".planning\\2026-10-23-peer-review\\claims-committed-7132180.txt",
       "sha256": "bb7db200b392b8717020370e3cf045f24fb0d936d7604952908a70c282df9014"
     },
     {
@@ -37,7 +37,7 @@
         "tools/scan_all_ledgers.py"
       ],
       "exit_code": 0,
-      "log": ".planning\\2026-10-23-peer-review\\ledgers-committed.txt",
+      "log": ".planning\\2026-10-23-peer-review\\ledgers-committed-7132180.txt",
       "sha256": "9fa62c2d9ca1778da4f82740c3e530edf1945b0f9d8306578d33a05154f73cb4"
     },
     {
@@ -47,7 +47,7 @@
         "tools/check_collaboration_plan.py"
       ],
       "exit_code": 1,
-      "log": ".planning\\2026-10-23-peer-review\\board-committed.txt",
+      "log": ".planning\\2026-10-23-peer-review\\board-committed-7132180.txt",
       "sha256": "3be5db2a17cc213b7d7c126ad28fdf3cf340062c798ff3dd564d39ba203eb81d"
     },
     {
