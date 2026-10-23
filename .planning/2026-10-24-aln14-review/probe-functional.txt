@@ -1,0 +1,10 @@
+========================================================
+PASS     O1 ranking-deterministic
+PASS     O2 expired-and-unknown-excluded
+PASS     O2b unknown-cost-needs-evidence
+PASS     O3 invalid-assessment-rejected
+PASS     O4 policy-immutable
+PASS     O4b default-policy-usable[guard]
+PASS     O5 discover-idempotent
+========================================================
+total=7 pass=7 fail=0

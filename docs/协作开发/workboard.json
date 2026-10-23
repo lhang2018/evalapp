@@ -1866,10 +1866,10 @@
       "title": "机会排序、无进展停止与归因规则",
       "stream": "runtime",
       "owner": "codex-runtime",
-      "reviewer": null,
+      "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -1891,17 +1891,32 @@
         "evoagent/api/goals_api.py"
       ],
       "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
-      "next_step": "独立复核有界真实推进、客观进展、停止/递归、持久命令和预期/实际归因；生产09/10收益、周期守护及前端另验",
+      "next_step": "claude-main 独立复核通过（三时点对照7探针：cabf7752为0/7缺口证明、948b433与6837129均7/7；专项95、联合116、固定全量1317/1与声明一致；API写入口403断言真实锁定）；生产候选收益(09/10)、周期守护、前端与生产规模负载仍按交付保留范围另验，整包ALN-14不关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",
           "from": "claude-main",
           "to": "codex-runtime",
           "reason": "用户要求重新整理认领；当前仅codex在本项目开发，接手未交付范围，保留历史交付及独立审阅要求"
+        },
+        {
+          "date": "2026-10-24",
+          "from": "待定",
+          "to": "claude-main",
+          "reason": "独立复核人指定：作者codex-runtime不自批；复核结论accepted"
         }
       ],
       "delivered_commit": "6837129d4f5ef2ccf442dd9b9d89b9426096155c",
-      "delivery": "docs/协作开发/交付/ALN-14-A-机会与持续目标治理.md"
+      "delivery": "docs/协作开发/交付/ALN-14-A-机会与持续目标治理.md",
+      "review_result": "accepted",
+      "third_party_review": {
+        "date": "2026-10-24",
+        "reviewer": "claude-main",
+        "probes": "O组7根（排序确定性/未知费用与过期/数值防线/策略不可变/默认策略护栏/发现幂等）",
+        "result": "cabf7752 0/7（模块不存在，import级缺口证明）；948b433 7/7；6837129 7/7；专项95 passed、联合116 passed、固定全量1317/1与声明一致；3项非阻断观察项见报告§三",
+        "report": "docs/协作开发/验收/2026-10-24-ALN-14-A独立复核.md",
+        "log": ".planning/2026-10-24-aln14-review/"
+      }
     },
     {
       "id": "ALN-15-A",

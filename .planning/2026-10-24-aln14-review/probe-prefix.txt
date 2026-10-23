@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "E:\evalapp\.planning\2026-10-24-aln14-review\probe_aln14.py", line 184, in <module>
+    probe("O1 ranking-deterministic", o1_ranking_deterministic)
+  File "E:\evalapp\.planning\2026-10-24-aln14-review\probe_aln14.py", line 24, in probe
+    fn()
+  File "E:\evalapp\.planning\2026-10-24-aln14-review\probe_aln14.py", line 61, in o1_ranking_deterministic
+    svc, gov, db, clock, mk_t = new_svc()
+  File "E:\evalapp\.planning\2026-10-24-aln14-review\probe_aln14.py", line 33, in new_svc
+    from evoagent.goals.governance import GoalGovernor
+ModuleNotFoundError: No module named 'evoagent.goals.governance'
