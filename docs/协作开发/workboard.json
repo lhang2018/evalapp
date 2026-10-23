@@ -322,6 +322,26 @@
     {
       "path": "evoagent/goals/store.py",
       "stream": "integration"
+    },
+    {
+      "path": "evoagent/config.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/core/runtime_budget.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/core/reservations.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/core/schema/reservations.py",
+      "stream": "integration"
+    },
+    {
+      "path": "evoagent/evolution/experiment_budget.py",
+      "stream": "integration"
     }
   ],
   "dispatches": [
@@ -1399,7 +1419,7 @@
       "title": "预算预留/结算/退款与未知费用对账契约",
       "stream": "integration",
       "owner": "codex-runtime",
-      "reviewer": null,
+      "reviewer": "opencode-evo",
       "branch": "main",
       "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
       "status": "review",
@@ -1611,7 +1631,16 @@
         "evoagent/planning/planner.py",
         "evoagent/evolution/runner.py",
         "evoagent/goals/store.py",
-        "evoagent/tools/contract.py"
+        "evoagent/tools/contract.py",
+        "evoagent/config.py",
+        "evoagent/core/runtime_budget.py",
+        "evoagent/core/reservations.py",
+        "evoagent/core/schema/reservations.py",
+        "evoagent/evolution/monitor.py",
+        "evoagent/evolution/experiment_budget.py",
+        "GAP_ANALYSIS.md",
+        "IMPLEMENTATION.md",
+        "ROADMAP.md"
       ],
       "working_basis": "15-A提供内部账户服务，后续实际调用须串行接线；base_commit为已核验源码而非发布基线；本卡仅认领未开工",
       "next_step": "开发权威账户绑定与分类/规划/ReAct/工具预留；覆盖未知费用、撤销、恢复与实验并发"
