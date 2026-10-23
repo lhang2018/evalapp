@@ -1,0 +1,11 @@
+========================================================
+PASS     P1 hard-gates-not-tolerated
+PASS     P2 unknown-budget-not-assumed
+PASS     P3 duplicate-identity-rejected
+PASS     P4 mode/wf-metrics-separated
+PASS     P5 append-rewrite-rejected
+PASS     P6 done-content-rewrite-rejected
+PASS     P7 contract-defends-bad-fields
+PASS     P8 dynamic-nodes-require-hybrid
+========================================================
+total=8 pass=8 fail=0

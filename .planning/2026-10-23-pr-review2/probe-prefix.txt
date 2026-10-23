@@ -1,0 +1,11 @@
+========================================================
+FAIL: AssertionError: 缺权限候选混进 hybrid_agent（dynamic_tolerates 放宽了硬门禁） P1 hard-gates-not-tolerated
+FAIL: AssertionError: 预算不可知但 cost=0 候选被选为 stable_workflow P2 unknown-budget-not-assumed
+FAIL: AssertionError: 重复 (workflow_id,version) 未被拒绝 P3 duplicate-identity-rejected
+FAIL: AssertionError: 模式选择正确却未计入 mode_accuracy P4 mode/wf-metrics-separated
+FAIL: AssertionError: append 级修订改写了既有步骤 s1 的内容 P5 append-rewrite-rejected
+FAIL: AssertionError: done 步骤内容被改写仍被接受 P6 done-content-rewrite-rejected
+FAIL: AssertionError: 恶意候选 #0 未被契约拒绝 P7 contract-defends-bad-fields
+FAIL: AssertionError: 带 dynamic_nodes 的全过候选被选为 stable_workflow P8 dynamic-nodes-require-hybrid
+========================================================
+total=8 pass=0 fail=8

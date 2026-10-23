@@ -1493,7 +1493,7 @@
       ],
       "working_basis": "用户要求按优先级认领未开发工作包：ALN-07 为首个未认领 P1；在当前共享候选工作区增量开发（同 ALN-06-A/08-M/11-A 方式），基线未正式发布，不用旧 HEAD 冒充 base_commit",
       "delivery": "docs/协作开发/交付/ALN-07-P-计划修订与证据保持.md",
-      "next_step": "由其他审阅者复核修复提交和负向探针（PR-01）；通过前保持review，原整包/真实环境缺口保留",
+      "next_step": "claude-main 已复核修复的 planner.py 修订不变量切片（探针P5/P6前后对照通过）；PR-01 其余切片（engine/恢复路径等）仍待复核，整卡保持review",
       "delivered_commit": "6d55756ff14a3460f9fe75802bc9ac12fd91ead5",
       "related_commits": [
         {
@@ -1504,12 +1504,19 @@
       "review_result": "changes_requested",
       "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
       "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
-      "fix_status": "reviewer_fixed_pending_independent_review",
+      "fix_status": "partial_fix_verified_by_third_party",
       "fix_author": "codex-runtime",
       "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
       "peer_findings": [
         "PR-01"
-      ]
+      ],
+      "third_party_review_partial": {
+        "date": "2026-10-23",
+        "reviewer": "claude-main",
+        "scope": "仅 planner.py 修订不变量切片（7132180 内 append 深比对与 done/running 内容保护）",
+        "result": "探针P5 append偷改既有步骤、P6 done步骤篡改描述：修复前均静默接受、修复后均拒绝；详见联合复核报告",
+        "report": "docs/协作开发/验收/2026-10-23-ALN-07修复第三方复核.md"
+      }
     },
     {
       "id": "ALN-07-W",
@@ -1520,7 +1527,7 @@
       "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -1555,8 +1562,8 @@
         "evoagent/evolution/routing_eval.py"
       ],
       "working_basis": "用户要求继续认领；本卡为 ALN-07 整包第一项「工作流匹配」，与 ALN-07-P 互补不改其语义；同时补 R-03 主题中工作流匹配/执行模式两项未覆盖的评测维度。基线未发布，base_commit 留空不使用旧 HEAD 冒充",
-      "next_step": "由其他审阅者复核7132180/1ff11c1及34b5fac后续加固；检查冲突保留、评测空候选/错误隔离及模式/预算契约，保持review，原整包与真实环境缺口保留",
-      "review_result": "changes_requested",
+      "next_step": "claude-main 第三方复核通过（前后对照+8根独立探针）：修复人=审阅人问题闭环；真实运行时自动接线匹配层与生产评测集仍为后续范围，整包ALN-07不关闭",
+      "review_result": "accepted",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1569,7 +1576,7 @@
       "delivery": "docs/协作开发/交付/ALN-07-W-工作流匹配与执行模式选择.md",
       "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
       "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
-      "fix_status": "reviewer_fixed_pending_independent_review",
+      "fix_status": "fix_verified_by_third_party",
       "fix_author": "codex-runtime",
       "fix_commit": "34b5fac37d477e727e4119a3390b00bd2e0bd4ed",
       "peer_findings": [
@@ -1579,7 +1586,19 @@
         "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
         "34b5fac37d477e727e4119a3390b00bd2e0bd4ed"
       ],
-      "followup_report": "docs/协作开发/验收/2026-10-23-审核修复后续加固.md"
+      "followup_report": "docs/协作开发/验收/2026-10-23-审核修复后续加固.md",
+      "third_party_review": {
+        "date": "2026-10-23",
+        "reviewer": "claude-main",
+        "fixes_covered": [
+          "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+          "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+          "34b5fac37d477e727e4119a3390b00bd2e0bd4ed"
+        ],
+        "result": "8根独立探针修复前0/8、修复后8/8；被审方3套新回归修复前56failed/5passed、修复后85passed；作者24项原测试零改动；定向123passed；固定全量1416/1",
+        "report": "docs/协作开发/验收/2026-10-23-ALN-07修复第三方复核.md",
+        "log": ".planning/2026-10-23-pr-review2/"
+      }
     },
     {
       "id": "ALN-13-A",
@@ -1846,8 +1865,8 @@
       "owner": "codex-runtime",
       "reviewer": null,
       "branch": "main",
-      "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
-      "status": "claimed",
+      "base_commit": "04de43f1c028024ce4a2bd3e82cc23edf34c36b9",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/05-记忆身份运行时接线.md",
@@ -1859,7 +1878,7 @@
         "evoagent/app.py"
       ],
       "working_basis": "2026-10-23差距核对后拆出明确消费者任务；当前项目串行排队，未开始实现，不改变原交付作者和review结论",
-      "next_step": "排队，按任务卡完成协议、最小主链接线与正反例；不得以模块测试替代真实消费者"
+      "next_step": "实现服务端主体绑定、持久身份校验、主链读写及ContextManifest引用；补API伪造/重启/隔离实际消费者回归"
     },
     {
       "id": "ALN-11-W",
@@ -2629,12 +2648,12 @@
     "mode": "当前项目单开发会话串行推进",
     "owner": "codex-runtime",
     "wip_limit": 1,
-    "active_task": null,
+    "active_task": "ALN-05-I",
     "next_task": "ALN-05-I",
     "items": [
       {
         "id": "ALN-05-I",
-        "state": "排队",
+        "state": "开发中",
         "condition": "消费05-M身份与清单接口，贯通Task持久化及运行时读写"
       },
       {
