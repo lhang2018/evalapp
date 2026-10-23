@@ -211,7 +211,7 @@ Python 服务端（标准库，SQLite）
 | EV-10 | 候选实验预算 | 🔹 | `evolution/controller.py`, `evolution/runner.py` | 双记账 `candidate:<id>` + `evolution`、耗尽记失败不中断批次 ✅；**但进化侧无实验并发控制**（任务侧 `BoundedSemaphore` 不覆盖进化实验），且**无「重复失败即停止」条件**——ReAct 的 `repeated_failure` 是单任务停止，与进化实验无关 |
 | EV-11 | 候选代码隔离沙箱 | ✅ | `evolution/sandbox.py`, `api/server.py`, `cli.py` | 一次性目录 + 环境白名单；审计钩子阻断网络/子进程/动态库/沙箱外读写；超时强杀、输出截断；`POST /evolution/sandbox/run`（admin）、`sandbox-run` CLI；非恶意代码强安全边界，文档已注明 |
 | EV-12 | 发布后监测采集与判定 | ✅ | `evolution/monitor.py`, `evolution/controller.py` | 时间窗采样、上窗对比、评估任务剔除、安全事件即时回滚、warning hold、`auto_rollback` 可关 |
-| **EV-14** | **路由质量评测与纠错** | ✅ | `evolution/routing_eval.py`, `api/routing_eval_api.py` | **F-53 新增**。路由专用评测集（覆盖全部已注册意图 + 歧义用例 + 独立保留集）与评估器；产出**意图准确率/专家准确率/混淆矩阵/top-1·top-3 命中率/兜底率/弃权率/平均置信度**；`regression_cases()` 把失败与低置信样本回流为回归用例（保留集不回流）；`compare()` 做基线对比并判定退化。API：`GET/POST /routing/eval`、`GET /routing/reports`。**首次运行即查出两个真实路由缺陷并修复**（幽灵意图 `programming` + `coding`/`travel` 无关键词） |
+| **EV-14** | **路由质量评测与纠错** | ✅ | `evolution/routing_eval.py`, `api/routing_eval_api.py` | **F-53 新增**。路由专用评测集（覆盖全部已注册意图 + 歧义用例 + 独立保留集）与评估器；产出**意图准确率/专家准确率/混淆矩阵/top-1·top-3 命中率/兜底率/弃权率/平均置信度**；`regression_cases()` 把失败与低置信样本回流为回归用例（保留集不回流）；`compare()` 做基线对比并判定退化。API：`GET/POST /routing/eval`、`GET /routing/reports`。**首次运行即查出两个真实路由缺陷并修复**（幽灵意图 `programming` + `coding`/`travel` 无关键词）；**ALN-07-W（2026-10-23）新增工作流匹配与执行模式评测维度**（`planning/matching.py::WorkflowMatcher` + `WorkflowModeEvaluator`，`routing_coverage()` 两层改为已评测） |
 
 ### 2.11 发布管理（PRD 59-63 / 80-82）
 

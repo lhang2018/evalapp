@@ -1355,19 +1355,29 @@
       "title": "工作流匹配与执行模式选择",
       "stream": "runtime",
       "owner": "claude-main",
-      "reviewer": null,
+      "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-23",
+          "scope": "工作流匹配与执行模式选择 + R-03 工作流/模式两维度评测；纯读匹配服务，不扣账不引第二套授权",
+          "source_commit": "a2e08a3",
+          "result": "新增 contracts/matching 与 WorkflowModeEvaluator；24 项匹配单测 + 既有覆盖断言更新；组合回归 123 passed；routing_coverage 两层改为已评测",
+          "log": "tests/test_workflow_matching.py",
+          "delivery": "docs/协作开发/交付/ALN-07-W-工作流匹配与执行模式选择.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/07-W工作流匹配与执行模式选择.md",
       "shared_files": [
         "evoagent/planning/planner.py",
         "evoagent/evolution/routing_eval.py"
       ],
       "working_basis": "用户要求继续认领；本卡为 ALN-07 整包第一项「工作流匹配」，与 ALN-07-P 互补不改其语义；同时补 R-03 主题中工作流匹配/执行模式两项未覆盖的评测维度。基线未发布，base_commit 留空不使用旧 HEAD 冒充",
-      "next_step": "已认领 in_progress：先定候选工作流与执行模式契约，写 matching 服务与评测维度，按任务卡六条验收逐条留证；不改 controller/engine/runtime_budget/goals 与 Android",
+      "next_step": "已交付待独立复核（codex-runtime）：匹配服务与评测维度已落，routing_coverage 两层改为已评测；真实运行时自动接线匹配层属后续范围，本卡不宣称主链已自动匹配；ALN-07 另两项（_risks_for 可执行恢复、轨迹编译）未开工",
+      "review_result": "pending",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1970,7 +1980,7 @@
       "stream": "runtime",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "07-P已交付review（代码6d55756），07-W工作流匹配与执行模式选择已认领in_progress（任务卡07-W）；剩余 _risks_for 可执行恢复策略、轨迹编译与副作用账本对账接线待后续拆卡"
+      "next_step": "07-P已交付review（代码6d55756）；07-W工作流匹配与执行模式选择已交付待 codex-runtime 独立复核（代码a2e08a3，评测维度已补、routing_coverage 两层改为已评测）；剩余 _risks_for 可执行恢复策略、轨迹编译与副作用账本对账接线待后续拆卡"
     },
     {
       "id": "ALN-08",
