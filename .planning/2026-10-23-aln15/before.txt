@@ -1,0 +1,22 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+EEE                                                                      [100%]
+=================================== ERRORS ====================================
+____ ERROR at setup of test_capacity_is_held_before_any_usage_is_recorded _____
+tests\test_budget_reservations.py:20: in store
+    service = BudgetLedger(db).reservation_store(clock=lambda: clock[0])
+E   AttributeError: 'BudgetLedger' object has no attribute 'reservation_store'
+__________ ERROR at setup of test_processes_share_the_same_capacity ___________
+tests\test_budget_reservations.py:20: in store
+    service = BudgetLedger(db).reservation_store(clock=lambda: clock[0])
+E   AttributeError: 'BudgetLedger' object has no attribute 'reservation_store'
+_ ERROR at setup of test_expiry_recovery_refunds_only_undispatched_and_never_replays _
+tests\test_budget_reservations.py:20: in store
+    service = BudgetLedger(db).reservation_store(clock=lambda: clock[0])
+E   AttributeError: 'BudgetLedger' object has no attribute 'reservation_store'
+=========================== short test summary info ===========================
+ERROR tests/test_budget_reservations.py::test_capacity_is_held_before_any_usage_is_recorded
+ERROR tests/test_budget_reservations.py::test_processes_share_the_same_capacity
+ERROR tests/test_budget_reservations.py::test_expiry_recovery_refunds_only_undispatched_and_never_replays
+28 deselected, 3 errors in 0.25s

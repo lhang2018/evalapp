@@ -49,7 +49,7 @@ def render(board):
         index = lines.index("## 子任务认领与交付")
         queue_lines = ["## 当前开发队列", "",
             f"执行方式：{execution['mode']}；当前开发者：{execution['owner']}；同时开发上限：{execution['wip_limit']} 张卡。",
-            f"正在开发：{execution['active_task'] or '无（本轮仅整理认领）'}；下一张：{execution['next_task']}。",
+            f"正在开发：{execution['active_task'] or '无（下一张尚未开工）'}；下一张：{execution['next_task']}。",
             "claimed 表示已接手，排队项不表示已经开工；review 保留原作者，未分配独立审阅人不代表可以自审。", "",
             "| 顺序 | 子任务 | 调度状态 | 开工/交付条件 |", "|---|---|---|---|"]
         for index_number, item in enumerate(execution["items"], 1):

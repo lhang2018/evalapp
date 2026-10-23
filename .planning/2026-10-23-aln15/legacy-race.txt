@@ -1,0 +1,1 @@
+Legacy check/record gap: allowed 2 calls against max_model_calls=1; final usage=2. New reservation API is opt-in, legacy check/record behavior intentionally unchanged.

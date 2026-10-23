@@ -1,0 +1,26 @@
+{
+  "hash_format": "UTF-8 LF / Git blob",
+  "files": {
+    ".planning\\2026-10-23-aln15\\backend-committed-8c479b6.txt": "618dbfcaed4ceb1ce56c0e7e36caa918997d63c65392f32d77f23385ca2ea2b8",
+    ".planning\\2026-10-23-aln15\\backend-committed.txt": "e61c69fa56cfcca35eaf40ecd87a57c9d3dcbb18312c41d05c4388b41e503921",
+    ".planning\\2026-10-23-aln15\\before.txt": "ebf43b27ac3fea571bbf7a1d397da5fa5808d331273705eab01db2a175a156f5",
+    ".planning\\2026-10-23-aln15\\board-committed-8c479b6.txt": "7d50ffc94df97e15b0a7b305258a95adfa15c33a030a66547bc9f37f3f341772",
+    ".planning\\2026-10-23-aln15\\board-committed.txt": "7d50ffc94df97e15b0a7b305258a95adfa15c33a030a66547bc9f37f3f341772",
+    ".planning\\2026-10-23-aln15\\claims-committed-8c479b6.txt": "abffc1fefde92872cbafe9da5d6b909a05a6f59ecafc404948c5ea9657181513",
+    ".planning\\2026-10-23-aln15\\claims-committed.txt": "abffc1fefde92872cbafe9da5d6b909a05a6f59ecafc404948c5ea9657181513",
+    ".planning\\2026-10-23-aln15\\client-committed-8c479b6.txt": "cfe15f8c757be0ae08319800afa743d9058a9193ab9d5d7cdfc9574eeb09bb52",
+    ".planning\\2026-10-23-aln15\\committed-8c479b6.json": "ab57fc0eb7fa50bd614178185b2d386db4a1c4a1383419b3b704ef951e7e8242",
+    ".planning\\2026-10-23-aln15\\committed-evidence.json": "c986ffe3a1df90f407a494045b5437df771442f63db1fa55e796625da6b86396",
+    ".planning\\2026-10-23-aln15\\findings.md": "d3bef8ec6588532245c6d2149266c03ba6a04b16736aba66a5c612506f17155f",
+    ".planning\\2026-10-23-aln15\\ledgers-committed-8c479b6.txt": "25fdc5c0cbd2d8accd586b49c411678eaf3a77beb681e599af1019bfb05c31ca",
+    ".planning\\2026-10-23-aln15\\ledgers-committed.txt": "25fdc5c0cbd2d8accd586b49c411678eaf3a77beb681e599af1019bfb05c31ca",
+    ".planning\\2026-10-23-aln15\\legacy-race.txt": "91a63fe486f19e0b08857893641dae7a830b76503ae8ccc0b22ec1cf4d229f0e",
+    ".planning\\2026-10-23-aln15\\progress.md": "59160c4227bac254c0616ee54a7b58cbc7598ca213d418da5299dd350042466d",
+    ".planning\\2026-10-23-aln15\\regression.txt": "3ef00fb66111d7cba2f0d1913cc5b57e213a9d5554fa4f3bb930ebc1f9b617fa",
+    ".planning\\2026-10-23-aln15\\targeted-first.txt": "82fc4144d3cb1a471b5c7d13c3879ab297e58ab2038a5c8dcd6506d21397f2c9",
+    ".planning\\2026-10-23-aln15\\task_plan.md": "c7b3e2a69462adfd2855cd9e2387822683b408cf44324150259d7d964aec0dae",
+    ".planning\\2026-10-23-aln15\\teardown-regression.txt": "fd2d5b98a0b0579d8f06d69a79d58aa03b6d845ae0ee1b5b92c7204c4d1793c6",
+    ".planning\\2026-10-23-aln15\\typecheck-committed-8c479b6.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".planning\\2026-10-23-aln15\\verify_committed.py": "f9dd297d869a08a1efdd96cdeceb2bd9b7bf49f028d26a961fa990fe15680edf"
+  }
+}

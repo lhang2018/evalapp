@@ -110,14 +110,14 @@
       "scope": "候选准备Git/日志证据有效；当前源码新增显式验收不通过，915/1仅为此前普通tests基线"
     },
     "latest_source_verification": {
-      "source_commit": "becfad7a14fee93728879d0cebc0fbee00a4dc0a",
-      "source_tree": "4f84d9c92145a1ea937941e139523120b09fd801",
-      "python_passed": 1176,
+      "source_commit": "6976662b035af5d7d114f8e6e2bc160b91dc826a",
+      "source_tree": "82fd2d501824a45880056c4cbcc02f8e0b92ac69",
+      "python_passed": 1218,
       "python_skipped": 1,
       "client_passed": 166,
       "typecheck": "passed",
-      "scope": "git archive排除未提交修改，类型检查复用已装依赖；未重跑真机，不替代prepared_candidate或独立接受",
-      "evidence": "../../.planning/2026-10-23-project-status/verification.json"
+      "scope": "后端6976662 git archive排除在途，线程异常警告升级错误；客户端及typecheck同android-app Git tree沿用8c；未重跑真机，不替代准备候选/独立接受",
+      "evidence": "../../.planning/2026-10-23-aln15/committed-evidence.json"
     }
   },
   "streams": [
@@ -1336,12 +1336,12 @@
       "branch": "main",
       "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
       "status": "blocked",
-      "blocker": "持续执行实现等待ALN-15-A持久预算预留/结算接口；真实收益归因验收还需ALN-09/10真实候选证据。ALN-13已交付，不再存在目录占用阻塞",
+      "blocker": "15-A账本服务已交付review，13目录占用已解除；持续执行仍等待15-R权威账户绑定与实际运行时预留，真实收益归因还需09/10真实候选证据",
       "evidence": [],
       "card": "docs/协作开发/任务卡/14-机会排序与无进展停止.md",
       "shared_files": [],
       "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
-      "next_step": "先消费13的Goal/授权契约准备规则与夹具；15接口就绪后串行实现机会排序、阈值停止和递归治理；收益unknown不计改善",
+      "next_step": "规则/不变量与夹具可消费15-A契约准备；15-R真实调用接线后实现受总额度约束的持续执行与归因",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1360,15 +1360,26 @@
       "reviewer": null,
       "branch": "main",
       "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-23",
+          "scope": "持久预算账本服务；固定提交源码归档；不含现有运行时自动接线",
+          "source_commit": "6976662b035af5d7d114f8e6e2bc160b91dc826a",
+          "functional_commit": "8c479b6c9f01f342920e2f52a19d96a0e1700364",
+          "source_tree": "82fd2d501824a45880056c4cbcc02f8e0b92ac69",
+          "result": "39 new reservation tests; 150 budget/Goal/schema regression; committed backend1218 passed/1 skipped, thread warnings as errors; client166/typecheck reused identical 8c client tree",
+          "log": ".planning/2026-10-23-aln15/committed-evidence.json",
+          "delivery": "docs/协作开发/交付/ALN-15-A-持久预算预留与对账.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/15-APRO资源调度与预算对账.md",
       "shared_files": [
         "evoagent/core/budget.py"
       ],
       "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
-      "next_step": "开发持久账户与层级原子预留；先验证并发、幂等与崩溃unknown不退款，再实现结算/对账",
+      "next_step": "独立复核原子账户/父链、dispatch、unknown及真实超支；账本服务已交付，运行时消费交15-R，不关闭整包",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1376,7 +1387,11 @@
           "to": "codex-runtime",
           "reason": "用户要求重新整理认领；当前仅codex在本项目开发，接手未交付范围，保留历史交付及独立审阅要求"
         }
-      ]
+      ],
+      "review_result": "pending",
+      "preparation_status": "delivered",
+      "delivered_commit": "8c479b6c9f01f342920e2f52a19d96a0e1700364",
+      "delivery": "docs/协作开发/交付/ALN-15-A-持久预算预留与对账.md"
     },
     {
       "id": "ALN-17-A",
@@ -1527,6 +1542,31 @@
       "working_basis": "承接 ALN-18-A 已交付首片（acbd22a）：补引用/调用图与 expected_sha256 并发保护；仅改 coding.py/测试，不碰共享注册表与执行路径",
       "next_step": "待独立复验；后续：类型解析级引用、LSP 适配、专家/App 接线（共享文件串行）、注册表提供卸载语义后的包级回滚",
       "delivered_commit": "48b4aba"
+    },
+    {
+      "id": "ALN-15-R",
+      "workpackage": "ALN-15",
+      "title": "权威预算账户绑定与运行时预留接线",
+      "stream": "integration",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "6976662b035af5d7d114f8e6e2bc160b91dc826a",
+      "status": "claimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/15-预算预留运行时接线.md",
+      "shared_files": [
+        "evoagent/app.py",
+        "evoagent/core/controller.py",
+        "evoagent/core/budget.py",
+        "evoagent/react/engine.py",
+        "evoagent/tools/registry.py",
+        "evoagent/core/persistence.py",
+        "evoagent/core/schema/migrations.py"
+      ],
+      "working_basis": "15-A提供内部账户服务，后续实际调用须串行接线；base_commit为已核验源码而非发布基线；本卡仅认领未开工",
+      "next_step": "下一张：权威Goal/Task/实验账户绑定，分类/规划/ReAct/工具reserve-dispatch-settle/unknown接线；开工先补完整共享调用点声明"
     }
   ],
   "workpackages": [
@@ -1773,7 +1813,7 @@
       "stream": "runtime",
       "owner": "codex-runtime",
       "delivery_state": "planned",
-      "next_step": "先消费13的Goal/授权契约准备规则与夹具；15接口就绪后串行实现机会排序、阈值停止和递归治理；收益unknown不计改善",
+      "next_step": "规则/不变量与夹具可消费15-A契约准备；15-R真实调用接线后实现受总额度约束的持续执行与归因",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1794,8 +1834,8 @@
       ],
       "stream": "runtime",
       "owner": "codex-runtime",
-      "delivery_state": "planned",
-      "next_step": "下一张开发卡：持久预留→结算/退款→unknown对账→崩溃回收；复用BudgetLedger并明确Goal总额度与任务硬上限区别；本轮仅重排认领，尚未开始编码",
+      "delivery_state": "partial_verified",
+      "next_step": "15-A已交付review（8c功能/697测试清理，固定源码1218/1）；下一张15-R接权威账户与实际模型/工具调用，APRO设备调度和真实账单仍待做",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1944,24 +1984,24 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "2026-10-23 当前项目单会话开发ALN-15-A：持久预算账户、层级预留、结算退款及unknown对账；其他认领卡串行排队，保留review/accepted与原依赖；基线candidate未发布。",
+  "execution_note": "2026-10-23 ALN-15-A持久账户/预留/结算对账服务已交付review；6976662固定源码后端1218/1，线程异常升级错误重验无警告；客户端166/typecheck同tree沿用8c。下一张15-R接真实账户与模型/工具调用，之后14持续目标；现有运行时未自动消费该服务。原review/accepted、31张子卡作者及准备候选保留，基线candidate未发布。",
   "execution_queue": {
     "updated_at": "2026-10-23",
     "mode": "当前项目单开发会话串行推进",
     "owner": "codex-runtime",
     "wip_limit": 1,
-    "active_task": "ALN-15-A",
-    "next_task": "ALN-15-A",
+    "active_task": null,
+    "next_task": "ALN-15-R",
     "items": [
       {
-        "id": "ALN-15-A",
-        "state": "开发中",
-        "condition": "先定持久预算契约及并发/崩溃不变量，再实现；不替上游卡验收"
+        "id": "ALN-15-R",
+        "state": "下一张/已认领未开工",
+        "condition": "15-A服务已交付，先把实际Goal/Task/实验及分类/规划/ReAct/工具调用接入预留，再启动14持续执行"
       },
       {
         "id": "ALN-14-A",
         "state": "依赖阻塞",
-        "condition": "13目录阻塞已解除；15预算接口就绪后实现，真实收益验收仍需09/10"
+        "condition": "15-A服务已有；持续执行等待15-R真实运行时预留，规则夹具可先准备，真实收益验收仍需09/10"
       },
       {
         "id": "ALN-05-I",

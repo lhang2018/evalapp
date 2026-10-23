@@ -16,3 +16,5 @@
 - 更新协作入口、规则、6张既有卡、2张新卡、生成认领表及渲染/队列校验工具；工具检查、旧候选哈希检查、89主题/19实体/14ADR/11契约/20用例覆盖检查通过。
 - 台账声明/漂移检查通过；已有对应测试43 passed/1 skipped。链接、生成表一致性、旧review/accepted不变及基线不变的核验见claim-reorganization.json；diff --check通过。
 - 当前接手源码锚点cabf775（相比上一轮becfad7仅提交会话记忆）；没有把它冒充新发布候选。未改业务实现、未混入未提交内容，未提交/推送本轮整理。
+
+后续继续15开发时，上述核对/认领自身文件已随e263e5d归档；Windows日志换行在Git中会规范为LF，verification.json的sha256已按UTF-8 LF日志规范更新，保留原raw_execution_sha256。结果和源commit不变。当前任务状态转以workboard与15-A交付为准，早期27/29子卡计数是历史快照。
