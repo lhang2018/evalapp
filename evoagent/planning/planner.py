@@ -18,6 +18,7 @@ from ..models.base import ChatMessage
 from ..models.metering import adapter_model_id, settle_adapter_cost
 from .contracts import MatchContext, ModeSelection, WorkflowCandidate
 from .matching import WorkflowMatcher
+from .snapshots import freeze_json, thaw_json
 
 
 INTENT_TOOL_HINTS: Dict[str, str] = {
@@ -42,10 +43,20 @@ class RecoveryPolicy:
     params: Dict[str, Any] = field(default_factory=dict)
     rationale: str = ""
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.category, str) or not self.category.strip():
+            raise ValueError("recovery category must be a nonempty string")
+        if self.action not in ("require_approval", "partial_retry", "checkpoint", "fallback_tool"):
+            raise ValueError(f"unsupported recovery action: {self.action}")
+        from collections.abc import Mapping
+        if not isinstance(self.params, Mapping):
+            raise ValueError("recovery params must be an object")
+        object.__setattr__(self, "params", freeze_json(self.params))
+
     def to_dict(self) -> Dict[str, Any]:
         return {"category": self.category, "action": self.action,
                 "applies_to_intent": self.applies_to_intent,
-                "params": dict(self.params), "rationale": self.rationale}
+                "params": thaw_json(self.params), "rationale": self.rationale}
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "RecoveryPolicy":
@@ -284,7 +295,8 @@ class ExecutionPlan:
         step = next((s for s in self.steps if s.step_id == step_id), None)
         if step is None or step.state != "failed" or step_id in self.completed_work:
             return []
-        return list(self.recovery_policies)
+        return [p if isinstance(p, RecoveryPolicy) else RecoveryPolicy.from_dict(p)
+                for p in self.recovery_policies]
 
     def validate(self) -> List[str]:
         """规划验收（PRD 11.3）：完整性/依赖顺序/资源可行性/风险覆盖/终止条件。"""

@@ -256,3 +256,26 @@ class LayerManager:
         }
         out["diagnostics"] = self.db.delete_diagnostics_for_task(task_id)
         return out
+
+    def validate_deletion_plan(self, plan: Any) -> None:
+        """Reject references that currently belong to another task before writes.
+
+        Missing IDs are allowed for replay/retention cleanup. This preflight is
+        not a global transaction with the EventBus connection.
+        """
+        from ..observability.export import DeletionScopeError
+        if self.bus is None:
+            return
+        own_ids = {e.event_id for e in self.bus.query(
+            task_id=plan.scope, limit=max(1, self.bus.count(plan.scope)))}
+        if any(self.bus.exists(eid) and eid not in own_ids for eid in plan.event_ids):
+            raise DeletionScopeError("删除计划包含其他任务的事件引用")
+
+    def record_deletion(self, plan: Any, *, actor: str, reason: str,
+                        outcome: str, detail: Dict[str, Any]) -> str:
+        """Persist each intent/result as a separate audit row, without payloads."""
+        audit_id = "del_" + uuid.uuid4().hex
+        self.db.save_audit(audit_id, actor, "privacy_deletion", plan.scope,
+                           outcome, {**detail, "executed_by": actor,
+                                     "execute_reason": reason})
+        return audit_id

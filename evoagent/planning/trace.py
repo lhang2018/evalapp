@@ -17,9 +17,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 from .planner import ExecutionPlan
-
-#: 步骤终态：不可能再变化
-_TERMINAL_STATES = ("done", "skipped")
+from .snapshots import freeze_json, thaw_json
 
 
 @dataclass(frozen=True)
@@ -72,6 +70,12 @@ class PlanTrace:
     #: 失败/跳过步骤的恢复候选（按 step_id 排序）
     recovery_candidates: Tuple[RecoveryCandidate, ...] = ()
 
+    def __post_init__(self) -> None:
+        for name in ("states", "revisions", "acceptance_criteria"):
+            object.__setattr__(self, name, freeze_json(getattr(self, name)))
+        for name in ("steps", "completed_work", "change_reasons", "recovery_candidates"):
+            object.__setattr__(self, name, tuple(getattr(self, name)))
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "plan_id": self.plan_id, "goal": self.goal,
@@ -82,9 +86,8 @@ class PlanTrace:
             "states": dict(self.states),
             "completed_work": list(self.completed_work),
             "change_reasons": list(self.change_reasons),
-            "revisions": [dict(r) for r in self.revisions],
-            "acceptance_criteria": [dict(a) if isinstance(a, dict) else a
-                                    for a in self.acceptance_criteria],
+            "revisions": thaw_json(self.revisions),
+            "acceptance_criteria": thaw_json(self.acceptance_criteria),
             "recovery_candidates": [c.to_dict()
                                     for c in self.recovery_candidates],
         }
@@ -123,13 +126,31 @@ class PlanTrace:
 
 def compile_trace(plan: ExecutionPlan) -> PlanTrace:
     """从计划编译执行轨迹；纯读，不改计划。"""
+    problems = plan._structural_problems(plan.steps)
+    if any(not s.step_id or s.state not in ("pending", "running", "done", "failed", "skipped")
+           for s in plan.steps):
+        problems.append("步骤ID或状态无效")
+    if problems:
+        raise ValueError("无法编译无效计划: " + "; ".join(problems))
+    by_id = {s.step_id: s for s in plan.steps}
+    ordered, visited_ids = [], set()
+
+    def order(sid):
+        if sid in visited_ids:
+            return
+        for dep_id in sorted(by_id[sid].deps):
+            order(dep_id)
+        visited_ids.add(sid)
+        ordered.append(by_id[sid])
+
+    for sid in sorted(by_id):
+        order(sid)
     steps = tuple(StepBinding(
         step_id=s.step_id,
         dep_ids=tuple(sorted(s.deps)),
-        tool_hint=s.tool_hint) for s in plan.steps)
+        tool_hint=s.tool_hint) for s in ordered)
 
     # 恢复分支候选：只对 failed/skipped 步骤生成
-    by_id = {s.step_id: s for s in plan.steps}
     done = set(plan.completed_work)
     candidates: List[RecoveryCandidate] = []
     for s in plan.steps:
@@ -141,24 +162,42 @@ def compile_trace(plan: ExecutionPlan) -> PlanTrace:
                 step_id=s.step_id, kind="infeasible", step_state=s.state,
                 reason="步骤已完成（completed_work），不允许重放成功副作用"))
             continue
-        # 依赖分类
-        failed_deps = tuple(sorted(
-            d for d in s.deps
-            if (by_id[d].state == "failed" and d not in done)
-            or by_id[d].state == "skipped"))
-        pending_deps = tuple(sorted(
-            d for d in s.deps
-            if by_id[d].state not in _TERMINAL_STATES and d not in failed_deps))
-        if failed_deps:
+        # Traverse unfinished ancestors, stopping at successful work. A failed
+        # direct dependency cannot hide its own running/pending prerequisite.
+        failed_deps, pending_deps, impossible, visited = set(), set(), set(), set()
+
+        def visit(dep_id):
+            if dep_id in visited:
+                return
+            visited.add(dep_id)
+            dep = by_id[dep_id]
+            if dep.state == "done":
+                return
+            if dep_id in done:
+                impossible.add(dep_id)
+                return
+            (failed_deps if dep.state in ("failed", "skipped") else pending_deps).add(dep_id)
+            for ancestor in dep.deps:
+                visit(ancestor)
+
+        for dep_id in s.deps:
+            visit(dep_id)
+        requirements = tuple(sorted(failed_deps | pending_deps | impossible))
+        if impossible:
             candidates.append(RecoveryCandidate(
-                step_id=s.step_id, kind="ready_after", step_state=s.state,
-                requires=failed_deps,
-                reason="依赖失败/跳过步骤恢复后可重试"))
+                step_id=s.step_id, kind="infeasible", step_state=s.state,
+                requires=requirements,
+                reason="依赖已有完成证据但状态冲突，不能重放成功副作用"))
         elif pending_deps:
             candidates.append(RecoveryCandidate(
                 step_id=s.step_id, kind="blocked", step_state=s.state,
-                requires=pending_deps,
-                reason="仍有未完成依赖，不能立即重试"))
+                requires=requirements,
+                reason="依赖链仍有未完成步骤，不能仅恢复失败依赖后重试"))
+        elif failed_deps:
+            candidates.append(RecoveryCandidate(
+                step_id=s.step_id, kind="ready_after", step_state=s.state,
+                requires=requirements,
+                reason="依赖失败/跳过步骤恢复后可重试"))
         else:
             candidates.append(RecoveryCandidate(
                 step_id=s.step_id, kind="retryable", step_state=s.state,
