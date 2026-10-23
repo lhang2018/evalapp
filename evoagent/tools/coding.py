@@ -27,8 +27,8 @@ from typing import Callable, Dict, List, Optional, Tuple
 from .contract import ToolContract, ToolResult, class_error
 
 _PACK_ID = "coding_pack"
-_PACK_VERSION = "1.4.0"
-_ROLLBACK_VERSION = "1.3.0"
+_PACK_VERSION = "1.5.0"
+_ROLLBACK_VERSION = "1.4.0"
 _CONTRACT_TEST_REF = "tests/test_coding_tools.py"
 _JOURNAL_DIR = ".evoagent_patch_journal"
 _SKIP_DIRS = {
@@ -536,12 +536,25 @@ def coding_edit_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
     return contract, run
 
 
+def _action_of(item: Dict[str, object]) -> str:
+    if item.get("create"):
+        return "created"
+    if item.get("deleted"):
+        return "deleted"
+    return "modified"
+
+
 def _rollback_files(prepared: List[Dict[str, object]]) -> List[str]:
     failed = []
     for item in prepared:
         path = item["path"]
         original = item["original"]
         try:
+            if item.get("create"):
+                path.unlink(missing_ok=True)
+                if path.exists():
+                    failed.append(str(item["rel"]))
+                continue
             path.write_text(original, encoding="utf-8")
             if path.read_text(encoding="utf-8") != original:
                 failed.append(str(item["rel"]))
@@ -573,7 +586,9 @@ def _write_journal(rootp: Path,
         "files": [{"path": str(item["rel"]),
                    "sha256_before": item["sha256_before"],
                    "sha256_after": item["sha256_after"],
-                   "original": item["original"]}
+                   "original": item["original"],
+                   "existed": not item.get("create"),
+                   "deleted": bool(item.get("deleted"))}
                   for item in prepared],
     })
     return path
@@ -640,18 +655,50 @@ def _recover_journals(rootp: Path, dry_run: bool):
             before = str(item.get("sha256_before") or "")
             after = str(item.get("sha256_after") or "")
             original = item.get("original")
+            existed = item.get("existed", True) is not False
+            deleted = bool(item.get("deleted"))
             action = "conflict"
             attempted_write = False
             try:
-                if not rel or not before or not after \
-                        or not isinstance(original, str):
+                if not rel or not isinstance(original, str):
                     raise ValueError("日志条目不完整")
-                if hashlib.sha256(
+                if not existed:
+                    if before or not after:
+                        raise ValueError("新增文件日志条目不完整")
+                elif not before or (not deleted and not after):
+                    raise ValueError("日志条目不完整")
+                if existed and hashlib.sha256(
                         original.encode("utf-8")).hexdigest() != before:
                     raise ValueError("原内容摘要与日志不符")
                 target = _resolve_within(rootp, rel)
                 current = _sha_file(target) if target.is_file() else ""
-                if current == after:
+                if not existed:
+                    if target.is_file() and current == after:
+                        if not dry_run:
+                            attempted_write = True
+                            target.unlink()
+                        action = "restored"
+                        restored += 1
+                    elif not target.exists():
+                        action = "already_before"
+                    else:
+                        action = "conflict"
+                        conflicts += 1
+                elif deleted:
+                    if not target.exists():
+                        if not dry_run:
+                            attempted_write = True
+                            target.write_text(original, encoding="utf-8")
+                            if _sha_file(target) != before:
+                                raise OSError("恢复后摘要不符")
+                        action = "restored"
+                        restored += 1
+                    elif current == before:
+                        action = "already_before"
+                    else:
+                        action = "conflict"
+                        conflicts += 1
+                elif current == after:
                     if not dry_run:
                         attempted_write = True
                         target.write_text(original, encoding="utf-8")
@@ -702,15 +749,24 @@ def _parse_unified_diff(text: str):
             return None, f"第 {index + 1} 行缺少 +++ 文件头"
         old_name = head[4:].split("\t")[0].strip()
         new_name = lines[index + 1][4:].split("\t")[0].strip()
-        if "/dev/null" in (old_name, new_name):
-            return None, "不支持新增/删除文件的 diff（/dev/null）"
+        create = old_name == "/dev/null"
+        delete = new_name == "/dev/null"
+        if create and delete:
+            return None, "文件头两侧同为 /dev/null，无法确定路径"
         if old_name.startswith("a/"):
             old_name = old_name[2:]
         if new_name.startswith("b/"):
             new_name = new_name[2:]
-        if old_name and new_name and old_name != new_name:
-            return None, f"文件头不一致: {old_name} -> {new_name}"
-        rel = new_name or old_name
+        if create:
+            rel = new_name
+        elif delete:
+            rel = old_name
+        else:
+            if old_name and new_name and old_name != new_name:
+                return None, f"文件头不一致: {old_name} -> {new_name}"
+            rel = new_name or old_name
+        if not rel:
+            return None, f"第 {index + 1} 行文件头缺少路径"
         index += 2
         hunks: List[Dict[str, object]] = []
         while index < total and lines[index].startswith("@@"):
@@ -718,11 +774,18 @@ def _parse_unified_diff(text: str):
             if not match:
                 return None, f"第 {index + 1} 行 hunk 头非法: " \
                              f"{lines[index].rstrip()}"
-            start_line = int(match.group(3) or 1)
-            old_left = int(match.group(2)) if match.group(2) is not None \
+            old_count = int(match.group(2)) if match.group(2) is not None \
                 else 1
-            new_left = int(match.group(4)) if match.group(4) is not None \
+            new_count = int(match.group(4)) if match.group(4) is not None \
                 else 1
+            if create and old_count != 0:
+                return None, f"{rel}: 新增文件的 hunk 旧计数必须为 0"
+            if delete and new_count != 0:
+                return None, f"{rel}: 删除文件的 hunk 新计数必须为 0"
+            start_line = int(match.group(1) or 1) if delete \
+                else int(match.group(3) or 1)
+            old_left = old_count
+            new_left = new_count
             index += 1
             old_block: List[str] = []
             new_block: List[str] = []
@@ -768,10 +831,71 @@ def _parse_unified_diff(text: str):
                           "new": "".join(new_block)})
         if not hunks:
             return None, f"{rel}: 缺少 hunk"
-        files.append({"path": rel, "hunks": hunks})
+        if (create or delete) and len(hunks) != 1:
+            return None, f"{rel}: 新增/删除文件只允许一个 hunk"
+        files.append({"path": rel, "hunks": hunks,
+                      "create": create, "delete": delete})
     if not files:
         return None, "diff 为空"
     return files, None
+
+
+_HUNK_FUZZ = 2
+
+
+def _line_at(text: str, offset: int) -> int:
+    return text.count("\n", 0, offset) + 1
+
+
+def _trim_hunk_context(old_block: str, new_block: str, fuzz: int):
+    old_lines = old_block.splitlines(True)
+    new_lines = new_block.splitlines(True)
+    lead = 0
+    while (lead < fuzz and lead < len(old_lines) - 1
+           and lead < len(new_lines) - 1
+           and old_lines[lead] == new_lines[lead]):
+        lead += 1
+    trail = 0
+    while (trail < fuzz - lead and trail < len(old_lines) - lead - 1
+           and trail < len(new_lines) - lead - 1
+           and old_lines[-1 - trail] == new_lines[-1 - trail]):
+        trail += 1
+    return ("".join(old_lines[lead:len(old_lines) - trail]),
+            "".join(new_lines[lead:len(new_lines) - trail]), lead)
+
+
+def _apply_hunk(content: str, old_block: str, new_block: str,
+                expected_line: int):
+    """定位并替换单个 hunk，返回 (新内容, 行数偏移, 命中行号)。"""
+    for fuzz in range(_HUNK_FUZZ + 1):
+        old_trim, new_trim, lead = _trim_hunk_context(
+            old_block, new_block, fuzz)
+        if not old_trim:
+            break
+        hits = []
+        start = 0
+        while True:
+            found = content.find(old_trim, start)
+            if found < 0:
+                break
+            hits.append(found)
+            start = found + 1
+        if not hits:
+            continue
+        want = expected_line + lead
+        exact = [hit for hit in hits if _line_at(content, hit) == want]
+        if len(hits) == 1:
+            pick = hits[0]
+        elif len(exact) == 1:
+            pick = exact[0]
+        else:
+            raise ValueError(
+                f"命中 {len(hits)} 处，行号 {want} 无法唯一消歧")
+        line_no = _line_at(content, pick)
+        updated = content[:pick] + new_trim + content[pick + len(old_trim):]
+        delta = new_trim.count("\n") - old_trim.count("\n")
+        return updated, delta, line_no
+    raise ValueError(f"上下文未命中（容错 {_HUNK_FUZZ} 行后仍无匹配）")
 
 
 def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
@@ -801,6 +925,7 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
         except ValueError as exc:
             return ToolResult.error_result(str(exc), "auth_or_permission")
 
+        diff_ops: Dict[str, str] = {}
         if diff_text is not None:
             parsed, parse_error = _parse_unified_diff(diff_text)
             if parse_error:
@@ -812,11 +937,33 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
             converted = []
             for entry in parsed:
                 rel = str(entry["path"])
+                create = bool(entry.get("create"))
+                delete = bool(entry.get("delete"))
                 try:
                     path = _resolve_within(rootp, rel)
                 except ValueError as exc:
                     return ToolResult.error_result(str(exc),
                                                    "auth_or_permission")
+                if create:
+                    if path.exists():
+                        return ToolResult.error_result(
+                            f"{rel}: 目标已存在，无法新增文件",
+                            "invalid_arguments")
+                    if not path.parent.is_dir():
+                        return ToolResult.error_result(
+                            f"{rel}: 父目录不存在，无法新增文件",
+                            "invalid_arguments")
+                    new_block = str(entry["hunks"][0]["new"])
+                    if not new_block:
+                        return ToolResult.error_result(
+                            f"{rel}: 新增文件内容为空", "invalid_arguments")
+                    if len(new_block.encode("utf-8")) > _MAX_SOURCE_BYTES:
+                        return ToolResult.error_result(
+                            f"文件过大: {rel}", "invalid_arguments")
+                    converted.append({"path": rel, "old_text": "",
+                                      "new_text": new_block, "_line": 1})
+                    diff_ops[rel] = "create"
+                    continue
                 if not path.is_file():
                     return ToolResult.error_result(
                         f"文件不存在: {rel}", "invalid_arguments")
@@ -840,17 +987,25 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
                         return ToolResult.error_result(
                             f"{rel}: 第 {hidx} 个 hunk 缺少上下文/删除行",
                             "invalid_arguments")
-                    hits = content.count(old_block)
-                    if hits != 1:
+                    try:
+                        # 同一文件的前序 hunk 已应用，内容按新文件行号定位
+                        content, _shift, hit_line = _apply_hunk(
+                            content, old_block, new_block,
+                            int(hunk["start"]))
+                    except ValueError as exc:
                         return ToolResult.error_result(
-                            f"{rel}: 第 {hidx} 个 hunk 命中 {hits} 处，"
-                            f"要求唯一，未写盘", "invalid_arguments")
+                            f"{rel}: 第 {hidx} 个 hunk {exc}，未写盘",
+                            "invalid_arguments")
                     if line_hint is None:
-                        line_hint = original.count(
-                            "\n", 0, original.find(old_block)) + 1
-                    content = content.replace(old_block, new_block, 1)
+                        line_hint = hit_line
+                if delete and content:
+                    return ToolResult.error_result(
+                        f"{rel}: 删除文件的 hunk 未覆盖全部内容",
+                        "invalid_arguments")
                 converted.append({"path": rel, "old_text": original,
                                   "new_text": content, "_line": line_hint})
+                if delete:
+                    diff_ops[rel] = "delete"
             edits = converted
 
         prepared: List[Dict[str, object]] = []
@@ -861,7 +1016,10 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
                     f"第 {index + 1} 条编辑不是对象", "invalid_arguments")
             rel = str(item.get("path") or "")
             old_text = str(item.get("old_text") or "")
-            if not rel or not old_text or item.get("new_text") is None:
+            is_create = diff_ops.get(rel) == "create"
+            is_delete = diff_ops.get(rel) == "delete"
+            if not rel or item.get("new_text") is None \
+                    or (not old_text and not is_create):
                 return ToolResult.error_result(
                     f"第 {index + 1} 条编辑缺少 path/old_text/new_text",
                     "invalid_arguments")
@@ -874,21 +1032,29 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
                 return ToolResult.error_result(
                     f"同一文件出现多条编辑: {rel}", "invalid_arguments")
             seen.add(str(path))
-            if not path.is_file():
-                return ToolResult.error_result(
-                    f"文件不存在: {rel}", "invalid_arguments")
-            if path.stat().st_size > _MAX_SOURCE_BYTES:
-                return ToolResult.error_result(
-                    f"文件过大: {rel}", "invalid_arguments")
-            try:
-                original = path.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError) as exc:
-                return ToolResult.error_result(str(exc), class_error(exc))
-
-            digest_before = hashlib.sha256(
-                original.encode("utf-8")).hexdigest()
+            if is_create:
+                if path.exists():
+                    return ToolResult.error_result(
+                        f"{rel}: 目标已存在，无法新增文件",
+                        "invalid_arguments")
+                original = ""
+                digest_before = ""
+            else:
+                if not path.is_file():
+                    return ToolResult.error_result(
+                        f"文件不存在: {rel}", "invalid_arguments")
+                if path.stat().st_size > _MAX_SOURCE_BYTES:
+                    return ToolResult.error_result(
+                        f"文件过大: {rel}", "invalid_arguments")
+                try:
+                    original = path.read_text(encoding="utf-8")
+                except (OSError, UnicodeDecodeError) as exc:
+                    return ToolResult.error_result(
+                        str(exc), class_error(exc))
+                digest_before = hashlib.sha256(
+                    original.encode("utf-8")).hexdigest()
             expected = item.get("expected_sha256")
-            if expected is not None:
+            if expected is not None and not is_create:
                 expected = str(expected).strip().lower()
                 if len(expected) < 8:
                     return ToolResult.error_result(
@@ -905,7 +1071,10 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
                                   "expected_sha256": expected,
                                   "actual_sha256": digest_before})
 
-            hits = original.count(old_text)
+            if is_create:
+                hits = 1
+            else:
+                hits = original.count(old_text)
             if hits != 1:
                 return ToolResult.error_result(
                     f"{rel}: old_text 命中 {hits} 处，要求唯一，未写盘",
@@ -913,8 +1082,9 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
             if new_text == old_text:
                 return ToolResult.error_result(
                     f"{rel}: 内容无变化，未写盘", "invalid_arguments")
-            content = original.replace(old_text, new_text, 1)
-            if path.suffix == ".py":
+            content = new_text if is_create \
+                else original.replace(old_text, new_text, 1)
+            if path.suffix == ".py" and not is_delete:
                 syntax_error = _syntax_error(content, rel)
                 if syntax_error:
                     return ToolResult(
@@ -928,7 +1098,7 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
                                   "syntax_error": syntax_error})
             line_hint = item.get("_line")
             if not isinstance(line_hint, int) or line_hint < 1:
-                line_hint = original.count(
+                line_hint = 1 if is_create else original.count(
                     "\n", 0, original.index(old_text)) + 1
             prepared.append({
                 "path": path,
@@ -936,9 +1106,11 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
                 "original": original,
                 "new_content": content,
                 "sha256_before": digest_before,
-                "sha256_after": hashlib.sha256(
+                "sha256_after": "" if is_delete else hashlib.sha256(
                     content.encode("utf-8")).hexdigest(),
                 "line": line_hint,
+                "create": is_create,
+                "deleted": is_delete,
             })
 
         if dry_run:
@@ -947,10 +1119,14 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
                 diff = "".join(difflib.unified_diff(
                     str(item["original"]).splitlines(True),
                     str(item["new_content"]).splitlines(True),
-                    fromfile=str(item["rel"]), tofile=str(item["rel"])))
+                    fromfile="/dev/null" if item["create"]
+                    else str(item["rel"]),
+                    tofile="/dev/null" if item["deleted"]
+                    else str(item["rel"])))
                 files.append({
                     "file": item["rel"],
                     "line": item["line"],
+                    "action": _action_of(item),
                     "sha256_before": item["sha256_before"],
                     "sha256_after": item["sha256_after"],
                     "diff": _tail(diff, 4000),
@@ -977,7 +1153,11 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
         written: List[str] = []
         try:
             for item in prepared:
-                item["path"].write_text(item["new_content"], encoding="utf-8")
+                if item["deleted"]:
+                    item["path"].unlink()
+                else:
+                    item["path"].write_text(item["new_content"],
+                                            encoding="utf-8")
                 written.append(str(item["rel"]))
         except OSError as exc:
             failed = _rollback_files(prepared)
@@ -998,7 +1178,10 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
         mismatched = []
         for item in prepared:
             try:
-                if item["path"].read_text(encoding="utf-8") \
+                if item["deleted"]:
+                    if item["path"].exists():
+                        mismatched.append(str(item["rel"]))
+                elif item["path"].read_text(encoding="utf-8") \
                         != item["new_content"]:
                     mismatched.append(str(item["rel"]))
             except OSError:
@@ -1027,6 +1210,7 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
             pass
 
         files = [{"file": item["rel"], "line": item["line"],
+                  "action": _action_of(item),
                   "sha256_before": item["sha256_before"],
                   "sha256_after": item["sha256_after"]}
                  for item in prepared]
@@ -1040,7 +1224,7 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
 
     contract = ToolContract(
         tool_id="coding_patch",
-        description="原子多文件补丁：edits 或统一 diff，全量预检、失败全量回滚、dry-run 预览",
+        description="原子多文件补丁：edits 或统一 diff（含新增/删除文件、行号消歧与上下文容错），全量预检、失败全量回滚、dry-run 预览",
         tool_version=_PACK_VERSION,
         permission_requirements=["fs.read", "fs.write"],
         input_schema={"type": "object", "properties": {

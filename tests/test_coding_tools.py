@@ -623,6 +623,29 @@ class TestCodingTools(unittest.TestCase):
         self.assertEqual(path.read_text(encoding="utf-8"),
                          "one = 10\nmid\nthree = 30\n")
 
+    def test_patch_diff_hunks_use_new_file_line_numbers(self):
+        root = self._project()
+        path = root / "a.py"
+        path.write_text("one = 1\ntwo = 2\nthree = 3\n", encoding="utf-8")
+        diff = (
+            "--- a/a.py\n"
+            "+++ b/a.py\n"
+            "@@ -1 +1,2 @@\n"
+            "-one = 1\n"
+            "+one = 10\n"
+            "+extra = 0\n"
+            "@@ -3 +4 @@\n"
+            "-three = 3\n"
+            "+three = 30\n"
+        )
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff})
+
+        self.assertTrue(result.ok)
+        self.assertEqual(path.read_text(encoding="utf-8"),
+                         "one = 10\nextra = 0\ntwo = 2\nthree = 30\n")
+
     def test_patch_diff_context_mismatch_aborts_all(self):
         root = self._project()
         first = root / "a.py"
@@ -666,9 +689,10 @@ class TestCodingTools(unittest.TestCase):
         neither = run({})
         self.assertFalse(neither.ok)
 
-        devnull = run({"diff": "--- /dev/null\n+++ b/a.py\n@@ -0,0 +1 @@\n+x = 1\n"})
+        devnull = run({"diff": "--- /dev/null\n+++ /dev/null\n"
+                               "@@ -0,0 +1 @@\n+x = 1\n"})
         self.assertFalse(devnull.ok)
-        self.assertIn("/dev/null", devnull.error)
+        self.assertIn("同为 /dev/null", devnull.error)
 
         marker = run({"diff": "--- a/a.py\n+++ b/a.py\n@@ -1 +1 @@\n-x = 1\n"
                               "\\ No newline at end of file\n+x = 2\n"})
@@ -726,6 +750,212 @@ class TestCodingTools(unittest.TestCase):
         self.assertIn("-x = 1", result.data["files"][0]["diff"])
         self.assertIn("+x = 2", result.data["files"][0]["diff"])
         self.assertEqual(path.read_text(encoding="utf-8"), "x = 1\n")
+
+    # ---- 新增/删除文件与 hunk 位置容错 ----
+
+    def test_patch_diff_creates_file(self):
+        root = self._project()
+        diff = ("--- /dev/null\n"
+                "+++ b/new_mod.py\n"
+                "@@ -0,0 +1,2 @@\n"
+                "+x = 1\n"
+                "+y = 2\n")
+        _, run = coding_patch_tool(str(root))
+
+        preview = run({"diff": diff, "dry_run": True})
+        self.assertTrue(preview.ok)
+        self.assertIn("+x = 1", preview.data["files"][0]["diff"])
+        self.assertEqual(preview.data["files"][0]["sha256_before"], "")
+        self.assertFalse((root / "new_mod.py").exists())
+
+        result = run({"diff": diff})
+
+        self.assertTrue(result.ok)
+        self.assertEqual(result.data["files"][0]["action"], "created")
+        self.assertEqual(result.data["files"][0]["sha256_before"], "")
+        self.assertEqual(len(result.data["files"][0]["sha256_after"]), 64)
+        self.assertEqual((root / "new_mod.py").read_text(encoding="utf-8"),
+                         "x = 1\ny = 2\n")
+        self.assertFalse((root / ".evoagent_patch_journal").exists())
+
+    def test_patch_diff_create_guards(self):
+        root = self._project()
+        (root / "exists.py").write_text("x = 1\n", encoding="utf-8")
+        _, run = coding_patch_tool(str(root))
+
+        existing = run({"diff": "--- /dev/null\n+++ b/exists.py\n"
+                                "@@ -0,0 +1 @@\n+x = 2\n"})
+        self.assertFalse(existing.ok)
+        self.assertIn("目标已存在", existing.error)
+        self.assertEqual((root / "exists.py").read_text(encoding="utf-8"),
+                         "x = 1\n")
+
+        missing_parent = run({"diff": "--- /dev/null\n+++ b/sub/x.py\n"
+                                      "@@ -0,0 +1 @@\n+x = 1\n"})
+        self.assertFalse(missing_parent.ok)
+        self.assertIn("父目录不存在", missing_parent.error)
+
+        with_removal = run({"diff": "--- /dev/null\n+++ b/bad.py\n"
+                                    "@@ -1,1 +1,1 @@\n-x\n+y\n"})
+        self.assertFalse(with_removal.ok)
+        self.assertIn("旧计数必须为 0", with_removal.error)
+        self.assertFalse((root / "bad.py").exists())
+
+    def test_patch_diff_deletes_file(self):
+        root = self._project()
+        path = root / "gone.txt"
+        path.write_text("x = 1\ny = 2\n", encoding="utf-8")
+        diff = ("--- a/gone.txt\n"
+                "+++ /dev/null\n"
+                "@@ -1,2 +0,0 @@\n"
+                "-x = 1\n"
+                "-y = 2\n")
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff})
+
+        self.assertTrue(result.ok)
+        self.assertEqual(result.data["files"][0]["action"], "deleted")
+        self.assertEqual(result.data["files"][0]["sha256_after"], "")
+        self.assertFalse(path.exists())
+        self.assertFalse((root / ".evoagent_patch_journal").exists())
+
+    def test_patch_diff_delete_requires_full_removal(self):
+        root = self._project()
+        path = root / "gone.txt"
+        path.write_text("x = 1\ny = 2\n", encoding="utf-8")
+        diff = ("--- a/gone.txt\n"
+                "+++ /dev/null\n"
+                "@@ -1 +0,0 @@\n"
+                "-x = 1\n")
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff})
+
+        self.assertFalse(result.ok)
+        self.assertIn("未覆盖全部内容", result.error)
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 1\ny = 2\n")
+        self.assertFalse((root / ".evoagent_patch_journal").exists())
+
+    def test_patch_diff_line_number_disambiguates(self):
+        root = self._project()
+        path = root / "dup.txt"
+        path.write_text("a = 0\nb = 0\nc = 0\nvalue = 1\nd = 0\nvalue = 1\n",
+                        encoding="utf-8")
+        diff = ("--- a/dup.txt\n+++ b/dup.txt\n@@ -6 +6 @@\n"
+                "-value = 1\n+value = 2\n")
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff})
+
+        self.assertTrue(result.ok)
+        self.assertEqual(result.data["files"][0]["line"], 6)
+        self.assertEqual(path.read_text(encoding="utf-8"),
+                         "a = 0\nb = 0\nc = 0\nvalue = 1\nd = 0\nvalue = 2\n")
+
+    def test_patch_diff_ambiguous_without_line_hit_rejected(self):
+        root = self._project()
+        path = root / "dup.txt"
+        original = "a = 0\nb = 0\nc = 0\nvalue = 1\nd = 0\nvalue = 1\n"
+        path.write_text(original, encoding="utf-8")
+        diff = ("--- a/dup.txt\n+++ b/dup.txt\n@@ -3 +3 @@\n"
+                "-value = 1\n+value = 2\n")
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff})
+
+        self.assertFalse(result.ok)
+        self.assertIn("无法唯一消歧", result.error)
+        self.assertEqual(path.read_text(encoding="utf-8"), original)
+
+    def test_patch_diff_fuzz_trims_context(self):
+        root = self._project()
+        path = root / "fuzz.txt"
+        path.write_text("start = 0\ntarget = 1\nend = 0\n", encoding="utf-8")
+        diff = ("--- a/fuzz.txt\n+++ b/fuzz.txt\n@@ -1,3 +1,3 @@\n"
+                " stale_top\n"
+                "-target = 1\n"
+                "+target = 2\n"
+                " stale_bottom\n")
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff})
+
+        self.assertTrue(result.ok)
+        self.assertEqual(path.read_text(encoding="utf-8"),
+                         "start = 0\ntarget = 2\nend = 0\n")
+
+    def test_patch_diff_fuzz_beyond_limit_rejected(self):
+        root = self._project()
+        path = root / "fuzz.txt"
+        original = "start = 0\ntarget = 1\nend = 0\n"
+        path.write_text(original, encoding="utf-8")
+        diff = ("--- a/fuzz.txt\n+++ b/fuzz.txt\n@@ -1,5 +1,5 @@\n"
+                " stale1\n"
+                " stale2\n"
+                " stale3\n"
+                "-target = 1\n"
+                "+target = 2\n"
+                " stale4\n")
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff})
+
+        self.assertFalse(result.ok)
+        self.assertIn("上下文未命中", result.error)
+        self.assertEqual(path.read_text(encoding="utf-8"), original)
+
+    def test_patch_diff_mixed_create_modify_delete(self):
+        root = self._project()
+        modified = root / "mod.txt"
+        removed = root / "gone.txt"
+        modified.write_text("keep\n", encoding="utf-8")
+        removed.write_text("bye\n", encoding="utf-8")
+        diff = ("--- a/mod.txt\n+++ b/mod.txt\n@@ -1 +1 @@\n"
+                "-keep\n+kept\n"
+                "--- /dev/null\n+++ b/new.txt\n@@ -0,0 +1 @@\n+new\n"
+                "--- a/gone.txt\n+++ /dev/null\n@@ -1 +0,0 @@\n-bye\n")
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"diff": diff})
+
+        self.assertTrue(result.ok)
+        actions = [row["action"] for row in result.data["files"]]
+        self.assertEqual(actions, ["modified", "created", "deleted"])
+        self.assertEqual(modified.read_text(encoding="utf-8"), "kept\n")
+        self.assertEqual((root / "new.txt").read_text(encoding="utf-8"),
+                         "new\n")
+        self.assertFalse(removed.exists())
+        self.assertFalse((root / ".evoagent_patch_journal").exists())
+
+    def test_patch_diff_mixed_failure_rolls_back_all(self):
+        root = self._project()
+        modified = root / "mod.txt"
+        removed = root / "gone.txt"
+        modified.write_text("keep\n", encoding="utf-8")
+        removed.write_text("bye\n", encoding="utf-8")
+        diff = ("--- a/mod.txt\n+++ b/mod.txt\n@@ -1 +1 @@\n"
+                "-keep\n+kept\n"
+                "--- /dev/null\n+++ b/new.txt\n@@ -0,0 +1 @@\n+new\n"
+                "--- a/gone.txt\n+++ /dev/null\n@@ -1 +0,0 @@\n-bye\n")
+        original_unlink = Path.unlink
+
+        def fail_unlink(self, *args, **kwargs):
+            if self.name == "gone.txt":
+                raise OSError("locked")
+            return original_unlink(self, *args, **kwargs)
+
+        _, run = coding_patch_tool(str(root))
+        with mock.patch.object(Path, "unlink", fail_unlink):
+            result = run({"diff": diff})
+
+        self.assertFalse(result.ok)
+        self.assertIn("写盘失败并回滚", result.error)
+        self.assertTrue(result.independently_verified)
+        self.assertEqual(modified.read_text(encoding="utf-8"), "keep\n")
+        self.assertFalse((root / "new.txt").exists())
+        self.assertEqual(removed.read_text(encoding="utf-8"), "bye\n")
+        self.assertFalse((root / ".evoagent_patch_journal").exists())
 
     # ---- 事务日志与中断恢复 ----
 
@@ -834,6 +1064,60 @@ class TestCodingTools(unittest.TestCase):
         self.assertEqual(path.read_text(encoding="utf-8"), "x = 1\n")
         self.assertFalse((root / ".evoagent_patch_journal").exists())
 
+    def _create_row(self, rel="new.py", content="x = 1\n"):
+        return {"path": rel, "sha256_before": "",
+                "sha256_after": hashlib.sha256(
+                    content.encode("utf-8")).hexdigest(),
+                "original": "", "existed": False, "deleted": False}
+
+    def _delete_row(self, rel="gone.py", original="x = 1\n"):
+        return {"path": rel,
+                "sha256_before": hashlib.sha256(
+                    original.encode("utf-8")).hexdigest(),
+                "sha256_after": "", "original": original,
+                "existed": True, "deleted": True}
+
+    def test_recover_removes_created_file(self):
+        root = self._project()
+        path = root / "new.py"
+        path.write_text("x = 1\n", encoding="utf-8")
+        self._plant_journal(root, [self._create_row()])
+        _, run = coding_patch_recover_tool(str(root))
+
+        result = run({})
+
+        self.assertTrue(result.ok)
+        self.assertEqual(result.data["restored"], 1)
+        self.assertFalse(path.exists())
+        self.assertFalse((root / ".evoagent_patch_journal").exists())
+
+    def test_recover_restores_deleted_file(self):
+        root = self._project()
+        path = root / "gone.py"
+        self._plant_journal(root, [self._delete_row()])
+        _, run = coding_patch_recover_tool(str(root))
+
+        result = run({})
+
+        self.assertTrue(result.ok)
+        self.assertEqual(result.data["restored"], 1)
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 1\n")
+        self.assertFalse((root / ".evoagent_patch_journal").exists())
+
+    def test_recover_created_file_conflict_not_removed(self):
+        root = self._project()
+        path = root / "new.py"
+        path.write_text("someone else\n", encoding="utf-8")
+        self._plant_journal(root, [self._create_row()])
+        _, run = coding_patch_recover_tool(str(root))
+
+        result = run({})
+
+        self.assertFalse(result.ok)
+        self.assertEqual(result.data["conflicts"], 1)
+        self.assertEqual(path.read_text(encoding="utf-8"), "someone else\n")
+        self.assertTrue((root / ".evoagent_patch_journal").is_dir())
+
     # ---- 契约与能力包 ----
 
     def test_contracts_declare_required_fields(self):
@@ -864,8 +1148,8 @@ class TestCodingTools(unittest.TestCase):
         manifest = install_coding_pack(registry, str(root))
 
         self.assertEqual(manifest.pack_id, "coding_pack")
-        self.assertEqual(manifest.version, "1.4.0")
-        self.assertEqual(manifest.rollback_version, "1.3.0")
+        self.assertEqual(manifest.version, "1.5.0")
+        self.assertEqual(manifest.rollback_version, "1.4.0")
         self.assertEqual(len(manifest.tool_ids), 8)
         self.assertIn("coding_patch", manifest.tool_ids)
         self.assertIn("coding_patch_recover", manifest.tool_ids)
