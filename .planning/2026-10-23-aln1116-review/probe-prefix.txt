@@ -1,0 +1,18 @@
+FAIL CR16-01 RunEvent 转换拒绝无来源的 untrusted 事件
+FAIL CR16-01b RunEvent 转换拒绝非法隐私等级
+PASS CR16-01c dict 路径校验未被削弱（回归）
+FAIL CR16-02 severity=error 推断为 degraded | fault_level=none
+FAIL CR16-02b severity=critical 推断为 fatal | fault_level=none
+PASS CR16-02c 普通事件仍为 none | fault_level=none
+FAIL CR16-03a 轮换失败不得退役旧凭证 | failed=True status=retired not_after=86900.0
+FAIL CR16-03b 宽限期不得延长原截止时间 | not_after=86900.0
+   rotate(public_key) raised: TypeError CredentialRegistry.rotate() got an unexpected keyword argument 'public_key'
+FAIL CR16-03c client_trust 公钥可轮换（无需私钥）
+FAIL CR16-04a 已撤销令牌不得回退静态配置复活 | ok=True role=admin status=200
+FAIL CR16-04b 同一秘密不得重复登记
+FAIL CR16-05 其他任务的审批记录不得混入链 | nodes=['A1', 'A9', 'e1', 'e2']
+FAIL CR16-06a digest 与输入顺序无关 | bb2310afe383 vs 65c89be99dd1
+FAIL CR16-06b 缺失因果引用必须报告 | ()
+
+==== 2/14 passed ====
+FAILED: ['CR16-01 RunEvent 转换拒绝无来源的 untrusted 事件', 'CR16-01b RunEvent 转换拒绝非法隐私等级', 'CR16-02 severity=error 推断为 degraded', 'CR16-02b severity=critical 推断为 fatal', 'CR16-03a 轮换失败不得退役旧凭证', 'CR16-03b 宽限期不得延长原截止时间', 'CR16-03c client_trust 公钥可轮换（无需私钥）', 'CR16-04a 已撤销令牌不得回退静态配置复活', 'CR16-04b 同一秘密不得重复登记', 'CR16-05 其他任务的审批记录不得混入链', 'CR16-06a digest 与输入顺序无关', 'CR16-06b 缺失因果引用必须报告']

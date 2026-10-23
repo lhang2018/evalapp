@@ -1239,7 +1239,7 @@
       "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "03600e1982455b1d6c27992cb03023b6d40bccf2",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "card": "docs/协作开发/任务卡/11-R-制品更新验收修复.md",
       "shared_files": [
@@ -1247,6 +1247,7 @@
       ],
       "delivery": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
       "delivered_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+      "review_result": "accepted",
       "evidence": [
         {
           "date": "2026-10-22",
@@ -1254,9 +1255,17 @@
           "source_commit": "aae0f9b1a129189734899807d2557a82b157288a",
           "result": "后端1095 passed/1 skipped；提交内客户端165 passed，typecheck通过；新增29项回归",
           "log": ".planning/2026-10-22-aln11-16-review/evidence.json"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "claude-main 第三方复核：干净worktree前后对照（03600e1→aae0f9b）+自写探针（服务端14项/客户端5项）",
+          "command": "python -m pytest tests/test_aln16_acceptance.py tests/test_observability_evidence.py tests/test_update_artifact_delivery.py -q; node --test \"test/update/*.test.ts\"; npm run typecheck; python .planning/2026-10-23-aln1116-review/probe_aln1116.py; node --test test/update/probe_client.test.ts",
+          "result": "修复前：服务端14 failed、客户端11 failed（判别力成立）；修复后：服务端1095 passed/1 skipped、客户端48 passed、typecheck通过；独立探针服务端14/14（修复前12失败）、客户端5/5（修复前整套不可加载）；无阻断项",
+          "reviewed_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+          "report": "docs/协作开发/验收/2026-10-23-ALN-11-R-ALN-16-R独立验收.md"
         }
       ],
-      "next_step": "由修复作者之外的reviewer复核；通过后再补端到端与真机验收"
+      "next_step": "claude-main 第三方复核通过：CR11-01..08 修复经前后对照确认（修复前11项失败→修复后全绿）；真机失败回滚/弱网断电/多设备灰度与生产信任根分发仍未完成，整包ALN-11不关闭"
     },
     {
       "id": "ALN-16-R",
@@ -1267,7 +1276,7 @@
       "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "03600e1982455b1d6c27992cb03023b6d40bccf2",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "card": "docs/协作开发/任务卡/16-R-观测凭证验收修复.md",
       "shared_files": [
@@ -1275,6 +1284,7 @@
       ],
       "delivery": "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
       "delivered_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+      "review_result": "accepted",
       "evidence": [
         {
           "date": "2026-10-22",
@@ -1282,9 +1292,17 @@
           "source_commit": "aae0f9b1a129189734899807d2557a82b157288a",
           "result": "后端1095 passed/1 skipped；提交内客户端165 passed，typecheck通过；新增29项回归",
           "log": ".planning/2026-10-22-aln11-16-review/evidence.json"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "claude-main 第三方复核：干净worktree前后对照（03600e1→aae0f9b）+自写服务端探针14项逐条复现CR16-01..06",
+          "command": "python -m pytest tests/test_aln16_acceptance.py tests/test_observability_evidence.py tests/test_update_artifact_delivery.py -q; python -m pytest -q; python .planning/2026-10-23-aln1116-review/probe_aln1116.py",
+          "result": "修复前14 failed→修复后全绿；独立探针14/14（修复前12失败：撤销令牌曾以admin身份复活200、轮换失败曾退役旧凭证并延长截止、他任务审批曾混入链、digest曾随输入顺序变化）；固定源码全量1095 passed/1 skipped；无阻断项",
+          "reviewed_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+          "report": "docs/协作开发/验收/2026-10-23-ALN-11-R-ALN-16-R独立验收.md"
         }
       ],
-      "next_step": "由修复作者之外的reviewer复核；通过后再补端到端与真机验收"
+      "next_step": "claude-main 第三方复核通过：CR16-01..06 修复逐条确认（修复前探针12项失败→修复后14/14）；Android事件接线、决策链自动装配、实际导出下载与存储删除、生产密钥托管仍未完成，整包ALN-16不关闭"
     },
     {
       "id": "ALN-07-P",
@@ -1866,7 +1884,7 @@
       "stream": "android",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "11-R及09c0192后续修复待独立复核；新增11-W排队完成活动workflow执行消费和自动健康探针，补修复后真机故障回滚",
+      "next_step": "11-R已由claude-main第三方复核通过（CR11-01..08前后对照确认）；新增11-W排队完成活动workflow执行消费和自动健康探针，补修复后真机故障回滚；整包不关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1970,7 +1988,7 @@
       "stream": "models",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "观测凭证模块及验收修复已提交；ALN-16-R待独立复核；Android事件、仓储自动装配与实际导出删除待接线"
+      "next_step": "观测凭证模块及验收修复已由claude-main第三方复核通过（CR16-01..06逐条确认）；Android事件、仓储自动装配与实际导出删除待接线；整包不关闭"
     },
     {
       "id": "ALN-17",
