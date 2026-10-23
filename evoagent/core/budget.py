@@ -94,6 +94,15 @@ class BudgetLedger:
         self._mem: Dict[str, Dict[str, float]] = {}
         self._lock = threading.RLock()
 
+    def reservation_store(self, *, clock=None):
+        """Opt-in durable aggregate accounts; does not change legacy pool checks.
+
+        Callers must reserve/claim dispatch/settle explicitly. A reservation is
+        resource capacity, never permission to execute a model or tool action.
+        """
+        from .reservations import BudgetReservations
+        return BudgetReservations(self, clock=clock)
+
     @staticmethod
     def _keys(scope: str, at: Optional[float] = None):
         ts = at if at is not None else time.time()

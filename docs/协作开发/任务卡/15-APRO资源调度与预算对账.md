@@ -1,6 +1,6 @@
 # ALN-15-A：预算预留/结算/退款与未知费用对账契约
 
-建议角色：integration（`evoagent/core/budget.py` 为集成共享文件）；调度与设备资源桥后续拆 runtime/Android 卡。依赖 ALN-02-A（回执对账，review）、ALN-08（计量，未关闭）、ALN-13-A（Goal 预算引用，在途）：本卡先定契约与夹具，不替上游做验收，也不改 Goal 域。
+当前负责人：codex-runtime；本卡于2026-10-23进入in_progress，为当前单会话唯一开发卡。`evoagent/core/budget.py` 共享接线由当前会话串行完成。消费 ALN-02-A（回执对账，review）、ALN-08（计量，未整包关闭）、ALN-13-A（Goal预算引用已交付review）的接口，不替上游做验收；调度与设备资源桥后续拆卡。
 
 ## 目标
 
@@ -8,11 +8,11 @@
 
 ## 写入边界
 
-可独占新增：`evoagent/core/reservations.py`（预留/结算/退款/回收，复用 `BudgetLedger` 持久化）、`tests/test_budget_reservations.py`、本卡交付文档。
+可独占新增：`evoagent/core/reservations.py`（预留/结算/退款/回收，复用 `BudgetLedger` 持久化）、`evoagent/core/schema/reservations.py`（幂等新域表自动发现）、`tests/test_budget_reservations.py`、本卡交付文档。
 
 可在本卡内小改：`evoagent/core/budget.py`（只加预留入口与查询，不改既有计费/限额语义）。
 
-不得触碰：`evoagent/goals/`（ALN-13-A 在途独占）、`evoagent/models/` 计量实现（ALN-08 在途）；`evoagent/api/server.py`、`evoagent/app.py`、`evoagent/core/controller.py` 的接线另交小卡，不在本卡直接改。设备资源桥（CPU/内存/磁盘/电量）属后续 Android/runtime 卡。
+本卡不修改 `evoagent/goals/` 的权威状态或 `evoagent/models/` 的计量语义；这属于范围约束，不再使用“13目录在途独占”的旧理由。`evoagent/api/server.py`、`evoagent/app.py`、`evoagent/core/controller.py` 的运行时接线需先登记小卡/补充本卡边界，不能只做独立账本后宣布运行时已自动预留。设备资源桥（CPU/内存/磁盘/电量）属后续范围。
 
 ## 验收
 
@@ -21,6 +21,13 @@
 - 进程崩溃后遗留预留可被识别并回收/对账，不重复计费。
 - Goal/Task/实验的预算引用可追溯到同一预留账本；子目标不能扩大父额度。
 - 夹具先证明现状缺口，实现后同一夹具转绿。
+
+## 实施顺序与完成边界
+
+1. 固定预算账户、预留ID与幂等键；明确 reserved/settled/refunded/unknown 状态、金额/调用量单位，以及崩溃后可退款与必须对账的区别。
+2. 在同一持久账本原子校验余额并预留，覆盖线程/进程并发；不把现有Task硬限额快照当作共享Goal总额度。
+3. 成功按实际用量结算；未发生副作用才按策略退款；unknown留账对账，不因超时自动释放可能已花费的额度。
+4. 固定提交验证并交独立审阅；明确标注运行时调用点是否已接入。自主推进、设备调度和API接线不自动算在账本交付内。
 
 ## 交付
 
