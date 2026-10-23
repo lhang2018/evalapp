@@ -1689,7 +1689,7 @@
       "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -1714,7 +1714,7 @@
         "evoagent/planning/planner.py"
       ],
       "working_basis": "用户要求继续认领三个；ALN-07 整包第三项，07-P/07-W 均已 accepted 复核范围；纯读编译器不接运行时。base_commit 留空不用旧 HEAD 冒充",
-      "next_step": "独立复核f633130、27项探针的修复前后判别力与真实SQLite路径；运行时/API/真实环境消费仍按父包另验",
+      "next_step": "claude-main 第三方复核通过（X组8探针三时点对照：原实现dfcfcee 0/8、修复f633130 8/8，CR24-01..07全部确认真实且修复有效；我的34项原测试零改动全绿；联合100 passed；固定全量1521/1与声明一致）；运行时/API接线与真实环境验收按父包另验，整包不关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1726,7 +1726,7 @@
       "preparation_status": "delivered",
       "delivered_commit": "dfcfcee",
       "delivery": "docs/协作开发/交付/ALN-07-T-轨迹编译.md",
-      "review_result": "changes_requested",
+      "review_result": "accepted",
       "review_report": "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md",
       "peer_findings": [
         "CR24-05",
@@ -1734,8 +1734,18 @@
       ],
       "fix_author": "codex-runtime",
       "fix_commit": "f633130b8968079654405461fc6df379267e3917",
-      "fix_status": "repaired_pending_independent_review",
-      "review_note": "原claude-main交付经独立复核发现问题，codex-runtime修复；本轮修复须其他审阅者复核，不自批"
+      "fix_status": "fix_verified_by_third_party",
+      "review_note": "原claude-main交付经独立复核发现问题，codex-runtime修复；本轮修复须其他审阅者复核，不自批",
+      "third_party_review": {
+        "date": "2026-10-24",
+        "reviewer": "claude-main",
+        "fixes_covered": [
+          "f633130b8968079654405461fc6df379267e3917"
+        ],
+        "result": "X组8探针：dfcfcee 0/8（X3报错与CR24-01描述一致、X6丢失祖先链实证）、f633130 8/8；34项原作者测试零改动；联合100 passed；固定全量1521/1；X4初版误判防伪行为为缺口，读源码后修正并双向验证（如实记录）",
+        "report": "docs/协作开发/验收/2026-10-24-三卡修复第三方复核.md",
+        "log": ".planning/2026-10-24-fix3-review/"
+      }
     },
     {
       "id": "ALN-07-R",
@@ -1746,7 +1756,7 @@
       "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -1771,7 +1781,7 @@
         "evoagent/planning/planner.py"
       ],
       "working_basis": "用户要求继续认领三个；ALN-07 整包第二项（WP-6.4 剩余，07-P 交付明示遗留）；策略声明+纯读查询，不接运行时自动执行",
-      "next_step": "独立复核f633130、27项探针的修复前后判别力与真实SQLite路径；运行时/API/真实环境消费仍按父包另验",
+      "next_step": "claude-main 第三方复核通过（X组8探针三时点对照：原实现dfcfcee 0/8、修复f633130 8/8，CR24-01..07全部确认真实且修复有效；我的34项原测试零改动全绿；联合100 passed；固定全量1521/1与声明一致）；运行时/API接线与真实环境验收按父包另验，整包不关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1783,15 +1793,25 @@
       "preparation_status": "delivered",
       "delivered_commit": "dfcfcee",
       "delivery": "docs/协作开发/交付/ALN-07-R-可执行恢复策略.md",
-      "review_result": "changes_requested",
+      "review_result": "accepted",
       "review_report": "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md",
       "peer_findings": [
         "CR24-07"
       ],
       "fix_author": "codex-runtime",
       "fix_commit": "f633130b8968079654405461fc6df379267e3917",
-      "fix_status": "repaired_pending_independent_review",
-      "review_note": "原claude-main交付经独立复核发现问题，codex-runtime修复；本轮修复须其他审阅者复核，不自批"
+      "fix_status": "fix_verified_by_third_party",
+      "review_note": "原claude-main交付经独立复核发现问题，codex-runtime修复；本轮修复须其他审阅者复核，不自批",
+      "third_party_review": {
+        "date": "2026-10-24",
+        "reviewer": "claude-main",
+        "fixes_covered": [
+          "f633130b8968079654405461fc6df379267e3917"
+        ],
+        "result": "X组8探针：dfcfcee 0/8（X3报错与CR24-01描述一致、X6丢失祖先链实证）、f633130 8/8；34项原作者测试零改动；联合100 passed；固定全量1521/1；X4初版误判防伪行为为缺口，读源码后修正并双向验证（如实记录）",
+        "report": "docs/协作开发/验收/2026-10-24-三卡修复第三方复核.md",
+        "log": ".planning/2026-10-24-fix3-review/"
+      }
     },
     {
       "id": "ALN-16-X",
@@ -1802,7 +1822,7 @@
       "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -1828,7 +1848,7 @@
         "evoagent/core/log_layers.py"
       ],
       "working_basis": "用户要求继续认领三个；ALN-16 遗留「实际导出下载与存储删除」，16-A/16-R 已 accepted；执行器 fail-closed + 幂等，不暴露 API 端点",
-      "next_step": "独立复核f633130、27项探针的修复前后判别力与真实SQLite路径；运行时/API/真实环境消费仍按父包另验",
+      "next_step": "claude-main 第三方复核通过（X组8探针三时点对照：原实现dfcfcee 0/8、修复f633130 8/8，CR24-01..07全部确认真实且修复有效；我的34项原测试零改动全绿；联合100 passed；固定全量1521/1与声明一致）；运行时/API接线与真实环境验收按父包另验，整包不关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1840,7 +1860,7 @@
       "preparation_status": "delivered",
       "delivered_commit": "dfcfcee",
       "delivery": "docs/协作开发/交付/ALN-16-X-导出下载与删除执行.md",
-      "review_result": "changes_requested",
+      "review_result": "accepted",
       "review_report": "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md",
       "peer_findings": [
         "CR24-01",
@@ -1850,8 +1870,18 @@
       ],
       "fix_author": "codex-runtime",
       "fix_commit": "f633130b8968079654405461fc6df379267e3917",
-      "fix_status": "repaired_pending_independent_review",
-      "review_note": "原claude-main交付经独立复核发现问题，codex-runtime修复；本轮修复须其他审阅者复核，不自批"
+      "fix_status": "fix_verified_by_third_party",
+      "review_note": "原claude-main交付经独立复核发现问题，codex-runtime修复；本轮修复须其他审阅者复核，不自批",
+      "third_party_review": {
+        "date": "2026-10-24",
+        "reviewer": "claude-main",
+        "fixes_covered": [
+          "f633130b8968079654405461fc6df379267e3917"
+        ],
+        "result": "X组8探针：dfcfcee 0/8（X3报错与CR24-01描述一致、X6丢失祖先链实证）、f633130 8/8；34项原作者测试零改动；联合100 passed；固定全量1521/1；X4初版误判防伪行为为缺口，读源码后修正并双向验证（如实记录）",
+        "report": "docs/协作开发/验收/2026-10-24-三卡修复第三方复核.md",
+        "log": ".planning/2026-10-24-fix3-review/"
+      }
     },
     {
       "id": "ALN-13-A",

@@ -1,0 +1,11 @@
+========================================================
+FAIL: AssertionError: verify_digest=False 绕过了校验并执行删除 X1 verify-flag-cannot-bypass
+FAIL: AssertionError: 把 scope 换成另一 task 仍执行了删除 X2 scope-swap-rejected
+FAIL: TypeError: int() argument must be a string, a bytes-like object or a real number, not 'dict' X3 nested-counts-ok
+FAIL: AssertionError: 空 event_ids 的合法计划未执行整 task 删除 X4 empty-ids-still-deletes
+FAIL: AssertionError: 已存在目标被覆盖写 X5 export-no-clobber
+FAIL: AssertionError: pending 祖先未传播进 requires: {'step_id': 'c', 'kind': 'ready_after', 'step_state': 'failed', 'requires': ['b'], 'reason': '依赖失败/跳过步骤恢复后可重试'} X6 pending-ancestor-propagates
+FAIL: AssertionError: 依赖环计划未被显式拒绝 X7 cycle-rejected
+FAIL: AssertionError: 非法 action 被接受 X8 bad-action-rejected
+========================================================
+total=8 pass=0 fail=8

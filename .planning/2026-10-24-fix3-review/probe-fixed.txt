@@ -1,0 +1,11 @@
+========================================================
+PASS     X1 verify-flag-cannot-bypass
+PASS     X2 scope-swap-rejected
+PASS     X3 nested-counts-ok
+PASS     X4 empty-ids-still-deletes
+PASS     X5 export-no-clobber
+PASS     X6 pending-ancestor-propagates
+PASS     X7 cycle-rejected
+PASS     X8 bad-action-rejected
+========================================================
+total=8 pass=8 fail=0
