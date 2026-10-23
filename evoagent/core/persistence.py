@@ -196,6 +196,11 @@ class Database:
                         "version_manifest": manifest})
         return out
 
+    def get_run_task_id(self, run_id: str) -> Optional[str]:
+        with self._lock:
+            row = self._conn.execute("SELECT task_id FROM task_runs WHERE run_id=?", (run_id,)).fetchone()
+        return row["task_id"] if row else None
+
     # ---- checkpoints ----
     def save_context_manifest(self, task_id, run_id, manifest) -> None:
         from ..memory.manifest import ContextManifest

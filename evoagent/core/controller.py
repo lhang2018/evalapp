@@ -178,11 +178,7 @@ class RuntimeController:
             bound = GoalStore(self.db).bind_task(task, goal_action,
                 command_id=goal_command_id, request_policy=authorization_scope)
             if bound.task_id != task.task_id:
-                self.memory_bindings.assert_principal(bound, principal_id)
-                identity, _ = self.memory_bindings.resolve(bound)
-                requested = self.memory_bindings.submission_identity(principal_id, memory_context)
-                if any(getattr(identity, k) != getattr(requested, k) for k in ("user_id", "project_id", "session_id")):
-                    raise PermissionError("重放Goal任务的记忆身份不一致")
+                self.memory_bindings.check_replay(bound, principal_id, memory_context, memory_grant_ref)
                 return bound
         elif origin != GoalOrigin.USER.value:
             raise PermissionError("自主来源任务必须关联已授权Goal")
@@ -217,6 +213,8 @@ class RuntimeController:
         device = task.runtime_manifest.get("device") or {}
         version_manifest.update({
             "task_id": task.task_id,
+            "memory_binding_ref": task.memory_binding_ref,
+            "memory_identity": dict(task.memory_identity),
             "device_id": device.get("device_id"),
             "installation_id": device.get("installation_id"),
             "app_version": device.get("app_version"),

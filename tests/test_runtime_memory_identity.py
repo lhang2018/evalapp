@@ -77,6 +77,7 @@ def test_real_controller_reads_only_current_owner_and_passes_same_identity_to_wr
     task = _run(app)
     assert reads and writes and reads[0] == writes[-1]
     assert reads[0].task_id == task.task_id and reads[0].expert_id == "general"
+    assert task.version_manifest["memory_binding_ref"] == task.memory_binding_ref
     assert "alpha knowledge mine" in prompts[0]
     assert all(m.content not in prompts[0] for m in foreign)
     assert mine.memory_id in _refs(app, task)
@@ -226,6 +227,9 @@ def test_actual_api_binds_authenticated_subject_and_filters_task_reads(app, api)
     assert foreign.memory_identity["user_id"]=="bob"
     assert api(f"/tasks/{foreign.task_id}")[0]==403
     assert api(f"/tasks/{foreign.task_id}/context-manifests")[0]==403
+    assert api(f"/runs/{foreign.current_run_id}/manifest")[0]==403
+    assert api(f"/runs/{mine.current_run_id}/manifest")[0]==200
+    assert all(row["task_id"] == mine.task_id for row in api("/logs/traces")[1]["traces"])
     assert api(f"/tasks/{mine.task_id}/context-manifests")[0]==200
     assert {t["task_id"] for t in api("/tasks")[1]["tasks"]}=={mine.task_id}
     assert api("/memory")[0]==403
@@ -381,3 +385,43 @@ def test_reconfigured_principal_cannot_take_over_previous_owner_tasks(app):
     with pytest.raises(PermissionError):authority.resolve(task,"general")
     with pytest.raises(PermissionError):authority.assert_principal(task,"api:operator")
     assert not authority.owns(task.task_id,"api:operator")
+
+
+
+def test_orphan_historic_run_manifest_is_not_an_operator_access_bypass(app,api):
+    app.db.save_runtime_manifest("manifest_orphan-run","unbound-old-task","orphan-run",None,None,{"private":"old"})
+    assert api("/runs/orphan-run/manifest")[0]==403
+    assert api("/runs/orphan-run/manifest",token="admin-secret")[0]==200
+
+
+def test_actual_mobile_expert_uses_server_hive_key_for_read_and_write(app):
+    task=app.submit("alpha knowledge",intent="general",domain="mobile_operation")
+    assert task.task_status==TaskStatus.SUCCEEDED,task.failure_reason
+    manifest=app.db.list_context_manifests(task.task_id)[0]["manifest"]
+    assert manifest["assembly"]["identity"]["expert_id"]=="mobile"
+    assert task.version_manifest["expert_ref"].startswith("mobile_operation/")
+    written=[m for m in app.memory.list_items() if m.task_id==task.task_id]
+    assert written and written[0].scope_key=="mobile" and written[0].expert_id=="mobile"
+
+
+def test_stale_legacy_snapshot_adopts_only_existing_private_binding(app):
+    old=Task(task_id="pre-migration",user_goal="old")
+    app.db.save_task(old)
+    stale=app.db.get_task(old.task_id)
+    identity,_=app.memory_bindings.resolve(old)
+    assert app.memory_bindings.resolve(stale)[0]==identity
+    assert stale.memory_binding_ref==old.memory_binding_ref
+
+
+def test_legacy_backfill_never_overwrites_a_concurrent_business_state_change(app):
+    old=Task(task_id="state-race",user_goal="old")
+    app.db.save_task(old)
+    stale=app.db.get_task(old.task_id)
+    old.task_status=TaskStatus.SUSPENDED
+    old.current_run_id="previous-run"
+    app.db.save_task(old)
+    app.memory_bindings.resolve(stale)
+    stored=app.db.get_task(old.task_id)
+    assert stored.task_status==TaskStatus.SUSPENDED
+    assert stored.current_run_id=="previous-run"
+    assert stored.memory_binding_ref==stale.memory_binding_ref

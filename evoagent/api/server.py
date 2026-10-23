@@ -113,8 +113,13 @@ def make_handler(app: App):
                 self._json(res.status, {"error": res.error})
                 return None
             parts = path.strip("/").split("/")
+            target_task = None
             if len(parts) >= 2 and parts[0] == "tasks":
-                task = app.db.get_task(parts[1])
+                target_task = parts[1]
+            elif len(parts) >= 2 and parts[0] == "runs":
+                target_task = app.db.get_run_task_id(parts[1])
+            if target_task is not None:
+                task = app.db.get_task(target_task)
                 if task is not None:
                     try:
                         app.memory_bindings.assert_principal(task, res.principal_id, admin=res.role == "admin")
@@ -225,8 +230,10 @@ def make_handler(app: App):
                 if not role_can_read("execution_trace", auth.role):
                     return self._json(403, {"error": "需要 execution_trace 读取权限"})
                 limit = min(1000, int(qs.get("limit") or 100))
-                return self._json(200, {"traces": app.db.list_traces(
-                    task_id=qs.get("task_id") or None, limit=limit)})
+                traces = app.db.list_traces(task_id=qs.get("task_id") or None, limit=limit)
+                if auth.role != "admin":
+                    traces = [row for row in traces if app.memory_bindings.owns(row["task_id"], auth.principal_id)]
+                return self._json(200, {"traces": traces})
             if path == "/logs/evidence":
                 if not role_can_read("diagnostic_evidence", auth.role):
                     return self._json(403, {"error": "需要 admin 权限"})
@@ -331,6 +338,11 @@ def make_handler(app: App):
                         f"manifest_{parts[1]}")
                     if manifest is None:
                         return self._json(404, {"error": "运行清单不存在"})
+                    try:
+                        app.memory_bindings.assert_principal(app.db.get_task(manifest["task_id"]),
+                            auth.principal_id, admin=auth.role == "admin")
+                    except PermissionError as exc:
+                        return self._json(403, {"error": str(exc)})
                     return self._json(200, manifest)
                 return self._json(404, {"error": "未知路径"})
             if path == "/sync/candidates":

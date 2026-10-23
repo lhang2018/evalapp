@@ -75,14 +75,17 @@ class MemoryBindingAuthority:
                     ref = "mb_" + uuid.uuid4().hex
                     self.db._conn.execute("INSERT INTO task_memory_bindings VALUES (?,?,?,?)",
                         (task.task_id, ref, principal, _json(payload)))
+                stored = self.db._conn.execute("SELECT data FROM tasks WHERE task_id=?", (task.task_id,)).fetchone()
+                if stored is not None:
+                    snapshot = json.loads(stored["data"])
+                    snapshot.update(memory_binding_ref=ref, memory_identity=identity.to_dict())
+                    self.db._conn.execute("UPDATE tasks SET data=? WHERE task_id=?", (_json(snapshot), task.task_id))
                 self.db._conn.commit()
             except BaseException:
                 self.db._conn.rollback()
                 raise
         task.memory_binding_ref = ref
         task.memory_identity = identity.to_dict()
-        if self.db.get_task(task.task_id) is not None:
-            self.db.save_task(task)
         return ref
 
     def bind_new(self, task, principal="local:host", requested=None, grant_ref=None):
@@ -103,6 +106,12 @@ class MemoryBindingAuthority:
             self._save(task, "legacy", identity, legacy=True)
             row = self._row(task.task_id)
         data = self._check_current_policy(row)
+        # Another process may have privately migrated the same old task after
+        # this caller loaded its pre-migration JSON. Adopt only the recorded
+        # legacy owner; modern snapshots may never be reconstructed by omission.
+        if (not task.memory_binding_ref and not task.memory_identity and data["legacy"]
+                and row["principal_id"] == "legacy" and data["grant_ref"] is None):
+            self._save(task, "legacy", MemoryIdentity(**data["identity"]), legacy=True)
         if task.memory_binding_ref != row["binding_ref"] or task.memory_identity != data["identity"]:
             raise MemoryAccessError("Task身份快照与权威绑定不一致")
         identity = MemoryIdentity(**data["identity"])
