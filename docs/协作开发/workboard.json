@@ -110,14 +110,14 @@
       "scope": "候选准备Git/日志证据有效；当前源码新增显式验收不通过，915/1仅为此前普通tests基线"
     },
     "latest_source_verification": {
-      "source_commit": "550da09d0c6796d5d42b80ac26c0bc23d73f1e85",
-      "source_tree": "899ad35a9d7c53370edcba07ad0dfce2b9c13d76",
-      "python_passed": 1263,
+      "source_commit": "6837129d4f5ef2ccf442dd9b9d89b9426096155c",
+      "source_tree": "625457f47de3344c59ddc6559117334b43ea1951",
+      "python_passed": 1317,
       "python_skipped": 1,
       "client_passed": 166,
       "typecheck": "passed",
-      "scope": "后端550da09 git archive排除在途，线程异常警告升级错误；客户端及typecheck同android-app Git tree沿用8c；未重跑真机，不替代准备候选/独立接受",
-      "evidence": "../../.planning/2026-10-23-aln15-runtime/committed-evidence.json"
+      "scope": "6837129 git archive后端1317/1，线程异常警告升级错误；包含同期已提交18-E，不包括后续在途；客户端同Git tree复用8c的166/typecheck；未重跑真机，不替代独立接受/发布候选",
+      "evidence": "../../.planning/2026-10-23-aln14/committed-evidence.json"
     }
   },
   "streams": [
@@ -1453,9 +1453,20 @@
       "reviewer": null,
       "branch": "main",
       "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-23",
+          "scope": "版本规则、持久候选排序、真实advance、停止/递归、管理API、未知证据与预期/实际归因；固定归档排除在途",
+          "source_commit": "6837129d4f5ef2ccf442dd9b9d89b9426096155c",
+          "functional_commit": "948b433",
+          "source_tree": "625457f47de3344c59ddc6559117334b43ea1951",
+          "result": "42 new governance tests; 135 related regression at 38-test stage; committed backend1317 passed/1 skipped with thread warnings as errors; client166/typecheck reused identical 8c tree; claims/ledgers/board passed",
+          "log": ".planning/2026-10-23-aln14/committed-evidence.json",
+          "delivery": "docs/协作开发/交付/ALN-14-A-机会与持续目标治理.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/14-机会排序与无进展停止.md",
       "shared_files": [
         "evoagent/goals/store.py",
@@ -1464,7 +1475,7 @@
         "evoagent/api/goals_api.py"
       ],
       "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
-      "next_step": "固定版本化排序/停止/递归规则；接入Goal权威门禁、真实推进及持久复盘，覆盖未知证据和并发恢复",
+      "next_step": "独立复核有界真实推进、客观进展、停止/递归、持久命令和预期/实际归因；生产09/10收益、周期守护及前端另验",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1472,7 +1483,9 @@
           "to": "codex-runtime",
           "reason": "用户要求重新整理认领；当前仅codex在本项目开发，接手未交付范围，保留历史交付及独立审阅要求"
         }
-      ]
+      ],
+      "delivered_commit": "6837129d4f5ef2ccf442dd9b9d89b9426096155c",
+      "delivery": "docs/协作开发/交付/ALN-14-A-机会与持续目标治理.md"
     },
     {
       "id": "ALN-15-A",
@@ -2055,8 +2068,8 @@
       ],
       "stream": "runtime",
       "owner": "codex-runtime",
-      "delivery_state": "planned",
-      "next_step": "15-R已交付运行时接口待独立复核；可消费该接口实现机会排序、无进展停止、递归限制与归因。真实收益验收仍需09/10实际候选证据",
+      "delivery_state": "partial_verified",
+      "next_step": "14-A显式推进、机会/停止/递归与管理API已交付review（6837129）；生产候选收益仍需09/10，周期守护/前端与整包另验",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -2227,20 +2240,15 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "2026-10-23 codex-runtime在当前项目开发ALN-14-A；15-R保留review，其他作者的卡和在途修改保留，共享路径仅按登记接线。",
+  "execution_note": "2026-10-23 codex-runtime完成14-A并交付review；下一张05-I记忆身份运行时接线，WIP=1。15-R及其他作者卡的审阅与在途内容保留，不自批、不发布。",
   "execution_queue": {
     "updated_at": "2026-10-23",
     "mode": "当前项目单开发会话串行推进",
     "owner": "codex-runtime",
     "wip_limit": 1,
-    "active_task": "ALN-14-A",
-    "next_task": "ALN-14-A",
+    "active_task": null,
+    "next_task": "ALN-05-I",
     "items": [
-      {
-        "id": "ALN-14-A",
-        "state": "开发中",
-        "condition": "消费已交付15-R实现机会排序、进展停止、递归治理与显式有界推进"
-      },
       {
         "id": "ALN-05-I",
         "state": "排队",
