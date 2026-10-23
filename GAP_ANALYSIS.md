@@ -195,7 +195,7 @@
 | R-04 Planner 计划修订 | ✅→🔹 | `_risks_for`（`evoagent/planning/planner.py::_risks_for`）是按 intent 硬编码的风险文案，不是可执行恢复策略；**无 replan/revise**，`ExecutionPlan.adjust` 全库唯一调用方是 `evoagent/react/engine.py:232` 的"同工具连续失败≥3 次"追加固定模板步骤 |
 | R-03 路由质量评测 | ✅→⬜ | **无任何路由评测集/指标**。`evolution/datasets.py` 两个内置集共 4 用例全为 `time_query`/`computation` 通用任务，**零个路由/分类评测用例**；无准确率/混淆矩阵/top-k/回退率/弃权率 |
 | E-01 运行事件与 Trace | ✅→🔹 | 无 node 级字段；成本/时延/结果全在 `payload` 自由字典，`events.py:275-279` 靠 `payload.get("latency_s")` 取值，**缺失静默计 0 → 时延聚合被无声低估**，任何依赖它做门禁或收益判定的结论不可靠 |
-| E-13 独立进化控制器 | ✅→🔹 | 预算池 ✅、次数上限 ✅；**并发控制缺失**（进化侧无 Semaphore）、**"重复失败即停止"不存在**（`react/engine.py:160` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关） |
+| E-13 独立进化控制器 | ✅→🔹 | 预算池 ✅、次数上限 ✅；**并发控制缺失**（进化侧无 Semaphore）、**"重复失败即停止"不存在**（`react/engine.py:235` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关） |
 | E-06 评测集版本/覆盖 | 🔹 | `datasets.py` 全文 47 行 4 用例；无注册/版本演进机制，无覆盖率台账 |
 | O-05 Runtime Manifest | ✅→🔹 | 独立表 ✅、每次运行落一份 ✅；但 `_version_manifest()` 依赖 `releases.current_release_id`，未发布时返回 `{"version":"unreleased"}` → **组件版本退化为空** |
 | O-08 离线降级与恢复 | 🔹→⬜ | `offline/policy.ts:8` `OFFLINE_INTENTS = ["time_query"]` —— **仅此一项**；`degrade/degrade_matrix/offline_capable` 在客户端仅命中测试断言，**无任何降级矩阵声明** |

@@ -254,7 +254,7 @@ ALN-13-A已按09卷完成Goal基础与运行时授权接线，具体[契约](doc
 - **验收**：失败案例能复现；回归集随真实失败增长。
 
 #### WP-3.3 进化并发与停止条件（E-13）
-- **交付**：进化侧并发上限（当前无 Semaphore，任务侧的 `BoundedSemaphore` 不覆盖进化实验）；"重复失败即停止"条件（当前 `react/engine.py:160` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关，概念被混淆）；实验失败率熔断。
+- **交付**：进化侧并发上限（当前无 Semaphore，任务侧的 `BoundedSemaphore` 不覆盖进化实验）；"重复失败即停止"条件（当前 `react/engine.py:235` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关，概念被混淆）；实验失败率熔断。
 - **前置**：WP-3.1
 
 #### WP-3.4 候选证据门禁收紧（E-09 / C-11）

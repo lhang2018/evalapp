@@ -29,6 +29,9 @@ class EmbeddingConfig:
 
 @dataclass
 class BudgetConfig:
+    # 未配置价格的远端调用必须有宿主明确的保守预留上界；None拒绝发送。
+    unknown_model_reservation_cost: Optional[float] = None
+    unknown_tool_reservation_cost: Optional[float] = None
     # 默认单任务硬预算（Architecture 12.1）
     task_max_model_calls: int = 25
     task_max_tool_calls: int = 50

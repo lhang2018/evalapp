@@ -2,6 +2,10 @@
 DOMAIN = "budget_reservations"
 
 TABLES = [
+    """CREATE TABLE IF NOT EXISTS budget_runtime_pool_baselines (
+        account_id TEXT PRIMARY KEY, data TEXT NOT NULL)""",
+    """CREATE TABLE IF NOT EXISTS budget_runtime_bindings (
+        task_id TEXT PRIMARY KEY, data TEXT NOT NULL)""",
     """CREATE TABLE IF NOT EXISTS budget_accounts (
         account_id TEXT PRIMARY KEY, parent_id TEXT, kind TEXT NOT NULL,
         reference TEXT NOT NULL, currency TEXT NOT NULL, limits TEXT NOT NULL,

@@ -134,16 +134,17 @@ class ReactEngine:
                         model_id = adapter.profile().model_id
                     except Exception:
                         model_id = None
-                    budget.record_model_call(0.0, model_id)
-                    model_call_inflight = True
-                    capture()  # reserve and checkpoint BEFORE the provider call
-                    suggestion = adapter.suggest_action(messages, tool_schemas)
+                    def checkpoint_dispatch(inflight):
+                        nonlocal model_call_inflight
+                        model_call_inflight = inflight
+                        capture()
+                    from ..core.runtime_budget import model_call
+                    suggestion = model_call(budget, adapter, "suggest_action", messages,
+                        tool_schemas, phase="react", on_pre_dispatch=checkpoint_dispatch)
                 except BudgetExceeded as e:
                     outcome.stop_reason = f"budget:{e.dimension}"
                     return capture()
                 assert_current_lease()
-                _settle_model_cost(budget, adapter, messages, suggestion,
-                                   model_id)
                 model_call_inflight = False
             next_iteration = i + 1
 

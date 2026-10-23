@@ -82,6 +82,11 @@ class RuntimeController:
         self.diagnostics = diagnostics
         self.classifier = classifier
         self.ledger = ledger
+        self.runtime_budgets = None
+        if ledger is not None and ledger.db is not None:
+            from .runtime_budget import RuntimeBudgets
+            self.runtime_budgets = RuntimeBudgets(ledger, config.budget, bus=bus)
+            self.runtime_budgets.sweep()
         self.audit = audit  # S-05 执行环节审计（可选）
         # 并发管理（Arch 3.2 管理并发和取消）
         self._active: Dict[str, threading.Event] = {}
@@ -261,6 +266,12 @@ class RuntimeController:
             self.db.save_task(task)
         except LeaseLost:
             task = self.db.get_task(task.task_id) or task
+        except BudgetExceeded as e:
+            task.task_status = TaskStatus.FAILED
+            task.failure_reason = f"预算耗尽[{e.dimension}]: {e}"
+            self.db.save_task(task)
+            self._emit(task, "task_budget_exhausted",
+                       {"dimension": e.dimension}, severity="warn")
         except IllegalTransition as e:
             task.task_status = TaskStatus.FAILED
             task.failure_reason = f"状态机冲突: {e}"
@@ -302,16 +313,17 @@ class RuntimeController:
                                {"dimension": e.dimension}, severity="warn")
                     return self._move(task, TaskStatus.FAILED)
                 if adapter is not None:
-                    # 与 ReAct 一致：调用前预登记次数，调用后按实测结算
                     model_id = adapter_model_id(adapter)
-                    budget.record_model_call(0.0, model_id)
             goal = task.user_goal
             if task.user_answers:
                 goal += "\n用户补充：\n" + "\n".join(a["answer"] for a in task.user_answers)
-            intent, domain, conf, method = self.classifier.classify(
-                goal, hint=intent_hint, domain_hint=domain_hint)
-            if method in ("model", "heuristic_fallback") and adapter is not None:
-                settle_adapter_cost(budget, adapter, model_id)
+            from .runtime_budget import CLASSIFICATION_BUDGET
+            token = CLASSIFICATION_BUDGET.set(budget)
+            try:
+                intent, domain, conf, method = self.classifier.classify(
+                    goal, hint=intent_hint, domain_hint=domain_hint)
+            finally:
+                CLASSIFICATION_BUDGET.reset(token)
             task.confidence = conf
             task.runtime_manifest["intent_classification"] = {
                 "method": method, "confidence": conf}
@@ -1014,6 +1026,11 @@ class RuntimeController:
                 for key, value in (limits or {}).items():
                     setattr(budget.limits, key, min(getattr(budget.limits, key), value))
             budget.authority_check = check_goal_authority
+        if self.runtime_budgets is not None:
+            budget.runtime_binding = self.runtime_budgets.bind(task, budget)
+            task.runtime_manifest["aggregate_budget"] = dict(budget.runtime_binding.data)
+        if task.current_run_id:
+            budget.persist_usage()
         return budget
 
     def _apply_expert_budget(self, task: Task,

@@ -60,11 +60,13 @@ class ControllerTaskRunner(TaskRunner):
                     "case_id": case.case_id, "version_manifest": case.version_manifest,
                     "failure_fixture": case.failure_fixture,
                     "reproduction": "input_replay; original fault is recorded, not injected"}}
-            task = self.controller.submit_task(
-                case.input_goal, intent=case.intent, domain=case.domain,
-                constraints=list(case.constraints),
-                acceptance=acceptance, wait=True, source="evaluation",
-                model_override=self.model_id, manifest_extras=extras)
+            from ..core.runtime_budget import experiment_scope
+            with experiment_scope(self.budget):
+                task = self.controller.submit_task(
+                    case.input_goal, intent=case.intent, domain=case.domain,
+                    constraints=list(case.constraints),
+                    acceptance=acceptance, wait=True, source="evaluation",
+                    model_override=self.model_id, manifest_extras=extras)
         except Exception as e:  # noqa: BLE001 —— 评测失败不能中断整批
             return False, time.time() - started, {
                 "error": f"{type(e).__name__}: {e}", "cost": 0.0}
@@ -94,7 +96,7 @@ class ControllerTaskRunner(TaskRunner):
                 model_ids.add(model_id)
         registry = getattr(getattr(self.controller, "router", None), "registry", None)
         evidence["cost_known"] = (not task.runtime_manifest.get("cost_reconciliation_required") and
-            not usage.get("unknown_model_costs") and (
+            not usage.get("unknown_model_costs") and not usage.get("unknown_tool_costs") and (
             not usage.get("model_calls") or (bool(model_ids) and registry is not None and all(
                 bool(getattr(registry.get(identity), "pricing_known", False)) for identity in model_ids))))
         evidence["version_manifest"] = getattr(task, "version_manifest", {})

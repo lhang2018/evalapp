@@ -7,6 +7,8 @@
 from typing import Iterable, List, Optional, Tuple
 
 from ..models.base import ChatMessage
+from ..core.budget import BudgetExceeded
+from ..core.leases import LeaseLost
 from .planner import _parse_json
 
 _DESCRIPTIONS = {
@@ -62,6 +64,8 @@ class IntentClassifier:
                 intent, domain, conf = self._model_classify(goal, domain_hint)
                 if intent in self.known:
                     return intent, domain or domain_hint or "", conf, "model"
+            except (BudgetExceeded, LeaseLost):
+                raise
             except Exception:  # noqa: BLE001 —— 分类失败不阻断任务
                 pass
             fallback_method = "heuristic_fallback"
@@ -84,7 +88,9 @@ class IntentClassifier:
             "confidence 是 0-1 的小数。"))
         user = ChatMessage(role="user",
                            content=f"goal:{goal}\ndomain_hint:{domain_hint or ''}")
-        data = _parse_json(self.model.generate([system, user]))
+        from ..core.runtime_budget import CLASSIFICATION_BUDGET, model_call
+        data = _parse_json(model_call(CLASSIFICATION_BUDGET.get(), self.model,
+                                     "generate", [system, user], phase="classification"))
         intent = str(data.get("intent") or "").strip()
         domain = str(data.get("domain") or "").strip()
         try:

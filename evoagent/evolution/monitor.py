@@ -113,7 +113,8 @@ def collect_metrics(store: Any, since: float, until: float, *,
     unknown_cost_samples = 0
     for task in terminal:
         usage = _usage(task)
-        if usage.get("cost") is None or usage.get("unknown_model_costs") or task.runtime_manifest.get("cost_reconciliation_required"):
+        if (usage.get("cost") is None or usage.get("unknown_model_costs") or
+                usage.get("unknown_tool_costs") or task.runtime_manifest.get("cost_reconciliation_required")):
             unknown_cost_samples += 1
         costs.append(float(usage.get("cost", 0.0) or 0.0))
         latencies.append(max(0.0, task.updated_at - task.created_at))

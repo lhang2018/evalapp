@@ -41,7 +41,7 @@ def make_candidate_budget(controller, candidate):
         # An unfinished attempt has an unknown crash time. Conservatively count
         # wall time since its last checkpoint rather than grant free runtime.
         usage["seconds"] = usage.get("seconds", 0) + max(0, time.time() - state["updated_at"])
-    for key in ("model_calls", "tool_calls", "cost", "seconds", "unknown_model_costs"):
+    for key in ("model_calls", "tool_calls", "cost", "seconds", "unknown_model_costs", "unknown_tool_costs"):
         value = usage.get(key, 0)
         if not math.isfinite(value) or value < 0:
             raise ValueError("候选预算历史用量无效: " + key)

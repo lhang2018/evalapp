@@ -193,16 +193,38 @@ class BudgetReservations:
              reservation["updated_at"], _json(reservation)))
         return reservation
 
-    def reserve(self, account_id, idempotency_key, amounts, *, ttl_seconds, actor, reason):
+    def _capacity(self, account, now, ceilings=None):
+        balance = self._balance(account, now)
+        if ceilings and account["account_id"] in ceilings:
+            cap = _units(ceilings[account["account_id"]])
+            if set(cap) != set(account["limits"]):
+                raise ValueError("capacity override must cover every dimension")
+            cap = {k: min(cap[k], account["limits"][k]) for k in cap}
+            balance["available"] = {k: cap[k] - balance["held"][k] - balance["spent"][k] for k in cap}
+        return balance
+
+    def reserve(self, account_id, idempotency_key, amounts, *, ttl_seconds, actor, reason,
+                additional_accounts=(), ceilings=None, known_free=False, context=None):
         account_id, key = _text(account_id, "account_id"), _text(idempotency_key, "idempotency_key")
         amounts, ttl = _units(amounts), _duration(ttl_seconds)
         actor, reason = _text(actor, "actor"), _text(reason, "reason")
         if not any(amounts.values()):
             raise ValueError("reservation must hold at least one unit")
-        if "cost_micros" in amounts and not amounts["cost_micros"] and any(
+        if type(known_free) is not bool or (known_free and amounts.get("cost_micros", 0)):
+            raise ValueError("known-free declarations require a boolean and zero held money")
+        if not known_free and "cost_micros" in amounts and not amounts["cost_micros"] and any(
                 value for key, value in amounts.items() if key != "cost_micros"):
             raise ValueError("a metered action requires a positive conservative cost hold")
-        fingerprint = hashlib.sha256(_json([account_id, key, amounts, ttl]).encode()).hexdigest()
+        roots = sorted({_text(value, "additional_account") for value in additional_accounts})
+        ceilings = {} if ceilings is None else {str(k): _units(v) for k, v in ceilings.items()}
+        context = {} if context is None else dict(context)
+        if set(context) - {"task_id", "run_id", "kind", "component", "phase", "effect_id"}:
+            raise ValueError("unknown execution reference")
+        context = {k: _text(v, k) for k, v in context.items()}
+        request = [account_id, key, amounts, ttl]
+        if roots or ceilings or known_free or context:
+            request += [roots, ceilings, known_free, context]
+        fingerprint = hashlib.sha256(_json(request).encode()).hexdigest()
         with self._write():
             old = self.db._conn.execute("SELECT reservation_id,fingerprint FROM budget_reservations "
                 "WHERE account_id=? AND idem_key=?", (account_id, key)).fetchone()
@@ -211,13 +233,23 @@ class BudgetReservations:
                     raise ReservationConflict("idempotency key reused with a different request")
                 return self._get(old["reservation_id"])
             accounts = self._lineage(account_id)
+            seen = {a["account_id"] for a in accounts}
+            for root in roots:
+                for account in self._lineage(root):
+                    if account["account_id"] not in seen:
+                        accounts.append(account)
+                        seen.add(account["account_id"])
+            if set(ceilings) - seen:
+                raise ValueError("override references an unallocated account")
             if set(amounts) != set(accounts[0]["limits"]):
                 raise ValueError("reservation must explicitly specify every account dimension")
             now = self._now()
             if not math.isfinite(now + ttl):
                 raise ValueError("lease deadline is not finite")
             for account in accounts:
-                balance = self._balance(account, now)
+                if set(amounts) != set(account["limits"]) or account["currency"] != accounts[0]["currency"]:
+                    raise ValueError("all allocated accounts must use identical dimensions and currency")
+                balance = self._capacity(account, now, ceilings)
                 if balance["reconciliation_required"]:
                     raise BudgetExceeded("reconciliation_required", "unresolved charge blocks new spending",
                                          scope=account["account_id"])
@@ -229,7 +261,7 @@ class BudgetReservations:
                 account_id=account_id, idempotency_key=key, amounts=amounts,
                 currency=accounts[0]["currency"], created_at=now, expires_at=now + ttl,
                 state="reserved", dispatched=False, actual=None, evidence_ref=None,
-                resolution=None, revision=0,
+                resolution=None, revision=0, ceilings=ceilings, context=context, known_free=known_free,
                 account_refs=[{k: a[k] for k in ("account_id", "kind", "reference")} for a in accounts])
             self.db._conn.execute("INSERT INTO budget_reservations VALUES (?,?,?,?,?,?,?,?)",
                 (reservation["reservation_id"], account_id, key, fingerprint, "reserved", 0,
@@ -238,17 +270,27 @@ class BudgetReservations:
                 [(reservation["reservation_id"], a["account_id"]) for a in accounts])
             return self._save(reservation, "reserved", actor, reason)
 
-    def mark_dispatched(self, reservation_id, *, actor, reason):
+    def mark_dispatched(self, reservation_id, *, actor, reason, ceilings=None, authority_check=None):
         actor, reason = _text(actor, "actor"), _text(reason, "reason")
         with self._write():
+            if authority_check:
+                authority_check()
             reservation = self._get(reservation_id)
             if (reservation["state"] != "reserved" or reservation["dispatched"]
                     or reservation["expires_at"] <= self._now()):
                 raise ReservationConflict("dispatch already claimed, expired, or no longer reserved; reconcile")
             # A sibling may have overrun or become unknown AFTER this hold was
             # created. Recheck all ancestors at the last boundary before issuing.
-            for account in self._lineage(reservation["account_id"]):
-                balance = self._balance(account, self._now())
+            caps = dict(reservation.get("ceilings") or {})
+            for key, values in (ceilings or {}).items():
+                checked = _units(values)
+                old = caps.get(key, checked)
+                if set(old) != set(checked):
+                    raise ValueError("changed capacity dimensions")
+                caps[key] = {k: min(old[k], checked[k]) for k in old}
+            for ref in reservation["account_refs"]:
+                account = self._account(ref["account_id"])
+                balance = self._capacity(account, self._now(), caps)
                 if balance["reconciliation_required"] or any(v < 0 for v in balance["available"].values()):
                     raise BudgetExceeded("reconciliation_required", "account cannot dispatch new work",
                                          scope=account["account_id"])

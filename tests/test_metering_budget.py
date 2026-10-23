@@ -131,7 +131,8 @@ class _ThreeStageModel:
         self._profile = ModelProfile(
             model_id="three-stage", provider="feature-fixture",
             pricing_known=pricing_known,
-            price_per_1k_input=1.0, price_per_1k_output=2.0)
+            price_per_1k_input=1.0, price_per_1k_output=2.0,
+            adapter_config={"reservation_max_cost": .2})
         self.last_usage = None
         self.calls = 0
 
@@ -198,13 +199,14 @@ class TestAllModelPhasesSettle(unittest.TestCase):
         self.assertAlmostEqual(totals["actual_cost"], 0.6)
         self.assertEqual(totals["unknown_calls"], 0)
 
-    def test_unknown_price_counts_each_phase_not_once(self):
+    def test_unknown_price_without_hold_ceiling_stops_before_classifier(self):
         task, usage, ledger = self._run(pricing_known=False)
-        self.assertEqual(task.task_status.value, "SUCCEEDED")
-        self.assertEqual(usage["model_calls"], 3)
+        self.assertEqual(task.task_status.value, "FAILED")
+        self.assertIn("pricing", task.failure_reason)
+        self.assertEqual(usage["model_calls"], 0)
         self.assertEqual(usage["cost"], 0.0)
-        self.assertEqual(usage["unknown_model_costs"], 3)
-        self.assertEqual(ledger.totals()["unknown_calls"], 3)
+        self.assertEqual(usage["unknown_model_costs"], 0)
+        self.assertEqual(ledger.totals()["calls"], 0)
 
     def test_cumulative_actual_cost_stops_task_over_budget(self):
         tmp = tempfile.mkdtemp(prefix="evoagent_phases_budget_")
@@ -224,9 +226,9 @@ class TestAllModelPhasesSettle(unittest.TestCase):
                               "max_cost_per_model_call": 1.0,
                               "max_model_calls": 10})
         usage = app.db.get_execution_budget(task.task_id)["usage"]
-        # 三阶段累计 0.6 超过 0.3：记账必须完整，任务不得记成功
-        self.assertEqual(usage["model_calls"], 3)
-        self.assertAlmostEqual(usage["cost"], 0.6)
+        # 预留上界0.2；第一次实付后只剩0.1，拒绝第二次发送。
+        self.assertEqual(usage["model_calls"], 1)
+        self.assertAlmostEqual(usage["cost"], 0.2)
         self.assertEqual(task.task_status.value, "FAILED")
 
 

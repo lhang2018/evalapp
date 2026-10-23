@@ -282,7 +282,7 @@ E 观测诊断评测与进化（13）：
 | E-10 稳定/候选轨道隔离 | ✅ | 生产绑定稳定资产；候选不能触碰稳定指针。证据：`build_manifest`（`evoagent/release/manager.py::build_manifest`）、`deploy`（`evoagent/release/manager.py::deploy`）|
 | E-11 收益与退化评估 | ✅ | 基线 vs 候选+漂移监测（`evoagent/evolution/drift.py`）；但**若 E-07 无自动候选，该链上游是空的**。证据：`evaluate_benefit`（`evoagent/evolution/benefit.py::evaluate_benefit`），test=12）、`detect`（`evoagent/evolution/drift.py::detect`），test=11）|
 | E-12 失败案例转回归资产 | 🔹 | `record_failure` 自动建案例（含 version_manifest + evidence_snapshot，信息量足够）；**但全仓无 DiagnosticCase → EvalCase 转换**（`grep "to_eval\|to_dataset\|regression_case"` 零匹配），案例止步于 diagnostics 表，**进不了 datasets**，"可复现回归资产"不成立 |
-| E-13 独立进化控制器 | 🔹 | 预算池隔离 ✅、实验次数上限 ✅；**但无实验并发控制**（进化侧无 Semaphore，任务侧 BoundedSemaphore 不覆盖进化实验）；**无"重复失败即停止"**（`react/engine.py:160` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关，属概念混淆）；无质量/失败率熔断 |
+| E-13 独立进化控制器 | 🔹 | 预算池隔离 ✅、实验次数上限 ✅；**但无实验并发控制**（进化侧无 Semaphore，任务侧 BoundedSemaphore 不覆盖进化实验）；**无"重复失败即停止"**（`react/engine.py:235` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关，属概念混淆）；无质量/失败率熔断 |
 
 G 自主目标与资源治理（10）：
 

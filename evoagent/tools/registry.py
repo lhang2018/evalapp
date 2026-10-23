@@ -260,7 +260,7 @@ class ToolRegistry:
             except Exception as e:
                 return ToolResult.error_result(str(e), "budget_exceeded")
 
-        def final_guard():
+        def final_guard(check_budget=True):
             assert_current_lease()
             try:
                 if self.authorizations:
@@ -282,7 +282,7 @@ class ToolRegistry:
                 task = self.store.get_task(task_id) if self.store and task_id else None
                 if task and task.is_terminal():
                     raise PermissionError("任务已终止，禁止执行新动作")
-                if budget:
+                if budget and check_budget:
                     budget.check_alive()
             except PermissionError as exc:
                 raise ActionBlocked(str(exc)) from exc
@@ -353,20 +353,34 @@ class ToolRegistry:
         while True:
             attempts += 1
             entered = {"runner": False}
-            def invoke(frozen_args):
-                entered["runner"] = True
+            permit = None
+            def invoke(frozen_args, attempt=entered):
+                attempt_permit = attempt.get("permit")
+                if attempt_permit:
+                    attempt_permit.dispatch(authority=lambda: final_guard(check_budget=False))
+                attempt["runner"] = True
                 return rt.runner(frozen_args)
             try:
                 if budget:
                     budget.check_tool_call(tool_id)
+                    from ..core.runtime_budget import begin_tool
+                    permit = begin_tool(budget, c, effect_id)
+                    entered["permit"] = permit
                     budget.record_tool_call(tool_id)  # durable reservation before entering runner
                 assert_current_lease()
                 result = self._run_with_timeout(invoke, args,
                                                 timeout, before_run=final_guard, worker_key=effect_id)
+                from ..core.runtime_budget import finish_tool
+                finish_tool(permit, budget, tool_id, result)
                 break
             except LeaseLost:
                 raise
             except Exception as e:  # noqa: BLE001
+                if permit:
+                    if permit.tool_free and permit.dispatched:
+                        permit.settle(0, "tool:error:declared-no-supplier-fee")
+                    else:
+                        permit.abort("tool:exception-or-timeout")
                 err_class = class_error(e)
                 if isinstance(e, BudgetExceeded):
                     err_class = "budget_exceeded"
