@@ -1,0 +1,9 @@
+========================================================
+PASS     I1 unknown-identity-rejected
+PASS     I1b ambiguous-rejected
+PASS     I1c unconfigured-principal-rejected
+PASS     I2 identity-fields-rejected
+PASS     I3 removed-policy-rejects-old-binding
+PASS     I4 omitted-uses-first[guard]
+========================================================
+total=6 pass=6 fail=0

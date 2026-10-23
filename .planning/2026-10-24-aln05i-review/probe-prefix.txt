@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "E:\evalapp\.planning\2026-10-24-aln05i-review\probe_05i.py", line 154, in <module>
+    probe("I1 unknown-identity-rejected", i1_unknown_identity_rejected)
+  File "E:\evalapp\.planning\2026-10-24-aln05i-review\probe_05i.py", line 21, in probe
+    fn()
+  File "E:\evalapp\.planning\2026-10-24-aln05i-review\probe_05i.py", line 46, in i1_unknown_identity_rejected
+    from evoagent.memory.binding import MemoryAccessError
+ModuleNotFoundError: No module named 'evoagent.memory.binding'
