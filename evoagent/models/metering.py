@@ -374,6 +374,8 @@ class MeteredModel:
 
     def _observe_locked(self, op: str, messages: List[ChatMessage], fn):
         start = time.time()
+        previous = getattr(self.inner, "last_usage", None)
+        previous_tokens = normalize_token_usage(previous)
         ok = True
         error_class: Optional[str] = None
         result: Any = None
@@ -387,7 +389,9 @@ class MeteredModel:
         finally:
             usage = self._build_usage(
                 op, messages, result if ok else None,
-                round(time.time() - start, 4), ok, error_class)
+                round(time.time() - start, 4), ok, error_class,
+                provider_fresh=(getattr(self.inner, "last_usage", None) is not previous
+                    or normalize_token_usage(getattr(self.inner, "last_usage", None)) != previous_tokens))
             self.last_usage = usage
             if self.ledger is not None:
                 try:
@@ -407,7 +411,7 @@ class MeteredModel:
 
     def _build_usage(self, op: str, messages: List[ChatMessage],
                      result: Any, latency_s: float, ok: bool,
-                     error_class: Optional[str]) -> ModelUsage:
+                     error_class: Optional[str], *, provider_fresh: bool = True) -> ModelUsage:
         try:
             profile = self.inner.profile()
         except Exception:  # noqa: BLE001
@@ -427,7 +431,7 @@ class MeteredModel:
             run_id=getattr(lease, "run_id", None))
 
         provider_usage = normalize_token_usage(getattr(self.inner, "last_usage", None))
-        if ok and provider_usage is not None:
+        if ok and provider_fresh and provider_usage is not None:
             usage.input_tokens = int(provider_usage["input_tokens"])
             usage.output_tokens = int(provider_usage["output_tokens"])
             usage.total_tokens = int(provider_usage.get(

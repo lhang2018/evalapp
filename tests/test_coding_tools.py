@@ -531,11 +531,13 @@ class TestCodingTools(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertFalse(result.goal_reached)
         self.assertTrue(result.evidence["rolled_back"])
-        self.assertFalse(result.side_effect_uncertain)
-        self.assertIsNone(result.evidence["journal"])
-        self.assertFalse((root / ".evoagent_patch_journal").exists())
+        # A foreign/corrupted post-write value is not proof that it is ours to
+        # overwrite. Preserve it and retain the journal for reconciliation.
+        self.assertTrue(result.side_effect_uncertain)
+        self.assertIsNotNone(result.evidence["journal"])
+        self.assertTrue((root / ".evoagent_patch_journal").exists())
         self.assertEqual(first.read_text(encoding="utf-8"), "x = 1\n")
-        self.assertEqual(second.read_text(encoding="utf-8"), "y = 2\n")
+        self.assertEqual(second.read_text(encoding="utf-8"), "corrupted\n")
 
     def test_patch_rollback_failure_is_flagged_uncertain(self):
         root = self._project()
@@ -547,6 +549,7 @@ class TestCodingTools(unittest.TestCase):
 
         def fail_second(self, data, *args, **kwargs):
             if self.name == "b.py":
+                original_write(self, "partial write\n", *args, **kwargs)
                 raise OSError("disk locked")
             return original_write(self, data, *args, **kwargs)
 
@@ -1148,8 +1151,8 @@ class TestCodingTools(unittest.TestCase):
         manifest = install_coding_pack(registry, str(root))
 
         self.assertEqual(manifest.pack_id, "coding_pack")
-        self.assertEqual(manifest.version, "1.5.0")
-        self.assertEqual(manifest.rollback_version, "1.4.0")
+        self.assertEqual(manifest.version, "1.5.1")
+        self.assertEqual(manifest.rollback_version, "1.5.0")
         self.assertEqual(len(manifest.tool_ids), 8)
         self.assertIn("coding_patch", manifest.tool_ids)
         self.assertIn("coding_patch_recover", manifest.tool_ids)

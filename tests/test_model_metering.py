@@ -69,7 +69,8 @@ class _ScriptedAdapter:
         self._profile = profile
         self._result = result
         self._error = error
-        self.last_usage = usage
+        self._response_usage = usage
+        self.last_usage = None
         self.last_request_id = request_id
 
     def profile(self):
@@ -84,11 +85,13 @@ class _ScriptedAdapter:
     def generate(self, messages):
         if self._error is not None:
             raise self._error
+        self.last_usage = dict(self._response_usage) if self._response_usage is not None else None
         return self._result if isinstance(self._result, str) else ""
 
     def suggest_action(self, messages, available_tools):
         if self._error is not None:
             raise self._error
+        self.last_usage = dict(self._response_usage) if self._response_usage is not None else None
         return self._result or Action(kind="finish", answer="ok")
 
 

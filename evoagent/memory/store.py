@@ -174,13 +174,21 @@ class MemoryStore:
             item.status = Credibility.PENDING_REVIEW
         existing = None
         with self._lock:
+            references = [item.memory_id] + [relation.get("target") for relation in item.relations
+                if relation.get("relation") in {"derived_from", "cached_from"}]
+            if any(self._conn.execute("SELECT 1 FROM memory_tombstones WHERE memory_id=?", (ref,)).fetchone()
+                   for ref in references if ref):
+                raise MemoryAccessError("已删除记忆及其过期派生引用不可重新写入")
+            previous = self.get(item.memory_id)
+            if previous is not None and identity is not None and not _identity_visible(previous, _access_keys(identity, None)):
+                raise MemoryAccessError("不可覆盖其他身份的记忆")
             # 简单冲突处理：同 scope+kind 相同内容 → 跳过重复
             dup = self._conn.execute(
-                "SELECT 1 FROM memory_items WHERE scope=? AND kind=? AND scope_key=?"
+                "SELECT * FROM memory_items WHERE scope=? AND kind=? AND scope_key=?"
                 " AND content=? AND status!='revoked'",
                 (item.scope.value, item.kind.value, item.scope_key, item.content)).fetchone()
             if dup:
-                return item
+                return self._row_to_item(dup)
             if item.fact_key:
                 existing = self._find_fact(item)
             self._conn.execute(

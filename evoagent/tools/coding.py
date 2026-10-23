@@ -27,10 +27,11 @@ from typing import Callable, Dict, List, Optional, Tuple
 from .contract import ToolContract, ToolResult, class_error
 
 _PACK_ID = "coding_pack"
-_PACK_VERSION = "1.5.0"
-_ROLLBACK_VERSION = "1.4.0"
+_PACK_VERSION = "1.5.1"
+_ROLLBACK_VERSION = "1.5.0"
 _CONTRACT_TEST_REF = "tests/test_coding_tools.py"
 _JOURNAL_DIR = ".evoagent_patch_journal"
+_LOCK_NAME = ".evoagent_patch.lock"
 _SKIP_DIRS = {
     ".git", ".hg", ".svn", "node_modules", "__pycache__", ".venv", "venv",
     "env", ".mypy_cache", ".pytest_cache", "build", "dist", ".tox",
@@ -56,6 +57,44 @@ def _resolve_within(rootp: Path, rel: str) -> Path:
     if not p.is_relative_to(rootp):
         raise ValueError(f"路径越界: {raw}")
     return p
+
+
+def _edit_path(rootp: Path, rel: str) -> Path:
+    path = _resolve_within(rootp, rel)
+    if any(part in {_JOURNAL_DIR, _LOCK_NAME} for part in Path(rel).parts) or (
+            path.relative_to(rootp).parts and path.relative_to(rootp).parts[0] in {_JOURNAL_DIR, _LOCK_NAME}):
+        raise ValueError("补丁事务元数据不能作为编辑目标")
+    return path
+
+
+def _serialized(root, runner):
+    """One cooperative edit/recovery writer per project, including processes."""
+    def call(args):
+        fd = None
+        try:
+            rootp = _resolve_root(root)
+            lock = rootp / _LOCK_NAME
+            if lock.resolve() != lock or lock.is_symlink():
+                raise PermissionError("补丁锁路径存在重定向")
+            fd = os.open(str(lock), os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0), 0o600)
+            if os.fstat(fd).st_size == 0:
+                os.write(fd, b"0")
+            os.lseek(fd, 0, os.SEEK_SET)
+            if os.name == "nt":
+                import msvcrt
+                msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except (OSError, ValueError) as exc:
+            if fd is not None:
+                os.close(fd)
+            return ToolResult.error_result(f"项目补丁锁或边界拒绝: {exc}", "auth_or_permission")
+        try:
+            return runner(args)
+        finally:
+            os.close(fd)
+    return call
 
 
 def _tail(text: str, limit: int = 2000) -> str:
@@ -415,7 +454,7 @@ def coding_edit_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
         new_text = str(new_text)
         try:
             rootp = _resolve_root(root)
-            path = _resolve_within(rootp, rel)
+            path = _edit_path(rootp, rel)
         except ValueError as exc:
             return ToolResult.error_result(str(exc), "auth_or_permission")
         if not path.is_file():
@@ -474,12 +513,20 @@ def coding_edit_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
             syntax_error = None
 
         try:
+            if path.resolve() != path or _sha_file(path) != digest_before:
+                return ToolResult.error_result("文件在预检后发生变更，拒绝覆盖", "invalid_arguments")
             path.write_text(new_content, encoding="utf-8")
         except OSError as exc:
-            return ToolResult.error_result(str(exc), class_error(exc))
+            try:
+                unchanged = path.is_file() and _sha_file(path) == digest_before
+            except (OSError, ValueError):
+                unchanged = False
+            return ToolResult(ok=False, error=str(exc), error_class=class_error(exc),
+                submitted=True, executed=True, side_effect_uncertain=not unchanged,
+                evidence={"written": not unchanged})
         try:
             verified = path.read_text(encoding="utf-8") == new_content
-        except OSError:
+        except (OSError, UnicodeError):
             verified = False
         evidence = {
             "path": rel,
@@ -492,12 +539,8 @@ def coding_edit_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
             "syntax_checked": path.suffix == ".py",
         }
         if not verified:
-            restored = False
-            try:
-                path.write_text(original, encoding="utf-8")
-                restored = path.read_text(encoding="utf-8") == original
-            except OSError:
-                restored = False
+            restored = not _rollback_files([dict(path=path, rel=rel, original=original,
+                sha256_before=digest_before, sha256_after=evidence["sha256_after"])])
             evidence["restored"] = restored
             return ToolResult(
                 ok=False, data=None,
@@ -533,7 +576,7 @@ def coding_edit_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
         cost_model={"unit": "bytes", "varies": "content_size"},
         contract_test_ref=_CONTRACT_TEST_REF,
     )
-    return contract, run
+    return contract, _serialized(root, run)
 
 
 def _action_of(item: Dict[str, object]) -> str:
@@ -550,6 +593,15 @@ def _rollback_files(prepared: List[Dict[str, object]]) -> List[str]:
         path = item["path"]
         original = item["original"]
         try:
+            if path.resolve() != path:
+                failed.append(str(item["rel"]))
+                continue
+            current = _sha_file(path) if path.is_file() else ""
+            if (not path.exists() and item.get("create")) or (path.is_file() and current == item["sha256_before"]):
+                continue
+            if current != item["sha256_after"] or (path.exists() and not path.is_file()):
+                failed.append(str(item["rel"]))
+                continue
             if item.get("create"):
                 path.unlink(missing_ok=True)
                 if path.exists():
@@ -558,13 +610,15 @@ def _rollback_files(prepared: List[Dict[str, object]]) -> List[str]:
             path.write_text(original, encoding="utf-8")
             if path.read_text(encoding="utf-8") != original:
                 failed.append(str(item["rel"]))
-        except OSError:
+        except (OSError, ValueError):
             failed.append(str(item["rel"]))
     return failed
 
 
 def _journal_path(rootp: Path) -> Path:
     jdir = rootp / _JOURNAL_DIR
+    if jdir.resolve() != jdir or jdir.is_symlink():
+        raise OSError("事务日志目录不得重定向")
     jdir.mkdir(parents=True, exist_ok=True)
     stamp = time.strftime("%Y%m%d-%H%M%S")
     return jdir / f"patch-{stamp}-{uuid.uuid4().hex[:8]}.json"
@@ -624,16 +678,24 @@ def _recover_journals(rootp: Path, dry_run: bool):
     conflicts = 0
     uncertain = False
     jdir = rootp / _JOURNAL_DIR
+    if jdir.resolve() != jdir or jdir.is_symlink():
+        return report, 0, 0, [{"journal": _JOURNAL_DIR, "error": "事务日志目录不得重定向"}], False
     if not jdir.is_dir():
         return report, restored, conflicts, errors, uncertain
     for path in sorted(jdir.glob("*.json")):
         entry: Dict[str, object] = {"journal": path.name, "files": []}
         try:
+            if path.resolve().parent != jdir or path.is_symlink():
+                raise ValueError("事务日志文件不得重定向")
             payload = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(payload, dict) or payload.get("version") != 1:
+                raise ValueError("非法日志格式或版本")
             files = payload.get("files")
             if not isinstance(files, list):
                 raise ValueError("缺少 files")
             status = payload.get("status")
+            if status not in {"pending", "committed"}:
+                raise ValueError("非法事务状态")
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             errors.append({"journal": path.name, "error": str(exc)})
             continue
@@ -670,7 +732,7 @@ def _recover_journals(rootp: Path, dry_run: bool):
                 if existed and hashlib.sha256(
                         original.encode("utf-8")).hexdigest() != before:
                     raise ValueError("原内容摘要与日志不符")
-                target = _resolve_within(rootp, rel)
+                target = _edit_path(rootp, rel)
                 current = _sha_file(target) if target.is_file() else ""
                 if not existed:
                     if target.is_file() and current == after:
@@ -716,6 +778,7 @@ def _recover_journals(rootp: Path, dry_run: bool):
                 uncertain = uncertain or attempted_write
                 entry.setdefault("errors", []).append(
                     {"file": rel, "error": str(exc)})
+                errors.append({"journal": path.name, "file": rel, "error": str(exc)})
             if action in ("conflict", "error"):
                 unresolved += 1
             file_rows.append({"file": rel, "sha256_before": before,
@@ -878,7 +941,10 @@ def _apply_hunk(content: str, old_block: str, new_block: str,
             found = content.find(old_trim, start)
             if found < 0:
                 break
-            hits.append(found)
+            end = found + len(old_trim)
+            if (found == 0 or content[found - 1] == "\n") and (
+                    old_trim.endswith("\n") or end == len(content) or content[end] == "\n"):
+                hits.append(found)
             start = found + 1
         if not hits:
             continue
@@ -940,7 +1006,7 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
                 create = bool(entry.get("create"))
                 delete = bool(entry.get("delete"))
                 try:
-                    path = _resolve_within(rootp, rel)
+                    path = _edit_path(rootp, rel)
                 except ValueError as exc:
                     return ToolResult.error_result(str(exc),
                                                    "auth_or_permission")
@@ -1025,7 +1091,7 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
                     "invalid_arguments")
             new_text = str(item.get("new_text"))
             try:
-                path = _resolve_within(rootp, rel)
+                path = _edit_path(rootp, rel)
             except ValueError as exc:
                 return ToolResult.error_result(str(exc), "auth_or_permission")
             if str(path) in seen:
@@ -1153,8 +1219,20 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
         written: List[str] = []
         try:
             for item in prepared:
+                path = item["path"]
+                if path.resolve() != path or (path.exists() if item["create"] else
+                        not path.is_file() or _sha_file(path) != item["sha256_before"]):
+                    raise OSError(f"预检后文件状态变更，拒绝覆盖: {item['rel']}")
+            for item in prepared:
+                path = item["path"]
+                if path.resolve() != path or (path.exists() if item["create"] else
+                        not path.is_file() or _sha_file(path) != item["sha256_before"]):
+                    raise OSError(f"写入前文件状态变更，拒绝覆盖: {item['rel']}")
                 if item["deleted"]:
                     item["path"].unlink()
+                elif item["create"]:
+                    with path.open("x", encoding="utf-8") as handle:
+                        handle.write(item["new_content"])
                 else:
                     item["path"].write_text(item["new_content"],
                                             encoding="utf-8")
@@ -1184,7 +1262,7 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
                 elif item["path"].read_text(encoding="utf-8") \
                         != item["new_content"]:
                     mismatched.append(str(item["rel"]))
-            except OSError:
+            except (OSError, UnicodeError):
                 mismatched.append(str(item["rel"]))
         if mismatched:
             failed = _rollback_files(prepared)
@@ -1206,8 +1284,12 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
         try:
             _mark_committed(journal)
             _remove_journal(journal)
-        except OSError:
-            pass
+        except OSError as exc:
+            return ToolResult(ok=False, data={"applied": written},
+                error=f"补丁已写入但提交标记失败，须恢复或对账: {exc}", error_class="execution_error",
+                submitted=True, executed=True, contract_valid=True, goal_reached=False,
+                independently_verified=False, side_effect_uncertain=True,
+                evidence={"written": written, "journal": journal.name, "commit_recorded": False})
 
         files = [{"file": item["rel"], "line": item["line"],
                   "action": _action_of(item),
@@ -1243,7 +1325,7 @@ def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
         cost_model={"unit": "edits", "varies": "file_count"},
         contract_test_ref=_CONTRACT_TEST_REF,
     )
-    return contract, run
+    return contract, _serialized(root, run)
 
 
 def coding_patch_recover_tool(root: str = "."
@@ -1303,7 +1385,7 @@ def coding_patch_recover_tool(root: str = "."
         cost_model={"unit": "journals", "varies": "file_count"},
         contract_test_ref=_CONTRACT_TEST_REF,
     )
-    return contract, run
+    return contract, _serialized(root, run)
 
 
 def coding_syntax_check_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
@@ -1465,11 +1547,11 @@ def coding_typecheck_tool(root: str = ".",
         permission_requirements=["fs.read", "process.exec"],
         input_schema={"type": "object", "properties": {
             "targets": {"type": "array"}}},
-        side_effect_level="none",
+        side_effect_level="external",
         idempotency_policy="none",
         timeout_policy=120.0,
         health_check=lambda: _checker_probe(command, Path(root or "."))[0],
-        risk_class="medium",
+        risk_class="high",
         offline_capable=True,
         requires_network=False,
         cost_model={"unit": "subprocess", "varies": "project_size"},

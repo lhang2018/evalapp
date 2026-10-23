@@ -5,6 +5,7 @@
 已验证的固定流程直接走工作流，不要求每次重新发明计划（PRD 11.3）。
 """
 
+import copy
 import json
 import re
 import time
@@ -131,6 +132,11 @@ class ExecutionPlan:
                 raise PlanRevisionError(
                     f"修订把已完成步骤 {sid} 降级为 {nxt.state}"
                     "——不允许重跑成功副作用")
+        for old in self.steps:
+            nxt = new_by_id.get(old.step_id)
+            if old.state in {"done", "running"} or old.step_id in self.completed_work or level == "append":
+                if nxt is None or nxt.to_dict() != old.to_dict():
+                    raise PlanRevisionError(f"修订改写已开始/已完成或append既有步骤 {old.step_id}")
 
         if level == "append":
             for s in self.steps:
@@ -144,7 +150,7 @@ class ExecutionPlan:
         removed = [sid for sid in old_ids if sid not in new_by_id]
 
         # —— 提交 ——
-        self.steps = new_steps
+        self.steps = copy.deepcopy(new_steps)
         merged = list(self.completed_work)
         for s in new_steps:
             if s.state == "done" and s.step_id not in merged:

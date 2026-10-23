@@ -103,6 +103,11 @@ class KeyRing:
         if algorithm != ALGORITHM:
             raise SigningError(f"不支持的签名算法: {algorithm}")
         key = SigningKey(key_id.strip(), secret, algorithm)
+        existing = self._keys.get(key.key_id)
+        if existing is not None:
+            if existing != key:
+                raise SigningError("签名密钥身份不可换密复用；轮换须使用新的key_id")
+            return existing
         self._keys[key.key_id] = key
         if self.active_key_id is None:
             self.active_key_id = key.key_id
