@@ -513,6 +513,19 @@ def test_objective_registration_cannot_retroactively_count_child_evidence(app):
         configure(app, root, [objective()])
 
 
+def test_partial_verified_milestones_are_progress_even_when_task_fails_other_checks(app):
+    goal = ready(app, rules={"max_failures": 5, "max_repeated_states": 2})
+    a, b, c = objective("a"), objective("b"), objective("c")
+    configure(app, goal, [a, b, c])
+    finish(app, goal, success=False, checks=[{"spec": a, "passed": True}, {"spec": b, "passed": False}])
+    first = app.goal_governor.report(goal["goal_id"])
+    assert first["fulfilled"] == [digest(a)] and first["no_progress"] == 0
+    finish(app, goal, success=False, checks=[{"spec": b, "passed": True}, {"spec": c, "passed": False}])
+    second = app.goal_governor.report(goal["goal_id"])
+    assert second["reason"] is None and second["no_progress"] == 0
+    assert set(second["fulfilled"]) == {digest(a), digest(b)}
+
+
 def test_registered_expectation_is_not_rewritten_after_actual_outcome(app):
     source = ready(app)
     candidate = app.opportunities.discover("goal", source["goal_id"], actor="system", reason="source", expires_at=time.time()+300)

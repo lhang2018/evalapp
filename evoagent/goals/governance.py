@@ -154,8 +154,8 @@ class GoalGovernor:
         success = task.task_status.value == "SUCCEEDED"
         return dict(task_id=task.task_id, goal_id=task.goal_id, run_id=task.current_run_id,
                     finished_at=task.updated_at, success=success, known=bool(known),
-                    checks=sorted(set(checks)) if known and success else [],
-                    state=digest([task.task_status.value, task.result, task.failure_reason]),
+                    checks=sorted(set(checks)) if known else [],
+                    state=digest([task.task_status.value, task.result, task.failure_reason, sorted(set(checks))]),
                     failure_reason=task.failure_reason or "", usage=usage)
 
     def report(self, goal_id, *, new_attempt=False):
