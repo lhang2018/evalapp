@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-22",
+  "updated_at": "2026-10-23",
   "purpose": "协作认领；不替代正式契约、原始 ALN 依赖或功能验收",
   "baseline": {
     "status": "candidate",
@@ -108,6 +108,16 @@
       ],
       "report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md",
       "scope": "候选准备Git/日志证据有效；当前源码新增显式验收不通过，915/1仅为此前普通tests基线"
+    },
+    "latest_source_verification": {
+      "source_commit": "becfad7a14fee93728879d0cebc0fbee00a4dc0a",
+      "source_tree": "4f84d9c92145a1ea937941e139523120b09fd801",
+      "python_passed": 1176,
+      "python_skipped": 1,
+      "client_passed": 166,
+      "typecheck": "passed",
+      "scope": "git archive排除未提交修改，类型检查复用已装依赖；未重跑真机，不替代prepared_candidate或独立接受",
+      "evidence": "../../.planning/2026-10-23-project-status/verification.json"
     }
   },
   "streams": [
@@ -304,12 +314,12 @@
       "workpackage": "ALN-00",
       "title": "发布可共享基线",
       "stream": "integration",
-      "owner": "claude-main",
+      "owner": "codex-runtime",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "in_progress",
-      "blocker": null,
+      "branch": "main",
+      "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
+      "status": "blocked",
+      "blocker": "正式发布等待已交付补丁的独立复核、ALN-04-UI真机路径及选定范围的干净候选核验；当前单开发者不能自批本人补丁",
       "evidence": [
         {
           "date": "2026-10-22",
@@ -365,7 +375,16 @@
         "GAP_ANALYSIS.md"
       ],
       "preparation_status": "verified_pending_review",
-      "next_step": "准备证据有效；CA-08-01/CA-06-01/CA-08-02 已修复（3b7ef62）待复验，复验通过后独立审阅与正式发布"
+      "next_step": "候选和交接整理可继续；独立接受前不修改published_commit，旧prepared_candidate保留历史证据",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "用户要求重新整理认领；当前仅codex在本项目开发，接手未交付范围，保留历史交付及独立审阅要求"
+        }
+      ],
+      "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工"
     },
     {
       "id": "ALN-04-R",
@@ -1233,7 +1252,14 @@
       ],
       "working_basis": "用户要求按优先级认领未开发工作包：ALN-07 为首个未认领 P1；在当前共享候选工作区增量开发（同 ALN-06-A/08-M/11-A 方式），基线未正式发布，不用旧 HEAD 冒充 base_commit",
       "delivery": "docs/协作开发/交付/ALN-07-P-计划修订与证据保持.md",
-      "next_step": "独立复核已请求并登记（2026-10-23-ALN-07-P独立复核请求.md，审阅人 codex-runtime）；剩余 _risks_for 可执行恢复策略、修订与副作用账本 submitted/unknown 对账接线、ALN-07 工作流匹配与轨迹编译两项待拆卡"
+      "next_step": "独立复核已请求并登记（2026-10-23-ALN-07-P独立复核请求.md，审阅人 codex-runtime）；剩余 _risks_for 可执行恢复策略、修订与副作用账本 submitted/unknown 对账接线、ALN-07 工作流匹配与轨迹编译两项待拆卡",
+      "delivered_commit": "6d55756ff14a3460f9fe75802bc9ac12fd91ead5",
+      "related_commits": [
+        {
+          "commit": "af6ef4896c93bef8b06c4201292219325f22f869",
+          "scope": "任务卡与认领登记；代码实际随6d55756入库"
+        }
+      ]
     },
     {
       "id": "ALN-13-A",
@@ -1280,63 +1306,87 @@
       "workpackage": "ALN-12",
       "title": "自然语言任务—设备执行/回执协议与离线故障矩阵",
       "stream": "android",
-      "owner": "claude-main",
+      "owner": "codex-runtime",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
+      "branch": "main",
+      "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
       "status": "claimed",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/12-自然语言手机任务与离线可靠性.md",
       "shared_files": [],
-      "working_basis": "用户要求认领剩余未认领的 P1 工作包；基线 candidate 未发布，沿用当前共享候选工作区增量开发，不用旧 HEAD 冒充 base_commit（同 ALN-07-P）",
-      "next_step": "先交设备动作提议/回执契约与离线故障矩阵，并用夹具证明任务未关联设备动作、无统一 effect 引用、矩阵缺项；通知在途文件由并行会话持有"
+      "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
+      "next_step": "排队：设备动作提议/回执契约、task/run/effect引用与离线故障矩阵；既有未提交通知/后台修改先核对依赖再独立处理，不覆盖",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "用户要求重新整理认领；当前仅codex在本项目开发，接手未交付范围，保留历史交付及独立审阅要求"
+        }
+      ]
     },
     {
       "id": "ALN-14-A",
       "workpackage": "ALN-14",
       "title": "机会排序、无进展停止与归因规则",
       "stream": "runtime",
-      "owner": "claude-main",
+      "owner": "codex-runtime",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
+      "branch": "main",
+      "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
       "status": "blocked",
-      "blocker": "等待 ALN-13-A 交付并释放 evoagent/goals/ 独占，等待 ALN-15 预算接口与 ALN-09/10 评测证据；解除前不写代码",
+      "blocker": "持续执行实现等待ALN-15-A持久预算预留/结算接口；真实收益归因验收还需ALN-09/10真实候选证据。ALN-13已交付，不再存在目录占用阻塞",
       "evidence": [],
       "card": "docs/协作开发/任务卡/14-机会排序与无进展停止.md",
       "shared_files": [],
-      "working_basis": "用户要求认领剩余未认领的 P1 工作包；ALN-14 依赖未满足，先登记规则边界与阻塞原因，不进入实现",
-      "next_step": "blocker 解除后按「规则与不变量表→可复现实验夹具→实现」交付；不得与在途 ALN-13-A 抢 evoagent/goals/"
+      "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
+      "next_step": "先消费13的Goal/授权契约准备规则与夹具；15接口就绪后串行实现机会排序、阈值停止和递归治理；收益unknown不计改善",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "用户要求重新整理认领；当前仅codex在本项目开发，接手未交付范围，保留历史交付及独立审阅要求"
+        }
+      ]
     },
     {
       "id": "ALN-15-A",
       "workpackage": "ALN-15",
       "title": "预算预留/结算/退款与未知费用对账契约",
       "stream": "integration",
-      "owner": "claude-main",
+      "owner": "codex-runtime",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "claimed",
+      "branch": "main",
+      "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/15-APRO资源调度与预算对账.md",
       "shared_files": [
         "evoagent/core/budget.py"
       ],
-      "working_basis": "用户要求认领剩余未认领的 P1 工作包；core/budget.py 为集成共享文件，由集成线串行小改；基线 candidate 未发布，不用旧 HEAD 冒充 base_commit",
-      "next_step": "先交预留—结算—退款—unknown 对账契约与夹具，复用 BudgetLedger；不改 Goal 域与 ALN-08 计量实现"
+      "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
+      "next_step": "开发持久账户与层级原子预留；先验证并发、幂等与崩溃unknown不退款，再实现结算/对账",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "用户要求重新整理认领；当前仅codex在本项目开发，接手未交付范围，保留历史交付及独立审阅要求"
+        }
+      ]
     },
     {
       "id": "ALN-17-A",
       "workpackage": "ALN-17",
       "title": "备份/恢复闭环加固与迁移回退契约",
       "stream": "integration",
-      "owner": "claude-main",
+      "owner": "codex-runtime",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
+      "branch": "main",
+      "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
       "status": "claimed",
       "blocker": null,
       "evidence": [],
@@ -1344,25 +1394,41 @@
       "shared_files": [
         "evoagent/core/schema/migrations.py"
       ],
-      "working_basis": "用户要求在剩余未认领工作包中再认领两个；ALN-17 的数据面备份/恢复可先于版本资产组合恢复独立验证，基线 candidate 未发布不用旧 HEAD 冒充 base_commit",
-      "next_step": "先交 schema_version 兼容判定、损坏拒绝、行数核对、迁移失败回退与 RTO/RPO 测量；空机器部署与制品恢复另卡"
+      "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
+      "next_step": "排队：schema兼容、损坏拒绝、行数核对、迁移回退与RTO/RPO测量；版本资产组合恢复和空机器部署另行验收",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "用户要求重新整理认领；当前仅codex在本项目开发，接手未交付范围，保留历史交付及独立审阅要求"
+        }
+      ]
     },
     {
       "id": "ALN-20-A",
       "workpackage": "ALN-20",
       "title": "Runtime 适配协议与固定版本 PoC 设计",
       "stream": "runtime",
-      "owner": "claude-main",
+      "owner": "codex-runtime",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
+      "branch": "main",
+      "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
       "status": "claimed",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/20-Runtime适配与Harness PoC.md",
       "shared_files": [],
-      "working_basis": "用户要求在剩余未认领工作包中再认领两个；ALN-20 先交协议/兼容矩阵，不接管执行路径，基线 candidate 未发布不用旧 HEAD 冒充 base_commit",
-      "next_step": "先交五类能力协议、Mock/现有运行时两路契约夹具与兼容矩阵；固定外部 Harness commit 的 PoC 与 ADR 正式条目另卡"
+      "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
+      "next_step": "排队：Runtime五类能力协议、Mock/现有运行时夹具和兼容矩阵；外部Harness固定版本PoC仍须另行实测",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "用户要求重新整理认领；当前仅codex在本项目开发，接手未交付范围，保留历史交付及独立审阅要求"
+        }
+      ]
     },
     {
       "id": "ALN-18-A",
@@ -1389,7 +1455,78 @@
       "card": "docs/协作开发/任务卡/18-真实编程能力包.md",
       "shared_files": [],
       "working_basis": "用户要求继续做 ALN-18；ALN-06 工具契约已可声明离线/成本/风险，ALN-07 计划修订已在 review，本卡先做不依赖执行路径的编程工具包切片",
-      "next_step": "待 runtime 线独立复验；后续：AST 引用/调用图、LSP 适配、专家与 App 接线（共享文件串行）、注册表提供卸载语义后的能力包升级/回滚"
+      "next_step": "待 runtime 线独立复验；后续：AST 引用/调用图、LSP 适配、专家与 App 接线（共享文件串行）、注册表提供卸载语义后的能力包升级/回滚",
+      "delivered_commit": "acbd22aacf647a3938fdafdd390f0b2e11d42977"
+    },
+    {
+      "id": "ALN-05-I",
+      "workpackage": "ALN-05",
+      "title": "记忆身份与ContextManifest运行时接线",
+      "stream": "runtime",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
+      "status": "claimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/05-记忆身份运行时接线.md",
+      "shared_files": [
+        "evoagent/core/task.py",
+        "evoagent/core/controller.py",
+        "evoagent/core/persistence.py",
+        "evoagent/core/schema/migrations.py",
+        "evoagent/app.py"
+      ],
+      "working_basis": "2026-10-23差距核对后拆出明确消费者任务；当前项目串行排队，未开始实现，不改变原交付作者和review结论",
+      "next_step": "排队，按任务卡完成协议、最小主链接线与正反例；不得以模块测试替代真实消费者"
+    },
+    {
+      "id": "ALN-11-W",
+      "workpackage": "ALN-11",
+      "title": "活动workflow执行消费与自动健康探针",
+      "stream": "android",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "main",
+      "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
+      "status": "claimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/11-活动工作流执行与健康探针.md",
+      "shared_files": [
+        "android-app/App.tsx"
+      ],
+      "working_basis": "2026-10-23差距核对后拆出明确消费者任务；当前项目串行排队，未开始实现，不改变原交付作者和review结论",
+      "next_step": "排队，按任务卡完成协议、最小主链接线与正反例；不得以模块测试替代真实消费者"
+    },
+    {
+      "id": "ALN-18-B",
+      "workpackage": "ALN-18",
+      "title": "跨文件引用/调用图与并发安全改写",
+      "stream": "runtime",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-23",
+          "scope": "coding_references 静态引用/调用点（导入关系分置信度）+ coding_edit expected_sha256 并发保护 + 符号签名/返回注解 + 能力包 1.1.0；新增3项专项，共17项",
+          "command": "python -m pytest tests/test_coding_tools.py tests/test_tool_contract_fields.py tests/test_tool_health.py tests/test_tools.py -q; python -m pytest tests -q",
+          "result": "定向39 passed（新增17）；全量1179 passed/1 skipped",
+          "log": ".planning/2026-10-22-aln18/b-targeted.txt; .planning/2026-10-22-aln18/b-full-suite.txt",
+          "delivery": "docs/协作开发/交付/ALN-18-B-引用与并发改写.md",
+          "source_commit": "48b4aba"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/18-真实编程能力包-B.md",
+      "shared_files": [],
+      "working_basis": "承接 ALN-18-A 已交付首片（acbd22a）：补引用/调用图与 expected_sha256 并发保护；仅改 coding.py/测试，不碰共享注册表与执行路径",
+      "next_step": "待独立复验；后续：类型解析级引用、LSP 适配、专家/App 接线（共享文件串行）、注册表提供卸载语义后的包级回滚",
+      "delivered_commit": "48b4aba"
     }
   ],
   "workpackages": [
@@ -1399,9 +1536,17 @@
       "title": "固定基线、统一台账与失败归因",
       "depends_on": [],
       "stream": "integration",
-      "owner": "claude-main",
+      "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "24cd524准备证据有效；新验收3个根因需修改复验，独立审阅后正式发布"
+      "next_step": "已修CA问题待独立复验；最新源码becfad7验证1176/1、客户端166/typecheck通过，仅为源码证据；正式发布按00-B独立审阅与干净候选条件推进",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "未交付卡串行接手，原review卡作者不变"
+        }
+      ]
     },
     {
       "id": "ALN-01",
@@ -1439,7 +1584,7 @@
       "stream": "assets",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "签名载荷与兼容声明已认领（ALN-03-S）；先锁字节契约，再接入发布校验"
+      "next_step": "03-S正文签名/文件摘要/兼容实现已提交review；下一步独立复核及生产签名/客户端字节验签联合验收"
     },
     {
       "id": "ALN-04",
@@ -1463,9 +1608,17 @@
         "ALN-04"
       ],
       "stream": "models",
-      "owner": "claude-main",
-      "delivery_state": "planned",
-      "next_step": "五类身份与 ContextManifest 已认领（ALN-05-M）；先定作用域，再补冲突/删除传播"
+      "owner": "codex-runtime",
+      "delivery_state": "partial_verified",
+      "next_step": "05-M已交付review；新增05-I由codex排队接Task身份持久化、Controller读写与ContextManifest；端侧缓存与隐私另验",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "接手后续消费者接线，原已交付卡作者保留"
+        }
+      ]
     },
     {
       "id": "ALN-06",
@@ -1492,8 +1645,8 @@
       ],
       "stream": "runtime",
       "owner": "claude-main",
-      "delivery_state": "planned",
-      "next_step": "ALN-07-P 计划修订与证据保持已交付待独立复核（分级修订+证据不变量，1109/1）；工作流匹配与轨迹编译待后续拆卡"
+      "delivery_state": "partial_verified",
+      "next_step": "07-P已交付review，代码6d55756、卡片af6ef48；恢复策略/副作用对账、完整工作流匹配与轨迹编译后续拆卡"
     },
     {
       "id": "ALN-08",
@@ -1558,9 +1711,17 @@
         "ALN-10"
       ],
       "stream": "android",
-      "owner": "claude-main",
+      "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "内核、真机接线及验收修复已提交；ALN-11-R待独立复核；执行器消费活动workflow、自动健康探针与真机故障回滚待验"
+      "next_step": "11-R及09c0192后续修复待独立复核；新增11-W排队完成活动workflow执行消费和自动健康探针，补修复后真机故障回滚",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "接手后续消费者接线，原已交付卡作者保留"
+        }
+      ]
     },
     {
       "id": "ALN-12",
@@ -1572,9 +1733,17 @@
         "ALN-04"
       ],
       "stream": "android",
-      "owner": "claude-main",
+      "owner": "codex-runtime",
       "delivery_state": "planned",
-      "next_step": "ALN-12-A 已认领：先交设备动作/回执协议与离线故障矩阵；通知在途文件由并行会话持有，先确认归属再接线"
+      "next_step": "排队：设备动作提议/回执契约、task/run/effect引用与离线故障矩阵；既有未提交通知/后台修改先核对依赖再独立处理，不覆盖",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "未交付卡串行接手，原review卡作者不变"
+        }
+      ]
     },
     {
       "id": "ALN-13",
@@ -1602,9 +1771,17 @@
         "ALN-15"
       ],
       "stream": "runtime",
-      "owner": "claude-main",
+      "owner": "codex-runtime",
       "delivery_state": "planned",
-      "next_step": "ALN-14-A 已认领但 blocked：等待 ALN-13-A 释放 evoagent/goals/、ALN-15 预算接口与 ALN-09/10 评测证据"
+      "next_step": "先消费13的Goal/授权契约准备规则与夹具；15接口就绪后串行实现机会排序、阈值停止和递归治理；收益unknown不计改善",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "未交付卡串行接手，原review卡作者不变"
+        }
+      ]
     },
     {
       "id": "ALN-15",
@@ -1616,9 +1793,17 @@
         "ALN-13"
       ],
       "stream": "runtime",
-      "owner": "claude-main",
+      "owner": "codex-runtime",
       "delivery_state": "planned",
-      "next_step": "ALN-15-A 已认领：先交预算预留/结算/退款与 unknown 对账契约和夹具，等 ALN-13 预算引用与 ALN-08 计量接入后接线"
+      "next_step": "下一张开发卡：持久预留→结算/退款→unknown对账→崩溃回收；复用BudgetLedger并明确Goal总额度与任务硬上限区别；本轮仅重排认领，尚未开始编码",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "未交付卡串行接手，原review卡作者不变"
+        }
+      ]
     },
     {
       "id": "ALN-16",
@@ -1645,9 +1830,17 @@
         "ALN-16"
       ],
       "stream": "assets",
-      "owner": "claude-main",
+      "owner": "codex-runtime",
       "delivery_state": "planned",
-      "next_step": "ALN-17-A 已认领：先交备份/恢复闭环加固与迁移回退契约；空机器部署与版本资产组合恢复待 ALN-03/06/16"
+      "next_step": "排队：schema兼容、损坏拒绝、行数核对、迁移回退与RTO/RPO测量；版本资产组合恢复和空机器部署另行验收",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "未交付卡串行接手，原review卡作者不变"
+        }
+      ]
     },
     {
       "id": "ALN-18",
@@ -1661,8 +1854,8 @@
       ],
       "stream": "assets",
       "owner": "claude-main",
-      "delivery_state": "planned",
-      "next_step": "ALN-18-A 已交第一切片（review，待独立复验）：符号定位/改写/语法/类型/测试工具与能力包清单；引用解析、LSP、专家接线与制品级回滚另卡"
+      "delivery_state": "partial_verified",
+      "next_step": "18-A/18-B 两片已交付 review（acbd22a + 本卡）：工具/引用/并发保护/检查测试；专家接线、LSP 与包级回滚后续推进"
     },
     {
       "id": "ALN-19",
@@ -1690,9 +1883,17 @@
         "ALN-16"
       ],
       "stream": "runtime",
-      "owner": "claude-main",
+      "owner": "codex-runtime",
       "delivery_state": "planned",
-      "next_step": "ALN-20-A 已认领：先交 Runtime 适配协议、兼容矩阵与两路契约夹具；固定版本 Harness PoC 另卡"
+      "next_step": "排队：Runtime五类能力协议、Mock/现有运行时夹具和兼容矩阵；外部Harness固定版本PoC仍须另行实测",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "claude-main",
+          "to": "codex-runtime",
+          "reason": "未交付卡串行接手，原review卡作者不变"
+        }
+      ]
     },
     {
       "id": "ALN-21",
@@ -1743,5 +1944,50 @@
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
     }
   ],
-  "execution_note": "ALN-01-A/02-A代码完成并进入review；精确22c50ca干净全量1065/1，新增49项；客户端同tree沿用136/typecheck。01传递影响19包、02影响17包，原依赖未改；03/05等同期交付继续各自独立审阅。基线candidate未发布，不自批、不混入他人在途内容。 2026-10-22 ALN-11-A/ALN-16-A 已交付，状态 review，等待 codex-runtime 独立复核。 2026-10-22 ALN-07-P（首个未认领 P1 工作包的第一项）已交付分级修订与证据不变量（completed_work 单调不减、结构校验、违约拒收且计划保持原状），状态 review，待作者之外的独立复核。 2026-10-22 ALN-12/14/15（剩余未认领 P1）已由 claude-main 认领协调：12-A 开始协议与离线故障矩阵，14-A 因 ALN-13 在途 blocked，15-A 先交预留/结算/对账契约。 2026-10-22 按用户指示再从剩余未认领包中认领 ALN-17-A（备份/恢复闭环与迁移回退）与 ALN-20-A（Runtime 适配协议），均先交契约与夹具；ALN-18/19/21/22 依赖未满足，暂不认领。"
+  "execution_note": "2026-10-23 当前项目单会话开发ALN-15-A：持久预算账户、层级预留、结算退款及unknown对账；其他认领卡串行排队，保留review/accepted与原依赖；基线candidate未发布。",
+  "execution_queue": {
+    "updated_at": "2026-10-23",
+    "mode": "当前项目单开发会话串行推进",
+    "owner": "codex-runtime",
+    "wip_limit": 1,
+    "active_task": "ALN-15-A",
+    "next_task": "ALN-15-A",
+    "items": [
+      {
+        "id": "ALN-15-A",
+        "state": "开发中",
+        "condition": "先定持久预算契约及并发/崩溃不变量，再实现；不替上游卡验收"
+      },
+      {
+        "id": "ALN-14-A",
+        "state": "依赖阻塞",
+        "condition": "13目录阻塞已解除；15预算接口就绪后实现，真实收益验收仍需09/10"
+      },
+      {
+        "id": "ALN-05-I",
+        "state": "排队",
+        "condition": "消费05-M身份与清单接口，贯通Task持久化及运行时读写"
+      },
+      {
+        "id": "ALN-11-W",
+        "state": "排队",
+        "condition": "先定真实workflow消费协议，自动健康失败触发实际旧能力恢复并补真机证据"
+      },
+      {
+        "id": "ALN-12-A",
+        "state": "排队",
+        "condition": "手机动作/回执协议与离线故障矩阵；通知在途内容不混入"
+      },
+      {
+        "id": "ALN-17-A",
+        "state": "排队",
+        "condition": "备份schema兼容、行数核对、迁移回退与恢复测量"
+      },
+      {
+        "id": "ALN-20-A",
+        "state": "排队",
+        "condition": "Runtime协议和同组夹具；固定外部Harness PoC另行验收"
+      }
+    ]
+  }
 }

@@ -4,7 +4,7 @@
 负责人：claude-main
 审阅人：待定（负责人不得自审）
 基线 commit：`cabf775`（codex 重整认领时的源码锚点；本卡只改独占模块）
-分支与最终 commit：`main`（本地提交，未推送）；最终 commit 见文末
+分支与最终 commit：`main`（本地提交，未推送）；`48b4aba`（源码+测试+任务卡+本文件）
 认领状态：review
 
 ## 触发场景与行为变化
@@ -46,4 +46,5 @@
 
 ## 提交记录
 
-- 待补：源码与本文件同批提交哈希。
+- `48b4aba`：`evoagent/tools/coding.py`、`tests/test_coding_tools.py`、任务卡、本交付文档同批本地提交（未推送）。
+- 台账（workboard/认领表）为独立提交，含同期并行会话的认领重整内容，原样保留并在提交说明中注明。
