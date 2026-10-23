@@ -1,0 +1,15 @@
+{
+  "reviewed_commit": "8621c8e43d28f88c8fe635c7781a9ea15d8673a5",
+  "test_source": "tests/test_peer_hardening.py",
+  "before_command": "python .planning/2026-10-23-peer-hardening/verify_before.py",
+  "logs": [
+    {
+      "path": ".planning/2026-10-23-peer-hardening/before-fixed.txt",
+      "sha256": "dea9af32c140a79fa1b6ab660e7b9b81570b47806afc11c5ea2b2872d07c61fb"
+    },
+    {
+      "path": ".planning/2026-10-23-peer-hardening/related-final.txt",
+      "sha256": "e58f46af32b87cd6fe3a8295deb1f0986cc6906e6151d3d45f3fc24597d5d653"
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+Python version is above 3.10, patching the collections module.
+FFF..FFFFFFFFFFFFFFFFFFFFF                                               [100%]
+================================== FAILURES ===================================
+__________ test_recovery_does_not_overwrite_file_created_at_restore ___________
+tests\test_peer_hardening.py:36: in test_recovery_does_not_overwrite_file_created_at_restore
+    assert not result.ok
+E   AssertionError: assert not True
+E    +  where True = ToolResult(ok=True, data={'dry_run': False, 'restored': 1, 'conflicts': 0, 'journals': [{'journal': 'pending.json', 'f...: 1, 'errors': 0, 'dry_run': False}, idempotency_key=None, safe_to_repeat=False, retryable=False, required_action=None).ok
+__________ test_rollback_does_not_overwrite_file_created_at_restore ___________
+tests\test_peer_hardening.py:45: in test_rollback_does_not_overwrite_file_created_at_restore
+    assert failed == ["gone.txt"]
+E   AssertionError: assert [] == ['gone.txt']
+E     
+E     Right contains one more item: 'gone.txt'
+E     Use -v to get more diff
+_________ test_explicit_empty_eval_candidates_do_not_inherit_defaults _________
+tests\test_peer_hardening.py:52: in test_explicit_empty_eval_candidates_do_not_inherit_defaults
+    assert evaluator.run([case]).case_results[0].ok
+E   AssertionError: assert False
+E    +  where False = WorkflowModeCaseResult(case_id='empty', ok=False, expected_mode='dynamic_planning', predicted_mode='stable_workflow', ...w_id='', predicted_workflow_id='default', rationale='稳定工作流 default@1 五项检查全部通过（成本 0）', holdout=False, tags=[], error='').ok
+________________ test_bad_candidate_case_does_not_abort_batch _________________
+tests\test_peer_hardening.py:71: in test_bad_candidate_case_does_not_abort_batch
+    report = WorkflowModeEvaluator().run(cases)
+evoagent\evolution\routing_eval.py:760: in run
+    res = self.evaluate_case(case)
+evoagent\evolution\routing_eval.py:728: in evaluate_case
+    matcher = (WorkflowMatcher(case.candidates)
+evoagent\planning\matching.py:30: in __init__
+    raise ValueError("duplicate workflow identity")
+E   ValueError: duplicate workflow identity
+_____ test_all_preconditions_pass_but_dynamic_nodes_still_require_hybrid ______
+tests\test_peer_hardening.py:80: in test_all_preconditions_pass_but_dynamic_nodes_still_require_hybrid
+    assert result.mode == "hybrid_agent"
+E   AssertionError: assert 'stable_workflow' == 'hybrid_agent'
+E     
+E     - hybrid_agent
+E     + stable_workflow
+__________________ test_invalid_candidate_cost_rejected[-1] ___________________
+tests\test_peer_hardening.py:87: in test_invalid_candidate_cost_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_________________ test_invalid_candidate_cost_rejected[True] __________________
+tests\test_peer_hardening.py:87: in test_invalid_candidate_cost_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+__________________ test_invalid_candidate_cost_rejected[1.5] __________________
+tests\test_peer_hardening.py:87: in test_invalid_candidate_cost_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+__________________ test_invalid_candidate_cost_rejected[10] ___________________
+tests\test_peer_hardening.py:87: in test_invalid_candidate_cost_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+__________________ test_invalid_candidate_cost_rejected[nan] __________________
+tests\test_peer_hardening.py:87: in test_invalid_candidate_cost_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+______________ test_invalid_budget_rejected_without_coercion[-1] ______________
+tests\test_peer_hardening.py:93: in test_invalid_budget_rejected_without_coercion
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_____________ test_invalid_budget_rejected_without_coercion[True] _____________
+tests\test_peer_hardening.py:93: in test_invalid_budget_rejected_without_coercion
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_____________ test_invalid_budget_rejected_without_coercion[1.5] ______________
+tests\test_peer_hardening.py:93: in test_invalid_budget_rejected_without_coercion
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+______________ test_invalid_budget_rejected_without_coercion[10] ______________
+tests\test_peer_hardening.py:93: in test_invalid_budget_rejected_without_coercion
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_____________ test_invalid_budget_rejected_without_coercion[inf] ______________
+tests\test_peer_hardening.py:94: in test_invalid_budget_rejected_without_coercion
+    MatchContext.build(remaining_budget=remaining)
+evoagent\planning\contracts.py:81: in build
+    remaining_budget=int(remaining_budget),
+E   OverflowError: cannot convert float infinity to integer
+_____________________ test_budget_known_is_boolean[false] _____________________
+tests\test_peer_hardening.py:99: in test_budget_known_is_boolean
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_______________________ test_budget_known_is_boolean[0] _______________________
+tests\test_peer_hardening.py:99: in test_budget_known_is_boolean
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_______________________ test_budget_known_is_boolean[1] _______________________
+tests\test_peer_hardening.py:99: in test_budget_known_is_boolean
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_____________________ test_budget_known_is_boolean[None] ______________________
+tests\test_peer_hardening.py:99: in test_budget_known_is_boolean
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_______ test_candidate_and_context_defensively_snapshot_mutable_inputs ________
+tests\test_peer_hardening.py:110: in test_candidate_and_context_defensively_snapshot_mutable_inputs
+    assert candidate.required_inputs == ("input",)
+E   AssertionError: assert ['input', 'other'] == ('input',)
+E     
+E     Left contains one more item: 'other'
+E     Use -v to get more diff
+__ test_malformed_candidate_identity_and_collections_rejected[workflow_id-] ___
+tests\test_peer_hardening.py:116: in test_malformed_candidate_identity_and_collections_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+____ test_malformed_candidate_identity_and_collections_rejected[version-] _____
+tests\test_peer_hardening.py:116: in test_malformed_candidate_identity_and_collections_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_ test_malformed_candidate_identity_and_collections_rejected[required_permissions-read] _
+tests\test_peer_hardening.py:116: in test_malformed_candidate_identity_and_collections_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_ test_malformed_candidate_identity_and_collections_rejected[dependencies-value3] _
+tests\test_peer_hardening.py:116: in test_malformed_candidate_identity_and_collections_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+=========================== short test summary info ===========================
+FAILED tests/test_peer_hardening.py::test_recovery_does_not_overwrite_file_created_at_restore
+FAILED tests/test_peer_hardening.py::test_rollback_does_not_overwrite_file_created_at_restore
+FAILED tests/test_peer_hardening.py::test_explicit_empty_eval_candidates_do_not_inherit_defaults
+FAILED tests/test_peer_hardening.py::test_bad_candidate_case_does_not_abort_batch
+FAILED tests/test_peer_hardening.py::test_all_preconditions_pass_but_dynamic_nodes_still_require_hybrid
+FAILED tests/test_peer_hardening.py::test_invalid_candidate_cost_rejected[-1]
+FAILED tests/test_peer_hardening.py::test_invalid_candidate_cost_rejected[True]
+FAILED tests/test_peer_hardening.py::test_invalid_candidate_cost_rejected[1.5]
+FAILED tests/test_peer_hardening.py::test_invalid_candidate_cost_rejected[10]
+FAILED tests/test_peer_hardening.py::test_invalid_candidate_cost_rejected[nan]
+FAILED tests/test_peer_hardening.py::test_invalid_budget_rejected_without_coercion[-1]
+FAILED tests/test_peer_hardening.py::test_invalid_budget_rejected_without_coercion[True]
+FAILED tests/test_peer_hardening.py::test_invalid_budget_rejected_without_coercion[1.5]
+FAILED tests/test_peer_hardening.py::test_invalid_budget_rejected_without_coercion[10]
+FAILED tests/test_peer_hardening.py::test_invalid_budget_rejected_without_coercion[inf]
+FAILED tests/test_peer_hardening.py::test_budget_known_is_boolean[false] - Fa...
+FAILED tests/test_peer_hardening.py::test_budget_known_is_boolean[0] - Failed...
+FAILED tests/test_peer_hardening.py::test_budget_known_is_boolean[1] - Failed...
+FAILED tests/test_peer_hardening.py::test_budget_known_is_boolean[None] - Fai...
+FAILED tests/test_peer_hardening.py::test_candidate_and_context_defensively_snapshot_mutable_inputs
+FAILED tests/test_peer_hardening.py::test_malformed_candidate_identity_and_collections_rejected[workflow_id-]
+FAILED tests/test_peer_hardening.py::test_malformed_candidate_identity_and_collections_rejected[version-]
+FAILED tests/test_peer_hardening.py::test_malformed_candidate_identity_and_collections_rejected[required_permissions-read]
+FAILED tests/test_peer_hardening.py::test_malformed_candidate_identity_and_collections_rejected[dependencies-value3]
+24 failed, 2 passed in 0.39s
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
