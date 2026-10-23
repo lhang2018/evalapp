@@ -859,7 +859,7 @@
       "reviewer": "opencode-evo",
       "branch": "main",
       "base_commit": "b34cd788bf90d007457f0b21671dcec4f9c98e89",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "delivered_commit": "8218ed056555d313c6809fff68bc1351ed63e560",
       "evidence": [
@@ -879,8 +879,21 @@
         "evoagent/evolution/evaluator.py"
       ],
       "working_basis": "用户要求核对并修复本人交付问题，确认CXR-01/02/03属实；保留原独立验收及其他会话在途内容",
-      "review_result": "pending",
-      "next_step": "独立复核8218ed0的CXR补丁；不继承旧ALN-10-Q/R的accepted结论"
+      "review_result": "accepted",
+      "next_step": "复核通过（8218ed0）。ALN-10 整包保持按父卡跟踪：真实价格/账单、生产评测集、真实上线观察数据仍待真实环境",
+      "review_evidence": [
+        {
+          "date": "2026-10-23",
+          "scope": "opencode-evo 独立复核：CXR-01/02/03 补丁精读+干净归档树全量+内联探针（交付树与HEAD双跑）",
+          "command": "python -m pytest tests -q; pytest tests/test_cxr_hardening.py tests/test_aln10_completion.py tests/test_release_evidence.py -q; CXR内联探针",
+          "result": "等效956 passed/1 skipped；专项124 passed；CXR三探针交付树与HEAD均通过；cost_known报告级聚合语义确认",
+          "reviewed_commit": "8218ed056555d313c6809fff68bc1351ed63e560",
+          "review_note": "三项加固与验收条款一一对应：unavailable显式错误且状态阻止发布/不可读空影响追踪；holdout纳入明细一致性与费用/夹具校验；fixture要求显式cost_known且与复现检查独立拒绝",
+          "review_report": "docs/协作开发/验收/2026-10-23-ALN-10-H独立复核.md"
+        }
+      ],
+      "review_note": "2026-10-23 opencode-evo 独立复核：三项加固与验收条款一一对应：unavailable显式错误且状态阻止发布/不可读空影响追踪；holdout纳入明细一致性与费用/夹具校验；fixture要求显式cost_known且与复现检查独立拒绝",
+      "review_report": "docs/协作开发/验收/2026-10-23-ALN-10-H独立复核.md"
     },
     {
       "id": "ALN-09-F",
@@ -891,7 +904,7 @@
       "reviewer": "opencode-evo",
       "branch": "main",
       "base_commit": "21e6d2fb0e3c780f22d040a648c64d4348498022",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "delivered_commit": "5b0cc085560aa222d86d4fd4c2527e6988bbb145",
       "evidence": [
@@ -912,8 +925,21 @@
         "evoagent/evolution/candidates.py"
       ],
       "working_basis": "用户明确要求修复检视发现的五项问题；保留opencode-evo整包协调，CA/Android及其他在途文件不混入",
-      "review_result": "pending",
-      "next_step": "独立复核精确5b0cc08；真实候选隔离宿主、持久问题队列与多进程租约仍按整包前置实施"
+      "review_result": "accepted",
+      "next_step": "复核通过（5b0cc08）。ALN-09 整包保持未关闭：真实候选隔离宿主、持久问题队列、多进程租约仍按整包前置实施（ALN-00 基线后）",
+      "review_evidence": [
+        {
+          "date": "2026-10-23",
+          "scope": "opencode-evo 独立复核：OC-09-01/02/03/04、OC-INT-01 补丁精读+干净归档树全量+原五探针+16项专项",
+          "command": "python -m pytest tests -q; pytest .planning/2026-10-22-opencode-review/acceptance_checks.py; pytest tests/test_opencode_fixes.py",
+          "result": "等效979 passed/1 skipped（archive树test_git_read_tool经git init后通过，环境伪差非交付缺陷）；五探针5 passed；test_opencode_fixes 16/16",
+          "reviewed_commit": "5b0cc085560aa222d86d4fd4c2527e6988bbb145",
+          "review_note": "五项修复与交付声明一致：恢复预算快照+账本day行聚合（月行不重计）、非阻塞锁+_active_evaluations防误接管、精确release_id、audit_persisted/audit_error显式、round_id幂等审计；观察项：_ledger_usage直连账本内部结构",
+          "review_report": "docs/协作开发/验收/2026-10-23-ALN-09-F独立复核.md"
+        }
+      ],
+      "review_note": "2026-10-23 opencode-evo 独立复核：五项修复与交付声明一致：恢复预算快照+账本day行聚合（月行不重计）、非阻塞锁+_active_evaluations防误接管、精确release_id、audit_persisted/audit_error显式、round_id幂等审计；观察项：_ledger_usage直连账本内部结构",
+      "review_report": "docs/协作开发/验收/2026-10-23-ALN-09-F独立复核.md"
     },
     {
       "id": "ALN-03-S",

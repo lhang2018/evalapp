@@ -1615,3 +1615,11 @@
 - 全量 775 passed 0 failed
 - 下一步（ALN-09/10 复核剩余范围）：回归用例默认消费进门禁证据（消费者接线）；候选真实资产隔离方案稿（ALN-06 依赖）；等 ALN-00 基线发布后接线 server/cli 入口
 
+### ALN-09-F / ALN-10-H 独立复核 accepted 完成（2026-10-23）
+- 认领两张待定审阅卡的独立复核（审阅人 opencode-evo；修复人 codex-runtime），提交面 = workboard.json + 认领表 rendered + 两份验收报告
+- ALN-09-F 复核（5b0cc08）：补丁精读四文件；干净归档树全量 等效979/1（test_git_read_tool 失败为 archive 无 .git 的环境伪差，树内 git init 后通过）；原五探针 5 passed；test_opencode_fixes 16/16 且名称与 OC 五条款一一映射；账本 day 行语义/scope 前缀/六个 BudgetController 依赖契约核对一致；结论 accepted
+- ALN-10-H 复核（8218ed0）：干净归档树全量 等效956/1；专项 124 passed；CXR 三内联探针在交付树与 HEAD 双跑通过（空白明细+holdout 拒绝、fixture 显式 cost_known、普通 runner 兼容）；结论 accepted
+- 方法观察记入报告：归档树验证需先 git init（test_git_read_tool 依赖仓库存在）；_ledger_usage 直连 budget.db 内部结构为 schema 演进点
+- test_e12_e13.py 在途半截收尾：我的回归消费测试草稿已被上游 accepted 实现（test_aln10_completion 四类覆盖）实质收编，除排 14 行占位 helper 并注记（文件回到 HEAD 态，10 passed）
+- ALN-09/ALN-10 整包保持未关闭（真实候选隔离宿主、持久问题队列、多进程租约、真实价格/账单、生产评测集等）
+
