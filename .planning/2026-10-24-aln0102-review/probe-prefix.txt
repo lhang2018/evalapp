@@ -1,0 +1,14 @@
+[FAIL] P1 permission_requirement_is_not_a_grant: AttributeError: 'ToolRegistry' object has no attribute 'authorizations'
+[FAIL] P2 path_prefix_lookalike_not_contained: TypeError: ToolContract.__init__() got an unexpected keyword argument 'resource_bindings'
+[FAIL] P3 path_traversal_rejected: TypeError: ToolContract.__init__() got an unexpected keyword argument 'resource_bindings'
+[FAIL] P4 task_grant_cannot_expand_expert_whitelist: AttributeError: 'ToolRegistry' object has no attribute 'authorizations'
+[FAIL] P5 explicit_empty_list_means_no_resource: AttributeError: 'ToolRegistry' object has no attribute 'authorizations'
+[FAIL] P6 revocation_blocks_new_action: AttributeError: 'ToolRegistry' object has no attribute 'authorizations'
+[FAIL] P7 unknown_policy_field_rejected: AttributeError: 'ToolRegistry' object has no attribute 'authorizations'
+[FAIL] R1 no_adapter_keeps_unknown: TypeError: ToolContract.__init__() got an unexpected keyword argument 'reconcile'
+[FAIL] R2 unverified_receipt_keeps_unknown: TypeError: ToolContract.__init__() got an unexpected keyword argument 'reconcile'
+[FAIL] R3 missing_receipt_ref_keeps_unknown: TypeError: ToolContract.__init__() got an unexpected keyword argument 'reconcile'
+[FAIL] R4 version_mismatch_keeps_unknown: TypeError: ToolContract.__init__() got an unexpected keyword argument 'reconcile'
+[FAIL] R5 verified_receipt_replays_without_reexecution: TypeError: ToolContract.__init__() got an unexpected keyword argument 'reconcile'
+
+total=12 passed=0 failed=12

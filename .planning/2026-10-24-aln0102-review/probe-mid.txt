@@ -1,0 +1,14 @@
+[PASS] P1 permission_requirement_is_not_a_grant
+[PASS] P2 path_prefix_lookalike_not_contained
+[PASS] P3 path_traversal_rejected
+[PASS] P4 task_grant_cannot_expand_expert_whitelist
+[PASS] P5 explicit_empty_list_means_no_resource
+[PASS] P6 revocation_blocks_new_action
+[PASS] P7 unknown_policy_field_rejected
+[FAIL] R1 no_adapter_keeps_unknown: KeyError: 'effect_id'
+[FAIL] R2 unverified_receipt_keeps_unknown: KeyError: 'effect_id'
+[FAIL] R3 missing_receipt_ref_keeps_unknown: KeyError: 'effect_id'
+[FAIL] R4 version_mismatch_keeps_unknown: KeyError: 'effect_id'
+[FAIL] R5 verified_receipt_replays_without_reexecution: KeyError: 'effect_id'
+
+total=12 passed=7 failed=5

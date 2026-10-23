@@ -1262,10 +1262,10 @@
       "title": "统一动作授权与资源范围",
       "stream": "runtime",
       "owner": "codex-runtime",
-      "reviewer": null,
+      "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "a3a39a1f24c91d6e79131f20eaf9a6ad6628aefb",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -1286,9 +1286,18 @@
       ],
       "working_basis": "用户明确要求完成01/02，接续既有安全网关基础实现",
       "delivered_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
-      "review_result": "pending",
+      "review_result": "accepted",
       "delivery": "docs/协作开发/交付/ALN-01-A-统一任务范围授权.md",
-      "next_step": "独立复核精确22c50ca及关闭标准；通过后由集成人关闭父包/推进共同基线，不能作者自批"
+      "next_step": "claude-main 独立复核通过（tree与18项blob/SHA256字节级吻合；12根探针三时点对照：8830edf 0/12、71f91ea 7/12、22c50ca 12/12；新增49项跨种子0/1/42稳定；固定全量1065/1与声明一致；作者测试改动为纯新增加严）；真实HTTP与本地文件验收不代表任意外部供应商已配置，传递影响19个下游包的对接效果本复核不背书，整包ALN-01不关闭",
+      "third_party_review": {
+        "date": "2026-10-24",
+        "reviewer": "claude-main",
+        "report": "docs/协作开发/验收/2026-10-24-ALN-01-A与02-A独立复核.md",
+        "log": ".planning/2026-10-24-aln0102-review/",
+        "fixes_covered": [],
+        "probes": "P组7根（权限声明非授权/前缀相似/路径穿越/不扩白名单/空集非无限制/撤销拒绝/未知字段拒绝）",
+        "result": "tree=5c3d7765f191abdf81e92136008a854970eb9812 与声明一致；source-files.json 18/18 blob+SHA256 一致；8830edf 0/12、71f91ea 7/12、22c50ca 12/12；新增49 passed（种子0/1/42）；固定全量1065/1；无改测试凑绿"
+      }
     },
     {
       "id": "ALN-02-A",
@@ -1296,10 +1305,10 @@
       "title": "回执对账与验证补偿",
       "stream": "runtime",
       "owner": "codex-runtime",
-      "reviewer": null,
+      "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "a3a39a1f24c91d6e79131f20eaf9a6ad6628aefb",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -1320,9 +1329,18 @@
       ],
       "working_basis": "用户明确要求完成01/02，接续既有安全网关基础实现",
       "delivered_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
-      "review_result": "pending",
+      "review_result": "accepted",
       "delivery": "docs/协作开发/交付/ALN-02-A-回执对账与验证补偿.md",
-      "next_step": "独立复核精确22c50ca及关闭标准；通过后由集成人关闭父包/推进共同基线，不能作者自批"
+      "next_step": "claude-main 独立复核通过（tree与18项blob/SHA256字节级吻合；12根探针三时点对照：8830edf 0/12、71f91ea 7/12、22c50ca 12/12；新增49项跨种子0/1/42稳定；固定全量1065/1与声明一致；作者测试改动为纯新增加严）；真实进程隔离与设备适配仍归ALN-09/11/12，裸工具名旧格式迁移另议。Python函数节点仅限受信任纯计算，传递影响17个下游包，整包ALN-02不关闭",
+      "third_party_review": {
+        "date": "2026-10-24",
+        "reviewer": "claude-main",
+        "report": "docs/协作开发/验收/2026-10-24-ALN-01-A与02-A独立复核.md",
+        "log": ".planning/2026-10-24-aln0102-review/",
+        "fixes_covered": [],
+        "probes": "R组5根（无适配器/未独立验证/缺回执引用/版本不符均保持unknown + 可核验回执释放且不重复执行护栏）",
+        "result": "tree=5c3d7765f191abdf81e92136008a854970eb9812 与声明一致；source-files.json 18/18 blob+SHA256 一致；8830edf 0/12、71f91ea 7/12、22c50ca 12/12；新增49 passed（种子0/1/42）；固定全量1065/1；无改测试凑绿"
+      }
     },
     {
       "id": "ALN-11-A",
@@ -2664,7 +2682,7 @@
       "stream": "runtime",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "ALN-01-A代码已交付，任务范围/撤销/审批交集已验证；独立验收后关闭，供19个下游包对接",
+      "next_step": "ALN-01-A已由claude-main独立复核接受（0 evidence字节级清单18/18、12探针三时点、49项跨种子、1065/1）；传递影响19个下游包仍各自对接，不自批、不宣布共同基线发布",
       "implementation_state": "complete_pending_independent_review"
     },
     {
@@ -2677,7 +2695,7 @@
       "stream": "runtime",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "ALN-02-A代码已交付，回执/产物恢复与验证补偿已验证；独立验收后关闭，供17个下游包对接",
+      "next_step": "ALN-02-A已由claude-main独立复核接受（字节级清单18/18、12探针三时点、49项跨种子、1065/1）；真实供应商适配与进程隔离另验，传递影响17个下游包，不自批、不宣布共同基线发布",
       "implementation_state": "complete_pending_independent_review"
     },
     {
