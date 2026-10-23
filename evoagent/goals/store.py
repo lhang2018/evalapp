@@ -211,6 +211,8 @@ class GoalStore:
                 parent = self._get(parent_goal_id)
                 if parent["status"] in TERMINAL:
                     raise PermissionError("父目标已终止")
+                from .governance import GoalGovernor
+                GoalGovernor(self.db, clock=self.clock).guard_child(parent_goal_id, title)
                 deadline = parent["deadline"] if deadline is None else deadline
                 if parent["deadline"] is not None and (deadline is None or deadline > parent["deadline"]):
                     raise PermissionError("子目标期限超过父目标")
@@ -262,6 +264,9 @@ class GoalStore:
             if LEVELS.index(grant["level"]) < ACTION_LEVEL[action]:
                 raise PermissionError("动作超出自主等级")
             grants.append(grant)
+        if active:
+            from .governance import GoalGovernor
+            GoalGovernor(self.db, clock=self.clock).guard(lineage, action)
         return lineage, grants
 
     def authorize(self, goal_id, policy, *, level, actor, reason,
@@ -382,6 +387,8 @@ class GoalStore:
                     raise GoalConflict("幂等任务记录丢失，需要人工恢复")
                 return existing
             lineage, grants = self._grants(task.goal_id, action)
+            from .governance import GoalGovernor
+            GoalGovernor(self.db, clock=self.clock).guard(lineage, action, new_attempt=True)
             limits = {key: min(grant["budget_policy"][key] for grant in grants)
                       for key in grants[0]["budget_policy"]}
             requested = task.budget_policy or {}

@@ -53,6 +53,9 @@ class RunManager:
             self.db.save_run(run_id, task.task_id, started, time.time(),
                              task.task_status.value, task.version_manifest,
                              task.parent_run_id)
+            if task.goal_id and task.is_terminal():
+                from ..goals.governance import GoalGovernor
+                GoalGovernor(self.db).reconcile(task.goal_id)
         except LeaseLost:
             pass  # A fenced worker must not finalize the new owner's run/task.
         finally:

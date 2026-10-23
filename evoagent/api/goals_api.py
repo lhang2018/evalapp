@@ -97,3 +97,61 @@ def sandbox_goal(ctx):
     if _admin(ctx):
         _call(ctx, lambda: ctx.app.goals.sandbox(ctx.path.split("/")[2],
             ctx.body.get("code"), ctx.app.sandbox, actor="api:admin"))
+
+
+@post("/goal-policies")
+def install_goal_policy(ctx):
+    if _admin(ctx):
+        _call(ctx, lambda: ctx.app.goal_governor.install_policy(actor="api:admin", **ctx.body), 201)
+
+
+@post("/goals/{goal_id}/objectives")
+def configure_goal_objectives(ctx):
+    if _admin(ctx):
+        _call(ctx, lambda: ctx.app.goal_governor.configure(ctx.path.split("/")[2], actor="api:admin", **ctx.body))
+
+
+@get("/goals/{goal_id}/progress")
+def get_goal_progress(ctx):
+    _call(ctx, lambda: ctx.app.goal_governor.report(ctx.path.split("/")[2]))
+
+
+@post("/goals/{goal_id}/advance")
+def advance_goal(ctx):
+    if _admin(ctx):
+        _call(ctx, lambda: ctx.app.goal_governor.advance(ctx.path.split("/")[2], **ctx.body))
+
+
+@post("/goals/{goal_id}/review")
+def review_goal_progress(ctx):
+    if _admin(ctx):
+        _call(ctx, lambda: ctx.app.goal_governor.review(ctx.path.split("/")[2], actor="api:admin", **ctx.body))
+
+
+@get("/opportunities")
+def list_opportunities(ctx):
+    _call(ctx, lambda: {"opportunities": ctx.app.opportunities.ranked(
+        policy_ref=ctx.query.get("policy_ref", "manual-review/v1"))})
+
+
+@post("/opportunities/discover")
+def discover_opportunity(ctx):
+    if _admin(ctx):
+        _call(ctx, lambda: ctx.app.opportunities.discover(actor="api:admin", **ctx.body), 201)
+
+
+@post("/opportunities/{candidate_id}/assessment")
+def assess_opportunity(ctx):
+    if _admin(ctx):
+        _call(ctx, lambda: ctx.app.opportunities.assess(ctx.path.split("/")[2], actor="api:admin", **ctx.body))
+
+
+@post("/opportunities/{candidate_id}/register")
+def register_opportunity(ctx):
+    if _admin(ctx):
+        _call(ctx, lambda: ctx.app.opportunities.register(ctx.path.split("/")[2], actor="api:admin"), 201)
+
+
+@get("/opportunities/{candidate_id}/outcome")
+def opportunity_outcome(ctx):
+    _call(ctx, lambda: ctx.app.opportunities.outcome(ctx.path.split("/")[2]))

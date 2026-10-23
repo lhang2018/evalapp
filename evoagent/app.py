@@ -195,6 +195,10 @@ class App:
             wf_lookup=self._wf_lookup, diagnostics=self.diagnostics,
             classifier=self.classifier, ledger=self.ledger,
             audit=self.audit)  # S-05 执行环节审计
+        from .goals.governance import GoalGovernor
+        from .goals.opportunities import OpportunityService
+        self.goal_governor = GoalGovernor(self.db, controller=self.controller)
+        self.opportunities = OpportunityService(self.db)
 
         # 评测器依赖运行时执行入口；在控制器之后注入以打破循环依赖
         self.evaluator = Evaluator(
