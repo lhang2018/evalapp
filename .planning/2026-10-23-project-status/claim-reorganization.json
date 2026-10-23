@@ -1,0 +1,15 @@
+{
+  "dispatches": 29,
+  "states": {
+    "blocked": 2,
+    "accepted": 5,
+    "review": 16,
+    "claimed": 6
+  },
+  "preserved_review_and_acceptance": true,
+  "preserved_original_dependencies": true,
+  "preserved_published_and_prepared_baseline": true,
+  "links_and_generated_board": "passed",
+  "next_task": "ALN-15-A",
+  "active_task": null
+}

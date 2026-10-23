@@ -1,6 +1,6 @@
 # ALN-20-A：Runtime 适配协议与固定版本 PoC 设计
 
-建议角色：runtime。ADR-010 要求「模型适配不等于 Runtime」；本卡先交协议、兼容矩阵与 PoC 设计，固定外部 Runtime commit 的实际 PoC 另卡。
+当前负责人：codex-runtime，串行排队未开工。ADR-010 要求「模型适配不等于 Runtime」；本卡先交协议、兼容矩阵与 PoC 设计，固定外部 Runtime commit 的实际 PoC 另卡。
 
 ## 目标
 
@@ -10,7 +10,7 @@
 
 可独占新增：`evoagent/runtime/`（协议与适配接口，纯契约，不接管执行）、`tests/test_runtime_protocol.py`、`docs/协作开发/交付/ALN-20-A-*.md`。
 
-不得触碰：`evoagent/core/controller.py`、`evoagent/react/engine.py`、`evoagent/workflows/engine.py` 等 ALN-01/02/04/16 在途共享文件；本卡不改执行路径，不引入第二条工具/账本权威。固定外部 Harness commit 的 PoC 与 ADR 正式条目另卡。
+本卡不改 `evoagent/core/controller.py`、`evoagent/react/engine.py`、`evoagent/workflows/engine.py` 的执行路径，不引入第二条工具/账本权威；这是本卡范围边界，不表示这些文件仍被历史会话占用。固定外部 Harness commit 的 PoC 与 ADR 正式条目另卡。
 
 ## 验收
 

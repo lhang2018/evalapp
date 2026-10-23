@@ -1,0 +1,65 @@
+{
+  "source_commit": "becfad7a14fee93728879d0cebc0fbee00a4dc0a",
+  "source_tree": "4f84d9c92145a1ea937941e139523120b09fd801",
+  "snapshot": "E:\\evalapp\\outputs\\status-2026-10-23-becfad7",
+  "scope": "git archive; excludes all uncommitted work",
+  "results": [
+    {
+      "name": "backend",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-23-project-status\\backend.txt",
+      "sha256": "5449113a65c981c15c3c189a56cb51cf18e9c72cb54fbff1d1cc9ce97b128813",
+      "tail": "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!\n  warnings.warn(\nPython version is above 3.10, patching the collections module.\n........................................................................ [  6%]\n........................................................................ [ 12%]\n........................................................................ [ 18%]\n........................................................................ [ 24%]\n........................................................................ [ 30%]\n........................................................................ [ 36%]\n........................................................................ [ 42%]\n........................................................................ [ 48%]\n........................................................................ [ 55%]\n........................................................................ [ 61%]\n........................................................................ [ 67%]\n........................................................................ [ 73%]\n........................................................................ [ 79%]\n........................................................................ [ 85%]\n........................................................................ [ 91%]\n........................................s............................... [ 97%]\n.........................                                                [100%]\n1176 passed, 1 skipped in 124.62s (0:02:04)\n"
+    },
+    {
+      "name": "client",
+      "command": [
+        "node",
+        "--test",
+        "test/offline/*.test.ts",
+        "test/device/*.test.ts",
+        "test/update/*.test.ts"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-23-project-status\\client.txt",
+      "sha256": "263a82095e72891f4822444de6010f295499b0d9d3636f2072840c68a4151cfb",
+      "tail": "thout artifact digest (0.6182ms)\n✔ check blocks unsigned target (0.3327ms)\n✔ check blocks native binary updates that need the app store (0.2004ms)\n✔ network failure during check marks phase failed and rethrows (0.7151ms)\n✔ verify refuses when storage headroom is insufficient (0.541ms)\n✔ verify stores a pending candidate after integrity and space checks (0.4242ms)\n✔ activate requires a verified candidate (0.4967ms)\n✔ verify without a candidate throws (0.184ms)\n✔ activate switches the inactive slot and keeps the previous release (0.7722ms)\n✔ health check success promotes the active slot to last known good (0.4269ms)\n✔ health check failure rolls back to the last known good release (0.6188ms)\n✔ rollback without a known good release throws (0.2673ms)\n✔ report upload failure keeps the local activation and records the error (0.3042ms)\n✔ corrupted state falls back to an empty slot state (0.1027ms)\n✔ candidate sync stores server stages without changing the active slot (0.3373ms)\n✔ candidate sync failure records an error and keeps local state (0.2526ms)\n✔ state persisted before candidate sync defaults to an empty list (0.1256ms)\n(node:115692) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/status-2026-10-23-becfad7/android-app/test/update/nativeArtifact.test.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\E:\\evalapp\\outputs\\status-2026-10-23-becfad7\\android-app\\package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n✔ base64 codec round-trips arbitrary bytes and UTF-8 text (2.7716ms)\n✔ production trust never accepts the bundled development key (2.3595ms)\n✔ bundle applier installs to the slot and points the active marker (0.5517ms)\n✔ bundle applier checks the bytes it reads against the verified digest (0.5997ms)\n✔ bundle applier rejects invalid payloads without touching the marker (0.3931ms)\n✔ range source slices full responses and parses totals (4.8285ms)\nℹ tests 166\nℹ suites 0\nℹ pass 166\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1252.7215\n"
+    },
+    {
+      "name": "claims",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/verify_claims.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-23-project-status\\claims.txt",
+      "sha256": "721641a9a6f5a48a245ffa6510a79ea2ab64976205b1502834b66538f82a8a06",
+      "tail": "====================================================================\n台账声明校验（IMPLEMENTATION.md）\n====================================================================\n解析主题行        : 84\n状态计数          : {'✅': 37, '⬜': 12, '🔹': 40}\n索引符号          : 1208\n自动抽取的声明     : 零调用 1 条 / 不存在 1 条\n  零调用声明明细    : link(M-08)\n  不存在声明明细    : WAITING_USER@api/server.py\n证据不足的 ✅ 行   : 0\n判错              : 0\n\n✅ 台账声明全部通过机器校验\n"
+    },
+    {
+      "name": "ledgers",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/scan_all_ledgers.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-23-project-status\\ledgers.txt",
+      "sha256": "baa8a171fc95fd9ced03ca1237e0d7459feb2960db99fc5cc37ff038fcf86676",
+      "tail": "====================================================================\n全台账行号漂移扫描\n====================================================================\n文档      : FEATURES.md, FEATURE_SPLIT.md, GAP_ANALYSIS.md, IMPLEMENTATION.md, ROADMAP.md, progress.md, task_plan.md, README.md\n语义引用  : 1 条已核对\n裸引用    : 50 条已核对\n锚定引用  : 113 条已核对\n发现问题  : 0\n\n"
+    }
+  ],
+  "typecheck": {
+    "exit_code": 0,
+    "log": ".planning\\2026-10-23-project-status\\typecheck.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dependencies": "junction to existing android-app/node_modules; committed source only"
+  }
+}
