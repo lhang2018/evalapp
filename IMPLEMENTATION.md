@@ -240,9 +240,9 @@ M 记忆上下文（10）：
 
 | 主题 | 状态 | 说明 |
 |---|---|---|
-| M-01..05 用户/项目/领域/会话/工作记忆 | 🔹 | 专家 memory_scope_key 已参与运行时读写；`MemoryStore.search`（`evoagent/memory/store.py::search`）拒绝空键跨域。ALN-05-M 新增身份作用域接口，真实运行身份装配与完整隔离按该卡待独立复核 |
+| M-01..05 用户/项目/领域/会话/工作记忆 | 🔹 | ALN-05-I已接Task持久绑定、服务主体白名单及真实ReAct读写/恢复；`MemoryStore.search`（`evoagent/memory/store.py::search`）补owner链、去重及冲突分区，保留专家蜂巢。05-M/05-I和修复待独立复核，完整IAM与端侧缓存另验 |
 | M-06 压缩与预算管理 | 🔹 | 共享压缩引擎+预算 ✅（硬约束保留有测试）；但保留是"结构化字段本来就不裁剪"的被动结果，非主动保全逻辑；领域压缩策略未分域 |
-| M-07 ContextManifest 来源追踪 | 🔹 | 已有 `ContextManifest`（`evoagent/memory/manifest.py::ContextManifest`）及装配来源/摘要/预算记录；运行时消费、失效与完整验收按 ALN-05-M 独立审阅，不再沿用历史零命中结论 |
+| M-07 ContextManifest 来源追踪 | 🔹 | `ContextManifest`（`evoagent/memory/manifest.py::ContextManifest`）已由05-I实际装配并按task/run持久化引用、摘要与压缩前后信息；正文不入清单。独立审阅、端侧失效与隐私删除仍待验收 |
 | M-08 记忆冲突与事实更新 | ⬜ | **无冲突识别**。`evoagent/memory/store.py:148` 的 `write` 只做精确去重；`link` **生产代码零调用点**（`evoagent/memory/store.py::link`）（仅 `tests/test_memory_router_diag.py:48` 以 `refines` 调用一次）—— 它本可建立 `contradicts` 关系；无置信合并、无用户确认流 |
 | M-09 记忆写入门禁 | ✅ | 实现质量好：无 evidence 的 VERIFIED 写入被强制降级为 PENDING_REVIEW；5 态可信度；未验证经验设 7 天有效期。证据：`write`（`evoagent/memory/store.py::write`），test=26）、`set_status`（`evoagent/memory/store.py::set_status`）。**这是「文档给了明确二元判断→实现就到位」的正面样本**|
 | M-10 保留、删除与隐私 | 🔹 | 隐私分级/脱敏 ✅，删除时向量已级联；**但 relations 中指向该 id 的其他记忆留悬空引用**（`related()` 靠 get() 返回 None 静默跳过）；无导出 |
@@ -347,7 +347,7 @@ Android 七子系统（A-01..07）：
 
 八个逻辑服务（SV-01..08）：SV-01/02/03/05/07 ✅（核心运行时、模型层、工具/专家层、events_sync、评测门禁）；
 **SV-06 🔹**（诊断/进化服务在，但**候选无自动信号**——E-07 四类信号零实现，服务只能被动接受人工传入）；
-SV-04 🔹（ContextManifest/删除传播/冲突识别缺）；SV-08 🔹（制品装载缺）。
+SV-04 🔹（05-I服务端身份/ContextManifest已交付review；端侧缓存与实际隐私仓储/删除另验）；SV-08 🔹（制品装载缺）。
 
 四个受保护控制器（CTRL-01..04）：
 - **CTRL-01 ✅**（`core/controller.py`）—— 但**执行环节零审计**（见 S-05），可解释性有缺口

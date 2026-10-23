@@ -1,0 +1,30 @@
+{
+  "initial_reviewed_commit": "04de43f1c028024ce4a2bd3e82cc23edf34c36b9",
+  "followup_reviewed_commit": "5847f3f0766279eacdda23162be82cb19f30da9f",
+  "logs": [
+    {
+      "path": ".planning/2026-10-23-aln05-integration/before-fixed.txt",
+      "sha256": "d7d4b99a1574f4d99c2b66a15ddeaffaa81b744b7b4eea88173a01ca2bde4b5e"
+    },
+    {
+      "path": ".planning/2026-10-23-aln05-integration/followup-before-fixed.txt",
+      "sha256": "b09221198fe49f75dfd590725a3063a78e2360de77d228adb31545c476daa032"
+    },
+    {
+      "path": ".planning/2026-10-23-aln05-integration/combined-final.txt",
+      "sha256": "e2614f2f5bf70237657e470675cff8d849b90f7546f770c134ade7e3b2148cb0"
+    },
+    {
+      "path": ".planning/2026-10-23-aln05-integration/legacy-final.txt",
+      "sha256": "fd72d8e3db8eebe26c8bb2bcaa0e1b2677fba0855cdf06197c21ee7b59501b9e"
+    },
+    {
+      "path": ".planning/2026-10-23-aln05-integration/access-final.txt",
+      "sha256": "c104002615518cb3492be7663f513ce032ba2e8b9b87c9b1fb342e847b0c8ce3"
+    },
+    {
+      "path": ".planning/2026-10-23-aln05-integration/access-final-2.txt",
+      "sha256": "8a0bc7ceaf865a811e6bbfe6662d997116a8331f2c992afb54bae5f5842cdd17"
+    }
+  ]
+}

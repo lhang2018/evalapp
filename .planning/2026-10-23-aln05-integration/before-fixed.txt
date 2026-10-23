@@ -1,0 +1,37 @@
+Python version is above 3.10, patching the collections module.
+FFFF                                                                     [100%]
+================================== FAILURES ===================================
+____ test_same_expert_key_does_not_merge_or_reveal_other_owners[changed0] _____
+tests\test_memory_owner_partition.py:19: in test_same_expert_key_does_not_merge_or_reveal_other_owners
+    assert mine.memory_id!=theirs.memory_id
+E   AssertionError: assert '5d1473f8cd84' != '5d1473f8cd84'
+E    +  where '5d1473f8cd84' = MemoryItem(content='alpha same', kind=<MemoryKind.DOMAIN_KNOWLEDGE: 'domain_knowledge'>, scope=<Scope.EXPERT: 'expert'...r_id='alice', project_id='p1', session_id='s1', task_id='t1', expert_id='general', conflict_ids=[], has_conflict=False).memory_id
+E    +  and   '5d1473f8cd84' = MemoryItem(content='alpha same', kind=<MemoryKind.DOMAIN_KNOWLEDGE: 'domain_knowledge'>, scope=<Scope.EXPERT: 'expert'...r_id='alice', project_id='p1', session_id='s1', task_id='t1', expert_id='general', conflict_ids=[], has_conflict=False).memory_id
+____ test_same_expert_key_does_not_merge_or_reveal_other_owners[changed1] _____
+tests\test_memory_owner_partition.py:19: in test_same_expert_key_does_not_merge_or_reveal_other_owners
+    assert mine.memory_id!=theirs.memory_id
+E   AssertionError: assert '72bd35ee30b4' != '72bd35ee30b4'
+E    +  where '72bd35ee30b4' = MemoryItem(content='alpha same', kind=<MemoryKind.DOMAIN_KNOWLEDGE: 'domain_knowledge'>, scope=<Scope.EXPERT: 'expert'...r_id='alice', project_id='p1', session_id='s1', task_id='t1', expert_id='general', conflict_ids=[], has_conflict=False).memory_id
+E    +  and   '72bd35ee30b4' = MemoryItem(content='alpha same', kind=<MemoryKind.DOMAIN_KNOWLEDGE: 'domain_knowledge'>, scope=<Scope.EXPERT: 'expert'...r_id='alice', project_id='p1', session_id='s1', task_id='t1', expert_id='general', conflict_ids=[], has_conflict=False).memory_id
+____ test_same_expert_key_does_not_merge_or_reveal_other_owners[changed2] _____
+tests\test_memory_owner_partition.py:19: in test_same_expert_key_does_not_merge_or_reveal_other_owners
+    assert mine.memory_id!=theirs.memory_id
+E   AssertionError: assert 'f6f176edc3d2' != 'f6f176edc3d2'
+E    +  where 'f6f176edc3d2' = MemoryItem(content='alpha same', kind=<MemoryKind.DOMAIN_KNOWLEDGE: 'domain_knowledge'>, scope=<Scope.EXPERT: 'expert'...r_id='alice', project_id='p1', session_id='s1', task_id='t1', expert_id='general', conflict_ids=[], has_conflict=False).memory_id
+E    +  and   'f6f176edc3d2' = MemoryItem(content='alpha same', kind=<MemoryKind.DOMAIN_KNOWLEDGE: 'domain_knowledge'>, scope=<Scope.EXPERT: 'expert'...r_id='alice', project_id='p1', session_id='s1', task_id='t1', expert_id='general', conflict_ids=[], has_conflict=False).memory_id
+_ test_context_manifest_contains_references_instead_of_constraint_and_acceptance_body _
+tests\test_memory_owner_partition.py:30: in test_context_manifest_contains_references_instead_of_constraint_and_acceptance_body
+    assert "private_constraint_body" not in payload
+E   assert 'private_constraint_body' not in '{"schema": ...68419.62052}'
+E     
+E     'private_constraint_body' is contained here:
+E       ained": ["private_constraint_body"], "acceptance_retained": [{"type": "result_nonempty", "value": "private_acceptance_body"}]}, "created_at": 1792768419.62052}
+E     ?           +++++++++++++++++++++++
+=========================== short test summary info ===========================
+FAILED tests/test_memory_owner_partition.py::test_same_expert_key_does_not_merge_or_reveal_other_owners[changed0]
+FAILED tests/test_memory_owner_partition.py::test_same_expert_key_does_not_merge_or_reveal_other_owners[changed1]
+FAILED tests/test_memory_owner_partition.py::test_same_expert_key_does_not_merge_or_reveal_other_owners[changed2]
+FAILED tests/test_memory_owner_partition.py::test_context_manifest_contains_references_instead_of_constraint_and_acceptance_body
+4 failed in 0.33s
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(

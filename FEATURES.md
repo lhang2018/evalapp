@@ -133,7 +133,7 @@ Python 服务端（标准库，SQLite）
 
 | ID | 功能 | 状态 | 代码位置 | 说明 / 限制 |
 |---|---|---|---|---|
-| MM-01 | 记忆类型/归属/可信状态/过期 | ✅ | `memory/store.py` | SQLite 持久化 |
+| MM-01 | 记忆类型/归属/可信状态/过期 | ✅ | `memory/store.py`, `memory/binding.py` | SQLite持久化；05-I接Task绑定和真实读写、owner分区，新增接线待独立审阅 |
 | MM-02 | 冲突替代（superseded） | ✅ | `memory/store.py` | 保留替代链 |
 | MM-03 | 记忆关系（refines 等） | ✅ | `memory/store.py` | 持久化与查询 |
 | MM-04 | 混合相关性检索 | ✅ | `memory/store.py` | 词法 + 向量余弦；中文 bigram |
@@ -343,7 +343,7 @@ Python 服务端（标准库，SQLite）
 
 ## 3. REST API 清单
 
-鉴权：设置 `EVOAGENT_API_TOKEN` 后普通接口需 `Authorization: Bearer <token>`；管理接口用 `EVOAGENT_ADMIN_TOKEN`。
+鉴权：设置 `EVOAGENT_API_TOKEN` 后普通接口需 `Authorization: Bearer <token>`；管理接口用 `EVOAGENT_ADMIN_TOKEN`。全局memory管理需要admin；任务、独立run清单和trace按服务主体过滤，admin保留全局管理权限。
 
 ### GET
 
@@ -356,7 +356,8 @@ Python 服务端（标准库，SQLite）
 | `/tasks/{id}` | 任务详情 |
 | `/tasks/{id}/events` | 任务事件 |
 | `/tasks/{id}/manifests` | 该任务的运行清单（设备身份与组件版本） |
-| `/runs/{run_id}/manifest` | 单次运行的 manifest（`run_<task_id>`） |
+| `/tasks/{id}/context-manifests?run_id=...` | 该任务的上下文清单、实际记忆来源与压缩引用；按主体校验 |
+| `/runs/{run_id}/manifest` | 单次独立运行的manifest，按任务主体校验 |
 | `/tasks/{id}/replay?limit=N` | 只读运行回放（需 `execution_trace` 读权限；不重放副作用；敏感负载脱敏） |
 | `/experts` | 专家与能力图 |
 | `/metrics` | 指标（JSON；`?format=prometheus`） |
@@ -605,6 +606,8 @@ Python 服务端（标准库，SQLite）
 | `execution_traces` | 执行轨迹（任务 `step` 连续、隐私分级、按 `at` 索引） |
 | `diagnostic_evidence` | 诊断证据（引用、授权标记、保留 7 天） |
 | `memory_items` | 记忆、关系、使用计数 |
+| `task_memory_bindings` / `memory_access_grants` | 服务端Task身份绑定及有期限/撤销的跨域记忆授权 |
+| `context_manifests` | task/run关联的不可改写上下文来源清单（不含正文） |
 | `memory_vectors` | 记忆向量（模型标识、维度、向量、更新时间） |
 | `tool_executions` | 幂等执行日志 |
 | `budget_ledger` | 预算账本（scope + 日/月键） |

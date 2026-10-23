@@ -1,0 +1,29 @@
+Python version is above 3.10, patching the collections module.
+FFF                                                                      [100%]
+================================== FAILURES ===================================
+_____ test_orphan_historic_run_manifest_is_not_an_operator_access_bypass ______
+tests\test_runtime_memory_identity.py:393: in test_orphan_historic_run_manifest_is_not_an_operator_access_bypass
+    assert api("/runs/orphan-run/manifest")[0]==403
+E   assert 200 == 403
+---------------------------- Captured stdout setup ----------------------------
+EvoAgent API: http://127.0.0.1:6518  (GET /health)
+_______ test_stale_legacy_snapshot_adopts_only_existing_private_binding _______
+tests\test_runtime_memory_identity.py:412: in test_stale_legacy_snapshot_adopts_only_existing_private_binding
+    assert app.memory_bindings.resolve(stale)[0]==identity
+evoagent\memory\binding.py:107: in resolve
+    raise MemoryAccessError("Task身份快照与权威绑定不一致")
+E   evoagent.memory.manifest.MemoryAccessError: Task身份快照与权威绑定不一致
+__ test_legacy_backfill_never_overwrites_a_concurrent_business_state_change ___
+tests\test_runtime_memory_identity.py:425: in test_legacy_backfill_never_overwrites_a_concurrent_business_state_change
+    assert stored.task_status==TaskStatus.SUSPENDED
+E   AssertionError: assert <TaskStatus.C...ED: 'CREATED'> == <TaskStatus.S...: 'SUSPENDED'>
+E     
+E     - SUSPENDED
+E     + CREATED
+=========================== short test summary info ===========================
+FAILED tests/test_runtime_memory_identity.py::test_orphan_historic_run_manifest_is_not_an_operator_access_bypass
+FAILED tests/test_runtime_memory_identity.py::test_stale_legacy_snapshot_adopts_only_existing_private_binding
+FAILED tests/test_runtime_memory_identity.py::test_legacy_backfill_never_overwrites_a_concurrent_business_state_change
+3 failed, 37 deselected in 1.11s
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
