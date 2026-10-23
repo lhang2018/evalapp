@@ -1,0 +1,8 @@
+{
+  "metadata_commit": "1c614655c9db243cafa9f7b276bdda370cbcc8e4",
+  "verified_git_blob_hashes": 11,
+  "source_code_unchanged_from": "f633130b8968079654405461fc6df379267e3917",
+  "metadata_checks_passed": 5,
+  "command": "python .planning/2026-10-24-code-review/verify_metadata.py 1c61465",
+  "ok": true
+}
