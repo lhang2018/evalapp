@@ -429,6 +429,14 @@
     {
       "path": "evoagent/memory/binding.py",
       "stream": "integration"
+    },
+    {
+      "path": "evoagent/observability/export.py",
+      "stream": "models"
+    },
+    {
+      "path": "evoagent/core/log_layers.py",
+      "stream": "models"
     }
   ],
   "dispatches": [
@@ -1673,6 +1681,91 @@
       }
     },
     {
+      "id": "ALN-07-T",
+      "workpackage": "ALN-07",
+      "title": "轨迹编译：输入绑定与恢复分支候选抽取",
+      "stream": "runtime",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/07-T轨迹编译.md",
+      "shared_files": [
+        "evoagent/planning/planner.py"
+      ],
+      "working_basis": "用户要求继续认领三个；ALN-07 整包第三项，07-P/07-W 均已 accepted 复核范围；纯读编译器不接运行时。base_commit 留空不用旧 HEAD 冒充",
+      "next_step": "已认领 in_progress：先定轨迹与恢复分支候选契约，写纯读编译器 trace.py 与回归，按任务卡六条验收留证；不改 controller/engine/side_effects",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "待拆卡",
+          "to": "claude-main",
+          "reason": "ALN-07 整包归 claude-main；轨迹编译为交付文档明示的第三项待拆卡"
+        }
+      ],
+      "preparation_status": "claimed"
+    },
+    {
+      "id": "ALN-07-R",
+      "workpackage": "ALN-07",
+      "title": "可执行恢复策略（_risks_for 结构化）",
+      "stream": "runtime",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/07-R可执行恢复策略.md",
+      "shared_files": [
+        "evoagent/planning/planner.py"
+      ],
+      "working_basis": "用户要求继续认领三个；ALN-07 整包第二项（WP-6.4 剩余，07-P 交付明示遗留）；策略声明+纯读查询，不接运行时自动执行",
+      "next_step": "已认领 in_progress：RecoveryPolicy 契约与 recovery_for_failure 纯读查询，risks 文案改为由策略渲染（兼容保留）；不改修订分级语义",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "待拆卡",
+          "to": "claude-main",
+          "reason": "ALN-07 整包归 claude-main；WP-6.4 遗留项拆卡"
+        }
+      ],
+      "preparation_status": "claimed"
+    },
+    {
+      "id": "ALN-16-X",
+      "workpackage": "ALN-16",
+      "title": "导出下载与删除计划的实际执行",
+      "stream": "models",
+      "owner": "claude-main",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/16-X导出下载与删除执行.md",
+      "shared_files": [
+        "evoagent/observability/export.py",
+        "evoagent/core/log_layers.py"
+      ],
+      "working_basis": "用户要求继续认领三个；ALN-16 遗留「实际导出下载与存储删除」，16-A/16-R 已 accepted；执行器 fail-closed + 幂等，不暴露 API 端点",
+      "next_step": "已认领 in_progress：execute_deletion 校验 digest/范围后调存储原语，export_to_file 带审计头与路径逃逸拒绝；不改 core/events 表结构",
+      "ownership_history": [
+        {
+          "date": "2026-10-23",
+          "from": "待拆卡",
+          "to": "claude-main",
+          "reason": "ALN-16 整包归 claude-main；16-A 交付明示的实际执行缺口"
+        }
+      ],
+      "preparation_status": "claimed"
+    },
+    {
       "id": "ALN-13-A",
       "workpackage": "ALN-13",
       "title": "Goal十态、持久授权与任务接线",
@@ -2505,7 +2598,7 @@
       "stream": "runtime",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "7132180/1ff11c1及34b5fac后续修复均待其他审阅者复核；保留真实运行时接线、执行器消费/编程包集成与真实环境验收，整包未关闭"
+      "next_step": "07-T 轨迹编译与 07-R 可执行恢复策略已认领 in_progress（2026-10-23）；真实运行时接线与执行器消费另卡；整包未关闭"
     },
     {
       "id": "ALN-08",
@@ -2676,7 +2769,7 @@
       "stream": "models",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "原A切片已独立接受；运行时消费、端侧接线与实际环境验收仍按原任务卡推进，整包未关闭"
+      "next_step": "16-X 导出下载与删除计划实际执行已认领 in_progress（2026-10-23）；端侧 EvidenceEvent 接线与生产密钥托管仍归其它卡；整包未关闭"
     },
     {
       "id": "ALN-17",
