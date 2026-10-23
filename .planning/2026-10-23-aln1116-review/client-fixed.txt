@@ -1,0 +1,70 @@
+$ node --test test/update/*.test.ts   (cwd=android-app @ aae0f9b)
+(node:44120) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fix-typecheck/android-app/test/update/artifact.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\lhang\AppData\Local\Temp\fix-typecheck\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ downloader resumes from the staged offset and renames after digest check (2.2795ms)
+✔ downloader rejects bad digest and truncated sources without renaming (0.768ms)
+✔ downloader refuses when free space is below the next chunk (0.2163ms)
+✔ trusted key ring verifies real artifact bytes and rejects tampering (23.2505ms)
+✔ prepare downloads and verifies before allowing activation (38.5282ms)
+✔ prepare blocks missing permissions, incompatible app and bad signature (21.6953ms)
+✔ low free space and store failures never reach activation (14.8291ms)
+✔ bundle apply failure keeps the active slot and reports activation_failed (9.2774ms)
+✔ a restart before activation does not switch slots without a verifier/applier (58.0658ms)
+✔ failed receipts persist and flush with the same apply id (20.447ms)
+✔ real artifact cannot use the legacy verify shortcut (21.6451ms)
+✔ activation rechecks actual bytes before calling the applier (49.1874ms)
+✔ activation rechecks permission revocation (10.4179ms)
+✔ activation rechecks signing key expiry (47.6394ms)
+✔ unknown-length downloads enforce the byte cap before appending (0.206ms)
+✔ cached files cannot evade the download byte cap (0.1017ms)
+✔ release IDs cannot escape the staging directory (65.0752ms)
+✔ short App versions are compared with zero-filled segments (14.999ms)
+✔ real rollback reapplies the known-good bundle before reporting success (38.4595ms)
+✔ failed rollback apply preserves the active slot and does not report success (41.2894ms)
+✔ unacknowledged receipts are retained beyond fifty events (57.6014ms)
+✔ concurrent health checks cannot overwrite each other's receipts (23.4515ms)
+✔ unconfirmed releases cannot replace the last known healthy bundle (140.7036ms)
+(node:61352) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fix-typecheck/android-app/test/update/manager.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\lhang\AppData\Local\Temp\fix-typecheck\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ init generates and persists an installation id (1.445ms)
+✔ check accepts a signed capability target (0.8963ms)
+✔ check blocks target without artifact digest (0.332ms)
+✔ check blocks unsigned target (0.1532ms)
+✔ check blocks native binary updates that need the app store (0.1676ms)
+✔ network failure during check marks phase failed and rethrows (0.8548ms)
+✔ verify refuses when storage headroom is insufficient (0.9854ms)
+✔ verify stores a pending candidate after integrity and space checks (0.8875ms)
+✔ activate requires a verified candidate (0.5487ms)
+✔ verify without a candidate throws (0.1674ms)
+✔ activate switches the inactive slot and keeps the previous release (1.288ms)
+✔ health check success promotes the active slot to last known good (0.3464ms)
+✔ health check failure rolls back to the last known good release (0.5841ms)
+✔ rollback without a known good release throws (0.2485ms)
+✔ report upload failure keeps the local activation and records the error (0.278ms)
+✔ corrupted state falls back to an empty slot state (0.1027ms)
+✔ candidate sync stores server stages without changing the active slot (0.2945ms)
+✔ candidate sync failure records an error and keeps local state (0.2374ms)
+✔ state persisted before candidate sync defaults to an empty list (0.1307ms)
+(node:118272) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fix-typecheck/android-app/test/update/nativeArtifact.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\lhang\AppData\Local\Temp\fix-typecheck\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ base64 codec round-trips arbitrary bytes and UTF-8 text (1.7758ms)
+✔ production trust never accepts the bundled development key (2.7481ms)
+✔ bundle applier installs to the slot and points the active marker (0.5472ms)
+✔ bundle applier checks the bytes it reads against the verified digest (0.4943ms)
+✔ bundle applier rejects invalid payloads without touching the marker (0.3265ms)
+✔ range source slices full responses and parses totals (3.1799ms)
+ℹ tests 48
+ℹ suites 0
+ℹ pass 48
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 827.7905
+EXIT_CODE=0

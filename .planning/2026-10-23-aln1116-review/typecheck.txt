@@ -1,0 +1,5 @@
+$ node_modules/.bin/tsc --version   (cwd=android-app @ aae0f9b)
+Version 5.9.3
+
+$ node_modules/.bin/tsc --noEmit
+EXIT_CODE=0

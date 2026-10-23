@@ -1,0 +1,30 @@
+(node:54972) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/probe_client.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\lhang\AppData\Local\Temp\fix-aln1116-prefix\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/probe_client.test.ts:7
+import { releaseKeysForBuild } from "../../src/update/devTrust.ts";
+         ^^^^^^^^^^^^^^^^^^^
+SyntaxError: The requested module '../../src/update/devTrust.ts' does not provide an export named 'releaseKeysForBuild'
+    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)
+    at async node:internal/modules/esm/loader:633:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.16.0
+✖ test\update\probe_client.test.ts (77.7387ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83.5115
+
+✖ failing tests:
+
+test at test\update\probe_client.test.ts:1:1
+✖ test\update\probe_client.test.ts (77.7387ms)
+  'test failed'

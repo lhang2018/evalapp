@@ -1,0 +1,277 @@
+(node:11472) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\lhang\AppData\Local\Temp\fix-aln1116-prefix\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ downloader resumes from the staged offset and renames after digest check (3.0784ms)
+✔ downloader rejects bad digest and truncated sources without renaming (0.8568ms)
+✔ downloader refuses when free space is below the next chunk (0.2363ms)
+✔ trusted key ring verifies real artifact bytes and rejects tampering (24.8979ms)
+✔ prepare downloads and verifies before allowing activation (11.6874ms)
+✔ prepare blocks missing permissions, incompatible app and bad signature (18.3651ms)
+✔ low free space and store failures never reach activation (9.836ms)
+✔ bundle apply failure keeps the active slot and reports activation_failed (141.9012ms)
+✔ a restart before activation does not switch slots without a verifier/applier (31.1745ms)
+✔ failed receipts persist and flush with the same apply id (39.2683ms)
+✖ real artifact cannot use the legacy verify shortcut (22.5913ms)
+✖ activation rechecks actual bytes before calling the applier (83.2641ms)
+✖ activation rechecks permission revocation (59.6084ms)
+✖ activation rechecks signing key expiry (12.0234ms)
+✖ unknown-length downloads enforce the byte cap before appending (0.2647ms)
+✖ cached files cannot evade the download byte cap (0.1382ms)
+✖ release IDs cannot escape the staging directory (44.7083ms)
+✖ short App versions are compared with zero-filled segments (13.8378ms)
+✖ real rollback reapplies the known-good bundle before reporting success (86.0238ms)
+✖ failed rollback apply preserves the active slot and does not report success (15.7978ms)
+✖ unacknowledged receipts are retained beyond fifty events (35.9836ms)
+✖ concurrent health checks cannot overwrite each other's receipts (20.0073ms)
+✖ unconfirmed releases cannot replace the last known healthy bundle (23.4732ms)
+(node:70016) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/nativeArtifact.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\lhang\AppData\Local\Temp\fix-aln1116-prefix\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/nativeArtifact.test.ts:15
+import { releaseKeysForBuild } from "../../src/update/devTrust.ts";
+         ^^^^^^^^^^^^^^^^^^^
+SyntaxError: The requested module '../../src/update/devTrust.ts' does not provide an export named 'releaseKeysForBuild'
+    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)
+    at async node:internal/modules/esm/loader:633:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.16.0
+✖ test\update\nativeArtifact.test.ts (114.5143ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 10
+ℹ fail 14
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 834.7261
+
+✖ failing tests:
+
+test at test\update\artifact.test.ts:453:1
+✖ real artifact cannot use the legacy verify shortcut (22.5913ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts:457:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /prepare|真实制品/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:461:1
+✖ activation rechecks actual bytes before calling the applier (83.2641ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts:467:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /摘要|制品|校验/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:472:1
+✖ activation rechecks permission revocation (59.6084ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts:479:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /权限/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:483:1
+✖ activation rechecks signing key expiry (12.0234ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts:489:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /过期|验签/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:493:1
+✖ unknown-length downloads enforce the byte cap before appending (0.2647ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts:498:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /超出/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:506:1
+✖ cached files cannot evade the download byte cap (0.1382ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts:509:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /超出/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:514:1
+✖ release IDs cannot escape the staging directory (44.7083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'available'
+  - 'blocked'
+  
+      at TestContext.<anonymous> (file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts:518:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'available',
+    expected: 'blocked',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:522:1
+✖ short App versions are compared with zero-filled segments (13.8378ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'available'
+  - 'blocked'
+  
+      at TestContext.<anonymous> (file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts:525:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'available',
+    expected: 'blocked',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:528:1
+✖ real rollback reapplies the known-good bundle before reporting success (86.0238ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 3
+  
+      at TestContext.<anonymous> (file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts:538:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 3,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:544:1
+✖ failed rollback apply preserves the active slot and does not report success (15.7978ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts:552:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /apply failed/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:557:1
+✖ unacknowledged receipts are retained beyond fifty events (35.9836ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  50 !== 51
+  
+      at TestContext.<anonymous> (file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts:565:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 50,
+    expected: 51,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:573:1
+✖ concurrent health checks cannot overwrite each other's receipts (20.0073ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 4
+  
+      at TestContext.<anonymous> (file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts:580:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 4,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\update\artifact.test.ts:583:1
+✖ unconfirmed releases cannot replace the last known healthy bundle (23.4732ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'rel_art_2'
+  - 'rel_art_1'
+             ^
+  
+      at TestContext.<anonymous> (file:///C:/Users/lhang/AppData/Local/Temp/fix-aln1116-prefix/android-app/test/update/artifact.test.ts:593:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'rel_art_2',
+    expected: 'rel_art_1',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\update\nativeArtifact.test.ts:1:1
+✖ test\update\nativeArtifact.test.ts (114.5143ms)
+  'test failed'

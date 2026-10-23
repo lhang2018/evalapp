@@ -41,3 +41,14 @@ README → `docs/协作开发/README.md` → `docs/协作开发/workboard.json`�
 - `tools/check_gap_closure.py`：主题→WP→特性三段反查（0 漏项）
 - `tools/check_collaboration_plan.py`：协作计划校验
 - 台账数字绝不手工估算；测试计数是提示级不拦截（并行开发必然滞后）。
+
+## 第三方复核对法（2026-10-23 已落地）
+- 方法索引：`.workbuddy/memory/2026-10-23.md`「第三方复核 ALN-11-R / ALN-16-R」→「复核方法：修复前/后对照」。
+  要点：`git worktree add --detach` 同时取修复前/后两个提交，自写探针按 cwd 加载源码，
+  要求同一探针「修复前失败、修复后通过」才承认判别力；数字一律落盘成日志再写进报告。
+
+## 待修复（2026-10-23 复核）
+- F-1..F-7 已于 2026-10-23 由 claude-main 直接修复（补跑日志、更正计数、台账 next_step、worktree 清理、
+  乱码与记忆索引）；逐项处理结果见
+  `docs/协作开发/验收/2026-10-23-WorkBuddy工作复核与待修复项.md` 各条的「处理结果」行。
+  F-4 采用方案（a）：保留 claude-main 的 accepted 结论并留档裁决原因。
