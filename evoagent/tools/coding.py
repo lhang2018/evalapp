@@ -10,6 +10,7 @@
 """
 
 import ast
+import difflib
 import hashlib
 import os
 import re
@@ -24,8 +25,8 @@ from typing import Callable, Dict, List, Optional, Tuple
 from .contract import ToolContract, ToolResult, class_error
 
 _PACK_ID = "coding_pack"
-_PACK_VERSION = "1.1.0"
-_ROLLBACK_VERSION = "1.0.0"
+_PACK_VERSION = "1.2.0"
+_ROLLBACK_VERSION = "1.1.0"
 _CONTRACT_TEST_REF = "tests/test_coding_tools.py"
 _SKIP_DIRS = {
     ".git", ".hg", ".svn", "node_modules", "__pycache__", ".venv", "venv",
@@ -531,6 +532,215 @@ def coding_edit_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
     return contract, run
 
 
+def _rollback_files(prepared: List[Dict[str, object]]) -> List[str]:
+    failed = []
+    for item in prepared:
+        path = item["path"]
+        original = item["original"]
+        try:
+            path.write_text(original, encoding="utf-8")
+            if path.read_text(encoding="utf-8") != original:
+                failed.append(str(item["rel"]))
+        except OSError:
+            failed.append(str(item["rel"]))
+    return failed
+
+
+def coding_patch_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
+    def run(args: Dict) -> ToolResult:
+        edits = args.get("edits")
+        dry_run = bool(args.get("dry_run"))
+        if not isinstance(edits, list) or not edits:
+            return ToolResult.error_result("edits 必须是非空数组",
+                                           "invalid_arguments")
+        if len(edits) > 50:
+            return ToolResult.error_result("单次最多 50 条编辑",
+                                           "invalid_arguments")
+        try:
+            rootp = _resolve_root(root)
+        except ValueError as exc:
+            return ToolResult.error_result(str(exc), "auth_or_permission")
+
+        prepared: List[Dict[str, object]] = []
+        seen = set()
+        for index, item in enumerate(edits):
+            if not isinstance(item, dict):
+                return ToolResult.error_result(
+                    f"第 {index + 1} 条编辑不是对象", "invalid_arguments")
+            rel = str(item.get("path") or "")
+            old_text = str(item.get("old_text") or "")
+            if not rel or not old_text or item.get("new_text") is None:
+                return ToolResult.error_result(
+                    f"第 {index + 1} 条编辑缺少 path/old_text/new_text",
+                    "invalid_arguments")
+            new_text = str(item.get("new_text"))
+            try:
+                path = _resolve_within(rootp, rel)
+            except ValueError as exc:
+                return ToolResult.error_result(str(exc), "auth_or_permission")
+            if str(path) in seen:
+                return ToolResult.error_result(
+                    f"同一文件出现多条编辑: {rel}", "invalid_arguments")
+            seen.add(str(path))
+            if not path.is_file():
+                return ToolResult.error_result(
+                    f"文件不存在: {rel}", "invalid_arguments")
+            if path.stat().st_size > _MAX_SOURCE_BYTES:
+                return ToolResult.error_result(
+                    f"文件过大: {rel}", "invalid_arguments")
+            try:
+                original = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                return ToolResult.error_result(str(exc), class_error(exc))
+
+            digest_before = hashlib.sha256(
+                original.encode("utf-8")).hexdigest()
+            expected = item.get("expected_sha256")
+            if expected is not None:
+                expected = str(expected).strip().lower()
+                if len(expected) < 8:
+                    return ToolResult.error_result(
+                        f"{rel}: expected_sha256 至少 8 位",
+                        "invalid_arguments")
+                if not digest_before.startswith(expected):
+                    return ToolResult(
+                        ok=False, data=None,
+                        error=f"{rel}: 文件摘要与期望不一致，未写盘",
+                        error_class="invalid_arguments",
+                        submitted=True, executed=True, contract_valid=True,
+                        goal_reached=False, independently_verified=True,
+                        evidence={"written": [], "path": rel,
+                                  "expected_sha256": expected,
+                                  "actual_sha256": digest_before})
+
+            hits = original.count(old_text)
+            if hits != 1:
+                return ToolResult.error_result(
+                    f"{rel}: old_text 命中 {hits} 处，要求唯一，未写盘",
+                    "invalid_arguments")
+            if new_text == old_text:
+                return ToolResult.error_result(
+                    f"{rel}: 内容无变化，未写盘", "invalid_arguments")
+            content = original.replace(old_text, new_text, 1)
+            if path.suffix == ".py":
+                syntax_error = _syntax_error(content, rel)
+                if syntax_error:
+                    return ToolResult(
+                        ok=False, data=None,
+                        error=f"{rel}: 改写后语法错误（第 "
+                              f"{syntax_error['line']} 行），未写盘",
+                        error_class="invalid_arguments",
+                        submitted=True, executed=True, contract_valid=True,
+                        goal_reached=False, independently_verified=True,
+                        evidence={"written": [], "path": rel,
+                                  "syntax_error": syntax_error})
+            prepared.append({
+                "path": path,
+                "rel": rel,
+                "original": original,
+                "new_content": content,
+                "sha256_before": digest_before,
+                "sha256_after": hashlib.sha256(
+                    content.encode("utf-8")).hexdigest(),
+                "line": original.count("\n", 0, original.index(old_text)) + 1,
+            })
+
+        if dry_run:
+            files = []
+            for item in prepared:
+                diff = "".join(difflib.unified_diff(
+                    str(item["original"]).splitlines(True),
+                    str(item["new_content"]).splitlines(True),
+                    fromfile=str(item["rel"]), tofile=str(item["rel"])))
+                files.append({
+                    "file": item["rel"],
+                    "line": item["line"],
+                    "sha256_before": item["sha256_before"],
+                    "sha256_after": item["sha256_after"],
+                    "diff": _tail(diff, 4000),
+                })
+            return ToolResult(
+                ok=True, data={"dry_run": True, "files": files},
+                submitted=True, executed=True, contract_valid=True,
+                goal_reached=True, independently_verified=True,
+                evidence={"written": [], "planned": len(files),
+                          "dry_run": True})
+
+        written: List[str] = []
+        try:
+            for item in prepared:
+                item["path"].write_text(item["new_content"], encoding="utf-8")
+                written.append(str(item["rel"]))
+        except OSError as exc:
+            failed = _rollback_files(prepared)
+            return ToolResult(
+                ok=False, data=None,
+                error=f"写盘失败并回滚: {exc}",
+                error_class=class_error(exc),
+                submitted=True, executed=True, contract_valid=True,
+                goal_reached=False,
+                independently_verified=not failed,
+                side_effect_uncertain=bool(failed),
+                evidence={"written": written, "rolled_back": True,
+                          "restore_failed": failed})
+
+        mismatched = []
+        for item in prepared:
+            try:
+                if item["path"].read_text(encoding="utf-8") \
+                        != item["new_content"]:
+                    mismatched.append(str(item["rel"]))
+            except OSError:
+                mismatched.append(str(item["rel"]))
+        if mismatched:
+            failed = _rollback_files(prepared)
+            return ToolResult(
+                ok=False, data=None,
+                error=f"写后校验不一致: {', '.join(mismatched)}，已回滚",
+                error_class="execution_error",
+                submitted=True, executed=True, contract_valid=True,
+                goal_reached=False,
+                independently_verified=not failed,
+                side_effect_uncertain=bool(failed),
+                evidence={"written": written, "rolled_back": True,
+                          "mismatched": mismatched,
+                          "restore_failed": failed})
+
+        files = [{"file": item["rel"], "line": item["line"],
+                  "sha256_before": item["sha256_before"],
+                  "sha256_after": item["sha256_after"]}
+                 for item in prepared]
+        return ToolResult(
+            ok=True, data={"dry_run": False, "applied": written,
+                           "files": files},
+            submitted=True, executed=True, contract_valid=True,
+            goal_reached=True, independently_verified=True,
+            evidence={"written": written, "applied": len(written),
+                      "rolled_back": False, "dry_run": False})
+
+    contract = ToolContract(
+        tool_id="coding_patch",
+        description="原子多文件补丁：全量预检、失败全量回滚、dry-run 预览",
+        tool_version=_PACK_VERSION,
+        permission_requirements=["fs.read", "fs.write"],
+        input_schema={"type": "object", "required": ["edits"], "properties": {
+            "edits": {"type": "array"},
+            "dry_run": {"type": "boolean"},
+        }},
+        side_effect_level="local",
+        idempotency_policy="state-check",
+        timeout_policy=30.0,
+        health_check=lambda: Path(root or ".").is_dir()
+        and os.access(root or ".", os.W_OK),
+        risk_class="high",
+        offline_capable=True,
+        requires_network=False,
+        cost_model={"unit": "edits", "varies": "file_count"},
+        contract_test_ref=_CONTRACT_TEST_REF,
+    )
+    return contract, run
+
+
 def coding_syntax_check_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
     def run(args: Dict) -> ToolResult:
         raw_targets = args.get("targets")
@@ -800,7 +1010,7 @@ def coding_test_tool(root: str = ".") -> Tuple[ToolContract, Callable]:
 
 
 CODING_TOOL_IDS = (
-    "coding_symbols", "coding_references", "coding_edit",
+    "coding_symbols", "coding_references", "coding_edit", "coding_patch",
     "coding_syntax_check", "coding_typecheck", "coding_test",
 )
 
@@ -832,6 +1042,7 @@ def build_coding_pack(root: str = "."
         "coding_symbols": coding_symbols_tool(root),
         "coding_references": coding_references_tool(root),
         "coding_edit": coding_edit_tool(root),
+        "coding_patch": coding_patch_tool(root),
         "coding_syntax_check": coding_syntax_check_tool(root),
         "coding_typecheck": coding_typecheck_tool(root),
         "coding_test": coding_test_tool(root),

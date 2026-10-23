@@ -4,16 +4,19 @@
 负向优先：坏代码、失败测试、错误路径都不得被判成功。
 """
 
+import hashlib
 import shutil
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from evoagent.tools.coding import (
     CODING_PACK, CODING_TOOL_IDS, build_coding_pack, coding_edit_tool,
-    coding_references_tool, coding_symbols_tool, coding_syntax_check_tool,
-    coding_test_tool, coding_typecheck_tool, install_coding_pack,
+    coding_patch_tool, coding_references_tool, coding_symbols_tool,
+    coding_syntax_check_tool, coding_test_tool, coding_typecheck_tool,
+    install_coding_pack,
 )
 from evoagent.tools.registry import ToolRegistry
 
@@ -217,7 +220,6 @@ class TestCodingTools(unittest.TestCase):
         self.assertEqual(path.read_text(encoding="utf-8"), original)
 
     def test_edit_expected_sha_rejects_concurrent_change(self):
-        import hashlib
         root = self._project()
         path = root / "app.py"
         path.write_text("value = 1\n", encoding="utf-8")
@@ -349,6 +351,215 @@ class TestCodingTools(unittest.TestCase):
         self.assertFalse(result.goal_reached)
         self.assertIn("未收集到测试", result.error)
 
+    # ---- 原子多文件补丁 ----
+
+    def test_patch_multi_file_success_evidence(self):
+        root = self._project()
+        (root / "a.py").write_text("x = 1\n", encoding="utf-8")
+        (root / "b.txt").write_text("hello\n", encoding="utf-8")
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"edits": [
+            {"path": "a.py", "old_text": "x = 1", "new_text": "x = 2"},
+            {"path": "b.txt", "old_text": "hello", "new_text": "world"},
+        ]})
+
+        self.assertTrue(result.ok)
+        self.assertTrue(result.goal_reached)
+        self.assertTrue(result.independently_verified)
+        self.assertFalse(result.data["dry_run"])
+        self.assertEqual(result.data["applied"], ["a.py", "b.txt"])
+        self.assertEqual((root / "a.py").read_text(encoding="utf-8"), "x = 2\n")
+        self.assertEqual((root / "b.txt").read_text(encoding="utf-8"),
+                         "world\n")
+        for item in result.data["files"]:
+            self.assertEqual(len(item["sha256_before"]), 64)
+            self.assertEqual(len(item["sha256_after"]), 64)
+            self.assertEqual(item["line"], 1)
+        after = {f["file"]: f["sha256_after"] for f in result.data["files"]}
+        self.assertEqual(
+            after["a.py"],
+            hashlib.sha256(b"x = 2\n").hexdigest())
+
+        # 证据摘要可作为下一次的并发保护输入
+        again = run({"edits": [
+            {"path": "a.py", "old_text": "x = 2", "new_text": "x = 3",
+             "expected_sha256": after["a.py"][:12]},
+        ]})
+        self.assertTrue(again.ok)
+
+    def test_patch_dry_run_previews_without_writing(self):
+        root = self._project()
+        path = root / "a.py"
+        path.write_text("x = 1\n", encoding="utf-8")
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"dry_run": True, "edits": [
+            {"path": "a.py", "old_text": "x = 1", "new_text": "x = 2"},
+        ]})
+
+        self.assertTrue(result.ok)
+        self.assertTrue(result.goal_reached)
+        self.assertTrue(result.data["dry_run"])
+        self.assertEqual(len(result.data["files"]), 1)
+        self.assertIn("-x = 1", result.data["files"][0]["diff"])
+        self.assertIn("+x = 2", result.data["files"][0]["diff"])
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 1\n")
+        self.assertEqual(result.evidence["written"], [])
+
+    def test_patch_second_edit_failure_writes_nothing(self):
+        root = self._project()
+        first = root / "a.py"
+        second = root / "b.txt"
+        first.write_text("x = 1\n", encoding="utf-8")
+        second.write_text("hello\n", encoding="utf-8")
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"edits": [
+            {"path": "a.py", "old_text": "x = 1", "new_text": "x = 2"},
+            {"path": "b.txt", "old_text": "absent", "new_text": "world"},
+        ]})
+
+        self.assertFalse(result.ok)
+        self.assertFalse(result.goal_reached)
+        self.assertEqual(result.error_class, "invalid_arguments")
+        self.assertEqual(first.read_text(encoding="utf-8"), "x = 1\n")
+        self.assertEqual(second.read_text(encoding="utf-8"), "hello\n")
+
+    def test_patch_syntax_error_aborts_all(self):
+        root = self._project()
+        first = root / "a.py"
+        second = root / "b.py"
+        first.write_text("x = 1\n", encoding="utf-8")
+        second.write_text("y = 2\n", encoding="utf-8")
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"edits": [
+            {"path": "a.py", "old_text": "x = 1", "new_text": "x = 2"},
+            {"path": "b.py", "old_text": "y = 2", "new_text": "y = ("},
+        ]})
+
+        self.assertFalse(result.ok)
+        self.assertFalse(result.goal_reached)
+        self.assertEqual(first.read_text(encoding="utf-8"), "x = 1\n")
+        self.assertEqual(second.read_text(encoding="utf-8"), "y = 2\n")
+
+    def test_patch_rejects_duplicate_path_and_noop(self):
+        root = self._project()
+        path = root / "a.py"
+        path.write_text("x = 1\n", encoding="utf-8")
+        _, run = coding_patch_tool(str(root))
+
+        dup = run({"edits": [
+            {"path": "a.py", "old_text": "x = 1", "new_text": "x = 2"},
+            {"path": "a.py", "old_text": "x = 2", "new_text": "x = 3"},
+        ]})
+        self.assertFalse(dup.ok)
+        self.assertIn("同一文件", dup.error)
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 1\n")
+
+        alias = run({"edits": [
+            {"path": "a.py", "old_text": "x = 1", "new_text": "x = 2"},
+            {"path": "./a.py", "old_text": "x = 1", "new_text": "x = 3"},
+        ]})
+        self.assertFalse(alias.ok)
+        self.assertIn("同一文件", alias.error)
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 1\n")
+
+        noop = run({"edits": [
+            {"path": "a.py", "old_text": "x = 1", "new_text": "x = 1"},
+        ]})
+        self.assertFalse(noop.ok)
+        self.assertIn("无变化", noop.error)
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 1\n")
+
+        empty = run({"edits": []})
+        self.assertFalse(empty.ok)
+        too_many = run({"edits": [
+            {"path": "a.py", "old_text": "x = 1", "new_text": "x = 2"},
+        ] * 51})
+        self.assertFalse(too_many.ok)
+        self.assertIn("最多 50", too_many.error)
+        self.assertEqual(path.read_text(encoding="utf-8"), "x = 1\n")
+
+    def test_patch_stale_sha_aborts_all(self):
+        root = self._project()
+        first = root / "a.py"
+        second = root / "b.py"
+        first.write_text("x = 1\n", encoding="utf-8")
+        second.write_text("y = 2\n", encoding="utf-8")
+        stale = hashlib.sha256(b"y = 0\n").hexdigest()
+        _, run = coding_patch_tool(str(root))
+
+        result = run({"edits": [
+            {"path": "a.py", "old_text": "x = 1", "new_text": "x = 2"},
+            {"path": "b.py", "old_text": "y = 2", "new_text": "y = 3",
+             "expected_sha256": stale},
+        ]})
+
+        self.assertFalse(result.ok)
+        self.assertEqual(result.evidence["expected_sha256"], stale)
+        self.assertEqual(result.evidence["actual_sha256"],
+                         hashlib.sha256(b"y = 2\n").hexdigest())
+        self.assertEqual(first.read_text(encoding="utf-8"), "x = 1\n")
+        self.assertEqual(second.read_text(encoding="utf-8"), "y = 2\n")
+
+    def test_patch_post_write_mismatch_rolls_back(self):
+        root = self._project()
+        first = root / "a.py"
+        second = root / "b.py"
+        first.write_text("x = 1\n", encoding="utf-8")
+        second.write_text("y = 2\n", encoding="utf-8")
+        original_write = Path.write_text
+        seen = {"n": 0}
+
+        def corrupt_second(self, data, *args, **kwargs):
+            if self.name == "b.py" and seen["n"] == 0:
+                seen["n"] += 1
+                return original_write(self, "corrupted\n", *args, **kwargs)
+            return original_write(self, data, *args, **kwargs)
+
+        _, run = coding_patch_tool(str(root))
+        with mock.patch.object(Path, "write_text", corrupt_second):
+            result = run({"edits": [
+                {"path": "a.py", "old_text": "x = 1", "new_text": "x = 2"},
+                {"path": "b.py", "old_text": "y = 2", "new_text": "y = 3"},
+            ]})
+
+        self.assertFalse(result.ok)
+        self.assertFalse(result.goal_reached)
+        self.assertTrue(result.evidence["rolled_back"])
+        self.assertFalse(result.side_effect_uncertain)
+        self.assertEqual(first.read_text(encoding="utf-8"), "x = 1\n")
+        self.assertEqual(second.read_text(encoding="utf-8"), "y = 2\n")
+
+    def test_patch_rollback_failure_is_flagged_uncertain(self):
+        root = self._project()
+        first = root / "a.py"
+        second = root / "b.py"
+        first.write_text("x = 1\n", encoding="utf-8")
+        second.write_text("y = 2\n", encoding="utf-8")
+        original_write = Path.write_text
+
+        def fail_second(self, data, *args, **kwargs):
+            if self.name == "b.py":
+                raise OSError("disk locked")
+            return original_write(self, data, *args, **kwargs)
+
+        _, run = coding_patch_tool(str(root))
+        with mock.patch.object(Path, "write_text", fail_second):
+            result = run({"edits": [
+                {"path": "a.py", "old_text": "x = 1", "new_text": "x = 2"},
+                {"path": "b.py", "old_text": "y = 2", "new_text": "y = 3"},
+            ]})
+
+        self.assertFalse(result.ok)
+        self.assertFalse(result.goal_reached)
+        self.assertTrue(result.side_effect_uncertain)
+        self.assertFalse(result.independently_verified)
+        self.assertIn("b.py", result.evidence["restore_failed"])
+        self.assertEqual(first.read_text(encoding="utf-8"), "x = 1\n")
+
     # ---- 契约与能力包 ----
 
     def test_contracts_declare_required_fields(self):
@@ -366,6 +577,8 @@ class TestCodingTools(unittest.TestCase):
                              "tests/test_coding_tools.py")
         self.assertEqual(pack["coding_edit"][0].side_effect_level, "local")
         self.assertEqual(pack["coding_edit"][0].risk_class, "high")
+        self.assertEqual(pack["coding_patch"][0].side_effect_level, "local")
+        self.assertEqual(pack["coding_patch"][0].risk_class, "high")
         self.assertEqual(pack["coding_symbols"][0].side_effect_level, "none")
 
     def test_install_pack_and_manifest(self):
@@ -374,8 +587,10 @@ class TestCodingTools(unittest.TestCase):
         manifest = install_coding_pack(registry, str(root))
 
         self.assertEqual(manifest.pack_id, "coding_pack")
-        self.assertEqual(manifest.version, "1.1.0")
-        self.assertEqual(manifest.rollback_version, "1.0.0")
+        self.assertEqual(manifest.version, "1.2.0")
+        self.assertEqual(manifest.rollback_version, "1.1.0")
+        self.assertEqual(len(manifest.tool_ids), 7)
+        self.assertIn("coding_patch", manifest.tool_ids)
         self.assertEqual(set(manifest.as_dict()["tool_ids"]),
                          set(CODING_TOOL_IDS))
         self.assertEqual(CODING_PACK, manifest)
