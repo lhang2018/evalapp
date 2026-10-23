@@ -1,0 +1,51 @@
+{
+  "reviewed_commit": "6a4c0b570a3955fbe7558b28541ddb441c2e0d39",
+  "before_commit": "dfcfceede913b8c85d5333a6b1c6948f75653488",
+  "identical_code_to": "f633130b8968079654405461fc6df379267e3917",
+  "scope": "latest changes only add evidence/workboard/memory; code and original tests unchanged",
+  "probe_sha256": "81b4c1a600a7ffab9962fbcd678d0cf5d127b37bee74ddd458180d7c3c71301c",
+  "results": [
+    {
+      "name": "probe-before",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        ".planning/2026-10-24-fix3-review/probe_fix3.py"
+      ],
+      "exit_code": 1,
+      "log": ".planning\\2026-10-24-latest-review\\probe-before.txt",
+      "sha256": "dbafdda114ccb6d14a0abd4a383b18ee1acd7ae39a4961b8175f7a4235aa6a9d"
+    },
+    {
+      "name": "probe-latest",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        ".planning/2026-10-24-fix3-review/probe_fix3.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-latest-review\\probe-latest.txt",
+      "sha256": "418c50d4b4b95d37813c7b21119aff0ba3fa602b049b56d4c7df8ff2cfa661a4"
+    },
+    {
+      "name": "related-latest",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "--basetemp",
+        "E:\\evalapp\\outputs\\latest-review-6a4c0b5-oz357g5f\\outputs\\pytest-tmp",
+        "tests/test_plan_trace.py",
+        "tests/test_recovery_policy.py",
+        "tests/test_export_deletion_exec.py",
+        "tests/test_peer_trace_export_review.py",
+        "tests/test_observability_evidence.py",
+        "tests/test_plan_revision.py",
+        "tests/test_planning.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-latest-review\\related-latest.txt",
+      "sha256": "3387dad18b3c3fd4abbad8e5b80adebb90992699809bf3dcbd859d0cd9228b31"
+    }
+  ]
+}

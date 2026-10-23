@@ -1,0 +1,93 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+..............................EEE.EEEEEEEEE...EEEE............E......... [ 72%]
+............................                                             [100%]
+=================================== ERRORS ====================================
+______________ ERROR at setup of test_export_to_file_with_audit _______________
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+_____________ ERROR at setup of test_export_path_escape_rejected ______________
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+____________ ERROR at setup of test_export_symlink_escape_rejected ____________
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+____ ERROR at setup of test_real_layer_manager_counts_and_durable_receipt _____
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+______ ERROR at setup of test_changed_scope_rejected_before_any_deletion ______
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+______________ ERROR at setup of test_digest_cannot_be_bypassed _______________
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+___ ERROR at setup of test_empty_event_snapshot_still_erases_task_evidence ____
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+_____ ERROR at setup of test_real_diagnostic_children_counted_and_deleted _____
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+_______ ERROR at setup of test_live_cross_task_event_reference_rejected _______
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+_______ ERROR at setup of test_successful_export_hash_matches_real_file _______
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+____ ERROR at setup of test_export_audit_is_durable_when_store_is_provided ____
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+___ ERROR at setup of test_export_missing_audit_store_rejected_before_write ___
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+___________ ERROR at setup of test_audit_failure_prevents_deletion ____________
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+__________ ERROR at setup of test_partial_delete_failure_is_audited ___________
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+_____ ERROR at setup of test_export_does_not_clobber_existing_file[False] _____
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+_____ ERROR at setup of test_export_does_not_clobber_existing_file[True] ______
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+____ ERROR at setup of test_run_event_persists_origin_trust_fault_and_refs ____
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1175: in mkdir
+    self._accessor.mkdir(self, mode)
+E   FileNotFoundError: [WinError 3] 系统找不到指定的路径。: 'E:\\evalapp\\outputs\\latest-review-6a4c0b5\\outputs\\pytest-tmp'
+=========================== short test summary info ===========================
+ERROR tests/test_export_deletion_exec.py::test_export_to_file_with_audit - Fi...
+ERROR tests/test_export_deletion_exec.py::test_export_path_escape_rejected - ...
+ERROR tests/test_export_deletion_exec.py::test_export_symlink_escape_rejected
+ERROR tests/test_peer_trace_export_review.py::test_real_layer_manager_counts_and_durable_receipt
+ERROR tests/test_peer_trace_export_review.py::test_changed_scope_rejected_before_any_deletion
+ERROR tests/test_peer_trace_export_review.py::test_digest_cannot_be_bypassed
+ERROR tests/test_peer_trace_export_review.py::test_empty_event_snapshot_still_erases_task_evidence
+ERROR tests/test_peer_trace_export_review.py::test_real_diagnostic_children_counted_and_deleted
+ERROR tests/test_peer_trace_export_review.py::test_live_cross_task_event_reference_rejected
+ERROR tests/test_peer_trace_export_review.py::test_successful_export_hash_matches_real_file
+ERROR tests/test_peer_trace_export_review.py::test_export_audit_is_durable_when_store_is_provided
+ERROR tests/test_peer_trace_export_review.py::test_export_missing_audit_store_rejected_before_write
+ERROR tests/test_peer_trace_export_review.py::test_audit_failure_prevents_deletion
+ERROR tests/test_peer_trace_export_review.py::test_partial_delete_failure_is_audited
+ERROR tests/test_peer_trace_export_review.py::test_export_does_not_clobber_existing_file[False]
+ERROR tests/test_peer_trace_export_review.py::test_export_does_not_clobber_existing_file[True]
+ERROR tests/test_observability_evidence.py::test_run_event_persists_origin_trust_fault_and_refs
+83 passed, 17 errors in 1.12s

@@ -1714,7 +1714,7 @@
         "evoagent/planning/planner.py"
       ],
       "working_basis": "用户要求继续认领三个；ALN-07 整包第三项，07-P/07-W 均已 accepted 复核范围；纯读编译器不接运行时。base_commit 留空不用旧 HEAD 冒充",
-      "next_step": "claude-main 第三方复核通过（X组8探针三时点对照：原实现dfcfcee 0/8、修复f633130 8/8，CR24-01..07全部确认真实且修复有效；我的34项原测试零改动全绿；联合100 passed；固定全量1521/1与声明一致）；运行时/API接线与真实环境验收按父包另验，整包不关闭",
+      "next_step": "claude-main已于3820e5d独立接受f633130；X组8探针两时点0/8→8/8，独立覆盖六组发现部分行为，其余含快照/持久化由27项回归覆盖；原测试34项、联合100项。运行时/API及真实环境按父包另验，整包不关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1735,16 +1735,17 @@
       "fix_author": "codex-runtime",
       "fix_commit": "f633130b8968079654405461fc6df379267e3917",
       "fix_status": "fix_verified_by_third_party",
-      "review_note": "原claude-main交付经独立复核发现问题，codex-runtime修复；本轮修复须其他审阅者复核，不自批",
+      "review_note": "原审核发现问题并由codex-runtime修复；f633130现已由claude-main独立接受。原changes_requested是历史记录，独立探针覆盖边界见第三方报告及最新提交复核",
       "third_party_review": {
         "date": "2026-10-24",
         "reviewer": "claude-main",
         "fixes_covered": [
           "f633130b8968079654405461fc6df379267e3917"
         ],
-        "result": "X组8探针：dfcfcee 0/8（X3报错与CR24-01描述一致、X6丢失祖先链实证）、f633130 8/8；34项原作者测试零改动；联合100 passed；固定全量1521/1；X4初版误判防伪行为为缺口，读源码后修正并双向验证（如实记录）",
+        "result": "X组8探针两时点：dfcfcee 0/8、f633130 8/8，直接覆盖CR24-01/02/03/04/05/07部分行为；CR24-06及其他子边界由被审方27项回归覆盖。原作者测试34（13+11+10）项未改；联合100通过；固定全量1521/1；本轮在6a4c0b5归档再次8/8、100通过",
         "report": "docs/协作开发/验收/2026-10-24-三卡修复第三方复核.md",
-        "log": ".planning/2026-10-24-fix3-review/"
+        "log": ".planning/2026-10-24-fix3-review/",
+        "scope_note": "无CR24-06单独第三方探针，不声称X组覆盖全部七组所有边界；既有接受结论保留"
       }
     },
     {
@@ -1781,7 +1782,7 @@
         "evoagent/planning/planner.py"
       ],
       "working_basis": "用户要求继续认领三个；ALN-07 整包第二项（WP-6.4 剩余，07-P 交付明示遗留）；策略声明+纯读查询，不接运行时自动执行",
-      "next_step": "claude-main 第三方复核通过（X组8探针三时点对照：原实现dfcfcee 0/8、修复f633130 8/8，CR24-01..07全部确认真实且修复有效；我的34项原测试零改动全绿；联合100 passed；固定全量1521/1与声明一致）；运行时/API接线与真实环境验收按父包另验，整包不关闭",
+      "next_step": "claude-main已于3820e5d独立接受f633130；X组8探针两时点0/8→8/8，独立覆盖六组发现部分行为，其余含快照/持久化由27项回归覆盖；原测试34项、联合100项。运行时/API及真实环境按父包另验，整包不关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1801,16 +1802,17 @@
       "fix_author": "codex-runtime",
       "fix_commit": "f633130b8968079654405461fc6df379267e3917",
       "fix_status": "fix_verified_by_third_party",
-      "review_note": "原claude-main交付经独立复核发现问题，codex-runtime修复；本轮修复须其他审阅者复核，不自批",
+      "review_note": "原审核发现问题并由codex-runtime修复；f633130现已由claude-main独立接受。原changes_requested是历史记录，独立探针覆盖边界见第三方报告及最新提交复核",
       "third_party_review": {
         "date": "2026-10-24",
         "reviewer": "claude-main",
         "fixes_covered": [
           "f633130b8968079654405461fc6df379267e3917"
         ],
-        "result": "X组8探针：dfcfcee 0/8（X3报错与CR24-01描述一致、X6丢失祖先链实证）、f633130 8/8；34项原作者测试零改动；联合100 passed；固定全量1521/1；X4初版误判防伪行为为缺口，读源码后修正并双向验证（如实记录）",
+        "result": "X组8探针两时点：dfcfcee 0/8、f633130 8/8，直接覆盖CR24-01/02/03/04/05/07部分行为；CR24-06及其他子边界由被审方27项回归覆盖。原作者测试34（13+11+10）项未改；联合100通过；固定全量1521/1；本轮在6a4c0b5归档再次8/8、100通过",
         "report": "docs/协作开发/验收/2026-10-24-三卡修复第三方复核.md",
-        "log": ".planning/2026-10-24-fix3-review/"
+        "log": ".planning/2026-10-24-fix3-review/",
+        "scope_note": "无CR24-06单独第三方探针，不声称X组覆盖全部七组所有边界；既有接受结论保留"
       }
     },
     {
@@ -1848,7 +1850,7 @@
         "evoagent/core/log_layers.py"
       ],
       "working_basis": "用户要求继续认领三个；ALN-16 遗留「实际导出下载与存储删除」，16-A/16-R 已 accepted；执行器 fail-closed + 幂等，不暴露 API 端点",
-      "next_step": "claude-main 第三方复核通过（X组8探针三时点对照：原实现dfcfcee 0/8、修复f633130 8/8，CR24-01..07全部确认真实且修复有效；我的34项原测试零改动全绿；联合100 passed；固定全量1521/1与声明一致）；运行时/API接线与真实环境验收按父包另验，整包不关闭",
+      "next_step": "claude-main已于3820e5d独立接受f633130；X组8探针两时点0/8→8/8，独立覆盖六组发现部分行为，其余含快照/持久化由27项回归覆盖；原测试34项、联合100项。运行时/API及真实环境按父包另验，整包不关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1871,16 +1873,17 @@
       "fix_author": "codex-runtime",
       "fix_commit": "f633130b8968079654405461fc6df379267e3917",
       "fix_status": "fix_verified_by_third_party",
-      "review_note": "原claude-main交付经独立复核发现问题，codex-runtime修复；本轮修复须其他审阅者复核，不自批",
+      "review_note": "原审核发现问题并由codex-runtime修复；f633130现已由claude-main独立接受。原changes_requested是历史记录，独立探针覆盖边界见第三方报告及最新提交复核",
       "third_party_review": {
         "date": "2026-10-24",
         "reviewer": "claude-main",
         "fixes_covered": [
           "f633130b8968079654405461fc6df379267e3917"
         ],
-        "result": "X组8探针：dfcfcee 0/8（X3报错与CR24-01描述一致、X6丢失祖先链实证）、f633130 8/8；34项原作者测试零改动；联合100 passed；固定全量1521/1；X4初版误判防伪行为为缺口，读源码后修正并双向验证（如实记录）",
+        "result": "X组8探针两时点：dfcfcee 0/8、f633130 8/8，直接覆盖CR24-01/02/03/04/05/07部分行为；CR24-06及其他子边界由被审方27项回归覆盖。原作者测试34（13+11+10）项未改；联合100通过；固定全量1521/1；本轮在6a4c0b5归档再次8/8、100通过",
         "report": "docs/协作开发/验收/2026-10-24-三卡修复第三方复核.md",
-        "log": ".planning/2026-10-24-fix3-review/"
+        "log": ".planning/2026-10-24-fix3-review/",
+        "scope_note": "无CR24-06单独第三方探针，不声称X组覆盖全部七组所有边界；既有接受结论保留"
       }
     },
     {
@@ -2731,7 +2734,7 @@
       "stream": "runtime",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "07-W已接受；07-P修订不变量获部分复核、其余恢复切片待复核；07-T/07-R已独立审查并修复f633130，待另一审阅者接受修复。运行时实际消费另验，整包未关闭"
+      "next_step": "07-W及07-T/07-R的f633130修复已独立接受；07-P修订不变量获部分复核、其余恢复切片待复核；运行时实际工作流/轨迹/恢复消费和副作用对账另验，整包未关闭"
     },
     {
       "id": "ALN-08",
@@ -2902,7 +2905,7 @@
       "stream": "models",
       "owner": "claude-main",
       "delivery_state": "partial_verified",
-      "next_step": "16-A/16-R已接受；16-X真实存储计数、范围/持久审计、导出防覆盖已由f633130修复，待其他审阅者复核；API/业务仓储、端侧EvidenceEvent及生产凭证另验，整包未关闭"
+      "next_step": "16-A/16-R及16-X的f633130修复已独立接受；API/业务仓储、端侧EvidenceEvent及生产凭证仍另验，不宣称全域擦除、跨层原子删除或整包关闭"
     },
     {
       "id": "ALN-17",
@@ -3124,6 +3127,13 @@
     "reviewed_commit": "dfcfceede913b8c85d5333a6b1c6948f75653488",
     "fix_commit": "f633130b8968079654405461fc6df379267e3917",
     "result": "changes_requested; repaired_pending_independent_review",
-    "report": "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md"
+    "report": "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md",
+    "snapshot_semantics": "原审核时点，三卡后续由claude-main于3820e5d接受；当前状态以dispatches及third_party_review为准"
+  },
+  "latest_review_evidence_check": {
+    "reviewed_commit": "6a4c0b570a3955fbe7558b28541ddb441c2e0d39",
+    "reviewer": "codex-runtime",
+    "report": "docs/协作开发/验收/2026-10-24-最新提交复核.md",
+    "result": "业务源码未变；探针0/8→8/8，联合100通过；纠正覆盖/计数/历史状态，保留已接受结果"
   }
 }
