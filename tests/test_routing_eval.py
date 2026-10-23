@@ -272,14 +272,21 @@ class TestFiveLayerCoverage(unittest.TestCase):
             self.assertTrue(rows[name]["metrics"], f"{name} 缺指标")
             self.assertEqual(rows[name]["gap"], "", f"{name} 不应标缺口")
 
-    def test_missing_layers_are_explicit(self):
+    def test_workflow_and_mode_layers_now_evaluated(self):
+        # ALN-07-W 已补上工作流匹配与执行模式两层的实现与评测，
+        # 但「接口诚实」的约束不变：已交付的层标已覆盖、未交付的缺口仍须写明。
         rows = {r["layer"]: r for r in routing_coverage()}
-        for name in ("workflow", "execution_mode"):
-            self.assertFalse(rows[name]["evaluated"],
-                             f"{name} 当前没有评测，不能标成已覆盖")
-            self.assertTrue(rows[name]["gap"], f"{name} 必须写明缺口")
-        self.assertIsNone(rows["workflow"]["entry"])
-        self.assertIsNone(rows["execution_mode"]["entry"])
+        wf = rows["workflow"]
+        self.assertTrue(wf["evaluated"], "工作流匹配层已由 ALN-07-W 评测")
+        self.assertIsNotNone(wf["entry"])
+        self.assertEqual(wf["gap"], "", "工作流匹配层已完整交付，缺口闭合")
+        self.assertIn("WorkflowMatcher", wf["implementation"])
+
+        em = rows["execution_mode"]
+        self.assertTrue(em["evaluated"], "执行模式层已由 ALN-07-W 评测")
+        self.assertIsNotNone(em["entry"])
+        self.assertIn("运行时", em["gap"], "执行模式层仍须诚实保留自动接线缺口")
+        self.assertIn("ModeSelection", em["implementation"])
 
     def test_model_layer_is_evaluated_with_honest_gap(self):
         rows = {r["layer"]: r for r in routing_coverage()}

@@ -9,12 +9,14 @@ import json
 import re
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from ..core.budget import BudgetController, BudgetExceeded
 from ..core.leases import LeaseLost
 from ..models.base import ChatMessage
 from ..models.metering import adapter_model_id, settle_adapter_cost
+from .contracts import MatchContext, ModeSelection, WorkflowCandidate
+from .matching import WorkflowMatcher
 
 
 INTENT_TOOL_HINTS: Dict[str, str] = {
@@ -80,6 +82,9 @@ class ExecutionPlan:
     acceptance_criteria: List[Dict[str, Any]] = field(default_factory=list)
     created_at: float = field(default_factory=time.time)
     revisions: List[Dict[str, Any]] = field(default_factory=list)
+    # 执行模式选择（ALN-07-W）：稳定工作流 / 混合 Agent 工作流 / 动态规划
+    execution_mode: str = ""
+    selection_rationale: str = ""
 
     def adjust(self, new_steps: List[PlanStep], reason: str,
                *, level: str = "replace") -> List[str]:
@@ -203,6 +208,8 @@ class ExecutionPlan:
             "acceptance_criteria": list(self.acceptance_criteria),
             "created_at": self.created_at,
             "revisions": [dict(r) for r in self.revisions],
+            "execution_mode": self.execution_mode,
+            "selection_rationale": self.selection_rationale,
         }
 
     @classmethod
@@ -222,6 +229,8 @@ class ExecutionPlan:
             created_at=float(d.get("created_at") or time.time()),
             revisions=[dict(r) for r in (d.get("revisions") or [])
                        if isinstance(r, dict)],
+            execution_mode=str(d.get("execution_mode") or ""),
+            selection_rationale=str(d.get("selection_rationale") or ""),
         )
 
     def validate(self) -> List[str]:
@@ -257,20 +266,55 @@ class ExecutionPlan:
 
 
 class PlanningEngine:
-    """首次实现：模型辅助 + 确定性模板兜底；工作流命中时直接引用工作流。"""
+    """首次实现：模型辅助 + 确定性模板兜底；工作流命中时直接引用工作流。
 
-    def __init__(self, model_adapter=None):
+    工作流匹配与执行模式选择（ALN-07-W）由本引擎持有，但**纯读**：
+    只拿上下文快照做五项检查与模式选择，不引入第二套授权/预算权威、不扣账。
+    """
+
+    def __init__(self, model_adapter=None, *,
+                 workflow_candidates: Optional[Sequence[WorkflowCandidate]] = None):
         self.model = model_adapter
+        self._matcher = WorkflowMatcher(workflow_candidates or ())
+        self._last_selection: Optional[ModeSelection] = None
+
+    # ---- 工作流匹配与执行模式选择（ALN-07-W）----
+
+    def set_workflow_candidates(self,
+                                candidates: Sequence[WorkflowCandidate]) -> None:
+        """注入/更新候选工作流集合。"""
+        self._matcher = WorkflowMatcher(candidates or ())
+
+    def select_execution_mode(self, context: MatchContext) -> ModeSelection:
+        """评估候选工作流并显式选择执行模式；结果留痕，不隐式默认。"""
+        selection = self._matcher.select(context)
+        self._last_selection = selection
+        return selection
+
+    @property
+    def last_selection(self) -> Optional[ModeSelection]:
+        return self._last_selection
 
     def make_plan(self, goal: str, *, intent: str = "general",
                   constraints: Optional[List[str]] = None,
                   acceptance: Optional[List[Dict[str, Any]]] = None,
                   plan_id: str = "plan_main",
                   model=None,
-                  budget: Optional[BudgetController] = None) -> ExecutionPlan:
+                  budget: Optional[BudgetController] = None,
+                  match_context: Optional[MatchContext] = None,
+                  workflow_candidates: Optional[Sequence[WorkflowCandidate]] = None
+                  ) -> ExecutionPlan:
         steps: Optional[List[PlanStep]] = None
         change_reasons: List[str] = []
         adapter = model or self.model
+
+        # 工作流匹配与执行模式选择（ALN-07-W）：纯读，不扣账、不改步骤生成
+        selection: Optional[ModeSelection] = None
+        if workflow_candidates is not None:
+            self.set_workflow_candidates(workflow_candidates)
+        if match_context is not None:
+            selection = self.select_execution_mode(match_context)
+
         if adapter is not None:
             try:
                 steps = self._model_plan(goal, intent, constraints or [],
@@ -293,6 +337,8 @@ class PlanningEngine:
             change_reasons=change_reasons,
             risks=self._risks_for(intent),
             reserved_budget_hint={"max_model_calls": 10},
+            execution_mode=(selection.mode if selection else ""),
+            selection_rationale=(selection.rationale if selection else ""),
         )
         return plan
 

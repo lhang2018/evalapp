@@ -40,6 +40,9 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
+from ..planning.contracts import MatchContext, WorkflowCandidate
+from ..planning.matching import WorkflowMatcher
+
 # 分类方法常量（与 planning/intent.py::IntentClassifier.classify 的返回值对应）
 METHOD_HINT = "hint"
 METHOD_MODEL = "model"
@@ -581,6 +584,7 @@ def routing_coverage() -> List[Dict[str, Any]]:
     assert callable(getattr(IntentClassifier, "classify", None))
     assert callable(getattr(ExpertRegistry, "route", None))
     assert callable(getattr(ModelRouter, "route", None))
+    assert callable(getattr(WorkflowMatcher, "select", None))
 
     return [
         {
@@ -605,21 +609,25 @@ def routing_coverage() -> List[Dict[str, Any]]:
         },
         {
             "layer": "workflow",
-            "implementation": "workflows/library.py（仅存取/执行，无匹配）",
-            "entry": None,
-            "evaluated": False,
-            "metrics": [],
-            "evidence": "",
-            "gap": "没有按目标/意图自动选择工作流的匹配入口；工作流只能显式指定",
+            "implementation": "planning/matching.py::WorkflowMatcher（ALN-07-W）",
+            "entry": "WorkflowMatcher.evaluate/select；PlanningEngine.select_execution_mode 透传",
+            "evaluated": True,
+            "metrics": ["mode_accuracy", "workflow_accuracy",
+                        "workflow_case_count", "by_mode"],
+            "evidence": "WorkflowModeEvaluator.run 走同一 WorkflowMatcher.select 入口；"
+                        "builtin_workflow_mode_dataset 覆盖三种模式与各项拒绝原因",
+            "gap": "",
         },
         {
             "layer": "execution_mode",
-            "implementation": "",
-            "entry": None,
-            "evaluated": False,
-            "metrics": [],
-            "evidence": "",
-            "gap": "没有 ReAct/计划/直答等执行模式的决策入口",
+            "implementation": "planning/matching.py::ModeSelection（ALN-07-W）",
+            "entry": "WorkflowMatcher.select -> ModeSelection(mode, rationale, ...)",
+            "evaluated": True,
+            "metrics": ["mode_accuracy", "by_mode"],
+            "evidence": "选择结果含显式 mode 与 rationale，不隐式默认；"
+                        "WorkflowModeEvaluator 校验 mode 选择准确率",
+            "gap": "真实运行时尚未自动接线匹配层（由调用方显式调用），"
+                   "运行时自动选型属后续范围",
         },
         {
             "layer": "model",
@@ -635,6 +643,220 @@ def routing_coverage() -> List[Dict[str, Any]]:
                         "实测成本进入任务预算",
             "gap": "尚无生产评测集；未知成本只计数、不折算金额",
         },
+    ]
+
+
+# ---------------------------------------------------------------- 工作流匹配与执行模式评测（ALN-07-W / R-03 的 workflow + execution_mode 层）
+
+@dataclass
+class WorkflowModeCase:
+    """工作流匹配与执行模式评测用例。
+
+    评测的是**匹配决策**对不对：给定候选工作流与上下文，是否选出正确的
+    执行模式（以及稳定工作流时是否命中正确的工作流）。不真正执行工作流。
+    """
+
+    case_id: str
+    context: MatchContext
+    expected_mode: str
+    #: 仅当期望 stable_workflow 时校验命中工作流；"" = 不校验
+    expected_workflow_id: str = ""
+    #: 若声明，则用本用例自带的候选集（覆盖 evaluator 共享候选）
+    candidates: List[WorkflowCandidate] = field(default_factory=list)
+    difficulty: str = "easy"
+    holdout: bool = False
+    tags: List[str] = field(default_factory=list)
+
+
+@dataclass
+class WorkflowModeCaseResult:
+    case_id: str
+    ok: bool
+    expected_mode: str
+    predicted_mode: str
+    expected_workflow_id: str
+    predicted_workflow_id: str
+    rationale: str
+    holdout: bool = False
+    tags: List[str] = field(default_factory=list)
+    error: str = ""
+
+
+@dataclass
+class WorkflowModeReport:
+    """工作流匹配与执行模式评测报告（指标全部由实际运行产出）。"""
+
+    dataset_id: str = "workflow_mode"
+    version: str = "1.0.0"
+    holdout: bool = False
+    case_count: int = 0
+    #: 执行模式选择准确率（stable/hybrid/dynamic 选对）
+    mode_accuracy: float = 0.0
+    #: 稳定工作流命中准确率（仅对期望 stable_workflow 的用例）
+    workflow_accuracy: float = 0.0
+    workflow_case_count: int = 0
+    #: 各执行模式：样本数 / 正确数
+    by_mode: Dict[str, Dict[str, int]] = field(default_factory=dict)
+    case_results: List[WorkflowModeCaseResult] = field(default_factory=list)
+
+    def summary(self) -> Dict[str, Any]:
+        return {
+            "dataset_id": self.dataset_id,
+            "version": self.version,
+            "case_count": self.case_count,
+            "mode_accuracy": round(self.mode_accuracy, 4),
+            "workflow_accuracy": round(self.workflow_accuracy, 4),
+            "workflow_case_count": self.workflow_case_count,
+            "by_mode": {k: dict(v) for k, v in self.by_mode.items()},
+            "holdout": self.holdout,
+        }
+
+
+class WorkflowModeEvaluator:
+    """工作流匹配与执行模式评测器（ALN-07-W）。
+
+    走与运行时相同的 `WorkflowMatcher.select` 入口；用例自带候选时可覆盖共享候选。
+    """
+
+    def __init__(self, candidates: Optional[Sequence[WorkflowCandidate]] = None):
+        self._matcher = WorkflowMatcher(candidates or ())
+
+    def set_candidates(self, candidates: Sequence[WorkflowCandidate]) -> None:
+        self._matcher = WorkflowMatcher(candidates)
+
+    def evaluate_case(self, case: WorkflowModeCase) -> WorkflowModeCaseResult:
+        matcher = (WorkflowMatcher(case.candidates)
+                   if case.candidates else self._matcher)
+        try:
+            sel = matcher.select(case.context)
+        except Exception as exc:  # noqa: BLE001 —— 单条失败不中断整批
+            return WorkflowModeCaseResult(
+                case_id=case.case_id, ok=False,
+                expected_mode=case.expected_mode, predicted_mode="",
+                expected_workflow_id=case.expected_workflow_id,
+                predicted_workflow_id="", rationale="",
+                holdout=case.holdout, tags=list(case.tags),
+                error=f"{type(exc).__name__}: {exc}")
+        mode_ok = sel.mode == case.expected_mode
+        wf_ok = (not case.expected_workflow_id) or (
+            sel.mode == "stable_workflow"
+            and sel.workflow_id == case.expected_workflow_id)
+        return WorkflowModeCaseResult(
+            case_id=case.case_id, ok=bool(mode_ok and wf_ok),
+            expected_mode=case.expected_mode, predicted_mode=sel.mode,
+            expected_workflow_id=case.expected_workflow_id,
+            predicted_workflow_id=sel.workflow_id,
+            rationale=sel.rationale, holdout=case.holdout,
+            tags=list(case.tags))
+
+    def run(self, cases: Iterable[WorkflowModeCase]) -> WorkflowModeReport:
+        rows = list(cases)
+        report = WorkflowModeReport(case_count=len(rows))
+        by_mode: Dict[str, Dict[str, int]] = {}
+        mode_ok = 0
+        wf_total = 0
+        wf_ok = 0
+        for case in rows:
+            res = self.evaluate_case(case)
+            report.case_results.append(res)
+            bucket = by_mode.setdefault(res.predicted_mode,
+                                        {"cases": 0, "correct": 0})
+            bucket["cases"] += 1
+            if res.ok:
+                mode_ok += 1
+                bucket["correct"] += 1
+            if case.expected_workflow_id:
+                wf_total += 1
+                if res.ok:
+                    wf_ok += 1
+        if rows:
+            report.mode_accuracy = mode_ok / len(rows)
+        if wf_total:
+            report.workflow_accuracy = wf_ok / wf_total
+            report.workflow_case_count = wf_total
+        report.by_mode = by_mode
+        return report
+
+
+def builtin_workflow_mode_dataset() -> List[WorkflowModeCase]:
+    """内置工作流匹配/执行模式评测集（ALN-07-W）。
+
+    覆盖三种模式与各项拒绝原因；全部用例确定性、可复现，且不调用任何模型。
+    仅校验匹配决策，不执行工作流。
+    """
+    base_candidates = [
+        WorkflowCandidate(
+            workflow_id="wf_stable", version="1",
+            required_inputs=("spec", "data"),
+            required_permissions=("read",),
+            dependencies=("skill:pdf@1",),
+            supported_model_versions=("gpt-4o",),
+            cost_estimate=10, budget_ref="b1",
+            description="稳定报告生成工作流"),
+        WorkflowCandidate(
+            workflow_id="wf_hybrid", version="1",
+            required_inputs=("spec", "data"),
+            required_permissions=("read",),
+            dependencies=("skill:pdf@1",),
+            supported_model_versions=("gpt-4o",),
+            cost_estimate=12, budget_ref="b1",
+            dynamic_tolerates=("inputs",),
+            dynamic_nodes=("retrieve_missing_data",),
+            description="混合工作流，输入可运行时补齐"),
+    ]
+    ctx_full = MatchContext.build(
+        goal="生成报告", intent="report",
+        inputs=("spec", "data"), permissions=("read",),
+        dependencies=("skill:pdf@1",), model_version="gpt-4o",
+        remaining_budget=100)
+    ctx_hybrid = MatchContext.build(
+        goal="生成报告", intent="report",
+        inputs=("spec",), permissions=("read",),
+        dependencies=("skill:pdf@1",), model_version="gpt-4o",
+        remaining_budget=100)
+    ctx_dynamic = MatchContext.build(
+        goal="探索性任务", intent="general",
+        inputs=(), permissions=(), dependencies=(),
+        model_version="", remaining_budget=0, budget_known=False)
+    ctx_no_budget = MatchContext.build(
+        goal="生成报告", intent="report",
+        inputs=("spec", "data"), permissions=("read",),
+        dependencies=("skill:pdf@1",), model_version="gpt-4o",
+        remaining_budget=5)
+    ctx_no_perm = MatchContext.build(
+        goal="生成报告", intent="report",
+        inputs=("spec", "data"), permissions=(),
+        dependencies=("skill:pdf@1",), model_version="gpt-4o",
+        remaining_budget=100)
+    ctx_bad_version = MatchContext.build(
+        goal="生成报告", intent="report",
+        inputs=("spec", "data"), permissions=("read",),
+        dependencies=("skill:pdf@1",), model_version="gpt-3.5",
+        remaining_budget=100)
+    ctx_empty = MatchContext.build()
+
+    return [
+        WorkflowModeCase("wm_stable", ctx_full, "stable_workflow",
+                        "wf_stable", candidates=list(base_candidates),
+                        difficulty="easy", tags=["builtin", "stable"]),
+        WorkflowModeCase("wm_hybrid", ctx_hybrid, "hybrid_agent",
+                        "", candidates=list(base_candidates),
+                        difficulty="medium", tags=["builtin", "hybrid"]),
+        WorkflowModeCase("wm_dynamic", ctx_dynamic, "dynamic_planning",
+                        "", candidates=list(base_candidates),
+                        difficulty="easy", tags=["builtin", "dynamic"]),
+        WorkflowModeCase("wm_budget_fail", ctx_no_budget, "dynamic_planning",
+                        "", candidates=list(base_candidates),
+                        difficulty="hard", tags=["builtin", "budget"]),
+        WorkflowModeCase("wm_perm_fail", ctx_no_perm, "dynamic_planning",
+                        "", candidates=list(base_candidates),
+                        difficulty="hard", tags=["builtin", "permission"]),
+        WorkflowModeCase("wm_version_fail", ctx_bad_version, "dynamic_planning",
+                        "", candidates=list(base_candidates),
+                        difficulty="hard", tags=["builtin", "version"]),
+        WorkflowModeCase("wm_empty_candidates", ctx_empty, "dynamic_planning",
+                        "", candidates=[],
+                        difficulty="easy", tags=["builtin", "empty"]),
     ]
 
 

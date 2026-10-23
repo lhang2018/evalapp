@@ -92,8 +92,10 @@ class TestRoutingEvalApiEndToEnd(unittest.TestCase):
         self.assertIn("route_accuracy", layers["model"]["metrics"])
         self.assertTrue(layers["model"]["gap"],
                         "模型层仍有预算接线缺口，必须如实保留")
-        self.assertFalse(layers["execution_mode"]["evaluated"])
-        self.assertTrue(layers["execution_mode"]["gap"])
+        self.assertTrue(layers["execution_mode"]["evaluated"],
+                        "执行模式层已由 ALN-07-W 补上评测")
+        self.assertIn("运行时", layers["execution_mode"]["gap"],
+                      "执行模式层仍有运行时自动接线缺口，必须如实保留")
 
     def test_model_eval_endpoint(self):
         """POST /routing/model-eval 走真实 ModelRouter 并返回路由指标。"""
