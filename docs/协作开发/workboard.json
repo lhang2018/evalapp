@@ -1419,10 +1419,10 @@
       "title": "预算预留/结算/退款与未知费用对账契约",
       "stream": "integration",
       "owner": "codex-runtime",
-      "reviewer": "opencode-evo",
+      "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -1434,6 +1434,14 @@
           "result": "39 new reservation tests; 150 budget/Goal/schema regression; committed backend1218 passed/1 skipped, thread warnings as errors; client166/typecheck reused identical 8c client tree",
           "log": ".planning/2026-10-23-aln15/committed-evidence.json",
           "delivery": "docs/协作开发/交付/ALN-15-A-持久预算预留与对账.md"
+        },
+        {
+          "date": "2026-10-23",
+          "scope": "claude-main 独立验收：干净worktree复验固定源码6976662；43项独立探针逐条复现任务卡五条验收标准，契约符合性逐条核对",
+          "command": "python .planning/2026-10-23-aln15-review/probe_aln15.py（cwd=干净复本，脚本按cwd加载被审源码）; python -m pytest tests/test_budget_reservations.py -q; python -m pytest tests/test_budget.py tests/test_budget_hierarchy.py tests/test_goal_governance.py tests/test_metering_budget.py tests/test_model_metering.py -q; python -m pytest -q -W error::pytest.PytestUnhandledThreadExceptionWarning",
+          "result": "独立探针43/43；联合回归141 passed；固定源码全量1218 passed/1 skipped（线程异常警告升级为错误）；无阻断项，附4项非阻断观察项",
+          "reviewed_commit": "6976662b035af5d7d114f8e6e2bc160b91dc826a",
+          "report": "docs/协作开发/验收/2026-10-23-ALN-15-A独立验收.md"
         }
       ],
       "card": "docs/协作开发/任务卡/15-APRO资源调度与预算对账.md",
@@ -1441,7 +1449,7 @@
         "evoagent/core/budget.py"
       ],
       "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
-      "next_step": "独立复核原子账户/父链、dispatch、unknown及真实超支；账本服务已交付，运行时消费交15-R，不关闭整包",
+      "next_step": "claude-main 独立验收通过（探针43/43、联合141、全量1218/1，无阻断项）：账本契约、并发与崩溃语义无违逆；运行时消费仍交15-R，4项非阻断观察项（recover_expired需调度、全新库并发初始化、余额聚合复杂度、镜像按预留日期归属）带入接线卡；整包ALN-15不关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -1450,7 +1458,7 @@
           "reason": "用户要求重新整理认领；当前仅codex在本项目开发，接手未交付范围，保留历史交付及独立审阅要求"
         }
       ],
-      "review_result": "pending",
+      "review_result": "accepted",
       "preparation_status": "delivered",
       "delivered_commit": "8c479b6c9f01f342920e2f52a19d96a0e1700364",
       "delivery": "docs/协作开发/交付/ALN-15-A-持久预算预留与对账.md"
@@ -1940,7 +1948,7 @@
       "stream": "runtime",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "15-A已交付review（8c功能/697测试清理，固定源码1218/1）；下一张15-R接权威账户与实际模型/工具调用，APRO设备调度和真实账单仍待做",
+      "next_step": "15-A已独立验收通过（claude-main探针43/43、联合141、固定源码1218/1，无阻断项）；下一张15-R接权威账户与实际模型/工具调用，APRO设备调度和真实账单仍待做；整包不关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",

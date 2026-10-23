@@ -1,0 +1,60 @@
+probe dir: C:\Users\lhang\AppData\Local\Temp\aln15-probe-hiwjohfc
+
+--- concurrency ---
+PASS P1 单连接8线程只允许1个预留 | winners=[7] held={'cost_micros': 60, 'model_calls': 1}
+PASS P1b 重开后占用仍为60不翻倍
+PASS P2 双连接6线程只允许1个预留 | winners=[3]
+PASS P3 4进程争抢后库内恰好1笔预留 | reserved=1 exitcodes=[0, 0, 0, 0]
+
+--- rejection+durability ---
+PASS P4 超限预留被拒绝且原因可查 | 预算耗尽[cost_micros]: insufficient unreserved capacity
+PASS P4b 调用量超限被拒绝 | 预算耗尽[model_calls]: insufficient unreserved capacity
+PASS P5 调用前预留已持久化（重启后仍占用） | held={'cost_micros': 60, 'model_calls': 1}
+PASS P5b 重启后预留仍挡住同额新预留
+
+--- lifecycle ---
+PASS P6a 未领取退款释放占用
+PASS P6b 已领取拒绝退款
+PASS P6c unknown 保持占用且要求对账
+PASS P6d unknown 未对账前阻断新动作
+PASS P6e 对账后按实测落地、占用释放 | spent={'cost_micros': 25, 'model_calls': 1}
+PASS P6f 对账镜像入账一次（日/月各一笔、金额一致） | [{'ledger_key': 'reservation:USD:goal:root:day:2023-11-15', 'model_calls': 1, 'cost': 2.5e-05}, {'ledger_key': 'reservation:USD:goal:root:month:2023-11', 'model_calls': 1, 'cost': 2.5e-05}]
+
+--- crash ---
+PASS P7a 子进程以非零码崩溃 | exitcode=23
+PASS P7b 崩溃后预留仍持久占用 | held={'cost_micros': 60, 'model_calls': 1}
+PASS P7c 在途（未过期）占用不冻结账户，额度内新动作放行
+PASS P7c2 恢复扫描前已领取过期记录阻断新 dispatch
+PASS P7d 过期已领取转 unknown 而非退款 | [('res_a470e547', 'unknown', 'recovery:dispatch-expired')]
+PASS P7e 崩溃预留对账后入账一次不重复计费 | rows=2 total=0.00012
+PASS P7f 对账重放不二次入账
+
+--- hierarchy ---
+PASS P8a 兄弟任务不能双花父额度
+PASS P8b 父账户占用同步可见 | root held={'cost_micros': 60, 'model_calls': 1}
+PASS P8c 子账户拒绝超父额度
+PASS P8c 子账户拒绝缺维度
+PASS P8c 子账户拒绝加维度
+PASS P8d 子账户币种须与父一致
+PASS P8e 三级引用绑定同一预留 | {'exp:h2', 'root:h2', 'task:h2'}
+
+--- terminal+dispatch ---
+PASS P9a 终态相同重放返回同一记录 | rev=3
+PASS P9b 终态不同重放被拒
+PASS P9c 重复结算不重复入账 | total=8e-05
+PASS P10a dispatch 只领一次
+PASS P10b 未 dispatch 不得结算
+PASS P10c 未 dispatch 不得标记 unknown
+PASS P11a 缺维度实测被拒（unknown 不按零）
+PASS P11b 零费用计量预留被拒
+PASS P11c 布尔金额被拒
+PASS P12a 超支如实结算且记录 overrun | available={'cost_micros': -740, 'model_calls': 92}
+PASS P12b 负余额后停止新预留
+
+--- expiry ---
+PASS P13a 未领取过期不要求对账（只占额度）
+PASS P13b 过期后不得 dispatch
+PASS P13c 未领取过期不阻断新预留（保守占用但可放行）
+PASS P13d 回收：未领取过期退款、占用释放 | ['refunded']
+
+==== 43/43 passed ====
