@@ -1,0 +1,14 @@
+[PASS] V1  foreign_task_record_rejected
+[PASS] V2  mixed_tasks_without_target_rejected
+[PASS] V10 ledger_entry_requires_explicit_target
+[PASS] V3  duplicate_effect_id_cannot_double_count
+[PASS] V4  ambiguous_multi_declaration_not_forced
+[PASS] V5  pending_declaration_cannot_steal_done_record
+[PASS] V6  from_dict_does_not_trust_ok
+[PASS] V7  report_lists_are_frozen
+[PASS] V8  none_plan_is_not_clean
+[PASS] V9  failed_is_resolved_not_uncertain
+[PASS] V11 clean_case_still_ok (护栏)
+[PASS] V12 bound_ambiguity_resolved_by_binding
+
+total=12 passed=12 failed=0

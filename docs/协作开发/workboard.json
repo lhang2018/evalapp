@@ -110,14 +110,14 @@
       "scope": "候选准备Git/日志证据有效；当前源码新增显式验收不通过，915/1仅为此前普通tests基线"
     },
     "latest_source_verification": {
-      "source_commit": "26aaec72280885815eebb1c4db1ea7098abdcf93",
-      "source_tree": "57d168560068c5fb6479cd1213c3e0087be2f177",
-      "python_passed": 1566,
+      "source_commit": "aafca22df33098f5e5a8d51026f4ba5b5e4385b7",
+      "source_tree": "fb098b6b099cee0d4590e12e35b45d63e0598ee2",
+      "python_passed": 1602,
       "python_skipped": 1,
       "client_passed": 166,
       "typecheck": "passed",
-      "scope": "07-E六组独立审核修复、29探针/125相关；固定Git归档排除在途，后端1566/1；客户端同tree复用8c479b6，未重跑真机，不发布基线",
-      "evidence": "../../.planning/2026-10-24-aln07e-review/committed-evidence.json"
+      "scope": "07-P运行时补审七组修复（含域权限拒绝传输）；31项计划及7项传输探针原代码31失败/7通过，相关207通过；固定aafca22后端1602/1，客户端同tree复用166/typecheck，未重跑真机，不发布基线",
+      "evidence": "../../.planning/2026-10-24-plan-runtime-review/committed-evidence.json"
     },
     "latest_peer_review": {
       "date": "2026-10-23",
@@ -1583,15 +1583,28 @@
           "result": "changes_requested; repaired_pending_independent_review",
           "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
           "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
+        },
+        {
+          "date": "2026-10-24",
+          "reviewed_commit": "50dd94c1eae841c26018762a6efedeb29eb1fe71",
+          "source_commit": "aafca22df33098f5e5a8d51026f4ba5b5e4385b7",
+          "scope": "剩余运行时切片补审；原有部分接受不扩大、不撤销；共享文件由codex-runtime串行整合",
+          "result": "07-P运行时补审七组修复（含域权限拒绝传输）；31项计划及7项传输探针原代码31失败/7通过，相关207通过；固定aafca22后端1602/1，客户端同tree复用166/typecheck，未重跑真机，不发布基线",
+          "report": "docs/协作开发/验收/2026-10-24-ALN-07-P运行时补审.md",
+          "log": ".planning/2026-10-24-plan-runtime-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/07-计划修订与证据保持.md",
       "shared_files": [
-        "evoagent/react/engine.py"
+        "evoagent/react/engine.py",
+        "evoagent/planning/planner.py",
+        "evoagent/core/controller.py",
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py"
       ],
       "working_basis": "用户要求按优先级认领未开发工作包：ALN-07 为首个未认领 P1；在当前共享候选工作区增量开发（同 ALN-06-A/08-M/11-A 方式），基线未正式发布，不用旧 HEAD 冒充 base_commit",
       "delivery": "docs/协作开发/交付/ALN-07-P-计划修订与证据保持.md",
-      "next_step": "claude-main 已复核修复的 planner.py 修订不变量切片（探针P5/P6前后对照通过）；PR-01 其余切片（engine/恢复路径等）仍待复核，整卡保持review",
+      "next_step": "独立复核aafca22及e54ad2a/eea3a00累计修复；原planner不变量切片的claude-main部分接受保持；精确动作/步骤绑定、对账与自动恢复策略消费仍另验",
       "delivered_commit": "6d55756ff14a3460f9fe75802bc9ac12fd91ead5",
       "related_commits": [
         {
@@ -1600,13 +1613,20 @@
         }
       ],
       "review_result": "changes_requested",
-      "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
-      "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
-      "fix_status": "partial_fix_verified_by_third_party",
+      "review_report": "docs/协作开发/验收/2026-10-24-ALN-07-P运行时补审.md",
+      "review_note": "剩余ReAct/控制器恢复路径发现依赖绕过、坏计划降级、进度/失败归因及上下文问题，修复并补齐域鉴权拒绝传输；需其他审阅者复核，不自批",
+      "fix_status": "repaired_pending_independent_review",
       "fix_author": "codex-runtime",
-      "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+      "fix_commit": "aafca22df33098f5e5a8d51026f4ba5b5e4385b7",
       "peer_findings": [
-        "PR-01"
+        "PR-01",
+        "RT07-01",
+        "RT07-02",
+        "RT07-03",
+        "RT07-04",
+        "RT07-05",
+        "RT07-06",
+        "RT07-07"
       ],
       "third_party_review_partial": {
         "date": "2026-10-23",
@@ -1614,7 +1634,16 @@
         "scope": "仅 planner.py 修订不变量切片（7132180 内 append 深比对与 done/running 内容保护）",
         "result": "探针P5 append偷改既有步骤、P6 done步骤篡改描述：修复前均静默接受、修复后均拒绝；详见联合复核报告",
         "report": "docs/协作开发/验收/2026-10-23-ALN-07修复第三方复核.md"
-      }
+      },
+      "repair_history": [
+        {
+          "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+          "review_note": "2026-10-23 独立探针发现缺陷，审阅人已修复；新修复须交其他审阅者复核，不自行批准",
+          "fix_status": "partial_fix_verified_by_third_party",
+          "fix_author": "codex-runtime",
+          "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd"
+        }
+      ]
     },
     {
       "id": "ALN-07-W",
@@ -1913,7 +1942,7 @@
       "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -1937,7 +1966,7 @@
       "card": "docs/协作开发/任务卡/07-E副作用账本对账.md",
       "shared_files": [],
       "working_basis": "用户要求再认领一个；ALN-07整包第四项——全库核实无计划↔副作用账本对账实现（07-T只到步骤完成态，答不了\"实际有没有产生副作用\"）；纯新文件零共享冲突，base_commit留空不用旧HEAD冒充",
-      "next_step": "独立复核26aaec7、29项探针原源码28失败/1通过与真实SQLite只读路径；新增ambiguous/resolved、显式step_bindings及派生只读报告，不接运行时、不关闭父包",
+      "next_step": "claude-main 已第三方复核 26aaec7 通过（原作者复核修复，修复人codex-runtime不自批）：被审方29项测试在原实现28 failed/1 passed、修复后全通过；自写12根探针11→0失败且护栏双向成立；我的16项原测试零改动仍全绿；相关回归121、固定全量1566/1；纯读性由真实SQLite authorizer运行时拦截证明（优于我原AST静态方案）；运行时消费对账结论、宿主绑定维护与compensated路径仍另验，ALN-07整包不关闭",
       "ownership_history": [
         {
           "date": "2026-10-24",
@@ -1949,12 +1978,12 @@
       "preparation_status": "delivered",
       "delivered_commit": "c91621e",
       "delivery": "docs/协作开发/交付/ALN-07-E-副作用账本对账.md",
-      "review_result": "changes_requested",
+      "review_result": "accepted",
       "review_report": "docs/协作开发/验收/2026-10-24-ALN-07-E独立审核.md",
       "review_note": "原交付存在跨任务/重复/歧义归因、可伪造结论和输入/终态口径问题；codex-runtime已修复，须其他审阅者复核，不自批",
       "fix_author": "codex-runtime",
       "fix_commit": "26aaec72280885815eebb1c4db1ea7098abdcf93",
-      "fix_status": "repaired_pending_independent_review",
+      "fix_status": "fix_verified_by_third_party",
       "peer_findings": [
         "PR07E-01",
         "PR07E-02",
@@ -1962,7 +1991,33 @@
         "PR07E-04",
         "PR07E-05",
         "PR07E-06"
-      ]
+      ],
+      "third_party_review": {
+        "date": "2026-10-24",
+        "reviewer": "claude-main",
+        "role": "原作者对修复的第三方复核（fix_author=codex-runtime，不自批）",
+        "fixes_covered": [
+          "26aaec72280885815eebb1c4db1ea7098abdcf93"
+        ],
+        "findings_confirmed": [
+          "PR07E-01 跨任务混淆：EffectRecord丢弃task_id，他任务记录满足本任务声明",
+          "PR07E-02 重复抵扣：同一effect_id可抵扣两条声明并报\"一致\"",
+          "PR07E-03 假确定性：多声明按step_id字典序硬配对，pending可抢done记录",
+          "PR07E-04 结论可伪造：from_dict信任传入ok，明细可被clear",
+          "PR07E-05 放行空输入：None计划+空记录得到ok=True",
+          "PR07E-06 语义混淆：failed（已定论未执行）被混入uncertain"
+        ],
+        "result": "被审方29项在原实现c91621e为28 failed/1 passed、26aaec7全通过；自写12探针原实现11 failed/1 passed（V11护栏双通过）、修复后12/12；16项原作者测试零改动；相关回归121 passed；固定全量1566/1与声明一致；SQLite authorizer只读验证真实存在（非自造账本）",
+        "report": "docs/协作开发/验收/2026-10-24-ALN-07-E修复第三方复核.md",
+        "log": ".planning/2026-10-24-aln07e-review2/",
+        "contract_changes": [
+          "EffectRecord新增必需task_id投影，旧投影缺任务来源须从账本重生成",
+          "ok改为派生字段(init=False)+9项一致性校验，from_dict不信任传入ok",
+          "明细改为冻结快照，to_dict仍返回新JSON结构",
+          "新增ambiguous/resolved两类及汇总字段；resolved不影响ok",
+          "reconcile新增step_bindings显式绑定，模块不证明其真实性也不视为授权"
+        ]
+      }
     },
     {
       "id": "ALN-13-A",
@@ -2830,7 +2885,7 @@
       "stream": "runtime",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "07-E经独立审核发现六组问题已由26aaec7修复、待另一审阅者接受；07-W/T/R已接受，07-P剩余恢复切片待核验；实际运行时工作流/轨迹/恢复/对账消费另验，整包未关闭"
+      "next_step": "07-E已由原作者第三方复核26aaec7接受（6项发现全部确认真实并修复）；07-W/07-T/07-R亦均已接受；07-P修订不变量仅部分复核待补；运行时实际消费工作流/轨迹/恢复/对账结论与宿主绑定维护另卡，整包未关闭"
     },
     {
       "id": "ALN-08",
@@ -3238,5 +3293,12 @@
     "fix_commit": "26aaec72280885815eebb1c4db1ea7098abdcf93",
     "result": "changes_requested; repaired_pending_independent_review",
     "report": "docs/协作开发/验收/2026-10-24-ALN-07-E独立审核.md"
+  },
+  "latest_review_aln07p_runtime": {
+    "reviewer": "codex-runtime",
+    "reviewed_commit": "50dd94c1eae841c26018762a6efedeb29eb1fe71",
+    "fix_commit": "aafca22df33098f5e5a8d51026f4ba5b5e4385b7",
+    "result": "changes_requested; repaired_pending_independent_review",
+    "report": "docs/协作开发/验收/2026-10-24-ALN-07-P运行时补审.md"
   }
 }

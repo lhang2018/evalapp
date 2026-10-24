@@ -1,0 +1,14 @@
+[FAIL] V1  foreign_task_record_rejected: AssertionError: 他任务记录满足了本任务声明（对账范围未校验）
+[FAIL] V2  mixed_tasks_without_target_rejected: AssertionError: 混合任务记录在未指定目标时被接受
+[FAIL] V10 ledger_entry_requires_explicit_target: AssertionError: 账本入口省略目标未被拒绝
+[FAIL] V3  duplicate_effect_id_cannot_double_count: AssertionError: 重复 effect_id 被接受并凑成一致
+[FAIL] V4  ambiguous_multi_declaration_not_forced: AssertionError: 歧义记录未被标出，而是被强行归因
+[FAIL] V5  pending_declaration_cannot_steal_done_record: AssertionError: 单条记录被确定性归因，掩盖了 pending 与 done 的歧义
+[FAIL] V6  from_dict_does_not_trust_ok: AssertionError: from_dict 信任了传入的 ok（明细为空却称一致）
+[FAIL] V7  report_lists_are_frozen: AssertionError: 报告明细可被就地清空（结论与明细脱节）
+[FAIL] V8  none_plan_is_not_clean: AssertionError: None 计划被当作干净计划，报告判为一致
+[FAIL] V9  failed_is_resolved_not_uncertain: AssertionError: failed（已明确未执行）被归为未决，丢失了定论语义
+[PASS] V11 clean_case_still_ok (护栏)
+[FAIL] V12 bound_ambiguity_resolved_by_binding: AssertionError: 修复版应支持 step_bindings 显式绑定
+
+total=12 passed=1 failed=11
