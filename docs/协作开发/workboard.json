@@ -28,90 +28,33 @@
     },
     "initial_head_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
     "prepared_candidate": {
-      "commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
-      "source_tree": "6b9bd53adb72c95676fc14d657c438a19687e550",
+      "commit": "532a3646aeb35d0510ba7dab6c9c74e403cfd675",
+      "source_tree": "cd9a3ffc7bdfb7c020faee40855478f3375d354d",
       "status": "verified_ready_for_publication_decision",
-      "source_export": "git archive --format=zip; project outputs; no new worktree",
-      "tracked_android_files_unchanged": 102,
+      "replaces": "f550d90（业务源码零差异，仅追加评估文档与被引用证据入库）",
+      "clean_before_and_after": true,
       "python_passed": 1661,
       "python_skipped": 1,
       "client_passed": 228,
       "typecheck": "passed",
+      "worktree": "detached /e/evalapp-candidate @532a364",
       "evidence": [
         {
-          "path": ".planning/2026-10-24-baseline-device/backend.txt",
-          "sha256": "dd096017d111f210221d23a8531c2b85a86e6853c731b0312fa1a1a4ff94648a",
+          "path": ".planning/2026-10-24-aln00b-clean2/backend-tests.txt",
+          "sha256": "890094696047df21e80c187450f5db47022174de376a9beaadbe2d0aa1e89ad1",
           "sha256_basis": "lf_normalized_text"
         },
         {
-          "path": ".planning/2026-10-24-baseline-device/client.txt",
-          "sha256": "673d33b8edeef301cdb1494e2a2401aafadebccec0ac88f3f5ac0797f2be8382",
+          "path": ".planning/2026-10-24-aln00b-clean2/client-tests.txt",
+          "sha256": "de03181ec7d27410e70b815afb9b57a3bf39405122b2e1123959f22abca78adc",
           "sha256_basis": "lf_normalized_text"
         },
         {
-          "path": ".planning/2026-10-24-baseline-device/claims.txt",
-          "sha256": "9e41e159ea27a3fb731e504c7fd7cebfbd8c3ee4fa431bcee5a442c6b761cf24",
-          "sha256_basis": "lf_normalized_text"
-        },
-        {
-          "path": ".planning/2026-10-24-baseline-device/ledgers.txt",
-          "sha256": "9fa62c2d9ca1778da4f82740c3e530edf1945b0f9d8306578d33a05154f73cb4",
-          "sha256_basis": "lf_normalized_text"
-        },
-        {
-          "path": ".planning/2026-10-24-baseline-device/board.txt",
-          "sha256": "30618fad4ddb7e281c12b37ca979bafd944c266fb876d8a4184ad71949342ee7",
-          "sha256_basis": "lf_normalized_text"
-        },
-        {
-          "path": ".planning/2026-10-24-baseline-device/gap.txt",
-          "sha256": "7ba5ab8bc1b026dab82911421e6904ea394f7a42d803d816d85e43d543449bed",
-          "sha256_basis": "lf_normalized_text"
-        },
-        {
-          "path": ".planning/2026-10-24-baseline-device/alignment.txt",
-          "sha256": "efa249a6b0f6427752ebc215f025a1d70954b67ef244ead420a330ff8335d49f",
-          "sha256_basis": "lf_normalized_text"
-        },
-        {
-          "path": ".planning/2026-10-24-baseline-device/typecheck.txt",
-          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "sha256_basis": "lf_normalized_text"
-        },
-        {
-          "path": ".planning/2026-10-24-baseline-device/android-build.txt",
-          "sha256": "d26e2e4c137b3eefbdff84d18a6a70653eb2bbd3437abe2c73a81d51011f0508",
+          "path": ".planning/2026-10-24-aln00b-clean2/typecheck.txt",
+          "sha256": "e8408be3f605d2a340ee19e6e73f25f4c3bd1bc350be1370f6d7dd92f08c7bf9",
           "sha256_basis": "lf_normalized_text"
         }
-      ],
-      "excluded_paths": [
-        "android-app/android/app/src/main/java/com/evoagent/DevicePackage.kt",
-        "android-app/src/offline/backgroundRunner.ts",
-        "android-app/android/app/src/main/java/com/evoagent/NotificationModule.kt",
-        "android-app/src/device/nativeNotifications.ts",
-        "android-app/src/device/notifications.ts",
-        "android-app/test/device/notifications.test.ts",
-        ".workbuddy/"
-      ],
-      "verified_by": "codex-runtime",
-      "verified_at": "2026-10-24T11:45:06.549267+00:00",
-      "review_mode": "user_authorized_revalidation_not_independent",
-      "report": "docs/协作开发/交付/ALN-00-B-新候选与真机回归.md",
-      "dependency_scope": "Python requirements.txt installed environment; Node24 built-in tests; isolated npm ci lockfile; TypeScript5.9.3; JDK17/Android SDK/Gradle caches reused",
-      "device_evidence": ".planning/2026-10-24-baseline-device/device-attestation.json",
-      "device_module_tests_passed": 9,
-      "device_limits": [
-        "test entry imports actual modules; not natural-language App main-chain",
-        "device dispatch counter uses an explicit transport fixture; no accessibility permission bypass",
-        "reconcile/applyResult use an explicit fixture; downloads, RSA verification, native files and AsyncStorage are real",
-        "accessibility service unavailable; permission refusal verified, no real click end-to-end claim",
-        "force-stop is process restart, not physical device reboot"
-      ],
-      "remaining_review": [
-        "00-B共享开发基线发布：原规则要求独立审阅；若采用本轮用户授权非独立复验发布，须明确确认该例外"
-      ],
-      "publication_ready": false,
-      "technical_verification_complete": true
+      ]
     },
     "acceptance_review": {
       "reviewed_commit": "8692637064389736695f433337c8d09e0bdcdafb",
@@ -634,6 +577,12 @@
           "result": "1661 passed/1 skipped; client228; tsc5.9.3 passed; Android ARM64 built/installed; device module9/9",
           "log": ".planning/2026-10-24-baseline-device/candidate-validation.json",
           "delivery": "docs/协作开发/交付/ALN-00-B-新候选与真机回归.md"
+        },
+        {
+          "date": "2026-10-24",
+          "scope": "候选刷新+审阅交接准备（非发布）：入库被引用证据消除红线，532a364 干净worktree三件套重跑",
+          "source_commit": "532a3646aeb35d0510ba7dab6c9c74e403cfd675",
+          "evidence": ".planning/2026-10-24-aln00b-clean2/ + docs/协作开发/验收/2026-10-24-ALN-00-B发布候选独立审阅交接.md"
         }
       ],
       "card": "docs/协作开发/任务卡/00-基线发布.md",
@@ -671,7 +620,7 @@
         "GAP_ANALYSIS.md"
       ],
       "preparation_status": "verified_ready_for_publication_decision",
-      "next_step": "技术材料已齐；确认00-B发布采用独立审阅还是用户授权非独立复验，再登记published_commit；生产发布不在本轮范围",
+      "next_step": "候选532a364（=f550d90业务零差异+评估文档+证据入库，独立复跑三件套1661/1+228/0+tsc零错）已就绪；独立审阅人按 2026-10-24-ALN-00-B发布候选独立审阅交接.md 复核，接受后填 published_commit；本会话不自批",
       "ownership_history": [
         {
           "date": "2026-10-23",

@@ -1,0 +1,2 @@
+command: npm run typecheck (tsc --noEmit, clean worktree @532a364)
+result: zero errors, exit 0

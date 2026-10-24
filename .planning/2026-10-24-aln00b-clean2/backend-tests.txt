@@ -1,0 +1,2 @@
+command: python -m pytest tests -q (detached worktree @532a364, clean)
+result: 1661 passed, 1 skipped in 286.80s
