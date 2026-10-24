@@ -187,10 +187,25 @@ def make_handler(app: App):
             （如 POST /diagnostics/import）直接从 self.rfile 读原始字节，
             若此处急切解析会消费掉流，导致处理器读到空数据。
             """
+            body_read = False
+
+            def read_body():
+                nonlocal body_read
+                body = self._body()
+                body_read = True
+                return body
+
+            def respond(code, payload):
+                # Domain guards can reject an authenticated request before
+                # accessing ctx.body, just like the transport auth guard.
+                if code in (401, 403) and not body_read:
+                    self._drain_rejected_body()
+                return self._json(code, payload)
+
             return RouteContext(
                 app=app, method=method, path=path,
-                query=self._query(), body_getter=self._body, auth=auth,
-                json=self._json, text=self._text, role_can_read=role_can_read)
+                query=self._query(), body_getter=read_body, auth=auth,
+                json=respond, text=self._text, role_can_read=role_can_read)
 
         def _dispatch(self, method: str, path: str, auth) -> bool:
             """先走注册表；未命中返回 False 让调用方继续既有链路。"""

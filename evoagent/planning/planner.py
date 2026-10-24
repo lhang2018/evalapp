@@ -141,6 +141,7 @@ class ExecutionPlan:
             if (not isinstance(step, PlanStep) or not isinstance(step.step_id, str)
                     or not step.step_id.strip() or not isinstance(step.state, str)
                     or step.state not in states or not isinstance(step.deps, (list, tuple))
+                    or (step.tool_hint is not None and not isinstance(step.tool_hint, str))
                     or any(not isinstance(dep, str) or not dep.strip() for dep in step.deps)):
                 raise PlanRevisionError("执行计划步骤字段或状态损坏")
         problems = self._structural_problems(self.steps)

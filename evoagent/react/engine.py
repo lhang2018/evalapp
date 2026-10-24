@@ -193,6 +193,11 @@ class ReactEngine:
                 # but provides no unfinished step for another tool operation.
                 outcome.stop_reason = "plan_complete"
                 return capture()
+            if plan is not None and _tool_requires_unready_branch(plan, suggestion.tool):
+                # Another independent branch being ready must not make a tool
+                # from a branch with unmet prerequisites executable.
+                outcome.stop_reason = "plan_blocked"
+                return capture()
 
             # tool_call: 交由控制器执行（这里仅执行，验收在控制器）
             tool = suggestion.tool
@@ -288,6 +293,39 @@ def _ensure_current_running(plan: ExecutionPlan) -> None:
     cur = _current_step(plan)
     if cur is not None and cur.state == "pending":
         cur.state = "running"
+
+
+def _tool_requires_unready_branch(plan: ExecutionPlan, tool: Optional[str]) -> bool:
+    by_id = {s.step_id: s for s in plan.steps}
+    candidates = [s for s in plan.steps if s.tool_hint == tool
+                  and s.state in ("pending", "running") and tool]
+
+    if not candidates or any(
+            all(by_id[dep].state == "done" for dep in step.deps)
+            for step in candidates):
+        return False
+    current = _current_step(plan)
+    if current is not None and current.tool_hint:
+        return True
+
+    # Legacy generic preparation steps have no tool binding and may legitimately
+    # collect context with a tool also mentioned later. Do not infer their
+    # identity from tool names, but never unlock a failed prerequisite branch.
+    def failed_ancestor(step):
+        todo, seen = list(step.deps), set()
+        while todo:
+            sid = todo.pop()
+            if sid in seen:
+                continue
+            seen.add(sid)
+            parent = by_id[sid]
+            if parent.state in ("failed", "skipped"):
+                return True
+            if parent.state != "done":
+                todo.extend(parent.deps)
+        return False
+
+    return all(failed_ancestor(step) for step in candidates)
 
 
 def _advance_plan(plan: ExecutionPlan, tool: Optional[str]) -> bool:

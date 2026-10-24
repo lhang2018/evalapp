@@ -109,6 +109,7 @@ def test_previous_step_failures_do_not_fail_next_step(gateway):
     plan(), plan(step("x"), step("x")),
     plan(step("a", deps=["b"]), step("b", deps=["a"])),
     plan(step("x", state="invalid")), plan(step("x"), completed=["x"]),
+    plan(step("x", tool=False)),
 ])
 def test_invalid_execution_state_is_rejected_before_dispatch(gateway, p):
     model = ScriptModel([Action("tool_call", tool="t")])
@@ -225,3 +226,31 @@ def test_legacy_unscoped_failure_counts_do_not_condemn_current_step(gateway):
                      restored_state={"failure_counts": {"t:invalid_arguments": 99}})
     assert outcome.stop_reason == "normal" and outcome.repeated_failures == 1
     assert p.steps[0].state == "running" and p.revisions == []
+
+
+@pytest.mark.parametrize("state", ["failed", "skipped", "pending", "running"])
+def test_ready_independent_branch_cannot_unlock_unready_branch_tool(gateway, state):
+    calls = []
+    gateway.register(ToolContract("child", side_effect_level="external"), lambda _: calls.append(1) or good())
+    p = plan(step("bad", "root", state=state), step("independent", "prep"), step("child", "child", ["bad"]))
+    outcome, model = run(gateway, p, [Action("tool_call", tool="child")])
+    assert outcome.stop_reason == "plan_blocked" and model.calls == 1
+    assert calls == [] and gateway.effects.history("task") == []
+    assert p.completed_work == [] and p.steps[-1].state == "pending"
+
+
+def test_ready_step_sharing_tool_with_blocked_step_is_still_executable(gateway):
+    calls = []
+    gateway.register(ToolContract("shared"), lambda _: calls.append(1) or good())
+    p = plan(step("bad", state="failed"), step("ready", "shared"), step("blocked", "shared", ["bad"]))
+    outcome, _ = run(gateway, p, [Action("tool_call", tool="shared")])
+    assert calls == [1] and p.completed_work == ["ready"]
+    assert outcome.stop_reason == "plan_blocked" and p.steps[-1].state == "pending"
+
+
+def test_generic_preparation_can_use_tool_also_hinted_in_later_step(gateway):
+    calls = []
+    gateway.register(ToolContract("lookup"), lambda _: calls.append(1) or good())
+    p = plan(step("prepare"), step("core", "lookup", ["prepare"]))
+    outcome, _ = run(gateway, p, [Action("tool_call", tool="lookup")])
+    assert calls == [1] and p.completed_work == ["prepare"] and outcome.finished
