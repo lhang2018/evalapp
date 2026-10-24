@@ -232,7 +232,7 @@ test("上传投影：回执只含引用与状态，提议脱敏文本目标，�
   const upload = proposalForUpload(p);
   assert.equal(upload.target_kind, "text");
   assert.equal(upload.target, "<local:text>");
-  assert.equal((upload as Record<string, unknown>).args, undefined);
+  assert.equal((upload as unknown as Record<string, unknown>).args, undefined);
   const pkg = proposalForUpload(proposal());
   assert.equal(pkg.target_kind, "package");
   assert.equal(pkg.target, "com.example.settings");
@@ -253,8 +253,8 @@ test("上传投影：回执只含引用与状态，提议脱敏文本目标，�
     recorded_at: 2,
   });
   assert.equal(receipt.has_evidence, true);
-  assert.equal((receipt as Record<string, unknown>).evidence, undefined);
-  assert.equal((receipt as Record<string, unknown>).message, undefined);
+  assert.equal((receipt as unknown as Record<string, unknown>).evidence, undefined);
+  assert.equal((receipt as unknown as Record<string, unknown>).message, undefined);
   const retention = localRetentionFields(p);
   for (const field of ["args", "message", "evidence", "target"]) {
     assert.ok(retention.includes(field), `本地保留字段缺 ${field}`);

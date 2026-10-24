@@ -32,9 +32,9 @@ test("缺口1：DeviceAction/ActionJournalEntry 无 task_id/run_id/effect_id 关
   const entry = broker.getJournal("act-gap-1");
   assert.ok(entry);
   // 现状：日志条目没有任何任务链路字段——任务无法追溯到效果
-  assert.equal((entry as Record<string, unknown>).task_id, undefined);
-  assert.equal((entry as Record<string, unknown>).run_id, undefined);
-  assert.equal((entry as Record<string, unknown>).effect_id, undefined);
+  assert.equal((entry as unknown as Record<string, unknown>).task_id, undefined);
+  assert.equal((entry as unknown as Record<string, unknown>).run_id, undefined);
+  assert.equal((entry as unknown as Record<string, unknown>).effect_id, undefined);
 });
 
 test("缺口2：broker 幂等日志不持久化——重启后同 action_id 会重复下发", async () => {
@@ -74,6 +74,6 @@ test("缺口3：无统一 effect 引用与回执投影——任务侧拿不到�
   // 现状：除了内存 journal，没有任何「任务 → 效果 → 可上传回执」结构；
   // evidence 含界面文本快照，也没有本地/上传字段切分。
   assert.ok(result.evidence);
-  const protocol = (globalThis as Record<string, unknown>).DeviceTaskProtocol;
+  const protocol = (globalThis as unknown as Record<string, unknown>).DeviceTaskProtocol;
   assert.equal(protocol, undefined);
 });
