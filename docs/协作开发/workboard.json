@@ -1910,16 +1910,25 @@
       "title": "副作用账本对账（计划↔已执行副作用）",
       "stream": "runtime",
       "owner": "claude-main",
-      "reviewer": null,
+      "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-24",
+          "scope": "副作用账本对账（计划↔已执行副作用）",
+          "source_commit": "c91621e",
+          "delivery": "docs/协作开发/交付/ALN-07-E-副作用账本对账.md",
+          "log": ".planning/2026-10-24-aln07e/",
+          "result": "新增 evoagent/planning/reconcile.py(393行) + 16项专项测试(七条验收逐条覆盖+成功路径护栏)；planning域组合回归102 passed；干净worktree固定c91621e全量1537/1；零既有文件改动（AST证明未导入账本，纯读结构性成立）"
+        }
+      ],
       "card": "docs/协作开发/任务卡/07-E副作用账本对账.md",
       "shared_files": [],
       "working_basis": "用户要求再认领一个；ALN-07整包第四项——全库核实无计划↔副作用账本对账实现（07-T只到步骤完成态，答不了\"实际有没有产生副作用\"）；纯新文件零共享冲突，base_commit留空不用旧HEAD冒充",
-      "next_step": "已认领 in_progress：写纯读 SideEffectReconciler 与七条验收回归；不改 planner.py/core/side_effects.py，不接运行时、不改账本",
+      "next_step": "已交付待独立复核（codex-runtime，代码c91621e）：纯读对账五类归类+fail-closed+确定性；运行时由谁消费对账结论（重试/告警/阻断）属后续范围，本卡不宣称已自动接线；ALN-07整包不关闭",
       "ownership_history": [
         {
           "date": "2026-10-24",
@@ -1928,7 +1937,9 @@
           "reason": "ALN-07整包归claude-main；整包next_step明示的副作用账本对账遗留项"
         }
       ],
-      "preparation_status": "claimed"
+      "preparation_status": "delivered",
+      "delivered_commit": "c91621e",
+      "delivery": "docs/协作开发/交付/ALN-07-E-副作用账本对账.md"
     },
     {
       "id": "ALN-13-A",
@@ -2796,7 +2807,7 @@
       "stream": "runtime",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "07-E副作用账本对账已认领in_progress（2026-10-24）；07-W/07-T/07-R及f633130修复均已第三方接受；运行时实际工作流/轨迹/恢复消费另卡，整包未关闭"
+      "next_step": "07-E副作用账本对账已交付review（代码c91621e，待codex-runtime复核）；07-W/07-T/07-R及f633130修复均已第三方接受；运行时实际消费对账结论与工作流/轨迹/恢复接线另卡，整包未关闭"
     },
     {
       "id": "ALN-08",
