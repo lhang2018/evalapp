@@ -29,6 +29,12 @@ export interface BundleHealthProbe {
   expect_output_equals?: unknown;
 }
 
+export function sameArtifact(a: { release_id?: string; version?: string; digest?: string } | null | undefined,
+  b: { release_id?: string; version?: string; digest?: string } | null | undefined): boolean {
+  return !!a?.release_id && !!a?.version && !!a?.digest
+    && a.release_id === b?.release_id && a.version === b?.version && a.digest === b?.digest;
+}
+
 // ---- 执行前拒绝（验收：不兼容/未注册工具/权限不足/非法 workflow）----
 
 export type BundleRejectCode =
@@ -241,6 +247,7 @@ export class BundleRuntime {
     this.now = options.now ?? (() => Date.now());
     this.executionTimeoutMs
       = options.executionTimeoutMs ?? DEFAULT_EXECUTION_TIMEOUT_MS;
+    if (!Number.isFinite(this.executionTimeoutMs) || this.executionTimeoutMs <= 0) throw new Error("非法执行超时");
     this.storeKey = options.storeKey ?? RUNTIME_STATE_KEY;
   }
 
@@ -279,7 +286,7 @@ export class BundleRuntime {
       ? (bundle.bundle.required_permissions as string[])
       : [];
     if (required.length) {
-      const granted = await this.grantedPermissions();
+      const granted = await this.withTimeout(Promise.resolve(this.grantedPermissions()), this.executionTimeoutMs);
       const missing = required.filter((name) => !granted.includes(name));
       if (missing.length) {
         problems.push(`缺少权限: ${missing.join(", ")}`);
@@ -318,7 +325,11 @@ export class BundleRuntime {
     input: Record<string, unknown>,
     taskRef: string,
   ): Promise<BundleExecutionRecord> {
-    const { bundle, def } = await this.resolveExecutable();
+    return this.executeResolved(await this.resolveExecutable(), input, taskRef);
+  }
+
+  private async executeResolved(executable: BundleExecutable, input: Record<string, unknown>, taskRef: string): Promise<BundleExecutionRecord> {
+    const { bundle, def } = executable;
     const startedAt = this.now();
     const record: BundleExecutionRecord = {
       execution_id: createId("bexec"),
@@ -419,7 +430,7 @@ export class BundleRuntime {
     let record: BundleExecutionRecord;
     try {
       record = await this.withTimeout(
-        this.execute(probeInput, ref),
+        this.executeResolved(executable, probeInput, ref),
         this.executionTimeoutMs,
       );
     } catch (error) {
@@ -427,6 +438,9 @@ export class BundleRuntime {
       return fail(timedOut ? "unknown" : "unhealthy",
         timedOut ? "探针执行超时（无结果，不标健康）" : `探针执行失败: ${messageOf(error)}`,
         null, binding);
+    }
+    if (!sameArtifact(binding, await this.loadActiveBundle())) {
+      return fail("unknown", "探针期间活动制品已变化，不能证明当前版本健康", record.execution_id, binding);
     }
     if (record.outcome === "timeout") {
       return fail("unknown", "探针执行超时（无结果，不标健康）",
@@ -466,8 +480,10 @@ export class BundleRuntime {
       : state.binding;
     const at = this.now();
     try {
+      const executable = await this.resolveExecutable();
+      if (sameArtifact(failed, executable.bundle)) throw new BundleRejectedError("not_executable", ["未切换到其他制品，不能证明回滚恢复"]);
       const record = await this.withTimeout(
-        this.execute(await this.probeInputOfActive(), taskRef ?? createId("recover")),
+        this.executeResolved(executable, executable.probe?.input ?? {}, taskRef ?? createId("recover")),
         this.executionTimeoutMs,
       );
       const recovery: BundleRecoveryRecord = {
@@ -478,7 +494,9 @@ export class BundleRuntime {
           workflow_version: record.workflow_version,
         },
         execution_id: record.execution_id,
-        outcome: record.outcome === "succeeded" ? "succeeded" : record.outcome,
+        outcome: record.outcome === "succeeded"
+          ? this.checkExpectation(executable.probe, record.output) || !sameArtifact(record, await this.loadActiveBundle()) ? "failed" : "succeeded"
+          : record.outcome,
       };
       await this.persist((current) => { current.recovery = recovery; });
       return recovery;
@@ -488,7 +506,7 @@ export class BundleRuntime {
         execution_id: null,
         outcome: error instanceof BundleRejectedError
           ? "not_executable"
-          : "timeout",
+          : messageOf(error) === "执行超时" ? "timeout" : "failed",
       };
       await this.persist((current) => { current.recovery = recovery; });
       return recovery;
@@ -534,7 +552,7 @@ export class BundleRuntime {
     record: BundleExecutionRecord,
     taskRef: string,
   ): Promise<boolean> {
-    const deadline = this.now() + this.executionTimeoutMs;
+    const deadline = Date.now() + this.executionTimeoutMs;
     const nodes = [...def.nodes];
     const done = new Map<string, BundleExecutionStep>();
     const outputs: Record<string, unknown> = {};
@@ -554,7 +572,7 @@ export class BundleRuntime {
         return false;
       }
       for (const node of ready) {
-        if (this.now() > deadline) {
+        if (Date.now() >= deadline) {
           record.steps.push({
             node_id: node.node_id, tool: node.tool, state: "failed",
             attempts: 0, started_at: this.now(), finished_at: this.now(),
@@ -564,6 +582,7 @@ export class BundleRuntime {
         }
         const step = await this.runNode(node, input, outputs, taskRef, deadline);
         record.steps.push(step);
+        if (step.error === "执行超时") return true;
         done.set(node.node_id, step);
         if (step.state === "success") outputs[node.node_id] = step.output;
       }
@@ -587,16 +606,16 @@ export class BundleRuntime {
     const runner = this.tools[node.tool];
     let lastError = "工具未注册";
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
-      if (this.now() > deadline) {
+      if (Date.now() >= deadline) {
         lastError = "执行超时";
         break;
       }
       step.attempts = attempt;
       try {
-        const output = await runner({
+        const output = await this.withTimeout(Promise.resolve().then(() => runner({
           ...(input ?? {}),
           ...(node.args ?? {}),
-        }, { task_ref: taskRef, node_id: node.node_id, outputs: { ...outputs } });
+        }, { task_ref: taskRef, node_id: node.node_id, outputs: { ...outputs } })), Math.max(1, deadline - Date.now()));
         const problems = schemaProblems(output, node.output_schema, node.node_id);
         if (problems.length) {
           lastError = problems.join("; ");
@@ -608,6 +627,7 @@ export class BundleRuntime {
         break;
       } catch (error) {
         lastError = messageOf(error);
+        if (lastError === "执行超时") break;
       }
     }
     step.finished_at = this.now();

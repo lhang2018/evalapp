@@ -50,6 +50,12 @@ class CapabilityDeclaration:
     supported: bool
     details: Dict[str, Any] = field(default_factory=dict)
 
+    def __post_init__(self):
+        if not isinstance(self.capability, RuntimeCapability):
+            raise ValueError("unknown runtime capability")
+        if not isinstance(self.supported, bool) or not isinstance(self.details, dict):
+            raise ValueError("capability supported must be boolean and details an object")
+
 
 @dataclass
 class CancelOutcome:
@@ -96,7 +102,10 @@ class RuntimeProtocol(ABC):
 
     def declaration_of(self, capability: RuntimeCapability
                        ) -> Optional[CapabilityDeclaration]:
-        for item in self.declarations():
+        declarations = self.declarations()
+        if len({d.capability for d in declarations}) != len(declarations):
+            raise ValueError("duplicate runtime capability declarations")
+        for item in declarations:
             if item.capability == capability:
                 return item
         return None
@@ -107,7 +116,7 @@ class RuntimeProtocol(ABC):
         if item is None:
             raise CapabilityNotSupportedError(
                 capability, self.name, "协议未声明该能力")
-        if not item.supported:
+        if item.supported is not True:
             raise CapabilityNotSupportedError(
                 capability, self.name,
                 str(item.details.get("reason", "")))

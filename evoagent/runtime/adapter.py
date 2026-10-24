@@ -42,7 +42,14 @@ class ExistingRuntimeAdapter(RuntimeProtocol):
     def declarations(self) -> List[CapabilityDeclaration]:
         def decl(cap: RuntimeCapability, backing: Any, details: Dict[str, Any]
                  ) -> CapabilityDeclaration:
-            supported = backing is not None
+            methods = {
+                RuntimeCapability.TOOL_INVOCATION: ("execute",),
+                RuntimeCapability.EVENT_STREAM: ("subscribe", "emit", "query_run"),
+                RuntimeCapability.CANCEL: ("cancel_task",),
+                RuntimeCapability.RECOVERY: ("begin",),
+                RuntimeCapability.SANDBOX: ("run_code",),
+            }[cap]
+            supported = backing is not None and all(callable(getattr(backing, name, None)) for name in methods)
             detail = dict(details)
             detail["backing"] = type(backing).__name__ if backing is not None \
                 else None

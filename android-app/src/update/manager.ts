@@ -582,12 +582,16 @@ export class UpdateManager {
   }
 
   /** 健康检查：成功则把当前版本记为已知良好；失败自动回滚。 */
-  healthCheck(ok: boolean): Promise<UpdateState> {
+  healthCheck(ok: boolean, expected?: Pick<UpdateSlot, "release_id" | "version" | "digest">): Promise<UpdateState> {
+    expected = expected ? { ...expected } : undefined;
     return this.queue(async () => {
       const state = await this.load();
       const active = state.slots[state.active_slot];
       if (state.phase !== "active" || !active) {
         throw new Error("当前没有已激活的版本");
+      }
+      if (expected && (active.release_id !== expected.release_id || active.version !== expected.version || active.digest !== expected.digest)) {
+        throw new Error("活动版本已变化，拒绝使用其他制品的健康结果");
       }
       await this.report(state, "health_check", active.release_id,
         ok ? "ok" : "unhealthy", ok ? "" : "健康检查失败", undefined, {

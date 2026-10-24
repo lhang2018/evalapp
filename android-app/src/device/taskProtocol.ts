@@ -24,6 +24,9 @@
  */
 
 import { createId } from "../offline/ids.ts";
+import { sha256Hex } from "../offline/sha256.ts";
+import { defaultRiskOf } from "./broker.ts";
+import { isPackageName } from "./observation.ts";
 import type { KeyValueStore } from "../offline/storage.ts";
 import type {
   ActionJournalEntry,
@@ -33,23 +36,25 @@ import type {
   JournalState,
 } from "./types.ts";
 
-/**
- * 风险缺省推导：与 broker.ts HIGH_RISK_KINDS 同表。
- * 仅为让本模块自包含（broker.ts 由共享文件线维护）；接线小卡应改为
- * 直接复用 broker.riskOf，两表不可分叉出不同结论。
- */
-const HIGH_RISK_KINDS = new Set([
-  "send_message",
-  "payment",
-  "delete",
-  "call",
-  "uninstall",
-]);
-
-function defaultRiskOf(kind: string): DeviceRisk {
-  if (HIGH_RISK_KINDS.has(kind)) return "high";
-  if (kind === "click_text") return "medium";
-  return "low";
+const riskOrder: DeviceRisk[] = ["low", "medium", "high"];
+function effectiveRisk(kind: string, requested?: DeviceRisk): DeviceRisk {
+  if (requested !== undefined && !riskOrder.includes(requested)) throw new Error("非法风险等级");
+  return riskOrder[Math.max(riskOrder.indexOf(defaultRiskOf(kind)), riskOrder.indexOf(requested ?? "low"))];
+}
+function clone<T>(value: T): T { return JSON.parse(JSON.stringify(value)) as T; }
+function fingerprint(value: unknown): string {
+  const sort = (v: any): any => Array.isArray(v) ? v.map(sort)
+    : v && typeof v === "object" ? Object.fromEntries(Object.keys(v).sort().map(k => [k, sort(v[k])])) : v;
+  return sha256Hex(JSON.stringify(sort(value)));
+}
+function ownProposal(value: DeviceActionProposal): DeviceActionProposal {
+  const p = clone(value);
+  for (const key of ["proposal_id", "task_id", "run_id", "action_id", "effect_id", "kind", "target"] as const) {
+    if (typeof p[key] !== "string" || !p[key].trim()) throw new Error(`非法提议字段: ${key}`);
+  }
+  if (!Number.isFinite(p.created_at)) throw new Error("非法提议时间");
+  p.risk = effectiveRisk(p.kind, p.risk);
+  return p;
 }
 
 // ---- 引用与提议契约 ----
@@ -90,9 +95,6 @@ export interface ProposalInput {
   now?: number;
 }
 
-/** 文本类动作的目标是屏幕内容，属敏感信息，上传时脱敏。 */
-const TEXTUAL_TARGET_KINDS = new Set(["click_text"]);
-
 export function createProposal(input: ProposalInput): DeviceActionProposal {
   if (!input.task_id?.trim()) {
     throw new Error("设备动作提议缺少 task_id");
@@ -112,9 +114,9 @@ export function createProposal(input: ProposalInput): DeviceActionProposal {
     effect_id: createId("fx"),
     kind: input.kind,
     target: input.target,
-    args: input.args,
-    risk: input.risk ?? defaultRiskOf(input.kind),
-    expected_observation: input.expected_observation,
+    args: input.args === undefined ? undefined : clone(input.args),
+    risk: effectiveRisk(input.kind, input.risk),
+    expected_observation: input.expected_observation === undefined ? undefined : clone(input.expected_observation),
     created_at: createdAt,
   };
 }
@@ -127,6 +129,8 @@ export function proposalToAction(
   if (proposal.expected_observation?.expect_text) {
     args.expect_text = proposal.expected_observation.expect_text;
   }
+  if (proposal.expected_observation?.expect_package) args.expect_package = proposal.expected_observation.expect_package;
+  if (proposal.expected_observation?.page_change_required) args.page_change_required = true;
   return {
     action_id: proposal.action_id,
     kind: proposal.kind,
@@ -177,6 +181,12 @@ export function receiptFromJournal(
   entry: ActionJournalEntry,
   options: { replayed: boolean; recordedAt: number },
 ): ActionReceipt {
+  if (entry.action_id !== proposal.action_id || entry.kind !== proposal.kind
+      || entry.risk !== proposal.risk || (entry.task_id && entry.task_id !== proposal.task_id)
+      || (entry.run_id && entry.run_id !== proposal.run_id)
+      || (entry.effect_id && entry.effect_id !== proposal.effect_id)) {
+    throw new Error("动作日志与提议身份不一致");
+  }
   return {
     effect_id: proposal.effect_id,
     action_id: entry.action_id,
@@ -248,7 +258,8 @@ export interface ProposalUploadProjection {
 export function proposalForUpload(
   proposal: DeviceActionProposal,
 ): ProposalUploadProjection {
-  const textual = TEXTUAL_TARGET_KINDS.has(proposal.kind);
+  const textual = proposal.kind !== "launch_intent" || !isPackageName(proposal.target);
+  const observation = proposal.expected_observation;
   return {
     proposal_id: proposal.proposal_id,
     task_id: proposal.task_id,
@@ -259,7 +270,11 @@ export function proposalForUpload(
     risk: proposal.risk,
     target_kind: textual ? "text" : "package",
     target: textual ? "<local:text>" : proposal.target,
-    expected_observation: proposal.expected_observation,
+    expected_observation: observation ? {
+      ...(observation.expect_package && isPackageName(observation.expect_package)
+        ? { expect_package: observation.expect_package } : {}),
+      ...(observation.page_change_required ? { page_change_required: true } : {}),
+    } : undefined,
     created_at: proposal.created_at,
   };
 }
@@ -267,7 +282,8 @@ export function proposalForUpload(
 /** 本地保留字段清单：契约要求与矩阵 local_retention 对齐。 */
 export function localRetentionFields(proposal: DeviceActionProposal): string[] {
   const fields = ["args", "message", "evidence"];
-  if (TEXTUAL_TARGET_KINDS.has(proposal.kind)) fields.push("target");
+  if (proposal.kind !== "launch_intent" || !isPackageName(proposal.target)) fields.push("target");
+  if (proposal.expected_observation?.expect_text) fields.push("expected_observation.expect_text");
   return fields;
 }
 
@@ -280,6 +296,8 @@ export interface TaskActionLedgerState {
   version: 1;
   proposals: Record<string, DeviceActionProposal>;
   receipts: Record<string, ActionReceipt>;
+  /** Compact durable deduplication markers survive full-history retention. */
+  retired?: Record<string, { fingerprint: string; receipt: ActionReceipt }>;
 }
 
 export function emptyLedgerState(): TaskActionLedgerState {
@@ -290,15 +308,45 @@ function parseLedgerState(raw: string | null): TaskActionLedgerState {
   if (!raw) return emptyLedgerState();
   try {
     const data = JSON.parse(raw) as Partial<TaskActionLedgerState>;
-    if (!data || data.version !== 1) return emptyLedgerState();
-    return {
+    if (!data || data.version !== 1 || !data.proposals || !data.receipts
+        || Array.isArray(data.proposals) || Array.isArray(data.receipts)
+        || typeof data.proposals !== "object" || typeof data.receipts !== "object") throw new Error("invalid ledger");
+    const state: TaskActionLedgerState = {
       version: 1,
       proposals: data.proposals ?? {},
       receipts: data.receipts ?? {},
+      retired: data.retired ?? {},
     };
+    if (!state.retired || typeof state.retired !== "object" || Array.isArray(state.retired)) throw new Error("invalid retirement markers");
+    for (const [id, p] of Object.entries(state.proposals)) {
+      ownProposal(p);
+      if (p.action_id !== id) throw new Error("proposal key mismatch");
+    }
+    for (const [id, receipt] of Object.entries(state.receipts)) {
+      const p = state.proposals[id];
+      if (!p || !receipt || receipt.action_id !== id || receipt.task_id !== p.task_id
+          || receipt.run_id !== p.run_id || receipt.effect_id !== p.effect_id
+          || receipt.proposal_id !== p.proposal_id || receipt.kind !== p.kind
+          || receipt.terminal !== isTerminalJournalState(receipt.state)) throw new Error("receipt identity mismatch");
+    }
+    for (const [id, marker] of Object.entries(state.retired)) {
+      if (!marker || !/^[a-f0-9]{64}$/.test(marker.fingerprint) || !marker.receipt
+          || marker.receipt.action_id !== id || !marker.receipt.terminal) throw new Error("invalid retired receipt");
+    }
+    return state;
   } catch {
-    return emptyLedgerState();
+    throw new Error("设备动作台账损坏，禁止清空后重新执行");
   }
+}
+
+const storeLocks = new WeakMap<KeyValueStore, Map<string, Promise<unknown>>>();
+async function storeExclusive<T>(kv: KeyValueStore, key: string, fn: () => Promise<T>): Promise<T> {
+  let locks = storeLocks.get(kv);
+  if (!locks) { locks = new Map(); storeLocks.set(kv, locks); }
+  const previous = locks.get(key) ?? Promise.resolve();
+  const next = previous.catch(() => {}).then(fn);
+  locks.set(key, next);
+  try { return await next; } finally { if (locks.get(key) === next) locks.delete(key); }
 }
 
 export interface TaskActionRef {
@@ -320,6 +368,7 @@ export class TaskActionLedger {
     this.now = options.now ?? (() => Date.now());
     this.storeKey = options.storeKey ?? LEDGER_KEY;
     this.limit = options.limit ?? DEFAULT_LEDGER_LIMIT;
+    if (!Number.isInteger(this.limit) || this.limit < 1) throw new Error("非法台账容量");
   }
 
   async loadState(): Promise<TaskActionLedgerState> {
@@ -327,14 +376,17 @@ export class TaskActionLedger {
   }
 
   async recordProposal(proposal: DeviceActionProposal): Promise<void> {
+    proposal = ownProposal(proposal);
     await this.persist((state) => {
+      this.assertIdentity(state, proposal);
+      if (state.proposals[proposal.action_id] || state.retired?.[proposal.action_id]) return;
       state.proposals[proposal.action_id] = proposal;
     });
   }
 
   async getReceipt(actionId: string): Promise<ActionReceipt | null> {
     const state = await this.loadState();
-    return state.receipts[actionId] ?? null;
+    return state.receipts[actionId] ?? state.retired?.[actionId]?.receipt ?? null;
   }
 
   async getProposal(actionId: string): Promise<DeviceActionProposal | null> {
@@ -343,9 +395,39 @@ export class TaskActionLedger {
   }
 
   async recordReceipt(receipt: ActionReceipt): Promise<void> {
+    receipt = clone(receipt);
     await this.persist((state) => {
+      const p = state.proposals[receipt.action_id];
+      if (!p || receipt.task_id !== p.task_id || receipt.run_id !== p.run_id
+          || receipt.effect_id !== p.effect_id || receipt.proposal_id !== p.proposal_id) throw new Error("回执引用不一致");
       state.receipts[receipt.action_id] = receipt;
     });
+  }
+
+  async claimProposal(proposal: DeviceActionProposal): Promise<{ claimed: boolean; proposal: DeviceActionProposal; receipt: ActionReceipt | null }> {
+    const p = ownProposal(proposal);
+    return this.persist((state) => {
+      this.assertIdentity(state, p);
+      const existing = state.proposals[p.action_id], retired = state.retired?.[p.action_id];
+      if (existing || retired) return { claimed: false, proposal: existing ?? p, receipt: state.receipts[p.action_id] ?? retired?.receipt ?? null };
+      state.proposals[p.action_id] = p;
+      return { claimed: true, proposal: p, receipt: null };
+    });
+  }
+
+  async recordRecoveryReceipt(receipt: ActionReceipt): Promise<ActionReceipt> {
+    return this.persist((state) => {
+      const prior = state.receipts[receipt.action_id] ?? state.retired?.[receipt.action_id]?.receipt;
+      if (prior) return { ...prior, replayed: true };
+      state.receipts[receipt.action_id] = clone(receipt);
+      return receipt;
+    });
+  }
+
+  private assertIdentity(state: TaskActionLedgerState, p: DeviceActionProposal) {
+    const existing = state.proposals[p.action_id];
+    const expected = existing ? fingerprint(existing) : state.retired?.[p.action_id]?.fingerprint;
+    if (expected && expected !== fingerprint(p)) throw new Error("action_id已绑定其他提议，禁止改写身份或参数");
   }
 
   /** 同一任务下的全部提议与回执（task → action → effect 链）。 */
@@ -360,21 +442,30 @@ export class TaskActionLedger {
       }));
   }
 
-  private async persist(
-    mutate: (state: TaskActionLedgerState) => void,
-  ): Promise<void> {
+  private async persist<T>(
+    mutate: (state: TaskActionLedgerState) => T,
+  ): Promise<T> {
+    return storeExclusive(this.kv, this.storeKey, async () => {
     const state = await this.loadState();
-    mutate(state);
+    const result = mutate(state);
     // 容量上界：按提议时间淘汰最旧条目，回执随提议一起淘汰。
     const ids = Object.values(state.proposals)
       .sort((a, b) => a.created_at - b.created_at);
     while (ids.length > this.limit) {
-      const oldest = ids.shift();
-      if (!oldest) break;
+      const index = ids.findIndex(p => state.receipts[p.action_id]?.terminal);
+      if (index < 0) throw new Error("台账包含未决动作，容量已满，禁止丢弃后继续执行");
+      const oldest = ids.splice(index, 1)[0];
+      state.retired ??= {};
+      const receipt = state.receipts[oldest.action_id];
+      state.retired[oldest.action_id] = { fingerprint: fingerprint(oldest), receipt: {
+        ...receipt, evidence: undefined, message: undefined,
+      } };
       delete state.proposals[oldest.action_id];
       delete state.receipts[oldest.action_id];
     }
     await this.kv.setItem(this.storeKey, JSON.stringify(state));
+    return result;
+    });
   }
 }
 
@@ -406,12 +497,12 @@ export async function executeProposal(
   options: { now?: () => number } = {},
 ): Promise<ProposalExecution> {
   const now = options.now ?? (() => Date.now());
-  const prior = await ledger.getReceipt(proposal.action_id);
-  if (prior) {
-    return { receipt: { ...prior, replayed: true }, dispatched: false };
+  const claim = await ledger.claimProposal(proposal);
+  proposal = claim.proposal;
+  if (claim.receipt) {
+    return { receipt: { ...claim.receipt, replayed: true }, dispatched: false };
   }
-  const existing = await ledger.getProposal(proposal.action_id);
-  if (existing) {
+  if (!claim.claimed) {
     const unknown: ActionReceipt = {
       effect_id: proposal.effect_id,
       action_id: proposal.action_id,
@@ -427,10 +518,8 @@ export async function executeProposal(
       occurred_at: now(),
       recorded_at: now(),
     };
-    await ledger.recordReceipt(unknown);
-    return { receipt: unknown, dispatched: false };
+    return { receipt: await ledger.recordRecoveryReceipt(unknown), dispatched: false };
   }
-  await ledger.recordProposal(proposal);
   const result = await broker.execute(proposalToAction(proposal));
   const entry = broker.getJournal(proposal.action_id);
   const receipt: ActionReceipt = entry
@@ -446,10 +535,10 @@ export async function executeProposal(
       run_id: proposal.run_id,
       kind: proposal.kind,
       risk: proposal.risk,
-      state: "failed",
-      terminal: true,
+      state: "unverified",
+      terminal: false,
       replayed: false,
-      message: result.message ?? "动作日志缺失，按失败处理",
+      message: result.message ?? "动作日志缺失，副作用待对账",
       occurred_at: now(),
       recorded_at: now(),
     };

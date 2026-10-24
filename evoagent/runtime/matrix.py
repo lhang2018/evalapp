@@ -113,7 +113,10 @@ def assert_matches_declarations(runtime: RuntimeProtocol,
                                 implementation: str) -> None:
     """矩阵行必须与运行时实际声明一致（测试与文档不漂移）。"""
     row = matrix_for(implementation)
-    declared = {item.capability: item for item in runtime.declarations()}
+    declarations = runtime.declarations()
+    declared = {item.capability: item for item in declarations}
+    if len(declared) != len(declarations):
+        raise AssertionError("duplicate runtime capability declarations")
     if set(declared) != set(row):
         raise AssertionError(
             f"{implementation} 矩阵能力集与声明不一致: "
@@ -121,6 +124,8 @@ def assert_matches_declarations(runtime: RuntimeProtocol,
             f"声明={sorted(c.value for c in declared)}")
     for capability, entry in row.items():
         item = declared[capability]
+        if not isinstance(item.supported, bool):
+            raise AssertionError("capability support must be boolean")
         if entry["level"] == ABSENT and item.supported:
             raise AssertionError(
                 f"{implementation}.{capability.value}: 矩阵=absent 但声明支持")

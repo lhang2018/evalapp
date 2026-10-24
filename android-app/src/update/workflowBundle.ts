@@ -201,7 +201,7 @@ export async function loadActiveBundle(
   if (!raw) return null;
   let marker: { slot?: unknown } | null = null;
   try {
-    marker = JSON.parse(raw) as { slot?: unknown };
+      marker = JSON.parse(raw);
   } catch {
     return null;
   }
@@ -209,7 +209,13 @@ export async function loadActiveBundle(
   const stored = await kv.getItem(slotBundleKey(marker.slot));
   if (!stored) return null;
   try {
-    return JSON.parse(stored) as InstalledBundle;
+    const record = JSON.parse(stored) as InstalledBundle;
+    const identity = marker as Partial<InstalledBundle>;
+    if (record.slot !== identity.slot || !record.bundle || Array.isArray(record.bundle)
+        || !["release_id", "version", "digest"].every(key =>
+          typeof (record as any)[key] === "string" && !!(record as any)[key]
+          && (record as any)[key] === (identity as any)[key])) return null;
+    return record;
   } catch {
     return null;
   }

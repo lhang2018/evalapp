@@ -76,7 +76,7 @@ class MockRuntime(RuntimeProtocol):
     def _query_run_events(self, run_id: str, limit: int) -> List[Any]:
         with self._lock:
             events = [e for e in self._events if e.get("run_id") == run_id]
-        return events[-limit:]
+        return events[:limit] if limit >= 0 else events
 
     # ---- 能力声明 ----
 
@@ -95,10 +95,9 @@ class MockRuntime(RuntimeProtocol):
                 RuntimeCapability.RECOVERY, True,
                 {"note": "内存恢复台账，返回新 run_id"}),
             CapabilityDeclaration(
-                RuntimeCapability.SANDBOX, self._sandbox_capable,
-                {"reason": "" if self._sandbox_capable
-                 else "Mock 不做真实隔离；沙箱能力默认拒绝，避免假执行证据",
-                 "note": "即便声明支持也只返回未执行结果，从不执行代码"}),
+                RuntimeCapability.SANDBOX, False,
+                {"reason": "Mock 不做真实隔离；沙箱能力拒绝，避免假执行证据",
+                 "note": "legacy sandbox_capable flag cannot enable real isolation"}),
         ]
 
     # ---- 取消 ----

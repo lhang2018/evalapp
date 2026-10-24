@@ -13,6 +13,13 @@ import type {
   DeviceRisk,
   JournalState,
 } from "./types.ts";
+import { sha256Hex } from "../offline/sha256.ts";
+
+function actionIdentity(action: DeviceAction): string {
+  const ordered = (v: any): any => Array.isArray(v) ? v.map(ordered)
+    : v && typeof v === "object" ? Object.fromEntries(Object.keys(v).sort().map(k => [k, ordered(v[k])])) : v;
+  return sha256Hex(JSON.stringify(ordered(action)));
+}
 
 export type ConfirmFn = (
   action: DeviceAction,
@@ -61,6 +68,7 @@ export class DeviceBroker {
   private readonly now: () => number;
   private readonly maxConsecutiveUnverified: number;
   private readonly entries = new Map<string, ActionJournalEntry>();
+  private readonly identities = new Map<string, string>();
   private consecutiveUnverified = 0;
   private stopped = false;
 
@@ -82,13 +90,20 @@ export class DeviceBroker {
   }
 
   riskOf(action: DeviceAction): DeviceRisk {
-    return action.risk ?? defaultRiskOf(action.kind);
+    const order: DeviceRisk[] = ["low", "medium", "high"];
+    return order[Math.max(order.indexOf(defaultRiskOf(action.kind)), order.indexOf(action.risk ?? "low"))];
   }
 
   async execute(action: DeviceAction): Promise<DeviceResult> {
+    action = JSON.parse(JSON.stringify(action)) as DeviceAction;
     const risk = this.riskOf(action);
+    action.risk = risk;
+    const identity = actionIdentity(action);
     const prior = this.entries.get(action.action_id);
-    if (prior) return this.replayResult(prior);
+    if (prior) return this.identities.get(action.action_id) === identity ? this.replayResult(prior)
+      : { status: "denied", message: "action_id已绑定其他动作，拒绝改写身份或参数" };
+    this.identities.set(action.action_id, identity);
+    this.record(action, risk, "prepared"); // Claim before the first async boundary.
 
     if (this.stopped) {
       const message =
@@ -174,11 +189,16 @@ export class DeviceBroker {
     if (typeof expectText === "string" && expectText.trim()) {
       expectation.expect_text = expectText.trim();
     }
+    const expectPackage = action.args?.expect_package;
+    if (typeof expectPackage === "string" && isPackageName(expectPackage)) expectation.expect_package = expectPackage;
     if (action.kind === "launch_intent" && isPackageName(action.target)) {
       expectation.expect_package = action.target;
     }
     const verification = verifyAction(before, after, expectation);
     const merged = { ...evidence, page_change: verification.evidence };
+    if (action.args?.page_change_required && !verification.evidence.changed) {
+      return { status: "unverified", message: "预期页面变化未发生", evidence: merged };
+    }
     if (verification.status === "verified") {
       return {
         status: "verified",

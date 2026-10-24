@@ -73,7 +73,7 @@ import { ApiUpdateTransport } from "./src/update/apiTransport.ts";
 import { TrustedKeyRing } from "./src/update/trust.ts";
 import { releaseKeysForBuild } from "./src/update/devTrust.ts";
 import {
-  BundleRuntime,
+  BundleRuntime, sameArtifact,
   BundleRejectedError,
 } from "./src/update/bundleRuntime.ts";
 import type {
@@ -834,7 +834,7 @@ export default function App(): React.JSX.Element {
     if (state.phase !== "active") return;
     const active = state.slots[state.active_slot];
     if (!active?.artifact_path) return; // 非真实制品包保持手工确认
-    if (state.last_known_good?.release_id === active.release_id) return;
+    if (sameArtifact(state.last_known_good, active)) return;
     setBundleBusy(true);
     try {
       const probe = await services.bundleRuntime.runHealthProbe(
@@ -842,10 +842,15 @@ export default function App(): React.JSX.Element {
       setRuntimeView(await services.bundleRuntime.loadState());
       setBundleMessage(
         `自动健康探针（${probe.version}）: ${probe.outcome} — ${probe.reason}`);
+      const current = await services.update.status();
+      if (!sameArtifact(probe, current.slots[current.active_slot])) {
+        setBundleMessage("活动版本已变化，本次探针不用于健康晋级或回滚。");
+        return;
+      }
       if (probe.outcome === "healthy") {
-        await runUpdate(() => services.update.healthCheck(true));
+        await runUpdate(() => services.update.healthCheck(true, probe));
       } else if (probe.outcome === "unhealthy") {
-        await runUpdate(() => services.update.healthCheck(false));
+        await runUpdate(() => services.update.healthCheck(false, probe));
         const recovery = await services.bundleRuntime.verifyRecovery(
           probe.reason);
         setRuntimeView(await services.bundleRuntime.loadState());
