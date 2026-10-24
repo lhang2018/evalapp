@@ -1,0 +1,26 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+..................................F.......                               [100%]
+================================== FAILURES ===================================
+______ test_two_connections_bind_same_old_task_without_changing_identity ______
+tests\test_runtime_memory_identity.py:373: in test_two_connections_bind_same_old_task_without_changing_identity
+    outcomes=list(pool.map(lambda pair:pair[0].resolve(pair[1]),zip(authorities,tasks)))
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\concurrent\futures\_base.py:621: in result_iterator
+    yield _result_or_cancel(fs.pop())
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\concurrent\futures\_base.py:319: in _result_or_cancel
+    return fut.result(timeout)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\concurrent\futures\_base.py:458: in result
+    return self.__get_result()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\concurrent\futures\_base.py:403: in __get_result
+    raise self._exception
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\concurrent\futures\thread.py:58: in run
+    result = self.fn(*self.args, **self.kwargs)
+tests\test_runtime_memory_identity.py:373: in <lambda>
+    outcomes=list(pool.map(lambda pair:pair[0].resolve(pair[1]),zip(authorities,tasks)))
+evoagent\memory\binding.py:107: in resolve
+    raise MemoryAccessError("Task身份快照与权威绑定不一致")
+E   evoagent.memory.manifest.MemoryAccessError: Task身份快照与权威绑定不一致
+=========================== short test summary info ===========================
+FAILED tests/test_runtime_memory_identity.py::test_two_connections_bind_same_old_task_without_changing_identity
+1 failed, 41 passed in 11.59s

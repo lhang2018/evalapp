@@ -1,0 +1,34 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+...F..........FF.F...                                                    [100%]
+================================== FAILURES ===================================
+_________ test_sibling_goal_and_separate_day_pool_cannot_be_bypassed __________
+tests\test_runtime_reservations.py:146: in test_sibling_goal_and_separate_day_pool_cannot_be_bypassed
+    a = goal(app, parent=root["goal_id"], calls=1)
+tests\test_runtime_reservations.py:71: in goal
+    g = app.goals.create("bounded goal", actor="user", deadline=time.time() + 3600,
+evoagent\goals\store.py:216: in create
+    raise PermissionError("子目标期限超过父目标")
+E   PermissionError: 子目标期限超过父目标
+____________ test_tool_call_is_allocated_and_correlated_to_effect _____________
+tests\test_runtime_reservations.py:263: in test_tool_call_is_allocated_and_correlated_to_effect
+    assert result.ok
+E   assert False
+E    +  where False = ToolResult(ok=False, data=None, error="AttributeError: type object 'ToolResult' has no attribute 'success'", error_cla...1e5500339897'}, idempotency_key='5a3b41415c417913', safe_to_repeat=False, retryable=False, required_action='reconcile').ok
+____ test_fixed_price_tool_settles_money_without_incrementing_calls_twice _____
+tests\test_runtime_reservations.py:275: in test_fixed_price_tool_settles_money_without_incrementing_calls_twice
+    assert result.ok
+E   assert False
+E    +  where False = ToolResult(ok=False, data=None, error="AttributeError: type object 'ToolResult' has no attribute 'success'", error_cla...horization_ref': None}, idempotency_key='5a3b41415c417913', safe_to_repeat=True, retryable=False, required_action=None).ok
+___ test_unknown_tool_billing_retains_actual_effect_result_and_pending_fee ____
+tests\test_runtime_reservations.py:297: in test_unknown_tool_billing_retains_actual_effect_result_and_pending_fee
+    assert result.ok and not result.side_effect_uncertain
+E   assert (False)
+E    +  where False = ToolResult(ok=False, data=None, error="AttributeError: type object 'ToolResult' has no attribute 'success'", error_cla...31a85e66f4f9'}, idempotency_key='5a3b41415c417913', safe_to_repeat=False, retryable=False, required_action='reconcile').ok
+=========================== short test summary info ===========================
+FAILED tests/test_runtime_reservations.py::test_sibling_goal_and_separate_day_pool_cannot_be_bypassed
+FAILED tests/test_runtime_reservations.py::test_tool_call_is_allocated_and_correlated_to_effect
+FAILED tests/test_runtime_reservations.py::test_fixed_price_tool_settles_money_without_incrementing_calls_twice
+FAILED tests/test_runtime_reservations.py::test_unknown_tool_billing_retains_actual_effect_result_and_pending_fee
+4 failed, 17 passed in 2.50s

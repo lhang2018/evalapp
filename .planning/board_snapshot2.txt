@@ -1,0 +1,84 @@
+<class 'list'>
+ALN-00 | None | claude-main | 固定基线、统一台账与失败归因
+ALN-01 | None | codex-runtime | 统一动作授权网关与工作流审批
+ALN-02 | None | codex-runtime | 副作用预记账、DAG 重试与补偿安全
+ALN-03 | None | claude-main | 发布正文签名与完整兼容声明
+ALN-04 | None | codex-runtime | Task/Run/Node/Approval 状态与重启恢复
+ALN-05 | None | claude-main | 多维记忆、ContextManifest 与冲突/删除
+ALN-06 | None | claude-main | 统一能力资产、Skill/Pack 与生命周期
+ALN-07 | None | None | 计划修订、工作流匹配和轨迹编译
+ALN-08 | None | claude-main | 模型网关、全层路由评测与计费
+ALN-09 | None | opencode-evo | 真实候选变更、持久队列与实验隔离
+ALN-10 | None | opencode-evo | 回归资产、依赖范围与独立门禁
+ALN-11 | None | None | Android 真实制品下载、装载与回滚
+ALN-12 | None | None | 自然语言手机任务与离线可靠性
+ALN-13 | None | None | Goal 实体、状态机与自主授权
+ALN-14 | None | None | 机会排序、无进展停止、子目标与归因
+ALN-15 | None | None | APRO 资源调度、预算预留与费用对账
+ALN-16 | None | None | 观测证据、隐私与凭证治理
+ALN-17 | None | None | 宿主部署、备份迁移与灾难恢复
+ALN-18 | None | None | 真实编程能力包
+ALN-19 | None | None | 真实 AI 漫剧能力包
+ALN-20 | None | None | AgentRuntimeAdapter 与 Harness 固定版本 PoC
+ALN-21 | None | None | Windows/平板后续扩展
+ALN-22 | None | None | 全量验收与发布证据
+=== dispatches compact
+ALN-00-B | ALN-00 | in_progress | claude-main | None
+ALN-04-R | ALN-04 | accepted | codex-runtime | claude-main
+ALN-06-A | ALN-06 | review | claude-main | codex-runtime
+ALN-08-M | ALN-08 | review | claude-main | codex-runtime
+ALN-04-UI | ALN-04 | review | codex-runtime | claude-main
+ALN-10-Q | ALN-10 | accepted | codex-runtime | claude-main
+ALN-10-R | ALN-10 | accepted | codex-runtime | claude-main
+ALN-00-V | ALN-00 | accepted | codex-runtime | claude-main
+ALN-08-R | ALN-08 | accepted | codex-runtime | claude-main
+ALN-10-H | ALN-10 | review | codex-runtime | None
+ALN-09-F | ALN-09 | review | codex-runtime | None
+ALN-03-S | ALN-03 | review | claude-main | codex-runtime
+ALN-05-M | ALN-05 | review | claude-main | codex-runtime
+ALN-01-A | ALN-01 | in_progress | codex-runtime | None
+ALN-02-A | ALN-02 | in_progress | codex-runtime | None
+=== ALN-10/06 package content
+{
+ "id": "ALN-10",
+ "priority": "P1",
+ "title": "回归资产、依赖范围与独立门禁",
+ "depends_on": [
+  "ALN-05",
+  "ALN-07",
+  "ALN-09"
+ ],
+ "stream": "assets",
+ "owner": "opencode-evo",
+ "delivery_state": "partial_verified",
+ "next_step": "ALN-10-Q/R已独立接受；CXR-01/02/03加固交付ALN-10-H待审；整合真实候选隔离宿主、制品装载与ALN-05/07/09后验收",
+ "supplemented_by": "codex-runtime"
+}
+{
+ "id": "ALN-11",
+ "priority": "P1",
+ "title": "Android 真实制品下载、装载与回滚",
+ "depends_on": [
+  "ALN-03",
+  "ALN-06",
+  "ALN-10"
+ ],
+ "stream": "android",
+ "owner": null,
+ "delivery_state": "planned",
+ "next_step": "依赖资产与门禁，补真实字节下载/验签/装载和健康回滚"
+}
+{
+ "id": "ALN-16",
+ "priority": "P1",
+ "title": "观测证据、隐私与凭证治理",
+ "depends_on": [
+  "ALN-00",
+  "ALN-01",
+  "ALN-04"
+ ],
+ "stream": "models",
+ "owner": null,
+ "delivery_state": "planned",
+ "next_step": "先定跨域引用、隐私与凭证契约，按运行/网关前置整合"
+}

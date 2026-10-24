@@ -1,0 +1,170 @@
+dispatches type <class 'list'>
+[
+ {
+  "id": "ALN-00-B",
+  "workpackage": "ALN-00",
+  "title": "发布可共享基线",
+  "stream": "integration",
+  "owner": "claude-main",
+  "reviewer": null,
+  "branch": null,
+  "base_commit": null,
+  "status": "in_progress",
+  "blocker": null,
+  "evidence": [
+   {
+    "date": "2026-10-22",
+    "scope": "codex-runtime完成干净开发候选准备，未替集成人发布",
+    "source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+    "command": "python -m pytest -q --tb=short; npm run test:offline; npm run typecheck",
+    "result": "909 passed/1 skipped; client136/typecheck passed",
+    "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
+    "delivery": "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md"
+   },
+   {
+    "date": "2026-10-22",
+    "scope": "运行时路由拒绝后续修复的干净候选；正式发布仍待审阅",
+    "source_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+    "command": "python -m pytest -q --tb=short",
+    "result": "915 passed/1 skipped; unchanged client tree reuses d77b241 evidence",
+    "log": ".planning/2026-10-22-router-rejection/clean-backend-tests.txt",
+    "delivery": "docs/协作开发/交付/ALN-08-R-运行时路由拒绝.md"
+   }
+  ],
+  "card": "docs/协作开发/任务卡/00-基线发布.md",
+  "shared_files": [
+   "evoagent/core/controller.py",
+   "evoagent/core/runs.py",
+   "evoagent/core/task.py",
+   "evoagent/core/state_machine.py",
+   "evoagent/react/engine.py",
+   "evoagent/workflows/engine.py",
+   "evoagent/tools/registry.py",
+   "evoagent/core/permissions.py",
+   "evoagent/core/approvals.py",
+   "evoagent/core/side_effects.py",
+   "evoagent/core/persistence.py",
+   "evoagent/core/schema/migrations.py",
+   "evoagent/core/contracts.py",
+   "evoagent/core/events.py",
+   "evoagent/core/budget.py",
+   "evoagent/tools/contract.py",
+   "evoagent/api/server.py",
+   "evoagent/api/routes.py",
+   "evoagent/api/auth.py",
+   "evoagent/app.py",
+   "evoagent/cli.py",
+   "android-app/App.tsx",
+   "android-app/src/api.ts",
+   "android-app/src/offline/types.ts",
+   "evoagent/release/manager.py",
+   "evoagent/release/delivery.py",
+   "FEATURES.md",
+   "ROADMAP.md",
+   "FEATURE_SPLIT.md",
+   "IMPLEMENTATION.md",
+   "GAP_ANALYSIS.md"
+  ],
+  "preparation_status": "verified_pending_review",
+  "next_step": "准备证据有效；先修复CA-08-01/CA-06-01/CA-08-02并复验，再独立审阅与正式发布"
+ },
+ {
+  "id": "ALN-04-R",
+  "workpackage": "ALN-04",
+  "title": "RUNNING 中断接管",
+  "stream": "runtime",
+  "owner": "codex-runtime",
+  "reviewer": "claude-main",
+  "branch": "main",
+  "base_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
+  "status": "accepted",
+  "blocker": null,
+  "evidence": [
+   {
+    "date": "2026-10-22",
+    "scope": "租约/隔离/15 项恢复与入口专项；真实杀进程与双进程竞争",
+    "command": "python -m pytest -q; npm run test:offline; npm run typecheck",
+    "result": "764 passed, 1 skipped；客户端 144 passed；typecheck passed",
+    "source": "验证当时的共享候选工作区；含其他人在途资产与模型实现，非纯 HEAD 验证",
+    "log": ".planning/2026-10-22-design-alignment/claimed-backend-final.txt",
+    "delivery": "docs/协作开发/交付/ALN-04-R-运行租约与中断接管.md"
+   },
+   {
+    "date": "2026-10-22",
+    "scope": "导出本轮提交候选，未纳入其他人在途源码",
+    "command": "python -m pytest -q；Git 元数据补齐后单项复验；npm run test:offline；npm run typecheck",
+    "result": "后端 766 passed / 1 skipped + Git 读取项补验 1 passed；候选客户端 136 passed/typecheck passed",
+    "source": "父提交 a957fe8 + 本轮暂存源码；本记录与源码同次提交",
+    "log": ".planning/2026-10-22-design-alignment/commit-candidate-backend-tests.txt",
+    "supplemental_log": ".planning/2026-10-22-design-alignment/commit-candidate-git-test.txt"
+   },
+   {
+    "date": "2026-10-22",
+    "scope": "claude-main 独立验收：租约/恢复/双进程专项 + 全量",
+    "command": "python -m pytest tests/test_process_recovery.py tests/test_run_ownership.py tests/test_run_continuation.py -q; python -m pytest tests -q",
+    "result": "目标专项通过；全量 915 passed, 1 skipped",
+    "reviewed_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+    "report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
+   }
+  ],
+  "card": "docs/协作开发/任务卡/04-运行恢复.md",
+  "shared_files": [
+   "evoagent/core/controller.py",
+   "evoagent/core/runs.py",
+   "evoagent/core/task.py",
+   "evoagent/core/state_machine.py",
+   "evoagent/core/persistence.py",
+   "evoagent/core/schema/migrations.py",
+   "evoagent/api/server.py",
+   "evoagent/api/auth.py",
+   "evoagent/cli.py"
+  ],
+  "working_basis": "用户明确要求认领并开发；在当前共享候选工作区增量实现，base_commit 不代表候选基线已发布。",
+  "delivery": "docs/协作开发/交付/ALN-04-R-运行租约与中断接管.md",
+  "review_result": "accepted",
+  "review_note": "2026-10-22 claude-main 独立审阅：租约 fencing、恢复阻断、真实杀进程与双进程竞争测试通过；整包组合验收仍待运行线整合",
+  "review_report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md",
+  "next_step": "合入共同基线；整包 ALN-04 的运行时/Android 组合验收另计",
+  "delivered_commit": "72d20f026ad0623ab1828341f88f290ed06f6006"
+ },
+ {
+  "id": "ALN-06-A",
+  "workpackage": "ALN-06",
+  "title": "不可变资产基础",
+  "stream": "assets",
+  "owner": "claude-main",
+  "reviewer": "codex-runtime",
+  "branch": null,
+  "base_commit": null,
+  "status": "review",
+  "blocker": null,
+  "evidence": [
+   {
+    "date": "2026-10-22",
+    "scope": "Asset 十一字段/八态/五 namespace + 不可变仓储 + 依赖/证据门禁 + Pack 字节夹具 + 旧实体映射 + 发布清单冻结引用边界",
+    "command": "python -m pytest tests -q",
+    "result": "776 passed, 1 skipped（含并行修复的 E-12/E-13；仅运行租约线 teardown 线程告警）",
+    "delivery": "docs/协作开发/交付/ALN-06-A-不可变资产基础.md"
+   },
+   {
+    "date": "2026-10-22",
+    "scope": "交叉审阅复现与修复，原作者和本轮修复作者分离登记",
+    "command": "python -m pytest tests/test_cross_review_regressions.py; clean commit full suite",
+    "result": "新增34专项通过；干净提交全量909 passed/1 skipped",
+    "source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+    "log": ".planning/2026-10-22-cross-review/clean-backend-tests.txt",
+    "delivery": "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md"
+   },
+   {
+    "date": "2026-10-22",
+    "scope": "Claude认领专项验收：既有相关测试+新增跨阶段/生命周期检查",
+    "reviewed_commit": "8692637064389736695f433337c8d09e0bdcdafb",
+    "command": "python -m pytest acceptance_checks.py -q --tb=short; related tests",
+    "result": "新增显式验收4 failed/1 passed，归为3个根因；既有178 passed",
+    "log": ".planning/2026-10-22-claude-acceptance/acceptance-results.txt",
+    "observations": ".planning/2026-10-22-claude-a
+=== workpackage ALN-11
+null
+=== workpackage ALN-16
+null
+=== first workpackage keys

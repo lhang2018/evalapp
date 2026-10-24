@@ -1,0 +1,135 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFFFFFFFFFFF.F                                                 [100%]
+================================== FAILURES ===================================
+______________ test_other_task_cannot_satisfy_own_completed_step ______________
+tests\test_peer_plan_reconcile_review.py:26: in test_other_task_cannot_satisfy_own_completed_step
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+____________ test_mixed_task_projection_without_scope_is_rejected _____________
+tests\test_peer_plan_reconcile_review.py:31: in test_mixed_task_projection_without_scope_is_rejected
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+____________ test_single_task_is_inferred_and_preserved_in_record _____________
+tests\test_peer_plan_reconcile_review.py:37: in test_single_task_is_inferred_and_preserved_in_record
+    assert report.task_id == "t"
+E   AssertionError: assert '' == 't'
+E     
+E     - t
+___________________ test_missing_task_reference_is_rejected ___________________
+tests\test_peer_plan_reconcile_review.py:44: in test_missing_task_reference_is_rejected
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+_____________ test_duplicate_effect_cannot_cover_two_declarations _____________
+tests\test_peer_plan_reconcile_review.py:49: in test_duplicate_effect_cannot_cover_two_declarations
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+__________ test_same_tool_without_step_binding_is_ambiguous[states0] __________
+tests\test_peer_plan_reconcile_review.py:56: in test_same_tool_without_step_binding_is_ambiguous
+    assert not report.ok and not report.matched
+E   AssertionError: assert (not False and not [MatchedEffect(step_id='a', tool_id='file_write', effect_id='e')])
+E    +  where False = ReconciliationReport(task_id='', plan_id='p', declared=[DeclaredEffect(step_id='a', tool_id='file_write', step_state='...ep_id='z', tool_id='file_write', step_state='done', description='z')], uncertain=[], pending_declarations=[], ok=False).ok
+E    +  and   [MatchedEffect(step_id='a', tool_id='file_write', effect_id='e')] = ReconciliationReport(task_id='', plan_id='p', declared=[DeclaredEffect(step_id='a', tool_id='file_write', step_state='...ep_id='z', tool_id='file_write', step_state='done', description='z')], uncertain=[], pending_declarations=[], ok=False).matched
+__________ test_same_tool_without_step_binding_is_ambiguous[states1] __________
+tests\test_peer_plan_reconcile_review.py:56: in test_same_tool_without_step_binding_is_ambiguous
+    assert not report.ok and not report.matched
+E   AssertionError: assert (not False and not [MatchedEffect(step_id='a', tool_id='file_write', effect_id='e')])
+E    +  where False = ReconciliationReport(task_id='', plan_id='p', declared=[DeclaredEffect(step_id='a', tool_id='file_write', step_state='...ep_id='z', tool_id='file_write', step_state='done', description='z')], uncertain=[], pending_declarations=[], ok=False).ok
+E    +  and   [MatchedEffect(step_id='a', tool_id='file_write', effect_id='e')] = ReconciliationReport(task_id='', plan_id='p', declared=[DeclaredEffect(step_id='a', tool_id='file_write', step_state='...ep_id='z', tool_id='file_write', step_state='done', description='z')], uncertain=[], pending_declarations=[], ok=False).matched
+_______ test_explicit_step_bindings_resolve_same_tool_without_guessing ________
+tests\test_peer_plan_reconcile_review.py:62: in test_explicit_step_bindings_resolve_same_tool_without_guessing
+    report = reconcile_plan(plan(step("a"), step("z")), [row("e1"), row("e2")],
+E   TypeError: reconcile_plan() got an unexpected keyword argument 'step_bindings'
+______________________ test_unknown_binding_is_rejected _______________________
+tests\test_peer_plan_reconcile_review.py:70: in test_unknown_binding_is_rejected
+    reconcile_plan(plan(step()), [row()], step_bindings={"missing-effect": "s"})
+E   TypeError: reconcile_plan() got an unexpected keyword argument 'step_bindings'
+________________ test_invalid_ledger_status_is_rejected[None] _________________
+tests\test_peer_plan_reconcile_review.py:75: in test_invalid_ledger_status_is_rejected
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+__________________ test_invalid_ledger_status_is_rejected[] ___________________
+tests\test_peer_plan_reconcile_review.py:75: in test_invalid_ledger_status_is_rejected
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+_______________ test_invalid_ledger_status_is_rejected[garbage] _______________
+tests\test_peer_plan_reconcile_review.py:75: in test_invalid_ledger_status_is_rejected
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+________________ test_invalid_plan_does_not_report_clean[None] ________________
+tests\test_peer_plan_reconcile_review.py:81: in test_invalid_plan_does_not_report_clean
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+_____________ test_invalid_plan_does_not_report_clean[bad_plan1] ______________
+tests\test_peer_plan_reconcile_review.py:81: in test_invalid_plan_does_not_report_clean
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+_____________ test_invalid_plan_does_not_report_clean[bad_plan2] ______________
+tests\test_peer_plan_reconcile_review.py:81: in test_invalid_plan_does_not_report_clean
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+_____________ test_invalid_plan_does_not_report_clean[bad_plan3] ______________
+tests\test_peer_plan_reconcile_review.py:81: in test_invalid_plan_does_not_report_clean
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+_____________ test_invalid_plan_does_not_report_clean[bad_plan4] ______________
+tests\test_peer_plan_reconcile_review.py:81: in test_invalid_plan_does_not_report_clean
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+________ test_known_terminal_result_is_not_reported_as_unknown[failed] ________
+tests\test_peer_plan_reconcile_review.py:89: in test_known_terminal_result_is_not_reported_as_unknown
+    assert not report.matched and not report.uncertain
+E   AssertionError: assert (not [] and not [EffectRecord(effect_id='e', tool_id='file_write', status='failed', idempotency_key='', effect_summary='', run_id='')])
+E    +  where [] = ReconciliationReport(task_id='', plan_id='p', declared=[DeclaredEffect(step_id='s', tool_id='file_write', step_state='...d='file_write', status='failed', idempotency_key='', effect_summary='', run_id='')], pending_declarations=[], ok=False).matched
+E    +  and   [EffectRecord(effect_id='e', tool_id='file_write', status='failed', idempotency_key='', effect_summary='', run_id='')] = ReconciliationReport(task_id='', plan_id='p', declared=[DeclaredEffect(step_id='s', tool_id='file_write', step_state='...d='file_write', status='failed', idempotency_key='', effect_summary='', run_id='')], pending_declarations=[], ok=False).uncertain
+_____ test_known_terminal_result_is_not_reported_as_unknown[compensated] ______
+tests\test_peer_plan_reconcile_review.py:89: in test_known_terminal_result_is_not_reported_as_unknown
+    assert not report.matched and not report.uncertain
+E   AssertionError: assert (not [] and not [EffectRecord(effect_id='e', tool_id='file_write', status='compensated', idempotency_key='', effect_summary='', run_id='')])
+E    +  where [] = ReconciliationReport(task_id='', plan_id='p', declared=[DeclaredEffect(step_id='s', tool_id='file_write', step_state='...le_write', status='compensated', idempotency_key='', effect_summary='', run_id='')], pending_declarations=[], ok=False).matched
+E    +  and   [EffectRecord(effect_id='e', tool_id='file_write', status='compensated', idempotency_key='', effect_summary='', run_id='')] = ReconciliationReport(task_id='', plan_id='p', declared=[DeclaredEffect(step_id='s', tool_id='file_write', step_state='...le_write', status='compensated', idempotency_key='', effect_summary='', run_id='')], pending_declarations=[], ok=False).uncertain
+________________ test_deserialized_ok_is_derived_from_details _________________
+tests\test_peer_plan_reconcile_review.py:96: in test_deserialized_ok_is_derived_from_details
+    assert not ReconciliationReport.from_dict(data).ok
+E   AssertionError: assert not True
+E    +  where True = ReconciliationReport(task_id='', plan_id='p', declared=[DeclaredEffect(step_id='s', tool_id='file_write', step_state='...d='file_write', status='unknown', idempotency_key='', effect_summary='', run_id='')], pending_declarations=[], ok=True).ok
+E    +    where ReconciliationReport(task_id='', plan_id='p', declared=[DeclaredEffect(step_id='s', tool_id='file_write', step_state='...d='file_write', status='unknown', idempotency_key='', effect_summary='', run_id='')], pending_declarations=[], ok=True) = from_dict({'declared': [{'description': 's', 'step_id': 's', 'step_state': 'done', 'tool_id': 'file_write'}], 'matched': [], 'ok': True, 'pending_declarations': [], ...})
+E    +      where from_dict = ReconciliationReport.from_dict
+_______________ test_deserialization_does_not_drop_invalid_rows _______________
+tests\test_peer_plan_reconcile_review.py:102: in test_deserialization_does_not_drop_invalid_rows
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+_______ test_report_is_a_frozen_snapshot_with_independent_serialization _______
+tests\test_peer_plan_reconcile_review.py:109: in test_report_is_a_frozen_snapshot_with_independent_serialization
+    with pytest.raises((AttributeError, TypeError, FrozenInstanceError)):
+E   Failed: DID NOT RAISE any of (<class 'AttributeError'>, <class 'TypeError'>, <class 'dataclasses.FrozenInstanceError'>)
+_______________ test_ledger_entry_requires_nonempty_task_scope ________________
+tests\test_peer_plan_reconcile_review.py:141: in test_ledger_entry_requires_nonempty_task_scope
+    with pytest.raises(ReconciliationError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.reconcile.ReconciliationError'>
+=========================== short test summary info ===========================
+FAILED tests/test_peer_plan_reconcile_review.py::test_other_task_cannot_satisfy_own_completed_step
+FAILED tests/test_peer_plan_reconcile_review.py::test_mixed_task_projection_without_scope_is_rejected
+FAILED tests/test_peer_plan_reconcile_review.py::test_single_task_is_inferred_and_preserved_in_record
+FAILED tests/test_peer_plan_reconcile_review.py::test_missing_task_reference_is_rejected
+FAILED tests/test_peer_plan_reconcile_review.py::test_duplicate_effect_cannot_cover_two_declarations
+FAILED tests/test_peer_plan_reconcile_review.py::test_same_tool_without_step_binding_is_ambiguous[states0]
+FAILED tests/test_peer_plan_reconcile_review.py::test_same_tool_without_step_binding_is_ambiguous[states1]
+FAILED tests/test_peer_plan_reconcile_review.py::test_explicit_step_bindings_resolve_same_tool_without_guessing
+FAILED tests/test_peer_plan_reconcile_review.py::test_unknown_binding_is_rejected
+FAILED tests/test_peer_plan_reconcile_review.py::test_invalid_ledger_status_is_rejected[None]
+FAILED tests/test_peer_plan_reconcile_review.py::test_invalid_ledger_status_is_rejected[]
+FAILED tests/test_peer_plan_reconcile_review.py::test_invalid_ledger_status_is_rejected[garbage]
+FAILED tests/test_peer_plan_reconcile_review.py::test_invalid_plan_does_not_report_clean[None]
+FAILED tests/test_peer_plan_reconcile_review.py::test_invalid_plan_does_not_report_clean[bad_plan1]
+FAILED tests/test_peer_plan_reconcile_review.py::test_invalid_plan_does_not_report_clean[bad_plan2]
+FAILED tests/test_peer_plan_reconcile_review.py::test_invalid_plan_does_not_report_clean[bad_plan3]
+FAILED tests/test_peer_plan_reconcile_review.py::test_invalid_plan_does_not_report_clean[bad_plan4]
+FAILED tests/test_peer_plan_reconcile_review.py::test_known_terminal_result_is_not_reported_as_unknown[failed]
+FAILED tests/test_peer_plan_reconcile_review.py::test_known_terminal_result_is_not_reported_as_unknown[compensated]
+FAILED tests/test_peer_plan_reconcile_review.py::test_deserialized_ok_is_derived_from_details
+FAILED tests/test_peer_plan_reconcile_review.py::test_deserialization_does_not_drop_invalid_rows
+FAILED tests/test_peer_plan_reconcile_review.py::test_report_is_a_frozen_snapshot_with_independent_serialization
+FAILED tests/test_peer_plan_reconcile_review.py::test_ledger_entry_requires_nonempty_task_scope
+23 failed, 1 passed in 0.45s

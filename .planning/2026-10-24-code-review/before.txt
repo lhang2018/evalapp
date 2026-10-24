@@ -1,0 +1,146 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFFFFFFFF                                                      [100%]
+================================== FAILURES ===================================
+_____________ test_real_layer_manager_counts_and_durable_receipt ______________
+tests\test_peer_trace_export_review.py:41: in test_real_layer_manager_counts_and_durable_receipt
+    out = execute_deletion(manager, plan, actor="admin", reason="execute")
+evoagent\observability\export.py:258: in execute_deletion
+    total = sum(int(v) for v in counts.values())
+evoagent\observability\export.py:258: in <genexpr>
+    total = sum(int(v) for v in counts.values())
+E   TypeError: int() argument must be a string, a bytes-like object or a real number, not 'dict'
+_______________ test_changed_scope_rejected_before_any_deletion _______________
+tests\test_peer_trace_export_review.py:63: in test_changed_scope_rejected_before_any_deletion
+    execute_deletion(manager, replace(plan, scope="b"), actor="admin", reason="r")
+evoagent\observability\export.py:258: in execute_deletion
+    total = sum(int(v) for v in counts.values())
+evoagent\observability\export.py:258: in <genexpr>
+    total = sum(int(v) for v in counts.values())
+E   TypeError: int() argument must be a string, a bytes-like object or a real number, not 'dict'
+_______________________ test_digest_cannot_be_bypassed ________________________
+tests\test_peer_trace_export_review.py:72: in test_digest_cannot_be_bypassed
+    execute_deletion(manager, replace(plan, digest="tampered"), actor="admin",
+evoagent\observability\export.py:258: in execute_deletion
+    total = sum(int(v) for v in counts.values())
+evoagent\observability\export.py:258: in <genexpr>
+    total = sum(int(v) for v in counts.values())
+E   TypeError: int() argument must be a string, a bytes-like object or a real number, not 'dict'
+____________ test_empty_event_snapshot_still_erases_task_evidence _____________
+tests\test_peer_trace_export_review.py:82: in test_empty_event_snapshot_still_erases_task_evidence
+    assert out["ok"] and out["total"] == 1
+E   assert (True and 0 == 1)
+____________________ test_audit_failure_prevents_deletion _____________________
+tests\test_peer_trace_export_review.py:94: in test_audit_failure_prevents_deletion
+    execute_deletion(manager, plan, actor="admin", reason="r")
+evoagent\observability\export.py:258: in execute_deletion
+    total = sum(int(v) for v in counts.values())
+evoagent\observability\export.py:258: in <genexpr>
+    total = sum(int(v) for v in counts.values())
+E   TypeError: int() argument must be a string, a bytes-like object or a real number, not 'dict'
+___________________ test_partial_delete_failure_is_audited ____________________
+tests\test_peer_trace_export_review.py:108: in test_partial_delete_failure_is_audited
+    assert any(r["outcome"] == "failed" for r in rows)
+E   assert False
+E    +  where False = any(<generator object test_partial_delete_failure_is_audited.<locals>.<genexpr> at 0x0000020E3370ADC0>)
+______________ test_export_does_not_clobber_existing_file[False] ______________
+tests\test_peer_trace_export_review.py:124: in test_export_does_not_clobber_existing_file
+    with pytest.raises(ExportDenied):
+E   Failed: DID NOT RAISE <class 'evoagent.observability.export.ExportDenied'>
+______________ test_export_does_not_clobber_existing_file[True] _______________
+tests\test_peer_trace_export_review.py:124: in test_export_does_not_clobber_existing_file
+    with pytest.raises(ExportDenied):
+E   Failed: DID NOT RAISE <class 'evoagent.observability.export.ExportDenied'>
+___________ test_failed_dependency_with_pending_ancestor_is_blocked ___________
+tests\test_peer_trace_export_review.py:142: in test_failed_dependency_with_pending_ancestor_is_blocked
+    assert by_id["x"].kind == "blocked"
+E   AssertionError: assert 'ready_after' == 'blocked'
+E     
+E     - blocked
+E     + ready_after
+__________ test_mixed_pending_and_failed_dependencies_are_not_hidden __________
+tests\test_peer_trace_export_review.py:149: in test_mixed_pending_and_failed_dependencies_are_not_hidden
+    assert by_id["x"].kind == "blocked" and set(by_id["x"].requires) == {"p", "f"}
+E   AssertionError: assert ('ready_after' == 'blocked'
+E     
+E     - blocked
+E     + ready_after)
+_______________ test_infeasible_dependency_propagates_to_child ________________
+tests\test_peer_trace_export_review.py:155: in test_infeasible_dependency_propagates_to_child
+    assert by_id["f"].kind == by_id["x"].kind == "infeasible"
+E   AssertionError: assert 'infeasible' == 'blocked'
+E     
+E     - blocked
+E     + infeasible
+______________ test_invalid_graph_is_explicitly_rejected[steps0] ______________
+tests\test_peer_trace_export_review.py:165: in test_invalid_graph_is_explicitly_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+______________ test_invalid_graph_is_explicitly_rejected[steps1] ______________
+tests\test_peer_trace_export_review.py:165: in test_invalid_graph_is_explicitly_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+______________ test_invalid_graph_is_explicitly_rejected[steps2] ______________
+tests\test_peer_trace_export_review.py:166: in test_invalid_graph_is_explicitly_rejected
+    compile_trace(make_plan(steps))
+evoagent\planning\trace.py:145: in compile_trace
+    failed_deps = tuple(sorted(
+evoagent\planning\trace.py:147: in <genexpr>
+    if (by_id[d].state == "failed" and d not in done)
+E   KeyError: 'missing'
+______________ test_invalid_graph_is_explicitly_rejected[steps3] ______________
+tests\test_peer_trace_export_review.py:165: in test_invalid_graph_is_explicitly_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_____ test_trace_snapshot_has_no_alias_to_live_plan_or_serialized_result ______
+tests\test_peer_trace_export_review.py:176: in test_trace_snapshot_has_no_alias_to_live_plan_or_serialized_result
+    assert trace.to_dict() == snapshot
+E   AssertionError: assert {'acceptance_...ode': '', ...} == {'acceptance_...ode': '', ...}
+E     
+E     Omitting 10 identical items, use -vv to show
+E     Differing items:
+E     {'acceptance_criteria': [{'params': {'values': [1, 2]}}]} != {'acceptance_criteria': [{'params': {'values': [1]}}]}
+E     {'revisions': [{'added': ['a', 'changed']}]} != {'revisions': [{'added': ['a']}]}
+E     Use -v to get more diff
+______________ test_trace_deserialization_owns_its_nested_values ______________
+tests\test_peer_trace_export_review.py:186: in test_trace_deserialization_owns_its_nested_values
+    assert trace.to_dict()["revisions"][0]["added"] == ["a"]
+E   AssertionError: assert ['a', 'changed'] == ['a']
+E     
+E     Left contains one more item: 'changed'
+E     Use -v to get more diff
+___________ test_recovery_policy_does_not_allow_unsupported_action ____________
+tests\test_peer_trace_export_review.py:192: in test_recovery_policy_does_not_allow_unsupported_action
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_____________ test_recovery_policy_params_are_immutable_snapshots _____________
+tests\test_peer_trace_export_review.py:204: in test_recovery_policy_params_are_immutable_snapshots
+    assert plan.to_dict() == before
+E   AssertionError: assert {'acceptance_....4389915, ...} == {'acceptance_....4389915, ...}
+E     
+E     Omitting 14 identical items, use -vv to show
+E     Differing items:
+E     {'recovery_policies': [{'action': 'partial_retry', 'applies_to_intent': '', 'category': 'risk', 'params': {'options': {'count': 999}, 'tools': ['safe', 'external']}, ...}]} != {'recovery_policies': [{'action': 'partial_retry', 'applies_to_intent': '', 'category': 'risk', 'params': {'options': {'count': 1}, 'tools': ['safe']}, ...}]}
+E     Use -v to get more diff
+=========================== short test summary info ===========================
+FAILED tests/test_peer_trace_export_review.py::test_real_layer_manager_counts_and_durable_receipt
+FAILED tests/test_peer_trace_export_review.py::test_changed_scope_rejected_before_any_deletion
+FAILED tests/test_peer_trace_export_review.py::test_digest_cannot_be_bypassed
+FAILED tests/test_peer_trace_export_review.py::test_empty_event_snapshot_still_erases_task_evidence
+FAILED tests/test_peer_trace_export_review.py::test_audit_failure_prevents_deletion
+FAILED tests/test_peer_trace_export_review.py::test_partial_delete_failure_is_audited
+FAILED tests/test_peer_trace_export_review.py::test_export_does_not_clobber_existing_file[False]
+FAILED tests/test_peer_trace_export_review.py::test_export_does_not_clobber_existing_file[True]
+FAILED tests/test_peer_trace_export_review.py::test_failed_dependency_with_pending_ancestor_is_blocked
+FAILED tests/test_peer_trace_export_review.py::test_mixed_pending_and_failed_dependencies_are_not_hidden
+FAILED tests/test_peer_trace_export_review.py::test_infeasible_dependency_propagates_to_child
+FAILED tests/test_peer_trace_export_review.py::test_invalid_graph_is_explicitly_rejected[steps0]
+FAILED tests/test_peer_trace_export_review.py::test_invalid_graph_is_explicitly_rejected[steps1]
+FAILED tests/test_peer_trace_export_review.py::test_invalid_graph_is_explicitly_rejected[steps2]
+FAILED tests/test_peer_trace_export_review.py::test_invalid_graph_is_explicitly_rejected[steps3]
+FAILED tests/test_peer_trace_export_review.py::test_trace_snapshot_has_no_alias_to_live_plan_or_serialized_result
+FAILED tests/test_peer_trace_export_review.py::test_trace_deserialization_owns_its_nested_values
+FAILED tests/test_peer_trace_export_review.py::test_recovery_policy_does_not_allow_unsupported_action
+FAILED tests/test_peer_trace_export_review.py::test_recovery_policy_params_are_immutable_snapshots
+19 failed in 0.62s

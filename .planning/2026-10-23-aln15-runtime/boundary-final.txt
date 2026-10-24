@@ -1,0 +1,21 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+...............................................F........................ [ 62%]
+...........................................                              [100%]
+================================== FAILURES ===================================
+__ test_runtime_preserves_goal_reference_and_rechecks_model_budget_authority __
+tests\test_goal_governance.py:328: in test_runtime_preserves_goal_reference_and_rechecks_model_budget_authority
+    budget = app.controller._make_budget(task)
+evoagent\core\controller.py:1022: in _make_budget
+    budget.persist_usage()
+evoagent\core\budget.py:201: in persist_usage
+    self.on_change({**self.snapshot(), "scopes": {
+evoagent\core\controller.py:1009: in <lambda>
+    budget.on_change = lambda state: self.db.save_execution_budget(
+evoagent\core\persistence.py:1014: in save_execution_budget
+    self._conn.execute("INSERT OR REPLACE INTO execution_budget_state VALUES (?,?,?)",
+E   sqlite3.IntegrityError: NOT NULL constraint failed: execution_budget_state.run_id
+=========================== short test summary info ===========================
+FAILED tests/test_goal_governance.py::test_runtime_preserves_goal_reference_and_rechecks_model_budget_authority
+1 failed, 114 passed in 17.09s

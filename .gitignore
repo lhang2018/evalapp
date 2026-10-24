@@ -15,3 +15,7 @@ android-app/.expo/
 
 # Local update-delivery test data
 .evoagent-update/
+
+# 本地数据库与设备私有数据（任何目录）
+*.db
+RKStorage*

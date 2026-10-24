@@ -1,0 +1,8 @@
+{
+  "workflow": "demo/v2",
+  "tools": ["open_app"],
+  "steps": [
+    {"id": "open", "tool": "open_app", "input": {"target": "com.android.settings"}}
+  ],
+  "created_for": "ALN-11 real-device activation"
+}

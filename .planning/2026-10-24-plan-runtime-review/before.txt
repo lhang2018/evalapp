@@ -1,0 +1,139 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFFFFFFFFF.                                                    [100%]
+================================== FAILURES ===================================
+_______ test_execution_progress_respects_dependencies_not_storage_order _______
+tests\test_plan_runtime_review.py:67: in test_execution_progress_respects_dependencies_not_storage_order
+    assert p.completed_work == ["r", "c"]
+E   AssertionError: assert ['c'] == ['r', 'c']
+E     
+E     At index 0 diff: 'c' != 'r'
+E     Right contains one more item: 'c'
+E     Use -v to get more diff
+________ test_blocked_dependency_stops_before_model_and_runner[failed] ________
+tests\test_plan_runtime_review.py:76: in test_blocked_dependency_stops_before_model_and_runner
+    assert calls == [] and model.calls == 0
+E   assert ([1] == []
+E     
+E     Left contains one more item: 1
+E     Use -v to get more diff)
+_______ test_blocked_dependency_stops_before_model_and_runner[skipped] ________
+tests\test_plan_runtime_review.py:76: in test_blocked_dependency_stops_before_model_and_runner
+    assert calls == [] and model.calls == 0
+E   assert ([1] == []
+E     
+E     Left contains one more item: 1
+E     Use -v to get more diff)
+___________ test_completed_plan_does_not_authorize_additional_tool ____________
+tests\test_plan_runtime_review.py:86: in test_completed_plan_does_not_authorize_additional_tool
+    assert not calls and outcome.stop_reason == "plan_complete"
+E   assert (not [1])
+___________ test_unrelated_tool_failure_does_not_fail_current_step ____________
+tests\test_plan_runtime_review.py:97: in test_unrelated_tool_failure_does_not_fail_current_step
+    assert p.to_dict() == before
+E   AssertionError: assert {'acceptance_....5823784, ...} == {'acceptance_....5823784, ...}
+E     
+E     Omitting 12 identical items, use -vv to show
+E     Differing items:
+E     {'revisions': [{'added': ['r2'], 'at': 1792822632.5853786, 'completed_work': [], 'level': 'append', ...}]} != {'revisions': []}
+E     {'change_reasons': ['步骤 s 连续失败（other）']} != {'change_reasons': []}
+E     {'steps': [{'acceptance': None, 'deps': [], 'description': 's', 'state': 'failed', ...}, {'acceptance': None, 'deps': ['s'], 'description': '失败恢复：核验 other 的副作用，安全降级或结束', 'state': 'pending', ...}]} != {'steps': [{'acceptance': None, 'deps': [], 'description': 's', 'state': 'running', ...}]}
+E     Use -v to get more diff
+______________ test_previous_step_failures_do_not_fail_next_step ______________
+tests\test_plan_runtime_review.py:104: in test_previous_step_failures_do_not_fail_next_step
+    assert outcome.stop_reason == "normal"
+E   AssertionError: assert 'repeated_failure' == 'normal'
+E     
+E     - normal
+E     + repeated_failure
+________ test_invalid_execution_state_is_rejected_before_dispatch[p0] _________
+tests\test_plan_runtime_review.py:115: in test_invalid_execution_state_is_rejected_before_dispatch
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+________ test_invalid_execution_state_is_rejected_before_dispatch[p1] _________
+tests\test_plan_runtime_review.py:115: in test_invalid_execution_state_is_rejected_before_dispatch
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+________ test_invalid_execution_state_is_rejected_before_dispatch[p2] _________
+tests\test_plan_runtime_review.py:115: in test_invalid_execution_state_is_rejected_before_dispatch
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+________ test_invalid_execution_state_is_rejected_before_dispatch[p3] _________
+tests\test_plan_runtime_review.py:115: in test_invalid_execution_state_is_rejected_before_dispatch
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+________ test_invalid_execution_state_is_rejected_before_dispatch[p4] _________
+tests\test_plan_runtime_review.py:115: in test_invalid_execution_state_is_rejected_before_dispatch
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+_____ test_persisted_corrupt_plan_cannot_become_unplanned_execution[None] _____
+tests\test_plan_runtime_review.py:125: in test_persisted_corrupt_plan_cannot_become_unplanned_execution
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+_____ test_persisted_corrupt_plan_cannot_become_unplanned_execution[raw1] _____
+tests\test_plan_runtime_review.py:125: in test_persisted_corrupt_plan_cannot_become_unplanned_execution
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+_____ test_persisted_corrupt_plan_cannot_become_unplanned_execution[raw2] _____
+tests\test_plan_runtime_review.py:125: in test_persisted_corrupt_plan_cannot_become_unplanned_execution
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+_____ test_persisted_corrupt_plan_cannot_become_unplanned_execution[raw3] _____
+tests\test_plan_runtime_review.py:125: in test_persisted_corrupt_plan_cannot_become_unplanned_execution
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+____________________ test_wrong_plan_reference_is_rejected ____________________
+tests\test_plan_runtime_review.py:133: in test_wrong_plan_reference_is_rejected
+    with pytest.raises(PlanRevisionError):
+E   Failed: DID NOT RAISE <class 'evoagent.planning.planner.PlanRevisionError'>
+_________ test_submitted_only_success_does_not_become_completed_work __________
+tests\test_plan_runtime_review.py:141: in test_submitted_only_success_does_not_become_completed_work
+    assert p.completed_work == [] and p.steps[0].state == "running"
+E   AssertionError: assert (['s'] == []
+E     
+E     Left contains one more item: 's'
+E     Use -v to get more diff)
+____ test_recovery_checkpoint_preserves_evidence_and_blocks_failed_branch _____
+tests\test_plan_runtime_review.py:163: in test_recovery_checkpoint_preserves_evidence_and_blocks_failed_branch
+    assert second.stop_reason == "plan_blocked" and model.calls == 0
+E   AssertionError: assert ('normal' == 'plan_blocked'
+E     
+E     - plan_blocked
+E     + normal)
+___ test_real_controller_suspends_blocked_plan_instead_of_claiming_success ____
+tests\test_plan_runtime_review.py:174: in test_real_controller_suspends_blocked_plan_instead_of_claiming_success
+    assert task.task_status == TaskStatus.SUSPENDED
+E   AssertionError: assert <TaskStatus.S...: 'SUCCEEDED'> == <TaskStatus.S...: 'SUSPENDED'>
+E     
+E     - SUSPENDED
+E     + SUCCEEDED
+______ test_real_controller_rejects_corruption_instead_of_dropping_plan _______
+tests\test_plan_runtime_review.py:188: in test_real_controller_rejects_corruption_instead_of_dropping_plan
+    assert task.task_status == TaskStatus.FAILED
+E   AssertionError: assert <TaskStatus.S...: 'SUCCEEDED'> == <TaskStatus.FAILED: 'FAILED'>
+E     
+E     - FAILED
+E     + SUCCEEDED
+=========================== short test summary info ===========================
+FAILED tests/test_plan_runtime_review.py::test_execution_progress_respects_dependencies_not_storage_order
+FAILED tests/test_plan_runtime_review.py::test_blocked_dependency_stops_before_model_and_runner[failed]
+FAILED tests/test_plan_runtime_review.py::test_blocked_dependency_stops_before_model_and_runner[skipped]
+FAILED tests/test_plan_runtime_review.py::test_completed_plan_does_not_authorize_additional_tool
+FAILED tests/test_plan_runtime_review.py::test_unrelated_tool_failure_does_not_fail_current_step
+FAILED tests/test_plan_runtime_review.py::test_previous_step_failures_do_not_fail_next_step
+FAILED tests/test_plan_runtime_review.py::test_invalid_execution_state_is_rejected_before_dispatch[p0]
+FAILED tests/test_plan_runtime_review.py::test_invalid_execution_state_is_rejected_before_dispatch[p1]
+FAILED tests/test_plan_runtime_review.py::test_invalid_execution_state_is_rejected_before_dispatch[p2]
+FAILED tests/test_plan_runtime_review.py::test_invalid_execution_state_is_rejected_before_dispatch[p3]
+FAILED tests/test_plan_runtime_review.py::test_invalid_execution_state_is_rejected_before_dispatch[p4]
+FAILED tests/test_plan_runtime_review.py::test_persisted_corrupt_plan_cannot_become_unplanned_execution[None]
+FAILED tests/test_plan_runtime_review.py::test_persisted_corrupt_plan_cannot_become_unplanned_execution[raw1]
+FAILED tests/test_plan_runtime_review.py::test_persisted_corrupt_plan_cannot_become_unplanned_execution[raw2]
+FAILED tests/test_plan_runtime_review.py::test_persisted_corrupt_plan_cannot_become_unplanned_execution[raw3]
+FAILED tests/test_plan_runtime_review.py::test_wrong_plan_reference_is_rejected
+FAILED tests/test_plan_runtime_review.py::test_submitted_only_success_does_not_become_completed_work
+FAILED tests/test_plan_runtime_review.py::test_recovery_checkpoint_preserves_evidence_and_blocks_failed_branch
+FAILED tests/test_plan_runtime_review.py::test_real_controller_suspends_blocked_plan_instead_of_claiming_success
+FAILED tests/test_plan_runtime_review.py::test_real_controller_rejects_corruption_instead_of_dropping_plan
+20 failed, 1 passed in 1.11s

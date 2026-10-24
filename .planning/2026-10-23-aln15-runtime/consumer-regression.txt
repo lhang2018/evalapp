@@ -1,0 +1,36 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+.................................................FFF.................... [ 67%]
+...........................F......                                       [100%]
+================================== FAILURES ===================================
+_ TestAllModelPhasesSettle.test_cumulative_actual_cost_stops_task_over_budget _
+tests\test_metering_budget.py:226: in test_cumulative_actual_cost_stops_task_over_budget
+    usage = app.db.get_execution_budget(task.task_id)["usage"]
+E   TypeError: 'NoneType' object is not subscriptable
+_ TestAllModelPhasesSettle.test_known_price_settles_classification_planning_and_react _
+tests\test_metering_budget.py:190: in test_known_price_settles_classification_planning_and_react
+    self.assertEqual(task.task_status.value, "SUCCEEDED")
+E   AssertionError: 'FAILED' != 'SUCCEEDED'
+E   - FAILED
+E   + SUCCEEDED
+___ TestAllModelPhasesSettle.test_unknown_price_counts_each_phase_not_once ____
+tests\test_metering_budget.py:202: in test_unknown_price_counts_each_phase_not_once
+    task, usage, ledger = self._run(pricing_known=False)
+tests\test_metering_budget.py:185: in _run
+    usage = app.db.get_execution_budget(task.task_id)["usage"]
+E   TypeError: 'NoneType' object is not subscriptable
+______ test_killed_model_process_recovers_parent_run_and_reserved_budget ______
+tests\test_process_recovery.py:125: in test_killed_model_process_recovers_parent_run_and_reserved_budget
+    assert recovered.task_status == TaskStatus.SUCCEEDED, recovered.failure_reason
+E   AssertionError: 预算耗尽: 预算停止: budget:reconciliation_required
+E   assert <TaskStatus.FAILED: 'FAILED'> == <TaskStatus.S...: 'SUCCEEDED'>
+E     
+E     - SUCCEEDED
+E     + FAILED
+=========================== short test summary info ===========================
+FAILED tests/test_metering_budget.py::TestAllModelPhasesSettle::test_cumulative_actual_cost_stops_task_over_budget
+FAILED tests/test_metering_budget.py::TestAllModelPhasesSettle::test_known_price_settles_classification_planning_and_react
+FAILED tests/test_metering_budget.py::TestAllModelPhasesSettle::test_unknown_price_counts_each_phase_not_once
+FAILED tests/test_process_recovery.py::test_killed_model_process_recovers_parent_run_and_reserved_budget
+4 failed, 102 passed in 16.63s
