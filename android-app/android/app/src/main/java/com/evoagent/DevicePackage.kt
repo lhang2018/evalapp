@@ -11,6 +11,7 @@ class DevicePackage : ReactPackage {
     ): List<NativeModule> = listOf(
         DeviceModule(reactContext),
         VoiceModule(reactContext),
+        NotificationModule(reactContext),
     )
 
     override fun createViewManagers(

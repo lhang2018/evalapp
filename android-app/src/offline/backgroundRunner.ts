@@ -4,6 +4,7 @@
  */
 
 import { api } from "../api.ts";
+import { createTaskNotifier } from "../device/nativeNotifications.ts";
 import { asyncStorageStore } from "../storage/asyncStorage.ts";
 import { ClientTransport } from "./apiTransport.ts";
 import { runBackgroundSync } from "./background.ts";
@@ -34,14 +35,21 @@ export async function runStoredBackgroundSync(): Promise<BackgroundSyncResult> {
       `client-manifest-${APP_VERSION}`,
     );
     const sync = new SyncEngine(queue, transport, tasks);
+    const before = await tasks.list();
     const result = await runBackgroundSync({
       health: () => client.health(),
       flush: () => sync.flush(false),
       refresh: () => tasks.refresh(),
     });
+    // 终态跃迁才提醒；通知失败不影响同步结果
+    const notified = await createTaskNotifier().notifyTransitions(
+      before,
+      await tasks.list(),
+    );
     console.log(
       `[background-sync] online=${result.online} flushed=${result.ran} ` +
-        `refreshed=${result.refreshed} error=${result.error ?? "none"}`,
+        `refreshed=${result.refreshed} notified=${notified} ` +
+        `error=${result.error ?? "none"}`,
     );
     return result;
   } catch (error) {
