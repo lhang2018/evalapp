@@ -29,27 +29,28 @@
     },
     "initial_head_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
     "prepared_candidate": {
-      "commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
-      "source_tree": "5c3d7765f191abdf81e92136008a854970eb9812",
+      "commit": "07f11e5",
+      "source_tree": "4ddb89c7ecf117119d1da104c8a09553b55b4b90",
       "status": "verified_pending_independent_review",
       "clean_before_and_after": true,
-      "python_passed": 1065,
+      "python_passed": 1653,
       "python_skipped": 1,
-      "client_passed": 136,
+      "client_passed": 207,
       "typecheck": "passed",
-      "dependency_scope": "ALN-01/02精确源码干净克隆全量，包含同期已提交03/05及CA修复；客户端目录tree未变，沿用d77b241的136/typecheck，本轮未重跑客户端",
+      "dependency_scope": "07f11e5完整HEAD干净worktree（git worktree detached）三件套重跑：后端1653/1、客户端207/0、typecheck 0错误（tsc 5.3.3+按package.json安装依赖，node_modules不属源码tree）。含已交付00-V/01-A/02-A/03-S/04-R/05-M/05-I/06-A/07全系列/08/09-F/10/11-A/R/W/12-A/13-A/14-A/15/16/17-A/18/20-A及07-B修复cc0aa3a；排除范围天然成立：通知/后台runner/DevicePackage在途改动均为未提交文件，不在候选tree内。前 prepared_candidate(22c50ca,1065/1,136客户端)保留于git历史，被本候选取代",
       "evidence": [
         {
-          "path": ".planning/2026-10-22-aln01-02/clean-backend-tests.txt",
-          "sha256": "bb4c882765de88676949298556d2552e28d1b96b97caff15b7d64792bc1dfd93"
+          "path": ".planning/2026-10-24-aln00b-clean/backend-tests.txt",
+          "sha256": "b8521360eeda5aa42f8a5883c5742ef852725bd15a7a4124084009b1534847f7"
         },
         {
-          "path": ".planning/2026-10-22-cross-review/clean-client-tests.txt",
-          "sha256": "c865879d5e9ee09cbb152b38f79c336816f6f91f901a60d1a0883271ead46cd0"
+          "path": ".planning/2026-10-24-aln00b-clean/client-tests.txt",
+          "sha256": "49c6373e28999d161a3c4984b3e58a34561e4eaad4b473ae482deec693a80651"
         },
         {
-          "path": ".planning/2026-10-22-cross-review/clean-client-typecheck.txt",
-          "sha256": "0c8a944e707e9a2ccc5da7e82abac823ab9667d35f4a4b1079abe69a21f6af51"
+          "path": ".planning/2026-10-24-aln00b-clean/typecheck.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "note": "空文件（tsc 0错误无输出，exit 0）"
         }
       ],
       "excluded_paths": [
@@ -59,28 +60,25 @@
         "android-app/src/device/nativeNotifications.ts",
         "android-app/src/device/notifications.ts",
         "android-app/test/device/notifications.test.ts",
-        "tests/test_e12_e13.py",
         ".workbuddy/"
       ],
       "remaining_review": [
-        "ALN-06-A",
-        "ALN-08-M",
-        "ALN-04-UI",
-        "ALN-10-H",
-        "ALN-09-F",
-        "ALN-03-S",
-        "ALN-05-M",
-        "ALN-01-A",
-        "ALN-02-A"
+        "ALN-04-UI（真机四路径证据已采集待复核确认）",
+        "ALN-07-B（修复cc0aa3a待第二审阅人）",
+        "ALN-11-W（真机证据已采集待复核确认）",
+        "ALN-12-A（自动化已接受，真机按整包另验）",
+        "ALN-20-A（审阅人待定）"
       ],
       "tools": {
         "python": "3.10.11",
         "node": "v24.16.0",
+        "typescript": "5.3.3",
         "git": "git version 2.43.0.windows.1",
         "platform": "Windows-10-10.0.19045-SP0"
       },
-      "client_evidence_source_commit": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
-      "client_source_tree": "0a85de3e9a3a380798aae2d664fcc25bc9b82c01"
+      "clean_tree_source_commit": "07f11e5",
+      "verified_at": "2026-10-24T19:20+08:00",
+      "verified_by": "zcode-main（00-B owner；候选准备非发布，published_commit仍由独立复核后填写）"
     },
     "acceptance_review": {
       "reviewed_commit": "8692637064389736695f433337c8d09e0bdcdafb",
@@ -473,6 +471,15 @@
           "result": "915 passed/1 skipped; unchanged client tree reuses d77b241 evidence",
           "log": ".planning/2026-10-22-router-rejection/clean-backend-tests.txt",
           "delivery": "docs/协作开发/交付/ALN-08-R-运行时路由拒绝.md"
+        },
+        {
+          "date": "2026-10-24",
+          "scope": "00-B owner 准备新干净候选（非发布）：07f11e5 完整 HEAD detached worktree 三件套重跑，取代 22c50ca 旧候选；排除范围天然成立（通知/后台在途改动均为未提交文件）；历史 snapshot 差异按交付模板以新候选清单处理",
+          "source_commit": "07f11e5",
+          "command": "git worktree add E:/evalapp-clean 07f11e5; python -m pytest tests -q; npm run test:offline; tsc --noEmit",
+          "result": "后端 1653 passed/1 skipped；客户端 207 passed/0 failed；typecheck 0 错误（tsc 5.3.3+安装依赖）",
+          "log": ".planning/2026-10-24-aln00b-clean/backend-tests.txt; client-tests.txt; typecheck.txt",
+          "delivery": "workboard baseline.prepared_candidate（commit 07f11e5, tree 4ddb89c7…, verified_pending_independent_review）"
         }
       ],
       "card": "docs/协作开发/任务卡/00-基线发布.md",
