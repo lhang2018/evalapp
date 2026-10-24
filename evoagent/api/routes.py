@@ -59,6 +59,11 @@ class RouteContext:
         self._body = None
 
     @property
+    def body_read(self) -> bool:
+        """Whether lazy JSON consumption has completed, including an empty body."""
+        return self._body is not None
+
+    @property
     def body(self) -> Dict[str, object]:
         if self._body is None:
             self._body = self._body_getter()
