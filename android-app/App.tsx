@@ -67,10 +67,18 @@ import type {
 import { DeviceBroker } from "./src/device/broker.ts";
 import { NativeDeviceTransport } from "./src/device/nativeTransport.ts";
 import type { NativeDeviceModuleLike } from "./src/device/nativeTransport.ts";
+import { formatLocalTime } from "./src/offline/policy.ts";
 import { UpdateManager } from "./src/update/manager.ts";
 import { ApiUpdateTransport } from "./src/update/apiTransport.ts";
 import { TrustedKeyRing } from "./src/update/trust.ts";
 import { releaseKeysForBuild } from "./src/update/devTrust.ts";
+import {
+  BundleRuntime,
+  BundleRejectedError,
+} from "./src/update/bundleRuntime.ts";
+import type {
+  BundleExecutionRecord, BundleRuntimeState, BundleTool,
+} from "./src/update/bundleRuntime.ts";
 import {
   FetchArtifactSource,
   NativeArtifactFiles,
@@ -191,6 +199,9 @@ export default function App(): React.JSX.Element {
   const [updateState, setUpdateState] = useState<UpdateState | null>(null);
   const [updateBusy, setUpdateBusy] = useState(false);
   const [activeBundle, setActiveBundle] = useState<InstalledBundle | null>(null);
+  const [bundleMessage, setBundleMessage] = useState<string | null>(null);
+  const [bundleBusy, setBundleBusy] = useState(false);
+  const [runtimeView, setRuntimeView] = useState<BundleRuntimeState | null>(null);
   const [exportPreview, setExportPreview] = useState<ExportPreview | null>(null);
   const [exporting, setExporting] = useState(false);
   const [exportSensitive, setExportSensitive] = useState(false);
@@ -243,6 +254,32 @@ export default function App(): React.JSX.Element {
     const broker = new DeviceBroker(deviceTransport, {
       confirm: confirmHighRisk,
     });
+    // 能力包工具注册表：设备动作走既有 DeviceBroker 授权/副作用边界；
+    // 纯本地工具只做无副作用计算。未注册工具的节点在执行前被拒绝。
+    const bundleTools: Record<string, BundleTool> = {
+      local_time: async (args) => ({
+        time: formatLocalTime(new Date()),
+        ...(typeof args.label === "string" ? { label: args.label } : {}),
+      }),
+      open_app: async (args) => {
+        const result = await broker.execute({
+          action_id: `bundle-${Date.now()}`,
+          kind: typeof args.kind === "string" ? args.kind : "launch_intent",
+          target: typeof args.target === "string" ? args.target : "",
+          args,
+        });
+        if (result.status !== "verified") {
+          throw new Error(
+            `设备动作未验证(${result.status}): ${result.message ?? "无证据不算成功"}`);
+        }
+        return result.evidence ?? { status: result.status };
+      },
+    };
+    const bundleRuntime = new BundleRuntime(asyncStorageStore, {
+      appVersion: APP_VERSION,
+      tools: bundleTools,
+      grantedPermissions: () => [],
+    });
     const updateFiles = new NativeArtifactFiles();
     const update = new UpdateManager(
       new ApiUpdateTransport(client),
@@ -269,6 +306,7 @@ export default function App(): React.JSX.Element {
       sync,
       deviceTransport,
       broker,
+      bundleRuntime,
       update,
       exporter: new DiagnosticsExporter(),
       exportSink: new NativeExportSink(deviceModule ?? null),
@@ -534,6 +572,12 @@ export default function App(): React.JSX.Element {
       } catch {
         // 已安装包读取失败不阻断主流程
       }
+      try {
+        const runtimeState = await services.bundleRuntime.loadState();
+        if (mounted) setRuntimeView(runtimeState);
+      } catch {
+        // 执行记录读取失败不阻断主流程
+      }
       await services.tasks.recoverInterrupted();
       const available = await services.deviceTransport.isAvailable();
       if (mounted) setDeviceAvailable(available);
@@ -578,7 +622,44 @@ export default function App(): React.JSX.Element {
     if (!text) return;
     setBusy(true);
     try {
-      const task = await services.tasks.submit(text, guessIntent(text), "low");
+      const intent = guessIntent(text);
+      // 活动能力包声明消费该意图：执行前校验，被拒则不建任务不执行
+      if (await services.bundleRuntime.declaresIntent(intent)) {
+        try {
+          await services.bundleRuntime.resolveExecutable();
+        } catch (e: unknown) {
+          const detail = e instanceof BundleRejectedError
+            ? `(${e.code}) ${e.reasons.join("; ")}`
+            : e instanceof Error ? e.message : String(e);
+          setError(`能力包执行前拒绝: ${detail}`);
+          return;
+        }
+        const task = await services.tasks.submit(text, intent, "low");
+        let record: BundleExecutionRecord;
+        try {
+          record = await services.bundleRuntime.execute(
+            { goal: text }, task.local_task_id);
+        } catch (e: unknown) {
+          const detail = e instanceof BundleRejectedError
+            ? `(${e.code}) ${e.reasons.join("; ")}`
+            : e instanceof Error ? e.message : String(e);
+          setError(`能力包执行失败: ${detail}`);
+          return;
+        } finally {
+          setRuntimeView(await services.bundleRuntime.loadState());
+        }
+        setBundleMessage(
+          `能力包 ${record.workflow_id}@${record.workflow_version}` +
+          `（${record.release_id} · ${record.version}）执行` +
+          `${record.outcome === "succeeded" ? "成功" : "失败"}` +
+          `，任务 ${task.local_task_id}`);
+        setGoal("");
+        setError(null);
+        await reloadLocal();
+        if (online) await flush(true);
+        return;
+      }
+      const task = await services.tasks.submit(text, intent, "low");
       setGoal("");
       setError(null);
       await reloadLocal();
@@ -743,20 +824,64 @@ export default function App(): React.JSX.Element {
     [services]
   );
 
+  /**
+   * 有界自动健康探针：真实制品激活后、晋级 last_known_good 之前执行。
+   * healthy → 确认健康；unhealthy → 健康检查失败自动回滚并验证原包可执行；
+   * unknown → 不标健康也不回滚，等待再次探针。
+   */
+  const probeActiveBundle = useCallback(async (trigger: string) => {
+    const state = await services.update.status();
+    if (state.phase !== "active") return;
+    const active = state.slots[state.active_slot];
+    if (!active?.artifact_path) return; // 非真实制品包保持手工确认
+    if (state.last_known_good?.release_id === active.release_id) return;
+    setBundleBusy(true);
+    try {
+      const probe = await services.bundleRuntime.runHealthProbe(
+        `probe:${trigger}`);
+      setRuntimeView(await services.bundleRuntime.loadState());
+      setBundleMessage(
+        `自动健康探针（${probe.version}）: ${probe.outcome} — ${probe.reason}`);
+      if (probe.outcome === "healthy") {
+        await runUpdate(() => services.update.healthCheck(true));
+      } else if (probe.outcome === "unhealthy") {
+        await runUpdate(() => services.update.healthCheck(false));
+        const recovery = await services.bundleRuntime.verifyRecovery(
+          probe.reason);
+        setRuntimeView(await services.bundleRuntime.loadState());
+        setActiveBundle(await loadActiveBundle(asyncStorageStore));
+        setBundleMessage(
+          `新版本 ${probe.version} 健康失败已回滚；` +
+          `恢复验证（${recovery.recovered?.version ?? "unknown"}）: ` +
+          `${recovery.outcome}`);
+      }
+      setUpdateState(await services.update.status());
+    } catch (e: unknown) {
+      setCenterError(
+        "健康探针异常：" + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setBundleBusy(false);
+    }
+  }, [services, runUpdate]);
+
   const activateUpdate = useCallback(() => {
     Alert.alert(
       "激活更新",
       `切换到候选版本 ${updateState?.target?.version ?? ""}？` +
-        "上一版本会保留为回滚目标，健康检查失败将自动回滚。",
+        "上一版本会保留为回滚目标，激活后将自动运行健康探针；" +
+        "探针失败会自动回滚并验证原版本可执行。",
       [
         { text: "取消", style: "cancel" },
         {
           text: "激活",
-          onPress: () => void runUpdate(() => services.update.activate()),
+          onPress: () => void (async () => {
+            await runUpdate(() => services.update.activate());
+            await probeActiveBundle("activate");
+          })(),
         },
       ]
     );
-  }, [runUpdate, services, updateState]);
+  }, [runUpdate, services, probeActiveBundle, updateState]);
 
   const rollbackUpdate = useCallback(() => {
     Alert.alert("回滚更新", "回滚到最近一次确认健康的版本？", [
@@ -1789,8 +1914,67 @@ export default function App(): React.JSX.Element {
                   <Text style={s.hint}>
                     当前能力包：{activeBundle.bundle.workflow as string} ·
                     {" "}{activeBundle.version} · 槽 {activeBundle.slot}
+                    {(activeBundle.bundle as Record<string, unknown>)
+                      .workflow_def ? " · 已内嵌可执行 workflow" : ""}
                   </Text>
                 )}
+                <View style={s.card}>
+                  <Text style={s.goal}>能力包执行消费与健康探针</Text>
+                  <Text style={s.hint}>
+                    活动包声明的意图任务会先经执行前校验并真实执行其 workflow；
+                    健康只由执行结果判定，无结果/unknown 不标健康。
+                  </Text>
+                  {bundleMessage && (
+                    <Text style={s.hint}>{bundleMessage}</Text>
+                  )}
+                  {runtimeView?.binding && (
+                    <Text style={s.mono}>
+                      最近执行绑定：{runtimeView.binding.workflow_id}
+                      @{runtimeView.binding.workflow_version} ·{" "}
+                      {runtimeView.binding.release_id} ·{" "}
+                      {runtimeView.binding.digest.slice(0, 12)}…
+                    </Text>
+                  )}
+                  {(runtimeView?.probes ?? []).slice(-3).map((probe) => (
+                    <View key={probe.probe_id}>
+                      <Text style={s.mono}>
+                        探针 {probe.version} · {probe.outcome} ·{" "}
+                        {formatTime(Math.floor(probe.at / 1000))}
+                      </Text>
+                      <Text style={s.hint}>
+                        {probe.reason}
+                        {probe.task_ref ? ` · 关联 ${probe.task_ref}` : ""}
+                      </Text>
+                    </View>
+                  ))}
+                  {runtimeView?.recovery && (
+                    <Text style={s.hint}>
+                      恢复验证：{runtimeView.recovery.outcome} · 失败版本{" "}
+                      {runtimeView.recovery.failed?.version ?? "-"} → 恢复版本{" "}
+                      {runtimeView.recovery.recovered?.version ?? "-"} ·{" "}
+                      {runtimeView.recovery.rollback_reason}
+                    </Text>
+                  )}
+                  <View style={s.row}>
+                    <View style={s.action}>
+                      <Button
+                        title={bundleBusy ? "探针执行中…" : "运行健康探针"}
+                        onPress={() => void probeActiveBundle("manual")}
+                        disabled={bundleBusy || updateBusy}
+                      />
+                    </View>
+                    <View style={s.action}>
+                      <Button
+                        title="刷新执行记录"
+                        onPress={() =>
+                          void services.bundleRuntime.loadState()
+                            .then(setRuntimeView)
+                        }
+                        disabled={bundleBusy || updateBusy}
+                      />
+                    </View>
+                  </View>
+                </View>
                 {updateState?.phase === "active" && (
                   <>
                     <Text style={s.hint}>激活后请确认功能正常再标记健康。</Text>
