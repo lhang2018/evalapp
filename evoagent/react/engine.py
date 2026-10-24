@@ -45,7 +45,8 @@ class ReactEngine:
                  event_bus: Optional[EventBus] = None,
                  max_iterations: int = 20,
                  max_repeat_failures: int = 3,
-                 effects: Any = None):
+                 effects: Any = None,
+                 bindings: Any = None):
         self.model = model
         self.tools = tools
         self.bus = event_bus
@@ -54,6 +55,10 @@ class ReactEngine:
         # Optional ledger is passed to the tool gateway, which writes before
         # execution. ReAct must not create a second, post-hoc ledger entry.
         self.effects = effects
+        # Optional action-binding ledger (ALN-07-B): records which plan step
+        # triggered each side effect. Evidence only — never an authorization
+        # input, and it never changes what tools may run.
+        self.bindings = bindings
 
     def run(self, base_messages: List[ChatMessage],
             budget: BudgetController,
@@ -227,6 +232,27 @@ class ReactEngine:
                 outcome.stop_reason = "approval_required"
                 return capture()
             step.tool_result = result
+            # ALN-07-B: record which step triggered this side effect so the
+            # reconciler can attribute same-tool multi-step plans instead of
+            # reporting them ambiguous. Best-effort by design: the side effect
+            # already happened, so a binding failure must not rewrite a real
+            # result into a failure — it is surfaced in evidence instead.
+            if self.bindings is not None and active_step is not None:
+                effect_id = (result.evidence or {}).get("effect_id")
+                if effect_id:
+                    if logical_task_id:
+                        try:
+                            self.bindings.bind(
+                                effect_id, active_step.step_id,
+                                task_id=logical_task_id,
+                                tool_id=(result.evidence or {}).get("tool")
+                                or tool or "")
+                        except Exception as exc:      # noqa: BLE001
+                            result.evidence["step_binding_error"] = (
+                                f"{type(exc).__name__}: {exc}")
+                    else:
+                        result.evidence["step_binding_skipped"] = (
+                            "no_task_scope")
             payload = result.to_dict()
             messages.append(ChatMessage(
                 role="assistant",
