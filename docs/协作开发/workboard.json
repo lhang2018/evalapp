@@ -2134,7 +2134,7 @@
       "title": "自然语言任务—设备执行/回执协议与离线故障矩阵",
       "stream": "android",
       "owner": "zcode-main",
-      "reviewer": null,
+      "reviewer": "opencode-evo",
       "branch": "main",
       "base_commit": "c61b53ec5f7f8937ab772b6ac5b377093792b1aa",
       "status": "review",
