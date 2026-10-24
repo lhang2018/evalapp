@@ -826,7 +826,8 @@
       "review_result": "unit_accepted_device_pending",
       "review_note": "2026-10-22 claude-main 独立审阅：审批会话完整绑定展示、单次消费、错误不回显、过期/断网/陈旧响应单测通过；交付文档明确真机路径未验，整卡不转 accepted",
       "review_report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md",
-      "next_step": "真机补批准、拒绝、断网和过期四路径；通过后再转 accepted",
+      "next_step": "真机四路径证据已采集（2026-10-24，见验收记录）：批准→SUCCEEDED(approval used×2)、拒绝→CANCELLED(denied)、断网→详情保留+按钮停用+恢复后批准成功、过期→本地闸门停用+resume正确重请求（注入过期+自然TTL两例）；待复核人claude-main确认后转accepted",
+      "device_evidence": "docs/协作开发/验收/2026-10-24-ALN-04-UI真机四路径证据.md",
       "delivered_commit": "72d20f026ad0623ab1828341f88f290ed06f6006"
     },
     {
