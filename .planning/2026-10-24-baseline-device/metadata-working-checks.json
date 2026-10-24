@@ -1,0 +1,34 @@
+[
+  {
+    "command": [
+      "tools/check_collaboration_plan.py",
+      "--verify-prepared"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "tools/verify_claims.py",
+      "--check"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "tools/scan_all_ledgers.py"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "tools/check_gap_closure.py"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      ".planning/2026-10-22-design-alignment/verify_alignment_plan.py"
+    ],
+    "exit_code": 0
+  }
+]

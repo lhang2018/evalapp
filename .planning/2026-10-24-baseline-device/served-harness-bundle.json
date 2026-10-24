@@ -2,5 +2,8 @@
   "sha256": "2aee3511aa288bedf556634cd3efa0c54599405588a6f19c6a5b82cd7cd75990",
   "size": 6285507,
   "contains_test_entry": true,
-  "contains_new_fix": true
+  "contains_new_fix": true,
+  "stage": "initial test fixture before action identity correction",
+  "status": "historical_failure_not_acceptance",
+  "final_harness_hash_location": ".planning/2026-10-24-baseline-device/device-attestation.json:harness_js.sha256"
 }
