@@ -13,7 +13,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from ..core.budget import BudgetController, BudgetExceeded
 from ..core.events import EventBus
-from ..core.leases import assert_current_lease
+from ..core.leases import LeaseLost, assert_current_lease
 from ..models.base import Action, ChatMessage, ModelAdapter
 from ..planning.planner import ExecutionPlan, PlanStep
 from ..tools.contract import ToolResult
@@ -232,27 +232,7 @@ class ReactEngine:
                 outcome.stop_reason = "approval_required"
                 return capture()
             step.tool_result = result
-            # ALN-07-B: record which step triggered this side effect so the
-            # reconciler can attribute same-tool multi-step plans instead of
-            # reporting them ambiguous. Best-effort by design: the side effect
-            # already happened, so a binding failure must not rewrite a real
-            # result into a failure — it is surfaced in evidence instead.
-            if self.bindings is not None and active_step is not None:
-                effect_id = (result.evidence or {}).get("effect_id")
-                if effect_id:
-                    if logical_task_id:
-                        try:
-                            self.bindings.bind(
-                                effect_id, active_step.step_id,
-                                task_id=logical_task_id,
-                                tool_id=(result.evidence or {}).get("tool")
-                                or tool or "")
-                        except Exception as exc:      # noqa: BLE001
-                            result.evidence["step_binding_error"] = (
-                                f"{type(exc).__name__}: {exc}")
-                    else:
-                        result.evidence["step_binding_skipped"] = (
-                            "no_task_scope")
+            self._record_step_binding(result, active_step, task_id, run_id)
             payload = result.to_dict()
             messages.append(ChatMessage(
                 role="assistant",
@@ -296,6 +276,46 @@ class ReactEngine:
 
         outcome.stop_reason = "max_iter"
         return capture()
+
+    def _record_step_binding(self, result, active_step, task_id, run_id):
+        """Bind verified gateway evidence; a cached observation is not a trigger."""
+        if self.bindings is None or active_step is None:
+            return
+        evidence = result.evidence
+        effect_id = evidence.get("effect_id")
+        if not effect_id:
+            return
+        if not task_id:
+            evidence["step_binding_skipped"] = "no_task_scope"
+            return
+        actual_tool = evidence.get("tool")
+        if not active_step.tool_hint or active_step.tool_hint != actual_tool:
+            evidence["step_binding_skipped"] = "step_tool_unmatched"
+            return
+        try:
+            ledger = self.effects if self.effects is not None else self.tools.effects
+            record = ledger.get(effect_id) if ledger is not None else None
+            contract = self.tools.contract(actual_tool)
+            if (not record or record["task_id"] != task_id
+                    or record["tool_id"] != actual_tool or contract is None
+                    or contract.side_effect_level == "none"):
+                evidence["step_binding_skipped"] = "unverified_effect"
+                return
+            if evidence.get("replayed"):
+                existing = self.bindings.get(effect_id)
+                if (not existing or existing["task_id"] != task_id
+                        or existing["step_id"] != active_step.step_id):
+                    evidence["step_binding_skipped"] = "replayed_without_matching_binding"
+                return
+            if record["run_id"] != (run_id or task_id):
+                evidence["step_binding_skipped"] = "effect_from_other_run"
+                return
+            self.bindings.bind(effect_id, active_step.step_id,
+                               task_id=task_id, tool_id=actual_tool)
+        except LeaseLost:
+            raise  # Fencing is mandatory, not an optional evidence write.
+        except Exception as exc:  # The external result must remain truthful.
+            evidence["step_binding_error"] = f"{type(exc).__name__}: {exc}"
 
 
 def last_success(result: Optional[ToolResult]) -> bool:

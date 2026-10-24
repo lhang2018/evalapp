@@ -44,6 +44,7 @@ from .models.openai_compat import OpenAICompatAdapter
 from .models.router import ModelRouter
 from .planning.intent import IntentClassifier
 from .planning.planner import PlanningEngine
+from .planning.binding import ActionBindings
 from .react.engine import ReactEngine
 from .release.delivery import ReleaseDelivery
 from .release.manager import ReleaseManager
@@ -144,8 +145,10 @@ class App:
             planning_model,
             known_intents=self._known_intents(),
             threshold=self.config.clarify_threshold)
+        self.action_bindings = ActionBindings(self.db)
         self.react = ReactEngine(planning_model,
                                  self.tools, self.bus,
+                                 bindings=self.action_bindings,
                                  max_iterations=self.config.react_max_iterations,
                                  max_repeat_failures=self.config.react_max_repeat_failures)
         self.workflow_engine = WorkflowEngine(self.tools,

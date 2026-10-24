@@ -70,28 +70,38 @@ class ActionBindings:
         effect_id = _need(effect_id, "effect_id")
         step_id = _need(step_id, "step_id")
         task_id = _need(task_id, "task_id")
+        if tool_id is not None:
+            tool_id = _need(tool_id, "tool_id")
+        bound_at = float(now if now is not None else time.time())
 
         with self.db._lock:
-            guard_write(self.db)
-            row = self._select(effect_id)
-            if row is not None:
-                if row["step_id"] != step_id:
-                    raise BindingConflict(
-                        f"副作用 {effect_id} 已归属于步骤 {row['step_id']}，"
-                        f"不能改写为 {step_id}")
-                if row["task_id"] != task_id:
-                    raise BindingConflict(
-                        f"副作用 {effect_id} 已归属于任务 {row['task_id']}，"
-                        f"不能改写为 {task_id}")
-                return dict(row)          # 幂等：原样返回，不刷新时间
-            self.db._conn.execute(
-                "INSERT INTO action_step_bindings"
-                " (effect_id, task_id, step_id, tool_id, bound_at)"
-                " VALUES (?,?,?,?,?)",
-                (effect_id, task_id, step_id, tool_id,
-                 float(now if now is not None else time.time())))
-            self.db._conn.commit()
-            return dict(self._select(effect_id) or {})
+            try:
+                guard_write(self.db)
+                # guard_write opens the fenced transaction only under a lease.
+                # Standalone callers still need a cross-connection write lock
+                # before reading, so a concurrent insert cannot win the gap.
+                if not self.db._conn.in_transaction:
+                    self.db._conn.execute("BEGIN IMMEDIATE")
+                row = self._select(effect_id)
+                if row is not None:
+                    if row["step_id"] != step_id or row["task_id"] != task_id:
+                        raise BindingConflict(
+                            f"副作用 {effect_id} 已归属于任务 {row['task_id']} "
+                            f"步骤 {row['step_id']}，不能改写归属")
+                    if tool_id is not None and row["tool_id"] != tool_id:
+                        raise BindingConflict(f"副作用 {effect_id} 的工具归属冲突")
+                else:
+                    self.db._conn.execute(
+                        "INSERT INTO action_step_bindings"
+                        " (effect_id, task_id, step_id, tool_id, bound_at)"
+                        " VALUES (?,?,?,?,?)",
+                        (effect_id, task_id, step_id, tool_id, bound_at))
+                    row = self._select(effect_id)
+                self.db._conn.commit()
+                return dict(row)
+            except BaseException:
+                self.db._conn.rollback()
+                raise
 
     # ---------------- 只读 ----------------
 
