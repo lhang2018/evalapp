@@ -60,8 +60,8 @@
   隐私基线（敏感内容不入上传载荷）与投影测试互相印证。
 - 命令与结果：`cd android-app && npm run test:offline` → **214 passed /
   0 failed**（原 190 + 本卡 24：taskProtocol 12 + failureMatrix 9 +
-  taskGaps 3）。typecheck 由并行会话声明通过，本机无 node_modules 且
-  全局 tsc 损坏未能复跑，留独立复核验证。
+  taskGaps 3）。typecheck 复跑通过（tsc --noEmit 无错误；并行协调会话
+  在 2026-10-24 补跑，此前声明的环境问题不复存在）。
 - Mock/真实边界：全部为 Node 原生 TS 单测（FakeTransport/MemoryStore）；
   真机自然语言执行、断网/杀进程/重启一致性、敏感内容证据按 ALN-12
   整包验收另行采集。
@@ -73,6 +73,11 @@
 - 未完成（按任务卡原范围保留）：App 主链路接线（提交任务→提议→执行）
   按后续小卡推进；服务端 effect 绑定消费（与 ALN-07-B 的
   action_bindings 对齐）另行登记范围；真机证据另验。
+- 留复核的已知窗口：executeProposal 在 broker 下发之后才落提议/回执台账，
+  进程恰在下发与落账之间被杀时，重启后该 action_id 在台账中无痕
+  （broker 内存日志同样丢失），重新提议会再次执行。协议头注释的
+  「预记账」语义建议改为先落提议再下发（中断后已记账无回执 = 副作用
+  未知，可见且不自动重发）；该行为改动属卡内小改，留独立复核裁决。
 - 影响主题：PRD 64-68（设备操作）、64-76（离线优先）、21（安全边界）；
   ALN-12 整包关闭仍需真机一致性证据。
 
