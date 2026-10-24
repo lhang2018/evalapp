@@ -2375,7 +2375,8 @@
         "代码: 本卡提交（evoagent/runtime/ 五类能力协议+Mock/现有运行时适配+兼容矩阵；tests/test_runtime_protocol.py 8项）",
         "测试: 定向 8 passed；全量 python -m pytest tests -q → 1634 passed / 1 skipped",
         "矩阵: 能力×实现兼容矩阵与采用判据见交付文档（mock沙箱刻意absent不做假执行；model_api_only参照行演示显式拒绝）",
-        "交付: docs/协作开发/交付/ALN-20-A-Runtime适配协议与固定版本PoC设计.md；固定外部Harness commit的实际PoC与ADR正式条目按任务卡另卡"
+        "交付: docs/协作开发/交付/ALN-20-A-Runtime适配协议与固定版本PoC设计.md；固定外部Harness commit的实际PoC与ADR正式条目按任务卡另卡",
+        "复跑核实: 协调会话独立复跑全量 python -m pytest tests -q → 1634 passed / 1 skipped，与交付声明一致（2026-10-24）"
       ],
       "card": "docs/协作开发/任务卡/20-Runtime适配与Harness PoC.md",
       "shared_files": [],
