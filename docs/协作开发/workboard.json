@@ -2300,7 +2300,7 @@
       "title": "备份/恢复闭环加固与迁移回退契约",
       "stream": "integration",
       "owner": "zcode-main",
-      "reviewer": null,
+      "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "c7726e83f8407b4709cb90f248bfd2f590021a02",
       "status": "review",
@@ -2316,7 +2316,7 @@
         "evoagent/core/schema/migrations.py"
       ],
       "working_basis": "2026-10-24 zcode-main 认领并完成交付。base_commit c7726e8 为接手锚点（基线仍candidate；接手期间并行提交照常落地未冲突）。旧格式（缺schema_version）按明确规则拒绝；低于当前版本走暂存区迁移升级，高于即拒绝；行数快照替换前+恢复后双重核对；迁移失败SAVEPOINT自动回退，已提交坏变更用迁移前备份restore回退（演练覆盖）。版本资产组合恢复与空机器部署不在本卡。",
-      "next_step": "待独立复核（跨版本判定、暂存迁移与行数核对、SAVEPOINT回退语义、RTO/RPO口径）；生产规模实测与部署文档另卡",
+      "next_step": "2026-10-24 claude-main 认领独立复核（作者 zcode-main，独立性成立）：在干净复本固定 5c90bee 复核跨版本判定、暂存迁移与行数核对、SAVEPOINT 回退语义、RTO/RPO 口径；自写探针 + 前后对照（功能前基点 c7726e8），生产规模实测与部署文档仍按整包另验，不自行批准",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -2329,6 +2329,12 @@
           "from": "codex-runtime",
           "to": "zcode-main",
           "reason": "用户要求zcode-main接手串行开发队列；接手未交付范围，保留在途内容与独立审阅要求，卡保持排队未开工"
+        },
+        {
+          "date": "2026-10-24",
+          "from": "待定",
+          "to": "claude-main",
+          "reason": "独立复核人认领：作者 zcode-main 不自审自收"
         }
       ]
     },
@@ -2340,14 +2346,14 @@
       "owner": "zcode-main",
       "reviewer": null,
       "branch": "main",
-      "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
-      "status": "claimed",
+      "base_commit": "427ef7e50f871b808aadacd0c377b6093a7e5be3",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/20-Runtime适配与Harness PoC.md",
       "shared_files": [],
-      "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
-      "next_step": "排队：Runtime五类能力协议、Mock/现有运行时夹具和兼容矩阵；外部Harness固定版本PoC仍须另行实测",
+      "working_basis": "2026-10-24 zcode-main 按队列认领开工（17-A已交付review后队首）。base_commit 427ef7e 为实际接手锚点（基线仍candidate）。纯契约卡：新增 evoagent/runtime/ 协议与适配接口、同组夹具与兼容矩阵；不改 controller/react/workflows 执行路径，不引入第二套工具/账本权威；外部Harness固定版本PoC按任务卡另卡另验。",
+      "next_step": "实现五类能力协议、Mock/现有运行时同组夹具、兼容矩阵与采用判据",
       "ownership_history": [
         {
           "date": "2026-10-23",
