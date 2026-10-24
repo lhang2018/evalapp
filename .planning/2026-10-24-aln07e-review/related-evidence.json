@@ -1,0 +1,11 @@
+{
+  "source_commit": "26aaec72280885815eebb1c4db1ea7098abdcf93",
+  "source_tree": "57d168560068c5fb6479cd1213c3e0087be2f177",
+  "results": [
+    {
+      "log": ".planning\\2026-10-24-aln07e-review\\related-final.txt",
+      "sha256": "411f36839b762692406be063d0e40d4675b48a73a932232ac88e7737e4615bfe",
+      "result": "125 passed; original 16 tests unchanged"
+    }
+  ]
+}

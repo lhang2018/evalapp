@@ -1,0 +1,16 @@
+{
+  "source_commit": "c91621ea79dd190dc3f62955bd8f94c29fd19b3c",
+  "injected_probe": "tests/test_peer_plan_reconcile_review.py",
+  "probe_sha256": "3d6e9a9814cc748a815488d76fee67bd04aaf2314899aa06e5e65e27effd92ea",
+  "command": [
+    "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+    "-m",
+    "pytest",
+    "tests/test_peer_plan_reconcile_review.py",
+    "-q",
+    "--tb=short"
+  ],
+  "exit_code": 1,
+  "log": ".planning\\2026-10-24-aln07e-review\\before-committed.txt",
+  "sha256": "05ebd3213257dbeef39ce8b0eeff8df76b458824cd24404d32e5ace4a8352d67"
+}
