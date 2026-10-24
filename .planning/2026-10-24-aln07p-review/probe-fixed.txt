@@ -1,0 +1,14 @@
+[PASS] V1  RT07-01 unready_step_not_selected (行为型)
+[PASS] V1b RT07-01 failed_ancestor_blocks_branch (能力型)
+[PASS] V2  RT07-03 submitted_only_is_not_success (行为型)
+[PASS] V2b RT07-03 contract_invalid_is_not_success (行为型)
+[PASS] V3  RT07-04 unrelated_tool_failure (行为型)
+[PASS] V3b RT07-04 matching_tool_failure (护栏)
+[PASS] V4  RT07-02 duplicate_step_ids_rejected (能力型)
+[PASS] V4b RT07-02 done_without_evidence_rejected (能力型)
+[PASS] V4c RT07-02 valid_plan_passes (护栏)
+EvoAgent API: http://127.0.0.1:10411  (GET /health)
+[PASS] V5  RT07-07 domain_rejection_returns_403 (行为型)
+[PASS] V6  guard ready_chain_still_progresses
+
+total=11 passed=11 failed=0

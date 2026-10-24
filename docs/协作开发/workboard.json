@@ -1563,7 +1563,7 @@
       "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -1604,7 +1604,7 @@
       ],
       "working_basis": "用户要求按优先级认领未开发工作包：ALN-07 为首个未认领 P1；在当前共享候选工作区增量开发（同 ALN-06-A/08-M/11-A 方式），基线未正式发布，不用旧 HEAD 冒充 base_commit",
       "delivery": "docs/协作开发/交付/ALN-07-P-计划修订与证据保持.md",
-      "next_step": "独立复核aafca22及e54ad2a/eea3a00累计修复；原planner不变量切片的claude-main部分接受保持；精确动作/步骤绑定、对账与自动恢复策略消费仍另验",
+      "next_step": "claude-main 已第三方复核运行时补审修复通过（原作者复核修复，修复人codex-runtime不自批）：被审方31 failed/7 passed在起点50dd94c复现；自写11根探针9→0失败（V5精确复现ConnectionAbortedError）、3根护栏成立；我的计划修订/续跑/进程恢复测试零改动；相关回归99、固定全量1602/1；eea3a00对test_auth_rejection_transport的改动经逐行甄别为零删断言的加严扩展；RT07-05/06未独立验证如实声明；同工具多步骤step_bindings、07-R/07-E消费与精确步骤授权仍另验，ALN-07整包不关闭",
       "delivered_commit": "6d55756ff14a3460f9fe75802bc9ac12fd91ead5",
       "related_commits": [
         {
@@ -1612,10 +1612,10 @@
           "scope": "任务卡与认领登记；代码实际随6d55756入库"
         }
       ],
-      "review_result": "changes_requested",
+      "review_result": "accepted",
       "review_report": "docs/协作开发/验收/2026-10-24-ALN-07-P运行时补审.md",
       "review_note": "剩余ReAct/控制器恢复路径发现依赖绕过、坏计划降级、进度/失败归因及上下文问题，修复并补齐域鉴权拒绝传输；需其他审阅者复核，不自批",
-      "fix_status": "repaired_pending_independent_review",
+      "fix_status": "fix_verified_by_third_party",
       "fix_author": "codex-runtime",
       "fix_commit": "aafca22df33098f5e5a8d51026f4ba5b5e4385b7",
       "peer_findings": [
@@ -1643,7 +1643,33 @@
           "fix_author": "codex-runtime",
           "fix_commit": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd"
         }
-      ]
+      ],
+      "third_party_review": {
+        "date": "2026-10-24",
+        "reviewer": "claude-main",
+        "role": "原作者对运行时补审修复的第三方复核（fix_author=codex-runtime，不自批）",
+        "fixes_covered": [
+          "e54ad2a",
+          "eea3a00",
+          "aafca22df33098f5e5a8d51026f4ba5b5e4385b7"
+        ],
+        "findings_confirmed": [
+          "RT07-01 _current_step只按存储顺序取，失败依赖照常执行",
+          "RT07-02 损坏计划静默降级为None后仍SUCCEEDED",
+          "RT07-03 submitted-only的ok被当步骤完成",
+          "RT07-04 无关工具失败误伤当前步骤（串账）",
+          "RT07-05 恢复保留过期计划提示且停机原因未持久化",
+          "RT07-06 已完成计划仍可产生额外工具动作",
+          "RT07-07 域级admin拒绝未消费POST体导致连接重置"
+        ],
+        "result": "被审方31 failed/7 passed在50dd94c复现、aafca22全通过；自写11探针起点9 failed/2 passed（两根为护栏）→修复后11/11；V5复现ConnectionAbortedError与报告描述一字不差；原作者测试零改动；相关回归99 passed；固定全量1602/1与声明一致；既有测试改动为零删断言的参数化加严",
+        "independent_gaps": [
+          "RT07-05 续跑上下文槽与stop_reason",
+          "RT07-06 plan_complete额外工具拦截"
+        ],
+        "report": "docs/协作开发/验收/2026-10-24-ALN-07-P运行时修复第三方复核.md",
+        "log": ".planning/2026-10-24-aln07p-review/"
+      }
     },
     {
       "id": "ALN-07-W",
@@ -2885,7 +2911,7 @@
       "stream": "runtime",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "07-E修复26aaec7已由claude-main第三方复核接受；07-W/T/R及P原planner不变量部分接受保持；P运行时aafca22累计修复待其他审阅者复核；精确动作绑定与工作流/轨迹/自动恢复/对账实际消费另验，整包未关闭"
+      "next_step": "07-P（含PR-01与RT07-01..07运行时补审修复）、07-W、07-T、07-R、07-E 均已第三方复核通过；运行时实际消费工作流/轨迹/恢复/对账结论、同工具多步骤step_bindings与精确步骤授权另卡，整包未关闭"
     },
     {
       "id": "ALN-08",
