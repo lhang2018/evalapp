@@ -2094,7 +2094,7 @@
       "title": "Goal十态、持久授权与任务接线",
       "stream": "runtime",
       "owner": "codex-runtime",
-      "reviewer": null,
+      "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "1ad71bc9d3b2d920cd8028d59765194941fd50c7",
       "status": "review",
@@ -2122,7 +2122,7 @@
         "IMPLEMENTATION.md",
         "ROADMAP.md"
       ],
-      "next_step": "独立复核c885cbd的53项Goal回归与1162/1提交源码全量；ALN-14/15消费Goal/授权/预算引用，不自批、不发布共同基线",
+      "next_step": "2026-10-24 claude-main 认领独立复核（作者 codex-runtime，独立性成立）；在干净复本复核 c885cbd 的53项Goal专项与1162/1，并按任务卡五条验收自写探针，不自批不发布基线。独立复核c885cbd的53项Goal回归与1162/1提交源码全量；ALN-14/15消费Goal/授权/预算引用，不自批、不发布共同基线",
       "review_result": "pending",
       "delivered_commit": "c885cbdc6464e8d253e9dba840a43aa48d746521",
       "delivery": "docs/协作开发/交付/ALN-13-A-Goal十态与自主授权.md",
