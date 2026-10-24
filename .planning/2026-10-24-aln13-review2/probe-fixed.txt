@@ -1,0 +1,11 @@
+[PASS] G1 terminal_state_is_closed
+[PASS] G2 cross_connection_cas_conflict
+[PASS] G3 child_cannot_expand_path_roots
+[PASS] G4 child_deadline_cannot_exceed_parent
+[PASS] G5 authorization_must_fit_goal_deadline
+[PASS] G6 revocation_blocks_and_clears_grants
+[PASS] G7 duplicate_command_same_goal
+[PASS] G7b different_command_new_goal (护栏)
+[PASS] G8 happy_path_still_works (护栏)
+
+total=9 passed=9 failed=0
