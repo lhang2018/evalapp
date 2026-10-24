@@ -1,0 +1,16 @@
+{
+  "source_commit": "ea5fc1563d05409199e90c84a4b1113613f2eae4",
+  "injected_probe": "tests/test_peer_action_binding_review.py",
+  "probe_sha256": "da17990c1cf575d0e4711af0de1221604fe048dc2d1a73f71839c816931f8caf",
+  "command": [
+    "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+    "-m",
+    "pytest",
+    "tests/test_peer_action_binding_review.py",
+    "-q",
+    "--tb=short"
+  ],
+  "exit_code": 1,
+  "log": ".planning\\2026-10-24-action-binding-review\\before-committed.txt",
+  "sha256": "e8de0ed1b8219b39d0b990a493a29fb43666ea279d57d437d5e511dbef3b5621"
+}

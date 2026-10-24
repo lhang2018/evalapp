@@ -1,0 +1,128 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFF.F...F                                                      [100%]
+================================== FAILURES ===================================
+_______ test_leased_binding_paths_finish_their_transaction[idempotent] ________
+tests\test_peer_action_binding_review.py:70: in test_leased_binding_paths_finish_their_transaction
+    assert not db._conn.in_transaction
+E   assert not True
+E    +  where True = <sqlite3.Connection object at 0x0000016714392740>.in_transaction
+E    +    where <sqlite3.Connection object at 0x0000016714392740> = <evoagent.core.persistence.Database object at 0x00000167145B8490>._conn
+________ test_leased_binding_paths_finish_their_transaction[conflict] _________
+tests\test_peer_action_binding_review.py:70: in test_leased_binding_paths_finish_their_transaction
+    assert not db._conn.in_transaction
+E   assert not True
+E    +  where True = <sqlite3.Connection object at 0x0000016714695340>.in_transaction
+E    +    where <sqlite3.Connection object at 0x0000016714695340> = <evoagent.core.persistence.Database object at 0x00000167144D3700>._conn
+____ test_leased_binding_paths_finish_their_transaction[invalid_timestamp] ____
+tests\test_peer_action_binding_review.py:70: in test_leased_binding_paths_finish_their_transaction
+    assert not db._conn.in_transaction
+E   assert not True
+E    +  where True = <sqlite3.Connection object at 0x0000016714695240>.in_transaction
+E    +    where <sqlite3.Connection object at 0x0000016714695240> = <evoagent.core.persistence.Database object at 0x000001671436FAF0>._conn
+_______ test_binding_conflict_uses_same_domain_error_across_connections _______
+tests\test_peer_action_binding_review.py:102: in test_binding_conflict_uses_same_domain_error_across_connections
+    assert sorted(f.result() for f in futures) == ["bound", "conflict"]
+tests\test_peer_action_binding_review.py:102: in <genexpr>
+    assert sorted(f.result() for f in futures) == ["bound", "conflict"]
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\concurrent\futures\_base.py:458: in result
+    return self.__get_result()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\concurrent\futures\_base.py:403: in __get_result
+    raise self._exception
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\concurrent\futures\thread.py:58: in run
+    result = self.fn(*self.args, **self.kwargs)
+tests\test_peer_action_binding_review.py:94: in attempt
+    CoordinatedBindings(db).bind("effect", sid, task_id="task")
+evoagent\planning\binding.py:87: in bind
+    self.db._conn.execute(
+E   sqlite3.IntegrityError: UNIQUE constraint failed: action_step_bindings.effect_id
+_______ test_tool_identity_conflict_cannot_silently_succeed[different] ________
+tests\test_peer_action_binding_review.py:113: in test_tool_identity_conflict_cannot_silently_succeed
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+__________ test_tool_identity_conflict_cannot_silently_succeed[123] ___________
+tests\test_peer_action_binding_review.py:113: in test_tool_identity_conflict_cannot_silently_succeed
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_ test_unmatched_or_generic_step_does_not_export_false_reconciler_binding[None] _
+tests\test_peer_action_binding_review.py:137: in test_unmatched_or_generic_step_does_not_export_false_reconciler_binding
+    assert bindings.for_task("task") == {}
+E   AssertionError: assert {'eff_de42e63...3': 'current'} == {}
+E     
+E     Left contains 1 more item:
+E     {'eff_de42e63d6ab8762ddb4de142dddf2743': 'current'}
+E     Use -v to get more diff
+_ test_unmatched_or_generic_step_does_not_export_false_reconciler_binding[expected] _
+tests\test_peer_action_binding_review.py:137: in test_unmatched_or_generic_step_does_not_export_false_reconciler_binding
+    assert bindings.for_task("task") == {}
+E   AssertionError: assert {'eff_de42e63...3': 'current'} == {}
+E     
+E     Left contains 1 more item:
+E     {'eff_de42e63d6ab8762ddb4de142dddf2743': 'current'}
+E     Use -v to get more diff
+___________ test_run_identifier_alone_is_not_an_explicit_task_scope ___________
+tests\test_peer_action_binding_review.py:146: in test_run_identifier_alone_is_not_an_explicit_task_scope
+    assert bindings.for_task("run-only") == {}
+E   AssertionError: assert {'eff_4047469...662847f': 's'} == {}
+E     
+E     Left contains 1 more item:
+E     {'eff_4047469c22a3bdf87b3b3c417662847f': 's'}
+E     Use -v to get more diff
+_____ test_read_only_runner_cannot_claim_an_unrelated_effect_id[foreign] ______
+tests\test_peer_action_binding_review.py:157: in test_read_only_runner_cannot_claim_an_unrelated_effect_id
+    assert bindings.for_task("task") == {}
+E   AssertionError: assert {'eff_8022adee66bf': 's'} == {}
+E     
+E     Left contains 1 more item:
+E     {'eff_8022adee66bf': 's'}
+E     Use -v to get more diff
+_____ test_read_only_runner_cannot_claim_an_unrelated_effect_id[missing] ______
+tests\test_peer_action_binding_review.py:157: in test_read_only_runner_cannot_claim_an_unrelated_effect_id
+    assert bindings.for_task("task") == {}
+E   AssertionError: assert {'made-up': 's'} == {}
+E     
+E     Left contains 1 more item:
+E     {'made-up': 's'}
+E     Use -v to get more diff
+___________ test_cached_receipt_is_not_new_step_attribution[False] ____________
+tests\test_peer_action_binding_review.py:177: in test_cached_receipt_is_not_new_step_attribution
+    assert bindings.for_task("task") == before
+E   AssertionError: assert {'eff_b7f0cce...f6f4e': 'new'} == {}
+E     
+E     Left contains 1 more item:
+E     {'eff_b7f0ccec5eb44394b69363db8c1f6f4e': 'new'}
+E     Use -v to get more diff
+____________ test_cached_receipt_is_not_new_step_attribution[True] ____________
+tests\test_peer_action_binding_review.py:178: in test_cached_receipt_is_not_new_step_attribution
+    assert result.evidence["step_binding_skipped"]
+E   KeyError: 'step_binding_skipped'
+_____________ test_lease_loss_is_not_a_best_effort_binding_error ______________
+tests\test_peer_action_binding_review.py:201: in test_lease_loss_is_not_a_best_effort_binding_error
+    with pytest.raises(LeaseLost):
+E   Failed: DID NOT RAISE <class 'evoagent.core.leases.LeaseLost'>
+______ test_real_app_wires_bindings_and_persists_them_for_reconciliation ______
+tests\test_peer_action_binding_review.py:259: in test_real_app_wires_bindings_and_persists_them_for_reconciliation
+    assert exported == {row["effect_id"]: "s" for row in rows} and exported
+E   AssertionError: assert ({} == {'eff_198d304...adce682': 's'}
+E     
+E     Right contains 1 more item:
+E     {'eff_198d304d6fdd97b9344f0df3aadce682': 's'}
+E     Use -v to get more diff)
+=========================== short test summary info ===========================
+FAILED tests/test_peer_action_binding_review.py::test_leased_binding_paths_finish_their_transaction[idempotent]
+FAILED tests/test_peer_action_binding_review.py::test_leased_binding_paths_finish_their_transaction[conflict]
+FAILED tests/test_peer_action_binding_review.py::test_leased_binding_paths_finish_their_transaction[invalid_timestamp]
+FAILED tests/test_peer_action_binding_review.py::test_binding_conflict_uses_same_domain_error_across_connections
+FAILED tests/test_peer_action_binding_review.py::test_tool_identity_conflict_cannot_silently_succeed[different]
+FAILED tests/test_peer_action_binding_review.py::test_tool_identity_conflict_cannot_silently_succeed[123]
+FAILED tests/test_peer_action_binding_review.py::test_unmatched_or_generic_step_does_not_export_false_reconciler_binding[None]
+FAILED tests/test_peer_action_binding_review.py::test_unmatched_or_generic_step_does_not_export_false_reconciler_binding[expected]
+FAILED tests/test_peer_action_binding_review.py::test_run_identifier_alone_is_not_an_explicit_task_scope
+FAILED tests/test_peer_action_binding_review.py::test_read_only_runner_cannot_claim_an_unrelated_effect_id[foreign]
+FAILED tests/test_peer_action_binding_review.py::test_read_only_runner_cannot_claim_an_unrelated_effect_id[missing]
+FAILED tests/test_peer_action_binding_review.py::test_cached_receipt_is_not_new_step_attribution[False]
+FAILED tests/test_peer_action_binding_review.py::test_cached_receipt_is_not_new_step_attribution[True]
+FAILED tests/test_peer_action_binding_review.py::test_lease_loss_is_not_a_best_effort_binding_error
+FAILED tests/test_peer_action_binding_review.py::test_real_app_wires_bindings_and_persists_them_for_reconciliation
+15 failed, 4 passed in 10.19s

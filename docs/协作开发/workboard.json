@@ -110,14 +110,14 @@
       "scope": "候选准备Git/日志证据有效；当前源码新增显式验收不通过，915/1仅为此前普通tests基线"
     },
     "latest_source_verification": {
-      "source_commit": "aafca22df33098f5e5a8d51026f4ba5b5e4385b7",
-      "source_tree": "fb098b6b099cee0d4590e12e35b45d63e0598ee2",
-      "python_passed": 1602,
+      "source_commit": "cc0aa3a3b93c6f7285823f290f33e70510ef8951",
+      "source_tree": "fc9ba434f7dd6a44cf54cbbc1550a8e6f4a14f6d",
+      "python_passed": 1653,
       "python_skipped": 1,
-      "client_passed": 166,
+      "client_passed": 207,
       "typecheck": "passed",
-      "scope": "07-P运行时补审七组修复（含域权限拒绝传输）；31项计划及7项传输探针原代码31失败/7通过，相关207通过；固定aafca22后端1602/1，客户端同tree复用166/typecheck，未重跑真机，不发布基线",
-      "evidence": "../../.planning/2026-10-24-plan-runtime-review/committed-evidence.json"
+      "scope": "07-B六组独立审核修复；19项探针原源码15失败/4通过，相关241通过；固定cc0aa3a后端1653/1、客户端207/typecheck实际复跑，排除在途，未重跑真机，不发布基线",
+      "evidence": "../../.planning/2026-10-24-action-binding-review/committed-evidence.json"
     },
     "latest_peer_review": {
       "date": "2026-10-23",
@@ -2074,14 +2074,24 @@
           "delivery": "docs/协作开发/交付/ALN-07-B-运行时动作绑定.md",
           "log": ".planning/2026-10-24-aln07b/",
           "result": "新增 action_bindings 表域模块(25行)+ActionBindings(144行)+engine可选注入接线，12项验收测试逐条覆盖；相关回归136 passed；干净复本固定全量1614/1（比接线前1602恰多12，无回退）"
+        },
+        {
+          "date": "2026-10-24",
+          "reviewed_commit": "ea5fc1563d05409199e90c84a4b1113613f2eae4",
+          "source_commit": "cc0aa3a3b93c6f7285823f290f33e70510ef8951",
+          "scope": "07-B独立复核及六组修复；不自批，不扩大07-P/E接受范围",
+          "result": "07-B六组独立审核修复；19项探针原源码15失败/4通过，相关241通过；固定cc0aa3a后端1653/1、客户端207/typecheck实际复跑，排除在途，未重跑真机，不发布基线",
+          "report": "docs/协作开发/验收/2026-10-24-ALN-07-B独立审核.md",
+          "log": ".planning/2026-10-24-action-binding-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/07-B运行时动作绑定.md",
       "shared_files": [
-        "evoagent/react/engine.py"
+        "evoagent/react/engine.py",
+        "evoagent/app.py"
       ],
       "working_basis": "用户要求继续认领开发；ALN-07整包第五项——核实全库无人产生step_bindings（只有reconcile.py接受该参数），导致07-E对同工具多声明永远只能判ambiguous；新表走core/schema自动发现零注册改动，engine仅加可选参数+约5行接线",
-      "next_step": "已交付待独立复核（codex-runtime，代码827d46d）：运行时现在能产生 effect->step 绑定，07-E 对账从永远ambiguous变为可确定归因；精确步骤授权（执行前拒绝）与运行时如何消费对账结论仍另卡，绑定不是授权凭据，ALN-07整包不关闭",
+      "next_step": "独立复核cc0aa3a、19项探针及真实App/网关/租约路径；历史缓存无绑定时不补猜，执行前精确步骤授权、run/plan命名空间与自动消费对账结论另验",
       "ownership_history": [
         {
           "date": "2026-10-24",
@@ -2092,7 +2102,21 @@
       ],
       "preparation_status": "delivered",
       "delivered_commit": "827d46d",
-      "delivery": "docs/协作开发/交付/ALN-07-B-运行时动作绑定.md"
+      "delivery": "docs/协作开发/交付/ALN-07-B-运行时动作绑定.md",
+      "review_result": "changes_requested",
+      "review_report": "docs/协作开发/验收/2026-10-24-ALN-07-B独立审核.md",
+      "review_note": "真实租约/多连接事务、工具身份、归属来源、缓存回执、LeaseLost及App装配六组问题已修复，修复作者codex-runtime须其他审阅者复核",
+      "fix_author": "codex-runtime",
+      "fix_commit": "cc0aa3a3b93c6f7285823f290f33e70510ef8951",
+      "fix_status": "repaired_pending_independent_review",
+      "peer_findings": [
+        "AB07-01",
+        "AB07-02",
+        "AB07-03",
+        "AB07-04",
+        "AB07-05",
+        "AB07-06"
+      ]
     },
     {
       "id": "ALN-13-A",
@@ -3065,7 +3089,7 @@
       "stream": "runtime",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "07-P/07-W/07-T/07-R/07-E 均已第三方复核通过；07-B运行时动作绑定已交付review（待codex-runtime复核）；精确步骤授权（执行前拒绝）与运行时消费对账结论另卡，整包未关闭"
+      "next_step": "07-P/W/T/R/E既定切片已第三方接受；07-B六组问题已修复cc0aa3a待其他审阅者复核；精确步骤授权、run/plan绑定与实际对账消费另验，整包未关闭"
     },
     {
       "id": "ALN-08",
@@ -3132,7 +3156,7 @@
       "stream": "android",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "原A切片已独立接受；运行时消费、端侧接线与实际环境验收仍按原任务卡推进，整包未关闭",
+      "next_step": "11-A/R既定切片已接受；11-W执行消费/探针/回滚自动化切片已复核，真机健康失败→回滚→旧能力执行仍待验，整包未关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -3153,8 +3177,8 @@
       ],
       "stream": "android",
       "owner": "codex-runtime",
-      "delivery_state": "planned",
-      "next_step": "排队：设备动作提议/回执契约、task/run/effect引用与离线故障矩阵；既有未提交通知/后台修改先核对依赖再独立处理，不覆盖",
+      "delivery_state": "partial_verified",
+      "next_step": "12-A提议/执行/回执及离线故障自动化已复核，保持review/device_pending；App主链接线、真机断网/杀进程/重启与敏感证据另验，通知在途不计交付",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -3176,7 +3200,7 @@
       "stream": "runtime",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "ALN-13-A后端实体/十态/自主授权与Task动作接线已交付；c885cbd及1162/1证据待独立复核；自动推进与资源预留分别由ALN-14/15消费",
+      "next_step": "13-A后端实体/十态/自主授权与Task动作接线已由claude-main独立接受；前端与生产自动推进另验，14/15已有消费不重复开发",
       "implementation_state": "delivered_pending_independent_review"
     },
     {
@@ -3250,8 +3274,8 @@
       ],
       "stream": "assets",
       "owner": "codex-runtime",
-      "delivery_state": "planned",
-      "next_step": "排队：schema兼容、损坏拒绝、行数核对、迁移回退与RTO/RPO测量；版本资产组合恢复和空机器部署另行验收",
+      "delivery_state": "partial_verified",
+      "next_step": "17-A备份恢复/兼容拒绝/行数/迁移回退既定切片已由claude-main独立接受；组合资产恢复、空机部署及生产RTO/RPO另验",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -3303,8 +3327,8 @@
       ],
       "stream": "runtime",
       "owner": "codex-runtime",
-      "delivery_state": "planned",
-      "next_step": "排队：Runtime五类能力协议、Mock/现有运行时夹具和兼容矩阵；外部Harness固定版本PoC仍须另行实测",
+      "delivery_state": "needs_recheck",
+      "next_step": "20-A五类Runtime协议/Mock与现有适配器/兼容矩阵已交付review，待独立复核；真实固定外部Harness PoC另验，不等同已集成",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -3465,5 +3489,12 @@
     "fix_commit": "aafca22df33098f5e5a8d51026f4ba5b5e4385b7",
     "result": "changes_requested; repaired_pending_independent_review",
     "report": "docs/协作开发/验收/2026-10-24-ALN-07-P运行时补审.md"
+  },
+  "latest_review_aln07b": {
+    "reviewer": "codex-runtime",
+    "reviewed_commit": "ea5fc1563d05409199e90c84a4b1113613f2eae4",
+    "fix_commit": "cc0aa3a3b93c6f7285823f290f33e70510ef8951",
+    "result": "changes_requested; repaired_pending_independent_review",
+    "report": "docs/协作开发/验收/2026-10-24-ALN-07-B独立审核.md"
   }
 }

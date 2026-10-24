@@ -1,0 +1,14 @@
+{
+  "source_commit": "cc0aa3a3b93c6f7285823f290f33e70510ef8951",
+  "source_tree": "fc9ba434f7dd6a44cf54cbbc1550a8e6f4a14f6d",
+  "scope": "Named backend suites in working tree immediately before commit; evoagent/tests changes committed without further edits; full Git archive repeats all suites",
+  "results": [
+    {
+      "name": "binding-related",
+      "exit_code": 0,
+      "result": "241 passed",
+      "log": ".planning/2026-10-24-action-binding-review/related-final.txt",
+      "sha256": "80b6896ebee2fbed97264d460ea967446302306502070d1d08694e4581e36249"
+    }
+  ]
+}
