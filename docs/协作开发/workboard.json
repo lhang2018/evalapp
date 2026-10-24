@@ -2097,7 +2097,7 @@
       "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "1ad71bc9d3b2d920cd8028d59765194941fd50c7",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -2108,6 +2108,15 @@
           "result": "1162 passed/1 skipped; 53 new Goal tests passed; ledger checks passed",
           "log": ".planning/2026-10-22-aln13/evidence.json",
           "delivery": "docs/协作开发/交付/ALN-13-A-Goal十态与自主授权.md"
+        },
+        {
+          "date": "2026-10-24",
+          "scope": "claude-main 独立复核：干净复本 c885cbd，自写150项探针 + 复跑53项Goal专项与1162/1全量；另在981cd26复跑确认无漂移",
+          "command": "python probe_aln13.py；python -m pytest tests/test_goal_governance.py -q；python -m pytest tests -q",
+          "result": "150/150 探针通过；53 passed；1162 passed / 1 skipped；981cd26：53 passed + 150/150",
+          "reviewed_commit": "c885cbdc6464e8d253e9dba840a43aa48d746521",
+          "probe": ".planning/2026-10-24-aln13-review/probe_aln13.py",
+          "report": "docs/协作开发/验收/2026-10-24-ALN-13-A独立复核.md"
         }
       ],
       "card": "docs/协作开发/任务卡/13-Goal与自主授权.md",
@@ -2122,8 +2131,8 @@
         "IMPLEMENTATION.md",
         "ROADMAP.md"
       ],
-      "next_step": "2026-10-24 claude-main 认领独立复核（作者 codex-runtime，独立性成立）；在干净复本复核 c885cbd 的53项Goal专项与1162/1，并按任务卡五条验收自写探针，不自批不发布基线。独立复核c885cbd的53项Goal回归与1162/1提交源码全量；ALN-14/15消费Goal/授权/预算引用，不自批、不发布共同基线",
-      "review_result": "pending",
+      "next_step": "claude-main 独立复核通过（150/150 探针 + 53专项 + 1162/1，981cd26复跑无漂移）：十态矩阵、跨连接CAS、重启持久化、幂等、授权期限/撤销/替换、父子九类扩权拒绝、五级动作、预算收紧与最终动作复核均符合契约；4项非阻断观察（读操作触发写事务、替换授权中断在途任务、撤销置blocked、后续GoalGovernor增益）带入接线评估；Android界面/真机长期运行、ALN-14自动推进与ALN-15跨任务预算仍另验，整包ALN-13不关闭",
+      "review_result": "accepted",
       "delivered_commit": "c885cbdc6464e8d253e9dba840a43aa48d746521",
       "delivery": "docs/协作开发/交付/ALN-13-A-Goal十态与自主授权.md",
       "preparation_status": "delivered"
