@@ -2427,7 +2427,7 @@
     "android-app/App.tsx",
     "android-app/src/update/workflowBundle.ts"
    ],
-   "working_basis": "2026-10-24 zcode-main 接手 codex-runtime 排队现场完成交付。base_commit f464881 为实际接手锚点（基线仍 candidate 未发布）。更新管理器未改，探针复用既有 healthCheck/rollback；服务端零改动；通知/后台 runner/DevicePackage 在途改动未触碰。",
+   "working_basis": "2026-10-24 zcode-main 接手 codex-runtime 排队现场完成交付。base_commit f464881 为实际接手锚点（基线仍 candidate 未发布）。更新管理器未改，探针复用既有 healthCheck/rollback；服务端零改动；通知/后台 runner/DevicePackage 在途改动未触碰。收尾提交由 codex-runtime 会话在交接登记后产出（352e8ef 实现+16项新测试、70f0c9c 台账与交付登记）；zcode-main 复核台账并复跑客户端 190 项测试通过，未改动实现；loadActiveBundle 存在一处换行丢失的格式瑕疵（无语义影响），留独立复核处置。",
    "next_step": "待独立复核（执行前拒绝覆盖面、unknown 不标健康、回滚后版本绑定）；真机故障证据与 ALN-11 整包关闭按原范围另验",
    "ownership_history": [
     {
