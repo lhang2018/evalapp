@@ -1,0 +1,54 @@
+{
+  "source_commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
+  "source_tree": "6b9bd53adb72c95676fc14d657c438a19687e550",
+  "attested_at": "2026-10-24T11:41:55.122505+00:00",
+  "tracked_android_files_unchanged": 102,
+  "important_source_sha256": {
+    "android-app/index.js": "0c0bd4ac16169567443b68a5bbd60f3eec2599fb353bafec41d175d0570f0963",
+    "android-app/App.tsx": "341fce0d060600b8e80608f6ce1cbd8533d9d134f057fa2389fd40be3219f9c1",
+    "android-app/src/device/broker.ts": "95d52b2a7d3333fec95f2e0c48bae9e7530570c5cbf385071e6b811023f7c4c7",
+    "android-app/src/device/taskProtocol.ts": "742030f159ffba7ad311c9f71f0cbb0dde98ab89884f21d5cb6ffe81eb23eb05",
+    "android-app/src/update/bundleRuntime.ts": "80be7a939a5ca46d19346f10f26dfb866b04b595fc4c7ea9848714681c5a8e21",
+    "android-app/src/update/manager.ts": "9f5881cb58ab567c1a2a2ec43706cd07ce8e04c70a509af8a620bb45d923acdb",
+    "android-app/src/update/workflowBundle.ts": "0da1ee1ea13b02c11fb3522c290b454a061fdca181aba82d78e2d2e01d0f3b73"
+  },
+  "installed_apk_sha256": "7b72b7997e842ba806841352dfc2e1494617a73f4dacbeb7d30ee85599fdeda2",
+  "apk_contains_js": false,
+  "product_js": {
+    "sha256": "12c61a5384976e2d4eca778984e5ebf5fbe092809718b344ddb829b6208d7578",
+    "size": 6526091,
+    "source": "Metro8084; exact original index.js"
+  },
+  "harness_js": {
+    "sha256": "02057cf3cbc350ea11e0fe757d4efa681a195285127efe671e52ab2737e38c79",
+    "size": 6285530,
+    "source": "separate test entry; unchanged candidate business modules"
+  },
+  "device_tests_passed": 9,
+  "device_tests_total": 9,
+  "actual_force_stop": true,
+  "product_entry_restored": true,
+  "versions": {
+    "python": "Python 3.10.11",
+    "node": "v24.16.0",
+    "java": "openjdk version \"17.0.20.1\" 2026-08-18\nOpenJDK Runtime Environment Temurin-17.0.20.1+1 (build 17.0.20.1+1)\nOpenJDK 64-Bit Server VM Temurin-17.0.20.1+1 (build 17.0.20.1+1, mixed mode, sharing)",
+    "adb": "Android Debug Bridge version 1.0.41\nVersion 37.0.1-15733141\nInstalled as C:\\Users\\lhang\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\nRunning on Windows 10.0.19045"
+  },
+  "dependencies": {
+    "npm_ci": {
+      "exit_code": 0,
+      "installed_packages": 599,
+      "elapsed_seconds": 13,
+      "observation": "actual npm ci stdout recorded by tool; no shared dependencies junction"
+    },
+    "typescript": "5.9.3",
+    "python_pytest": "8.4.2"
+  },
+  "limitations": [
+    "test entry imports actual modules; not natural-language App main-chain",
+    "device dispatch counter uses an explicit transport fixture; no accessibility permission bypass",
+    "reconcile/applyResult use an explicit fixture; downloads, RSA verification, native files and AsyncStorage are real",
+    "accessibility service unavailable; permission refusal verified, no real click end-to-end claim",
+    "force-stop is process restart, not physical device reboot"
+  ]
+}

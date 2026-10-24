@@ -1,0 +1,431 @@
+{
+  "source_commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
+  "source_tree": "6b9bd53adb72c95676fc14d657c438a19687e550",
+  "engine": "Hermes",
+  "tests": [
+    {
+      "name": "native_environment_and_permission_boundary",
+      "ok": true,
+      "detail": {
+        "available": false,
+        "native_file_module": true,
+        "durable_storage": "AsyncStorage"
+      }
+    },
+    {
+      "name": "concurrent_same_action_dispatches_once",
+      "ok": true,
+      "detail": {
+        "dispatches": 1,
+        "receipt": "verified"
+      }
+    },
+    {
+      "name": "changed_identity_and_corrupt_history_refuse",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "signed_good_bundle_download_native_install_and_health",
+      "ok": true,
+      "detail": {
+        "digest": "79ec7867558c6a71c3ed7cc707909acdf6b64cd96a179edb0a526cd9ab7555c7",
+        "probe": "healthy"
+      }
+    },
+    {
+      "name": "unhealthy_bundle_rolls_back_and_executes_old_native_artifact",
+      "ok": true,
+      "detail": {
+        "phase": "rolled_back",
+        "recovery": {
+          "at": 1792841880565,
+          "rollback_reason": "探针期望不符: 输出不包含 \"MUST_NOT_MATCH_07466FB\"",
+          "failed": {
+            "release_id": "review_bad",
+            "version": "v2.0.0",
+            "digest": "3144b44bc62d2b21d24b005de9a9e27b2180b9e396740f6c985303b8eb40e9d4",
+            "workflow_id": "review",
+            "workflow_version": "unknown"
+          },
+          "recovered": {
+            "release_id": "review_good",
+            "version": "v1.0.0",
+            "digest": "79ec7867558c6a71c3ed7cc707909acdf6b64cd96a179edb0a526cd9ab7555c7",
+            "workflow_id": "review",
+            "workflow_version": "1.0.0"
+          },
+          "execution_id": "bexec_mvmbrkl30rr2uiks1h38",
+          "outcome": "succeeded"
+        },
+        "receipts": [
+          "verified",
+          "activation_pending",
+          "activated",
+          "health_check",
+          "verified",
+          "activation_pending",
+          "activated",
+          "health_check",
+          "rolled_back"
+        ]
+      }
+    },
+    {
+      "name": "hard_tool_timeout_no_retry_or_downstream_after_late_completion",
+      "ok": true,
+      "detail": {
+        "outcome": "timeout",
+        "elapsed_ms": 169,
+        "calls_before_probe": 1,
+        "dependent": 0,
+        "probe": "unknown"
+      }
+    },
+    {
+      "name": "stale_probe_cannot_promote_current_artifact",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "actual_force_stop_restart_keeps_receipts_and_never_replays_unknown",
+      "ok": true,
+      "detail": {
+        "dispatches": 0,
+        "completed": "verified",
+        "interrupted": "unverified"
+      }
+    },
+    {
+      "name": "actual_restart_keeps_bundle_binding_and_old_capability_execution",
+      "ok": true,
+      "detail": {
+        "active": "review_good",
+        "digest": "79ec7867558c6a71c3ed7cc707909acdf6b64cd96a179edb0a526cd9ab7555c7",
+        "outcome": "succeeded",
+        "recovery": "succeeded"
+      }
+    }
+  ],
+  "limits": [
+    "test entry imports actual modules; not natural-language App main-chain",
+    "device dispatch counter uses an explicit transport fixture; no accessibility permission bypass",
+    "reconcile/applyResult use an explicit fixture; downloads, RSA verification, native files and AsyncStorage are real"
+  ],
+  "phase": "done",
+  "capture": {
+    "at": "2026-10-24T11:39:37.129438+00:00",
+    "device": "5748d823 / 24018RPACC / Android16",
+    "raw_db_sha256": "fbd1ea6e14d1f3bbcf9b2573d7e4559c8bafa2ec9a27e77b6611c48e758095dd",
+    "raw_db_committed": false
+  },
+  "namespace_rows": 13,
+  "durable_state": {
+    "update/update_state_v1": {
+      "version": 1,
+      "installation_id": "review-device",
+      "active_slot": "b",
+      "slots": {
+        "a": {
+          "release_id": "review_bad",
+          "version": "v2.0.0",
+          "digest": "3144b44bc62d2b21d24b005de9a9e27b2180b9e396740f6c985303b8eb40e9d4",
+          "activated_at": 1792841880525,
+          "signing_key_id": "review-device-only",
+          "artifact_path": "review_f550d90/update/review_bad.bundle"
+        },
+        "b": {
+          "release_id": "review_good",
+          "version": "v1.0.0",
+          "digest": "79ec7867558c6a71c3ed7cc707909acdf6b64cd96a179edb0a526cd9ab7555c7",
+          "activated_at": 1792841880413,
+          "signing_key_id": "review-device-only",
+          "artifact_path": "review_f550d90/update/review_good.bundle"
+        }
+      },
+      "last_known_good": {
+        "release_id": "review_good",
+        "version": "v1.0.0",
+        "digest": "79ec7867558c6a71c3ed7cc707909acdf6b64cd96a179edb0a526cd9ab7555c7",
+        "activated_at": 1792841880413,
+        "signing_key_id": "review-device-only",
+        "artifact_path": "review_f550d90/update/review_good.bundle"
+      },
+      "pending": null,
+      "artifact": null,
+      "receipts": [],
+      "phase": "available",
+      "target": {
+        "release_id": "review_good",
+        "version": "v1.0.0",
+        "artifact_digest": "sha256:79ec7867558c6a71c3ed7cc707909acdf6b64cd96a179edb0a526cd9ab7555c7",
+        "signed_by": "review-device-only",
+        "signature_ok": true,
+        "rollback_target": null,
+        "min_app_version": "0.1.0",
+        "channel": "review",
+        "bundle_kind": "workflow",
+        "delivery_mode": "capability_slot",
+        "gray_percent": 100,
+        "artifact_url": "http://127.0.0.1:8334/good.bundle",
+        "artifact_size": 212,
+        "artifact_sha256": "79ec7867558c6a71c3ed7cc707909acdf6b64cd96a179edb0a526cd9ab7555c7",
+        "artifact_signature": "c00f542e6c4c7c304bd92e1732c30694049b60d6f3108c1ef910b53a6ade41168d8a83de9eca0887d5a4b7a6043939e4be5a25fdf22612328e02d62fdd25c2cace88ab6614a7b0cb5b259589c84536bcfc08fa3aabd741b19820fbe7a3f660a86ff0e56822deee7f31982689e903b2198e7512996b942858442f82293d6e8f16d69535c6fbef19ccb8a1eb76d1bc549ddbe8b84134dec09d042d6d45eb2868548863188bc16367c3a185af8a30f8ffb466c668d7bc8aaaf4e1cde4786ef676bfcd0229cfd838ad54f91d5e281fd43cf0b8ab179f4b33d772aec163263bd3fe917baf81e5c2a5eb345bdbf030fa19799605aded6676ba28e64a0ceaeee3a62fc7",
+        "signing_key_id": "review-device-only",
+        "signature_schema": "evoagent.release.signing/1",
+        "required_tool_contracts": [],
+        "required_permissions": []
+      },
+      "checks": [],
+      "reasons": [],
+      "candidates": [],
+      "candidates_synced_at": null,
+      "last_checked_at": 1792841881132,
+      "last_error": null
+    },
+    "ledger/device_task_ledger_v1": {
+      "version": 1,
+      "proposals": {
+        "device-review-once": {
+          "proposal_id": "proposal-once",
+          "task_id": "device-review-task",
+          "run_id": "device-review-run",
+          "action_id": "device-review-once",
+          "effect_id": "effect-once",
+          "kind": "launch_intent",
+          "target": "com.evoagent",
+          "risk": "low",
+          "created_at": 1
+        },
+        "device-review-interrupted": {
+          "proposal_id": "proposal-interrupted",
+          "task_id": "device-review-task",
+          "run_id": "device-review-run",
+          "action_id": "device-review-interrupted",
+          "effect_id": "effect-interrupted",
+          "kind": "launch_intent",
+          "target": "com.evoagent",
+          "risk": "low",
+          "created_at": 1
+        }
+      },
+      "receipts": {
+        "device-review-once": {
+          "effect_id": "effect-once",
+          "action_id": "device-review-once",
+          "proposal_id": "proposal-once",
+          "task_id": "device-review-task",
+          "run_id": "device-review-run",
+          "kind": "launch_intent",
+          "risk": "low",
+          "state": "verified",
+          "terminal": true,
+          "replayed": false,
+          "evidence": {
+            "fixture": true
+          },
+          "occurred_at": 1792841880113,
+          "recorded_at": 1792841880113
+        },
+        "device-review-interrupted": {
+          "effect_id": "effect-interrupted",
+          "action_id": "device-review-interrupted",
+          "proposal_id": "proposal-interrupted",
+          "task_id": "device-review-task",
+          "run_id": "device-review-run",
+          "kind": "launch_intent",
+          "risk": "low",
+          "state": "unverified",
+          "terminal": false,
+          "replayed": false,
+          "message": "中断恢复：已记账无回执，副作用未知，需人工对账",
+          "occurred_at": 1792841931483,
+          "recorded_at": 1792841931483
+        }
+      },
+      "retired": {}
+    },
+    "update/bundle_runtime_v1": {
+      "version": 1,
+      "binding": {
+        "release_id": "review_good",
+        "version": "v1.0.0",
+        "digest": "79ec7867558c6a71c3ed7cc707909acdf6b64cd96a179edb0a526cd9ab7555c7",
+        "workflow_id": "review",
+        "workflow_version": "1.0.0"
+      },
+      "records": [
+        {
+          "execution_id": "bexec_mvmbrkhb0hyy0oeok5om",
+          "task_ref": "device-review-good",
+          "release_id": "review_good",
+          "version": "v1.0.0",
+          "digest": "79ec7867558c6a71c3ed7cc707909acdf6b64cd96a179edb0a526cd9ab7555c7",
+          "workflow_id": "review",
+          "workflow_version": "1.0.0",
+          "input": {},
+          "output": {
+            "time": "2026-10-24T11:38:00.433Z",
+            "label": "good"
+          },
+          "steps": [
+            {
+              "node_id": "time",
+              "tool": "local_time",
+              "state": "success",
+              "attempts": 1,
+              "started_at": 1792841880432,
+              "finished_at": 1792841880433,
+              "output": {
+                "time": "2026-10-24T11:38:00.433Z",
+                "label": "good"
+              }
+            }
+          ],
+          "outcome": "succeeded",
+          "started_at": 1792841880431,
+          "finished_at": 1792841880433
+        },
+        {
+          "execution_id": "bexec_mvmbrkk30nb29mk4eeo7",
+          "task_ref": "device-review-bad",
+          "release_id": "review_bad",
+          "version": "v2.0.0",
+          "digest": "3144b44bc62d2b21d24b005de9a9e27b2180b9e396740f6c985303b8eb40e9d4",
+          "workflow_id": "review",
+          "workflow_version": "1.0.0",
+          "input": {},
+          "output": {
+            "time": "2026-10-24T11:38:00.531Z",
+            "label": "bad"
+          },
+          "steps": [
+            {
+              "node_id": "time",
+              "tool": "local_time",
+              "state": "success",
+              "attempts": 1,
+              "started_at": 1792841880531,
+              "finished_at": 1792841880531,
+              "output": {
+                "time": "2026-10-24T11:38:00.531Z",
+                "label": "bad"
+              }
+            }
+          ],
+          "outcome": "succeeded",
+          "started_at": 1792841880531,
+          "finished_at": 1792841880531
+        },
+        {
+          "execution_id": "bexec_mvmbrkl30rr2uiks1h38",
+          "task_ref": "recover_mvmbrkl30q153bzg7kqx",
+          "release_id": "review_good",
+          "version": "v1.0.0",
+          "digest": "79ec7867558c6a71c3ed7cc707909acdf6b64cd96a179edb0a526cd9ab7555c7",
+          "workflow_id": "review",
+          "workflow_version": "1.0.0",
+          "input": {},
+          "output": {
+            "time": "2026-10-24T11:38:00.568Z",
+            "label": "good"
+          },
+          "steps": [
+            {
+              "node_id": "time",
+              "tool": "local_time",
+              "state": "success",
+              "attempts": 1,
+              "started_at": 1792841880567,
+              "finished_at": 1792841880568,
+              "output": {
+                "time": "2026-10-24T11:38:00.568Z",
+                "label": "good"
+              }
+            }
+          ],
+          "outcome": "succeeded",
+          "started_at": 1792841880567,
+          "finished_at": 1792841880568
+        },
+        {
+          "execution_id": "bexec_mvmbsnwm07jbeexa96ex",
+          "task_ref": "device-review-post-restart",
+          "release_id": "review_good",
+          "version": "v1.0.0",
+          "digest": "79ec7867558c6a71c3ed7cc707909acdf6b64cd96a179edb0a526cd9ab7555c7",
+          "workflow_id": "review",
+          "workflow_version": "1.0.0",
+          "input": {},
+          "output": {
+            "time": "2026-10-24T11:38:51.527Z",
+            "label": "good"
+          },
+          "steps": [
+            {
+              "node_id": "time",
+              "tool": "local_time",
+              "state": "success",
+              "attempts": 1,
+              "started_at": 1792841931527,
+              "finished_at": 1792841931528,
+              "output": {
+                "time": "2026-10-24T11:38:51.527Z",
+                "label": "good"
+              }
+            }
+          ],
+          "outcome": "succeeded",
+          "started_at": 1792841931526,
+          "finished_at": 1792841931528
+        }
+      ],
+      "probes": [
+        {
+          "probe_id": "probe_mvmbrkh60grn653atfwh",
+          "outcome": "healthy",
+          "release_id": "review_good",
+          "version": "v1.0.0",
+          "digest": "79ec7867558c6a71c3ed7cc707909acdf6b64cd96a179edb0a526cd9ab7555c7",
+          "workflow_id": "review",
+          "task_ref": "device-review-good",
+          "reason": "探针执行成功且期望相符",
+          "execution_id": "bexec_mvmbrkhb0hyy0oeok5om",
+          "at": 1792841880442
+        },
+        {
+          "probe_id": "probe_mvmbrkk10m0qki8z5m1e",
+          "outcome": "unhealthy",
+          "release_id": "review_bad",
+          "version": "v2.0.0",
+          "digest": "3144b44bc62d2b21d24b005de9a9e27b2180b9e396740f6c985303b8eb40e9d4",
+          "workflow_id": "review",
+          "task_ref": "device-review-bad",
+          "reason": "探针期望不符: 输出不包含 \"MUST_NOT_MATCH_07466FB\"",
+          "execution_id": "bexec_mvmbrkk30nb29mk4eeo7",
+          "at": 1792841880536
+        }
+      ],
+      "recovery": {
+        "at": 1792841880565,
+        "rollback_reason": "探针期望不符: 输出不包含 \"MUST_NOT_MATCH_07466FB\"",
+        "failed": {
+          "release_id": "review_bad",
+          "version": "v2.0.0",
+          "digest": "3144b44bc62d2b21d24b005de9a9e27b2180b9e396740f6c985303b8eb40e9d4",
+          "workflow_id": "review",
+          "workflow_version": "unknown"
+        },
+        "recovered": {
+          "release_id": "review_good",
+          "version": "v1.0.0",
+          "digest": "79ec7867558c6a71c3ed7cc707909acdf6b64cd96a179edb0a526cd9ab7555c7",
+          "workflow_id": "review",
+          "workflow_version": "1.0.0"
+        },
+        "execution_id": "bexec_mvmbrkl30rr2uiks1h38",
+        "outcome": "succeeded"
+      }
+    }
+  }
+}

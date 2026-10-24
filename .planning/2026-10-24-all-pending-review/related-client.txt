@@ -1,0 +1,106 @@
+(node:112160) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/broker.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ high-risk actions require independent confirmation (2.092ms)
+✔ confirmed high-risk action executes and records evidence (1.3169ms)
+✔ transport errors become failed rather than throwing (0.6728ms)
+✔ verified results without evidence are downgraded to unverified (0.3245ms)
+✔ repeating an action_id never replays the device action (0.6423ms)
+✔ dispatched-but-unverified actions are not replayed (0.4308ms)
+✔ missing native module reports unavailable without crashing (0.3242ms)
+✔ click results are verified only when the UI actually changed (1.4519ms)
+✔ permission dialogs downgrade otherwise successful clicks (0.4894ms)
+✔ consecutive unverified actions trigger a safety stop until resumed (0.7805ms)
+✔ verified actions reset the consecutive failure counter (0.4873ms)
+✔ native transport passes through evidence and failure messages (0.3873ms)
+(node:10640) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ two ledger instances sharing durable storage claim an action only once (3.8249ms)
+✔ cached action id cannot be reused with a different task_id (3.312ms)
+✔ cached action id cannot be reused with a different run_id (2.1692ms)
+✔ cached action id cannot be reused with a different effect_id (0.6868ms)
+✔ cached action id cannot be reused with a different target (0.3883ms)
+✔ proposal owns nested input snapshots (0.1411ms)
+✔ retention does not make an already dispatched action executable again after restart (0.731ms)
+✔ pending proposal is not evicted to permit replay (0.4523ms)
+✔ invalid persisted ledger is rejected rather than becoming an empty execution history (0.3376ms)
+✔ missing broker journal after dispatch remains unknown (0.6031ms)
+✔ journal receipt cannot refer to another action (0.2493ms)
+✔ upload never contains expected screen text or recipient targets (0.2119ms)
+✔ explicit low risk cannot downgrade a known high risk device operation (0.2177ms)
+✔ raw broker concurrent duplicates cannot both dispatch (0.2859ms)
+✔ raw broker never returns another task's cached action receipt (0.2565ms)
+(node:81144) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/taskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 缺口证明：任务链路引用随动作进入 broker 日志（task→action→effect 可追溯） (4.6991ms)
+✔ createProposal：引用完整且稳定，run_id 缺省派生自任务，风险按 broker 同表推导 (0.4953ms)
+✔ proposalToAction：预期观察映射 expect_text，引用随动作下发 (0.2044ms)
+✔ 执行成功：回执终态 verified、证据与时间戳齐备，任务链可查 (0.9907ms)
+✔ 同一 action_id 重放：返回原回执，不重复下发，原始证据保留 (2.3245ms)
+✔ 未知副作用（unverified）不是终态：不自动重放，需人工对账 (4.3216ms)
+✔ 高风险无确认：终态 denied；重放不重复询问、不下发 (1.0718ms)
+✔ 无障碍未授权：终态 unavailable，重试需新提议（新 action_id） (0.8617ms)
+✔ 失败动作不自动重放：同一 action_id 返回原失败回执 (0.6798ms)
+✔ 中断恢复：先落提议后下发——崩溃窗口（已记账无回执）不自动重发 (0.8559ms)
+✔ 台账持久化：重启（新实例）后提议、回执与任务链完整 (0.6648ms)
+✔ 台账容量上界：超出 limit 淘汰最旧条目 (1.0257ms)
+✔ 上传投影：回执只含引用与状态，提议脱敏文本目标，本地保留字段列明 (0.4189ms)
+(node:54852) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/approvals.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ shows full binding, accepts once, and does not equate acceptance with task success (2.6797ms)
+✔ reject and per-approval state are independent (1.6828ms)
+✔ expiration and offline mode disable decisions while retaining details (0.4372ms)
+✔ status or binding changes on re-read require review before decision (0.2416ms)
+✔ HTTP 401 errors never echo a credential or server error body (0.4041ms)
+✔ HTTP 403 errors never echo a credential or server error body (0.2757ms)
+✔ HTTP 404 errors never echo a credential or server error body (0.2952ms)
+✔ HTTP 409 errors never echo a credential or server error body (0.2342ms)
+✔ HTTP 500 errors never echo a credential or server error body (0.5109ms)
+✔ an ambiguous POST is checked by the same approval id before any retry (0.9951ms)
+✔ responses from a previous credential or disposed page cannot enable a button (0.4407ms)
+✔ a response for another task cannot be approved (0.1762ms)
+(node:6700) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/update/bundleRuntime.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 没有活动包时执行前拒绝，工具不被调用 (1.452ms)
+✔ 旧版包（未内嵌 workflow_def）不可执行，仅展示 (0.8266ms)
+✔ 未注册工具在执行前拒绝 (0.6467ms)
+✔ 不兼容版本与权限不足在执行前拒绝 (1.8602ms)
+✔ 非法 workflow（环/重复ID/未知依赖/标识不一致）在执行前拒绝 (1.3455ms)
+✔ 装载层拒绝非法 workflow_def，非法包不会成为活动包 (0.4397ms)
+✔ 同一输入在更新前后使用各自版本 workflow，输出与证据绑定版本 (1.2667ms)
+✔ DAG 按依赖执行并传递上游输出；失败阻断下游并校验输出契约 (0.9299ms)
+✔ 探针：执行成功且期望相符才算 healthy (0.8006ms)
+✔ 探针：期望不符或执行失败为 unhealthy (0.8307ms)
+✔ 探针：超时无结果为 unknown，不标健康 (27.6397ms)
+✔ 探针：已激活但非法的包被判 unhealthy（执行前拒绝） (0.4413ms)
+✔ declaresIntent 只匹配活动包声明的意图 (0.3049ms)
+✔ 健康失败自动回滚后，原健康包真实可执行且版本关联跨重启保留 (99.4182ms)
+✔ versionAtLeast 语义与更新管理器一致 (0.0773ms)
+✔ validateWorkflowDef 拒绝无可执行体与非法参数 (0.0603ms)
+(node:49304) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/update/peerBundleReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ normal execution has a hard wait bound and never dispatches a dependent after a late timeout (60.1084ms)
+✔ a health result cannot certify an active bundle switched during the probe (1.2796ms)
+✔ recovery must satisfy the restored bundle expectation (1.4751ms)
+✔ recovery cannot call the same failed release a rollback (0.841ms)
+✔ active marker and slot contents must refer to the same artifact (0.2287ms)
+✔ update manager validates the probe artifact inside its serialized health decision (0.9856ms)
+ℹ tests 74
+ℹ suites 0
+ℹ pass 74
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 323.704

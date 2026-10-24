@@ -1,0 +1,41 @@
+{
+  "source_commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
+  "source_tree": "6b9bd53adb72c95676fc14d657c438a19687e550",
+  "results": [
+    {
+      "name": "typecheck",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-24-baseline-device/typecheck.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256_basis": "lf_normalized_text"
+    },
+    {
+      "name": "android-build",
+      "command": [
+        "cmd",
+        "/c",
+        "gradlew.bat",
+        ":app:assembleDebug",
+        "-PreactNativeArchitectures=arm64-v8a",
+        "-PreactNativeDevServerPort=8084",
+        "--console=plain"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-24-baseline-device/android-build.txt",
+      "sha256": "d26e2e4c137b3eefbdff84d18a6a70653eb2bbd3437abe2c73a81d51011f0508",
+      "sha256_basis": "lf_normalized_text"
+    }
+  ],
+  "dependency_install": "npm ci --no-audit --no-fund; lockfile exact; no shared node_modules junction",
+  "typescript": "5.9.3",
+  "apk": {
+    "path": "E:\\evalapp\\outputs\\baseline-device-f550d90\\android-app\\android\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
+    "sha256": "7b72b7997e842ba806841352dfc2e1494617a73f4dacbeb7d30ee85599fdeda2",
+    "size": 156283051
+  }
+}

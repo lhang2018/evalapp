@@ -1,0 +1,7 @@
+{
+  "at": "2026-10-24T11:38:47.076859+00:00",
+  "before_pid": "23260",
+  "after_pid": "",
+  "command": "adb -s 5748d823 shell am force-stop com.evoagent",
+  "killed": true
+}

@@ -1,0 +1,37 @@
+(node:90008) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/update/bundleRuntime.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 没有活动包时执行前拒绝，工具不被调用 (1.3886ms)
+✔ 旧版包（未内嵌 workflow_def）不可执行，仅展示 (0.7771ms)
+✔ 未注册工具在执行前拒绝 (0.6259ms)
+✔ 不兼容版本与权限不足在执行前拒绝 (1.8047ms)
+✔ 非法 workflow（环/重复ID/未知依赖/标识不一致）在执行前拒绝 (1.4733ms)
+✔ 装载层拒绝非法 workflow_def，非法包不会成为活动包 (0.3804ms)
+✔ 同一输入在更新前后使用各自版本 workflow，输出与证据绑定版本 (1.0648ms)
+✔ DAG 按依赖执行并传递上游输出；失败阻断下游并校验输出契约 (0.8953ms)
+✔ 探针：执行成功且期望相符才算 healthy (0.9634ms)
+✔ 探针：期望不符或执行失败为 unhealthy (0.7314ms)
+✔ 探针：超时无结果为 unknown，不标健康 (31.92ms)
+✔ 探针：已激活但非法的包被判 unhealthy（执行前拒绝） (0.7957ms)
+✔ declaresIntent 只匹配活动包声明的意图 (0.3216ms)
+✔ 健康失败自动回滚后，原健康包真实可执行且版本关联跨重启保留 (63.8496ms)
+✔ versionAtLeast 语义与更新管理器一致 (0.0769ms)
+✔ validateWorkflowDef 拒绝无可执行体与非法参数 (0.0628ms)
+(node:104004) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/update/peerBundleReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ normal execution has a hard wait bound and never dispatches a dependent after a late timeout (63.1948ms)
+✔ a health result cannot certify an active bundle switched during the probe (1.4465ms)
+✔ recovery must satisfy the restored bundle expectation (1.8053ms)
+✔ recovery cannot call the same failed release a rollback (1.0363ms)
+✔ active marker and slot contents must refer to the same artifact (0.3221ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 248.5086

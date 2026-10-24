@@ -1,0 +1,389 @@
+(node:39164) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ two ledger instances sharing durable storage claim an action only once (2.2169ms)
+✖ cached action id cannot be reused with a different task_id (0.7593ms)
+✖ cached action id cannot be reused with a different run_id (0.2702ms)
+✖ cached action id cannot be reused with a different effect_id (0.2831ms)
+✖ cached action id cannot be reused with a different target (0.268ms)
+✖ proposal owns nested input snapshots (0.3643ms)
+✖ retention does not make an already dispatched action executable again after restart (0.4521ms)
+✖ pending proposal is not evicted to permit replay (0.2072ms)
+✖ invalid persisted ledger is rejected rather than becoming an empty execution history (0.2739ms)
+✖ missing broker journal after dispatch remains unknown (0.315ms)
+✖ journal receipt cannot refer to another action (0.1816ms)
+✖ upload never contains expected screen text or recipient targets (5.3592ms)
+✖ explicit low risk cannot downgrade a known high risk device operation (0.2515ms)
+✖ raw broker concurrent duplicates cannot both dispatch (0.2257ms)
+(node:19616) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/update/peerBundleReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ normal execution has a hard wait bound and never dispatches a dependent after a late timeout (1.5199ms)
+✖ a health result cannot certify an active bundle switched during the probe (1.1038ms)
+✖ recovery must satisfy the restored bundle expectation (0.8172ms)
+✔ recovery cannot call the same failed release a rollback (0.3957ms)
+✖ active marker and slot contents must refer to the same artifact (0.6518ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 1
+ℹ fail 18
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 129.9294
+
+✖ failing tests:
+
+test at android-app\test\device\peerTaskProtocol.test.ts:14:1
+✖ two ledger instances sharing durable storage claim an action only once (2.2169ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:18:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\device\peerTaskProtocol.test.ts:22:3
+✖ cached action id cannot be reused with a different task_id (0.7593ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:25:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at android-app\test\device\peerTaskProtocol.test.ts:22:3
+✖ cached action id cannot be reused with a different run_id (0.2702ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:25:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at android-app\test\device\peerTaskProtocol.test.ts:22:3
+✖ cached action id cannot be reused with a different effect_id (0.2831ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:25:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at android-app\test\device\peerTaskProtocol.test.ts:22:3
+✖ cached action id cannot be reused with a different target (0.268ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:25:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at android-app\test\device\peerTaskProtocol.test.ts:31:1
+✖ proposal owns nested input snapshots (0.3643ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'changed'
+  - 'original'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:35:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'changed',
+    expected: 'original',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\device\peerTaskProtocol.test.ts:39:1
+✖ retention does not make an already dispatched action executable again after restart (0.4521ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  3 !== 2
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:44:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 3,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\device\peerTaskProtocol.test.ts:47:1
+✖ pending proposal is not evicted to permit replay (0.2072ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:50:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at android-app\test\device\peerTaskProtocol.test.ts:54:1
+✖ invalid persisted ledger is rejected rather than becoming an empty execution history (0.2739ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:57:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at android-app\test\device\peerTaskProtocol.test.ts:61:1
+✖ missing broker journal after dispatch remains unknown (0.315ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'failed'
+  - 'unverified'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:66:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'failed',
+    expected: 'unverified',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\device\peerTaskProtocol.test.ts:69:1
+✖ journal receipt cannot refer to another action (0.1816ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:71:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at android-app\test\device\peerTaskProtocol.test.ts:75:1
+✖ upload never contains expected screen text or recipient targets (5.3592ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(!encoded.includes("private-recipient") && !encoded.includes("private-screen-text"))
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:78:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at android-app\test\device\peerTaskProtocol.test.ts:81:1
+✖ explicit low risk cannot downgrade a known high risk device operation (0.2515ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'low' !== 'high'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:82:65)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'low',
+    expected: 'high',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\device\peerTaskProtocol.test.ts:88:1
+✖ raw broker concurrent duplicates cannot both dispatch (0.2257ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts:92:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\update\peerBundleReview.test.ts:17:1
+✖ normal execution has a hard wait bound and never dispatches a dependent after a late timeout (1.5199ms)
+  Error [BundleRejectedError]: workflow_def.workflow_id (review) 与包标识 (undefined) 不一致
+      at BundleRuntime.resolveExecutable (file:///E:/evalapp/android-app/src/update/bundleRuntime.ts:301:13)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async BundleRuntime.execute (file:///E:/evalapp/android-app/src/update/bundleRuntime.ts:321:29)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/update/peerBundleReview.test.ts:23:20)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    code: 'illegal_workflow',
+    reasons: [ 'workflow_def.workflow_id (review) 与包标识 (undefined) 不一致' ]
+  }
+
+test at android-app\test\update\peerBundleReview.test.ts:30:1
+✖ a health result cannot certify an active bundle switched during the probe (1.1038ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'unhealthy'
+  - 'unknown'
+       ^
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/update/peerBundleReview.test.ts:33:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unhealthy',
+    expected: 'unknown',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\update\peerBundleReview.test.ts:35:1
+✖ recovery must satisfy the restored bundle expectation (0.8172ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'not_executable'
+  - 'failed'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/update/peerBundleReview.test.ts:39:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'not_executable',
+    expected: 'failed',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\update\peerBundleReview.test.ts:47:1
+✖ active marker and slot contents must refer to the same artifact (0.6518ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   bundle: {
+  +     health_probe: {},
+  +     workflow_def: {
+  +       nodes: [
+  +         {
+  +           max_retries: 2,
+  +           node_id: 'first',
+  +           tool: 'tool'
+  +         },
+  +         {
+  +           deps: [
+  +             'first'
+  +           ],
+  +           node_id: 'after',
+  +           tool: 'after'
+  +         }
+  +       ],
+  +       version: '1',
+  +       workflow_id: 'review'
+  +     }
+  +   },
+  +   digest: 'digest-1',
+  +   installed_at: 1,
+  +   release_id: 'release-1',
+  +   slot: 'a',
+  +   version: '1'
+  + }
+  - null
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/update/peerBundleReview.test.ts:51:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { slot: 'a', release_id: 'release-1', version: '1', digest: 'digest-1', installed_at: 1, bundle: { workflow_def: [Object], health_probe: {} } },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

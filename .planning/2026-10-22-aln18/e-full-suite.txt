@@ -1,0 +1,95 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  5%]
+........................................................................ [ 10%]
+........................................................................ [ 16%]
+........................................................................ [ 21%]
+........................................................................ [ 27%]
+........................................................................ [ 32%]
+........................................................................ [ 38%]
+........................................................................ [ 43%]
+........................................................................ [ 49%]
+.............................................F.......................... [ 54%]
+........................................................................ [ 60%]
+........................................................................ [ 65%]
+........................................................................ [ 71%]
+........................................................................ [ 76%]
+........................................................................ [ 82%]
+........................................................................ [ 87%]
+........................................................................ [ 93%]
+...............................s........................................ [ 98%]
+................                                                         [100%]
+================================== FAILURES ===================================
+________________ test_api_admin_goal_flow_and_operator_denial _________________
+
+app = <evoagent.app.App object at 0x0000017A88492CB0>
+
+    def test_api_admin_goal_flow_and_operator_denial(app):
+        app.config.api_admin_token, app.config.api_token = "admin-token", "op-token"
+        server = ApiServer(app, port=0)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        port = server.httpd.server_address[1]
+        def request(method, path, body=None, token="admin-token"):
+            req = urllib.request.Request(f"http://127.0.0.1:{port}{path}",
+                data=json.dumps(body).encode() if body is not None else None, method=method,
+                headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"})
+            try:
+                with urllib.request.urlopen(req, timeout=5) as response:
+                    return response.status, json.load(response)
+            except urllib.error.HTTPError as error:
+                return error.code, json.load(error)
+        try:
+            payload = dict(title="api purpose", success_criteria=["accepted"], deadline=time.time()+3600)
+>           assert request("POST", "/goals", payload, token="op-token")[0] == 403
+
+tests\test_goal_governance.py:396: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_goal_governance.py:390: in request
+    with urllib.request.urlopen(req, timeout=5) as response:
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:216: in urlopen
+    return opener.open(url, data, timeout)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:519: in open
+    response = self._open(req, data)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:536: in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:496: in _call_chain
+    result = func(*args)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:1377: in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:1352: in do_open
+    r = h.getresponse()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:1375: in getresponse
+    response.begin()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:318: in begin
+    version, status, reason = self._read_status()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:279: in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <socket.SocketIO object at 0x0000017A884BCE20>
+b = <memory at 0x0000017A860F8100>
+
+    def readinto(self, b):
+        """Read up to len(b) bytes into the writable buffer *b* and return
+        the number of bytes read.  If the socket is non-blocking and no bytes
+        are available, None is returned.
+    
+        If *b* is non-empty, a 0 return value indicates that the connection
+        was shutdown at the other end.
+        """
+        self._checkClosed()
+        self._checkReadable()
+        if self._timeout_occurred:
+            raise OSError("cannot read from timed out object")
+        while True:
+            try:
+>               return self._sock.recv_into(b)
+E               ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\socket.py:705: ConnectionAbortedError
+---------------------------- Captured stdout call -----------------------------
+EvoAgent API: http://127.0.0.1:14759  (GET /health)
+=========================== short test summary info ===========================
+FAILED tests/test_goal_governance.py::test_api_admin_goal_flow_and_operator_denial
+1 failed, 1310 passed, 1 skipped in 139.64s (0:02:19)

@@ -1,0 +1,120 @@
+Starting a Gradle Daemon (subsequent builds will be faster)
+> Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:shared:processResources NO-SOURCE
+> Task :gradle-plugin:settings-plugin:pluginDescriptors
+> Task :gradle-plugin:settings-plugin:processResources
+> Task :gradle-plugin:shared:compileKotlin
+> Task :gradle-plugin:shared:compileJava NO-SOURCE
+> Task :gradle-plugin:shared:classes UP-TO-DATE
+> Task :gradle-plugin:shared:jar
+> Task :gradle-plugin:settings-plugin:compileKotlin
+> Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:settings-plugin:classes
+> Task :gradle-plugin:settings-plugin:jar
+> Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors
+> Task :gradle-plugin:react-native-gradle-plugin:processResources
+
+> Task :gradle-plugin:react-native-gradle-plugin:compileKotlin
+w: file:///E:/evalapp/outputs/baseline-device-f550d90/android-app/node_modules/@react-native/gradle-plugin/react-native-gradle-plugin/src/main/kotlin/com/facebook/react/ReactPlugin.kt:97:35 Unnecessary safe call on a non-null receiver of type Jvm!
+
+> Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:react-native-gradle-plugin:classes
+> Task :gradle-plugin:react-native-gradle-plugin:jar
+> Task :app:generateAutolinkingPackageList
+> Task :app:generateCodegenSchemaFromJavaScript SKIPPED
+> Task :app:generateCodegenArtifactsFromSchema SKIPPED
+> Task :app:preBuild
+> Task :app:preDebugBuild
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:generateDebugBuildConfig
+> Task :react-native-async-storage_async-storage:preBuild UP-TO-DATE
+> Task :react-native-async-storage_async-storage:preDebugBuild UP-TO-DATE
+> Task :react-native-async-storage_async-storage:writeDebugAarMetadata
+> Task :app:generateDebugResValues
+> Task :react-native-async-storage_async-storage:generateDebugResValues
+> Task :react-native-async-storage_async-storage:generateDebugResources
+> Task :app:checkDebugAarMetadata
+> Task :react-native-async-storage_async-storage:packageDebugResources
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :react-native-async-storage_async-storage:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+> Task :app:mergeDebugResources
+> Task :react-native-async-storage_async-storage:compileDebugLibraryResources
+> Task :react-native-async-storage_async-storage:parseDebugLocalResources
+> Task :react-native-async-storage_async-storage:generateDebugBuildConfig
+
+> Task :react-native-async-storage_async-storage:processDebugManifest
+package="com.reactnativecommunity.asyncstorage" found in source AndroidManifest.xml: E:\evalapp\outputs\baseline-device-f550d90\android-app\node_modules\@react-native-async-storage\async-storage\android\src\main\AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.reactnativecommunity.asyncstorage" from the source AndroidManifest.xml: E:\evalapp\outputs\baseline-device-f550d90\android-app\node_modules\@react-native-async-storage\async-storage\android\src\main\AndroidManifest.xml.
+
+> Task :react-native-async-storage_async-storage:javaPreCompileDebug
+> Task :app:javaPreCompileDebug
+> Task :react-native-async-storage_async-storage:generateDebugRFile
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+
+> Task :react-native-async-storage_async-storage:compileDebugJavaWithJavac
+E:\evalapp\outputs\baseline-device-f550d90\android-app\node_modules\@react-native-async-storage\async-storage\android\src\main\java\com\reactnativecommunity\asyncstorage\AsyncStorageModule.java:84: ����: [removal] NativeModule �е� onCatalystInstanceDestroy() �ѹ�ʱ, �ұ��Ϊ��ɾ��
+  public void onCatalystInstanceDestroy() {
+              ^
+ע: ĳЩ�����ļ�ʹ�û򸲸����ѹ�ʱ�� API��
+ע: �й���ϸ��Ϣ, ��ʹ�� -Xlint:deprecation ���±��롣
+ע: E:\evalapp\outputs\baseline-device-f550d90\android-app\node_modules\@react-native-async-storage\async-storage\android\src\javaPackage\java\com\reactnativecommunity\asyncstorage\AsyncStoragePackage.javaʹ����δ�����򲻰�ȫ�Ĳ�����
+ע: �й���ϸ��Ϣ, ��ʹ�� -Xlint:unchecked ���±��롣
+1 ������
+
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :react-native-async-storage_async-storage:mergeDebugShaders
+> Task :react-native-async-storage_async-storage:compileDebugShaders NO-SOURCE
+> Task :react-native-async-storage_async-storage:generateDebugAssets UP-TO-DATE
+> Task :react-native-async-storage_async-storage:bundleLibCompileToJarDebug
+> Task :react-native-async-storage_async-storage:packageDebugAssets
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :react-native-async-storage_async-storage:bundleLibRuntimeToJarDebug
+> Task :app:desugarDebugFileDependencies
+> Task :react-native-async-storage_async-storage:processDebugJavaRes NO-SOURCE
+> Task :app:mergeDebugJniLibFolders
+> Task :react-native-async-storage_async-storage:mergeDebugJniLibFolders
+> Task :react-native-async-storage_async-storage:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-async-storage_async-storage:bundleLibRuntimeToDirDebug
+> Task :app:checkDebugDuplicateClasses
+> Task :react-native-async-storage_async-storage:copyDebugJniLibsProjectOnly
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:processDebugManifestForPackage
+> Task :app:mergeDebugNativeLibs
+> Task :app:processDebugResources
+> Task :app:mergeLibDexDebug
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libc++_shared.so, libfabricjni.so, libfbjni.so, libfolly_runtime.so, libglog.so, libhermes.so, libhermes_executor.so, libhermesinstancejni.so, libimagepipeline.so, libjscinstance.so, libjsi.so, libjsijniprofiler.so, libjsinspector.so, libmapbufferjni.so, libnative-filters.so, libnative-imagetranscoder.so, libreact_codegen_rncore.so, libreact_debug.so, libreact_devsupportjni.so, libreact_featureflags.so, libreact_featureflagsjni.so, libreact_nativemodule_core.so, libreact_nativemodule_defaults.so, libreact_nativemodule_dom.so, libreact_nativemodule_featureflags.so, libreact_nativemodule_microtasks.so, libreact_newarchdefaults.so, libreact_performance_timeline.so, libreact_render_componentregistry.so, libreact_render_consistency.so, libreact_render_core.so, libreact_render_debug.so, libreact_render_element.so, libreact_render_graphics.so, libreact_render_imagemanager.so, libreact_render_mapbuffer.so, libreact_render_observers_events.so, libreact_render_uimanager_consistency.so, libreact_utils.so, libreactnativeblob.so, libreactnativejni.so, librninstance.so, librrc_image.so, librrc_legacyviewmanagerinterop.so, librrc_textinput.so, librrc_view.so, libruntimeexecutor.so, libturbomodulejsijni.so, libuimanagerjni.so, libyoga.so.
+
+> Task :app:mergeExtDexDebug
+
+> Task :app:compileDebugKotlin
+w: file:///E:/evalapp/outputs/baseline-device-f550d90/android-app/android/app/src/main/java/com/evoagent/HeadlessSyncRunner.kt:37:56 The corresponding parameter in the supertype 'ReactInstanceEventListener' is named 'context'. This may cause problems when calling this function with named arguments.
+
+> Task :app:compileDebugJavaWithJavac
+> Task :app:dexBuilderDebug
+> Task :app:processDebugJavaRes
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:mergeProjectDexDebug
+> Task :app:mergeDebugJavaResource
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+
+BUILD SUCCESSFUL in 2m 21s
+71 actionable tasks: 71 executed

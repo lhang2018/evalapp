@@ -1,0 +1,59 @@
+(node:56408) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/broker.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ high-risk actions require independent confirmation (1.0245ms)
+✔ confirmed high-risk action executes and records evidence (0.7799ms)
+✔ transport errors become failed rather than throwing (0.2555ms)
+✔ verified results without evidence are downgraded to unverified (0.1253ms)
+✔ repeating an action_id never replays the device action (0.2016ms)
+✔ dispatched-but-unverified actions are not replayed (0.1367ms)
+✔ missing native module reports unavailable without crashing (0.133ms)
+✔ click results are verified only when the UI actually changed (0.5948ms)
+✔ permission dialogs downgrade otherwise successful clicks (0.191ms)
+✔ consecutive unverified actions trigger a safety stop until resumed (0.294ms)
+✔ verified actions reset the consecutive failure counter (0.1548ms)
+✔ native transport passes through evidence and failure messages (0.3412ms)
+(node:26452) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ two ledger instances sharing durable storage claim an action only once (2.4623ms)
+✔ cached action id cannot be reused with a different task_id (0.8339ms)
+✔ cached action id cannot be reused with a different run_id (0.7593ms)
+✔ cached action id cannot be reused with a different effect_id (1.967ms)
+✔ cached action id cannot be reused with a different target (0.7597ms)
+✔ proposal owns nested input snapshots (0.1379ms)
+✔ retention does not make an already dispatched action executable again after restart (0.4462ms)
+✔ pending proposal is not evicted to permit replay (0.2989ms)
+✔ invalid persisted ledger is rejected rather than becoming an empty execution history (0.1604ms)
+✔ missing broker journal after dispatch remains unknown (0.3367ms)
+✔ journal receipt cannot refer to another action (0.1701ms)
+✔ upload never contains expected screen text or recipient targets (0.1393ms)
+✔ explicit low risk cannot downgrade a known high risk device operation (0.1209ms)
+✔ raw broker concurrent duplicates cannot both dispatch (0.1859ms)
+(node:25360) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/taskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 缺口证明：任务链路引用随动作进入 broker 日志（task→action→effect 可追溯） (1.7328ms)
+✔ createProposal：引用完整且稳定，run_id 缺省派生自任务，风险按 broker 同表推导 (0.2891ms)
+✔ proposalToAction：预期观察映射 expect_text，引用随动作下发 (0.1152ms)
+✔ 执行成功：回执终态 verified、证据与时间戳齐备，任务链可查 (0.353ms)
+✔ 同一 action_id 重放：返回原回执，不重复下发，原始证据保留 (1.4465ms)
+✔ 未知副作用（unverified）不是终态：不自动重放，需人工对账 (0.7005ms)
+✔ 高风险无确认：终态 denied；重放不重复询问、不下发 (1.708ms)
+✔ 无障碍未授权：终态 unavailable，重试需新提议（新 action_id） (0.7808ms)
+✔ 失败动作不自动重放：同一 action_id 返回原失败回执 (0.33ms)
+✔ 中断恢复：先落提议后下发——崩溃窗口（已记账无回执）不自动重发 (0.7604ms)
+✔ 台账持久化：重启（新实例）后提议、回执与任务链完整 (0.3949ms)
+✔ 台账容量上界：超出 limit 淘汰最旧条目 (0.5868ms)
+✔ 上传投影：回执只含引用与状态，提议脱敏文本目标，本地保留字段列明 (0.4702ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 140.7221

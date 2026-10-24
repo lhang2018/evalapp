@@ -1,0 +1,52 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFF                                                                 [100%]
+================================== FAILURES ===================================
+___________________ test_supported_is_a_real_boolean[false] ___________________
+tests\test_peer_runtime_protocol_review.py:11: in test_supported_is_a_real_boolean
+    with pytest.raises((TypeError, ValueError)):
+E   Failed: DID NOT RAISE any of (<class 'TypeError'>, <class 'ValueError'>)
+_____________________ test_supported_is_a_real_boolean[1] _____________________
+tests\test_peer_runtime_protocol_review.py:11: in test_supported_is_a_real_boolean
+    with pytest.raises((TypeError, ValueError)):
+E   Failed: DID NOT RAISE any of (<class 'TypeError'>, <class 'ValueError'>)
+___________________ test_supported_is_a_real_boolean[None] ____________________
+tests\test_peer_runtime_protocol_review.py:11: in test_supported_is_a_real_boolean
+    with pytest.raises((TypeError, ValueError)):
+E   Failed: DID NOT RAISE any of (<class 'TypeError'>, <class 'ValueError'>)
+_______ test_mock_never_advertises_a_real_sandbox_even_with_legacy_flag _______
+tests\test_peer_runtime_protocol_review.py:17: in test_mock_never_advertises_a_real_sandbox_even_with_legacy_flag
+    with pytest.raises(CapabilityNotSupportedError):
+E   Failed: DID NOT RAISE <class 'evoagent.runtime.protocol.CapabilityNotSupportedError'>
+_________ test_incomplete_backing_component_is_explicitly_unsupported _________
+tests\test_peer_runtime_protocol_review.py:23: in test_incomplete_backing_component_is_explicitly_unsupported
+    assert not any(d.supported for d in adapter.declarations())
+E   assert not True
+E    +  where True = any(<generator object test_incomplete_backing_component_is_explicitly_unsupported.<locals>.<genexpr> at 0x0000017A7D0D2650>)
+________ test_duplicate_declarations_cannot_disappear_in_a_matrix_dict ________
+tests\test_peer_runtime_protocol_review.py:34: in test_duplicate_declarations_cannot_disappear_in_a_matrix_dict
+    with pytest.raises((ValueError, AssertionError)):
+E   Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'AssertionError'>)
+____ test_mock_event_query_returns_same_prefix_and_zero_limit_as_real_bus _____
+tests\test_peer_runtime_protocol_review.py:46: in test_mock_event_query_returns_same_prefix_and_zero_limit_as_real_bus
+    assert runtime.query_run_events("r", limit=0) == []
+E   AssertionError: assert [{'event_id':...d': 'r', ...}] == []
+E     
+E     Left contains 3 more items, first extra item: {'event_id': '5bd5d092f5404002adb2abe2638cd0b5', 'event_type': 'review', 'payload': {'n': 0}, 'run_id': 'r', ...}
+E     Use -v to get more diff
+_______ test_adapter_keeps_actual_tool_policy_and_sandbox_restrictions ________
+tests\test_peer_runtime_protocol_review.py:61: in test_adapter_keeps_actual_tool_policy_and_sandbox_restrictions
+    assert not violation.ok and violation.violation
+E   AssertionError: assert (not True)
+E    +  where True = SandboxOutcome(ok=True, output='', error=None, violation=False).ok
+=========================== short test summary info ===========================
+FAILED tests/test_peer_runtime_protocol_review.py::test_supported_is_a_real_boolean[false]
+FAILED tests/test_peer_runtime_protocol_review.py::test_supported_is_a_real_boolean[1]
+FAILED tests/test_peer_runtime_protocol_review.py::test_supported_is_a_real_boolean[None]
+FAILED tests/test_peer_runtime_protocol_review.py::test_mock_never_advertises_a_real_sandbox_even_with_legacy_flag
+FAILED tests/test_peer_runtime_protocol_review.py::test_incomplete_backing_component_is_explicitly_unsupported
+FAILED tests/test_peer_runtime_protocol_review.py::test_duplicate_declarations_cannot_disappear_in_a_matrix_dict
+FAILED tests/test_peer_runtime_protocol_review.py::test_mock_event_query_returns_same_prefix_and_zero_limit_as_real_bus
+FAILED tests/test_peer_runtime_protocol_review.py::test_adapter_keeps_actual_tool_policy_and_sandbox_restrictions
+8 failed in 0.74s

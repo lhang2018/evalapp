@@ -1,0 +1,127 @@
+(node:8128) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/update/peerBundleReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ normal execution has a hard wait bound and never dispatches a dependent after a late timeout (254.7035ms)
+✖ a health result cannot certify an active bundle switched during the probe (3.1989ms)
+✖ recovery must satisfy the restored bundle expectation (1.6968ms)
+✖ recovery cannot call the same failed release a rollback (1.1719ms)
+✖ active marker and slot contents must refer to the same artifact (1.027ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 0
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 372.6602
+
+✖ failing tests:
+
+test at android-app\test\update\peerBundleReview.test.ts:17:1
+✖ normal execution has a hard wait bound and never dispatches a dependent after a late timeout (254.7035ms)
+  Error: unbounded execution
+      at Timeout.<anonymous> (file:///E:/evalapp/android-app/test/update/peerBundleReview.test.ts:23:132)
+      at listOnTimeout (node:internal/timers:605:17)
+      at process.processTimers (node:internal/timers:541:7)
+
+test at android-app\test\update\peerBundleReview.test.ts:30:1
+✖ a health result cannot certify an active bundle switched during the probe (3.1989ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'healthy'
+  - 'unknown'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/update/peerBundleReview.test.ts:33:10)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'healthy',
+    expected: 'unknown',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\update\peerBundleReview.test.ts:35:1
+✖ recovery must satisfy the restored bundle expectation (1.6968ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'succeeded'
+  - 'failed'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/update/peerBundleReview.test.ts:39:10)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'succeeded',
+    expected: 'failed',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\update\peerBundleReview.test.ts:41:1
+✖ recovery cannot call the same failed release a rollback (1.1719ms)
+  AssertionError [ERR_ASSERTION]: Expected "actual" to be strictly unequal to:
+  
+  'succeeded'
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/update/peerBundleReview.test.ts:45:10)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'succeeded',
+    expected: 'succeeded',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\update\peerBundleReview.test.ts:47:1
+✖ active marker and slot contents must refer to the same artifact (1.027ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   bundle: {
+  +     health_probe: {},
+  +     workflow: 'review',
+  +     workflow_def: {
+  +       nodes: [
+  +         {
+  +           max_retries: 2,
+  +           node_id: 'first',
+  +           tool: 'tool'
+  +         },
+  +         {
+  +           deps: [
+  +             'first'
+  +           ],
+  +           node_id: 'after',
+  +           tool: 'after'
+  +         }
+  +       ],
+  +       version: '1',
+  +       workflow_id: 'review'
+  +     }
+  +   },
+  +   digest: 'digest-1',
+  +   installed_at: 1,
+  +   release_id: 'release-1',
+  +   slot: 'a',
+  +   version: '1'
+  + }
+  - null
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/update/peerBundleReview.test.ts:51:10)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { slot: 'a', release_id: 'release-1', version: '1', digest: 'digest-1', installed_at: 1, bundle: { workflow: 'review', workflow_def: [Object], health_probe: {} } },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

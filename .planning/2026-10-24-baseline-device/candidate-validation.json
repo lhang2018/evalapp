@@ -1,0 +1,95 @@
+{
+  "commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
+  "tree": "6b9bd53adb72c95676fc14d657c438a19687e550",
+  "snapshot": "E:\\evalapp\\outputs\\baseline-device-f550d90",
+  "results": [
+    {
+      "name": "backend",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-W",
+        "error::pytest.PytestUnhandledThreadExceptionWarning"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-24-baseline-device/backend.txt",
+      "sha256": "dd096017d111f210221d23a8531c2b85a86e6853c731b0312fa1a1a4ff94648a",
+      "sha256_basis": "lf_normalized_text"
+    },
+    {
+      "name": "client",
+      "command": [
+        "node",
+        "--test",
+        "test/offline/*.test.ts",
+        "test/device/*.test.ts",
+        "test/update/*.test.ts"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-24-baseline-device/client.txt",
+      "sha256": "673d33b8edeef301cdb1494e2a2401aafadebccec0ac88f3f5ac0797f2be8382",
+      "sha256_basis": "lf_normalized_text"
+    },
+    {
+      "name": "claims",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/verify_claims.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-24-baseline-device/claims.txt",
+      "sha256": "9e41e159ea27a3fb731e504c7fd7cebfbd8c3ee4fa431bcee5a442c6b761cf24",
+      "sha256_basis": "lf_normalized_text"
+    },
+    {
+      "name": "ledgers",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/scan_all_ledgers.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-24-baseline-device/ledgers.txt",
+      "sha256": "9fa62c2d9ca1778da4f82740c3e530edf1945b0f9d8306578d33a05154f73cb4",
+      "sha256_basis": "lf_normalized_text"
+    },
+    {
+      "name": "board",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/check_collaboration_plan.py",
+        "--verify-prepared"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-24-baseline-device/board.txt",
+      "sha256": "30618fad4ddb7e281c12b37ca979bafd944c266fb876d8a4184ad71949342ee7",
+      "sha256_basis": "lf_normalized_text"
+    },
+    {
+      "name": "gap",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/check_gap_closure.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-24-baseline-device/gap.txt",
+      "sha256": "7ba5ab8bc1b026dab82911421e6904ea394f7a42d803d816d85e43d543449bed",
+      "sha256_basis": "lf_normalized_text"
+    },
+    {
+      "name": "alignment",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        ".planning/2026-10-22-design-alignment/verify_alignment_plan.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-24-baseline-device/alignment.txt",
+      "sha256": "efa249a6b0f6427752ebc215f025a1d70954b67ef244ead420a330ff8335d49f",
+      "sha256_basis": "lf_normalized_text"
+    }
+  ],
+  "dependency_scope": "Python installed environment; node tests use built-in runner; separate dependency/typecheck/build evidence follows"
+}

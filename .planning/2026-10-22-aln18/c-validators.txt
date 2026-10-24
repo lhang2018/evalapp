@@ -1,0 +1,27 @@
+== verify_claims ==
+索引符号          : 1230
+自动抽取的声明     : 零调用 1 条 / 不存在 1 条
+  零调用声明明细    : link(M-08)
+  不存在声明明细    : WAITING_USER@api/server.py
+证据不足的 ✅ 行   : 0
+判错              : 0
+
+✅ 台账声明全部通过机器校验
+== scan_all_ledgers ==
+全台账行号漂移扫描
+====================================================================
+文档      : FEATURES.md, FEATURE_SPLIT.md, GAP_ANALYSIS.md, IMPLEMENTATION.md, ROADMAP.md, progress.md, task_plan.md, README.md
+语义引用  : 1 条已核对
+裸引用    : 50 条已核对
+锚定引用  : 113 条已核对
+发现问题  : 0
+
+== check_gap_closure ==
+
+ℹ️  状态已 ✅ 但仍被特性关联（特性收口后应解绑）: 4
+   E-07 -> F-07
+   E-09 -> F-14
+   R-03 -> F-53
+   R-12 -> F-03
+
+✅ 全部未完成主题均已落到特性
