@@ -17,11 +17,20 @@ import zipfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from .schema.migrations import SCHEMA_VERSION, apply_migrations, current_version
+
 DB_FILES = ("evoagent.db", "events.db", "memory.db")
 REQUIRED_TABLES = {
     "evoagent.db": "tasks",
     "events.db": "runtime_events",
     "memory.db": "memory_items",
+}
+# manifest.counts 键 → (库文件, 表)。行数快照在恢复前后都要核对。
+COUNT_TABLES: Dict[str, tuple] = {
+    "tasks": ("evoagent.db", "tasks"),
+    "events": ("events.db", "runtime_events"),
+    "memories": ("memory.db", "memory_items"),
+    "release_manifests": ("evoagent.db", "release_manifests"),
 }
 BACKUP_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,119}\.zip$")
 FORMAT_VERSION = 1
@@ -95,6 +104,35 @@ class BackupManager:
             "release_manifests": self._count(self.db, "release_manifests"),
         }
 
+    def _schema_version(self) -> int:
+        """备份数据当时的 schema 版本：优先读主库迁移台账，退回源码版本。"""
+        if self.db is not None:
+            try:
+                return current_version(self.db._conn)
+            except sqlite3.DatabaseError:
+                return 0
+        source = self.data_dir / "evoagent.db"
+        if source.exists():
+            conn = sqlite3.connect(str(source))
+            try:
+                return current_version(conn)
+            except sqlite3.DatabaseError:
+                return 0
+            finally:
+                conn.close()
+        return SCHEMA_VERSION
+
+    @staticmethod
+    def _count_file(path: Path, table: str) -> int:
+        conn = sqlite3.connect(str(path))
+        try:
+            return int(conn.execute(
+                f"SELECT COUNT(*) FROM {table}").fetchone()[0])
+        except sqlite3.DatabaseError:
+            return 0
+        finally:
+            conn.close()
+
     def _resolve(self, ref: str) -> Path:
         """API 只传文件名；CLI 允许传已有路径。"""
         raw = (ref or "").strip()
@@ -136,6 +174,7 @@ class BackupManager:
                 staged.append((dbfile, tmp))
             manifest = {
                 "format": FORMAT_VERSION,
+                "schema_version": self._schema_version(),
                 "created_at": time.time(),
                 "files": files,
                 "counts": self._counts(),
@@ -166,6 +205,10 @@ class BackupManager:
                 manifest = json.loads(zf.read(MANIFEST_NAME).decode("utf-8"))
                 if manifest.get("format") != FORMAT_VERSION:
                     errors.append("备份格式版本不兼容")
+                if manifest.get("schema_version") is None:
+                    errors.append(
+                        "备份缺少 schema_version（旧格式）：当前程序拒绝恢复，"
+                        "请用创建该备份的程序恢复或重新生成备份")
                 with tempfile.TemporaryDirectory() as td:
                     for dbfile in DB_FILES:
                         if dbfile not in names:
@@ -194,34 +237,90 @@ class BackupManager:
                 "manifest": manifest}
 
     def restore(self, ref: str, *, safety_backup: bool = True) -> Dict[str, Any]:
+        started = time.time()
         check = self.verify(ref)
         if not check["ok"]:
             raise ValueError("备份校验失败: " + "; ".join(check["errors"]))
         path = Path(check["path"])
+        manifest = check["manifest"]
+        backup_version = int(manifest["schema_version"])
+        target_version = (current_version(self.db._conn)
+                          if self.db is not None else SCHEMA_VERSION)
+        if backup_version > target_version:
+            raise ValueError(
+                f"备份 schema 版本 {backup_version} 高于当前程序支持的 "
+                f"{target_version}：请先升级程序到对应版本再恢复，"
+                "或改用与当前程序匹配的备份")
         safety = None
         if safety_backup and self.db is not None:
             safety = self.create(
                 f"pre_restore_{time.strftime('%Y%m%d-%H%M%S')}"
                 f"_{uuid.uuid4().hex[:4]}.zip")["name"]
+        counts: Dict[str, int] = manifest.get("counts") or {}
         restored: List[str] = []
+        migrations_applied: List[str] = []
         with zipfile.ZipFile(path) as zf, tempfile.TemporaryDirectory() as td:
-            for dbfile, comp in self._components():
-                if dbfile not in check["manifest"].get("files", {}):
+            staged: Dict[str, Path] = {}
+            for dbfile in DB_FILES:
+                if dbfile not in manifest.get("files", {}):
                     continue
                 tmp = Path(td) / dbfile
                 with zf.open(dbfile) as src, open(tmp, "wb") as dst:
                     shutil.copyfileobj(src, dst)
+                staged[dbfile] = tmp
+            # 行数快照核对（替换当前数据之前）：与 manifest.counts 逐一对照
+            discrepancies = []
+            for key, (dbfile, table) in COUNT_TABLES.items():
+                if key in counts and dbfile in staged:
+                    actual = self._count_file(staged[dbfile], table)
+                    if actual != counts[key]:
+                        discrepancies.append(
+                            f"{key}: 快照 {counts[key]} ≠ 实际 {actual}")
+            if discrepancies:
+                raise ValueError("备份数据与行数快照不符，已取消恢复: "
+                                 + "; ".join(discrepancies))
+            # 暂存区迁移升级：低于当前版本按迁移路径升级；
+            # 迁移失败在此中止，当前数据未被触碰。
+            if "evoagent.db" in staged:
+                mig_conn = sqlite3.connect(str(staged["evoagent.db"]))
+                try:
+                    migrations_applied = apply_migrations(mig_conn)
+                    mig_conn.commit()
+                finally:
+                    mig_conn.close()
+            for dbfile, comp in self._components():
+                if dbfile not in staged:
+                    continue
                 if comp is not None:
-                    src_conn = sqlite3.connect(str(tmp))
+                    src_conn = sqlite3.connect(str(staged[dbfile]))
                     try:
                         src_conn.backup(comp._conn)
                     finally:
                         src_conn.close()
                 else:
-                    shutil.copyfile(tmp, self.data_dir / dbfile)
+                    shutil.copyfile(staged[dbfile], self.data_dir / dbfile)
                 restored.append(dbfile)
+        # 恢复后对账：账本/事件计数与快照一致。恢复只还原状态，
+        # 不执行历史副作用（事件原样回放由显式机制负责，不在此处）。
+        live = self._counts()
+        live_backing = {"tasks": self.db, "release_manifests": self.db,
+                        "events": self.bus, "memories": self.memory}
+        mismatched = [
+            f"{key}: 快照 {counts[key]} ≠ 恢复后 {live.get(key)}"
+            for key, (dbfile, _table) in COUNT_TABLES.items()
+            if key in counts and live_backing.get(key) is not None
+            and live.get(key) != counts[key]
+        ]
+        if mismatched:
+            raise RuntimeError(
+                "恢复后计数与快照不符（可从安全备份 "
+                f"{safety or '（未创建）'} 二次恢复）: " + "; ".join(mismatched))
         return {"ok": True, "name": path.name, "restored": restored,
-                "safety_backup": safety, "counts": self._counts(),
+                "safety_backup": safety, "counts": live,
+                "schema_version": backup_version,
+                "migrations_applied": migrations_applied,
+                "duration_ms": int((time.time() - started) * 1000),
+                "counts_verified": True,
                 "restart_recommended": True}
 
     def list(self) -> List[Dict[str, Any]]:

@@ -13,6 +13,15 @@
 
 迁移函数签名固定为 ``fn(conn) -> None``，必须在单个事务内完成。
 执行记录写入 ``schema_migrations`` 表，同一个库只会执行一次。
+每条迁移在独立 SAVEPOINT 内执行：失败自动回退到该条迁移前的状态
+（已应用的更早迁移与业务数据保持不变），并抛出 :class:`MigrationError`。
+
+回退入口（ALN-17-A 演练契约）：
+- 迁移执行中失败：SAVEPOINT 自动回退，无需人工介入。
+- 迁移已提交后才发现问题：用迁移前的
+  :meth:`~evoagent.core.backup.BackupManager.create` 备份走
+  ``restore`` 恢复（恢复路径本身带行数核对与安全备份），
+  演练见 ``tests/test_migration_rollback.py``。
 
 约定：
 - 版本号严格递增，**不得修改已发布的迁移函数**（否则同库不同版本行为分叉）。
@@ -26,6 +35,16 @@ from typing import Callable, List, Tuple
 SCHEMA_VERSION = 3
 
 Migration = Tuple[int, str, Callable[[sqlite3.Connection], None]]
+
+
+class MigrationError(RuntimeError):
+    """迁移执行失败；目标库已回退到该条迁移前的状态。"""
+
+    def __init__(self, version: int, name: str, cause: BaseException):
+        self.version = version
+        self.name = name
+        self.cause = cause
+        super().__init__(f"迁移 {version}({name}) 失败并已回退: {cause}")
 
 
 def _m001_baseline(conn: sqlite3.Connection) -> None:
@@ -78,6 +97,8 @@ def apply_migrations(conn: sqlite3.Connection) -> List[str]:
     """执行所有尚未应用的迁移，返回本次实际执行的迁移名列表。
 
     幂等：重复调用不会重复执行已记录的迁移。
+    每条迁移在独立 SAVEPOINT 内执行：某条失败时回退到该条之前的状态，
+    已应用的更早迁移保留，并抛出 :class:`MigrationError`。
     """
     conn.execute(
         """CREATE TABLE IF NOT EXISTS schema_migrations(
@@ -87,10 +108,18 @@ def apply_migrations(conn: sqlite3.Connection) -> List[str]:
     for version, name, fn in sorted(MIGRATIONS, key=lambda m: m[0]):
         if version <= done:
             continue
-        fn(conn)
-        conn.execute(
-            "INSERT OR REPLACE INTO schema_migrations(version, name, applied_at)"
-            " VALUES (?,?,?)", (version, name, _now()))
+        savepoint = f"migration_{version:04d}"
+        conn.execute(f"SAVEPOINT {savepoint}")
+        try:
+            fn(conn)
+            conn.execute(
+                "INSERT OR REPLACE INTO schema_migrations(version, name, applied_at)"
+                " VALUES (?,?,?)", (version, name, _now()))
+        except BaseException as exc:
+            conn.execute(f"ROLLBACK TO SAVEPOINT {savepoint}")
+            conn.execute(f"RELEASE SAVEPOINT {savepoint}")
+            raise MigrationError(version, name, exc) from exc
+        conn.execute(f"RELEASE SAVEPOINT {savepoint}")
         applied.append(name)
     return applied
 

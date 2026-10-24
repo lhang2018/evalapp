@@ -2302,16 +2302,21 @@
       "owner": "zcode-main",
       "reviewer": null,
       "branch": "main",
-      "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
-      "status": "claimed",
+      "base_commit": "c7726e83f8407b4709cb90f248bfd2f590021a02",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        "代码: 本卡提交（backup.py manifest schema_version/兼容判定/暂存迁移升级/行数核对；migrations.py SAVEPOINT 原子回退+MigrationError）",
+        "测试: 全量 python -m pytest tests -q → 1626 passed / 1 skipped；定向 backup_recovery+migration_rollback+backup → 19 passed",
+        "RTO/RPO: tools/measure_backup_recovery.py 实测，报告 .planning/2026-10-24-aln17a/measure-report.json（5任务/105事件/8记忆，空目录恢复 RTO≈0.028s，恢复后与快照逐行一致 RPO=0）",
+        "交付: docs/协作开发/交付/ALN-17-A-备份恢复闭环与迁移回退.md；RTO为开发机小数据集数值，生产规模与空机器部署/版本组合恢复按整包验收另测"
+      ],
       "card": "docs/协作开发/任务卡/17-宿主部署与灾难恢复.md",
       "shared_files": [
         "evoagent/core/schema/migrations.py"
       ],
-      "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
-      "next_step": "排队：schema兼容、损坏拒绝、行数核对、迁移回退与RTO/RPO测量；版本资产组合恢复和空机器部署另行验收",
+      "working_basis": "2026-10-24 zcode-main 认领并完成交付。base_commit c7726e8 为接手锚点（基线仍candidate；接手期间并行提交照常落地未冲突）。旧格式（缺schema_version）按明确规则拒绝；低于当前版本走暂存区迁移升级，高于即拒绝；行数快照替换前+恢复后双重核对；迁移失败SAVEPOINT自动回退，已提交坏变更用迁移前备份restore回退（演练覆盖）。版本资产组合恢复与空机器部署不在本卡。",
+      "next_step": "待独立复核（跨版本判定、暂存迁移与行数核对、SAVEPOINT回退语义、RTO/RPO口径）；生产规模实测与部署文档另卡",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -3331,13 +3336,8 @@
     "owner": "zcode-main",
     "wip_limit": 1,
     "active_task": null,
-    "next_task": "ALN-17-A",
+    "next_task": "ALN-20-A",
     "items": [
-      {
-        "id": "ALN-17-A",
-        "state": "排队",
-        "condition": "备份schema兼容、行数核对、迁移回退与恢复测量"
-      },
       {
         "id": "ALN-20-A",
         "state": "排队",

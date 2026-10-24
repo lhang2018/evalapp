@@ -1,0 +1,50 @@
+{
+ "started_at": 1792829744.6044965,
+ "tasks": 5,
+ "build_seconds": 1.366,
+ "snapshot_counts": {
+  "tasks": 5,
+  "events": 105,
+  "memories": 8,
+  "release_manifests": 1
+ },
+ "backup_bytes": {
+  "evoagent.db": 1228800,
+  "events.db": 61440,
+  "memory.db": 45056
+ },
+ "rows_after_backup": {
+  "tasks": 6
+ },
+ "rpo_exposure_rows": {
+  "tasks": 1
+ },
+ "restore": {
+  "ok": true,
+  "rto_seconds": 0.028,
+  "rto_ms_in_result": 28,
+  "restored": [
+   "evoagent.db",
+   "events.db",
+   "memory.db"
+  ],
+  "migrations_applied": [],
+  "counts_verified": true
+ },
+ "restored_counts": {
+  "tasks": 5,
+  "events": 105,
+  "memories": 8,
+  "release_manifests": 1
+ },
+ "rpo": {
+  "tasks": 0,
+  "events": 0,
+  "memories": 0,
+  "release_manifests": 0
+ },
+ "rpo_note": "恢复数据与快照逐行一致（差值0）；快照之后的增量 {'tasks': 1} 即本次事故的损失范围",
+ "task_readable_after_restore": true,
+ "ok": true,
+ "finished_at": 1792829746.6766925
+}
