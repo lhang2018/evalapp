@@ -1,0 +1,102 @@
+{
+  "source_commit": "aafca22df33098f5e5a8d51026f4ba5b5e4385b7",
+  "source_tree": "fb098b6b099cee0d4590e12e35b45d63e0598ee2",
+  "scope": "git archive; excludes dirty working-tree files; typecheck reuses installed dependencies",
+  "snapshot": "E:\\evalapp\\outputs\\plan-runtime-review-aafca22",
+  "results": [
+    {
+      "name": "backend-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-W",
+        "error::pytest.PytestUnhandledThreadExceptionWarning"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-plan-runtime-review\\backend-committed.txt",
+      "sha256": "8c5e3e9264ccf2835a84a59c52e0bab606ffbab764353afd49b40163c850f0ed"
+    },
+    {
+      "name": "claims-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/verify_claims.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-plan-runtime-review\\claims-committed.txt",
+      "sha256": "25c8dc5eea26b6ccdccb2a473df86dbc9b414ef2a3cd7b025bd44a3e8f1dd144"
+    },
+    {
+      "name": "ledgers-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/scan_all_ledgers.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-plan-runtime-review\\ledgers-committed.txt",
+      "sha256": "9fa62c2d9ca1778da4f82740c3e530edf1945b0f9d8306578d33a05154f73cb4"
+    },
+    {
+      "name": "board-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/check_collaboration_plan.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-plan-runtime-review\\board-committed.txt",
+      "sha256": "60383a4120d6c2b5c20afaca23a7896ae464c4c67323ea2126d45f315ed47866"
+    },
+    {
+      "name": "gap-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/check_gap_closure.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-plan-runtime-review\\gap-committed.txt",
+      "sha256": "7ba5ab8bc1b026dab82911421e6904ea394f7a42d803d816d85e43d543449bed"
+    },
+    {
+      "name": "alignment-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        ".planning/2026-10-22-design-alignment/verify_alignment_plan.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-plan-runtime-review\\alignment-committed.txt",
+      "sha256": "efa249a6b0f6427752ebc215f025a1d70954b67ef244ead420a330ff8335d49f"
+    },
+    {
+      "name": "client-committed",
+      "command": [
+        "node",
+        "--test",
+        "test/offline/*.test.ts",
+        "test/device/*.test.ts",
+        "test/update/*.test.ts"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-23-aln15\\client-committed-8c479b6.txt",
+      "sha256": "cfe15f8c757be0ae08319800afa743d9058a9193ab9d5d7cdfc9574eeb09bb52",
+      "reused_from_source_commit": "8c479b6c9f01f342920e2f52a19d96a0e1700364",
+      "reuse_reason": "identical android-app Git tree"
+    },
+    {
+      "name": "typecheck-committed",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-23-aln15\\typecheck-committed-8c479b6.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reused_from_source_commit": "8c479b6c9f01f342920e2f52a19d96a0e1700364",
+      "reuse_reason": "identical android-app Git tree"
+    }
+  ]
+}

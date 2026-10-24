@@ -1,0 +1,11 @@
+{
+  "scope": "documentation coverage only",
+  "topics": 89,
+  "entities": 19,
+  "adrs": 14,
+  "contract_sections": 11,
+  "acceptance_cases": 20,
+  "workpackages": 23,
+  "errors": [],
+  "ok": true
+}

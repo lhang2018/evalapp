@@ -1,0 +1,33 @@
+{
+  "source_commit": "aafca22df33098f5e5a8d51026f4ba5b5e4385b7",
+  "source_tree": "fb098b6b099cee0d4590e12e35b45d63e0598ee2",
+  "scope": "Named test suites rerun in the same final committed Git archive after the lazy getter compatibility patch",
+  "results": [
+    {
+      "name": "runtime-related",
+      "exit_code": 0,
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-m",
+        "pytest",
+        "tests/test_plan_runtime_review.py",
+        "tests/test_plan_revision.py",
+        "tests/test_planning.py",
+        "tests/test_plan_trace.py",
+        "tests/test_process_recovery.py",
+        "tests/test_run_continuation.py",
+        "tests/test_execution_boundaries.py",
+        "tests/test_peer_plan_reconcile_review.py",
+        "tests/test_auth_rejection_transport.py",
+        "tests/test_goal_opportunities.py",
+        "-q",
+        "--tb=short",
+        "-W",
+        "error::pytest.PytestUnhandledThreadExceptionWarning"
+      ],
+      "result": "207 passed",
+      "log": ".planning/2026-10-24-plan-runtime-review/related-final.txt",
+      "sha256": "b54fc346fd83f3fb1c0b2544ed3a2b888a0655ed72785677b76706d606e99878"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  4%]
+........................................................................ [  9%]
+........................................................................ [ 13%]
+........................................................................ [ 18%]
+........................................................................ [ 22%]
+........................................................................ [ 27%]
+........................................................................ [ 31%]
+........................................................................ [ 36%]
+........................................................................ [ 40%]
+........................................................................ [ 45%]
+.................................F...................................... [ 49%]
+........................................................................ [ 54%]
+........................................................................ [ 58%]
+........................................................................ [ 63%]
+........................................................................ [ 67%]
+........................................................................ [ 72%]
+........................................................................ [ 76%]
+........................................................................ [ 81%]
+........................................................................ [ 85%]
+........................................................................ [ 90%]
+......................................................................s. [ 95%]
+........................................................................ [ 99%]
+.......                                                                  [100%]
+================================== FAILURES ===================================
+________ test_governance_and_opportunities_api_require_transport_admin ________
+tests\test_goal_opportunities.py:460: in test_governance_and_opportunities_api_require_transport_admin
+    assert request("POST", "/goal-policies", {}, token="operator-token")[0] == 403
+tests\test_goal_opportunities.py:455: in request
+    with urllib.request.urlopen(req, timeout=10) as response:
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:216: in urlopen
+    return opener.open(url, data, timeout)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:519: in open
+    response = self._open(req, data)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:536: in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:496: in _call_chain
+    result = func(*args)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:1377: in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:1352: in do_open
+    r = h.getresponse()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:1375: in getresponse
+    response.begin()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:318: in begin
+    version, status, reason = self._read_status()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:279: in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\socket.py:705: in readinto
+    return self._sock.recv_into(b)
+E   ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+---------------------------- Captured stdout call -----------------------------
+EvoAgent API: http://127.0.0.1:4246  (GET /health)
+=========================== short test summary info ===========================
+FAILED tests/test_goal_opportunities.py::test_governance_and_opportunities_api_require_transport_admin
+1 failed, 1589 passed, 1 skipped in 167.98s (0:02:47)

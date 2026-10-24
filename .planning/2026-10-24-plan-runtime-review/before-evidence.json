@@ -1,0 +1,25 @@
+{
+  "source_commit": "50dd94c1eae841c26018762a6efedeb29eb1fe71",
+  "injected_probes": [
+    {
+      "path": "tests/test_plan_runtime_review.py",
+      "sha256": "13ad3322e372cc309252e4b491152191cd454271399e86f374ffa2f71da85c9e"
+    },
+    {
+      "path": "tests/test_auth_rejection_transport.py",
+      "sha256": "e2ed62256f194cf97ca9424894a11a2bf8b915f441bcf7101c0e4bb01fba3705"
+    }
+  ],
+  "command": [
+    "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+    "-m",
+    "pytest",
+    "tests/test_plan_runtime_review.py",
+    "tests/test_auth_rejection_transport.py",
+    "-q",
+    "--tb=short"
+  ],
+  "exit_code": 1,
+  "log": ".planning\\2026-10-24-plan-runtime-review\\before-committed.txt",
+  "sha256": "703de704dadf1278f4ce72fc74487ac0bf189bdb7ed3f6f9737dff891c006019"
+}

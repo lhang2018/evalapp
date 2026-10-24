@@ -1,0 +1,121 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [ 34%]
+......FF.....FFF...FE..F................................................ [ 69%]
+...............................................................          [100%]
+=================================== ERRORS ====================================
+_ ERROR at teardown of test_answer_is_consumed_once_across_database_connections _
+  + Exception Group Traceback (most recent call last):
+  |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\runner.py", line 344, in from_call
+  |     result: TResult | None = func()
+  |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\runner.py", line 246, in <lambda>
+  |     lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+  |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\pluggy\_hooks.py", line 512, in __call__
+  |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+  |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\pluggy\_manager.py", line 120, in _hookexec
+  |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+  |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\pluggy\_callers.py", line 167, in _multicall
+  |     raise exception
+  |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\pluggy\_callers.py", line 139, in _multicall
+  |     teardown.throw(exception)
+  |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\logging.py", line 858, in pytest_runtest_teardown
+  |     yield
+  |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\pluggy\_callers.py", line 139, in _multicall
+  |     teardown.throw(exception)
+  |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\capture.py", line 905, in pytest_runtest_teardown
+  |     return (yield)
+  |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\pluggy\_callers.py", line 121, in _multicall
+  |     res = hook_impl.function(*args)
+  |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py", line 152, in pytest_runtest_teardown
+  |     collect_thread_exception(item.config)
+  |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py", line 72, in collect_thread_exception
+  |     raise ExceptionGroup("multiple thread exception warnings", errors)
+  | exceptiongroup.ExceptionGroup: multiple thread exception warnings (2 sub-exceptions)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+    |     self.run()
+    |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+    |     self._target(*self._args, **self._kwargs)
+    |   File "E:\evalapp\tests\test_run_continuation.py", line 185, in submit
+    |     task.waiting_request["request_id"], "使用北京时间")
+    | TypeError: 'NoneType' object is not subscriptable
+    | 
+    | The above exception was the direct cause of the following exception:
+    | 
+    | Traceback (most recent call last):
+    |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py", line 58, in collect_thread_exception
+    |     warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+    | pytest.PytestUnhandledThreadExceptionWarning: Exception in thread Thread-39 (submit)
+    | Enable tracemalloc to get traceback where the object was allocated.
+    | See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    +---------------- 2 ----------------
+    | Traceback (most recent call last):
+    |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+    |     self.run()
+    |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+    |     self._target(*self._args, **self._kwargs)
+    |   File "E:\evalapp\tests\test_run_continuation.py", line 185, in submit
+    |     task.waiting_request["request_id"], "使用北京时间")
+    | TypeError: 'NoneType' object is not subscriptable
+    | 
+    | The above exception was the direct cause of the following exception:
+    | 
+    | Traceback (most recent call last):
+    |   File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py", line 58, in collect_thread_exception
+    |     warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+    | pytest.PytestUnhandledThreadExceptionWarning: Exception in thread Thread-38 (submit)
+    | Enable tracemalloc to get traceback where the object was allocated.
+    | See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    +------------------------------------
+================================== FAILURES ===================================
+__________ test_answer_continues_history_and_preserves_tool_evidence __________
+tests\test_run_continuation.py:50: in test_answer_continues_history_and_preserves_tool_evidence
+    assert task.task_status == TaskStatus.WAITING_USER
+E   AssertionError: assert <TaskStatus.S...: 'SUSPENDED'> == <TaskStatus.W...WAITING_USER'>
+E     
+E     - WAITING_USER
+E     + SUSPENDED
+_______ test_answer_retry_is_idempotent_and_conflicting_answer_rejected _______
+tests\test_run_continuation.py:77: in test_answer_retry_is_idempotent_and_conflicting_answer_rejected
+    question = task.waiting_request["request_id"]
+E   TypeError: 'NoneType' object is not subscriptable
+__________________ test_answer_survives_application_restart ___________________
+tests\test_run_continuation.py:106: in test_answer_survives_application_restart
+    task.task_id, task.waiting_request["request_id"], "使用北京时间")
+E   TypeError: 'NoneType' object is not subscriptable
+_______ test_classification_answer_reenters_planning_with_original_goal _______
+tests\test_run_continuation.py:127: in test_classification_answer_reenters_planning_with_original_goal
+    assert resumed.task_status == TaskStatus.SUCCEEDED
+E   AssertionError: assert <TaskStatus.S...: 'SUSPENDED'> == <TaskStatus.S...: 'SUCCEEDED'>
+E     
+E     - SUCCEEDED
+E     + SUSPENDED
+___________ test_resume_rejects_changed_expert_before_new_tool_call ___________
+tests\test_run_continuation.py:136: in test_resume_rejects_changed_expert_before_new_tool_call
+    task.task_id, task.waiting_request["request_id"], "使用北京时间")
+E   TypeError: 'NoneType' object is not subscriptable
+__________ test_answer_is_consumed_once_across_database_connections ___________
+tests\test_run_continuation.py:194: in test_answer_is_consumed_once_across_database_connections
+    assert sorted(accepted) == [False, True]
+E   assert [] == [False, True]
+E     
+E     Right contains 2 more items, first extra item: False
+E     Use -v to get more diff
+___________ test_answer_api_status_validation_auth_and_run_history ____________
+tests\test_run_continuation.py:274: in test_answer_api_status_validation_auth_and_run_history
+    body = {"request_id": task.waiting_request["request_id"], "answer": "使用北京时间"}
+E   TypeError: 'NoneType' object is not subscriptable
+---------------------------- Captured stdout call -----------------------------
+EvoAgent API: http://127.0.0.1:5765  (GET /health)
+=========================== short test summary info ===========================
+FAILED tests/test_run_continuation.py::test_answer_continues_history_and_preserves_tool_evidence
+FAILED tests/test_run_continuation.py::test_answer_retry_is_idempotent_and_conflicting_answer_rejected
+FAILED tests/test_run_continuation.py::test_answer_survives_application_restart
+FAILED tests/test_run_continuation.py::test_classification_answer_reenters_planning_with_original_goal
+FAILED tests/test_run_continuation.py::test_resume_rejects_changed_expert_before_new_tool_call
+FAILED tests/test_run_continuation.py::test_answer_is_consumed_once_across_database_connections
+FAILED tests/test_run_continuation.py::test_answer_api_status_validation_auth_and_run_history
+ERROR tests/test_run_continuation.py::test_answer_is_consumed_once_across_database_connections
+7 failed, 199 passed, 1 error in 25.97s
