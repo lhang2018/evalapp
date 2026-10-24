@@ -2549,15 +2549,15 @@
         "代码: 352e8ef (bundleRuntime.ts 新增; workflowBundle.ts/App.tsx 小改; 16 项新测试)",
         "测试: android-app 190 passed / 0 failed (npm run test:offline)；typecheck 通过",
         "交付: docs/协作开发/交付/ALN-11-W-活动workflow执行消费与健康探针.md（含执行消费协议契约）",
-        "真机健康失败→回滚→旧能力可执行证据未采集，按验收第5条另行登记；自动化与真机待验分开"
+        "真机证据（2026-10-24 18:05-18:12，小米24018RPACC/Android16，inst_mvgemk5601b3r1lded2g）: 健康基线rel_good_v3(v9.2.0)激活→自动探针真实执行workflow→healthy→自动晋级已知良好；注入缺陷rel_bad_v4(v9.3.0)激活→探针期望核对不符→unhealthy（不标健康）→自动回滚（状态rolled_back，服务端rolled_back ok）→verifyRecovery真实执行原健康包workflow→succeeded（failed/recovered成对版本绑定rel_bad_v4·47c6b6d3…/rel_good_v3·8e5212ed…）；强杀重启后状态与版本关联完整保留。逐屏截图/ui dump/设备KV RKStorage/服务端部署时间线见 docs/协作开发/验收/2026-10-24-ALN-11-W真机健康回滚证据.md 及 .planning/2026-10-24-aln11w-device/"
       ],
       "card": "docs/协作开发/任务卡/11-活动工作流执行与健康探针.md",
       "shared_files": [
         "android-app/App.tsx",
         "android-app/src/update/workflowBundle.ts"
       ],
-      "working_basis": "2026-10-24 zcode-main 接手 codex-runtime 排队现场完成交付。base_commit f464881 为实际接手锚点（基线仍 candidate 未发布）。更新管理器未改，探针复用既有 healthCheck/rollback；服务端零改动；通知/后台 runner/DevicePackage 在途改动未触碰。收尾提交由 codex-runtime 会话在交接登记后产出（352e8ef 实现+16项新测试、70f0c9c 台账与交付登记）；zcode-main 复核台账并复跑客户端 190 项测试通过，未改动实现；loadActiveBundle 存在一处换行丢失的格式瑕疵（无语义影响），留独立复核处置。",
-      "next_step": "真机健康失败→真实回滚→旧能力可执行证据补验（按卡验收第5条）；ALN-11 整包按原范围；submit路径硬超时可留运行时小卡",
+      "working_basis": "2026-10-24 zcode-main 接手 codex-runtime 排队现场完成交付。base_commit f464881 为实际接手锚点（基线仍 candidate 未发布）。更新管理器未改，探针复用既有 healthCheck/rollback；服务端零改动；通知/后台 runner/DevicePackage 在途改动未触碰。收尾提交由 codex-runtime 会话在交接登记后产出（352e8ef 实现+16项新测试、70f0c9c 台账与交付登记）；zcode-main 复核台账并复跑客户端 190 项测试通过，未改动实现；loadActiveBundle 存在一处换行丢失的格式瑕疵（无语义影响），留独立复核处置。同日真机验收第5条证据采集完成（见验收记录），转 accepted 由复核人 opencode-evo 决定。",
+      "next_step": "真机证据已采集（验收第5条六步全部触发并留证），待复核人opencode-evo确认后转accepted；ALN-11整包按原范围；submit路径硬超时可留运行时小卡",
       "ownership_history": [
         {
           "date": "2026-10-24",

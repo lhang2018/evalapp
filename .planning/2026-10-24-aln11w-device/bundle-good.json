@@ -1,0 +1,18 @@
+{
+  "workflow": "demo/good-v3",
+  "intent": "time_query",
+  "workflow_def": {
+    "workflow_id": "demo/good-v3",
+    "version": "v3.0.0",
+    "name": "本地时间能力（健康基线）",
+    "nodes": [
+      {"node_id": "now", "description": "取本地时间", "tool": "local_time",
+       "args": {"label": "good-capability"}}
+    ]
+  },
+  "health_probe": {
+    "input": {"label": "health-probe"},
+    "expect_output_contains": "2026"
+  },
+  "created_for": "ALN-11-W 真机证据阶段A：健康基线（探针真实执行且期望相符）"
+}
