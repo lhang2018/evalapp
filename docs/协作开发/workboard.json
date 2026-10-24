@@ -2125,13 +2125,13 @@
       "owner": "zcode-main",
       "reviewer": null,
       "branch": "main",
-      "base_commit": "70f0c9cd",
+      "base_commit": "c61b53ec5f7f8937ab772b6ac5b377093792b1aa",
       "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/12-自然语言手机任务与离线可靠性.md",
       "shared_files": [],
-      "working_basis": "当前项目单开发会话串行队列；base_commit为接手时真实源码锚点，不是已发布基线；claimed为已接手未开工",
+      "working_basis": "2026-10-24 zcode-main 按队列认领开工（WIP=1，本流内唯一在途卡）。base_commit c61b53ec 为实际接手锚点（基线仍candidate）。claude-main并行进行ALN-07-B（服务端effect→step绑定），与本卡客户端路径零重叠；effect_id语义关系在任务协议文档中显式对齐。通知/后台runner/DevicePackage在途改动不触碰；服务端只提接口需求不接线。",
       "next_step": "排队：设备动作提议/回执契约、task/run/effect引用与离线故障矩阵；既有未提交通知/后台修改先核对依赖再独立处理，不覆盖",
       "ownership_history": [
         {
@@ -2456,13 +2456,26 @@
         "android-app/src/update/workflowBundle.ts"
       ],
       "working_basis": "2026-10-24 zcode-main 接手 codex-runtime 排队现场完成交付。base_commit f464881 为实际接手锚点（基线仍 candidate 未发布）。更新管理器未改，探针复用既有 healthCheck/rollback；服务端零改动；通知/后台 runner/DevicePackage 在途改动未触碰。收尾提交由 codex-runtime 会话在交接登记后产出（352e8ef 实现+16项新测试、70f0c9c 台账与交付登记）；zcode-main 复核台账并复跑客户端 190 项测试通过，未改动实现；loadActiveBundle 存在一处换行丢失的格式瑕疵（无语义影响），留独立复核处置。",
-      "next_step": "待独立复核（执行前拒绝覆盖面、unknown 不标健康、回滚后版本绑定）；真机故障证据与 ALN-11 整包关闭按原范围另验",
+      "next_step": "真机健康失败→真实回滚→旧能力可执行证据补验（按卡验收第5条）；ALN-11 整包按原范围；submit路径硬超时可留运行时小卡",
       "ownership_history": [
         {
           "date": "2026-10-24",
           "from": "codex-runtime",
           "to": "zcode-main",
           "reason": "用户要求新会话接手认领；保留codex-runtime当日在途未提交实现，不重置不清除；测试补全与真机证据为接手后未完成点"
+        }
+      ],
+      "review_result": "automation_accepted_device_pending",
+      "review_note": "2026-10-24 opencode-evo 独立复核：干净树182/0+16/16+tsc 0错；执行前拒绝六类/unknown不标健康/回滚后版本绑定三点确认；无eval收痕；loadActiveBundle换行瑕疵已由复核修复；观察：submit路径execute无硬超时包壳(留运行时小卡)、190为交付时脏区计数(固定树=182)",
+      "review_report": "docs/协作开发/验收/2026-10-24-ALN-11-W独立复核.md",
+      "review_evidence": [
+        {
+          "date": "2026-10-24",
+          "scope": "opencode-evo 独立复核：352e8ef 干净归档树客户端三组+typecheck+六大焦点+动态执行收痕",
+          "command": "node --test test/offline/*.test.ts test/device/*.test.ts test/update/*.test.ts; npx tsc --noEmit",
+          "result": "182 passed/0 failed(update65/device33/offline84)；bundleRuntime 16/16；typecheck 0错",
+          "reviewed_commit": "352e8ef",
+          "review_report": "docs/协作开发/验收/2026-10-24-ALN-11-W独立复核.md"
         }
       ]
     },

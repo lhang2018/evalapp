@@ -196,7 +196,8 @@ export class WorkflowBundleApplier implements BundleApplier {
 
 export async function loadActiveBundle(
   kv: KeyValueStore,
-): Promise<InstalledBundle | null> {  const raw = await kv.getItem(ACTIVE_BUNDLE_KEY);
+): Promise<InstalledBundle | null> {
+  const raw = await kv.getItem(ACTIVE_BUNDLE_KEY);
   if (!raw) return null;
   let marker: { slot?: unknown } | null = null;
   try {

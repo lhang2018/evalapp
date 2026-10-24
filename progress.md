@@ -1623,3 +1623,11 @@
 - test_e12_e13.py 在途半截收尾：我的回归消费测试草稿已被上游 accepted 实现（test_aln10_completion 四类覆盖）实质收编，除排 14 行占位 helper 并注记（文件回到 HEAD 态，10 passed）
 - ALN-09/ALN-10 整包保持未关闭（真实候选隔离宿主、持久问题队列、多进程租约、真实价格/账单、生产评测集等）
 
+### ALN-11-W 独立复核完成（2026-10-24，automation_accepted_device_pending）
+- 认领并复核 352e8ef：干净归档树 node --test 三组 182/0（update65/device33/offline84）、本卡 bundleRuntime 16/16、tsc --noEmit 0 错、eval/Function 收痕均无
+- 交付建议三重点全确认：执行前拒绝六类（App 不建任务不执行）✓；unknown 只来自超时/未知异常且不晋级不回滚 ✓；execute 每次重读活动包+verifyRecovery 失败/恢复双方版本绑定跨重启 ✓
+- 处置：loadActiveBundle 换行瑕疵（注记点名的留复核事项）已修复并复跑 bundleRuntime+manager 35/0
+- 观察：submit 路径 execute 无硬超时包壳（runNode deadline 仅节点边界，挂起工具 promise 永不返回；探针路径有 withTimeout）→ 留运行时小卡或收契约措辞；190 计数为交付时脏区口径，固定树=182；工作区 typecheck 1 错属在途未跟踪 taskGaps.test.ts 非本卡
+- 结论：自动化复核通过；真机健康失败→回滚→旧能力可执行证据未采集 → 依 ALN-04-UI 先例整卡保持 review(automation_accepted_device_pending)，不转 accepted
+- 附带：60+ 提交历史积压已推送同步（origin/main 追平至 c61b53e）；ALN-15-A 我认领后被 claude-main 更快验收收口（43探针），我方席位退出无损
+
