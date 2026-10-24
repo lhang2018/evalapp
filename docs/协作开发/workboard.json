@@ -2157,7 +2157,7 @@
       "card": "docs/协作开发/任务卡/12-自然语言手机任务与离线可靠性.md",
       "shared_files": [],
       "working_basis": "2026-10-24 zcode-main 按队列认领开工（WIP=1，本流内唯一在途卡）。base_commit c61b53ec 为实际接手锚点（基线仍candidate）。claude-main并行进行ALN-07-B（服务端effect→step绑定），与本卡客户端路径零重叠；effect_id语义关系在任务协议文档中显式对齐。通知/后台runner/DevicePackage在途改动不触碰；服务端只提接口需求不接线。同日完成交付：独占新模块与测试由zcode-main会话编写；types/broker卡内增量与缺口夹具由并行协调会话完成（字段与本协议同源对齐），分工记录见交付文档。",
-      "next_step": "待独立复核（引用不可变与幂等重放、未知副作用禁自动重放、矩阵与实现对齐、上传脱敏投影）；App主链路接线按后续小卡，服务端effect绑定消费另行登记范围",
+      "next_step": "真机自然语言执行/断网/杀进程/重启一致性与敏感内容证据按ALN-12整包验收另验；App主链路接线小卡落实后须走上传投影并复用broker.riskOf防两表漂移",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -2170,6 +2170,19 @@
           "from": "codex-runtime",
           "to": "zcode-main",
           "reason": "用户要求zcode-main接手串行开发队列；接手未交付范围，保留在途内容与独立审阅要求，卡保持排队未开工"
+        }
+      ],
+      "review_result": "automation_accepted_device_pending",
+      "review_note": "2026-10-24 opencode-evo 独立复核：干净树206/0(=基线182+新增24)+tsc 0错；引用不可变与幂等重放/未知副作用禁自动重放/矩阵与实现对齐(500容量、2s→5min退避、7天1天保留期抽验全符)/上传脱敏投影四点确认；交付点名的crash窗口已按复核裁决修复为预记账语义(先落提议再下发+断点不自动重发留unverified回执+新增回归测试,修复后207/0)；214为交付时脏区口径,固定树=206(修后207)",
+      "review_report": "docs/协作开发/验收/2026-10-24-ALN-12-A独立复核.md",
+      "review_evidence": [
+        {
+          "date": "2026-10-24",
+          "scope": "opencode-evo 独立复核：4a8947a+8dc82b9 干净归档树三组+typecheck+四重点+缺口夹具对照+crash窗口裁决修复",
+          "command": "node --test test/offline/*.test.ts test/device/*.test.ts test/update/*.test.ts; npx tsc --noEmit",
+          "result": "206 passed/0 failed(taskProtocol12+failureMatrix9+taskGaps3新增)；typecheck 0错；裁决修复后207/0",
+          "reviewed_commit": "4a8947a/8dc82b9",
+          "review_report": "docs/协作开发/验收/2026-10-24-ALN-12-A独立复核.md"
         }
       ]
     },

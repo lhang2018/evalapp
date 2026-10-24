@@ -389,10 +389,13 @@ export interface ProposalExecution {
 }
 
 /**
- * 执行设备动作提议：
+ * 执行设备动作提议（预记账：先落提议再下发）：
  * 1. 台账已有该 action_id 的回执 → 原样返回（replayed=true），不进 broker，
  *    不重复下发；
- * 2. 否则经 broker 既有授权/确认/验证路径执行一次，回执落台账。
+ * 2. 台账已有该 action_id 的提议但无回执 = 上次执行在落账与下发之间
+ *    被中断（进程崩溃窗口），副作用未知 → 不自动重发，回执按
+ *    unverified 留痕（terminal=false，可见、需人工对账）；
+ * 3. 否则经 broker 既有授权/确认/验证路径执行一次，回执落台账。
  * 重试语义：任何已回执的 action_id 都不自动重发；重试 = 新提议新 action_id。
  * 未知副作用（dispatched/unverified）因此永不自动重放。
  */
@@ -407,8 +410,28 @@ export async function executeProposal(
   if (prior) {
     return { receipt: { ...prior, replayed: true }, dispatched: false };
   }
-  const result = await broker.execute(proposalToAction(proposal));
+  const existing = await ledger.getProposal(proposal.action_id);
+  if (existing) {
+    const unknown: ActionReceipt = {
+      effect_id: proposal.effect_id,
+      action_id: proposal.action_id,
+      proposal_id: proposal.proposal_id,
+      task_id: proposal.task_id,
+      run_id: proposal.run_id,
+      kind: proposal.kind,
+      risk: proposal.risk,
+      state: "unverified",
+      terminal: false,
+      replayed: false,
+      message: "中断恢复：已记账无回执，副作用未知，需人工对账",
+      occurred_at: now(),
+      recorded_at: now(),
+    };
+    await ledger.recordReceipt(unknown);
+    return { receipt: unknown, dispatched: false };
+  }
   await ledger.recordProposal(proposal);
+  const result = await broker.execute(proposalToAction(proposal));
   const entry = broker.getJournal(proposal.action_id);
   const receipt: ActionReceipt = entry
     ? receiptFromJournal(proposal, entry, {

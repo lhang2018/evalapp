@@ -1631,3 +1631,11 @@
 - 结论：自动化复核通过；真机健康失败→回滚→旧能力可执行证据未采集 → 依 ALN-04-UI 先例整卡保持 review(automation_accepted_device_pending)，不转 accepted
 - 附带：60+ 提交历史积压已推送同步（origin/main 追平至 c61b53e）；ALN-15-A 我认领后被 claude-main 更快验收收口（43探针），我方席位退出无损
 
+### ALN-12-A 独立复核完成（2026-10-24，automation_accepted_device_pending）
+- 认领并复核 4a8947a+8dc82b9：干净归档树 node --test 三组 206/0（=基线182+新增24：taskProtocol12+failureMatrix9+taskGaps3）、tsc --noEmit 0 错
+- 四重点全确认：引用不可变与幂等重放（同 action_id 原回执、calls 不变）✓；未知副作用非终态禁自动重放、重试=新提议新 action_id ✓；矩阵 11 类与实现锚点对齐（QUEUE_CAPACITY=500、退避 2s→5min、normal 7 天/debug 1 天/critical 永不清）✓；上传脱敏投影（文本目标 <local:text>、args/evidence/message 本地保留）✓
+- 裁决：交付点名的 crash 窗口（下发后才落账）按交付建议修复为预记账语义——先 recordProposal 再 broker.execute；断点恢复分支：已记账无回执=副作用未知 → 不自动重发、落 unverified 可见回执需人工对账；修复前提已验（broker.execute 全分支不抛出）；新增「中断恢复」回归测试，修后 207/0+typecheck 0 错
+- 观察：并发双发由 broker 幂等内沿兜底（进程内）+协议台账跨重启幂等，两层已钉；接线小卡须用上传投影且复用 broker.riskOf 防 HIGH_RISK_KINDS 两表漂移；214 为交付时脏区口径，固定树=206（修后207）
+- 结论：自动化复核通过；真机自然语言执行/断网/杀进程/重启一致性证据未采集 → 整卡保持 review(automation_accepted_device_pending)，不转 accepted
+- 本批性质注记：同日两卡（ALN-11-W→ALN-12-A）均为干净树独立复验并出报告；ALN-13-A 已被 claude-main 认领，未撞车
+

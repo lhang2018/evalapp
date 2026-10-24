@@ -195,6 +195,28 @@ test("失败动作不自动重放：同一 action_id 返回原失败回执", asy
   assert.equal(f.transport.calls, 1);
 });
 
+test("中断恢复：先落提议后下发——崩溃窗口（已记账无回执）不自动重发", async () => {
+  const f = fixture();
+  const p = proposal();
+  // 模拟崩溃窗口：提议已记账，但进程在 Broker 下发至回执落账之间被杀，
+  // 台账中只剩提议、没有回执。
+  await f.ledger.recordProposal(p);
+  // 重启（新台账实例）后同一 action_id 重放：不自动重发，副作用按未知留痕。
+  const revived = new TaskActionLedger(f.kv, { now: f.now });
+  const outcome = await executeProposal(revived, f.broker, p, { now: f.now });
+  assert.equal(f.transport.calls, 0, "崩溃窗口后禁止自动重发");
+  assert.equal(outcome.dispatched, false);
+  assert.equal(outcome.receipt.state, "unverified");
+  assert.equal(outcome.receipt.terminal, false);
+  assert.equal(outcome.receipt.replayed, false);
+  assert.ok(outcome.receipt.message?.includes("需人工对账"));
+  // 已留痕后再次调用：幂等返回同一 unknown 回执，仍不下发。
+  const again = await executeProposal(revived, f.broker, p, { now: f.now });
+  assert.equal(again.dispatched, false);
+  assert.equal(again.receipt.replayed, true);
+  assert.equal(f.transport.calls, 0);
+});
+
 test("台账持久化：重启（新实例）后提议、回执与任务链完整", async () => {
   const f = fixture();
   const p = proposal();
