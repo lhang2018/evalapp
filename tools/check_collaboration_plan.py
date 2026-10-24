@@ -147,7 +147,13 @@ def validate(board):
             errors.append("merged/accepted task requires evidence: " + item["id"])
         if item["status"] == "accepted" and not item["reviewer"]:
             errors.append("accepted task requires a reviewer: " + item["id"])
-        if item["reviewer"] and item["reviewer"] == item["owner"]:
+        authorization = item.get("review_authorization") or {}
+        user_revalidation = (authorization.get("source") == "user_request"
+            and authorization.get("allow_same_author") is True
+            and authorization.get("independent") is False
+            and bool(authorization.get("request"))
+            and bool(item.get("acceptance_review", {}).get("report")))
+        if item["reviewer"] and item["reviewer"] == item["owner"] and not user_revalidation:
             errors.append("task author cannot be their own reviewer: " + item["id"])
         if not set(item["shared_files"]).issubset(paths):
             errors.append("undeclared shared-file handoff: " + item["id"])

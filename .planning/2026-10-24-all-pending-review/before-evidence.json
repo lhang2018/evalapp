@@ -1,0 +1,45 @@
+{
+  "source_commit": "08d2ac99419b9186e0ac4e0df7378368d719a76b",
+  "probes": [
+    {
+      "path": "tests/test_peer_runtime_protocol_review.py",
+      "sha256": "f79378435e7bbb002ed32596213fbf180b4aa85d5a50e443e21628931cd0f596"
+    },
+    {
+      "path": "android-app/test/device/peerTaskProtocol.test.ts",
+      "sha256": "48afc9dd52368f80e452f7d569e1c77664cc4e419bd9ac81644333d444d53446"
+    },
+    {
+      "path": "android-app/test/update/peerBundleReview.test.ts",
+      "sha256": "71be50575a8d2bd7bdd1462caeaec73f06415c34d258a28ad06dca9c3a560058"
+    }
+  ],
+  "results": [
+    {
+      "name": "runtime-before-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-m",
+        "pytest",
+        "tests/test_peer_runtime_protocol_review.py",
+        "-q",
+        "--tb=short"
+      ],
+      "exit_code": 1,
+      "log": ".planning/2026-10-24-all-pending-review/runtime-before-committed.txt",
+      "sha256": "0d73b07f52475079f6350db60a0774967bf4c3dfc26f0e1411ecf8c7642ceac8"
+    },
+    {
+      "name": "client-before-committed",
+      "command": [
+        "node",
+        "--test",
+        "android-app/test/device/peerTaskProtocol.test.ts",
+        "android-app/test/update/peerBundleReview.test.ts"
+      ],
+      "exit_code": 1,
+      "log": ".planning/2026-10-24-all-pending-review/client-before-committed.txt",
+      "sha256": "e041b1a8b7d328f60f2fa8356ebc65e11b70c76b05012a7b7702ab8d30310b80"
+    }
+  ]
+}

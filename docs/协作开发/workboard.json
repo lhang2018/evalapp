@@ -29,7 +29,7 @@
     },
     "initial_head_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
     "prepared_candidate": {
-      "commit": "07f11e5",
+      "commit": "07f11e5a96f6a93c9b566eef24d163790891e6db",
       "source_tree": "4ddb89c7ecf117119d1da104c8a09553b55b4b90",
       "status": "verified_pending_independent_review",
       "clean_before_and_after": true,
@@ -41,7 +41,9 @@
       "evidence": [
         {
           "path": ".planning/2026-10-24-aln00b-clean/backend-tests.txt",
-          "sha256": "b8521360eeda5aa42f8a5883c5742ef852725bd15a7a4124084009b1534847f7"
+          "sha256": "8302032bc198f5c5c9290316eba7bd40402d50fb1fca1f488852e1bebb9932cd",
+          "original_working_copy_sha256": "b8521360eeda5aa42f8a5883c5742ef852725bd15a7a4124084009b1534847f7",
+          "normalization": "CRLF working-copy evidence normalized to identical committed LF text; test output unchanged"
         },
         {
           "path": ".planning/2026-10-24-aln00b-clean/client-tests.txt",
@@ -76,9 +78,11 @@
         "git": "git version 2.43.0.windows.1",
         "platform": "Windows-10-10.0.19045-SP0"
       },
-      "clean_tree_source_commit": "07f11e5",
+      "clean_tree_source_commit": "07f11e5a96f6a93c9b566eef24d163790891e6db",
       "verified_at": "2026-10-24T19:20+08:00",
-      "verified_by": "zcode-main（00-B owner；候选准备非发布，published_commit仍由独立复核后填写）"
+      "verified_by": "zcode-main（00-B owner；候选准备非发布，published_commit仍由独立复核后填写）",
+      "review_snapshot_semantics": "eaa1342准备时的历史待审列表；当前五卡已在包含07466fb修复的源码上验收，本候选不含这些修复，不得直接发布",
+      "superseded_by_fix_commit": "07466fb0beea638ef03952641c02d65a6df828cb"
     },
     "acceptance_review": {
       "reviewed_commit": "8692637064389736695f433337c8d09e0bdcdafb",
@@ -108,14 +112,14 @@
       "scope": "候选准备Git/日志证据有效；当前源码新增显式验收不通过，915/1仅为此前普通tests基线"
     },
     "latest_source_verification": {
-      "source_commit": "cc0aa3a3b93c6f7285823f290f33e70510ef8951",
-      "source_tree": "fc9ba434f7dd6a44cf54cbbc1550a8e6f4a14f6d",
-      "python_passed": 1653,
+      "source_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+      "source_tree": "7bf9e6a810357e53407c6b7226bbfd36a565bbc6",
+      "python_passed": 1661,
       "python_skipped": 1,
-      "client_passed": 207,
+      "client_passed": 228,
       "typecheck": "passed",
-      "scope": "07-B六组独立审核修复；19项探针原源码15失败/4通过，相关241通过；固定cc0aa3a后端1653/1、客户端207/typecheck实际复跑，排除在途，未重跑真机，不发布基线",
-      "evidence": "../../.planning/2026-10-24-action-binding-review/committed-evidence.json"
+      "scope": "全部五张待审卡统一验收；Runtime/设备协议/工作流边界修复，固定Git归档1661/1+228+typecheck；真机为657ed1c/07f11e5既有采集的只读复核；不发布基线",
+      "evidence": "../../.planning/2026-10-24-all-pending-review/committed-evidence.json"
     },
     "latest_peer_review": {
       "date": "2026-10-23",
@@ -163,6 +167,21 @@
       "source_commit": "05a7cf43f599a25c6add290063e19f16ae942c49",
       "status": "review",
       "report": "docs/协作开发/交付/ALN-05-I-记忆身份与清单运行时接线.md"
+    },
+    "latest_acceptance": {
+      "source_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+      "accepted_cards": [
+        "ALN-04-UI",
+        "ALN-07-B",
+        "ALN-11-W",
+        "ALN-12-A",
+        "ALN-20-A"
+      ],
+      "reviewer": "codex-runtime",
+      "authorization": "user-requested unified revalidation; not claimed independent",
+      "report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md",
+      "publication_ready": false,
+      "publication_blocker": "prepared_candidate07f11e5 omits 07466fb runtime/client fixes"
     }
   },
   "streams": [
@@ -439,6 +458,18 @@
     {
       "path": "evoagent/core/log_layers.py",
       "stream": "models"
+    },
+    {
+      "path": "android-app/src/update/manager.ts",
+      "stream": "android"
+    },
+    {
+      "path": "android-app/src/device/broker.ts",
+      "stream": "android"
+    },
+    {
+      "path": "android-app/src/device/taskProtocol.ts",
+      "stream": "android"
     }
   ],
   "dispatches": [
@@ -452,7 +483,7 @@
       "branch": "main",
       "base_commit": "cabf7752c0243341b2e72ddf2c05495df1f04911",
       "status": "blocked",
-      "blocker": "正式发布等待已交付补丁的独立复核、ALN-04-UI真机路径及选定范围的干净候选核验；当前单开发者不能自批本人补丁",
+      "blocker": "最新准备候选07f11e5不含07466fb执行/去重/能力修复；需刷新选定候选与干净核验后另行发布，published_commit仍空",
       "evidence": [
         {
           "date": "2026-10-22",
@@ -517,7 +548,7 @@
         "GAP_ANALYSIS.md"
       ],
       "preparation_status": "verified_pending_review",
-      "next_step": "候选和交接整理可继续；独立接受前不修改published_commit，旧prepared_candidate保留历史证据",
+      "next_step": "五张待审卡已统一验收；把候选刷新到包含07466fb与本轮元数据的提交并核验，再执行发布流程，不发布旧07f11e5",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -789,10 +820,10 @@
       "title": "Android 管理员审批",
       "stream": "android",
       "owner": "codex-runtime",
-      "reviewer": "claude-main",
+      "reviewer": "codex-runtime",
       "branch": "main",
       "base_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -820,6 +851,14 @@
           "result": "12 pass；typecheck passed；真机批准/拒绝/断网/过期路径未执行",
           "reviewed_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
           "report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
+        },
+        {
+          "date": "2026-10-24",
+          "source_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+          "scope": "审批详情/单次决定/权限与离线状态；批准/拒绝/断网恢复/过期真机证据已交叉复核。演示服务无鉴权，角色限制另由真实API自动化覆盖",
+          "result": "fixed Git archive: backend1661 passed/1 skipped; client228 passed; typecheck passed; 5 metadata/coverage checks passed",
+          "report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md",
+          "log": ".planning/2026-10-24-all-pending-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/04-Android审批.md",
@@ -830,12 +869,35 @@
       ],
       "working_basis": "用户明确要求认领并开发；在当前共享候选工作区增量实现，base_commit 不代表候选基线已发布。",
       "delivery": "docs/协作开发/交付/ALN-04-UI-管理员审批页面.md",
-      "review_result": "unit_accepted_device_pending",
-      "review_note": "2026-10-22 claude-main 独立审阅：审批会话完整绑定展示、单次消费、错误不回显、过期/断网/陈旧响应单测通过；交付文档明确真机路径未验，整卡不转 accepted",
-      "review_report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md",
-      "next_step": "真机四路径证据已采集（2026-10-24，见验收记录）：批准→SUCCEEDED(approval used×2)、拒绝→CANCELLED(denied)、断网→详情保留+按钮停用+恢复后批准成功、过期→本地闸门停用+resume正确重请求（注入过期+自然TTL两例）；待复核人claude-main确认后转accepted",
+      "review_result": "accepted",
+      "review_note": "用户明确要求本会话统一复验验收；本轮自己的修复属于授权复验而非第三方。审批详情/单次决定/权限与离线状态；批准/拒绝/断网恢复/过期真机证据已交叉复核。演示服务无鉴权，角色限制另由真实API自动化覆盖",
+      "review_report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md",
+      "next_step": "本卡既定UI与四路径证据已按用户授权验收；生产身份与完整端到端故障矩阵仍按父包推进",
       "device_evidence": "docs/协作开发/验收/2026-10-24-ALN-04-UI真机四路径证据.md",
-      "delivered_commit": "72d20f026ad0623ab1828341f88f290ed06f6006"
+      "delivered_commit": "72d20f026ad0623ab1828341f88f290ed06f6006",
+      "review_history": [
+        {
+          "reviewer": "claude-main",
+          "review_result": "unit_accepted_device_pending",
+          "review_note": "2026-10-22 claude-main 独立审阅：审批会话完整绑定展示、单次消费、错误不回显、过期/断网/陈旧响应单测通过；交付文档明确真机路径未验，整卡不转 accepted",
+          "review_report": "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
+        }
+      ],
+      "review_authorization": {
+        "source": "user_request",
+        "request": "所有待审核的不管安排谁，你直接复合验收即可",
+        "allow_same_author": true,
+        "independent": false
+      },
+      "acceptance_review": {
+        "date": "2026-10-24",
+        "reviewer": "codex-runtime",
+        "source_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+        "mode": "user_authorized_revalidation",
+        "independent": false,
+        "scope": "审批详情/单次决定/权限与离线状态；批准/拒绝/断网恢复/过期真机证据已交叉复核。演示服务无鉴权，角色限制另由真实API自动化覆盖",
+        "report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md"
+      }
     },
     {
       "id": "ALN-10-Q",
@@ -2072,7 +2134,7 @@
       "reviewer": "codex-runtime",
       "branch": null,
       "base_commit": null,
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -2091,6 +2153,14 @@
           "result": "07-B六组独立审核修复；19项探针原源码15失败/4通过，相关241通过；固定cc0aa3a后端1653/1、客户端207/typecheck实际复跑，排除在途，未重跑真机，不发布基线",
           "report": "docs/协作开发/验收/2026-10-24-ALN-07-B独立审核.md",
           "log": ".planning/2026-10-24-action-binding-review/committed-evidence.json"
+        },
+        {
+          "date": "2026-10-24",
+          "source_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+          "scope": "cc0aa3a六组修复复验：租约/并发事务、真实归属、缓存回执与App装配；精确动作授权、plan/run命名空间和自动对账仍不在本切片",
+          "result": "fixed Git archive: backend1661 passed/1 skipped; client228 passed; typecheck passed; 5 metadata/coverage checks passed",
+          "report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md",
+          "log": ".planning/2026-10-24-all-pending-review/committed-evidence.json"
         }
       ],
       "card": "docs/协作开发/任务卡/07-B运行时动作绑定.md",
@@ -2099,7 +2169,7 @@
         "evoagent/app.py"
       ],
       "working_basis": "用户要求继续认领开发；ALN-07整包第五项——核实全库无人产生step_bindings（只有reconcile.py接受该参数），导致07-E对同工具多声明永远只能判ambiguous；新表走core/schema自动发现零注册改动，engine仅加可选参数+约5行接线",
-      "next_step": "独立复核cc0aa3a、19项探针及真实App/网关/租约路径；历史缓存无绑定时不补猜，执行前精确步骤授权、run/plan命名空间与自动消费对账结论另验",
+      "next_step": "本轮用户授权复验通过；网关原子绑定/崩溃缺证、plan/run精确范围与对账驱动执行另行实现",
       "ownership_history": [
         {
           "date": "2026-10-24",
@@ -2111,12 +2181,12 @@
       "preparation_status": "delivered",
       "delivered_commit": "827d46d",
       "delivery": "docs/协作开发/交付/ALN-07-B-运行时动作绑定.md",
-      "review_result": "changes_requested",
-      "review_report": "docs/协作开发/验收/2026-10-24-ALN-07-B独立审核.md",
-      "review_note": "真实租约/多连接事务、工具身份、归属来源、缓存回执、LeaseLost及App装配六组问题已修复，修复作者codex-runtime须其他审阅者复核",
+      "review_result": "accepted",
+      "review_report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md",
+      "review_note": "用户明确要求本会话统一复验验收；本轮自己的修复属于授权复验而非第三方。cc0aa3a六组修复复验：租约/并发事务、真实归属、缓存回执与App装配；精确动作授权、plan/run命名空间和自动对账仍不在本切片",
       "fix_author": "codex-runtime",
       "fix_commit": "cc0aa3a3b93c6f7285823f290f33e70510ef8951",
-      "fix_status": "repaired_pending_independent_review",
+      "fix_status": "fix_verified_by_user_authorized_revalidation",
       "peer_findings": [
         "AB07-01",
         "AB07-02",
@@ -2124,7 +2194,31 @@
         "AB07-04",
         "AB07-05",
         "AB07-06"
-      ]
+      ],
+      "review_history": [
+        {
+          "reviewer": "codex-runtime",
+          "review_result": "changes_requested",
+          "review_note": "真实租约/多连接事务、工具身份、归属来源、缓存回执、LeaseLost及App装配六组问题已修复，修复作者codex-runtime须其他审阅者复核",
+          "review_report": "docs/协作开发/验收/2026-10-24-ALN-07-B独立审核.md",
+          "fix_status": "repaired_pending_independent_review"
+        }
+      ],
+      "review_authorization": {
+        "source": "user_request",
+        "request": "所有待审核的不管安排谁，你直接复合验收即可",
+        "allow_same_author": true,
+        "independent": false
+      },
+      "acceptance_review": {
+        "date": "2026-10-24",
+        "reviewer": "codex-runtime",
+        "source_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+        "mode": "user_authorized_revalidation",
+        "independent": false,
+        "scope": "cc0aa3a六组修复复验：租约/并发事务、真实归属、缓存回执与App装配；精确动作授权、plan/run命名空间和自动对账仍不在本切片",
+        "report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md"
+      }
     },
     {
       "id": "ALN-13-A",
@@ -2181,21 +2275,32 @@
       "title": "自然语言任务—设备执行/回执协议与离线故障矩阵",
       "stream": "android",
       "owner": "zcode-main",
-      "reviewer": "opencode-evo",
+      "reviewer": "codex-runtime",
       "branch": "main",
       "base_commit": "c61b53ec5f7f8937ab772b6ac5b377093792b1aa",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         "代码: 本卡提交（taskProtocol.ts/failureMatrix.ts 新增；types.ts/broker.ts 卡内增量小改；taskGaps.test.ts 缺口夹具）",
         "测试: android-app 214 passed / 0 failed (npm run test:offline)；新增24项（协议12+矩阵9+缺口3），全部转绿",
         "交付: docs/协作开发/交付/ALN-12-A-自然语言任务设备协议与故障矩阵.md（含契约与分工说明）",
-        "typecheck 由并行会话声明通过、本机未能复跑（无node_modules/全局tsc损坏）；真机自然语言执行与断网/杀进程/重启一致性按整包验收另验"
+        "typecheck 由并行会话声明通过、本机未能复跑（无node_modules/全局tsc损坏）；真机自然语言执行与断网/杀进程/重启一致性按整包验收另验",
+        {
+          "date": "2026-10-24",
+          "source_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+          "scope": "本卡正式范围为提议/回执/任务引用与故障矩阵；并发认领、持久去重、隐私、严格风险及坏状态拒绝已修复验证。自然语言App主链/真机设备全矩阵属于父包后续",
+          "result": "fixed Git archive: backend1661 passed/1 skipped; client228 passed; typecheck passed; 5 metadata/coverage checks passed",
+          "report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md",
+          "log": ".planning/2026-10-24-all-pending-review/committed-evidence.json"
+        }
       ],
       "card": "docs/协作开发/任务卡/12-自然语言手机任务与离线可靠性.md",
-      "shared_files": [],
+      "shared_files": [
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
       "working_basis": "2026-10-24 zcode-main 按队列认领开工（WIP=1，本流内唯一在途卡）。base_commit c61b53ec 为实际接手锚点（基线仍candidate）。claude-main并行进行ALN-07-B（服务端effect→step绑定），与本卡客户端路径零重叠；effect_id语义关系在任务协议文档中显式对齐。通知/后台runner/DevicePackage在途改动不触碰；服务端只提接口需求不接线。同日完成交付：独占新模块与测试由zcode-main会话编写；types/broker卡内增量与缺口夹具由并行协调会话完成（字段与本协议同源对齐），分工记录见交付文档。",
-      "next_step": "真机自然语言执行/断网/杀进程/重启一致性与敏感内容证据按ALN-12整包验收另验；App主链路接线小卡落实后须走上传投影并复用broker.riskOf防两表漂移",
+      "next_step": "协议与矩阵切片已验收；另拆自然语言Task→设备动作App主链、物理重启/系统杀进程全矩阵与敏感数据真机验收，不关闭父包",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -2210,9 +2315,9 @@
           "reason": "用户要求zcode-main接手串行开发队列；接手未交付范围，保留在途内容与独立审阅要求，卡保持排队未开工"
         }
       ],
-      "review_result": "automation_accepted_device_pending",
-      "review_note": "2026-10-24 opencode-evo 独立复核：干净树206/0(=基线182+新增24)+tsc 0错；引用不可变与幂等重放/未知副作用禁自动重放/矩阵与实现对齐(500容量、2s→5min退避、7天1天保留期抽验全符)/上传脱敏投影四点确认；交付点名的crash窗口已按复核裁决修复为预记账语义(先落提议再下发+断点不自动重发留unverified回执+新增回归测试,修复后207/0)；214为交付时脏区口径,固定树=206(修后207)",
-      "review_report": "docs/协作开发/验收/2026-10-24-ALN-12-A独立复核.md",
+      "review_result": "accepted",
+      "review_note": "用户明确要求本会话统一复验验收；本轮自己的修复属于授权复验而非第三方。本卡正式范围为提议/回执/任务引用与故障矩阵；并发认领、持久去重、隐私、严格风险及坏状态拒绝已修复验证。自然语言App主链/真机设备全矩阵属于父包后续",
+      "review_report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md",
       "review_evidence": [
         {
           "date": "2026-10-24",
@@ -2222,7 +2327,34 @@
           "reviewed_commit": "4a8947a/8dc82b9",
           "review_report": "docs/协作开发/验收/2026-10-24-ALN-12-A独立复核.md"
         }
-      ]
+      ],
+      "review_history": [
+        {
+          "reviewer": "opencode-evo",
+          "review_result": "automation_accepted_device_pending",
+          "review_note": "2026-10-24 opencode-evo 独立复核：干净树206/0(=基线182+新增24)+tsc 0错；引用不可变与幂等重放/未知副作用禁自动重放/矩阵与实现对齐(500容量、2s→5min退避、7天1天保留期抽验全符)/上传脱敏投影四点确认；交付点名的crash窗口已按复核裁决修复为预记账语义(先落提议再下发+断点不自动重发留unverified回执+新增回归测试,修复后207/0)；214为交付时脏区口径,固定树=206(修后207)",
+          "review_report": "docs/协作开发/验收/2026-10-24-ALN-12-A独立复核.md"
+        }
+      ],
+      "review_authorization": {
+        "source": "user_request",
+        "request": "所有待审核的不管安排谁，你直接复合验收即可",
+        "allow_same_author": true,
+        "independent": false
+      },
+      "acceptance_review": {
+        "date": "2026-10-24",
+        "reviewer": "codex-runtime",
+        "source_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+        "mode": "user_authorized_revalidation",
+        "independent": false,
+        "scope": "本卡正式范围为提议/回执/任务引用与故障矩阵；并发认领、持久去重、隐私、严格风险及坏状态拒绝已修复验证。自然语言App主链/真机设备全矩阵属于父包后续",
+        "report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md"
+      },
+      "fix_author": "codex-runtime",
+      "fix_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+      "fix_status": "fix_verified_by_user_authorized_revalidation",
+      "delivery": "docs/协作开发/交付/ALN-12-A-自然语言任务设备协议与故障矩阵.md"
     },
     {
       "id": "ALN-14-A",
@@ -2398,22 +2530,30 @@
       "title": "Runtime 适配协议与固定版本 PoC 设计",
       "stream": "runtime",
       "owner": "zcode-main",
-      "reviewer": null,
+      "reviewer": "codex-runtime",
       "branch": "main",
       "base_commit": "427ef7e50f871b808aadacd0c377b6093a7e5be3",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         "代码: 本卡提交（evoagent/runtime/ 五类能力协议+Mock/现有运行时适配+兼容矩阵；tests/test_runtime_protocol.py 8项）",
         "测试: 定向 8 passed；全量 python -m pytest tests -q → 1634 passed / 1 skipped",
         "矩阵: 能力×实现兼容矩阵与采用判据见交付文档（mock沙箱刻意absent不做假执行；model_api_only参照行演示显式拒绝）",
         "交付: docs/协作开发/交付/ALN-20-A-Runtime适配协议与固定版本PoC设计.md；固定外部Harness commit的实际PoC与ADR正式条目按任务卡另卡",
-        "复跑核实: 协调会话独立复跑全量 python -m pytest tests -q → 1634 passed / 1 skipped，与交付声明一致（2026-10-24）"
+        "复跑核实: 协调会话独立复跑全量 python -m pytest tests -q → 1634 passed / 1 skipped，与交付声明一致（2026-10-24）",
+        {
+          "date": "2026-10-24",
+          "source_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+          "scope": "五类Runtime协议、现有/Mock共享夹具与能力矩阵切片；能力类型/缺接口/重复声明/Mock真实拒绝与事件顺序已修复。固定外部Runtime实测与正式采用另验",
+          "result": "fixed Git archive: backend1661 passed/1 skipped; client228 passed; typecheck passed; 5 metadata/coverage checks passed",
+          "report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md",
+          "log": ".planning/2026-10-24-all-pending-review/committed-evidence.json"
+        }
       ],
       "card": "docs/协作开发/任务卡/20-Runtime适配与Harness PoC.md",
       "shared_files": [],
       "working_basis": "2026-10-24 zcode-main 按队列认领开工（17-A已交付review后队首）。base_commit 427ef7e 为实际接手锚点（基线仍candidate）。纯契约卡：新增 evoagent/runtime/ 协议与适配接口、同组夹具与兼容矩阵；不改 controller/react/workflows 执行路径，不引入第二套工具/账本权威；外部Harness固定版本PoC按任务卡另卡另验。同日完成交付：能力缺失 CapabilityNotSupportedError 显式拒绝；共享夹具双实现跑通；适配层 assertIs 断言持有注入权威，不复制权限/账本/Task权威。",
-      "next_step": "待独立复核（拒绝语义、共享夹具双实现一致性、权威不变性断言、矩阵与声明一致性）；固定外部Runtime commit的PoC与ADR-010正式条目另卡",
+      "next_step": "协议与矩阵切片已验收；固定外部Runtime commit的真实PoC、ADR正式采用与实际主链接入另行推进",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -2427,7 +2567,34 @@
           "to": "zcode-main",
           "reason": "用户要求zcode-main接手串行开发队列；接手未交付范围，保留在途内容与独立审阅要求，卡保持排队未开工"
         }
-      ]
+      ],
+      "review_history": [
+        {
+          "reviewer": null
+        }
+      ],
+      "review_result": "accepted",
+      "review_report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md",
+      "review_note": "用户明确要求本会话统一复验验收；本轮自己的修复属于授权复验而非第三方。五类Runtime协议、现有/Mock共享夹具与能力矩阵切片；能力类型/缺接口/重复声明/Mock真实拒绝与事件顺序已修复。固定外部Runtime实测与正式采用另验",
+      "review_authorization": {
+        "source": "user_request",
+        "request": "所有待审核的不管安排谁，你直接复合验收即可",
+        "allow_same_author": true,
+        "independent": false
+      },
+      "acceptance_review": {
+        "date": "2026-10-24",
+        "reviewer": "codex-runtime",
+        "source_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+        "mode": "user_authorized_revalidation",
+        "independent": false,
+        "scope": "五类Runtime协议、现有/Mock共享夹具与能力矩阵切片；能力类型/缺接口/重复声明/Mock真实拒绝与事件顺序已修复。固定外部Runtime实测与正式采用另验",
+        "report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md"
+      },
+      "fix_author": "codex-runtime",
+      "fix_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+      "fix_status": "fix_verified_by_user_authorized_revalidation",
+      "delivery": "docs/协作开发/交付/ALN-20-A-Runtime适配协议与固定版本PoC设计.md"
     },
     {
       "id": "ALN-18-A",
@@ -2548,24 +2715,33 @@
       "title": "活动workflow执行消费与自动健康探针",
       "stream": "android",
       "owner": "zcode-main",
-      "reviewer": "opencode-evo",
+      "reviewer": "codex-runtime",
       "branch": "main",
       "base_commit": "f46488124c9a8fcf7da1ec099bb902138d53fb5f",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         "代码: 352e8ef (bundleRuntime.ts 新增; workflowBundle.ts/App.tsx 小改; 16 项新测试)",
         "测试: android-app 190 passed / 0 failed (npm run test:offline)；typecheck 通过",
         "交付: docs/协作开发/交付/ALN-11-W-活动workflow执行消费与健康探针.md（含执行消费协议契约）",
-        "真机证据（2026-10-24 18:05-18:12，小米24018RPACC/Android16，inst_mvgemk5601b3r1lded2g）: 健康基线rel_good_v3(v9.2.0)激活→自动探针真实执行workflow→healthy→自动晋级已知良好；注入缺陷rel_bad_v4(v9.3.0)激活→探针期望核对不符→unhealthy（不标健康）→自动回滚（状态rolled_back，服务端rolled_back ok）→verifyRecovery真实执行原健康包workflow→succeeded（failed/recovered成对版本绑定rel_bad_v4·47c6b6d3…/rel_good_v3·8e5212ed…）；强杀重启后状态与版本关联完整保留。逐屏截图/ui dump/设备KV RKStorage/服务端部署时间线见 docs/协作开发/验收/2026-10-24-ALN-11-W真机健康回滚证据.md 及 .planning/2026-10-24-aln11w-device/"
+        "真机证据（2026-10-24 18:05-18:12，小米24018RPACC/Android16，inst_mvgemk5601b3r1lded2g）: 健康基线rel_good_v3(v9.2.0)激活→自动探针真实执行workflow→healthy→自动晋级已知良好；注入缺陷rel_bad_v4(v9.3.0)激活→探针期望核对不符→unhealthy（不标健康）→自动回滚（状态rolled_back，服务端rolled_back ok）→verifyRecovery真实执行原健康包workflow→succeeded（failed/recovered成对版本绑定rel_bad_v4·47c6b6d3…/rel_good_v3·8e5212ed…）；强杀重启后状态与版本关联完整保留。逐屏截图/ui dump/设备KV RKStorage/服务端部署时间线见 docs/协作开发/验收/2026-10-24-ALN-11-W真机健康回滚证据.md 及 .planning/2026-10-24-aln11w-device/",
+        {
+          "date": "2026-10-24",
+          "source_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+          "scope": "执行消费、有界探针、制品绑定与回滚恢复；既有真机失败→回滚→旧能力执行/重启证据已核对。新增硬超时与竞态修复由固定源码回归覆盖",
+          "result": "fixed Git archive: backend1661 passed/1 skipped; client228 passed; typecheck passed; 5 metadata/coverage checks passed",
+          "report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md",
+          "log": ".planning/2026-10-24-all-pending-review/committed-evidence.json"
+        }
       ],
       "card": "docs/协作开发/任务卡/11-活动工作流执行与健康探针.md",
       "shared_files": [
         "android-app/App.tsx",
-        "android-app/src/update/workflowBundle.ts"
+        "android-app/src/update/workflowBundle.ts",
+        "android-app/src/update/manager.ts"
       ],
       "working_basis": "2026-10-24 zcode-main 接手 codex-runtime 排队现场完成交付。base_commit f464881 为实际接手锚点（基线仍 candidate 未发布）。更新管理器未改，探针复用既有 healthCheck/rollback；服务端零改动；通知/后台 runner/DevicePackage 在途改动未触碰。收尾提交由 codex-runtime 会话在交接登记后产出（352e8ef 实现+16项新测试、70f0c9c 台账与交付登记）；zcode-main 复核台账并复跑客户端 190 项测试通过，未改动实现；loadActiveBundle 存在一处换行丢失的格式瑕疵（无语义影响），留独立复核处置。同日真机验收第5条证据采集完成（见验收记录），转 accepted 由复核人 opencode-evo 决定。",
-      "next_step": "真机证据已采集（验收第5条六步全部触发并留证），待复核人opencode-evo确认后转accepted；ALN-11整包按原范围；submit路径硬超时可留运行时小卡",
+      "next_step": "本卡执行消费/探针/实际回滚与旧包执行切片已验收；生产签名、多设备灰度与更多真机超时故障另验",
       "ownership_history": [
         {
           "date": "2026-10-24",
@@ -2574,9 +2750,9 @@
           "reason": "用户要求新会话接手认领；保留codex-runtime当日在途未提交实现，不重置不清除；测试补全与真机证据为接手后未完成点"
         }
       ],
-      "review_result": "automation_accepted_device_pending",
-      "review_note": "2026-10-24 opencode-evo 独立复核：干净树182/0+16/16+tsc 0错；执行前拒绝六类/unknown不标健康/回滚后版本绑定三点确认；无eval收痕；loadActiveBundle换行瑕疵已由复核修复；观察：submit路径execute无硬超时包壳(留运行时小卡)、190为交付时脏区计数(固定树=182)",
-      "review_report": "docs/协作开发/验收/2026-10-24-ALN-11-W独立复核.md",
+      "review_result": "accepted",
+      "review_note": "用户明确要求本会话统一复验验收；本轮自己的修复属于授权复验而非第三方。执行消费、有界探针、制品绑定与回滚恢复；既有真机失败→回滚→旧能力执行/重启证据已核对。新增硬超时与竞态修复由固定源码回归覆盖",
+      "review_report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md",
       "review_evidence": [
         {
           "date": "2026-10-24",
@@ -2586,7 +2762,34 @@
           "reviewed_commit": "352e8ef",
           "review_report": "docs/协作开发/验收/2026-10-24-ALN-11-W独立复核.md"
         }
-      ]
+      ],
+      "review_history": [
+        {
+          "reviewer": "opencode-evo",
+          "review_result": "automation_accepted_device_pending",
+          "review_note": "2026-10-24 opencode-evo 独立复核：干净树182/0+16/16+tsc 0错；执行前拒绝六类/unknown不标健康/回滚后版本绑定三点确认；无eval收痕；loadActiveBundle换行瑕疵已由复核修复；观察：submit路径execute无硬超时包壳(留运行时小卡)、190为交付时脏区计数(固定树=182)",
+          "review_report": "docs/协作开发/验收/2026-10-24-ALN-11-W独立复核.md"
+        }
+      ],
+      "review_authorization": {
+        "source": "user_request",
+        "request": "所有待审核的不管安排谁，你直接复合验收即可",
+        "allow_same_author": true,
+        "independent": false
+      },
+      "acceptance_review": {
+        "date": "2026-10-24",
+        "reviewer": "codex-runtime",
+        "source_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+        "mode": "user_authorized_revalidation",
+        "independent": false,
+        "scope": "执行消费、有界探针、制品绑定与回滚恢复；既有真机失败→回滚→旧能力执行/重启证据已核对。新增硬超时与竞态修复由固定源码回归覆盖",
+        "report": "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md"
+      },
+      "fix_author": "codex-runtime",
+      "fix_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+      "fix_status": "fix_verified_by_user_authorized_revalidation",
+      "delivery": "docs/协作开发/交付/ALN-11-W-活动workflow执行消费与健康探针.md"
     },
     {
       "id": "ALN-18-B",
@@ -3048,7 +3251,7 @@
       "stream": "runtime",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "RUNNING 强杀接管；另行完成审批 UI 和组合验收"
+      "next_step": "04-R及04-UI既定切片已接受，UI四路径真机证据已核对；更多生产组合恢复与身份部署仍另验"
     },
     {
       "id": "ALN-05",
@@ -3097,7 +3300,7 @@
       "stream": "runtime",
       "owner": "claude-main",
       "delivery_state": "needs_recheck",
-      "next_step": "07-P/W/T/R/E既定切片已第三方接受；07-B六组问题已修复cc0aa3a待其他审阅者复核；精确步骤授权、run/plan绑定与实际对账消费另验，整包未关闭"
+      "next_step": "07-P/W/T/R/E/B既定切片均已验收；原子绑定崩溃窗口、精确步骤授权/范围与实际对账消费仍待实现，整包未关闭"
     },
     {
       "id": "ALN-08",
@@ -3164,7 +3367,7 @@
       "stream": "android",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "11-A/R既定切片已接受；11-W执行消费/探针/回滚自动化切片已复核，真机健康失败→回滚→旧能力执行仍待验，整包未关闭",
+      "next_step": "11-A/R/W既定切片均已验收，健康失败→真实回滚→旧包执行/重启真机证据已核对；生产签名/多端灰度另验",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -3186,7 +3389,7 @@
       "stream": "android",
       "owner": "codex-runtime",
       "delivery_state": "partial_verified",
-      "next_step": "12-A提议/执行/回执及离线故障自动化已复核，保持review/device_pending；App主链接线、真机断网/杀进程/重启与敏感证据另验，通知在途不计交付",
+      "next_step": "12-A协议/矩阵及本轮安全边界修复已验收；自然语言App主链与父包真机离线/系统重启矩阵另拆，不将协议通过当整包闭合",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -3336,7 +3539,7 @@
       "stream": "runtime",
       "owner": "codex-runtime",
       "delivery_state": "needs_recheck",
-      "next_step": "20-A五类Runtime协议/Mock与现有适配器/兼容矩阵已交付review，待独立复核；真实固定外部Harness PoC另验，不等同已集成",
+      "next_step": "20-A协议/适配/矩阵切片已验收；固定外部Runtime真实PoC与主链采用另验，整包未关闭",
       "ownership_history": [
         {
           "date": "2026-10-23",

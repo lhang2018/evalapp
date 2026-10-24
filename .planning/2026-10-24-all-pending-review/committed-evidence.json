@@ -1,0 +1,98 @@
+{
+  "source_commit": "07466fb0beea638ef03952641c02d65a6df828cb",
+  "source_tree": "7bf9e6a810357e53407c6b7226bbfd36a565bbc6",
+  "scope": "git archive; excludes dirty working-tree files; typecheck reuses installed dependencies",
+  "snapshot": "E:\\evalapp\\outputs\\all-pending-review-07466fb",
+  "results": [
+    {
+      "name": "backend-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "-W",
+        "error::pytest.PytestUnhandledThreadExceptionWarning"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-all-pending-review\\backend-committed.txt",
+      "sha256": "1ee9975048cee973e5614220911928d1a4135e8476d32295074e5139cabf6d4e"
+    },
+    {
+      "name": "client-committed",
+      "command": [
+        "node",
+        "--test",
+        "test/offline/*.test.ts",
+        "test/device/*.test.ts",
+        "test/update/*.test.ts"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-all-pending-review\\client-committed.txt",
+      "sha256": "749b889dff77a28a6e0ef85b53988bd7eff15051595bce5ab446e05dfccec123"
+    },
+    {
+      "name": "claims-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/verify_claims.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-all-pending-review\\claims-committed.txt",
+      "sha256": "9e41e159ea27a3fb731e504c7fd7cebfbd8c3ee4fa431bcee5a442c6b761cf24"
+    },
+    {
+      "name": "ledgers-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/scan_all_ledgers.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-all-pending-review\\ledgers-committed.txt",
+      "sha256": "9fa62c2d9ca1778da4f82740c3e530edf1945b0f9d8306578d33a05154f73cb4"
+    },
+    {
+      "name": "board-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/check_collaboration_plan.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-all-pending-review\\board-committed.txt",
+      "sha256": "30618fad4ddb7e281c12b37ca979bafd944c266fb876d8a4184ad71949342ee7"
+    },
+    {
+      "name": "gap-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "tools/check_gap_closure.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-all-pending-review\\gap-committed.txt",
+      "sha256": "7ba5ab8bc1b026dab82911421e6904ea394f7a42d803d816d85e43d543449bed"
+    },
+    {
+      "name": "alignment-committed",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        ".planning/2026-10-22-design-alignment/verify_alignment_plan.py"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-all-pending-review\\alignment-committed.txt",
+      "sha256": "efa249a6b0f6427752ebc215f025a1d70954b67ef244ead420a330ff8335d49f"
+    },
+    {
+      "name": "typecheck-committed",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0,
+      "log": ".planning\\2026-10-24-all-pending-review\\typecheck-committed.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

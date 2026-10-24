@@ -1,0 +1,221 @@
+{
+  "scope": "Read-only audit of zcode-main's device collection; not a newly executed device scenario",
+  "device": "5748d823 / 24018RPACC / Android16 / debug0.1.0",
+  "collector": "zcode-main",
+  "auditor": "codex-runtime",
+  "provenance_commits": [
+    "657ed1c",
+    "07f11e5"
+  ],
+  "inputs": [
+    {
+      "path": ".planning/2026-10-24-aln04ui-device/a7.xml",
+      "git_ref": "07f11e5",
+      "sha256": "09afb91ea624625eee5faa08d10262cafc283b9bf1cca032ba8ff385b894ea19"
+    },
+    {
+      "path": ".planning/2026-10-24-aln11w-device/f4.xml",
+      "git_ref": null,
+      "sha256": "55daf9234f3932882100049b2cbadb9704864d0a096bd4193da0bf9b6a6a6451"
+    },
+    {
+      "path": ".planning/2026-10-24-aln04ui-device/final-approve.png",
+      "git_ref": "07f11e5",
+      "sha256": "6171e9cf61448fa1edd1ec0799314198e830511ad632b3ce2891b1c1dfc6f5d1"
+    },
+    {
+      "path": ".planning/2026-10-24-aln11w-device/ui15.png",
+      "git_ref": "657ed1c",
+      "sha256": "3ce58b4ccca383faeaf14c979dd348cc3d6973db3c88a3438efb9697254f2473"
+    },
+    {
+      "path": ".planning/2026-10-24-aln11w-device/ui18-restart.png",
+      "git_ref": "657ed1c",
+      "sha256": "1523c96adf8a8bedecab7968c18cbab755b998b5e713398cffd2e57ef6fafbe8"
+    },
+    {
+      "path": ".planning/2026-10-24-aln11w-device/RKStorage-device.db",
+      "git_ref": null,
+      "sha256": "130c51425a6a3ed78dc512c7a8d605dd1672371628ddc5271b27af44e8cda4ff"
+    }
+  ],
+  "approval_nodes": {
+    "expired": [
+      {
+        "text": "审批 apr_7d07716a492e4009b75d77c96082d24a · 已过期",
+        "enabled": "true",
+        "widget": "android.widget.TextView"
+      }
+    ],
+    "offline": [
+      {
+        "text": "审批 apr_70426ad7417342feaba167b2a5d82263 · 待审批",
+        "enabled": "true",
+        "widget": "android.widget.TextView"
+      },
+      {
+        "text": "详情待本次会话刷新核验，审批按钮已停用。",
+        "enabled": "true",
+        "widget": "android.widget.TextView"
+      },
+      {
+        "text": "离线：可查看已读取详情，联网后刷新审批。",
+        "enabled": "true",
+        "widget": "android.widget.TextView"
+      },
+      {
+        "text": "批准此动作",
+        "enabled": "false",
+        "widget": "android.widget.Button"
+      },
+      {
+        "text": "批准此动作",
+        "enabled": "false",
+        "widget": "android.widget.TextView"
+      },
+      {
+        "text": "拒绝并取消任务",
+        "enabled": "false",
+        "widget": "android.widget.Button"
+      },
+      {
+        "text": "拒绝并取消任务",
+        "enabled": "false",
+        "widget": "android.widget.TextView"
+      },
+      {
+        "text": "审批 apr_7d07716a492e4009b75d77c96082d24a · 尚未读取",
+        "enabled": "true",
+        "widget": "android.widget.TextView"
+      }
+    ]
+  },
+  "task_rows": {
+    "65ed5ad7b9f6": "CANCELLED",
+    "9f9ce3874a88": "SUCCEEDED",
+    "a15c5d4718e3": "SUCCEEDED",
+    "b0f2e3173c65": "SUSPENDED"
+  },
+  "approval_rows": [
+    {
+      "task_id": "65ed5ad7b9f6",
+      "approval_id": "apr_ce37cb2a8fa0421e838f2c27b6445916",
+      "raw_status": "denied",
+      "effective_status": "denied"
+    },
+    {
+      "task_id": "9f9ce3874a88",
+      "approval_id": "apr_70426ad7417342feaba167b2a5d82263",
+      "raw_status": "used",
+      "effective_status": "used"
+    },
+    {
+      "task_id": "a15c5d4718e3",
+      "approval_id": "apr_9729b3876014490b8fec07d86f7be5e7",
+      "raw_status": "pending",
+      "effective_status": "expired"
+    },
+    {
+      "task_id": "a15c5d4718e3",
+      "approval_id": "apr_912df78cc4044c7c8befeb3f0d6a3748",
+      "raw_status": "used",
+      "effective_status": "used"
+    },
+    {
+      "task_id": "b0f2e3173c65",
+      "approval_id": "apr_7d07716a492e4009b75d77c96082d24a",
+      "raw_status": "pending",
+      "effective_status": "expired"
+    }
+  ],
+  "workflow": {
+    "phase": "rolled_back",
+    "active": {
+      "slot": "a",
+      "release_id": "rel_good_v3",
+      "version": "v9.2.0",
+      "digest": "8e5212ed4481b109e71708690b378d9d339da1d3338af04a01ac13d44eb722f0",
+      "installed_at": 1792836559043
+    },
+    "recovery": {
+      "at": 1792836559142,
+      "rollback_reason": "探针期望不符: 输出不包含 \"ZJ_UNMATCHABLE_7727\"",
+      "failed": {
+        "release_id": "rel_bad_v4",
+        "version": "v9.3.0",
+        "digest": "47c6b6d385e72aa043125f3b99c548b53dcb718919f5eb255692ce4c2e42b5e5",
+        "workflow_id": "demo/bad-v4",
+        "workflow_version": "unknown"
+      },
+      "recovered": {
+        "release_id": "rel_good_v3",
+        "version": "v9.2.0",
+        "digest": "8e5212ed4481b109e71708690b378d9d339da1d3338af04a01ac13d44eb722f0",
+        "workflow_id": "demo/good-v3",
+        "workflow_version": "v3.0.0"
+      },
+      "execution_id": "bexec_mvm8lijs0fk9cgd7fhd2",
+      "outcome": "succeeded"
+    },
+    "probes": [
+      {
+        "probe_id": "probe_mvm8j43004t5343pmos6",
+        "outcome": "healthy",
+        "release_id": "rel_good_v3",
+        "version": "v9.2.0",
+        "digest": "8e5212ed4481b109e71708690b378d9d339da1d3338af04a01ac13d44eb722f0",
+        "workflow_id": "demo/good-v3",
+        "task_ref": "probe:activate",
+        "reason": "探针执行成功且期望相符",
+        "execution_id": "bexec_mvm8j43405s4kwttbofi",
+        "at": 1792836447102
+      },
+      {
+        "probe_id": "probe_mvm8lidk0aoq66inq615",
+        "outcome": "unhealthy",
+        "release_id": "rel_bad_v4",
+        "version": "v9.3.0",
+        "digest": "47c6b6d385e72aa043125f3b99c548b53dcb718919f5eb255692ce4c2e42b5e5",
+        "workflow_id": "demo/bad-v4",
+        "task_ref": "probe:activate",
+        "reason": "探针期望不符: 输出不包含 \"ZJ_UNMATCHABLE_7727\"",
+        "execution_id": "bexec_mvm8lido0b4ryqxh25hm",
+        "at": 1792836558934
+      }
+    ],
+    "records": [
+      {
+        "execution_id": "bexec_mvm8j43405s4kwttbofi",
+        "task_ref": "probe:activate",
+        "release_id": "rel_good_v3",
+        "version": "v9.2.0",
+        "digest": "8e5212ed4481b109e71708690b378d9d339da1d3338af04a01ac13d44eb722f0",
+        "workflow_id": "demo/good-v3",
+        "outcome": "succeeded"
+      },
+      {
+        "execution_id": "bexec_mvm8lido0b4ryqxh25hm",
+        "task_ref": "probe:activate",
+        "release_id": "rel_bad_v4",
+        "version": "v9.3.0",
+        "digest": "47c6b6d385e72aa043125f3b99c548b53dcb718919f5eb255692ce4c2e42b5e5",
+        "workflow_id": "demo/bad-v4",
+        "outcome": "succeeded"
+      },
+      {
+        "execution_id": "bexec_mvm8lijs0fk9cgd7fhd2",
+        "task_ref": "recover_mvm8lijs0e1fkst8nkhk",
+        "release_id": "rel_good_v3",
+        "version": "v9.2.0",
+        "digest": "8e5212ed4481b109e71708690b378d9d339da1d3338af04a01ac13d44eb722f0",
+        "workflow_id": "demo/good-v3",
+        "outcome": "succeeded"
+      }
+    ]
+  },
+  "limits": [
+    "Approval UI tasks were mapped with a fixture; auth disabled in this local demo; role/auth boundaries tested separately",
+    "Derived expiry is checked without claiming pending SQL rows were transitioned",
+    "No new physical reboot, production signing, or natural-language device main-chain claim"
+  ]
+}
