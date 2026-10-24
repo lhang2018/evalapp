@@ -1,0 +1,8 @@
+[PASS] R1 跨版本(备份更新)拒绝且理由可操作
+[PASS] R2 缺 schema_version 旧格式拒绝
+[PASS] R3 行数快照不符中止且不动现网数据
+[PASS] R4 失败迁移只回退自身(SAVEPOINT)
+[PASS] R5 正常备份恢复往返 (护栏)
+[PASS] R6 耗时与计数口径可核算
+
+total=6 passed=6 failed=0

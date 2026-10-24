@@ -1,0 +1,8 @@
+[FAIL] R1 跨版本(备份更新)拒绝且理由可操作: AssertionError: 更高版本备份被接受恢复（程序会读到未知结构）
+[FAIL] R2 缺 schema_version 旧格式拒绝: AssertionError: 缺 schema_version 的旧格式备份被判为可恢复（无法判断兼容性）
+[FAIL] R3 行数快照不符中止且不动现网数据: AssertionError: 行数快照不符却完成了恢复（可能已覆盖现网数据）
+[FAIL] R4 失败迁移只回退自身(SAVEPOINT): ImportError: cannot import name 'MigrationError' from 'evoagent.core.schema.migrations' (E:\evalapp-review-17a-base\evoagent\core\schema\migrations.py)
+[FAIL] R5 正常备份恢复往返 (护栏): AssertionError: 恢复完成但未标记计数已核对: {'ok': True, 'name': 'base.zip', 'restored': ['evoagent.db', 'events.db', 'memory.db'], 'safety_backup': 'pre_restore_20261024-163200_1c75.zip', 'counts': {'tasks': 0, 'events': 0, 'memories': 0, 'release_manifests': 1}, 'restart_recommended': True}
+[FAIL] R6 耗时与计数口径可核算: AssertionError: 未提供可用的恢复耗时口径: None
+
+total=6 passed=0 failed=6
