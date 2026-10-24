@@ -25,6 +25,10 @@ export interface DeviceAction {
   target: string;
   args?: Record<string, unknown>;
   risk?: DeviceRisk;
+  /** 任务链路关联（ALN-12-A 增量，可选）：由任务协议层填充，随日志留痕 */
+  task_id?: string;
+  run_id?: string | null;
+  effect_id?: string;
 }
 
 export interface DeviceResult {
@@ -42,4 +46,8 @@ export interface ActionJournalEntry {
   updated_at: number;
   evidence?: Record<string, unknown>;
   message?: string;
+  /** 任务链路关联（ALN-12-A 增量，可选）：与动作同源，不改变既有语义 */
+  task_id?: string;
+  run_id?: string | null;
+  effect_id?: string;
 }

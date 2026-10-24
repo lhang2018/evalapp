@@ -2137,13 +2137,18 @@
       "reviewer": null,
       "branch": "main",
       "base_commit": "c61b53ec5f7f8937ab772b6ac5b377093792b1aa",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        "代码: 本卡提交（taskProtocol.ts/failureMatrix.ts 新增；types.ts/broker.ts 卡内增量小改；taskGaps.test.ts 缺口夹具）",
+        "测试: android-app 214 passed / 0 failed (npm run test:offline)；新增24项（协议12+矩阵9+缺口3），全部转绿",
+        "交付: docs/协作开发/交付/ALN-12-A-自然语言任务设备协议与故障矩阵.md（含契约与分工说明）",
+        "typecheck 由并行会话声明通过、本机未能复跑（无node_modules/全局tsc损坏）；真机自然语言执行与断网/杀进程/重启一致性按整包验收另验"
+      ],
       "card": "docs/协作开发/任务卡/12-自然语言手机任务与离线可靠性.md",
       "shared_files": [],
-      "working_basis": "2026-10-24 zcode-main 按队列认领开工（WIP=1，本流内唯一在途卡）。base_commit c61b53ec 为实际接手锚点（基线仍candidate）。claude-main并行进行ALN-07-B（服务端effect→step绑定），与本卡客户端路径零重叠；effect_id语义关系在任务协议文档中显式对齐。通知/后台runner/DevicePackage在途改动不触碰；服务端只提接口需求不接线。",
-      "next_step": "排队：设备动作提议/回执契约、task/run/effect引用与离线故障矩阵；既有未提交通知/后台修改先核对依赖再独立处理，不覆盖",
+      "working_basis": "2026-10-24 zcode-main 按队列认领开工（WIP=1，本流内唯一在途卡）。base_commit c61b53ec 为实际接手锚点（基线仍candidate）。claude-main并行进行ALN-07-B（服务端effect→step绑定），与本卡客户端路径零重叠；effect_id语义关系在任务协议文档中显式对齐。通知/后台runner/DevicePackage在途改动不触碰；服务端只提接口需求不接线。同日完成交付：独占新模块与测试由zcode-main会话编写；types/broker卡内增量与缺口夹具由并行协调会话完成（字段与本协议同源对齐），分工记录见交付文档。",
+      "next_step": "待独立复核（引用不可变与幂等重放、未知副作用禁自动重放、矩阵与实现对齐、上传脱敏投影）；App主链路接线按后续小卡，服务端effect绑定消费另行登记范围",
       "ownership_history": [
         {
           "date": "2026-10-23",
@@ -3304,13 +3309,8 @@
     "owner": "zcode-main",
     "wip_limit": 1,
     "active_task": null,
-    "next_task": "ALN-12-A",
+    "next_task": "ALN-17-A",
     "items": [
-      {
-        "id": "ALN-12-A",
-        "state": "排队",
-        "condition": "手机动作/回执协议与离线故障矩阵；通知在途内容不混入"
-      },
       {
         "id": "ALN-17-A",
         "state": "排队",

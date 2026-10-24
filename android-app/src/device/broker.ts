@@ -25,6 +25,13 @@ export interface DeviceBrokerOptions {
   maxConsecutiveUnverified?: number;
 }
 
+/** 类型缺省风险表（模块级导出，供任务协议在提议期推导，语义不变）。 */
+export function defaultRiskOf(kind: string): DeviceRisk {
+  if (HIGH_RISK_KINDS.has(kind)) return "high";
+  if (kind === "click_text") return "medium";
+  return "low";
+}
+
 const HIGH_RISK_KINDS = new Set([
   "send_message",
   "payment",
@@ -37,7 +44,10 @@ function hasEvidence(evidence?: Record<string, unknown>): boolean {
   return Boolean(evidence) && Object.keys(evidence as object).length > 0;
 }
 
-function stateForStatus(status: DeviceResult["status"]): JournalState {
+/** 结果状态 → 日志状态；导出供任务协议回执投影使用（ALN-12-A）。 */
+export function journalStateForStatus(
+  status: DeviceResult["status"],
+): JournalState {
   if (status === "verified") return "verified";
   if (status === "failed") return "failed";
   if (status === "denied") return "denied";
@@ -72,10 +82,7 @@ export class DeviceBroker {
   }
 
   riskOf(action: DeviceAction): DeviceRisk {
-    if (action.risk) return action.risk;
-    if (HIGH_RISK_KINDS.has(action.kind)) return "high";
-    if (action.kind === "click_text") return "medium";
-    return "low";
+    return action.risk ?? defaultRiskOf(action.kind);
   }
 
   async execute(action: DeviceAction): Promise<DeviceResult> {
@@ -143,7 +150,7 @@ export class DeviceBroker {
     this.record(
       action,
       risk,
-      stateForStatus(result.status),
+      journalStateForStatus(result.status),
       result.message,
       result.evidence,
     );
@@ -247,6 +254,10 @@ export class DeviceBroker {
     entry.updated_at = now;
     entry.message = message;
     if (evidence) entry.evidence = evidence;
+    // 任务链路关联（ALN-12-A）：同一 action_id 的引用不可变
+    if (action.task_id !== undefined) entry.task_id = action.task_id;
+    if (action.run_id !== undefined) entry.run_id = action.run_id;
+    if (action.effect_id !== undefined) entry.effect_id = action.effect_id;
     this.entries.set(action.action_id, entry);
   }
 }
