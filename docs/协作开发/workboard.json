@@ -43,16 +43,19 @@
           "path": ".planning/2026-10-24-aln00b-clean/backend-tests.txt",
           "sha256": "8302032bc198f5c5c9290316eba7bd40402d50fb1fca1f488852e1bebb9932cd",
           "original_working_copy_sha256": "b8521360eeda5aa42f8a5883c5742ef852725bd15a7a4124084009b1534847f7",
-          "normalization": "CRLF working-copy evidence normalized to identical committed LF text; test output unchanged"
+          "normalization": "CRLF working-copy evidence normalized to identical committed LF text; test output unchanged",
+          "sha256_basis": "lf_normalized_text"
         },
         {
           "path": ".planning/2026-10-24-aln00b-clean/client-tests.txt",
-          "sha256": "49c6373e28999d161a3c4984b3e58a34561e4eaad4b473ae482deec693a80651"
+          "sha256": "49c6373e28999d161a3c4984b3e58a34561e4eaad4b473ae482deec693a80651",
+          "sha256_basis": "lf_normalized_text"
         },
         {
           "path": ".planning/2026-10-24-aln00b-clean/typecheck.txt",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "note": "空文件（tsc 0错误无输出，exit 0）"
+          "note": "空文件（tsc 0错误无输出，exit 0）",
+          "sha256_basis": "lf_normalized_text"
         }
       ],
       "excluded_paths": [

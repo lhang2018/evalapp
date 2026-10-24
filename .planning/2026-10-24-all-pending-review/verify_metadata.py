@@ -84,6 +84,7 @@ for current, original in zip(candidate["evidence"], candidate_before["evidence"]
     original_blob = blob(current["path"], "eaa1342")
     assert blob(current["path"]) == original_blob
     assert hashlib.sha256(original_blob).hexdigest() == current["sha256"]
+    assert current["sha256_basis"] == "lf_normalized_text"
     if current["sha256"] != original["sha256"]:
         assert current["original_working_copy_sha256"] == original["sha256"]
         assert hashlib.sha256(original_blob.replace(b"\n", b"\r\n")).hexdigest() == original["sha256"]
@@ -145,5 +146,18 @@ for case in ("missing_authorization", "independent_true", "non_boolean_permissio
         card["acceptance_review"].pop("report")
     assert "task author cannot be their own reviewer: ALN-04-UI" in checker.validate(board), case
     negative_checks.append(case)
+evidence = candidate["evidence"][0]
+log = snapshot / evidence["path"]
+saved = log.read_bytes()
+try:
+    canonical = saved.replace(b"\r\n", b"\n")
+    for data in (canonical, canonical.replace(b"\n", b"\r\n")):
+        log.write_bytes(data)
+        assert not checker.verify_prepared(new)
+    log.write_bytes(canonical + b"changed test result\n")
+    assert "prepared evidence changed: " + evidence["path"] in checker.verify_prepared(new)
+finally:
+    log.write_bytes(saved)
 print(json.dumps(dict(metadata_commit=commit, source_commit=fixed["source_commit"],
-    verified_git_blob_hashes=hashes, checks=checks, rejected_same_author_cases=negative_checks), indent=2))
+    verified_git_blob_hashes=hashes, checks=checks, rejected_same_author_cases=negative_checks,
+    prepared_evidence_checks="LF/CRLF accepted; altered content rejected"), indent=2))

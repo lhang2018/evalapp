@@ -9,3 +9,4 @@
 
 - 进一步校验Git blob发现候选backend-tests日志登记的是CRLF工作副本哈希，提交为LF；逐字节确认仅换行差异，保留original_working_copy_sha256并将当前证据与哈希统一到原Git LF正文，未改测试结果。补齐11/12/20交付链接及最新验收前缀。
 - 提交前whitespace检查发现原始失败日志含测试框架输出的空白行；保留原始日志及其哈希，不修饰失败证据，代码/文档仍执行严格diff检查。暂存集逐路径核对，未包含其他会话文件。
+- f0fb3f4归档元数据复核发现core.autocrlf影响git archive文本，backend/client日志以CRLF导出；证据逐字节规范到LF后与原Git正文完全一致。候选日志显式标记lf_normalized_text摘要口径，检查器仅对该口径规范CRLF，其余原始摘要规则保留；补LF/CRLF同正文通过及实际改写拒绝校验。此前归档复核失败如实保留，不算通过。

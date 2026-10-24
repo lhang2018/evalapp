@@ -205,7 +205,12 @@ def verify_prepared(board):
         errors.append("prepared candidate Git tree does not match commit")
     for evidence in prepared.get("evidence", []):
         path = ROOT / evidence["path"]
-        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != evidence["sha256"]:
+        data = path.read_bytes() if path.is_file() else None
+        # Git archive/checkouts may apply core.autocrlf. Only explicitly marked
+        # text evidence uses the canonical LF body; legacy evidence stays raw.
+        if data is not None and evidence.get("sha256_basis") == "lf_normalized_text":
+            data = data.replace(b"\r\n", b"\n")
+        if data is None or hashlib.sha256(data).hexdigest() != evidence["sha256"]:
             errors.append("prepared evidence changed: " + evidence["path"])
     if not prepared.get("evidence"):
         errors.append("prepared candidate is missing verification evidence")
