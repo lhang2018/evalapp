@@ -23,7 +23,7 @@ from ..memory.store import Credibility, MemoryItem, MemoryKind, MemoryStore, Sco
 from ..models.base import ChatMessage, ModelAdapter
 from ..models.metering import adapter_model_id, settle_adapter_cost
 from ..models.router import ModelRouter
-from ..planning.planner import ExecutionPlan, PlanningEngine
+from ..planning.planner import ExecutionPlan, PlanningEngine, PlanRevisionError
 from ..react.engine import ReactEngine, ReactOutcome
 from ..release.manager import ReleaseManager
 from ..tools.contract import ToolResult
@@ -463,6 +463,8 @@ class RuntimeController:
         return self._run_react(task, budget)
 
     def _run_react(self, task: Task, budget: BudgetController) -> Task:
+        # A present but corrupt plan must not silently become unplanned execution.
+        plan = self._plan_from_task(task)
         expert = self.experts.get(task.domain) or self.experts.route(task.intent)
         # E-07 能力缺口信号源：意图与领域均无专属能力，解析落到
         # general 且该意图未在 general 的适用声明中——能力目录缺口，
@@ -507,7 +509,6 @@ class RuntimeController:
             messages.insert(0, ChatMessage(role="system",
                                            content=expert.system_prompt))
         cancel_flag = self._active.get(task.task_id)
-        plan = self._plan_from_task(task)
         cp = self.cp_mgr.latest(task.task_id)
 
         def save_progress(state):
@@ -535,7 +536,7 @@ class RuntimeController:
             "steps": len(outcome.steps),
             "repeated_failures": outcome.repeated_failures,
         }, severity="warn" if outcome.stop_reason in (
-            "repeated_failure", "max_iter", "no_progress") else "info")
+            "repeated_failure", "max_iter", "no_progress", "plan_blocked") else "info")
         if outcome.stop_reason == "cancel":
             if task.task_status != TaskStatus.CANCELLED:
                 task = self._move(task, TaskStatus.CANCELLED)
@@ -543,7 +544,7 @@ class RuntimeController:
         if outcome.stop_reason == "needs_user":
             return self._wait_for_user(task, budget, outcome.answer,
                                        "react", outcome.continuation)
-        if outcome.stop_reason in ("paused", "side_effect_unknown", "approval_required"):
+        if outcome.stop_reason in ("paused", "side_effect_unknown", "approval_required", "plan_blocked"):
             # F-13 检查点有序化（GAP §1.3）：必须先落 paused 检查点、最后才
             # 把 SUSPENDED 状态写库。否则观察者一看到 SUSPENDED 状态就读
             # latest()，拿到的仍是旧 running 检查点（丢失预算/计划），
@@ -559,6 +560,7 @@ class RuntimeController:
             self._audit("task_paused", target=task.task_id,
                         detail_stage="react_decision_boundary")
             self._emit(task, "task_paused", {
+                "reason": outcome.stop_reason,
                 "plan_progress": task.runtime_manifest.get("plan_progress")})
             return task
         # 验收：Plan 完成 ≠ 实际完成（PRD 7.4），必须走独立验收
@@ -1142,13 +1144,20 @@ class RuntimeController:
 
     @staticmethod
     def _plan_from_task(task: Task) -> Optional[ExecutionPlan]:
+        if "execution_plan" not in task.runtime_manifest:
+            return None  # Legacy tasks truly lacking a plan remain supported.
         raw = task.runtime_manifest.get("execution_plan")
-        if not isinstance(raw, dict):
-            return None
+        if (not isinstance(raw, dict) or not isinstance(raw.get("steps"), list)
+                or any(not isinstance(step, dict) for step in raw["steps"])):
+            raise PlanRevisionError("持久执行计划格式损坏")
         try:
-            return ExecutionPlan.from_dict(raw)
-        except Exception:  # noqa: BLE001 —— 旧任务/损坏计划不影响执行
-            return None
+            plan = ExecutionPlan.from_dict(raw)
+        except Exception as exc:
+            raise PlanRevisionError("持久执行计划无法读取") from exc
+        plan.validate_execution_state()
+        if task.execution_plan_ref and plan.plan_id != task.execution_plan_ref:
+            raise PlanRevisionError("持久执行计划引用不匹配")
+        return plan
 
     def _freeze_execution_manifest(self, task: Task, *, expert=None,
                                     model=None, workflow=None) -> None:

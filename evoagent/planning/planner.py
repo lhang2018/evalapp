@@ -128,6 +128,32 @@ class ExecutionPlan:
     # 结构化恢复策略（ALN-07-R）；旧计划无该字段按空兼容
     recovery_policies: List[RecoveryPolicy] = field(default_factory=list)
 
+    def validate_execution_state(self) -> None:
+        """Reject damaged execution snapshots before any model/tool dispatch.
+
+        Historical plans may omit completed_work; done states are still never
+        runnable. An explicit completion marker must agree with a real done step.
+        """
+        if not isinstance(self.steps, (list, tuple)) or not self.steps:
+            raise PlanRevisionError("执行计划缺少非空步骤")
+        states = {"pending", "running", "done", "failed", "skipped"}
+        for step in self.steps:
+            if (not isinstance(step, PlanStep) or not isinstance(step.step_id, str)
+                    or not step.step_id.strip() or not isinstance(step.state, str)
+                    or step.state not in states or not isinstance(step.deps, (list, tuple))
+                    or any(not isinstance(dep, str) or not dep.strip() for dep in step.deps)):
+                raise PlanRevisionError("执行计划步骤字段或状态损坏")
+        problems = self._structural_problems(self.steps)
+        if problems:
+            raise PlanRevisionError("执行计划结构不合法: " + "; ".join(problems))
+        if (not isinstance(self.completed_work, (list, tuple))
+                or any(not isinstance(sid, str) for sid in self.completed_work)):
+            raise PlanRevisionError("执行计划完成证据损坏")
+        by_id = {step.step_id: step for step in self.steps}
+        if len(self.completed_work) != len(set(self.completed_work)) or any(
+                sid not in by_id or by_id[sid].state != "done" for sid in self.completed_work):
+            raise PlanRevisionError("执行计划完成证据与步骤状态冲突")
+
     def adjust(self, new_steps: List[PlanStep], reason: str,
                *, level: str = "replace") -> List[str]:
         """动态调整（PRD 11.2 / ALN-07-P）：分级修订，不变量违约即拒绝。

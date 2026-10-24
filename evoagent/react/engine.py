@@ -76,6 +76,8 @@ class ReactEngine:
         adapter = model or self.model
         logical_task_id = task_id or run_id
         outcome = ReactOutcome()
+        if plan is not None:
+            plan.validate_execution_state()
         restored = restored_state or {}
         messages = ([ChatMessage(**m) for m in restored["messages"]]
                     if restored.get("messages") else list(base_messages))
@@ -83,9 +85,16 @@ class ReactEngine:
             outcome.steps.append(TraceStep(
                 step["iteration"], Action(**step["action"]),
                 ToolResult(**step["tool_result"]) if step.get("tool_result") else None))
-        if plan is not None and not restored.get("messages"):
+        if plan is not None:
             _ensure_current_running(plan)
-            _insert_plan_message(messages, plan)
+            if restored.get("messages"):
+                # Refresh this engine-owned context slot without growing it on
+                # every resume. Execution traces remain the audit history.
+                messages[:] = [m for m in messages if not (
+                    m.role == "system" and m.content.startswith("execution_plan:"))]
+                messages.append(ChatMessage(role="system", content=_plan_message(plan)))
+            else:
+                _insert_plan_message(messages, plan)
         tool_schemas = self.tools.schema_for_model(allowed_tools)
         fail_signature_counts: Dict[str, int] = dict(restored.get("failure_counts") or {})
         last_actions: List[str] = list(restored.get("last_actions") or [])
@@ -108,6 +117,7 @@ class ReactEngine:
                 "next_iteration": next_iteration,
                 "pending_action": pending_action,
                 "model_call_inflight": model_call_inflight,
+                "stop_reason": outcome.stop_reason,
             }
             if on_checkpoint:
                 on_checkpoint(outcome.continuation)
@@ -123,6 +133,11 @@ class ReactEngine:
             if _flag(cancel_flag, "paused"):
                 outcome.stop_reason = "paused"
                 return capture()
+            if plan is not None:
+                plan.validate_execution_state()
+                if _current_step(plan) is None and any(s.state not in ("done", "skipped") for s in plan.steps):
+                    outcome.stop_reason = "plan_blocked"
+                    return capture()
 
             if pending_action:
                 suggestion = Action(**pending_action)
@@ -173,8 +188,15 @@ class ReactEngine:
                 messages.append(ChatMessage(role="assistant", content=outcome.answer))
                 return capture()
 
+            if plan is not None and _current_step(plan) is None:
+                # A complete plan can still request a summary/clarification,
+                # but provides no unfinished step for another tool operation.
+                outcome.stop_reason = "plan_complete"
+                return capture()
+
             # tool_call: 交由控制器执行（这里仅执行，验收在控制器）
             tool = suggestion.tool
+            active_step = _current_step(plan) if plan is not None else None
             signature = f"{tool}:{_sig(suggestion.args)}"
             last_actions.append(signature)
             step = TraceStep(i, suggestion)
@@ -217,18 +239,20 @@ class ReactEngine:
                 outcome.stop_reason = "side_effect_unknown"
                 return capture()
 
-            if plan is not None and result.ok and _advance_plan(plan, tool):
+            if last_success(result):
+                fail_signature_counts.clear()
+                outcome.repeated_failures = 0
+            if plan is not None and last_success(result) and _advance_plan(plan, tool):
                 messages.append(ChatMessage(
                     role="system", content=_plan_progress_message(plan)))
                 _ensure_current_running(plan)
 
             # ---- 防循环检测（PRD 12.3）----
             if not last_success(result):
-                fail_sig = _fail_sig(tool, result)
+                fail_sig = _fail_sig(tool, result, active_step.step_id if active_step else None)
                 fail_signature_counts[fail_sig] = \
                     fail_signature_counts.get(fail_sig, 0) + 1
-                outcome.repeated_failures = max(
-                    fail_signature_counts.values())
+                outcome.repeated_failures = fail_signature_counts[fail_sig]
                 if fail_signature_counts[fail_sig] >= self.max_repeat_failures:
                     if plan is not None:
                         _mark_step_failed(plan, tool)
@@ -244,7 +268,7 @@ class ReactEngine:
 
 
 def last_success(result: Optional[ToolResult]) -> bool:
-    return bool(result and result.ok)
+    return bool(result and result.ok and result.executed and result.contract_valid)
 
 
 # ---------- 计划驱动 ----------
@@ -254,8 +278,10 @@ def _flag(obj: Optional[Any], name: str) -> bool:
 
 
 def _current_step(plan: ExecutionPlan) -> Optional[PlanStep]:
-    return next((s for s in plan.steps if s.state in ("pending", "running")),
-                None)
+    by_id = {s.step_id: s for s in plan.steps}
+    ready = [s for s in plan.steps if s.state in ("pending", "running")
+             and all(dep in by_id and by_id[dep].state == "done" for dep in s.deps)]
+    return next((s for s in ready if s.state == "running"), ready[0] if ready else None)
 
 
 def _ensure_current_running(plan: ExecutionPlan) -> None:
@@ -281,6 +307,8 @@ def _mark_step_failed(plan: ExecutionPlan, tool: Optional[str]) -> None:
     cur = _current_step(plan)
     if cur is None:
         return
+    if cur.tool_hint and cur.tool_hint != tool:
+        return  # An unrelated tool failure is not evidence this step failed.
     cur.state = "failed"
     used = {s.step_id for s in plan.steps}
     n = len(plan.steps) + 1
@@ -368,9 +396,9 @@ def _sig(args: Dict[str, Any]) -> str:
         return str(args)
 
 
-def _fail_sig(tool: Optional[str], result: Optional[ToolResult]) -> str:
+def _fail_sig(tool: Optional[str], result: Optional[ToolResult], step_id: Optional[str] = None) -> str:
     ec = result.error_class if result else "unknown"
-    return f"{tool}:{ec}"
+    return _json_compact([step_id, tool, ec]) if step_id is not None else f"{tool}:{ec}"
 
 
 def _json_compact(obj: Any) -> str:
