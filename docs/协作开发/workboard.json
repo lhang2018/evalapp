@@ -3956,15 +3956,22 @@
       "title": "任务历史、项目空间与跨会话延续",
       "stream": "android",
       "owner": "zcode-main",
-      "reviewer": null,
+      "reviewer": "zcode-next",
       "branch": "feature/user-direction",
       "base_commit": "33529bef6b4bb54dc6c3a2d8385b8e0e36f38ea0",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         "代码: a6eca36 features/projects/space.ts（groupByProject/projectSummary/continuationContext）+ 5项测试",
         "测试: projects.test 5项（归集/摘要去重/延续上下文/全完成空openTasks/无goal_id按intent）",
-        "不建立第二套 Task 状态——只做只读归集；LocalTask 扩展 goal_id+result_evidence"
+        "不建立第二套 Task 状态——只做只读归集；LocalTask 扩展 goal_id+result_evidence",
+        {
+          "date": "2026-10-25",
+          "reviewer": "zcode-next",
+          "scope": "独立复核：4探针(goal_id归集/回落intent/摘要去重/延续上下文)+5项复跑；只读归集边界走读确认",
+          "result": "accepted",
+          "evidence": "docs/协作开发/验收/2026-10-25-ALN-24-C独立复核.md"
+        }
       ],
       "card": "docs/协作开发/任务卡/24-C-任务历史、项目空间与跨会话延续.md",
       "shared_files": [
@@ -3995,7 +4002,7 @@
         "UX-15",
         "UX-16"
       ],
-      "next_step": "待独立复核（审阅人待定）；项目空间 App UI 挂载属后续 UI 卡",
+      "next_step": "复核通过；解锁24-D/25-A；项目空间UI挂载后续卡",
       "working_basis": "2026-10-25 zcode-main 认领开工。23-C 工作区投影和 24-A 产物交付层均已交付 review；本卡消费两者构建项目空间与跨会话延续。",
       "prerequisites": "仅需仓库与本地测试环境"
     },
