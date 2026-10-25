@@ -1,0 +1,23 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+......................F................................................. [ 62%]
+............................................                             [100%]
+================================== FAILURES ===================================
+___________________ test_empty_file_change_is_real_artifact ___________________
+
+tmp_path = WindowsPath('C:/Users/lhang/AppData/Local/Temp/pytest-of-lhang/pytest-555/test_empty_file_change_is_real0')
+
+    def test_empty_file_change_is_real_artifact(tmp_path):
+        root=tmp_path/'root';root.mkdir();file=root/'a';file.write_bytes(b'old')
+        snap=snapshot_project(str(root));file.write_bytes(b'')
+        store=ArtifactStore(str(tmp_path/'artifacts'))
+        out=CodingPackRuntime(ToolRegistry(),store).archive_modified('t',str(root),snap)
+>       assert len(out['archived'])==1 and store.read(out['archived'][0])==b''
+E       assert (0 == 1)
+E        +  where 0 = len([])
+
+tests\test_developed_review_3.py:141: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_developed_review_3.py::test_empty_file_change_is_real_artifact
+1 failed, 115 passed, 1 deselected in 14.93s

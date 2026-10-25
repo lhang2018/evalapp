@@ -1,0 +1,36 @@
+(node:63332) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/developedReview3.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ settings proposal reaches supported native operation through real adapter (9.0525ms)
+✔ work requiring planning must not invent click: 帮我整理报告 (0.3485ms)
+✔ work requiring planning must not invent click: 打开设置然后发送消息 (0.1267ms)
+✔ work requiring planning must not invent click: 设置一个提醒 (0.1169ms)
+✔ device proposal without task identity stays pending (0.123ms)
+✔ verified action is not presented as completed whole task (0.4084ms)
+✔ non-success receipt labels retain denial and pending state (0.1398ms)
+✔ receipt cannot borrow another task identity (0.3748ms)
+✔ inconsistent terminal flag cannot hide uncertain effect (0.1838ms)
+✔ unknown receipt state fails closed without automatic replay (0.1584ms)
+✔ old-run receipt cannot borrow current-run task view (0.1215ms)
+(node:56616) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/pipeline.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 概念问题 → chat 模式 (1.8446ms)
+✔ 请求执行 → work 模式 (0.5905ms)
+✔ 用户显式切换优先 (0.4038ms)
+✔ 成功回执 → 用户看到完成状态 (0.4795ms)
+✔ 未验证副作用 → 警告不自动重放 (1.0623ms)
+✔ 拒绝 → 用户看到拒绝原因 (0.2009ms)
+✔ 上传载荷不含参数/文本/证据内容 (0.1705ms)
+✔ chat → 无设备动作；work → 设备动作并投影 (0.2584ms)
+✔ 任务视图衔接：回执终态→任务视图显示完成 (0.325ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 193.1328

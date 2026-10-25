@@ -1,0 +1,125 @@
+{
+  "fix_commit": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
+  "snapshot": {
+    "source_commit": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
+    "source_tree": "57287daa03e99546beabc4ae0c7f3e1c5c634571",
+    "snapshot": "E:\\evalapp\\outputs\\developed-review3-a1b3a31",
+    "archive_sha256": "1e023e9728f3ef9dbc61cc7c44b3e95379be29115d567ccd08d3a4c6a8b71550",
+    "scope": "exact Git archive under outputs, excludes concurrent dirty files; no worktree"
+  },
+  "initial_negative_probes": {
+    "backend_failed": 20,
+    "client_failed": 9
+  },
+  "fixed_full_backend": {
+    "passed": 2169,
+    "skipped": 1,
+    "deselected": 1,
+    "failed": 0,
+    "command": "python -X utf8 -m pytest tests tools/tests --deselect=tests/test_fact_verification.py::test_real_http_source_is_accessible_and_cited -q",
+    "scope": "exact a1b3a31 archive; public HTTP test explicitly excluded; CLI matrix uses a declared unavailable source double"
+  },
+  "fixed_full_client_passed": 353,
+  "fixed_typecheck": "passed",
+  "typescript": "5.9.3",
+  "dependencies": "existing installed node_modules reused via junction; no npm ci/APK build claim",
+  "preceding_targeted": {
+    "backend_passed": 116,
+    "backend_deselected": 1,
+    "final_boundary_passed": 26,
+    "client_passed": 20
+  },
+  "network_tested_for_new_code": false,
+  "device_tested_for_new_code": false,
+  "product_acceptance_added": false,
+  "independent_review_of_complete_fix": false,
+  "published_by_this_review": false,
+  "logs": [
+    {
+      "path": ".planning/2026-10-25-developed-review-3/before-client.txt",
+      "sha256_lf": "29fc509ee87c9e46011b4a10c8032e1cca0e21039fa5646cd7b8feee833ea999"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/before-python.txt",
+      "sha256_lf": "cacff8653ec7b969fcef89dddda5793ba671df9629c67e22b94f96f5e4113481"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/claims-check.json",
+      "sha256_lf": "10b389df517a3761056e7a01f9afd6d5142eb13583b2d625f02fb65cb6b421d1"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/collaboration-check.txt",
+      "sha256_lf": "a89e2e21d2cec4e39c540a6fb61cf9445eb132b3dc7b8f2728a1b748d08d7e82"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/combined-python.txt",
+      "sha256_lf": "5b0301bcc5b095d55477146fc87a60a1ae091e08975c0074bddf85e95c417737"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/final-boundary-python.txt",
+      "sha256_lf": "7f33d2c95c7fdf12d64595884aff34fd0b511398e4fc616279d3978198f08989"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/final-targeted-client.txt",
+      "sha256_lf": "a1198323e1be6a9fdd4e37c8918b0d83689fcae5a3119a23351776a8385a422c"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/final-targeted-python-2.txt",
+      "sha256_lf": "215a050d5ce4e12183c25da45aa804fc0a063dd6a7c78d5198b243e81c4e1546"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/final-targeted-python.txt",
+      "sha256_lf": "3100b167bc19a5581923f0f32c83c5208e635479a9e698b6e0725cbb970ce354"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/final-typecheck.txt",
+      "sha256_lf": "8cbafc7cf12a272ca79c7f62f9f8e7f22c469fc231061b69b5d974a20906718d"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/fixed-full-client.txt",
+      "sha256_lf": "fa72d36b9d892270a47808551385bee1a461e696f0439ce26b38558eb899aae0"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/fixed-full-python.txt",
+      "sha256_lf": "2c6009f02aed05eb71600ebb671617de45c657719632b5f5d817cd946f80d45e"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/fixed-import.txt",
+      "sha256_lf": "cb98808e84674263e0566aacbce06a7c78d1c18ef9a6d99c023b5292f050cd2a"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/fixed-source.json",
+      "sha256_lf": "024dcc14b6f196da7a3947e6cbd775ac03904796fafa31025b0b1cc9de5115ea"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/fixed-typecheck.txt",
+      "sha256_lf": "8cbafc7cf12a272ca79c7f62f9f8e7f22c469fc231061b69b5d974a20906718d"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/fixed-typescript-version.txt",
+      "sha256_lf": "4985b444236c5acdb5b850e5d754975e130eed5b033c53f201cdf471e83d7f13"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/full-client.txt",
+      "sha256_lf": "4ef373ca85f1a1e70c057c71c334d13ea235fa389cb45891b8a00a81b80a84e5"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/ledgers-check.json",
+      "sha256_lf": "8e24e24ba5d341e3cdb4fa014068890247aa4cdc451d4695d9d35d12d0321070"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/targeted-client.txt",
+      "sha256_lf": "3b2cefa5b6f65383a4053699143579b02895e611ad948ba01bde4e7e1a537a43"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/targeted-python.txt",
+      "sha256_lf": "c07bf762ec60b6ce531620d4df53d8f5cfc46180b1e224c8ee36d313f2d74ccd"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/typecheck.txt",
+      "sha256_lf": "8cbafc7cf12a272ca79c7f62f9f8e7f22c469fc231061b69b5d974a20906718d"
+    }
+  ],
+  "review_metadata_observed_in": "6a8501233f0ec0f7b4fce74d97fd13facd6e6b0d",
+  "review_metadata_note": "shared board updates were included by a concurrent metadata commit; verified three cards remain review with this exact fix anchor; no duplicate board/formatting commit"
+}

@@ -1,0 +1,233 @@
+(node:61520) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/developedReview3.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ settings proposal reaches supported native operation through real adapter (2.1005ms)
+✖ work requiring planning must not invent click: 帮我整理报告 (1.6476ms)
+✖ work requiring planning must not invent click: 打开设置然后发送消息 (0.2463ms)
+✖ work requiring planning must not invent click: 设置一个提醒 (0.1893ms)
+✖ device proposal without task identity stays pending (0.1882ms)
+✖ verified action is not presented as completed whole task (0.3878ms)
+✖ non-success receipt labels retain denial and pending state (0.2309ms)
+✖ receipt cannot borrow another task identity (0.2284ms)
+✖ inconsistent terminal flag cannot hide uncertain effect (0.145ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 0
+ℹ fail 9
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 161.2313
+
+✖ failing tests:
+
+test at android-app\test\offline\developedReview3.test.ts:13:1
+✖ settings proposal reaches supported native operation through real adapter (2.1005ms)
+  Error: 设备动作提议缺少 task_id
+      at createProposal (file:///E:/evalapp/android-app/src/device/taskProtocol.ts:100:11)
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/developedReview3.test.ts:16:18)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+test at android-app\test\offline\developedReview3.test.ts:25:3
+✖ work requiring planning must not invent click: 帮我整理报告 (1.6476ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   args: {},
+  +   kind: 'click_text',
+  +   run_id: '',
+  +   target: '',
+  +   task_id: ''
+  + }
+  - null
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/developedReview3.test.ts:27:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { task_id: '', run_id: '', kind: 'click_text', target: '', args: {} },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\offline\developedReview3.test.ts:25:3
+✖ work requiring planning must not invent click: 打开设置然后发送消息 (0.2463ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   args: {},
+  +   kind: 'open_app',
+  +   run_id: '',
+  +   target: 'com.android.settings',
+  +   task_id: ''
+  + }
+  - null
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/developedReview3.test.ts:27:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { task_id: '', run_id: '', kind: 'open_app', target: 'com.android.settings', args: {} },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\offline\developedReview3.test.ts:25:3
+✖ work requiring planning must not invent click: 设置一个提醒 (0.1893ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   args: {},
+  +   kind: 'click_text',
+  +   run_id: '',
+  +   target: 'com.android.settings',
+  +   task_id: ''
+  + }
+  - null
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/developedReview3.test.ts:27:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { task_id: '', run_id: '', kind: 'click_text', target: 'com.android.settings', args: {} },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\offline\developedReview3.test.ts:31:1
+✖ device proposal without task identity stays pending (0.1882ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   args: {},
+  +   kind: 'open_app',
+  +   run_id: '',
+  +   target: 'com.android.settings',
+  +   task_id: ''
+  + }
+  - null
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/developedReview3.test.ts:32:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { task_id: '', run_id: '', kind: 'open_app', target: 'com.android.settings', args: {} },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\offline\developedReview3.test.ts:35:1
+✖ verified action is not presented as completed whole task (0.3878ms)
+  AssertionError [ERR_ASSERTION]: Expected "actual" to be strictly unequal to: '已完成'
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/developedReview3.test.ts:37:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '已完成',
+    expected: '已完成',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\offline\developedReview3.test.ts:40:1
+✖ non-success receipt labels retain denial and pending state (0.2309ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /拒绝/. Input:
+  
+  '失败'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/developedReview3.test.ts:41:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '失败',
+    expected: /拒绝/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at android-app\test\offline\developedReview3.test.ts:46:1
+✖ receipt cannot borrow another task identity (0.2284ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/developedReview3.test.ts:47:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /身份|任务/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at android-app\test\offline\developedReview3.test.ts:50:1
+✖ inconsistent terminal flag cannot hide uncertain effect (0.145ms)
+  AssertionError [ERR_ASSERTION]: The "string" argument must be of type string. Received type object (null)
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/developedReview3.test.ts:52:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: /重放|核对|确认/,
+    operator: 'match',
+    diff: 'simple'
+  }

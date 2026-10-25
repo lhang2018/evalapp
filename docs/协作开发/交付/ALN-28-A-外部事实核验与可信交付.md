@@ -4,7 +4,7 @@
 负责人：dsh-lead（本会话认领）
 审阅人：待定（未分配独立审阅人，不自批为独立验收）
 基线 commit：`1f2c0b0162e2681c338eeae033a47ab50212d44a`（认领时的 `feature/user-direction` HEAD，不是已发布共同基线）
-分支与最终 commit：`feature/user-direction` / `fbb6612414bf8dcb8d201d8ce8a4bf001ff95883`（tree `b268d923f27d7576f67d220e66e89d6e9dac4427`）
+分支与最终 commit：`feature/user-direction` / `fbb6612414bf8dcb8d201d8ce8a4bf001ff95833`（tree `b268d923f27d7576f67d220e66e89d6e9dac4427`）
 认领状态：claimed → **review**
 
 ## 触发场景与行为变化
@@ -29,7 +29,7 @@
 ## 验证证据
 
 - 正向（真实网络）：
-  - `https://example.com/` 真实抓取成功：可达 `accessible=true`、延迟 8.471s、正文 sha256 `25ddf2c883e0d1958ea971d279a7e4f0fd446724ee3db7db19dadabd4a62e484`、发布者 `example.com`、引用片段 `Example Domain`；
+  - `https://example.com/` 真实抓取成功：可达 `accessible=true`、延迟 0.317s、正文 sha256 `25ddf2c883e0d1958ea971d279a7e4f0fd446724ee3db7db19dadabd4a62e484`、发布者 `example.com`、引用片段 `Example Domain`；
   - 真实引用交付：结论「example.com 页面包含 “Example Domain” 文案」→ `supported`，`delivered=1`、引用 `fixture=false`、URL/摘要齐全。
 - 五态矩阵（本地对照夹具，`fixture=true` 明确标注）：
   - `supported`（两发布者，confidence 0.9）；
@@ -40,7 +40,7 @@
   - `mentions` → `unknown`、`unreachable` → `unknown`（不可访问来源不计证据）。
 - 拒绝/失败路径：抓取失败抛 `SourceFetchError`（不产生假来源）；不可访问来源只进 `inaccessible`；`assert_deliverable` 拒绝无引用/模型自述 supported（测试覆盖）。
 - 命令、结果、日志与对应源码 commit：
-  - 提交 `fbb6612414bf8dcb8d201d8ce8a4bf001ff95883`；
+  - 提交 `fbb6612414bf8dcb8d201d8ce8a4bf001ff95833`；
   - 本卡专项：`python -m pytest tests/test_fact_verification.py -q` → **11 passed, 1 skipped**（跳过的是 pytest 环境内公网用例；独立 `python -c` 真实抓取已成功，证据见 JSON）；
   - 实测命令：`python -m evoagent.verification.report --out .planning/2026-10-25-aln28a/verification-evidence.json` → exit 0，`verdict_ok=true`；
   - 全量后端：`python -m pytest tests/ -q` → **2040 passed / 0 failed / 2 skipped（434.71s）**，日志 `.planning/2026-10-25-aln28a/backend-tests.txt`（本次全绿，无他人未提交改动干扰）。
@@ -52,7 +52,7 @@
 
 ## 回滚与未完成事项
 
-- 回滚触发、操作及验证：`git revert fbb6612414bf8dcb8d201d8ce8a4bf001ff95883`（删新增包与测试；无 schema/迁移）。回滚后既有模块不受影响。
+- 回滚触发、操作及验证：`git revert fbb6612414bf8dcb8d201d8ce8a4bf001ff95833`（删新增包与测试；无 schema/迁移）。回滚后既有模块不受影响。
 - 保留的限制、后续 ALN 和依赖：
   - 结论由调用方结构化提供；**自动从模型输出抽取 Claim** 未实现（属后续接线）；
   - 只抓取 HTML，未做 JS 渲染页/PDF/视频来源；
@@ -64,3 +64,10 @@
 ## 审阅结论：待审
 
 ## 整包结论：仍实现中（ALN-28：真实数据源、自动抽取与端到端接线仍待；本卡交付核验与可信交付层）
+
+
+## 第三批审查修正（2026-10-25）
+
+a1b3a3183b057b4e72a50677a703555a05ba4acf补齐正文引用匹配、原始字节摘要/来源大小上限、来源记录有效性、未来与非法时间窗及实际build交付守卫。真实抓取默认mentions；supports需要受信调用方明确核对，未实现自动语义判断。原夹具和公网采证保留为历史，不是新修复的外网验收。本轮网络相关探针为本地受控替身，公网用例显式不运行。
+
+原独立复核读取到滚动工作区新字段而引用旧提交，新增修复需按上述精确提交独立复查。详见[第三批审查](../验收/2026-10-25-第三批交叉审查与真实性修复.md)。

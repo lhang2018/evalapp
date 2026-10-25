@@ -1,0 +1,65 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+.........F.......F........                                               [100%]
+================================== FAILURES ===================================
+_____________________ test_future_claim_is_not_delivered ______________________
+
+    def test_future_claim_is_not_delivered():
+        claim=Claim('c','future assertion','k',valid_from=2000)
+>       out=TrustedDelivery().build(topic='future',claims=[claim],sources=[fixture_source(claim_key='k',quote='support')],now=1000)
+
+tests\test_developed_review_3.py:86: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\verification\delivery.py:51: in build
+    citations = self._citations(delivered + conflicts + unverified)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+verdicts = [{'applicable_window': {'valid_from': 2000, 'valid_until': None}, 'claim_id': 'c', 'confidence': 0.0, 'conflicting': [], ...}]
+
+    @staticmethod
+    def _citations(verdicts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        seen = set()
+        rows: List[Dict[str, Any]] = []
+        for verdict in verdicts:
+>           self.assert_deliverable(verdict)
+E           NameError: name 'self' is not defined
+
+evoagent\verification\delivery.py:79: NameError
+_____________________ test_build_enforces_delivery_guard ______________________
+
+    def test_build_enforces_delivery_guard():
+        class ForgedChecker:
+            def verify(self,*a,**k):
+                return Verdict('c','model claim','supported',.9,model_only=True,supporting=[{'url':'u'}])
+>       with pytest.raises(DeliveryError):TrustedDelivery(checker=ForgedChecker()).build(topic='t',claims=[Claim('c','claim','k')],sources=[])
+
+tests\test_developed_review_3.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\verification\delivery.py:41: in build
+    self.assert_deliverable(verdict)
+evoagent\verification\delivery.py:95: in assert_deliverable
+    if verdict.state == "supported" and any(
+evoagent\verification\delivery.py:96: in <genexpr>
+    SourceRecord.from_dict(c).evidence_problem() for c in verdict.supporting):
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cls = <class 'evoagent.verification.sources.SourceRecord'>, data = {'url': 'u'}
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "SourceRecord":
+        fields = {name: data[name] for name in cls.__dataclass_fields__
+                  if name in data}
+        fields.setdefault("source_id", "src_" + hashlib.sha256(
+            (data.get("url") or "").encode()).hexdigest()[:12])
+        fields.setdefault("retrieved_at", time.time())
+        fields.setdefault("content_digest", "")
+        fields.setdefault("quote", "")
+>       return cls(**fields)
+E       TypeError: SourceRecord.__init__() missing 1 required positional argument: 'publisher'
+
+evoagent\verification\sources.py:86: TypeError
+=========================== short test summary info ===========================
+FAILED tests/test_developed_review_3.py::test_future_claim_is_not_delivered
+FAILED tests/test_developed_review_3.py::test_build_enforces_delivery_guard
+2 failed, 24 passed in 2.03s

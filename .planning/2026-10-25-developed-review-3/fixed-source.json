@@ -1,0 +1,7 @@
+{
+  "source_commit": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
+  "source_tree": "57287daa03e99546beabc4ae0c7f3e1c5c634571",
+  "snapshot": "E:\\evalapp\\outputs\\developed-review3-a1b3a31",
+  "archive_sha256": "1e023e9728f3ef9dbc61cc7c44b3e95379be29115d567ccd08d3a4c6a8b71550",
+  "scope": "exact Git archive under outputs, excludes concurrent dirty files; no worktree"
+}
