@@ -5759,7 +5759,7 @@
    "title": "通知、离线与系统重启真机矩阵",
    "stream": "android",
    "owner": "dsh-lead",
-   "reviewer": "claude-main",
+   "reviewer": null,
    "branch": "feature/user-direction",
    "base_commit": "61451f3ff2251dd042d19d74e10bad87eb05a46d",
    "status": "review",
@@ -5794,6 +5794,16 @@
      "result": "通知修复已由 node 5项+客户端358项/tsc0 验证；真机端到端因设备无验证网络未完成；设备已恢复(移除白名单/还原偏好/停Metro/锁屏)，未清用户数据",
      "log": ".planning/2026-10-25-aln12v/notification-fix-verification.json",
      "delivery": "docs/协作开发/验收/2026-10-25-复核问题修复记录-29C-12V.md"
+    },
+    {
+     "date": "2026-10-26",
+     "scope": "claude 半成品收尾：primeBaseline 静态基线化（不触原生模块）、backgroundRunner 同步前基线化+原生桥惰性查找保持原语义、测试8→13项补齐；通知相关node37 passed/客户端366 passed/tsc0错",
+     "source_commit": "3283819921fc245b6376b09c92c27c8d15a4f721",
+     "functional_commit": "3283819921fc245b6376b09c92c27c8d15a4f721",
+     "source_tree": "dc70a252076a30ee39ae39194916ccd3b99961d6",
+     "result": "已收尾并通过客户端全量；真机端到端通知复验仍受设备无已验证互联网限制；需另一审阅人复核（claude 已停止复核，修复者不自评）",
+     "log": "",
+     "delivery": "docs/协作开发/验收/2026-10-25-复核问题修复记录-29C-12V.md"
     }
    ],
    "card": "docs/协作开发/任务卡/12-V-通知、离线与系统重启真机矩阵.md",
@@ -5815,7 +5825,7 @@
     "G0",
     "G3"
    ],
-   "next_step": "通知补发修复(147a489)已由 node/客户端测试覆盖；真机复验在无已验证互联网的设备上未观测到通知——WorkManager SyncWorker 从未执行(ENQUEUED,attempts=0)，需联网设备复验端到端；仍需另一名审阅人复核(修复者不自评)",
+   "next_step": "claude 复核已停止、其未提交改动已由 dsh-lead 收尾(3283819)：基线化接线+测试8→13项，通知相关node37/客户端366/tsc0全绿；仍需另一名审阅人复核(zcode-main/zcode-next)，且真机端到端通知复验需有验证互联网的设备",
    "working_basis": "以61451f3ff2251dd042d19d74e10bad87eb05a46d（feature/user-direction HEAD，执行起点）作为实际接手锚点；最终证据提交6806f57a9513bb206d14bb67613b4d5bbcc737ab；基线仍为candidate、prepared_candidate 21899e6 未发布",
    "prerequisites": "可连接设备，记录APK/JS精确版本",
    "delivered_commit": "6806f57a9513bb206d14bb67613b4d5bbcc737ab",
@@ -5838,6 +5848,12 @@
      "from": "review",
      "to": "review",
      "reason": "用户解锁设备复验：定位到 WorkManager 后台任务未执行（设备无验证网络）而非通知逻辑；端到端待联网设备复验"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review(claude-main 停止复核)",
+     "to": "review",
+     "reason": "接续 claude 半成品改动收尾并提交3283819；reviewer置空待他人复核"
     }
    ]
   },
