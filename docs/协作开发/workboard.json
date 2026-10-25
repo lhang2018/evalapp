@@ -4166,15 +4166,22 @@
       "title": "成本与资源的用户可见控制",
       "stream": "android",
       "owner": "zcode-main",
-      "reviewer": null,
+      "reviewer": "zcode-next",
       "branch": "feature/user-direction",
       "base_commit": "9239382d8287de313f21cf608c1a21af1370dd30",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         "代码: 3bd9d6c features/budget/view.ts（formatCost/unknownCostView/budgetStatusView/taskBudgetView）",
         "测试: budget.test 7项；客户端308全绿/tsc 0错",
-        "验收对齐: GLOBAL-03预算耗尽停止新增+产物保留；unknown不当0金额；调额不绕过准入（客户端只展示不改权威）"
+        "验收对齐: GLOBAL-03预算耗尽停止新增+产物保留；unknown不当0金额；调额不绕过准入（客户端只展示不改权威）",
+        {
+          "date": "2026-10-25",
+          "reviewer": "zcode-next",
+          "scope": "修复后独立复核：5探针(unknown不当0金额/币种未知标注/上限未知blocked不显充足/零上限硬上限/产物保留只随核验)+6项复跑",
+          "result": "accepted",
+          "evidence": "docs/协作开发/验收/2026-10-25-ALN-24-E独立复核.md"
+        }
       ],
       "card": "docs/协作开发/任务卡/24-E-成本与资源的用户可见控制.md",
       "shared_files": [
@@ -4200,7 +4207,7 @@
         "UX-25",
         "GLOBAL"
       ],
-      "next_step": "本批修复已提交，独立复查：未知预算与币种、不以预算推断产物保留；既有真实环境与产品验收缺口仍按原交付登记，不据模块回归关闭整包。",
+      "next_step": "修复后复核通过转accepted",
       "working_basis": "2026-10-25 zcode-main 认领开工。复用九级硬预算（已复核）与 BudgetLedger 既有数据，投影为用户可见预算/费用/未知成本视图；不建第二套预算计算。",
       "prerequisites": "仅需仓库与本地测试环境",
       "latest_code_review": {
