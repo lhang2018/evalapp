@@ -71,12 +71,24 @@ class FeedbackStore:
                     "aggregated": True,
                     "count": existing["count"] + 1}
         fid = "fb_" + uuid.uuid4().hex[:16]
-        self._conn.execute(
-            "INSERT INTO user_feedback(feedback_id, agg_key, category, text,"
-            " task_id, run_id, manifest_id, evidence_refs, cause_status,"
-            " count, first_seen_at, last_seen_at) VALUES (?,?,?,?,?,?,?,?,?,1,?,?)",
-            (fid, key, category, scrubbed, task_id, run_id, manifest_id,
-             json.dumps(refs), "unverified", now_ts, now_ts))
+        try:
+            self._conn.execute(
+                "INSERT INTO user_feedback(feedback_id, agg_key, category,"
+                " text, task_id, run_id, manifest_id, evidence_refs,"
+                " cause_status, count, first_seen_at, last_seen_at)"
+                " VALUES (?,?,?,?,?,?,?,?,?,1,?,?)",
+                (fid, key, category, scrubbed, task_id, run_id, manifest_id,
+                 json.dumps(refs), "unverified", now_ts, now_ts))
+        except sqlite3.IntegrityError:
+            # 并发兜底：agg_key 唯一约束命中时并入既有条目
+            self._conn.execute(
+                "UPDATE user_feedback SET count=count+1, last_seen_at=? "
+                "WHERE agg_key=?", (now_ts, key))
+            row = self._conn.execute(
+                "SELECT feedback_id, count FROM user_feedback WHERE agg_key=?",
+                (key,)).fetchone()
+            return {"feedback_id": row["feedback_id"], "aggregated": True,
+                    "count": row["count"]}
         self._conn.commit()
         return {"feedback_id": fid, "aggregated": False, "count": 1}
 

@@ -10,7 +10,7 @@ DOMAIN = "feedback"
 TABLES = [
     """CREATE TABLE IF NOT EXISTS user_feedback (
   feedback_id TEXT PRIMARY KEY,
-  agg_key TEXT NOT NULL,
+  agg_key TEXT NOT NULL UNIQUE,
   category TEXT NOT NULL,
   text TEXT NOT NULL,
   task_id TEXT,
@@ -22,7 +22,7 @@ TABLES = [
   first_seen_at REAL NOT NULL,
   last_seen_at REAL NOT NULL
 )""",
-    "CREATE UNIQUE INDEX IF NOT EXISTS "
+    "CREATE INDEX IF NOT EXISTS "
     "idx_feedback_agg ON user_feedback(agg_key)",
     "CREATE INDEX IF NOT EXISTS "
     "idx_feedback_task ON user_feedback(task_id)",
