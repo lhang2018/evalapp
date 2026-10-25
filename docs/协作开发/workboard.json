@@ -4341,9 +4341,20 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "a038f2195ab8bc5d571900fdf27a14e1400adf5b",
-      "status": "claimed",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-25",
+          "scope": "真实外部 HTTP 供应商适配器：参数派生幂等键提交、按权威回执对账、超时/响应丢失先对账、进程强杀窗口恢复不重复执行；6项专项+相关域60项通过",
+          "source_commit": "b63f85e213cffb2529eaf07355cebcee7681c952",
+          "functional_commit": "b63f85e213cffb2529eaf07355cebcee7681c952",
+          "source_tree": "739760f0b13b9d34e99ef20a6c2b51022e2cbdb8",
+          "result": "干净HEAD(2ea7d38) worktree+本卡文件：专项6 passed；相关域60 passed；全量1803 passed/2 failed/1 skipped，2项失败删掉本卡文件后同样失败(HEAD既有漂移与预算线回归)。主工作区因他人未提交 registry.py 与 authorization.py 签名不一致无法跑工具执行路径，故在干净 worktree 验证",
+          "log": ".planning/2026-10-25-aln02p/backend-clean-worktree.txt",
+          "delivery": "docs/协作开发/交付/ALN-02-P-真实供应商副作用与进程故障恢复.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/02-P-真实供应商副作用与进程故障恢复.md",
       "shared_files": [
         "evoagent/core/controller.py",
@@ -4376,9 +4387,11 @@
         "UX-10",
         "F03"
       ],
-      "next_step": "先读 SideEffectLedger/registry 的预记账与 reconcile_effect 契约，按卡落真实外部适配器（HTTP 幂等键+回执查询）并验证超时与进程退出窗口；证据绑定精确commit、命令与日志，未经复核不记accepted",
-      "working_basis": "以a038f2195ab8bc5d571900fdf27a14e1400adf5b（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
+      "next_step": "待独立复核：真实HTTP供应商幂等提交/权威回执对账/超时与响应丢失先对账/子进程强杀窗口恢复/伪造回执拒绝的证据见交付文档与 .planning/2026-10-25-aln02p/；审阅人未定，不自批为独立验收；真实供应商凭证与补偿调用、App/CLI装配属后续动作，ALN-02整包不关闭",
+      "working_basis": "以a038f2195ab8bc5d571900fdf27a14e1400adf5b（认领时feature/user-direction HEAD）作为接手锚点；最终提交b63f85e213cffb2529eaf07355cebcee7681c952在干净HEAD 2ea7d38的detached worktree中验证；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
       "prerequisites": "真实供应商或受控外部测试服务",
+      "delivered_commit": "b63f85e213cffb2529eaf07355cebcee7681c952",
+      "delivery": "docs/协作开发/交付/ALN-02-P-真实供应商副作用与进程故障恢复.md",
       "ownership_history": [
         {
           "date": "2026-10-25",
