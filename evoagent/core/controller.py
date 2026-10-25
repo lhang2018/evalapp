@@ -28,6 +28,7 @@ from ..react.engine import ReactEngine, ReactOutcome
 from ..release.manager import ReleaseManager
 from ..tools.contract import ToolResult
 from ..tools.registry import ToolRegistry
+from ..assets.entity import AssetError
 from ..workflows.engine import WorkflowEngine
 from ..workflows.models import WorkflowDef, WorkflowNodeState
 from ..config import Config
@@ -59,7 +60,8 @@ class RuntimeController:
                  wf_lookup: Optional[Callable[[str], Optional[WorkflowDef]]] = None,
                  diagnostics: Any = None, classifier: Any = None,
                  ledger: Optional[Any] = None,
-                 audit: Any = None, memory_bindings=None):
+                 audit: Any = None, memory_bindings=None,
+                 asset_binder: Any = None):
         self.cfg = config
         self.db = db
         self.bus = bus
@@ -90,6 +92,10 @@ class RuntimeController:
             self.runtime_budgets = RuntimeBudgets(ledger, config.budget, bus=bus)
             self.runtime_budgets.sweep()
         self.audit = audit  # S-05 执行环节审计（可选）
+        # ALN-06-R：运行时精确消费绑定（可选）。注入后执行步冻结清单时
+        # 绑定专家/工作流的精确资产版本（ref+digest），恢复/续跑只验证
+        # 不重绑；未注入时行为与既有完全一致。
+        self.asset_binder = asset_binder
         # 并发管理（Arch 3.2 管理并发和取消）
         self._active: Dict[str, threading.Event] = {}
         self._lock = threading.Lock()
@@ -276,6 +282,14 @@ class RuntimeController:
             self.db.save_task(task)
         except LeaseLost:
             task = self.db.get_task(task.task_id) or task
+        except AssetError as e:
+            task.task_status = TaskStatus.FAILED
+            task.failure_reason = f"资产消费校验失败: {e}"
+            self.db.save_task(task)
+            self._record_diagnostic(task, Verdict(passed=False), [],
+                                    "asset_binding_rejected")
+            self._emit(task, "task_asset_binding_rejected",
+                       {"reason": str(e)}, severity="warn")
         except BudgetExceeded as e:
             task.task_status = TaskStatus.FAILED
             task.failure_reason = f"预算耗尽[{e.dimension}]: {e}"
@@ -587,7 +601,6 @@ class RuntimeController:
                             "passed": False,
                             "error": f"工作流不存在: {task.workflow_ref}"}])
             return self._finalize(task, verdict, None, budget=budget)
-        wf.created_from_task = task.task_id
         # Registered workflow definitions are shared assets, not mutable run
         # state. Restore only this task's completed outputs below.
         for node in wf.nodes:
@@ -595,6 +608,9 @@ class RuntimeController:
             node.attempt, node.output, node.error = 0, None, None
         self._freeze_execution_manifest(
             task, expert=self.experts.get(task.domain), workflow=wf)
+        # created_from_task 属运行态字段（不进资产内容摘要），须在
+        # freeze 绑定之后设置——否则绑定漂移检查必然失败。
+        wf.created_from_task = task.task_id
 
         # 断点续跑：同一任务存在本版本工作流检查点时复用已完成节点输出
         completed = None
@@ -931,6 +947,9 @@ class RuntimeController:
         if not registered:
             self._register_active(task)
         task.runtime_manifest["resume_versions"] = copy.deepcopy(task.version_manifest)
+        if self.asset_binder is not None and task.runtime_manifest.get("asset_bindings"):
+            # 旧 run 版本固定：恢复只验证绑定仍存在且摘要一致，不重新绑定
+            self.asset_binder.verify_pinned(task.runtime_manifest["asset_bindings"])
         try:
             run_id, started = self.runs.begin(task, task.version_manifest, recovery=recovery)
         except BaseException:
@@ -1179,8 +1198,77 @@ class RuntimeController:
         manifest["tool_versions"] = self.tools.version_inventory()
         if "expert_ref" in facts:
             task.runtime_manifest["expert_ref"] = facts["expert_ref"]
+        self._bind_task_assets(task, expert=expert, workflow=workflow)
         self.runs.freeze(task)
         self.db.save_task(task)
+
+    def _bind_task_assets(self, task: Task, *, expert=None,
+                          workflow=None) -> None:
+        """ALN-06-R：执行前把专家/工作流绑到不可变资产的精确版本。
+
+        已有绑定（恢复/续跑）只验证存在与摘要一致，不重新解析——
+        资产事后退役不得阻断旧运行；新绑定拒绝 retired/draft/candidate。
+        工作流库/专家注册表内容与绑定资产摘要不一致视为库漂移，拒绝执行。
+        """
+        if self.asset_binder is None:
+            return
+        existing = task.runtime_manifest.get("asset_bindings")
+        if existing:
+            self.asset_binder.verify_pinned(existing)
+            # 执行内容仍须与绑定一致：库漂移在续跑路径同样拒绝
+            from ..assets.mapping import expert_to_asset, workflow_to_asset
+            from ..assets.content import content_digest
+            from ..assets.consumption import ConsumptionError
+            if workflow is not None:
+                pinned = existing.get(f"workflow:{workflow.workflow_id}"
+                                      f"@{workflow.version}")
+                if pinned is not None and content_digest(
+                        workflow_to_asset(workflow).content) != pinned["content_digest"]:
+                    raise ConsumptionError(
+                        f"工作流库内容与绑定资产摘要不一致（续跑）: "
+                        f"{workflow.workflow_id}@{workflow.version}")
+            if expert is not None:
+                pinned = existing.get(f"expert:{expert.expert_id}"
+                                      f"@{expert.version}")
+                if pinned is not None and content_digest(
+                        expert_to_asset(expert).content) != pinned["content_digest"]:
+                    raise ConsumptionError(
+                        f"专家注册表内容与绑定资产摘要不一致（续跑）: "
+                        f"{expert.expert_id}@{expert.version}")
+            return
+        bindings: Dict[str, Any] = {}
+        # 内容快照摘要：库内容漂移时与绑定资产不一致，执行前拒绝
+        from ..assets.mapping import expert_to_asset, workflow_to_asset
+        from ..assets.content import content_digest
+        from ..assets.consumption import ConsumptionError
+        if workflow is not None:
+            bindings.update(self.asset_binder.bind(
+                "workflow", workflow.workflow_id))
+            bound = bindings.get(f"workflow:{workflow.workflow_id}"
+                                 f"@{workflow.version}")
+            if bound is None:
+                raise ConsumptionError(
+                    f"工作流 {workflow.workflow_id} 绑定版本与执行版本不一致")
+            drift = content_digest(workflow_to_asset(workflow).content)
+            if drift != bound["content_digest"]:
+                raise ConsumptionError(
+                    f"工作流库内容与绑定资产摘要不一致: "
+                    f"{workflow.workflow_id}@{workflow.version}")
+        if expert is not None:
+            bindings.update(self.asset_binder.bind("expert", expert.expert_id))
+            bound = bindings.get(f"expert:{expert.expert_id}"
+                                 f"@{expert.version}")
+            if bound is not None:
+                drift = content_digest(expert_to_asset(expert).content)
+                if drift != bound["content_digest"]:
+                    raise ConsumptionError(
+                        f"专家注册表内容与绑定资产摘要不一致: "
+                        f"{expert.expert_id}@{expert.version}")
+        if bindings:
+            task.runtime_manifest["asset_bindings"] = bindings
+            task.version_manifest["asset_bindings"] = dict(bindings)
+            self._emit(task, "asset_bindings_frozen",
+                       {"refs": sorted(bindings)})
 
     def _version_manifest(self) -> Dict[str, Any]:
         if self.releases and self.releases.current_release_id:

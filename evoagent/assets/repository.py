@@ -163,6 +163,17 @@ class AssetRepository:
     def resolve(self, ref: str) -> Dict[str, Any]:
         return self.get_exact(ref).to_contract_dict()
 
+    def versions_of(self, asset_id: str, *,
+                    lifecycle_state: Optional[str] = None) -> List[Asset]:
+        """同一 asset_id 的全部版本（只读；供消费方做确定性选择）。"""
+        sql = "SELECT * FROM assets WHERE asset_id=?"
+        args: List[Any] = [asset_id]
+        if lifecycle_state:
+            sql += " AND lifecycle_state=?"
+            args.append(lifecycle_state)
+        sql += " ORDER BY version"
+        return [self._row_to_asset(r) for r in self._conn.execute(sql, args)]
+
     def list(self, *, asset_type: Optional[str] = None,
              namespace: Optional[str] = None,
              lifecycle_state: Optional[str] = None,
