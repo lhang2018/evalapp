@@ -5453,16 +5453,23 @@
       "title": "自然语言手机App真实任务主链",
       "stream": "android",
       "owner": "zcode-main",
-      "reviewer": null,
+      "reviewer": "zcode-next",
       "branch": "feature/user-direction",
       "base_commit": "e7338e29e46ee80a2d8d337da14091b5fbc01c86",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         "代码: 07edc6b features/pipeline/chain.ts（classifyPipeline/resultView/uploadPayload）+ 9项测试",
         "测试: pipeline.test 9项（chat/work判定/显式覆盖/成功/未验证/拒绝/隐私守卫/完整链路/任务视图衔接）；客户端337全绿/tsc 0错",
         "交付: docs/协作开发/交付/ALN-12-E-自然语言任务主链.md",
-        "App.tsx 挂载待23-F语音入口提交后串行；真机执行按ALN-12-V真机矩阵另采"
+        "App.tsx 挂载待23-F语音入口提交后串行；真机执行按ALN-12-V真机矩阵另采",
+        {
+          "date": "2026-10-25",
+          "reviewer": "zcode-next",
+          "scope": "独立复核：7探针(chat/work精确proposal/不支持动作诚实降级不猜/缺身份不产动作/显式覆盖/隐私守卫/未验证警告)+9项复跑",
+          "result": "accepted",
+          "evidence": "docs/协作开发/验收/2026-10-25-ALN-12-E独立复核.md"
+        }
       ],
       "card": "docs/协作开发/任务卡/12-E-自然语言手机App真实任务主链.md",
       "shared_files": [
@@ -5492,7 +5499,7 @@
         "G0",
         "G1"
       ],
-      "next_step": "待独立复核（审阅人待定）；App.tsx 挂载等23-F提交后串行；真机按12-V另采",
+      "next_step": "复核通过；解锁21-A；App挂载待23-F串行；真机执行按12-V另采",
       "working_basis": "2026-10-25 zcode-main 认领开工。依赖全部满足（23-C review/07-C review/06-R accepted）。复用已交付的 23-A 契约、23-B 模式、23-C 工作区、23-D 状态映射、24-B 能力六档、29-C 反馈、11-W 真机链路、12-A 协议协议；本卡连成完整链路。",
       "prerequisites": "可连接且授权的Android设备",
       "ownership_history": []
