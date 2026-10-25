@@ -4510,10 +4510,10 @@
    "title": "真实供应商副作用与进程故障恢复",
    "stream": "runtime",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "zcode-main",
    "branch": "feature/user-direction",
    "base_commit": "a038f2195ab8bc5d571900fdf27a14e1400adf5b",
-   "status": "review",
+   "status": "accepted",
    "blocker": null,
    "evidence": [
     {
@@ -4525,6 +4525,11 @@
      "result": "干净HEAD(2ea7d38) worktree+本卡文件：专项6 passed；相关域60 passed；全量1803 passed/2 failed/1 skipped，2项失败删掉本卡文件后同样失败(HEAD既有漂移与预算线回归)。主工作区因他人未提交 registry.py 与 authorization.py 签名不一致无法跑工具执行路径，故在干净 worktree 验证",
      "log": ".planning/2026-10-25-aln02p/backend-clean-worktree.txt",
      "delivery": "docs/协作开发/交付/ALN-02-P-真实供应商副作用与进程故障恢复.md"
+    },
+    {
+     "date": "2026-10-25",
+     "scope": "独立复核（zcode-main）：独立搭建本地HTTP供应商探针——R1专项6过、R2真实提交回执、R3权威回执对账confirmed、R4无回执independently_verified+executed=False（证明未执行）、R5伪造回执VendorError拒绝、R6幂等键跨实例稳定、R7协议错误fail-closed；不信任调用方传入+网络异常不猜测+权威记录独证三语义确认；转accepted",
+     "review_report": "docs/协作开发/验收/2026-10-25-ALN-02-P独立复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/02-P-真实供应商副作用与进程故障恢复.md",
