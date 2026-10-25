@@ -148,3 +148,53 @@ export function taskViewOf(task: LocalTask): UserTaskView {
       return { state: "queued", label: task.status, wait };
   }
 }
+
+
+// ---- 契约展示（ALN-23-A 对外投影）----
+
+export interface TaskContractView {
+  goal: string;
+  constraints: string[];
+  acceptanceCriteria: string[];
+  targetObject: string;
+  expectedOutput: string;
+  complexity: string;
+  requiredTools: string[];
+  requiredPermissions: string[];
+  openQuestions: string[];
+  /** 来自服务端 to_dict() 的原始契约数据 */
+  hasContract: boolean;
+}
+
+/**
+ * 从服务端 TaskInfo（to_dict()）投影契约展示视图。
+ * 无契约字段时 hasContract=false（旧任务兼容）。
+ */
+export function contractViewOf(info: {
+  user_goal?: string;
+  constraints?: string[];
+  acceptance_criteria?: Array<Record<string, unknown>>;
+  target_object?: string;
+  expected_output?: string;
+  complexity?: string;
+  required_tools?: string[];
+  required_permissions?: string[];
+  open_questions?: string[];
+}): TaskContractView {
+  return {
+    goal: info.user_goal ?? "",
+    constraints: info.constraints ?? [],
+    acceptanceCriteria: (info.acceptance_criteria ?? [])
+      .map((a) => typeof a === "object" && a !== null && "criterion" in a
+        ? String(a.criterion) : String(a)),
+    targetObject: info.target_object ?? "",
+    expectedOutput: info.expected_output ?? "",
+    complexity: info.complexity ?? "",
+    requiredTools: info.required_tools ?? [],
+    requiredPermissions: info.required_permissions ?? [],
+    openQuestions: info.open_questions ?? [],
+    hasContract: Boolean(info.constraints?.length
+      || info.acceptance_criteria?.length
+      || info.target_object || info.expected_output),
+  };
+}

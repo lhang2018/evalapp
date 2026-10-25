@@ -42,6 +42,17 @@ export interface TaskInfo {
   failure_reason?: string | null;
   result_evidence?: unknown[];
   created_at: number;
+  /** ALN-23-A 统一任务契约（服务端 to_dict 全量返回） */
+  constraints?: string[];
+  acceptance_criteria?: Array<{ criterion?: string; [k: string]: unknown }>;
+  target_object?: string;
+  expected_output?: string;
+  complexity?: string;
+  required_tools?: string[];
+  required_permissions?: string[];
+  open_questions?: string[];
+  requires_network?: boolean | null;
+  workflow_suitable?: boolean | null;
 }
 
 export interface RunEvent {
