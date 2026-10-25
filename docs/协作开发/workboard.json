@@ -3,9 +3,9 @@
  "updated_at": "2026-10-25",
  "purpose": "协作认领；不替代正式契约、原始 ALN 依赖或功能验收",
  "baseline": {
-  "status": "candidate",
+  "status": "published",
   "head_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
-  "published_commit": null,
+  "published_commit": "21899e6ac5019599881727bcbe24662e57325368",
   "snapshot": ".planning/2026-10-22-design-alignment/collaboration-baseline.json",
   "last_verified_workspace": {
    "python_passed": 764,
@@ -588,7 +588,7 @@
    "reviewer": "claude-main",
    "branch": "main",
    "base_commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
-   "status": "review",
+   "status": "accepted",
    "evidence": [
     {
      "date": "2026-10-22",
@@ -631,6 +631,15 @@
      "scope": "候选刷新+审阅交接准备（非发布）：入库被引用证据消除红线，532a364 干净worktree三件套重跑",
      "source_commit": "532a3646aeb35d0510ba7dab6c9c74e403cfd675",
      "evidence": ".planning/2026-10-24-aln00b-clean2/ + docs/协作开发/验收/2026-10-24-ALN-00-B发布候选独立审阅交接.md"
+    },
+    {
+     "date": "2026-10-25",
+     "scope": "独立复核通过（claude-main，非owner会话）：候选21899e6干净worktree独立复跑三件套全部对齐——后端1701 passed/1 skipped（472.49s）、客户端268 passed/0 failed、typecheck 0错误；三证据sha256逐一核对一致；排除项抽查树内0命中（RKStorage/*.pem/通知在途六文件）；源码树c8e3bc8d与声明一致。发布快照不含其后148提交（40feat/9fix，94产品文件+11524/-188）已记录备查。基线转published",
+     "source_commit": "21899e6ac5019599881727bcbe24662e57325368",
+     "command": "git worktree add <tmp> 21899e6 --detach; python -m pytest tests -q; npm install && npm run test:offline; npm run typecheck",
+     "result": "后端1701 passed/1 skipped；客户端268 passed/0 failed；typecheck 0错误（node v22.22.2/tsc5.9.3，与候选环境v24.16.0/5.3.3的差异不影响结论）",
+     "log": ".planning/2026-10-25-aln00b-review/{backend-tests,client-tests,typecheck,npm-install}.txt",
+     "delivery": "docs/协作开发/验收/2026-10-25-ALN-00-B发布候选独立复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/00-基线发布.md",
