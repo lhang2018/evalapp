@@ -3360,7 +3360,8 @@
       "title": "首发冻结范围与八道发布门禁",
       "stream": "integration",
       "owner": "claude-main",
-      "reviewer": "zcode-main",      "branch": "main",
+      "reviewer": "zcode-main",
+      "branch": "main",
       "base_commit": "029a9987eeffff1fc502987f3d6a6bdfa8722ec4",
       "status": "accepted",
       "blocker": null,
@@ -3370,13 +3371,13 @@
         "tools/check_release_gates.py",
         "tests/test_release_gates.py：14 项通过",
         ".planning/2026-10-25-aln29-b/mutation_test.py：变异 7/7 捕获",
-        "干净 worktree 固定源码 029a998：pytest 1675 passed / 1 skipped"
-      ,
-    {
-      "date": "2026-10-25",
-      "scope": "独立复核（zcode-main）：R1判别力14项独立复跑全过、R2/R3结构0与require-release 2三层退出语义、R4冻结范围13项逐项、R5八门禁全untested且G6与published_commit自洽、R6三规则代码化无加权、R8变异判别力（含自曝M2无判别力并修复）；结论转accepted（验收公共尺子范围）",
-      "review_report": "docs/协作开发/验收/2026-10-25-ALN-29-B独立复核.md"
-    }],
+        "干净 worktree 固定源码 029a998：pytest 1675 passed / 1 skipped",
+        {
+          "date": "2026-10-25",
+          "scope": "独立复核（zcode-main）：R1判别力14项独立复跑全过、R2/R3结构0与require-release 2三层退出语义、R4冻结范围13项逐项、R5八门禁全untested且G6与published_commit自洽、R6三规则代码化无加权、R8变异判别力（含自曝M2无判别力并修复）；结论转accepted（验收公共尺子范围）",
+          "review_report": "docs/协作开发/验收/2026-10-25-ALN-29-B独立复核.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/29-B-首发冻结范围与八道发布门禁.md",
       "shared_files": [
         "tools/check_collaboration_plan.py"
@@ -4336,11 +4337,11 @@
       "workpackage": "ALN-02",
       "title": "真实供应商副作用与进程故障恢复",
       "stream": "runtime",
-      "owner": null,
+      "owner": "dsh-lead",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "a038f2195ab8bc5d571900fdf27a14e1400adf5b",
+      "status": "claimed",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/02-P-真实供应商副作用与进程故障恢复.md",
@@ -4375,9 +4376,17 @@
         "UX-10",
         "F03"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
-      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-      "prerequisites": "真实供应商或受控外部测试服务"
+      "next_step": "先读 SideEffectLedger/registry 的预记账与 reconcile_effect 契约，按卡落真实外部适配器（HTTP 幂等键+回执查询）并验证超时与进程退出窗口；证据绑定精确commit、命令与日志，未经复核不记accepted",
+      "working_basis": "以a038f2195ab8bc5d571900fdf27a14e1400adf5b（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
+      "prerequisites": "真实供应商或受控外部测试服务",
+      "ownership_history": [
+        {
+          "date": "2026-10-25",
+          "from": "待认领",
+          "to": "dsh-lead",
+          "reason": "用户指示继续；09-H/13-P 交付转 review 后接续。02-P 为剩余唯一 P0 可开工卡（依赖 02-A 已 accepted），只在 evoagent/tools/ 新增外部适配器文件、不改 shared_files 中既有文件"
+        }
+      ]
     },
     {
       "id": "ALN-03-P",
@@ -4421,11 +4430,11 @@
       "workpackage": "ALN-04",
       "title": "组合状态与生产身份恢复矩阵",
       "stream": "runtime",
-      "owner": null,
+      "owner": "zcode-next",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "a038f2195ab8bc5d571900fdf27a14e1400adf5b",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/04-V-组合状态与生产身份恢复矩阵.md",
@@ -4463,8 +4472,8 @@
         "F03",
         "G3"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
-      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "next_step": "侦察授权身份绑定/组合状态恢复缺口",
+      "working_basis": "2026-10-25 zcode-next 认领（12-V 因真机已断开让位）。复用 04-R 四路径与 authorizations/approvals/leases 既有实现；写入边界 core/+api/；本地进程级故障注入+身份切换模拟，真实部署身份联测另验。",
       "prerequisites": "真实部署身份与故障注入环境"
     },
     {
@@ -4473,7 +4482,8 @@
       "title": "精确能力版本的运行时消费",
       "stream": "runtime",
       "owner": "zcode-next",
-      "reviewer": "zcode-main",      "branch": "feature/user-direction",
+      "reviewer": "zcode-main",
+      "branch": "feature/user-direction",
       "base_commit": "bf706e8a2764a332f5e4fd6aaecb8e7ee1c799d3",
       "status": "accepted",
       "blocker": null,
@@ -4481,13 +4491,13 @@
         "代码: 本卡提交 feat(ALN-06-R)（assets/consumption.py 新增绑定协议；repository.versions_of 只读扩展；controller 可选 asset_binder 三处接线；15 项专项测试）",
         "测试: 专项 15 passed；相关回归 115 passed；全量 1699 passed / 1 skipped / 0 failed（goal_opportunities 瞬态失败经 stash 对照排除，与本卡无关）",
         "交付: docs/协作开发/交付/ALN-06-R-精确能力版本的运行时消费.md（绑定/退役拒绑/旧run固定/库漂移拒绝语义与证据）",
-        "未注入 binder 时 controller 行为零差异（专项断言）；生产装配与 App/专家真实消费链按 ALN-06 整包另验"
-      ,
-    {
-      "date": "2026-10-25",
-      "scope": "独立复核（zcode-main）：R1专项15过独立复跑、R2相关回归64过、R3退役拒绑AssetNotConsumable、R4旧run版本固定豁免、R5库漂移digest可检测、R6零差异声明（binder可选前置）、R7绑定内容完整；语义审查三重点（created_from_task排除/pinned豁免边界/versions_of确定性）均确认；结论转accepted（本卡范围）",
-      "review_report": "docs/协作开发/验收/2026-10-25-ALN-06-R独立复核.md"
-    }],
+        "未注入 binder 时 controller 行为零差异（专项断言）；生产装配与 App/专家真实消费链按 ALN-06 整包另验",
+        {
+          "date": "2026-10-25",
+          "scope": "独立复核（zcode-main）：R1专项15过独立复跑、R2相关回归64过、R3退役拒绑AssetNotConsumable、R4旧run版本固定豁免、R5库漂移digest可检测、R6零差异声明（binder可选前置）、R7绑定内容完整；语义审查三重点（created_from_task排除/pinned豁免边界/versions_of确定性）均确认；结论转accepted（本卡范围）",
+          "review_report": "docs/协作开发/验收/2026-10-25-ALN-06-R独立复核.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/06-R-精确能力版本的运行时消费.md",
       "shared_files": [
         "evoagent/core/controller.py",
@@ -4631,10 +4641,9 @@
       "title": "真实候选宿主、持久队列与进程隔离",
       "stream": "assets",
       "owner": "dsh-lead",
-      "reviewer": null,
-      "branch": "feature/user-direction",
+      "reviewer": "zcode-main",      "branch": "feature/user-direction",
       "base_commit": "f7ccfcb936f4ed06dea26b84b44c01805d19dff0",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -4647,7 +4656,12 @@
           "log": ".planning/2026-10-25-aln09h/backend-tests.txt",
           "delivery": "docs/协作开发/交付/ALN-09-H-真实候选宿主、持久问题队列与进程隔离.md"
         }
-      ],
+      ,
+    {
+      "date": "2026-10-25",
+      "scope": "独立复核（zcode-main）：R1专项16过独立复跑、R2相关域23过、R3入队幂等、R4六线程并发领取仅1成功、R5租约接管后旧token complete被LeaseLost拒、R6新持有者consumed落库、R7 attempts递增；边界自述诚实（非恶意代码强边界）；结论转accepted（本卡范围）",
+      "review_report": "docs/协作开发/验收/2026-10-25-ALN-09-H独立复核.md"
+    }],
       "card": "docs/协作开发/任务卡/09-H-真实候选宿主、持久队列与进程隔离.md",
       "shared_files": [
         "evoagent/evolution/controller.py",
