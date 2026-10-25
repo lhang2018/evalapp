@@ -15,6 +15,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from ..core.budget import BudgetController, BudgetExceeded
 from ..core.events import EventBus
+from ..core.leases import LeaseLost
 from ..tools.registry import ToolRegistry
 from .benefit import evaluate_benefit
 from .candidates import (ALLOWED, CandidateStatus, EvolutionCandidate,
@@ -24,6 +25,7 @@ from .evaluator import (EvalDataset, Evaluator, EvalReport, GateThresholds,
                         ReleaseGate)
 from ..core import contracts as _contracts
 from .monitor import MonitorPolicy, PostReleaseMonitor
+from .queue import ProblemQueue
 from .regression import FailureRegressionBuilder
 from .safety import SafetySuite
 from .release_evidence import (candidate_spec, context_digest, digest, save_evaluation,
@@ -74,7 +76,8 @@ class EvolutionController:
                  datasets: Optional[Dict[str, EvalDataset]] = None,
                  budget_config: Optional[Any] = None,
                  experts: Optional[Any] = None,
-                 max_concurrent_evaluations: Optional[int] = None):
+                 max_concurrent_evaluations: Optional[int] = None,
+                 problem_queue: Optional[Any] = None):
         self.evaluator = evaluator
         self.gate = gate or ReleaseGate()
         self._evaluation_lock = threading.RLock()
@@ -94,6 +97,15 @@ class EvolutionController:
         self.holdout_dataset: Optional[EvalDataset] = self._find_holdout()
         self.candidates: Dict[str, EvolutionCandidate] = {}
         self.tickets: deque = deque()
+        # ALN-09-H：问题票据持久化 + 多进程租约。没有 Database 时保持纯内存
+        # 行为；有库时先接管过期租约，再装载未消费票据，进程重启不丢证据。
+        self.problem_queue = problem_queue
+        if self.problem_queue is None and getattr(store, "_conn", None) is not None:
+            self.problem_queue = ProblemQueue(store)
+        if self.problem_queue is not None:
+            self.problem_queue.recover_stale()
+            for item in self.problem_queue.pending(limit=500):
+                self.tickets.append(item["ticket"])
         self._seq = 0
         # E-13（GAP 第二批第 9 项）：并发评测上限；「进行中评测」=
         # TESTING/EVALUATING 状态候选（04 卷 E-13 实验编排）
@@ -174,8 +186,16 @@ class EvolutionController:
         return self.candidates.get(candidate_id)
 
     # ---- 问题登记与排序 ----
-    def register_problem(self, ticket: ProblemTicket) -> None:
+    def register_problem(self, ticket: ProblemTicket) -> bool:
+        """登记问题票据：内存队列 + 持久队列（可用时，幂等落库）。
+
+        返回是否新入队：``False`` 表示该 ticket_id 已在持久队列里
+        （重复登记不覆盖已有证据，也不复活已消费票据）。
+        """
         self.tickets.append(ticket)
+        if self.problem_queue is None:
+            return True
+        return self.problem_queue.enqueue(ticket)
 
     # ---- E-07 消费链：问题票据 → 自动候选提案（GAP 第二批第 7 项）----
     def _baseline_version(self) -> str:
@@ -211,6 +231,9 @@ class EvolutionController:
                 continue
             if self._has_open_candidate_for(ticket.target_component):
                 continue
+            claim = self._claim_ticket(ticket)
+            if claim is False:  # 另一进程持有租约，或票据已被消费
+                continue
             try:
                 cand = self.propose_candidate(
                     self._baseline_version(),
@@ -228,13 +251,55 @@ class EvolutionController:
                         payload={"ticket_id": ticket.ticket_id,
                                  "error": f"{type(e).__name__}: {e}"})
                 ticket.consumed = False
+                self._release_ticket(claim, ticket)
                 continue
             ticket.consumed = True
             ticket.candidate_id = cand.candidate_id
+            self._complete_ticket(claim, ticket)
             proposed.append(cand.candidate_id)
         self.tickets = deque(
             t for t in self.tickets if not (t.signal_type and t.consumed))
         return proposed
+
+    # ---- ALN-09-H：持久队列的领取 / 完成 / 释放（无队列时全是无操作）----
+    def _claim_ticket(self, ticket: ProblemTicket):
+        """领取票据租约。
+
+        返回 ``None`` = 无持久队列（纯内存行为）；``False`` = 票据已被
+        其他进程持有或已消费；否则返回租约凭据。
+        """
+        if self.problem_queue is None:
+            return None
+        claim = self.problem_queue.claim(ticket.ticket_id)
+        return False if claim is None else claim
+
+    def _complete_ticket(self, claim, ticket: ProblemTicket) -> None:
+        if claim is None or self.problem_queue is None:
+            return
+        try:
+            self.problem_queue.complete(claim, candidate_id=ticket.candidate_id)
+        except LeaseLost:
+            # 提案期间租约被接管：候选已落库，票据交给新持有者；
+            # 组件级节流（_has_open_candidate_for）避免同组件重复提案。
+            self._emit_lease_lost(ticket)
+
+    def _release_ticket(self, claim, ticket: ProblemTicket) -> None:
+        if claim is None or self.problem_queue is None:
+            return
+        try:
+            self.problem_queue.release(claim, reason="提案失败，保留证据")
+        except LeaseLost:
+            self._emit_lease_lost(ticket)
+
+    def _emit_lease_lost(self, ticket: ProblemTicket) -> None:
+        if self.bus is None:
+            return
+        try:
+            self.bus.emit(event_type="evolution_ticket_lease_lost",
+                          component_id="evolution",
+                          payload={"ticket_id": ticket.ticket_id})
+        except Exception:  # noqa: BLE001 —— 事件自身故障不影响执行
+            pass
 
     # ---- E-13 实验编排轮（队列 / 预算 / 并发 / 停止条件）--------------
     def run_evolution_round(self, max_evaluations: int = 1) -> Dict[str, Any]:
