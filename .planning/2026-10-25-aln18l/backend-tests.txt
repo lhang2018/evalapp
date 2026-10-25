@@ -1,0 +1,328 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  3%]
+........................................................................ [  6%]
+........................................................................ [ 10%]
+.....F.................................................................. [ 13%]
+........................................................................ [ 17%]
+........................................................................ [ 20%]
+........................................................................ [ 24%]
+........................................................................ [ 27%]
+.............................................................FFFFFFFFFFF [ 31%]
+........................................................................ [ 34%]
+........................................................................ [ 37%]
+........................................................................ [ 41%]
+........................................................................ [ 44%]
+........................................................................ [ 48%]
+........................................................................ [ 51%]
+........................................................................ [ 55%]
+........................................................................ [ 58%]
+........................................................................ [ 62%]
+........................................................................ [ 65%]
+........................................................................ [ 69%]
+........................................................................ [ 72%]
+........................................................................ [ 75%]
+........................................................................ [ 79%]
+....................F................................................... [ 82%]
+........................................................................ [ 86%]
+........................................................................ [ 89%]
+........................................................................ [ 93%]
+.............................................................s.......... [ 96%]
+......................................................................   [100%]
+================================== FAILURES ===================================
+_________ TestAttachmentApi.test_chunked_upload_complete_and_content __________
+
+self = <test_attachments.TestAttachmentApi testMethod=test_chunked_upload_complete_and_content>
+
+    def test_chunked_upload_complete_and_content(self):
+        data = bytes(range(256)) * 156  # 39936 字节，3 块（末块 7168）
+        body = init_body(aid(6), data)
+        status, _ = self._post("/attachments", body)
+        self.assertEqual(status, 201)
+    
+        status, chunk0 = self._put_chunk(aid(6), 0, data[:CHUNK])
+        self.assertEqual(status, 200)
+        self.assertEqual(chunk0["received_bytes"], CHUNK)
+        self.assertEqual(chunk0["received_chunks"], [0])
+        self.assertEqual(chunk0["chunk_sha256"], digest(data[:CHUNK]))
+    
+        self._upload_all(aid(6), data)
+    
+        status, out = self._post(f"/attachments/{aid(6)}/complete", {})
+        self.assertEqual(status, 200)
+        self.assertTrue(out["verified"])
+        self.assertEqual(out["attachment"]["status"], "complete")
+        self.assertEqual(out["attachment"]["received_bytes"], len(data))
+    
+        status, headers, raw = self._request("GET", f"/attachments/{aid(6)}")
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(raw.decode())["status"], "complete")
+    
+        status, headers, raw = self._request(
+            "GET", f"/attachments/{aid(6)}/content")
+        self.assertEqual(status, 200)
+        self.assertEqual(raw, data)
+>       self.assertEqual(headers.get("X-Attachment-SHA256"), digest(data))
+E       AssertionError: None != '904e25095fffab80e5ebbaddab06ad231486d5d9e77dd65c53ba6a966243fc18'
+
+tests\test_attachments.py:152: AssertionError
+_____________________ test_future_claim_is_not_delivered ______________________
+
+    def test_future_claim_is_not_delivered():
+        claim=Claim('c','future assertion','k',valid_from=2000)
+        out=TrustedDelivery().build(topic='future',claims=[claim],sources=[fixture_source(claim_key='k',quote='support')],now=1000)
+>       assert not out['delivered'] and out['unverified'][0]['state']=='unknown'
+E       AssertionError: assert (not [{'applicable_window': {'valid_from': 2000, 'valid_until': None}, 'claim_id': 'c', 'confidence': 0.7, 'conflicting': [], ...}])
+
+tests\test_developed_review_3.py:87: AssertionError
+________________ test_invalid_claim_window_rejected[nan-None] _________________
+
+start = nan, end = None
+
+    @pytest.mark.parametrize('start,end',[(math.nan,None),(None,math.inf),(20,10)])
+    def test_invalid_claim_window_rejected(start,end):
+>       with pytest.raises(ValueError):Claim('c','assertion','k',valid_from=start,valid_until=end)
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_developed_review_3.py:92: Failed
+________________ test_invalid_claim_window_rejected[None-inf] _________________
+
+start = None, end = inf
+
+    @pytest.mark.parametrize('start,end',[(math.nan,None),(None,math.inf),(20,10)])
+    def test_invalid_claim_window_rejected(start,end):
+>       with pytest.raises(ValueError):Claim('c','assertion','k',valid_from=start,valid_until=end)
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_developed_review_3.py:92: Failed
+__________________ test_invalid_claim_window_rejected[20-10] __________________
+
+start = 20, end = 10
+
+    @pytest.mark.parametrize('start,end',[(math.nan,None),(None,math.inf),(20,10)])
+    def test_invalid_claim_window_rejected(start,end):
+>       with pytest.raises(ValueError):Claim('c','assertion','k',valid_from=start,valid_until=end)
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_developed_review_3.py:92: Failed
+_________ test_incomplete_or_mistyped_source_never_supports[change0] __________
+
+change = {'quote': ''}
+
+    @pytest.mark.parametrize('change',[{'quote':''},{'content_digest':''},{'accessible':'false'},{'url':''}])
+    def test_incomplete_or_mistyped_source_never_supports(change):
+        raw=fixture_source(claim_key='k',quote='support').to_dict();raw.update(change)
+        source=SourceRecord.from_dict(raw)
+>       assert FactCrossChecker().verify(Claim('c','assertion','k'),[source]).state!='supported'
+E       AssertionError: assert 'supported' != 'supported'
+E        +  where 'supported' = Verdict(claim_id='c', statement='assertion', state='supported', confidence=0.7, supporting=[{'source_id': 'src_fixture...alid_from': None, 'valid_until': None}, reasons=['可访问来源直接支持（1 条，1 个发布者）'], model_only=False, policy='无外部证据不得仅凭模型自述判可信').state
+E        +    where Verdict(claim_id='c', statement='assertion', state='supported', confidence=0.7, supporting=[{'source_id': 'src_fixture...alid_from': None, 'valid_until': None}, reasons=['可访问来源直接支持（1 条，1 个发布者）'], model_only=False, policy='无外部证据不得仅凭模型自述判可信') = verify(Claim(claim_id='c', statement='assertion', claim_key='k', model_generated=True, valid_from=None, valid_until=None, applies_to='', derived_from_internal=False, notes=''), [SourceRecord(source_id='src_fixture_9efb3a1e62e3', url='fixture://k/fixture-publisher/supports', publisher='fixture-p...c0aafb', quote='', claim_key='k', stance='supports', trust='secondary', accessible=True, fetch_error='', fixture=True)])
+E        +      where verify = <evoagent.verification.crosscheck.FactCrossChecker object at 0x00000222B163D210>.verify
+E        +        where <evoagent.verification.crosscheck.FactCrossChecker object at 0x00000222B163D210> = FactCrossChecker()
+E        +      and   Claim(claim_id='c', statement='assertion', claim_key='k', model_generated=True, valid_from=None, valid_until=None, applies_to='', derived_from_internal=False, notes='') = Claim('c', 'assertion', 'k')
+
+tests\test_developed_review_3.py:99: AssertionError
+_________ test_incomplete_or_mistyped_source_never_supports[change1] __________
+
+change = {'content_digest': ''}
+
+    @pytest.mark.parametrize('change',[{'quote':''},{'content_digest':''},{'accessible':'false'},{'url':''}])
+    def test_incomplete_or_mistyped_source_never_supports(change):
+        raw=fixture_source(claim_key='k',quote='support').to_dict();raw.update(change)
+        source=SourceRecord.from_dict(raw)
+>       assert FactCrossChecker().verify(Claim('c','assertion','k'),[source]).state!='supported'
+E       AssertionError: assert 'supported' != 'supported'
+E        +  where 'supported' = Verdict(claim_id='c', statement='assertion', state='supported', confidence=0.7, supporting=[{'source_id': 'src_fixture...alid_from': None, 'valid_until': None}, reasons=['可访问来源直接支持（1 条，1 个发布者）'], model_only=False, policy='无外部证据不得仅凭模型自述判可信').state
+E        +    where Verdict(claim_id='c', statement='assertion', state='supported', confidence=0.7, supporting=[{'source_id': 'src_fixture...alid_from': None, 'valid_until': None}, reasons=['可访问来源直接支持（1 条，1 个发布者）'], model_only=False, policy='无外部证据不得仅凭模型自述判可信') = verify(Claim(claim_id='c', statement='assertion', claim_key='k', model_generated=True, valid_from=None, valid_until=None, applies_to='', derived_from_internal=False, notes=''), [SourceRecord(source_id='src_fixture_9efb3a1e62e3', url='fixture://k/fixture-publisher/supports', publisher='fixture-p..., quote='support', claim_key='k', stance='supports', trust='secondary', accessible=True, fetch_error='', fixture=True)])
+E        +      where verify = <evoagent.verification.crosscheck.FactCrossChecker object at 0x00000222B39305B0>.verify
+E        +        where <evoagent.verification.crosscheck.FactCrossChecker object at 0x00000222B39305B0> = FactCrossChecker()
+E        +      and   Claim(claim_id='c', statement='assertion', claim_key='k', model_generated=True, valid_from=None, valid_until=None, applies_to='', derived_from_internal=False, notes='') = Claim('c', 'assertion', 'k')
+
+tests\test_developed_review_3.py:99: AssertionError
+_________ test_incomplete_or_mistyped_source_never_supports[change2] __________
+
+change = {'accessible': 'false'}
+
+    @pytest.mark.parametrize('change',[{'quote':''},{'content_digest':''},{'accessible':'false'},{'url':''}])
+    def test_incomplete_or_mistyped_source_never_supports(change):
+        raw=fixture_source(claim_key='k',quote='support').to_dict();raw.update(change)
+        source=SourceRecord.from_dict(raw)
+>       assert FactCrossChecker().verify(Claim('c','assertion','k'),[source]).state!='supported'
+E       AssertionError: assert 'supported' != 'supported'
+E        +  where 'supported' = Verdict(claim_id='c', statement='assertion', state='supported', confidence=0.7, supporting=[{'source_id': 'src_fixture...alid_from': None, 'valid_until': None}, reasons=['可访问来源直接支持（1 条，1 个发布者）'], model_only=False, policy='无外部证据不得仅凭模型自述判可信').state
+E        +    where Verdict(claim_id='c', statement='assertion', state='supported', confidence=0.7, supporting=[{'source_id': 'src_fixture...alid_from': None, 'valid_until': None}, reasons=['可访问来源直接支持（1 条，1 个发布者）'], model_only=False, policy='无外部证据不得仅凭模型自述判可信') = verify(Claim(claim_id='c', statement='assertion', claim_key='k', model_generated=True, valid_from=None, valid_until=None, applies_to='', derived_from_internal=False, notes=''), [SourceRecord(source_id='src_fixture_9efb3a1e62e3', url='fixture://k/fixture-publisher/supports', publisher='fixture-p...uote='support', claim_key='k', stance='supports', trust='secondary', accessible='false', fetch_error='', fixture=True)])
+E        +      where verify = <evoagent.verification.crosscheck.FactCrossChecker object at 0x00000222B2306D40>.verify
+E        +        where <evoagent.verification.crosscheck.FactCrossChecker object at 0x00000222B2306D40> = FactCrossChecker()
+E        +      and   Claim(claim_id='c', statement='assertion', claim_key='k', model_generated=True, valid_from=None, valid_until=None, applies_to='', derived_from_internal=False, notes='') = Claim('c', 'assertion', 'k')
+
+tests\test_developed_review_3.py:99: AssertionError
+_________ test_incomplete_or_mistyped_source_never_supports[change3] __________
+
+change = {'url': ''}
+
+    @pytest.mark.parametrize('change',[{'quote':''},{'content_digest':''},{'accessible':'false'},{'url':''}])
+    def test_incomplete_or_mistyped_source_never_supports(change):
+        raw=fixture_source(claim_key='k',quote='support').to_dict();raw.update(change)
+        source=SourceRecord.from_dict(raw)
+>       assert FactCrossChecker().verify(Claim('c','assertion','k'),[source]).state!='supported'
+E       AssertionError: assert 'supported' != 'supported'
+E        +  where 'supported' = Verdict(claim_id='c', statement='assertion', state='supported', confidence=0.7, supporting=[{'source_id': 'src_fixture...alid_from': None, 'valid_until': None}, reasons=['可访问来源直接支持（1 条，1 个发布者）'], model_only=False, policy='无外部证据不得仅凭模型自述判可信').state
+E        +    where Verdict(claim_id='c', statement='assertion', state='supported', confidence=0.7, supporting=[{'source_id': 'src_fixture...alid_from': None, 'valid_until': None}, reasons=['可访问来源直接支持（1 条，1 个发布者）'], model_only=False, policy='无外部证据不得仅凭模型自述判可信') = verify(Claim(claim_id='c', statement='assertion', claim_key='k', model_generated=True, valid_from=None, valid_until=None, applies_to='', derived_from_internal=False, notes=''), [SourceRecord(source_id='src_fixture_9efb3a1e62e3', url='', publisher='fixture-publisher', retrieved_at=1792925493.261..., quote='support', claim_key='k', stance='supports', trust='secondary', accessible=True, fetch_error='', fixture=True)])
+E        +      where verify = <evoagent.verification.crosscheck.FactCrossChecker object at 0x00000222B3930B50>.verify
+E        +        where <evoagent.verification.crosscheck.FactCrossChecker object at 0x00000222B3930B50> = FactCrossChecker()
+E        +      and   Claim(claim_id='c', statement='assertion', claim_key='k', model_generated=True, valid_from=None, valid_until=None, applies_to='', derived_from_internal=False, notes='') = Claim('c', 'assertion', 'k')
+
+tests\test_developed_review_3.py:99: AssertionError
+_____________________ test_build_enforces_delivery_guard ______________________
+
+    def test_build_enforces_delivery_guard():
+        class ForgedChecker:
+            def verify(self,*a,**k):
+                return Verdict('c','model claim','supported',.9,model_only=True,supporting=[{'url':'u'}])
+>       with pytest.raises(DeliveryError):TrustedDelivery(checker=ForgedChecker()).build(topic='t',claims=[Claim('c','claim','k')],sources=[])
+E       Failed: DID NOT RAISE <class 'evoagent.verification.delivery.DeliveryError'>
+
+tests\test_developed_review_3.py:106: Failed
+__________________ test_fetch_rejects_quote_absent_from_body __________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000222B1D531F0>
+
+    def test_fetch_rejects_quote_absent_from_body(monkeypatch):
+        fake_http(monkeypatch,b'the actual page')
+>       with pytest.raises(SourceFetchError):fetch_source('https://source.test',quote='invented claim')
+E       Failed: DID NOT RAISE <class 'evoagent.verification.sources.SourceFetchError'>
+
+tests\test_developed_review_3.py:116: Failed
+_____________________ test_source_digest_covers_raw_bytes _____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000222B19476A0>
+
+    def test_source_digest_covers_raw_bytes(monkeypatch):
+        body=b'content\xff';fake_http(monkeypatch,body)
+>       assert fetch_source('https://source.test').content_digest==hashlib.sha256(body).hexdigest()
+E       AssertionError: assert '49605e47e61c...7bc68c163da8c' == '3210a173002f...bbd7da03415cd'
+E         
+E         - 3210a173002f9a822e3ef7fce0dd381e43c374db850f4b6d2e9bbd7da03415cd
+E         + 49605e47e61c17269c6a2bba7c5f3c0ee5985177dab52aded257bc68c163da8c
+
+tests\test_developed_review_3.py:121: AssertionError
+____ TestCrossImplementation.test_client_trust_ts_verifies_server_envelope ____
+
+self = <test_release_install_retire.TestCrossImplementation testMethod=test_client_trust_ts_verifies_server_envelope>
+
+    @unittest.skipIf(not TRUST_TS.is_file(), "端侧 trust.ts 不存在")
+    def test_client_trust_ts_verifies_server_envelope(self):
+        key = PrivateIdentityKey.generate(key_id="cross-key")
+        body = b'{"workflow": "cross/1"}'
+        digest = hashlib.sha256(body).hexdigest()
+        rm = ReleaseManager()
+        fields, _ = _envelope_fields(
+            release_id="rel_cross", version="v3.0.0", body=body, key=key)
+        manifest = rm.build_manifest(**fields)
+        rm.current_release_id = manifest.release_id
+        delivery = ReleaseDelivery(rm, _MemoryStore())
+        out = delivery.reconcile(installation_id="inst_cross",
+                                 device_id="dev_cross", platform="android",
+                                 app_version="0.2.0")
+        target = out["target"]
+        self.assertEqual(out["decision"], "update_available")
+        envelope = {
+            "schema": target["signature_schema"],
+            "release_id": target["release_id"],
+            "version": target["version"],
+            "artifact_sha256": target["artifact_sha256"],
+            "artifact_size": target["artifact_size"],
+            "signing_key_id": target["signing_key_id"],
+            "signature": target["artifact_signature"],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            pub = Path(tmp) / "pub.json"
+            env = Path(tmp) / "envelope.json"
+            art = Path(tmp) / "artifact.bin"
+            tampered = Path(tmp) / "tampered.bin"
+            pub.write_text(json.dumps(key.public_record()), encoding="utf-8")
+            env.write_text(json.dumps(envelope), encoding="utf-8")
+            art.write_bytes(body)
+            tampered.write_bytes(body[:-1] + b"X")
+            script = (
+                "import { readFileSync } from 'node:fs';\n"
+                "import { pathToFileURL } from 'node:url';\n"
+                f"const {{ TrustedKeyRing }} =\n"
+                f"  await import(pathToFileURL({str(TRUST_TS)!r}));\n"
+                "const pub = JSON.parse(readFileSync(process.argv[1], 'utf-8'));\n"
+                "const envelope = JSON.parse("
+                "readFileSync(process.argv[2], 'utf-8'));\n"
+                "const bytes = new Uint8Array("
+                "readFileSync(process.argv[3]));\n"
+                "const ring = new TrustedKeyRing([{ ...pub, revoked: false }]);\n"
+                "const result = ring.verifyArtifact(envelope, bytes);\n"
+                "process.stdout.write(result.ok ? 'PASS' :"
+                " 'FAIL:' + result.reasons.join(';'));\n"
+            )
+            good = subprocess.run(
+                ["node", "--experimental-strip-types",
+                 "--input-type=module", "-e", script,
+                 str(pub), str(env), str(art)],
+                capture_output=True, text=True, timeout=120)
+            assert good.stdout.strip() == "PASS", (
+                f"端侧验签失败: {good.stdout!r} {good.stderr[-400:]!r}")
+            bad = subprocess.run(
+                ["node", "--experimental-strip-types",
+                 "--input-type=module", "-e", script,
+                 str(pub), str(env), str(tampered)],
+                capture_output=True, text=True, timeout=120)
+>           assert bad.stdout.startswith("FAIL"), (
+                f"篡改制品必须被拒: {bad.stdout!r} {bad.stderr[-400:]!r}")
+E           AttributeError: 'NoneType' object has no attribute 'startswith'
+
+tests\test_release_install_retire.py:505: AttributeError
+============================== warnings summary ===============================
+tests/test_memory_router_diag.py::TestWorkflowLibraryAndGit::test_git_read_tool
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-1215 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+  UnicodeDecodeError: 'gbk' codec can't decode byte 0xae in position 28: illegal multibyte sequence
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_install_retire.py::TestCrossImplementation::test_client_trust_ts_verifies_server_envelope
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-1381 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+  UnicodeDecodeError: 'gbk' codec can't decode byte 0xa6 in position 15: illegal multibyte sequence
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_attachments.py::TestAttachmentApi::test_chunked_upload_complete_and_content
+FAILED tests/test_developed_review_3.py::test_future_claim_is_not_delivered
+FAILED tests/test_developed_review_3.py::test_invalid_claim_window_rejected[nan-None]
+FAILED tests/test_developed_review_3.py::test_invalid_claim_window_rejected[None-inf]
+FAILED tests/test_developed_review_3.py::test_invalid_claim_window_rejected[20-10]
+FAILED tests/test_developed_review_3.py::test_incomplete_or_mistyped_source_never_supports[change0]
+FAILED tests/test_developed_review_3.py::test_incomplete_or_mistyped_source_never_supports[change1]
+FAILED tests/test_developed_review_3.py::test_incomplete_or_mistyped_source_never_supports[change2]
+FAILED tests/test_developed_review_3.py::test_incomplete_or_mistyped_source_never_supports[change3]
+FAILED tests/test_developed_review_3.py::test_build_enforces_delivery_guard
+FAILED tests/test_developed_review_3.py::test_fetch_rejects_quote_absent_from_body
+FAILED tests/test_developed_review_3.py::test_source_digest_covers_raw_bytes
+FAILED tests/test_release_install_retire.py::TestCrossImplementation::test_client_trust_ts_verifies_server_envelope
+13 failed, 2072 passed, 1 skipped, 2 warnings in 381.21s (0:06:21)
