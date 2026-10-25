@@ -4748,9 +4748,20 @@
    "reviewer": null,
    "branch": "feature/user-direction",
    "base_commit": "9239382d8287de313f21cf608c1a21af1370dd30",
-   "status": "claimed",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-25",
+     "scope": "主链执行模式路由接线：与评测同一 WorkflowMatcher.select 入口、五项检查拒绝原因入运行清单、预算不可知不假设充足、钉住工作流不可用显式拒绝不旁路、执行前后归因一致性告警；7项专项+工作流/控制/路由189项回归通过，全量零失败",
+     "source_commit": "9901f170f939e8f302ee8f528700fc2bc3a42503",
+     "functional_commit": "9901f170f939e8f302ee8f528700fc2bc3a42503",
+     "source_tree": "26fe71f6a74a2b2a01025d70ea7c59f2bb2e22ca",
+     "result": "专项7 passed；大块回归189 passed；全量1892 passed/0 failed/1 skipped。本地路由夹具非生产工作流资产；cost_estimate用节点数近似；hybrid动态节点执行未落地(归因会显式标不一致)",
+     "log": ".planning/2026-10-25-aln08w/backend-tests.txt",
+     "delivery": "docs/协作开发/交付/ALN-08-W-工作流与执行模式的主链路由.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/08-W-工作流与执行模式的主链路由.md",
    "shared_files": [
     "evoagent/core/controller.py",
@@ -4767,9 +4778,19 @@
     "UX-06",
     "B-75"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
-   "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-   "prerequisites": "本地路由夹具可开发；真实链另采证"
+   "next_step": "待独立复核：主链与评测同入口选择、五项检查拒绝原因入清单、钉住工作流不可用显式拒绝不旁路、预算不可知不假设充足、执行归因一致性的证据见交付文档与 .planning/2026-10-25-aln08w/；审阅人未定，不自批为独立验收；hybrid动态节点执行与生产工作流资产属后续范围，ALN-08整包不关闭",
+   "working_basis": "以9239382d8287de313f21cf608c1a21af1370dd30（认领时feature/user-direction HEAD）作为接手锚点；最终提交9901f170f939e8f302ee8f528700fc2bc3a42503；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
+   "prerequisites": "本地路由夹具可开发；真实链另采证",
+   "delivered_commit": "9901f170f939e8f302ee8f528700fc2bc3a42503",
+   "delivery": "docs/协作开发/交付/ALN-08-W-工作流与执行模式的主链路由.md",
+   "ownership_history": [
+    {
+     "date": "2026-10-25",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户指示继续；依赖 23-A(review 待审接口)/08-R(accepted)，写入面 evoagent/routing/ 新建包 + controller 精确三处接线，不改 workflows/engine.py"
+    }
+   ]
   },
   {
    "id": "ALN-08-P",
