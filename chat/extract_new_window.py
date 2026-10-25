@@ -45,22 +45,32 @@ def parts_to_text(m):
 
 
 def load_all():
-    seen, msgs = set(), []
+    """按页重建时序：页间按页内最早消息升序拼接（页间已验证不重叠），
+    页内保持抓取顺序，最后按 create_time 稳定排序（同秒保留抓取顺序，
+    避免批量时间戳打乱问答配对）。"""
+    pages = []
+    seen = set()
     for tag, pat in SOURCES.items():
         for f in glob.glob(os.path.join(pat, "messages*")):
             try:
                 data = json.load(io.open(f, encoding="utf-8"))
             except Exception:
                 continue
+            page = []
             for m in data.get("messages", []):
                 mid = m.get("id")
                 if not mid or mid in seen:
                     continue
                 seen.add(mid)
                 m["_src"] = tag
-                msgs.append(m)
-    msgs.sort(key=lambda m: (m.get("create_time") or 0))
-    return msgs
+                page.append(m)
+            if page:
+                pages.append(page)
+    pages.sort(key=lambda pg: min((m.get("create_time") or 0)
+                                  for m in pg))
+    ordered = [m for pg in pages for m in pg]
+    ordered.sort(key=lambda m: m.get("create_time") or 0)
+    return ordered
 
 
 def existing_max():
@@ -114,11 +124,13 @@ def main():
     print("next number:", nxt)
     made = []
     idx = []
-    for i, um in enumerate(users):
+    for ui, um in enumerate(users):
         ts = um.get("create_time") or 0
         u_text = parts_to_text(um)
         answers = []
-        for m in msgs[i + 1:]:
+        # 按该用户消息在全量序列中的真实位置向后收集，直到下一个用户回合
+        pos = next(j for j, m in enumerate(msgs) if m["id"] == um["id"])
+        for m in msgs[pos + 1:]:
             if m["author"]["role"] == "user":
                 break
             if m["author"]["role"] == "assistant" and parts_to_text(m):
