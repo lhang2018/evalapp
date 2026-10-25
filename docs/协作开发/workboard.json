@@ -3578,15 +3578,22 @@
       "title": "用户可见状态与权威任务状态映射",
       "stream": "runtime",
       "owner": "zcode-main",
-      "reviewer": null,
+      "reviewer": "zcode-next",
       "branch": "feature/user-direction",
       "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         "代码: b40863c",
         "测试: 代码: b40863c 映射层 + d1272c9 任务行接线（taskViewOf.label + 等待原因行）",
-        "交付: docs/协作开发/交付/ALN-23-D-用户可见状态映射.md"
+        "交付: docs/协作开发/交付/ALN-23-D-用户可见状态映射.md",
+        {
+          "date": "2026-10-25",
+          "reviewer": "zcode-next",
+          "scope": "独立复核：6探针(终态防伪造/本地DONE有result标本地·无result判失败/失败/审批needs_you/已答不追问/RECONCILE需确认)+5项复跑；只读投影走读确认",
+          "result": "accepted",
+          "evidence": "docs/协作开发/验收/2026-10-25-ALN-23-D独立复核.md"
+        }
       ],
       "card": "docs/协作开发/任务卡/23-D-用户可见状态与权威任务状态映射.md",
       "shared_files": [
@@ -3613,7 +3620,7 @@
         "F02",
         "F03"
       ],
-      "next_step": "待独立复核（审阅人待定）；App 接线已上屏（d1272c9），真机操作证据按整包验收另采",
+      "next_step": "复核通过转accepted",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
       "prerequisites": "仅需仓库与本地测试环境",
       "claim_metadata_calibration": {
@@ -4490,11 +4497,11 @@
       "workpackage": "ALN-27",
       "title": "可组合能力与动态工作流资产",
       "stream": "assets",
-      "owner": null,
+      "owner": "zcode-main",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "2782cd25ef690d5286f76345f4eb838d8c6b19ad",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/27-B-可组合能力与动态工作流资产.md",
@@ -4513,7 +4520,7 @@
         "B-85"
       ],
       "next_step": "按卡实施并提交证据；未经复核不记accepted",
-      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "working_basis": "2026-10-25 zcode-main 认领开工。依赖 26-B(claimed) + 27-A(accepted) 已满足。复用 06-R 精确消费绑定 + 27-A 经验沉淀 + 07-W 工作流匹配，构建可组合能力资产层。",
       "prerequisites": "仅需仓库与本地测试环境"
     },
     {
