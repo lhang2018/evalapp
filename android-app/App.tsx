@@ -86,6 +86,10 @@ import type {
   BundleExecutionRecord, BundleRuntimeState, BundleTool,
 } from "./src/update/bundleRuntime.ts";
 import {
+  canActivateNow,
+  updateControlView,
+} from "./src/update/control.ts";
+import {
   FetchArtifactSource,
   NativeArtifactFiles,
 } from "./src/update/nativeArtifact.ts";
@@ -954,6 +958,18 @@ export default function App(): React.JSX.Element {
   }, [services, runUpdate]);
 
   const activateUpdate = useCallback(() => {
+    // GLOBAL-01（ALN-29-E）：运行绑定不可无约束热切换——有运行中任务
+    // 时拒绝激活并把理由给用户；守卫在 UI 决策层，manager 状态机不变。
+    const running = localTasks.filter(
+      (t) => t.status === "SUBMITTED" || t.status === "WAITING_DEPENDENCY",
+    ).length;
+    const guard = updateState
+      ? canActivateNow(updateState, running)
+      : { allowed: false, reasons: ["更新状态未加载"] };
+    if (!guard.allowed) {
+      Alert.alert("暂不能激活", guard.reasons.join("\n"));
+      return;
+    }
     Alert.alert(
       "激活更新",
       `切换到候选版本 ${updateState?.target?.version ?? ""}？` +
@@ -970,7 +986,7 @@ export default function App(): React.JSX.Element {
         },
       ]
     );
-  }, [runUpdate, services, probeActiveBundle, updateState]);
+  }, [runUpdate, services, probeActiveBundle, updateState, localTasks]);
 
   const rollbackUpdate = useCallback(() => {
     Alert.alert("回滚更新", "回滚到最近一次确认健康的版本？", [
@@ -2083,6 +2099,36 @@ export default function App(): React.JSX.Element {
                       .workflow_def ? " · 已内嵌可执行 workflow" : ""}
                   </Text>
                 )}
+                {updateState && (() => {
+                  const view = updateControlView(updateState);
+                  return (
+                    <>
+                      <Text style={s.hint}>
+                        版本角色：当前{" "}
+                        {view.currentRole === "stable" ? "稳定" : "未知"}
+                        {view.currentVersion
+                          ? `（${view.currentVersion}）` : ""}
+                        {view.candidateVersion
+                          ? ` · 候选 ${view.candidateRole === "candidate" ? "实验" : view.candidateRole}（${view.candidateVersion}）`
+                          : ""}
+                      </Text>
+                      {view.rejectionNotice && (
+                        <Text style={s.hint}>
+                          最近拒绝：{view.rejectionNotice}
+                        </Text>
+                      )}
+                      {view.rollbackEvidence && (
+                        <Text style={s.hint}>
+                          回滚证据：{view.rollbackEvidence.fromVersion} →{" "}
+                          {view.rollbackEvidence.toVersion}
+                          {view.rollbackEvidence.digest
+                            ? ` · digest ${view.rollbackEvidence.digest.slice(0, 12)}…`
+                            : ""}
+                        </Text>
+                      )}
+                    </>
+                  );
+                })()}
                 <View style={s.card}>
                   <Text style={s.goal}>能力包执行消费与健康探针</Text>
                   <Text style={s.hint}>
