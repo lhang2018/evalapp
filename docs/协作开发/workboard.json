@@ -4539,15 +4539,22 @@
       "title": "可组合能力与动态工作流资产",
       "stream": "assets",
       "owner": "zcode-main",
-      "reviewer": null,
+      "reviewer": "zcode-next",
       "branch": "feature/user-direction",
       "base_commit": "2782cd25ef690d5286f76345f4eb838d8c6b19ad",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         "代码: 3a716d0 assets/composition.py（dependency_closure/check_io_compatibility/compose）+ 10项测试",
         "测试: composition 10项 + 资产域回归 78 passed",
-        "验收对齐: 依赖闭包递归（缺失拒绝）；IO兼容（名称+类型）；升级不变（组合引用固定 asset_id@version 不改旧绑定）"
+        "验收对齐: 依赖闭包递归（缺失拒绝）；IO兼容（名称+类型）；升级不变（组合引用固定 asset_id@version 不改旧绑定）",
+        {
+          "date": "2026-10-25",
+          "reviewer": "zcode-next",
+          "scope": "独立复核：4探针(闭包递归/缺失拒绝/IO名称类型/组合版本固定升级不变)+10项复跑；发现交付文档缺失（owner补，不阻塞）",
+          "result": "accepted",
+          "evidence": "docs/协作开发/验收/2026-10-25-ALN-27-B独立复核.md"
+        }
       ],
       "card": "docs/协作开发/任务卡/27-B-可组合能力与动态工作流资产.md",
       "shared_files": [
@@ -4564,7 +4571,7 @@
         "A-70",
         "B-85"
       ],
-      "next_step": "待独立复核（审阅人待定）",
+      "next_step": "复核通过；owner 补交付文档",
       "working_basis": "2026-10-25 zcode-main 认领开工。依赖 26-B(claimed) + 27-A(accepted) 已满足。复用 06-R 精确消费绑定 + 27-A 经验沉淀 + 07-W 工作流匹配，构建可组合能力资产层。",
       "prerequisites": "仅需仓库与本地测试环境"
     },
@@ -6241,19 +6248,19 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "2e1438f4ee7583232f11297b51a6cca838b0becb",
-   "status": "review",
-   "blocker": null,
-   "evidence": [
-    {
-     "date": "2026-10-25",
-     "scope": "Windows 终端扩展验证（验证卡，沿用 12-V 模式）：平台词汇表最小加法扩展（manager._SUPPORTED_PLATFORMS 与 delivery.PLATFORMS 各增 windows 一行）+ 新增 tests/test_windows_terminal_validation.py 16 项 + 实测探针与证据工件；test_release_signing.py 参数化用例 ['windows']→['linux'] 理解性适配（归因已实证）",
-     "result": "16 项连跑 4 次稳定；相关回归 81 passed（signing 22 + release/recovery 59）；归因实证：隔离 worktree 回退平台行后 signing 测试恢复 9/9，确认失败由本卡扩展引起（确定回归非偶发）；变异 6/6 全部捕获；隔离全量（干净 HEAD+本卡改动）2148 passed/2 skipped/0 failed；真实进程击杀后新终端接管续跑 SUCCEEDED（killed_exitcode=1）；组合恢复 RTO 0.03s/RPO 0.88s、身份保持；提交 dbd32a1",
-     "command": "python -m pytest tests/test_windows_terminal_validation.py -q; python -m pytest tests/test_release_signing.py tests/test_release_install_retire.py tests/test_release_assets.py tests/test_deployment_recovery.py tests/test_backup_recovery.py tests/test_release_gates.py -q; python .planning/2026-10-25-aln21a/probe.py; python .planning/2026-10-25-aln21a/mutation_test.py",
-     "log": ".planning/2026-10-25-aln21a/iso-full-server.log; .planning/2026-10-25-aln21a/windows-terminal-evidence.json; .planning/2026-10-25-aln21a/mutation-results.log",
-     "delivery": "docs/协作开发/交付/ALN-21-A-Windows终端扩展验证.md"
-    }
-   ],
-   "card": "docs/协作开发/任务卡/21-A-Windows或平板扩展验证.md",
+      "status": "review",
+      "blocker": null,
+      "evidence": [
+        {
+          "date": "2026-10-25",
+          "scope": "Windows 终端扩展验证（验证卡，沿用 12-V 模式）：平台词汇表最小加法扩展（manager._SUPPORTED_PLATFORMS 与 delivery.PLATFORMS 各增 windows 一行）+ 新增 tests/test_windows_terminal_validation.py 16 项 + 实测探针与证据工件；test_release_signing.py 参数化用例 ['windows']→['linux'] 理解性适配（归因已实证）",
+          "result": "16 项连跑 4 次稳定；相关回归 81 passed（signing 22 + release/recovery 59）；归因实证：隔离 worktree 回退平台行后 signing 测试恢复 9/9，确认失败由本卡扩展引起（确定回归非偶发）；变异 6/6 全部捕获；隔离全量（干净 HEAD+本卡改动）2148 passed/2 skipped/0 failed；真实进程击杀后新终端接管续跑 SUCCEEDED（killed_exitcode=1）；组合恢复 RTO 0.03s/RPO 0.88s、身份保持；提交 dbd32a1",
+          "command": "python -m pytest tests/test_windows_terminal_validation.py -q; python -m pytest tests/test_release_signing.py tests/test_release_install_retire.py tests/test_release_assets.py tests/test_deployment_recovery.py tests/test_backup_recovery.py tests/test_release_gates.py -q; python .planning/2026-10-25-aln21a/probe.py; python .planning/2026-10-25-aln21a/mutation_test.py",
+          "log": ".planning/2026-10-25-aln21a/iso-full-server.log; .planning/2026-10-25-aln21a/windows-terminal-evidence.json; .planning/2026-10-25-aln21a/mutation-results.log",
+          "delivery": "docs/协作开发/交付/ALN-21-A-Windows终端扩展验证.md"
+        }
+      ],
+      "card": "docs/协作开发/任务卡/21-A-Windows或平板扩展验证.md",
       "shared_files": [
         "evoagent/core/controller.py",
         "evoagent/core/runs.py",
@@ -6327,20 +6334,20 @@
         "G0",
         "G3"
       ],
-   "next_step": "已交付转 review（提交 dbd32a1）；审阅人未定保留 null，不自批；保留缺口：平板终端、Android 客户端在 Windows 宿主、CLI/API 接入部署恢复编排、登记簿备份边界产品决策",
-   "working_basis": "claude-main 认领实施：Windows 终端实测验证（本机即目标终端）。以探针脚本+交付报告为主，evoagent/ 下代码改动最小化；共享文件按需外科手术式修改并声明精确修改点。平板终端与 Android 客户端边界记保留缺口。",
-   "ownership_history": [
+      "next_step": "已交付转 review（提交 dbd32a1）；审阅人未定保留 null，不自批；保留缺口：平板终端、Android 客户端在 Windows 宿主、CLI/API 接入部署恢复编排、登记簿备份边界产品决策",
+      "working_basis": "claude-main 认领实施：Windows 终端实测验证（本机即目标终端）。以探针脚本+交付报告为主，evoagent/ 下代码改动最小化；共享文件按需外科手术式修改并声明精确修改点。平板终端与 Android 客户端边界记保留缺口。",
+      "ownership_history": [
+        {
+          "date": "2026-10-25",
+          "from": "待认领",
+          "to": "claude-main",
+          "reason": "用户指示认领；25-B 被并行会话认领后 21-A 为唯一可行 READY 卡；依赖 17-P/20-P/12-E 均 accepted；Windows 即本机目标终端，与并行在途无重叠"
+        }
+      ],
+      "prerequisites": "目标终端"
+    },
     {
-     "date": "2026-10-25",
-     "from": "待认领",
-     "to": "claude-main",
-     "reason": "用户指示认领；25-B 被并行会话认领后 21-A 为唯一可行 READY 卡；依赖 17-P/20-P/12-E 均 accepted；Windows 即本机目标终端，与并行在途无重叠"
-    }
-   ],
-   "prerequisites": "目标终端"
-  },
-  {
-   "id": "ALN-22-A",
+      "id": "ALN-22-A",
       "workpackage": "ALN-22",
       "title": "原全量范围与新增产品证据汇总",
       "stream": "integration",
