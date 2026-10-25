@@ -1,0 +1,17 @@
+ALN-25-A 变异测试 2026-10-25T18:37:50
+target=C:\Users\lhang\AppData\Local\Temp\workbuddy-update-x64\aln25a-iso
+[baseline] exit=0 31 passed in 7.81s
+[M1] CAUGHT   记忆无策略服务时 fail-open（应为 fail-closed） -> 1 failed, 30 passed in 7.83s
+[M2] CAUGHT   忽略 24-D 作用域允许策略（deny 失效） -> 1 failed, 30 passed in 7.67s
+[M3] CAUGHT   用户明说降级为 recorded（四级分类失真） -> 1 failed, 30 passed in 7.39s
+[M4] CAUGHT   过时任务状态当作当前事实（stale 判定失效） -> 3 failed, 28 passed in 7.48s
+[M5] CAUGHT   冲突记忆不标记待确认 -> 1 failed, 30 passed in 7.93s
+[M6] CAUGHT   过期记忆不标记待确认 -> 1 failed, 30 passed in 7.53s
+[M7] CAUGHT   移除高价值效用门槛 -> 2 failed, 29 passed in 7.46s
+[M8] CAUGHT   needs_evidence 候选混入建议 -> 1 failed, 30 passed in 7.42s
+[M9] CAUGHT   范围外机会候选不再排除 -> 1 failed, 30 passed in 6.71s
+[M10] CAUGHT   授权字段篡改为已执行（违反建议≠授权） -> 1 failed, 30 passed in 6.75s
+[M11] CAUGHT   无授权 Grants 的来源谎称权限已解析 -> 1 failed, 30 passed in 6.71s
+[M12] CAUGHT   无高价值时不返回 withheld 原因 -> 2 failed, 29 passed in 6.77s
+[restored-baseline] exit=0 31 passed in 6.76s
+summary: caught=12 survived=0 total=12
