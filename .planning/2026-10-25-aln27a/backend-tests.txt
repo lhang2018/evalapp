@@ -1,0 +1,88 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  3%]
+........................................................................ [  7%]
+........................................................................ [ 11%]
+.....F.................................................................. [ 15%]
+........................................................................ [ 19%]
+........................................................................ [ 22%]
+........................................................................ [ 26%]
+........................................................................ [ 30%]
+........................................................................ [ 34%]
+........................................................................ [ 38%]
+........................................................................ [ 41%]
+........................................................................ [ 45%]
+........................................................................ [ 49%]
+........................................................................ [ 53%]
+........................................................................ [ 57%]
+........................................................................ [ 60%]
+........................................................................ [ 64%]
+........................................................................ [ 68%]
+........................................................................ [ 72%]
+........................................................................ [ 76%]
+........................................................................ [ 79%]
+........................................................................ [ 83%]
+........................................................................ [ 87%]
+........................................................................ [ 91%]
+........................................................................ [ 95%]
+..........s............................................................. [ 98%]
+...................                                                      [100%]
+================================== FAILURES ===================================
+_________ TestAttachmentApi.test_chunked_upload_complete_and_content __________
+
+self = <test_attachments.TestAttachmentApi testMethod=test_chunked_upload_complete_and_content>
+
+    def test_chunked_upload_complete_and_content(self):
+        data = bytes(range(256)) * 156  # 39936 ×Ö½Ú£¬3 ¿é£¨Ä©¿é 7168£©
+        body = init_body(aid(6), data)
+        status, _ = self._post("/attachments", body)
+        self.assertEqual(status, 201)
+    
+        status, chunk0 = self._put_chunk(aid(6), 0, data[:CHUNK])
+        self.assertEqual(status, 200)
+        self.assertEqual(chunk0["received_bytes"], CHUNK)
+        self.assertEqual(chunk0["received_chunks"], [0])
+        self.assertEqual(chunk0["chunk_sha256"], digest(data[:CHUNK]))
+    
+        self._upload_all(aid(6), data)
+    
+        status, out = self._post(f"/attachments/{aid(6)}/complete", {})
+        self.assertEqual(status, 200)
+        self.assertTrue(out["verified"])
+        self.assertEqual(out["attachment"]["status"], "complete")
+        self.assertEqual(out["attachment"]["received_bytes"], len(data))
+    
+        status, headers, raw = self._request("GET", f"/attachments/{aid(6)}")
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(raw.decode())["status"], "complete")
+    
+        status, headers, raw = self._request(
+            "GET", f"/attachments/{aid(6)}/content")
+        self.assertEqual(status, 200)
+        self.assertEqual(raw, data)
+>       self.assertEqual(headers.get("X-Attachment-SHA256"), digest(data))
+E       AssertionError: None != '904e25095fffab80e5ebbaddab06ad231486d5d9e77dd65c53ba6a966243fc18'
+
+tests\test_attachments.py:152: AssertionError
+============================== warnings summary ===============================
+tests/test_memory_router_diag.py::TestWorkflowLibraryAndGit::test_git_read_tool
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-1209 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+  UnicodeDecodeError: 'gbk' codec can't decode byte 0xae in position 34: illegal multibyte sequence
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_attachments.py::TestAttachmentApi::test_chunked_upload_complete_and_content
+1 failed, 1889 passed, 1 skipped, 1 warning in 430.30s (0:07:10)
