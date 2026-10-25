@@ -25,7 +25,7 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 from ..core.leases import guard_write
 
@@ -138,6 +138,120 @@ class ActionBindings:
                 "SELECT COUNT(*) AS n FROM action_step_bindings WHERE task_id=?",
                 (task_id,)).fetchone()
         return int(row["n"] if row else 0)
+
+    # ---------------- 预绑定意图（ALN-07-C：消崩溃半绑定窗口） ----------------
+
+    def record_intent(self, task_id: str, step_id: str, tool_id: str, *,
+                      run_id: Optional[str] = None,
+                      now: Optional[float] = None) -> str:
+        """执行前登记绑定意图（effect_id 未决）。
+
+        必须发生在副作用工具调用之前：任何时刻崩溃后，意图流都能证明
+        「该步骤当时正要产生该工具的副作用」，使补绑成为确定性匹配而
+        不是猜测。intent_id 幂等：同键重复登记返回同一意图。
+        """
+        task_id = _need(task_id, "task_id")
+        step_id = _need(step_id, "step_id")
+        tool_id = _need(tool_id, "tool_id")
+        created_at = float(now if now is not None else time.time())
+        intent_id = f"{task_id}:{step_id}:{created_at}"
+        with self.db._lock:
+            try:
+                if not self.db._conn.in_transaction:
+                    self.db._conn.execute("BEGIN IMMEDIATE")
+                self.db._conn.execute(
+                    "INSERT OR IGNORE INTO action_binding_intents"
+                    " (intent_id, task_id, step_id, tool_id, run_id,"
+                    "  created_at, effect_id) VALUES (?,?,?,?,?,?,NULL)",
+                    (intent_id, task_id, step_id, tool_id, run_id, created_at))
+                self.db._conn.commit()
+            except BaseException:
+                self.db._conn.rollback()
+                raise
+        return intent_id
+
+    def resolve_intent(self, intent_id: str, effect_id: str, *,
+                       now: Optional[float] = None) -> Dict[str, Any]:
+        """执行成功后回填 effect_id 并固化权威绑定（相邻原子写）。
+
+        绑定仍走 bind() 的幂等/冲突语义；回填失败不撤销已发生的副作用。
+        """
+        intent_id = _need(intent_id, "intent_id")
+        row = self.intent(intent_id)
+        if row is None:
+            raise BindingError(f"绑定意图不存在: {intent_id}")
+        if row["effect_id"] not in (None, effect_id):
+            raise BindingConflict(
+                f"意图 {intent_id} 已回填 {row['effect_id']}，不能改写")
+        bound = self.bind(effect_id, row["step_id"], task_id=row["task_id"],
+                          tool_id=row["tool_id"], now=now)
+        with self.db._lock:
+            try:
+                if not self.db._conn.in_transaction:
+                    self.db._conn.execute("BEGIN IMMEDIATE")
+                self.db._conn.execute(
+                    "UPDATE action_binding_intents SET effect_id=?"
+                    " WHERE intent_id=?", (effect_id, intent_id))
+                self.db._conn.commit()
+            except BaseException:
+                self.db._conn.rollback()
+                raise
+        return bound
+
+    def intent(self, intent_id: str) -> Optional[Dict[str, Any]]:
+        with self.db._lock:
+            row = self.db._conn.execute(
+                "SELECT intent_id, task_id, step_id, tool_id, run_id,"
+                " created_at, effect_id FROM action_binding_intents"
+                " WHERE intent_id=?", (intent_id,)).fetchone()
+        return dict(row) if row else None
+
+    def pending_intents(self, task_id: str) -> List[Dict[str, Any]]:
+        """未回填（崩溃时未固化）的意图，按登记时间排序。"""
+        with self.db._lock:
+            rows = self.db._conn.execute(
+                "SELECT intent_id, task_id, step_id, tool_id, run_id,"
+                " created_at FROM action_binding_intents"
+                " WHERE task_id=? AND effect_id IS NULL"
+                " ORDER BY created_at, intent_id", (task_id,)).fetchall()
+        return [dict(r) for r in rows]
+
+    def heal_pending(self, task_id: str,
+                     ledger_rows: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
+        """崩溃重启后对未决意图做确定性补绑（先对账后决定的一部分）。
+
+        匹配规则（不猜）：账本行 tool_id/task_id 与意图一致、effect 尚无
+        任何绑定，且该意图步骤没有其它已绑定 effect 时代入候选；
+        唯一候选 → 补绑；零候选 → 副作用未发生，意图标记 stale；
+        多候选 → ambiguous，不自动绑，留给对账报告人工裁决。
+        """
+        task_id = _need(task_id, "task_id")
+        existing = self.for_task(task_id)
+        by_step: Dict[str, List[str]] = {}
+        for effect_id, step_id in existing.items():
+            by_step.setdefault(step_id, []).append(effect_id)
+        unbound = [r for r in ledger_rows
+                   if r.get("task_id") == task_id
+                   and r.get("effect_id") not in existing
+                   and r.get("effect_id")]
+        healed: Dict[str, str] = {}
+        stale: List[str] = []
+        ambiguous: List[Dict[str, Any]] = []
+        for intent in self.pending_intents(task_id):
+            candidates = [r for r in unbound
+                          if r.get("tool_id") == intent["tool_id"]]
+            if not candidates:
+                stale.append(intent["intent_id"])
+                continue
+            if len(candidates) > 1 or by_step.get(intent["step_id"]):
+                ambiguous.append({"intent_id": intent["intent_id"],
+                                  "candidates": [c.get("effect_id")
+                                                 for c in candidates]})
+                continue
+            row = candidates[0]
+            self.resolve_intent(intent["intent_id"], row["effect_id"])
+            healed[row["effect_id"]] = intent["step_id"]
+        return {"healed": healed, "stale": stale, "ambiguous": ambiguous}
 
     # ---------------- 内部 ----------------
 

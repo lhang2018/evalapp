@@ -22,4 +22,18 @@ TABLES = [
     "idx_action_bindings_task ON action_step_bindings(task_id)",
     "CREATE INDEX IF NOT EXISTS "
     "idx_action_bindings_step ON action_step_bindings(task_id, step_id)",
+    # ALN-07-C：预绑定意图（消「副作用已发生、绑定未写」崩溃窗口）。
+    # 执行前登记（effect_id NULL=未决），执行后回填固化；崩溃重启后由
+    # heal_pending 与账本做确定性补绑。它同样不是授权凭据。
+    """CREATE TABLE IF NOT EXISTS action_binding_intents (
+  intent_id TEXT PRIMARY KEY,
+  task_id TEXT NOT NULL,
+  step_id TEXT NOT NULL,
+  tool_id TEXT NOT NULL,
+  run_id TEXT,
+  created_at REAL NOT NULL,
+  effect_id TEXT
+)""",
+    "CREATE INDEX IF NOT EXISTS "
+    "idx_binding_intents_task ON action_binding_intents(task_id, effect_id)",
 ]

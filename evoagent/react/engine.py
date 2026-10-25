@@ -212,6 +212,11 @@ class ReactEngine:
             step = TraceStep(i, suggestion)
             outcome.steps.append(step)
 
+            # ALN-07-C：副作用工具调用前登记绑定意图（消「副作用已发生、
+            # 绑定未写」崩溃窗口）。意图登记失败不得阻止执行本身——
+            # 它是证据流，不是许可闸门；崩溃后由 heal_pending 确定性补绑。
+            intent_id = self._record_binding_intent(
+                tool, active_step, logical_task_id, run_id)
             try:
                 budget.check_tool_call(tool)
                 result = self.tools.execute(tool or "", suggestion.args,
@@ -232,7 +237,8 @@ class ReactEngine:
                 outcome.stop_reason = "approval_required"
                 return capture()
             step.tool_result = result
-            self._record_step_binding(result, active_step, task_id, run_id)
+            self._record_step_binding(result, active_step, task_id, run_id,
+                                      intent_id=intent_id)
             payload = result.to_dict()
             messages.append(ChatMessage(
                 role="assistant",
@@ -277,7 +283,29 @@ class ReactEngine:
         outcome.stop_reason = "max_iter"
         return capture()
 
-    def _record_step_binding(self, result, active_step, task_id, run_id):
+    def _record_binding_intent(self, tool, active_step, task_id, run_id):
+        """登记「本步骤即将产生该工具副作用」的意图（07-C）。
+
+        只对可能进入绑定判定的工具登记：无绑定账本、无活动步骤或
+        纯观察工具（side_effect_level=none）不登记，避免意图噪音。
+        """
+        if self.bindings is None or active_step is None or not task_id:
+            return None
+        if not tool or not active_step.tool_hint or active_step.tool_hint != tool:
+            return None
+        try:
+            contract = self.tools.contract(tool)
+            if contract is None or contract.side_effect_level == "none":
+                return None
+            return self.bindings.record_intent(
+                task_id, active_step.step_id, tool, run_id=run_id or None)
+        except LeaseLost:
+            raise
+        except Exception:
+            return None  # 意图流尽力而为；权威绑定仍由执行后路径保证
+
+    def _record_step_binding(self, result, active_step, task_id, run_id,
+                             intent_id=None):
         """Bind verified gateway evidence; a cached observation is not a trigger."""
         if self.bindings is None or active_step is None:
             return
@@ -310,8 +338,11 @@ class ReactEngine:
             if record["run_id"] != (run_id or task_id):
                 evidence["step_binding_skipped"] = "effect_from_other_run"
                 return
-            self.bindings.bind(effect_id, active_step.step_id,
-                               task_id=task_id, tool_id=actual_tool)
+            if intent_id:
+                self.bindings.resolve_intent(intent_id, effect_id)
+            else:
+                self.bindings.bind(effect_id, active_step.step_id,
+                                   task_id=task_id, tool_id=actual_tool)
         except LeaseLost:
             raise  # Fencing is mandatory, not an optional evidence write.
         except Exception as exc:  # The external result must remain truthful.
