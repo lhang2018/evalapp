@@ -1,0 +1,24 @@
+{
+  "source_commit": "077d2939236dff71821ab69157ea50bf4d1dbbeb",
+  "source_tree": "caad45c5895bcd9d7f373ece7017b682ed69bbf3",
+  "client_passed": 384,
+  "typecheck": "passed",
+  "backend_related_passed": 112,
+  "backend_full_rerun": false,
+  "device_verified": false,
+  "scope": "07-C只读再检；12-E设备确认/原生状态/安全停止修复，非App挂载或真机验收",
+  "records": {
+    "validation.json": ".planning/2026-10-26-mainchain-review/validation.json",
+    "backend-validation.json": ".planning/2026-10-26-mainchain-review/backend-validation.json"
+  },
+  "evidence_sha256_lf": {
+    "validation.json": "10253ed367d4bd96bbda03aaebfe96a8604e39ce75023ee4e76d2daf8c521902",
+    "backend-validation.json": "c0af90198ba1efc60e5d6ebd05b7635b8f0393e4de6ccc7b330b979b31609ad6",
+    "negative-probes.txt": "b5b3fd5338a940f484b5db28e9abd8127e4f8fcabb20578c535da3bbca2433a9",
+    "focused-tests.txt": "a79f59bc2b419c2a9c07afe96bb84f91cf9f05c1f2e3d29c661e293213b1f005",
+    "client-tests.txt": "42c2a664c7e9ce4d7b048a0eb64742d8205acb2d7575c892c6688e5881ba97c3",
+    "typecheck.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend-tests.txt": "c8940014d6104e04dc6ddff702a9d9f1e87184e7913e0ae63641b1554ce9cf94"
+  },
+  "new_temporary_data_removed": true
+}

@@ -1,0 +1,257 @@
+(node:53816) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ confirmation callback cannot rewrite the action identity or nested parameters (2.1321ms)
+✖ non-boolean confirmation "false" cannot authorize execution (1.2938ms)
+✖ non-boolean confirmation "true" cannot authorize execution (0.2938ms)
+✖ non-boolean confirmation 1 cannot authorize execution (0.2142ms)
+✖ non-boolean confirmation {} cannot authorize execution (0.2337ms)
+✖ safety stop prevents dispatch after waiting on availability (0.468ms)
+✖ safety stop prevents dispatch after waiting on confirmation (0.316ms)
+✖ native truthy ok "false" is not verified success (0.2413ms)
+✖ native truthy ok "true" is not verified success (0.2093ms)
+✖ native truthy ok 1 is not verified success (0.1768ms)
+✖ native truthy ok {} is not verified success (0.147ms)
+✖ native service availability must be literal true before dispatch (0.471ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 0
+ℹ fail 12
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 156.0791
+
+✖ failing tests:
+
+test at test\device\mainchainReview.test.ts:15:1
+✖ confirmation callback cannot rewrite the action identity or nested parameters (2.1321ms)
+  Error: 动作日志与提议身份不一致
+      at receiptFromJournal (file:///E:/evalapp/android-app/src/device/taskProtocol.ts:188:11)
+      at executeProposal (file:///E:/evalapp/android-app/src/device/taskProtocol.ts:526:7)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts:28:18)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+
+test at test\device\mainchainReview.test.ts:37:3
+✖ non-boolean confirmation "false" cannot authorize execution (1.2938ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'verified'
+  - 'denied'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts:43:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'denied',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\device\mainchainReview.test.ts:37:3
+✖ non-boolean confirmation "true" cannot authorize execution (0.2938ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'verified'
+  - 'denied'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts:43:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'denied',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\device\mainchainReview.test.ts:37:3
+✖ non-boolean confirmation 1 cannot authorize execution (0.2142ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'verified'
+  - 'denied'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts:43:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'denied',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\device\mainchainReview.test.ts:37:3
+✖ non-boolean confirmation {} cannot authorize execution (0.2337ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'verified'
+  - 'denied'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts:43:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'denied',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\device\mainchainReview.test.ts:49:3
+✖ safety stop prevents dispatch after waiting on availability (0.468ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'unverified'
+  - 'denied'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts:70:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unverified',
+    expected: 'denied',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\device\mainchainReview.test.ts:49:3
+✖ safety stop prevents dispatch after waiting on confirmation (0.316ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'unverified'
+  - 'denied'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts:70:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unverified',
+    expected: 'denied',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\device\mainchainReview.test.ts:77:3
+✖ native truthy ok "false" is not verified success (0.2413ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'verified'
+  - 'unverified'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts:82:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'unverified',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\device\mainchainReview.test.ts:77:3
+✖ native truthy ok "true" is not verified success (0.2093ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'verified'
+  - 'unverified'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts:82:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'unverified',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\device\mainchainReview.test.ts:77:3
+✖ native truthy ok 1 is not verified success (0.1768ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'verified'
+  - 'unverified'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts:82:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'unverified',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\device\mainchainReview.test.ts:77:3
+✖ native truthy ok {} is not verified success (0.147ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'verified'
+  - 'unverified'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts:82:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'verified',
+    expected: 'unverified',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\device\mainchainReview.test.ts:86:1
+✖ native service availability must be literal true before dispatch (0.471ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'unverified'
+  - 'unavailable'
+       ^
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts:93:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unverified',
+    expected: 'unavailable',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
