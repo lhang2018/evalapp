@@ -265,4 +265,5 @@ android-app/               React Native Android 客户端
   src/update/              安装实例/版本对账/双槽位更新管理（纯 TS，可单测）
   android/                 Kotlin 原生壳：AccessibilityService + DeviceModule + VoiceModule + WorkManager 后台同步
   test/                    128 项客户端测试（node --test）
+chat/                      设计语料库（源会话抓取/提取/专项总目/原稿归档，见 chat/README.md）
 ```
