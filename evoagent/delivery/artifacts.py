@@ -13,9 +13,12 @@
 """
 
 import hashlib
+import os
+import re
+import tempfile
 import json
 import time
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any, Dict, List, Optional
 
 
@@ -31,57 +34,106 @@ class ArtifactStore:
     """产物存储：文件系统为主体，元数据随 Task.result_evidence 走。"""
 
     def __init__(self, data_dir: str):
-        self.root = Path(data_dir) / "artifacts"
+        self.root = (Path(data_dir) / "artifacts").resolve()
         self.root.mkdir(parents=True, exist_ok=True)
+
+    @staticmethod
+    def _component(value: str) -> str:
+        if (not isinstance(value, str) or not value or value in (".", "..")
+                or value.rstrip(". ") != value
+                or re.search(r'[<>:"/\\|?*\x00-\x1f]', value)):
+            raise ArtifactError("产物任务/节点标识不能包含路径或非法文件名")
+        return value
+
+    def _path(self, relative: str, task_id: Optional[str] = None) -> Optional[Path]:
+        if not isinstance(relative, str) or not relative or PureWindowsPath(relative).drive:
+            return None
+        raw = Path(relative.replace("\\", "/"))
+        if raw.is_absolute():
+            return None
+        try:
+            path = (self.root / raw).resolve()
+            scope = self.root if task_id is None else self.root / self._component(task_id)
+            if not path.is_relative_to(scope) or not path.is_relative_to(self.root):
+                return None
+            return path
+        except (OSError, RuntimeError, ValueError):
+            return None
 
     def save(self, task_id: str, node_id: str, kind: str,
              content: bytes, *, description: str = "",
              encoding: str = "utf-8") -> Dict[str, Any]:
-        """保存产物，返回元数据（可直接 append 到 task.result_evidence）。"""
-        if not content:
-            raise ArtifactError("产物内容不能为空")
+        task_id, node_id = self._component(task_id), self._component(node_id)
+        if not isinstance(content, bytes) or not content:
+            raise ArtifactError("产物内容必须是非空字节串")
         digest = _digest_bytes(content)
-        artifact_id = f"{task_id}:{node_id}:{digest[:12]}"
-        task_dir = self.root / task_id
+        artifact_id = f"{task_id}:{node_id}:{digest}"
+        task_dir = self._path(task_id)
+        if task_dir is None:
+            raise ArtifactError("产物路径超出存储根目录")
         task_dir.mkdir(parents=True, exist_ok=True)
         ext = {"markdown": ".md", "json": ".json", "text": ".txt",
-               "report": ".md", "file": ".bin", "binary": ".bin",
-               }.get(kind, ".bin")
-        path = task_dir / f"{node_id}{ext}"
-        path.write_bytes(content)
-        return {
-            "artifact_id": artifact_id,
-            "node_id": node_id,
-            "kind": kind,
-            "sha256": digest,
-            "bytes": len(content),
-            "path": str(path.relative_to(self.root)),
-            "description": description,
-            "encoding": encoding,
-            "created_at": time.time(),
-        }
+               "report": ".md", "file": ".bin", "binary": ".bin"}.get(kind, ".bin")
+        relative = f"{task_id}/{node_id}-{digest}{ext}"
+        path = self._path(relative, task_id)
+        if path is None:
+            raise ArtifactError("产物路径超出存储根目录")
+        temporary = None
+        try:
+            with tempfile.NamedTemporaryFile(dir=task_dir, prefix=".artifact-", delete=False) as handle:
+                temporary = Path(handle.name)
+                handle.write(content)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temporary, path)
+        finally:
+            if temporary is not None and temporary.exists():
+                temporary.unlink()
+        return {"artifact_id": artifact_id, "node_id": node_id, "kind": kind,
+                "sha256": digest, "bytes": len(content), "path": relative,
+                "description": description, "encoding": encoding,
+                "created_at": time.time()}
 
-    def verify(self, meta: Dict[str, Any]) -> bool:
-        """校验产物文件与元数据一致（文件存在 + sha256 匹配 + 大小匹配）。"""
-        path = self.root / meta.get("path", "")
-        if not path.is_file():
-            return False
-        data = path.read_bytes()
-        return (_digest_bytes(data) == meta.get("sha256")
-                and len(data) == meta.get("bytes"))
-
-    def read(self, meta: Dict[str, Any]) -> Optional[bytes]:
-        """读取产物内容；文件缺失或校验不符返回 None（不抛错）。"""
-        if not self.verify(meta):
+    def read(self, meta: Dict[str, Any], *, limit: Optional[int] = None,
+             task_id: Optional[str] = None) -> Optional[bytes]:
+        """Read once, validate those exact bytes, and optionally retain only a preview."""
+        if not isinstance(meta, dict):
             return None
-        return (self.root / meta["path"]).read_bytes()
+        path = self._path(meta.get("path"), task_id)
+        size, digest = meta.get("bytes"), meta.get("sha256")
+        if (path is None or type(size) is not int or size < 0
+                or not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest)):
+            return None
+        if limit is not None and (type(limit) is not int or limit < 0):
+            raise ArtifactError("预览字节上限无效")
+        chunks, total, kept, hasher = [], 0, 0, hashlib.sha256()
+        try:
+            with path.open("rb") as handle:
+                while True:
+                    chunk = handle.read(65536)
+                    if not chunk:
+                        break
+                    total += len(chunk)
+                    if total > size:
+                        return None
+                    hasher.update(chunk)
+                    piece = chunk if limit is None else chunk[:max(0, limit - kept)]
+                    if piece:
+                        chunks.append(piece)
+                        kept += len(piece)
+        except OSError:
+            return None
+        if total != size or hasher.hexdigest() != digest:
+            return None
+        return b"".join(chunks)
 
-    def list_for_task(self, evidence: List[Dict[str, Any]]) \
-            -> List[Dict[str, Any]]:
-        """列出任务的全部有效产物（文件系统存在性为准）。"""
-        return [e for e in (evidence or [])
-                if isinstance(e, dict) and "artifact_id" in e
-                and self.verify(e)]
+    def verify(self, meta: Dict[str, Any], *, task_id: Optional[str] = None) -> bool:
+        return self.read(meta, limit=0, task_id=task_id) is not None
+
+    def list_for_task(self, evidence: List[Dict[str, Any]], *,
+                      task_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        return [e for e in (evidence or []) if isinstance(e, dict)
+                and "artifact_id" in e and self.verify(e, task_id=task_id)]
 
     def diff_for_rebuild(self, old_evidence: List[Dict[str, Any]],
                          new_content: Dict[str, bytes]) -> Dict[str, Any]:
@@ -95,7 +147,7 @@ class ArtifactStore:
         rebuild, keep = [], []
         for node_id, content in (new_content or {}).items():
             old = old_by_node.get(node_id)
-            if old is None or _digest_bytes(content) != old.get("sha256"):
+            if old is None or _digest_bytes(content) != old.get("sha256") or not self.verify(old):
                 rebuild.append(node_id)
             else:
                 keep.append(node_id)

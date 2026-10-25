@@ -68,7 +68,7 @@ test("安全恢复：未决副作用阻断，已决放行", () => {
   assert.equal(blocked.pendingEffects.length, 1);
 
   const safe = checkRecoverySafety([
-    { effect_id: "fx1", status: "verified" },
+    { effect_id: "fx1", status: "confirmed" },
   ]);
   assert.equal(safe.safe, true);
   assert.equal(safe.blocker, null);

@@ -1,0 +1,351 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFFF.F                                                         [100%]
+================================== FAILURES ===================================
+______ test_artifact_identifiers_cannot_escape_store[../outside-report] _______
+
+tmp_path = WindowsPath('C:/Users/lhang/AppData/Local/Temp/pytest-of-lhang/pytest-512/test_artifact_identifiers_cann0')
+task_id = '../outside', node_id = 'report'
+
+    @pytest.mark.parametrize("task_id,node_id",[
+        ("../outside","report"),("task","../../outside"),("task","C:\\outside"),
+        ("task","/absolute"),("task",".."),("task","node/child"),
+    ])
+    def test_artifact_identifiers_cannot_escape_store(tmp_path,task_id,node_id):
+        store=ArtifactStore(str(tmp_path/"data"))
+>       with pytest.raises(ArtifactError):
+E       Failed: DID NOT RAISE <class 'evoagent.delivery.artifacts.ArtifactError'>
+
+tests\test_developed_review_2.py:24: Failed
+______ test_artifact_identifiers_cannot_escape_store[task-../../outside] ______
+
+tmp_path = WindowsPath('C:/Users/lhang/AppData/Local/Temp/pytest-of-lhang/pytest-512/test_artifact_identifiers_cann1')
+task_id = 'task', node_id = '../../outside'
+
+    @pytest.mark.parametrize("task_id,node_id",[
+        ("../outside","report"),("task","../../outside"),("task","C:\\outside"),
+        ("task","/absolute"),("task",".."),("task","node/child"),
+    ])
+    def test_artifact_identifiers_cannot_escape_store(tmp_path,task_id,node_id):
+        store=ArtifactStore(str(tmp_path/"data"))
+>       with pytest.raises(ArtifactError):
+E       Failed: DID NOT RAISE <class 'evoagent.delivery.artifacts.ArtifactError'>
+
+tests\test_developed_review_2.py:24: Failed
+_______ test_artifact_identifiers_cannot_escape_store[task-C:\\outside] _______
+
+tmp_path = WindowsPath('C:/Users/lhang/AppData/Local/Temp/pytest-of-lhang/pytest-512/test_artifact_identifiers_cann2')
+task_id = 'task', node_id = 'C:\\outside'
+
+    @pytest.mark.parametrize("task_id,node_id",[
+        ("../outside","report"),("task","../../outside"),("task","C:\\outside"),
+        ("task","/absolute"),("task",".."),("task","node/child"),
+    ])
+    def test_artifact_identifiers_cannot_escape_store(tmp_path,task_id,node_id):
+        store=ArtifactStore(str(tmp_path/"data"))
+        with pytest.raises(ArtifactError):
+>           store.save(task_id,node_id,"text",b"must stay inside")
+
+tests\test_developed_review_2.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\delivery\artifacts.py:51: in save
+    path.write_bytes(content)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1143: in write_bytes
+    with self.open(mode='wb') as f:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/outside.txt'), mode = 'wb', buffering = -1
+encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return self._accessor.open(self, mode, buffering, encoding, errors,
+                                   newline)
+E       PermissionError: [Errno 13] Permission denied: 'C:\\outside.txt'
+
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1119: PermissionError
+________ test_artifact_identifiers_cannot_escape_store[task-/absolute] ________
+
+tmp_path = WindowsPath('C:/Users/lhang/AppData/Local/Temp/pytest-of-lhang/pytest-512/test_artifact_identifiers_cann3')
+task_id = 'task', node_id = '/absolute'
+
+    @pytest.mark.parametrize("task_id,node_id",[
+        ("../outside","report"),("task","../../outside"),("task","C:\\outside"),
+        ("task","/absolute"),("task",".."),("task","node/child"),
+    ])
+    def test_artifact_identifiers_cannot_escape_store(tmp_path,task_id,node_id):
+        store=ArtifactStore(str(tmp_path/"data"))
+        with pytest.raises(ArtifactError):
+>           store.save(task_id,node_id,"text",b"must stay inside")
+
+tests\test_developed_review_2.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\delivery\artifacts.py:51: in save
+    path.write_bytes(content)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1143: in write_bytes
+    with self.open(mode='wb') as f:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/absolute.txt'), mode = 'wb', buffering = -1
+encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return self._accessor.open(self, mode, buffering, encoding, errors,
+                                   newline)
+E       PermissionError: [Errno 13] Permission denied: 'C:\\absolute.txt'
+
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1119: PermissionError
+___________ test_artifact_identifiers_cannot_escape_store[task-..] ____________
+
+tmp_path = WindowsPath('C:/Users/lhang/AppData/Local/Temp/pytest-of-lhang/pytest-512/test_artifact_identifiers_cann4')
+task_id = 'task', node_id = '..'
+
+    @pytest.mark.parametrize("task_id,node_id",[
+        ("../outside","report"),("task","../../outside"),("task","C:\\outside"),
+        ("task","/absolute"),("task",".."),("task","node/child"),
+    ])
+    def test_artifact_identifiers_cannot_escape_store(tmp_path,task_id,node_id):
+        store=ArtifactStore(str(tmp_path/"data"))
+>       with pytest.raises(ArtifactError):
+E       Failed: DID NOT RAISE <class 'evoagent.delivery.artifacts.ArtifactError'>
+
+tests\test_developed_review_2.py:24: Failed
+_______ test_artifact_identifiers_cannot_escape_store[task-node/child] ________
+
+tmp_path = WindowsPath('C:/Users/lhang/AppData/Local/Temp/pytest-of-lhang/pytest-512/test_artifact_identifiers_cann5')
+task_id = 'task', node_id = 'node/child'
+
+    @pytest.mark.parametrize("task_id,node_id",[
+        ("../outside","report"),("task","../../outside"),("task","C:\\outside"),
+        ("task","/absolute"),("task",".."),("task","node/child"),
+    ])
+    def test_artifact_identifiers_cannot_escape_store(tmp_path,task_id,node_id):
+        store=ArtifactStore(str(tmp_path/"data"))
+        with pytest.raises(ArtifactError):
+>           store.save(task_id,node_id,"text",b"must stay inside")
+
+tests\test_developed_review_2.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\delivery\artifacts.py:51: in save
+    path.write_bytes(content)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1143: in write_bytes
+    with self.open(mode='wb') as f:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/lhang/AppData/Local/Temp/pytest-of-lhang/pytest-512/test_artifact_identifiers_cann5/data/artifacts/task/node/child.txt')
+mode = 'wb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return self._accessor.open(self, mode, buffering, encoding, errors,
+                                   newline)
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\lhang\\AppData\\Local\\Temp\\pytest-of-lhang\\pytest-512\\test_artifact_identifiers_cann5\\data\\artifacts\\task\\node\\child.txt'
+
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\pathlib.py:1119: FileNotFoundError
+_____________ test_artifact_read_rejects_forged_outside_metadata ______________
+
+tmp_path = WindowsPath('C:/Users/lhang/AppData/Local/Temp/pytest-of-lhang/pytest-512/test_artifact_read_rejects_for0')
+
+    def test_artifact_read_rejects_forged_outside_metadata(tmp_path):
+        outside=tmp_path/"private.txt";outside.write_bytes(b"private bytes")
+        store=ArtifactStore(str(tmp_path/"data"))
+        meta={"artifact_id":"fake","path":str(outside),"sha256":hashlib.sha256(outside.read_bytes()).hexdigest(),"bytes":outside.stat().st_size}
+>       assert store.read(meta) is None
+E       AssertionError: assert b'private bytes' is None
+E        +  where b'private bytes' = read({'artifact_id': 'fake', 'bytes': 13, 'path': 'C:\\Users\\lhang\\AppData\\Local\\Temp\\pytest-of-lhang\\pytest-512\\test_artifact_read_rejects_for0\\private.txt', 'sha256': '1d4fec327a6cac6f1521d1b5321f55136d0472499d8482c4115eeacffaff140f'})
+E        +    where read = <evoagent.delivery.artifacts.ArtifactStore object at 0x000001B03A953C40>.read
+
+tests\test_developed_review_2.py:31: AssertionError
+___________________ test_artifact_versions_remain_readable ____________________
+
+tmp_path = WindowsPath('C:/Users/lhang/AppData/Local/Temp/pytest-of-lhang/pytest-512/test_artifact_versions_remain_0')
+
+    def test_artifact_versions_remain_readable(tmp_path):
+        store=ArtifactStore(str(tmp_path))
+        old=store.save("t","report","text",b"old")
+        new=store.save("t","report","text",b"new")
+>       assert old["path"]!=new["path"]
+E       AssertionError: assert 't\\report.txt' != 't\\report.txt'
+
+tests\test_developed_review_2.py:38: AssertionError
+____________ test_missing_artifact_cannot_be_kept_by_digest_alone _____________
+
+tmp_path = WindowsPath('C:/Users/lhang/AppData/Local/Temp/pytest-of-lhang/pytest-512/test_missing_artifact_cannot_b0')
+
+    def test_missing_artifact_cannot_be_kept_by_digest_alone(tmp_path):
+        store=ArtifactStore(str(tmp_path))
+        old=store.save("t","a","text",b"same")
+        (store.root/old["path"]).unlink()
+>       assert store.diff_for_rebuild([old],{"a":b"same"})=={"rebuild":["a"],"keep":[]}
+E       AssertionError: assert {'keep': ['a'], 'rebuild': []} == {'keep': [], 'rebuild': ['a']}
+E         
+E         Differing items:
+E         {'rebuild': []} != {'rebuild': ['a']}
+E         {'keep': ['a']} != {'keep': []}
+E         Use -v to get more diff
+
+tests\test_developed_review_2.py:45: AssertionError
+____________________ test_binary_preview_is_base64_not_hex ____________________
+
+tmp_path = WindowsPath('C:/Users/lhang/AppData/Local/Temp/pytest-of-lhang/pytest-512/test_binary_preview_is_base64_0')
+
+    def test_binary_preview_is_base64_not_hex(tmp_path):
+        store=ArtifactStore(str(tmp_path))
+        content=b"\x00\x01\xab\xff"
+        meta=store.save("t","img","binary",content)
+        app=SimpleNamespace(config=SimpleNamespace(data_dir=str(tmp_path)),
+                            db=SimpleNamespace(get_task=lambda _:SimpleNamespace(result_evidence=[meta])))
+        status,payload=preview_artifact(SimpleNamespace(app=app,path=f"/tasks/t/artifacts/{meta['artifact_id']}/preview",
+                                   json=lambda status,payload:(status,payload)))
+        assert status==200
+>       assert payload["base64"]==base64.b64encode(content).decode("ascii")
+E       AssertionError: assert '0001abff' == 'AAGr/w=='
+E         
+E         - AAGr/w==
+E         + 0001abff
+
+tests\test_developed_review_2.py:56: AssertionError
+___________ test_one_effect_contested_by_two_intents_is_not_guessed ___________
+
+bindings = <evoagent.planning.binding.ActionBindings object at 0x000001B03A952140>
+
+    def test_one_effect_contested_by_two_intents_is_not_guessed(bindings):
+        bindings.record_intent("t","s1","write",now=1)
+        bindings.record_intent("t","s2","write",now=2)
+>       report=bindings.heal_pending("t",[{"task_id":"t","tool_id":"write","effect_id":"e1"}])
+
+tests\test_developed_review_2.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\planning\binding.py:252: in heal_pending
+    self.resolve_intent(intent["intent_id"], row["effect_id"])
+evoagent\planning\binding.py:186: in resolve_intent
+    bound = self.bind(effect_id, row["step_id"], task_id=row["task_id"],
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.planning.binding.ActionBindings object at 0x000001B03A952140>
+effect_id = 'e1', step_id = 's2'
+
+    def bind(self, effect_id: str, step_id: str, *,
+             task_id: str = "", tool_id: Optional[str] = None,
+             now: Optional[float] = None) -> Dict[str, Any]:
+        """把一次副作用绑定到触发它的步骤（幂等；冲突拒绝）。
+    
+        返回当前生效的绑定行。重复绑定同一对是**无操作**，不会刷新
+        ``bound_at``——首次归属时间才是审计上有意义的时刻。
+        """
+        effect_id = _need(effect_id, "effect_id")
+        step_id = _need(step_id, "step_id")
+        task_id = _need(task_id, "task_id")
+        if tool_id is not None:
+            tool_id = _need(tool_id, "tool_id")
+        bound_at = float(now if now is not None else time.time())
+    
+        with self.db._lock:
+            try:
+                guard_write(self.db)
+                # guard_write opens the fenced transaction only under a lease.
+                # Standalone callers still need a cross-connection write lock
+                # before reading, so a concurrent insert cannot win the gap.
+                if not self.db._conn.in_transaction:
+                    self.db._conn.execute("BEGIN IMMEDIATE")
+                row = self._select(effect_id)
+                if row is not None:
+                    if row["step_id"] != step_id or row["task_id"] != task_id:
+>                       raise BindingConflict(
+                            f"副作用 {effect_id} 已归属于任务 {row['task_id']} "
+                            f"步骤 {row['step_id']}，不能改写归属")
+E                           evoagent.planning.binding.BindingConflict: 副作用 e1 已归属于任务 t 步骤 s1，不能改写归属
+
+evoagent\planning\binding.py:88: BindingConflict
+__________ test_resolve_rolls_back_binding_when_intent_update_fails ___________
+
+bindings = <evoagent.planning.binding.ActionBindings object at 0x000001B03A8BCF70>
+
+    def test_resolve_rolls_back_binding_when_intent_update_fails(bindings):
+        intent=bindings.record_intent("t","s","write")
+        conn=bindings.db._conn
+        conn.execute("CREATE TRIGGER review_fail_intent BEFORE UPDATE ON action_binding_intents BEGIN SELECT RAISE(ABORT,'injected'); END")
+        conn.commit()
+        with pytest.raises(sqlite3.IntegrityError):
+            bindings.resolve_intent(intent,"e")
+>       assert bindings.get("e") is None
+E       AssertionError: assert {'bound_at': 1792918949.675496, 'effect_id': 'e', 'step_id': 's', 'task_id': 't', ...} is None
+E        +  where {'bound_at': 1792918949.675496, 'effect_id': 'e', 'step_id': 's', 'task_id': 't', ...} = get('e')
+E        +    where get = <evoagent.planning.binding.ActionBindings object at 0x000001B03A8BCF70>.get
+
+tests\test_developed_review_2.py:78: AssertionError
+_________ test_intent_identity_does_not_collide_across_tools_or_runs __________
+
+bindings = <evoagent.planning.binding.ActionBindings object at 0x000001B03A3D0B20>
+
+    def test_intent_identity_does_not_collide_across_tools_or_runs(bindings):
+        ids={bindings.record_intent("t","s",tool,run_id=run,now=1)
+             for tool,run in [("write","run1"),("send","run1"),("write","run2")]}
+>       assert len(ids)==3
+E       AssertionError: assert 1 == 3
+E        +  where 1 = len({'t:s:1.0'})
+
+tests\test_developed_review_2.py:84: AssertionError
+___________ test_record_intent_does_not_commit_callers_transaction ____________
+
+bindings = <evoagent.planning.binding.ActionBindings object at 0x000001B03A8BF3A0>
+
+    def test_record_intent_does_not_commit_callers_transaction(bindings):
+        conn=bindings.db._conn
+        conn.execute("CREATE TABLE review_pending(x TEXT)");conn.commit()
+        conn.execute("INSERT INTO review_pending VALUES ('not committed')")
+        try:
+>           with pytest.raises(ValueError):
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_developed_review_2.py:91: Failed
+____________________ test_zero_tool_budget_is_not_ignored _____________________
+
+    def test_zero_tool_budget_is_not_ignored():
+        router=ModeRouter(lambda _:workflow())
+        selection=router.decide(goal="calc",intent="general",workflow_ids=["review"],
+            budget=budget({"max_model_calls":10,"max_tool_calls":0}))
+>       assert selection.mode==DYNAMIC
+E       AssertionError: assert 'stable_workflow' == 'dynamic_planning'
+E         
+E         - dynamic_planning
+E         + stable_workflow
+
+tests\test_developed_review_2.py:113: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_developed_review_2.py::test_artifact_identifiers_cannot_escape_store[../outside-report]
+FAILED tests/test_developed_review_2.py::test_artifact_identifiers_cannot_escape_store[task-../../outside]
+FAILED tests/test_developed_review_2.py::test_artifact_identifiers_cannot_escape_store[task-C:\\outside]
+FAILED tests/test_developed_review_2.py::test_artifact_identifiers_cannot_escape_store[task-/absolute]
+FAILED tests/test_developed_review_2.py::test_artifact_identifiers_cannot_escape_store[task-..]
+FAILED tests/test_developed_review_2.py::test_artifact_identifiers_cannot_escape_store[task-node/child]
+FAILED tests/test_developed_review_2.py::test_artifact_read_rejects_forged_outside_metadata
+FAILED tests/test_developed_review_2.py::test_artifact_versions_remain_readable
+FAILED tests/test_developed_review_2.py::test_missing_artifact_cannot_be_kept_by_digest_alone
+FAILED tests/test_developed_review_2.py::test_binary_preview_is_base64_not_hex
+FAILED tests/test_developed_review_2.py::test_one_effect_contested_by_two_intents_is_not_guessed
+FAILED tests/test_developed_review_2.py::test_resolve_rolls_back_binding_when_intent_update_fails
+FAILED tests/test_developed_review_2.py::test_intent_identity_does_not_collide_across_tools_or_runs
+FAILED tests/test_developed_review_2.py::test_record_intent_does_not_commit_callers_transaction
+FAILED tests/test_developed_review_2.py::test_zero_tool_budget_is_not_ignored
+15 failed, 1 passed in 0.58s

@@ -1,0 +1,44 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+.......................................................................F [ 94%]
+..F.                                                                     [100%]
+================================== FAILURES ===================================
+_____________ test_lease_loss_is_not_a_best_effort_binding_error ______________
+
+db = <evoagent.core.persistence.Database object at 0x000001A7850841C0>
+
+    def test_lease_loss_is_not_a_best_effort_binding_error(db):
+        tools = registry(db)
+        tools.register(ToolContract("send", side_effect_level="external"), lambda _: good())
+    
+        class FencedBindings(ActionBindings):
+            def bind(self, *args, **kwargs):
+                raise LeaseLost("binding lease lost")
+    
+>       with pytest.raises(LeaseLost):
+E       Failed: DID NOT RAISE <class 'evoagent.core.leases.LeaseLost'>
+
+tests\test_peer_action_binding_review.py:201: Failed
+________ test_binding_storage_failure_preserves_true_execution_outcome ________
+
+db = <evoagent.core.persistence.Database object at 0x000001A784AA2B30>
+
+    def test_binding_storage_failure_preserves_true_execution_outcome(db):
+        tools = registry(db)
+        tools.register(ToolContract("send", side_effect_level="external"), lambda _: good())
+        class UnavailableBindings(ActionBindings):
+            def bind(self, *args, **kwargs):
+                raise OSError("binding storage unavailable")
+        outcome, _, _ = run(db, plan(step("s", "send")), [Action("tool_call", tool="send")], tools=tools,
+                            bindings=UnavailableBindings(db), task_id="task", run_id="run")
+        result = outcome.steps[0].tool_result
+        assert result.ok and result.executed and outcome.finished
+>       assert "OSError" in result.evidence["step_binding_error"]
+E       KeyError: 'step_binding_error'
+
+tests\test_peer_action_binding_review.py:244: KeyError
+=========================== short test summary info ===========================
+FAILED tests/test_peer_action_binding_review.py::test_lease_loss_is_not_a_best_effort_binding_error
+FAILED tests/test_peer_action_binding_review.py::test_binding_storage_failure_preserves_true_execution_outcome
+2 failed, 74 passed in 8.74s

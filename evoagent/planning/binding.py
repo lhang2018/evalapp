@@ -24,6 +24,9 @@
 """
 from __future__ import annotations
 
+import hashlib
+import json
+import math
 import time
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -56,49 +59,49 @@ class ActionBindings:
         if db is None:
             raise BindingError("绑定账本需要数据库连接")
         self.db = db
+        self._atomic_write = False
 
     # ---------------- 写入 ----------------
 
-    def bind(self, effect_id: str, step_id: str, *,
-             task_id: str = "", tool_id: Optional[str] = None,
-             now: Optional[float] = None) -> Dict[str, Any]:
-        """把一次副作用绑定到触发它的步骤（幂等；冲突拒绝）。
+    def _begin_write(self):
+        if self.db._conn.in_transaction:
+            raise BindingError("绑定账本不能提交调用方在途事务")
+        guard_write(self.db)
+        if not self.db._conn.in_transaction:
+            self.db._conn.execute("BEGIN IMMEDIATE")
 
-        返回当前生效的绑定行。重复绑定同一对是**无操作**，不会刷新
-        ``bound_at``——首次归属时间才是审计上有意义的时刻。
-        """
-        effect_id = _need(effect_id, "effect_id")
-        step_id = _need(step_id, "step_id")
-        task_id = _need(task_id, "task_id")
-        if tool_id is not None:
-            tool_id = _need(tool_id, "tool_id")
-        bound_at = float(now if now is not None else time.time())
+    def _write_binding(self, effect_id, step_id, task_id, tool_id, bound_at):
+        row = self._select(effect_id)
+        if row is not None:
+            if row["step_id"] != step_id or row["task_id"] != task_id:
+                raise BindingConflict("副作用归属与原绑定冲突")
+            if tool_id is not None and row["tool_id"] != tool_id:
+                raise BindingConflict("副作用工具归属冲突")
+        else:
+            self.db._conn.execute(
+                "INSERT INTO action_step_bindings"
+                " (effect_id,task_id,step_id,tool_id,bound_at) VALUES (?,?,?,?,?)",
+                (effect_id, task_id, step_id, tool_id, bound_at))
+            row = self._select(effect_id)
+        return dict(row)
 
+    def bind(self, effect_id: str, step_id: str, *, task_id: str = "",
+             tool_id: Optional[str] = None, now: Optional[float] = None) -> Dict[str, Any]:
+        effect_id, step_id, task_id = (_need(effect_id, "effect_id"),
+            _need(step_id, "step_id"), _need(task_id, "task_id"))
+        tool_id = _need(tool_id, "tool_id") if tool_id is not None else None
         with self.db._lock:
-            try:
-                guard_write(self.db)
-                # guard_write opens the fenced transaction only under a lease.
-                # Standalone callers still need a cross-connection write lock
-                # before reading, so a concurrent insert cannot win the gap.
+            if self._atomic_write:
                 if not self.db._conn.in_transaction:
-                    self.db._conn.execute("BEGIN IMMEDIATE")
-                row = self._select(effect_id)
-                if row is not None:
-                    if row["step_id"] != step_id or row["task_id"] != task_id:
-                        raise BindingConflict(
-                            f"副作用 {effect_id} 已归属于任务 {row['task_id']} "
-                            f"步骤 {row['step_id']}，不能改写归属")
-                    if tool_id is not None and row["tool_id"] != tool_id:
-                        raise BindingConflict(f"副作用 {effect_id} 的工具归属冲突")
-                else:
-                    self.db._conn.execute(
-                        "INSERT INTO action_step_bindings"
-                        " (effect_id, task_id, step_id, tool_id, bound_at)"
-                        " VALUES (?,?,?,?,?)",
-                        (effect_id, task_id, step_id, tool_id, bound_at))
-                    row = self._select(effect_id)
+                    raise BindingError("原子绑定事务已丢失")
+                return self._write_binding(effect_id, step_id, task_id, tool_id,
+                    float(now if now is not None else time.time()))
+            self._begin_write()
+            try:
+                bound = self._write_binding(effect_id, step_id, task_id, tool_id,
+                    float(now if now is not None else time.time()))
                 self.db._conn.commit()
-                return dict(row)
+                return bound
             except BaseException:
                 self.db._conn.rollback()
                 raise
@@ -142,27 +145,23 @@ class ActionBindings:
     # ---------------- 预绑定意图（ALN-07-C：消崩溃半绑定窗口） ----------------
 
     def record_intent(self, task_id: str, step_id: str, tool_id: str, *,
-                      run_id: Optional[str] = None,
-                      now: Optional[float] = None) -> str:
-        """执行前登记绑定意图（effect_id 未决）。
-
-        必须发生在副作用工具调用之前：任何时刻崩溃后，意图流都能证明
-        「该步骤当时正要产生该工具的副作用」，使补绑成为确定性匹配而
-        不是猜测。intent_id 幂等：同键重复登记返回同一意图。
-        """
-        task_id = _need(task_id, "task_id")
-        step_id = _need(step_id, "step_id")
-        tool_id = _need(tool_id, "tool_id")
+                      run_id: Optional[str] = None, now: Optional[float] = None) -> str:
+        task_id, step_id, tool_id = (_need(task_id, "task_id"),
+            _need(step_id, "step_id"), _need(tool_id, "tool_id"))
+        run_id = _need(run_id, "run_id") if run_id is not None else None
         created_at = float(now if now is not None else time.time())
-        intent_id = f"{task_id}:{step_id}:{created_at}"
+        if not math.isfinite(created_at):
+            raise BindingError("意图时间必须有限")
+        identity = json.dumps([task_id, step_id, tool_id, run_id, created_at],
+                              ensure_ascii=False, separators=(",", ":"))
+        intent_id = "intent_" + hashlib.sha256(identity.encode("utf-8")).hexdigest()
         with self.db._lock:
+            self._begin_write()
             try:
-                if not self.db._conn.in_transaction:
-                    self.db._conn.execute("BEGIN IMMEDIATE")
                 self.db._conn.execute(
-                    "INSERT OR IGNORE INTO action_binding_intents"
-                    " (intent_id, task_id, step_id, tool_id, run_id,"
-                    "  created_at, effect_id) VALUES (?,?,?,?,?,?,NULL)",
+                    "INSERT INTO action_binding_intents"
+                    " (intent_id,task_id,step_id,tool_id,run_id,created_at,effect_id)"
+                    " VALUES (?,?,?,?,?,?,NULL) ON CONFLICT(intent_id) DO NOTHING",
                     (intent_id, task_id, step_id, tool_id, run_id, created_at))
                 self.db._conn.commit()
             except BaseException:
@@ -170,33 +169,37 @@ class ActionBindings:
                 raise
         return intent_id
 
-    def resolve_intent(self, intent_id: str, effect_id: str, *,
-                       now: Optional[float] = None) -> Dict[str, Any]:
-        """执行成功后回填 effect_id 并固化权威绑定（相邻原子写）。
-
-        绑定仍走 bind() 的幂等/冲突语义；回填失败不撤销已发生的副作用。
-        """
-        intent_id = _need(intent_id, "intent_id")
-        row = self.intent(intent_id)
+    def _resolve_in_transaction(self, intent_id, effect_id, now):
+        row = self.db._conn.execute(
+            "SELECT * FROM action_binding_intents WHERE intent_id=?", (intent_id,)).fetchone()
         if row is None:
-            raise BindingError(f"绑定意图不存在: {intent_id}")
+            raise BindingError("绑定意图不存在")
         if row["effect_id"] not in (None, effect_id):
-            raise BindingConflict(
-                f"意图 {intent_id} 已回填 {row['effect_id']}，不能改写")
+            raise BindingConflict("意图已回填，不能改写副作用")
+        # Keep the public persistence hook (including subclass fencing/fault
+        # injection), while the base implementation joins this owned transaction.
         bound = self.bind(effect_id, row["step_id"], task_id=row["task_id"],
                           tool_id=row["tool_id"], now=now)
+        self.db._conn.execute(
+            "UPDATE action_binding_intents SET effect_id=? WHERE intent_id=?",
+            (effect_id, intent_id))
+        return bound
+
+    def resolve_intent(self, intent_id: str, effect_id: str, *,
+                       now: Optional[float] = None) -> Dict[str, Any]:
+        intent_id, effect_id = _need(intent_id, "intent_id"), _need(effect_id, "effect_id")
         with self.db._lock:
+            self._begin_write()
+            self._atomic_write = True
             try:
-                if not self.db._conn.in_transaction:
-                    self.db._conn.execute("BEGIN IMMEDIATE")
-                self.db._conn.execute(
-                    "UPDATE action_binding_intents SET effect_id=?"
-                    " WHERE intent_id=?", (effect_id, intent_id))
+                bound = self._resolve_in_transaction(intent_id, effect_id, now)
                 self.db._conn.commit()
+                return bound
             except BaseException:
                 self.db._conn.rollback()
                 raise
-        return bound
+            finally:
+                self._atomic_write = False
 
     def intent(self, intent_id: str) -> Optional[Dict[str, Any]]:
         with self.db._lock:
@@ -218,40 +221,54 @@ class ActionBindings:
 
     def heal_pending(self, task_id: str,
                      ledger_rows: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
-        """崩溃重启后对未决意图做确定性补绑（先对账后决定的一部分）。
-
-        匹配规则（不猜）：账本行 tool_id/task_id 与意图一致、effect 尚无
-        任何绑定，且该意图步骤没有其它已绑定 effect 时代入候选；
-        唯一候选 → 补绑；零候选 → 副作用未发生，意图标记 stale；
-        多候选 → ambiguous，不自动绑，留给对账报告人工裁决。
-        """
+        """Only heal a one-to-one mapping; missing records are not execution proof."""
         task_id = _need(task_id, "task_id")
-        existing = self.for_task(task_id)
-        by_step: Dict[str, List[str]] = {}
-        for effect_id, step_id in existing.items():
-            by_step.setdefault(step_id, []).append(effect_id)
-        unbound = [r for r in ledger_rows
-                   if r.get("task_id") == task_id
-                   and r.get("effect_id") not in existing
-                   and r.get("effect_id")]
-        healed: Dict[str, str] = {}
-        stale: List[str] = []
-        ambiguous: List[Dict[str, Any]] = []
-        for intent in self.pending_intents(task_id):
-            candidates = [r for r in unbound
-                          if r.get("tool_id") == intent["tool_id"]]
-            if not candidates:
-                stale.append(intent["intent_id"])
-                continue
-            if len(candidates) > 1 or by_step.get(intent["step_id"]):
-                ambiguous.append({"intent_id": intent["intent_id"],
-                                  "candidates": [c.get("effect_id")
-                                                 for c in candidates]})
-                continue
-            row = candidates[0]
-            self.resolve_intent(intent["intent_id"], row["effect_id"])
-            healed[row["effect_id"]] = intent["step_id"]
-        return {"healed": healed, "stale": stale, "ambiguous": ambiguous}
+        rows = list(ledger_rows)
+        with self.db._lock:
+            self._begin_write()
+            self._atomic_write = True
+            try:
+                existing = self.for_task(task_id)
+                by_step = set(existing.values())
+                unbound = [r for r in rows if r.get("task_id") == task_id
+                           and r.get("effect_id") and r["effect_id"] not in existing]
+                intents = self.pending_intents(task_id)
+                def compatible(intent, row):
+                    if row.get("tool_id") != intent["tool_id"]:
+                        return False
+                    if intent["run_id"] is not None and row.get("run_id") != intent["run_id"]:
+                        return False
+                    created = row.get("created_at")
+                    if created is not None and (type(created) not in (int, float)
+                            or not math.isfinite(created) or created < intent["created_at"]):
+                        return False
+                    return True
+                matches = {i["intent_id"]: [r for r in unbound if compatible(i, r)]
+                           for i in intents}
+                healed, stale, ambiguous = {}, [], []
+                for intent in intents:
+                    candidates = matches[intent["intent_id"]]
+                    if not candidates:
+                        stale.append(intent["intent_id"])
+                        continue
+                    effect_id = candidates[0]["effect_id"]
+                    competing = sum(any(r["effect_id"] == effect_id for r in found)
+                                    for found in matches.values())
+                    if (len(candidates) != 1 or competing != 1
+                            or intent["step_id"] in by_step):
+                        ambiguous.append({"intent_id": intent["intent_id"],
+                            "candidates": [r["effect_id"] for r in candidates]})
+                        continue
+                    self._resolve_in_transaction(intent["intent_id"], effect_id, None)
+                    healed[effect_id] = intent["step_id"]
+                    by_step.add(intent["step_id"])
+                self.db._conn.commit()
+                return {"healed": healed, "stale": stale, "ambiguous": ambiguous}
+            except BaseException:
+                self.db._conn.rollback()
+                raise
+            finally:
+                self._atomic_write = False
 
     # ---------------- 内部 ----------------
 

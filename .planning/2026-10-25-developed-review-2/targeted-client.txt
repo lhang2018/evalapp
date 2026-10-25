@@ -1,0 +1,36 @@
+(node:52256) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/budget.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ formatCost / formatCalls 基本格式 (0.6643ms)
+✔ unknown 不能当 0 金额：单独标注 (0.1296ms)
+✔ 预算状态三档：ok / warning(≥80%) / exhausted(=100%) (0.1242ms)
+✔ 预算耗尽不隐藏产物（GLOBAL-03 断言） (0.6981ms)
+✔ maxModelCalls 未定义时不出 warning/exhausted (0.1044ms)
+✔ taskBudgetView：needs_you 状态透传 (0.1771ms)
+(node:52948) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/controls.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 执行中任务：可取消和暂停 (0.6624ms)
+✔ 暂停中任务：可继续（无暂停选项） (0.1473ms)
+✔ 终态任务：无控制动作 (0.6655ms)
+✔ NEEDS_RECONCILE：确认重提选项 (0.0977ms)
+✔ 目标变更：新目标创建新任务，旧任务保留 (0.1936ms)
+✔ 安全恢复：未决副作用阻断，已决放行 (0.1194ms)
+(node:3188) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/developedReview2.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 服务端终态覆盖NEEDS_RECONCILE旧缓存，不允许再次确认重提 (0.969ms)
+✔ planned与未知副作用状态均不能宣称安全恢复 (0.185ms)
+✔ 预算上限未知不能显示充足；零预算是硬上限 (0.1416ms)
+✔ 未核对产物时不能宣称产物已保留，异常费用不得显示成金额 (0.1173ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 108.2446

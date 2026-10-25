@@ -32,14 +32,14 @@ export interface ControlOption {
 export function availableControls(task: LocalTask): ControlOption[] {
   const view = taskViewOf(task);
   const options: ControlOption[] = [];
-  // 取消：非终态都可取消
-  if (view.state !== "done" && view.state !== "cancelled"
-      && view.state !== "failed") {
-    options.push({
-      action: "cancel", label: "取消任务",
-      needsConfirm: true, confirmHint: "取消后不可恢复，确认取消？",
-    });
+  if (view.state === "done" || view.state === "cancelled" || view.state === "failed") {
+    return options;
   }
+  // 取消：非终态都可取消
+  options.push({
+    action: "cancel", label: "取消任务",
+    needsConfirm: true, confirmHint: "取消后不可恢复，确认取消？",
+  });
   // 暂停：执行中可暂停
   if (view.state === "working") {
     options.push({
@@ -111,9 +111,8 @@ export interface RecoveryCheck {
 export function checkRecoverySafety(
   sideEffects: Array<{ effect_id: string; status: string }>,
 ): RecoveryCheck {
-  const pending = sideEffects.filter(
-    (e) => e.status === "unknown" || e.status === "pending"
-          || e.status === "submitted");
+  const terminal = new Set(["confirmed", "failed", "compensated"]);
+  const pending = sideEffects.filter((e) => !terminal.has(e.status));
   if (pending.length > 0) {
     return {
       safe: false,

@@ -17,6 +17,7 @@
 """
 
 import time
+import math
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from ..planning.contracts import MatchContext, ModeSelection, WorkflowCandidate
@@ -71,7 +72,8 @@ class ModeRouter:
         """返回 (预算是否可知, 剩余可用额度)。
 
         预算对象缺失/快照异常 → 不可知（匹配阶段不得假设充足）；
-        未声明任何上限 → 可知且视为不受限（返回 0 但 known=True）。
+        候选成本以工具节点数计，使用工具调用额度；模型调用额度不能与其取min。
+        缺失上限不可知，零上限表示不允许工具调用。
         """
         if budget is None:
             return False, 0
@@ -82,17 +84,16 @@ class ModeRouter:
             return False, 0
         if exceeded:
             return True, 0
-        limits = (snapshot or {}).get("limits") or {}
-        usage = (snapshot or {}).get("usage") or {}
-        remaining: List[float] = []
-        for key in ("max_model_calls", "max_tool_calls"):
-            limit = limits.get(key)
-            if isinstance(limit, (int, float)) and not isinstance(limit, bool) and limit > 0:
-                used = usage.get(key) or 0
-                remaining.append(float(limit) - float(used))
-        if not remaining:
-            return True, 0  # 无上限声明：已知且不受限
-        return True, int(max(0, min(remaining)))
+        if not isinstance(snapshot, dict):
+            return False, 0
+        limits, usage = snapshot.get("limits"), snapshot.get("usage")
+        if not isinstance(limits, dict) or not isinstance(usage, dict):
+            return False, 0
+        limit, used = limits.get("max_tool_calls"), usage.get("tool_calls", 0)
+        if any(type(v) not in (int, float) or not math.isfinite(v) or v < 0
+               for v in (limit, used)):
+            return False, 0
+        return True, int(max(0, limit - used))
 
     def context(self, *, goal: str, intent: str,
                 candidates: Sequence[WorkflowCandidate],

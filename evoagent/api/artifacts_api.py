@@ -6,7 +6,7 @@
   （前 4KB 文本或 base64 二进制），供客户端展示。
 """
 
-from pathlib import Path
+import base64
 
 from .routes import get
 
@@ -22,7 +22,7 @@ def list_task_artifacts(ctx):
         return ctx.json(404, {"error": "任务不存在"})
     from ..delivery.artifacts import ArtifactStore
     store = ArtifactStore(str(app.config.data_dir))
-    visible = store.list_for_task(task.result_evidence)
+    visible = store.list_for_task(task.result_evidence, task_id=task_id)
     return ctx.json(200, {"artifacts": [
         {"artifact_id": a["artifact_id"], "node_id": a["node_id"],
          "kind": a["kind"], "sha256": a["sha256"], "bytes": a["bytes"],
@@ -46,18 +46,18 @@ def preview_artifact(ctx):
                  and e.get("artifact_id") == artifact_id), None)
     if meta is None:
         return ctx.json(404, {"error": "产物不存在"})
-    content = store.read(meta)
+    content = store.read(meta, limit=PREVIEW_LIMIT, task_id=task_id)
     if content is None:
         return ctx.json(410, {"error": "产物文件缺失或校验不符"})
-    truncated = len(content) > PREVIEW_LIMIT
-    preview = content[:PREVIEW_LIMIT]
+    truncated = meta["bytes"] > PREVIEW_LIMIT
+    preview = content
     kind = meta.get("kind", "binary")
     is_text = kind in ("markdown", "text", "json", "report")
     return ctx.json(200, {
         "artifact_id": artifact_id,
         "kind": kind,
-        "bytes": len(content),
+        "bytes": meta["bytes"],
         "truncated": truncated,
         "text": preview.decode("utf-8", errors="replace") if is_text else None,
-        "base64": None if is_text else preview.hex(),
+        "base64": None if is_text else base64.b64encode(preview).decode("ascii"),
     })

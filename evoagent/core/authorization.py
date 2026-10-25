@@ -101,8 +101,41 @@ class AuthorizationStore:
             # （含未声明身份的请求）一律拒绝，fail-closed 不静默放行
             raise PermissionError(
                 f"任务授权属身份 {bound}，拒绝以 {principal or '匿名'} 复用")
+        self._check_retry_ancestors(row, contract, args, principal)
         check_policy(row["policy"], contract, args)
         return ref
+
+    def _check_retry_ancestors(self, row, contract, args, principal):
+        """Automatic retries inherit a live ceiling, not a fresh wider grant.
+
+        An explicit independently issued grant replaces this delegation. Old
+        tasks/grants remain immutable, and revoking/replacing a source revision
+        invalidates descendants at the final action boundary.
+        """
+        seen = {row["authorization_ref"]}
+        for _ in range(32):
+            if row["actor"] != "system:retry-preserve-scope":
+                return
+            task = self.db.get_task(row["task_id"])
+            ref = (task.runtime_manifest if task else {}).get("authorization_parent_ref")
+            if not ref or ref in seen:
+                raise PermissionError("重跑授权来源缺失或形成循环")
+            seen.add(ref)
+            with self.db._lock:
+                parent = self.db._conn.execute(
+                    "SELECT * FROM action_authorizations WHERE authorization_ref=?", (ref,)).fetchone()
+            if parent is None:
+                raise PermissionError("重跑授权来源不存在")
+            current = self.current(parent["task_id"])
+            if (current is None or current["authorization_ref"] != ref
+                    or parent["revoked_at"] is not None or parent["expires_at"] <= time.time()):
+                raise PermissionError("重跑授权来源已变更、撤销或过期")
+            bound = current["policy"].get("principal")
+            if bound is not None and bound != principal:
+                raise PermissionError("重跑授权来源身份不一致")
+            check_policy(current["policy"], contract, args)
+            row = current
+        raise PermissionError("重跑授权来源链过长")
 
 
 

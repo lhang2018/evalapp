@@ -11,7 +11,9 @@ import {
 import type { LocalTask } from "../../src/offline/types.ts";
 
 test("formatCost / formatCalls 基本格式", () => {
-  assert.equal(formatCost(0.123), "¥0.123");
+  assert.equal(formatCost(0.123, "CNY"), "¥0.123");
+  assert.match(formatCost(0.123), /币种未知/);
+  assert.equal(formatCost(0.123, "USD"), "$0.123");
   assert.equal(formatCost(undefined), "—");
   assert.equal(formatCalls(5), "5 次调用");
   assert.equal(formatCalls(undefined), "0 次调用");
@@ -39,18 +41,19 @@ test("预算状态三档：ok / warning(≥80%) / exhausted(=100%)", () => {
   const exhausted = budgetStatusView({ model_calls: 10 }, 10);
   assert.equal(exhausted.level, "exhausted");
   assert.equal(exhausted.blocked, true);
-  assert.equal(exhausted.artifactsPreserved, true);
+  assert.equal(exhausted.artifactsPreserved, null);
   assert.match(exhausted.label, /耗尽/);
 });
 
-test("预算耗尽不隐藏产物（GLOBAL-03 断言）", () => {
+test("预算耗尽不推断产物已保留；独立核验结果单独传入", () => {
   const v = budgetStatusView({ model_calls: 10 }, 10);
-  assert.equal(v.artifactsPreserved, true);
+  assert.equal(v.artifactsPreserved, null, "预算信息不能证明文件仍存在");
+  assert.equal(budgetStatusView({ model_calls: 10 }, 10, true).artifactsPreserved, true);
 });
 
-test("maxModelCalls 未定义时不出 warning/exhausted", () => {
+test("maxModelCalls 未定义时如实显示未知", () => {
   const v = budgetStatusView({ model_calls: 100 }, undefined);
-  assert.equal(v.level, "ok");
+  assert.equal(v.level, "unknown");
 });
 
 test("taskBudgetView：needs_you 状态透传", () => {

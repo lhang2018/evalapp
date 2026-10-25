@@ -36,9 +36,13 @@ export interface SystemBudget {
 
 // ---- 用户可读格式 ----
 
-export function formatCost(cost: number | undefined): string {
-  if (cost === undefined || cost === null) return "—";
-  return `¥${cost.toFixed(3)}`;
+export function formatCost(cost: number | undefined, currency?: string): string {
+  if (typeof cost !== "number" || !Number.isFinite(cost) || cost < 0) return "—";
+  const amount = cost.toFixed(3);
+  if (currency === "CNY") return "¥" + amount;
+  if (currency === "USD") return "$" + amount;
+  if (currency && /^[A-Z]{3}$/.test(currency)) return currency + " " + amount;
+  return amount + "（币种未知）";
 }
 
 export function formatCalls(calls: number | undefined): string {
@@ -67,37 +71,47 @@ export function unknownCostView(usage: BudgetUsageSnapshot | undefined): Unknown
 
 export interface BudgetStatusView {
   /** ok | warning | exhausted */
-  level: "ok" | "warning" | "exhausted";
+  level: "ok" | "warning" | "exhausted" | "unknown";
   /** 用户可见文案 */
   label: string;
   /** true = 不再有新调用 */
   blocked: boolean;
   /** true = 接近上限需要提示 */
   warning: boolean;
-  /** 已保留产物仍然可访问（GLOBAL-03 断言） */
-  artifactsPreserved: boolean;
+  /** 独立核验的产物状态；null表示未核验，预算本身不能证明文件可访问。 */
+  artifactsPreserved: boolean | null;
 }
 
 export function budgetStatusView(
   usage: BudgetUsageSnapshot | undefined,
   maxModelCalls: number | undefined,
+  artifactsVerified: boolean | null = null,
 ): BudgetStatusView {
   const calls = usage?.model_calls ?? 0;
-  const max = maxModelCalls ?? 0;
-  if (max > 0 && calls >= max) {
+  const max = maxModelCalls;
+  if (typeof max !== "number" || !Number.isFinite(max) || max < 0
+      || !Number.isFinite(calls) || calls < 0 || usage === undefined) {
     return {
-      level: "exhausted", label: "预算耗尽：不再新增调用，已完成产物保留",
-      blocked: true, warning: false, artifactsPreserved: true,
+      level: "unknown", label: "预算信息未知，需要核验执行端额度",
+      blocked: true, warning: true, artifactsPreserved: artifactsVerified,
+    };
+  }
+  if (calls >= max) {
+    return {
+      level: "exhausted", label: artifactsVerified === true
+        ? "预算耗尽：不再新增调用，已核验产物可用"
+        : "预算耗尽：不再新增调用；产物可用性需独立核验",
+      blocked: true, warning: false, artifactsPreserved: artifactsVerified,
     };
   }
   if (max > 0 && calls >= max * 0.8) {
     return {
       level: "warning", label: "预算接近上限",
-      blocked: false, warning: true, artifactsPreserved: true,
+      blocked: false, warning: true, artifactsPreserved: artifactsVerified,
     };
   }
   return { level: "ok", label: "预算充足", blocked: false, warning: false,
-           artifactsPreserved: true };
+           artifactsPreserved: artifactsVerified };
 }
 
 // ---- 任务预算状态投影 ----

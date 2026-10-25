@@ -1135,14 +1135,15 @@ class RuntimeController:
             self._emit(task, "reconciliation_gate", {"decision": "error",
                        "reason": task.failure_reason}, severity="warn")
             return task
-        detail = {"decision": "resume" if report.ok else "await_user",
+        safe_to_resume = report.ok and not healed["ambiguous"]
+        detail = {"decision": "resume" if safe_to_resume else "await_user",
                   "healed": healed["healed"], "stale_intents": healed["stale"],
                   "ambiguous_intents": healed["ambiguous"],
                   "undeclared": [u.record.effect_id for u in report.undeclared],
                   "uncertain": [r.effect_id for r in report.uncertain],
                   "ambiguous_effects": [r.effect_id for r in report.ambiguous],
                   "unexecuted": [d.step_id for d in report.unexecuted]}
-        if report.ok:
+        if safe_to_resume:
             self._emit(task, "reconciliation_gate", detail)
             return None
         # 副作用不明：不自动重放、不盲目续跑——转等待用户裁决（R-12）
@@ -1170,6 +1171,12 @@ class RuntimeController:
                      user_answers=copy.deepcopy(task.user_answers),
                      budget_policy=dict(task.budget_policy),
                      intent=task.intent, domain=task.domain)
+        for field in ("target_object", "expected_output", "complexity",
+                      "requires_network", "open_questions", "required_tools",
+                      "required_permissions", "workflow_suitable"):
+            setattr(retry, field, copy.deepcopy(getattr(task, field)))
+        if (task.runtime_manifest or {}).get("principal_id"):
+            retry.runtime_manifest["principal_id"] = task.runtime_manifest["principal_id"]
         retry.parent_task_id = task.task_id
         retry.parent_run_id = task.current_run_id
         self.memory_bindings.inherit(task, retry)
@@ -1177,6 +1184,18 @@ class RuntimeController:
         if task.goal_id:
             from ..goals import GoalStore
             GoalStore(self.db).bind_retry(task.task_id, retry)
+        if self.tools.authorizations is not None:
+            grant = self.tools.authorizations.current(task.task_id)
+            if grant is None and task.authorization_ref:
+                raise PermissionError("原任务授权已丢失，不能扩大范围重跑")
+            if grant is not None:
+                remaining = grant["expires_at"] - time.time()
+                if grant["revoked_at"] is not None or remaining <= 0:
+                    raise PermissionError("原任务授权已撤销或过期，重跑需重新授权")
+                retry.runtime_manifest["authorization_parent_ref"] = grant["authorization_ref"]
+                retry.authorization_ref = self.tools.authorizations.issue(
+                    retry.task_id, copy.deepcopy(grant["policy"]),
+                    actor="system:retry-preserve-scope", ttl_seconds=remaining)
         self._emit(retry, "task_created",
                    {"goal": retry.user_goal, "resumed_from": task.task_id})
         return retry
