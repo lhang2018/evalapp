@@ -4843,9 +4843,20 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "41fc372cf7e7d38bc27679f5e91ccc0844c7d091",
-      "status": "claimed",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-25",
+          "scope": "GoalScheduler：持久周期推进(下一轮到期/时间槽幂等命令)、主任务负载让出、停止/授权每轮重查、goal_schedules 租约fencing与失败退避；10项专项与goal域112项回归通过",
+          "source_commit": "78a70f15ce5b18dd7c6e0accd4151023ae60833c",
+          "functional_commit": "78a70f15ce5b18dd7c6e0accd4151023ae60833c",
+          "source_tree": "4ff9a45bff19ca5776824daaff9f062640057803",
+          "result": "专项10 passed；goal域112 passed；全量1815 passed/3 failed/1 skipped，3项失败均为他人未提交改动(budget线、cli.py漂移、release/identity.py运行期新建)，本卡仅新增文件未改既有模块",
+          "log": ".planning/2026-10-25-aln13p/backend-tests.txt",
+          "delivery": "docs/协作开发/交付/ALN-13-P-生产长期目标推进与周期守护.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/13-P-生产长期目标推进与周期守护.md",
       "shared_files": [
         "evoagent/goals/store.py"
@@ -4861,9 +4872,11 @@
         "B-90",
         "B-91"
       ],
-      "next_step": "先读 GoalStore/GoalGovernor 现有 advance/report 与 13-A/14-A 交付记录，按卡补周期调度与负载守护；证据绑定精确commit、命令与日志，未经复核不记accepted",
-      "working_basis": "以41fc372cf7e7d38bc27679f5e91ccc0844c7d091（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
+      "next_step": "待独立复核：周期推进/负载让出/停止与授权每轮重查/租约接管fencing/失败退避/重启续跑证据见交付文档与 .planning/2026-10-25-aln13p/；审阅人未定，不自批为独立验收；调度器接入App/CLI/API与生产负载标定属集成角色后续动作，ALN-13整包不关闭",
+      "working_basis": "以41fc372cf7e7d38bc27679f5e91ccc0844c7d091（认领时feature/user-direction HEAD）作为接手锚点；最终提交78a70f15ce5b18dd7c6e0accd4151023ae60833c；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
       "prerequisites": "运行时调度与负载环境",
+      "delivered_commit": "78a70f15ce5b18dd7c6e0accd4151023ae60833c",
+      "delivery": "docs/协作开发/交付/ALN-13-P-生产长期目标推进与周期守护.md",
       "ownership_history": [
         {
           "date": "2026-10-25",
