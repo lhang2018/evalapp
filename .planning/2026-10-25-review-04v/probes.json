@@ -1,0 +1,11 @@
+{
+ "same_principal_ok": true,
+ "cross_principal_rejected": true,
+ "anonymous_rejected": true,
+ "legacy_still_works": true,
+ "waiting_restored": true,
+ "approval_restored": true,
+ "cross_principal_after_restart_rejected": true,
+ "bound_principal_after_restart_ok": true,
+ "submit_records_principal": true
+}

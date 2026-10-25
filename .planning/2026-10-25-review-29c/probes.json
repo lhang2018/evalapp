@@ -1,0 +1,83 @@
+{
+ "task_id": "10c10fe50cac",
+ "submit_ok": [
+  201,
+  {
+   "feedback_id": "fb_ceb3a6bd0a3449e8",
+   "aggregated": false,
+   "count": 1
+  }
+ ],
+ "detail": {
+  "feedback_id": "fb_ceb3a6bd0a3449e8",
+  "category": "bug",
+  "text": "结果页空白",
+  "task_id": "10c10fe50cac",
+  "run_id": null,
+  "manifest_id": "rm_probe_1",
+  "evidence_refs": [
+   "event:evt-1"
+  ],
+  "cause_status": "unverified",
+  "count": 1,
+  "first_seen_at": 1792927716.0071266,
+  "last_seen_at": 1792927716.0071266
+ },
+ "duplicate": [
+  201,
+  {
+   "feedback_id": "fb_ceb3a6bd0a3449e8",
+   "aggregated": true,
+   "count": 2
+  }
+ ],
+ "list_rows": 1,
+ "unknown_task": [
+  404,
+  {
+   "error_code": "not_found",
+   "message": "任务不存在，无法关联反馈",
+   "retryable": false,
+   "correlation_id": "7de727be26254059a0d708beea1e6d18",
+   "related_event_id": null,
+   "required_action": "fix_request",
+   "safe_to_repeat": "yes",
+   "error": "任务不存在，无法关联反馈"
+  }
+ ],
+ "secret_text": [
+  201,
+  {
+   "feedback_id": "fb_f8224a107b2c4823",
+   "aggregated": false,
+   "count": 1
+  }
+ ],
+ "list_after_secret": 1,
+ "operator_list": [
+  403,
+  {
+   "error_code": "forbidden",
+   "message": "该操作需要 admin 权限",
+   "retryable": false,
+   "correlation_id": "a5e1afa6634641c8b11174079ea9df34",
+   "related_event_id": null,
+   "required_action": "none",
+   "safe_to_repeat": "yes",
+   "error": "该操作需要 admin 权限"
+  }
+ ],
+ "bad_category": [
+  400,
+  {
+   "error_code": "invalid_request",
+   "message": "未知反馈类型: xx",
+   "retryable": false,
+   "correlation_id": "0c5ecd00356046bcb1d16ab4b001f137",
+   "related_event_id": null,
+   "required_action": "fix_request",
+   "safe_to_repeat": "yes",
+   "error": "未知反馈类型: xx"
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+{
+ "checks": {
+  "recognized_secret_rejected_400": true,
+  "recognized_secret_not_stored": true,
+  "unrecognized_secretlike_stored_as_is": true
+ }
+}
