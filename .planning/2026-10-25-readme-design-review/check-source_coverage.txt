@@ -1,0 +1,30 @@
+{
+  "scope": "committed source and task-card registration only; not acceptance",
+  "head": "8be14cf9e68e0268ad5ef93642ebd513a68f1df8",
+  "prepared_candidate": "532a3646aeb35d0510ba7dab6c9c74e403cfd675",
+  "changed_files": [
+    "android-app/android/app/src/main/java/com/evoagent/DevicePackage.kt",
+    "android-app/android/app/src/main/java/com/evoagent/NotificationModule.kt",
+    "android-app/src/device/nativeNotifications.ts",
+    "android-app/src/device/notifications.ts",
+    "android-app/src/offline/backgroundRunner.ts",
+    "android-app/test/device/notificationReview.test.ts",
+    "android-app/test/device/notifications.test.ts",
+    "android-app/test/offline/backgroundNotificationReview.test.ts"
+  ],
+  "recorded_files": [
+    "android-app/android/app/src/main/java/com/evoagent/DevicePackage.kt",
+    "android-app/android/app/src/main/java/com/evoagent/NotificationModule.kt",
+    "android-app/src/device/nativeNotifications.ts",
+    "android-app/src/device/notifications.ts",
+    "android-app/src/offline/backgroundRunner.ts",
+    "android-app/test/device/notificationReview.test.ts",
+    "android-app/test/device/notifications.test.ts",
+    "android-app/test/offline/backgroundNotificationReview.test.ts"
+  ],
+  "unregistered_files": [],
+  "unregistered_task_cards": [],
+  "missing_task_cards": [],
+  "errors": [],
+  "ok": true
+}

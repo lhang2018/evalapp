@@ -1,0 +1,8 @@
+{
+  "classes": {
+    "not_containing_corresponding_final": 2,
+    "exact": 21,
+    "contains_final_with_extra": 42,
+    "no_final_in_source": 2
+  }
+}

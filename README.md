@@ -7,7 +7,9 @@
 
 条目级代码映射见 [IMPLEMENTATION.md](./IMPLEMENTATION.md)；全量功能状态（后续开发在此追加）见 [FEATURES.md](./FEATURES.md)。Android 客户端见 [android-app/](./android-app/)。
 
-**协作开发从这里开始：[协作开发入口](docs/协作开发/README.md)**。包含当前进度、23 个工作包认领表、首轮 5 张任务卡、共享文件归属和交付模板。运行/审批改动尚未全部提交，先由集成人发布可共享基线，再从同一 commit 并行接线。
+**协作开发从这里开始：[协作开发入口](docs/协作开发/README.md)**。实际认领、验收与候选状态以 [workboard.json](docs/协作开发/workboard.json) 为准；基线当前仍为 candidate，尚未发布。
+
+**新增设计从这里开始：[README 新增设计梳理](docs/README新增设计梳理与实施映射_2026-10-25.md)** → [产品目标形态与实施路线](docs/产品目标形态与实施路线_2026-10-25.md) → [设计源语料与提取状态](chat/README.md)。新增内容明确八个产品模块、28 UX 和 17 条验收用例；ALN-23—29 目前是拆分提案。
 
 ## 快速开始（无需 LLM Key）
 
@@ -238,7 +240,7 @@ Android 后台周期同步（WorkManager 最短 15 分钟、联网 + 电量不�
 在任务窗口内直接执行无界面 JS，不依赖前台服务，支持冷启动；ROM 自启动限制需用户授权）、
 语音输入与反馈（系统 SpeechRecognizer/TTS，显式授权、结果只填入输入框不自动提交、可取消/停止、
 不可用时降级）。
-测试通过：Python 475 项、客户端 128 项。迭代占位：视觉/OCR 操作、真实生成服务适配、能力包制品装载。
+验证证据按版本区分：候选 532a364 记录 Python 1661 passed / 1 skipped、客户端 228 passed；后续通知修复 271378e 记录客户端 252 passed、类型检查与构建通过，最新通知 APK 的真机投递仍待验证。本次文档整理未重跑业务测试。生产能力、真实服务与制品消费范围以正式台账和对应验收证据为准。
 
 ## 目录
 
@@ -258,12 +260,12 @@ evoagent/                  Python 服务端核心
   core/replay.py           只读运行回放
   core/backup.py           三库备份/校验/恢复
   cli.py                   命令行
-tests/                     475 项服务端测试
+tests/                     服务端测试（验证数量与版本见台账）
 android-app/               React Native Android 客户端
   src/offline/             本地任务/事件队列、隐私过滤、同步引擎、后台同步策略、诊断包导出/导入、附件分块上传（纯 TS，可单测）
   src/device/              设备操作契约/风险闸门/界面观测/语音输入与朗读/原生桥接（纯 TS，可单测）
   src/update/              安装实例/版本对账/双槽位更新管理（纯 TS，可单测）
   android/                 Kotlin 原生壳：AccessibilityService + DeviceModule + VoiceModule + WorkManager 后台同步
-  test/                    128 项客户端测试（node --test）
+  test/                    客户端测试（node --test）
 chat/                      设计语料库（源会话抓取/提取/专项总目/原稿归档，见 chat/README.md）
 ```
