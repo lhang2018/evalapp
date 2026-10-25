@@ -4633,10 +4633,10 @@
    "title": "改进效果与用户收益说明",
    "stream": "integration",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "zcode-main",
    "branch": "feature/user-direction",
    "base_commit": "f25092ca8f849e1e853e9915f7fd3d43550f52e3",
-   "status": "review",
+   "status": "accepted",
    "blocker": null,
    "evidence": [
     {
@@ -4648,6 +4648,11 @@
      "result": "专项9 passed；演化/接口域102 passed；全量1983 passed/1 failed/1 skipped，唯一失败为他人ALN-07-C系 test_peer_action_binding_review.py 且工作区有他人未提交 planning/binding.py，本卡未改绑定/规划/ReAct。端侧展示未接(App.tsx未改)、仅中文、基准报告与候选的自动关联待评测线接线",
      "log": ".planning/2026-10-25-aln29d/backend-tests.txt",
      "delivery": "docs/协作开发/交付/ALN-29-D-改进效果与用户收益说明.md"
+    },
+    {
+     "date": "2026-10-25",
+     "scope": "独立复核（zcode-main）：独立构造候选/基准/监测探针——R2只有候选→零正向claims+cannot_claim双条、R3基准improved无监测→benchmark-only+不能声称线上、R4 regressed→degradation+不能声称改进、R5不可复现→benchmark claims=0 fail-closed、R6监测回滚→post_release_regression+禁止线上；五条硬规则全过；转accepted",
+     "review_report": "docs/协作开发/验收/2026-10-25-ALN-29-D独立复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/29-D-改进效果与用户收益说明.md",
