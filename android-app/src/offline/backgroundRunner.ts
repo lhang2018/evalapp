@@ -5,6 +5,7 @@
 
 import { api } from "../api.ts";
 import { createTaskNotifier } from "../device/nativeNotifications.ts";
+import { TaskNotifier } from "../device/notifications.ts";
 import { asyncStorageStore } from "../storage/asyncStorage.ts";
 import { ClientTransport } from "./apiTransport.ts";
 import { runBackgroundSync } from "./background.ts";
@@ -43,6 +44,13 @@ export async function runStoredBackgroundSync(): Promise<BackgroundSyncResult> {
     } catch {
       // 缺少可靠的前态时跳过通知，不补发或猜测任务跃迁。
     }
+    // 同步前只做"历史终态基线化"（不触碰原生通知模块）：避免首次安装/升级
+    // 把既有已完成任务当成新完成而补发；失败不阻断同步，下次 run 重试。
+    try {
+      await TaskNotifier.primeBaseline(asyncStorageStore, before ?? []);
+    } catch {
+      // 基线初始化失败：保持未就绪，本次不补发。
+    }
     const result = await runBackgroundSync({
       health: () => client.health(),
       flush: async () => {
@@ -52,7 +60,7 @@ export async function runStoredBackgroundSync(): Promise<BackgroundSyncResult> {
       },
       refresh: () => tasks.refresh(),
     });
-    // 只有完成刷新才比较终态；桥初始化和通知读盘也属于尽力而为。
+    // 只有完成刷新才比较终态；原生桥只在确实需要投递时查找（失败不影响同步）。
     // 12-V 复核修复：即使读不到 before 快照，也交给带持久化标记的通知器
     // 补发"同步已先行完成"的终态任务（标记去重，不会重复提醒）。
     let notified = 0;

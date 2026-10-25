@@ -33,6 +33,23 @@ export interface TaskNotification {
 }
 
 const NOTIFIED_PREFIX = "evoagent_task_notified:";
+const BASELINE_KEY = `${NOTIFIED_PREFIX}baseline:v1`;
+
+let notificationSerial: Promise<void> = Promise.resolve();
+
+async function serialized<T>(operation: () => Promise<T>): Promise<T> {
+  const previous = notificationSerial;
+  let release: () => void = () => {};
+  notificationSerial = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await previous;
+  try {
+    return await operation();
+  } finally {
+    release();
+  }
+}
 
 /** FNV-1a 31 位：同一任务的通知始终复用同一 ID，避免反复堆叠。 */
 export function notificationIdFor(localTaskId: string): number {
@@ -98,9 +115,48 @@ export class TaskNotifier {
     );
   }
 
-  /** 持久化标记未写过的终态任务（覆盖"同步已先行完成"的窗口）。 */
+  async initializeExisting(tasks: LocalTask[]): Promise<void> {
+    await TaskNotifier.primeBaseline(this.store, tasks);
+  }
+
+  /**
+   * 只做历史终态基线化，不触碰原生通知模块（可在后台同步前安全调用）。
+   * 失败不抛：保持未就绪，下次 run 重试；通知始终是尽力而为。
+   */
+  static async primeBaseline(
+    store: NotificationMarkerStore | null,
+    tasks: LocalTask[],
+  ): Promise<void> {
+    if (!store) return;
+    await serialized(async () => {
+      try {
+        if (await store.getItem(BASELINE_KEY) === "READY") return;
+      } catch {
+        // 读取失败时继续尝试写入基线；写入失败会保持未就绪，下次 run 重试
+      }
+      try {
+        for (const task of tasks) {
+          if (task.status === "DONE") {
+            await store.setItem(
+              NOTIFIED_PREFIX + task.local_task_id,
+              "DONE",
+            );
+          }
+        }
+        await store.setItem(BASELINE_KEY, "READY");
+      } catch {
+        // 通知是尽力而为：基线初始化失败不阻断后台同步。
+      }
+    });
+  }
+
   private async unmarkedTerminal(after: LocalTask[]): Promise<LocalTask[]> {
     if (!this.store) return [];
+    try {
+      if (await this.store.getItem(BASELINE_KEY) !== "READY") return [];
+    } catch {
+      return [];
+    }
     const rows: LocalTask[] = [];
     for (const task of after) {
       if (task.status !== "DONE") continue;
@@ -116,12 +172,37 @@ export class TaskNotifier {
     return rows;
   }
 
+  private async unmarkedTransitions(tasks: LocalTask[]): Promise<LocalTask[]> {
+    if (!this.store) return tasks;
+    const rows: LocalTask[] = [];
+    for (const task of tasks) {
+      try {
+        const marked = await this.store.getItem(
+          NOTIFIED_PREFIX + task.local_task_id,
+        );
+        if (marked !== "DONE") rows.push(task);
+      } catch {
+        rows.push(task);
+      }
+    }
+    return rows;
+  }
+
   async notifyTransitions(
     before: LocalTask[],
     after: LocalTask[],
   ): Promise<number> {
+    return serialized(() => this.notifyTransitionsLocked(before, after));
+  }
+
+  private async notifyTransitionsLocked(
+    before: LocalTask[],
+    after: LocalTask[],
+  ): Promise<number> {
     if (!this.module) return 0;
-    const candidates = this.completed(before, after);
+    const candidates = await this.unmarkedTransitions(
+      this.completed(before, after),
+    );
     const seen = new Set(candidates.map((task) => task.local_task_id));
     for (const task of await this.unmarkedTerminal(after)) {
       if (!seen.has(task.local_task_id)) {
