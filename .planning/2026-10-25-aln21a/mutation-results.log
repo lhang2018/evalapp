@@ -1,0 +1,8 @@
+基线（未变异）: 16 passed in 4.76s
+M1 [捕获] 平台门回退：Windows 终端不可对账 -> 6 failed, 10 passed in 5.11s
+M2 [捕获] Windows 制品清单校验失败 -> 2 failed, 14 passed in 4.96s
+M3 [捕获] 退役版本可被激活/安装 -> 1 failed, 15 passed in 4.59s
+M4 [捕获] 自报密钥与清单不一致也放行 -> 1 failed, 15 passed in 4.65s
+M5 [捕获] 部署校验失去 fail-closed -> 2 failed, 14 passed in 4.72s
+M6 [捕获] 不兼容备份不再拒绝 -> 1 failed, 15 passed in 4.91s
+总计: 6/6 捕获

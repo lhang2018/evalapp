@@ -22,7 +22,7 @@ from . import signing
 _DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
 _APP_VERSION_RE = re.compile(
     r"^[vV]?\d+(?:\.\d+){0,2}(?:[-+][0-9A-Za-z.-]+)?$")
-_SUPPORTED_PLATFORMS = ("android", "ios")
+_SUPPORTED_PLATFORMS = ("android", "ios", "windows")
 _CHANNELS = ("stable", "draft", "internal")
 # 这些字段由签名流程本身产生，不参与被签名的清单元数据。
 _SIGNING_FIELDS = frozenset({

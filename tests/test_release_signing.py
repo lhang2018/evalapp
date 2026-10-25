@@ -191,7 +191,9 @@ def test_key_rotation_keeps_old_manifest_verifiable(tmp_path):
 
 @pytest.mark.parametrize("field,value,token", [
     ("target_platforms", [], "target_platforms"),
-    ("target_platforms", ["windows"], "target_platforms"),
+    # ALN-21-A：windows 自该卡起进入受支持平台词汇表（Windows 终端
+    # 扩展验证），此处改用仍不受支持的平台保持「不支持的平台被拒」语义
+    ("target_platforms", ["linux"], "target_platforms"),
     ("min_app_version", "", "min_app_version"),
     ("permission_requirements", None, "permission_requirements"),
     ("required_tool_contracts", None, "required_tool_contracts"),

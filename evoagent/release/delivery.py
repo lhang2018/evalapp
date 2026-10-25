@@ -18,7 +18,7 @@ import time
 import uuid
 from typing import Any, Dict, List, Optional, Set
 
-PLATFORMS = ("android", "ios")
+PLATFORMS = ("android", "ios", "windows")
 ACTIONS = ("download_started", "verified", "activation_pending", "activated",
            "activation_failed", "health_check", "rolled_back", "retired")
 # 这些动作意味着“该版本将被/已被安装实例使用”，必须绑定可用的生产签名身份
