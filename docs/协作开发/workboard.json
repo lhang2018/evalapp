@@ -4647,15 +4647,22 @@
       "title": "问题反馈与运行证据关联",
       "stream": "integration",
       "owner": "zcode-main",
-      "reviewer": null,
+      "reviewer": "zcode-next",
       "branch": "feature/user-direction",
       "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         "代码: 1c390ed",
         "测试: 代码: 1c390ed 全链（schema域表+store+API）+ 21899e6 schema幂等修复 + d1272c9 App入口",
-        "交付: docs/协作开发/交付/ALN-29-C-问题反馈与运行证据关联.md"
+        "交付: docs/协作开发/交付/ALN-29-C-问题反馈与运行证据关联.md",
+        {
+          "date": "2026-10-25",
+          "reviewer": "zcode-next",
+          "scope": "独立复核：HTTP级4探针(绑定+根因恒unverified/未知任务404/凭据400/聚合计数)+6项复跑",
+          "result": "accepted",
+          "evidence": "docs/协作开发/验收/2026-10-25-ALN-29-C独立复核.md"
+        }
       ],
       "card": "docs/协作开发/任务卡/29-C-问题反馈与运行证据关联.md",
       "shared_files": [
@@ -4681,7 +4688,7 @@
       "requirement_refs": [
         "UX-26"
       ],
-      "next_step": "待独立复核（审阅人待定）；App 接线已上屏（d1272c9），真机操作证据按整包验收另采",
+      "next_step": "复核通过转accepted",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
       "prerequisites": "仅需仓库与本地测试环境",
       "claim_metadata_calibration": {
