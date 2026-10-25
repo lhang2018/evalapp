@@ -4320,9 +4320,20 @@
    "reviewer": null,
    "branch": "feature/user-direction",
    "base_commit": "95f3e38aaeae06434edbe6b8d8d832e02640cc61",
-   "status": "claimed",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-25",
+     "scope": "能力缺口证据与主动规划候选：三类可追溯证据(失败任务/兜底路由/未满足目标)、按签名聚合+按ref去重、min_evidence+失败原因门控fail-closed(证据不足进insufficient不生成候选)、规划前traceability核对task:/goal:引用、候选带benefit/cost且只经EvolutionController.propose_candidate登记(requires_evaluation=True，不绕过评测/门禁/发布，规划器不部署)",
+     "source_commit": "662c25898b7f3e82ea898cfd69439a43cb8702bb",
+     "functional_commit": "662c25898b7f3e82ea898cfd69439a43cb8702bb",
+     "source_tree": "2748f1b86a67838407e8455e932952787e6bf734",
+     "result": "专项9 passed；目标/演化域165 passed；全量2098 passed/1 failed/1 skipped，唯一失败为他人 review 测试文件在全量顺序下的隔离问题(单独运行26 passed)，本卡未触及制品归档。真实数据证据：.evoagent 历史库(94 SUCCEEDED/2 FAILED)只读分析→2缺口均insufficient、0候选(fail-closed)，引用逐条可回查；fixture矩阵演示晋升→1候选经evolution登记；8项检查全过。边界：未接线上遥测/API/UI/真实预算",
+     "log": ".planning/2026-10-25-aln26a/gap-planning-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-26-A-能力缺口证据与主动规划候选.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/26-A-能力缺口证据与主动规划候选.md",
    "shared_files": [
     "evoagent/evolution/controller.py",
@@ -4345,7 +4356,7 @@
    "requirement_refs": [
     "A-59"
    ],
-   "next_step": "实现能力缺口证据与主动规划候选：从真实失败/未满足目标/能力清单抽取可追溯证据，缺口去重与阈值fail-closed(证据不足不生成建议)，候选计划带范围/收益/成本与证据引用，且只能经既有EvolutionController候选评测流程，不绕过评测与发布；新增模块在 evoagent/goals|evolution 下，共用文件先声明修改点",
+   "next_step": "待独立复核：缺口聚合/去重/阈值fail-closed、真实历史库上不产生候选、fixture晋升经evolution登记、traceability拒绝失配引用、规划器不部署的证据见交付文档与 .planning/2026-10-25-aln26a/；审阅人未定，不自批；线上遥测/API/UI/真实预算属后续，ALN-26整包不关闭",
    "working_basis": "以95f3e38aaeae06434edbe6b8d8d832e02640cc61（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布",
    "prerequisites": "仅需仓库与本地测试环境",
    "ownership_history": [
@@ -4355,7 +4366,9 @@
      "to": "dsh-lead",
      "reason": "用户询问可接卡；25-A/06-R 均已 accepted，26-A READY 且冲突面为空；先登记claim再动手（上次29-E未claim导致并发交付）"
     }
-   ]
+   ],
+   "delivered_commit": "662c25898b7f3e82ea898cfd69439a43cb8702bb",
+   "delivery": "docs/协作开发/交付/ALN-26-A-能力缺口证据与主动规划候选.md"
   },
   {
    "id": "ALN-26-B",
@@ -6046,11 +6059,11 @@
    "workpackage": "ALN-21",
    "title": "Windows或平板扩展验证",
    "stream": "android",
-   "owner": null,
+   "owner": "claude-main",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "2e1438f4ee7583232f11297b51a6cca838b0becb",
+   "status": "in_progress",
    "blocker": null,
    "evidence": [],
    "card": "docs/协作开发/任务卡/21-A-Windows或平板扩展验证.md",
@@ -6128,7 +6141,7 @@
     "G3"
    ],
    "next_step": "按卡实施并提交证据；未经复核不记accepted",
-   "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+   "working_basis": "claude-main 认领实施：Windows 终端实测验证（本机即目标终端）。以探针脚本+交付报告为主，evoagent/ 下代码改动最小化；共享文件按需外科手术式修改并声明精确修改点。平板终端与 Android 客户端边界记保留缺口。",
    "prerequisites": "目标终端"
   },
   {
