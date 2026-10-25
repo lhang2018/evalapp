@@ -1,0 +1,51 @@
+---- r1 ----
+PASS R1a 根冻结为绝对路径 | C:\Users\lhang\AppData\Local\Temp\p18g_806ocha3
+PASS R1b 相对根恢复拒绝 | 快照必须冻结绝对项目根
+PASS R1c ../穿越拒绝 | 非法快照相对路径
+PASS R1d 反斜杠穿越拒绝 
+PASS R1e 中段..穿越拒绝 
+PASS R1f 绝对路径注入拒绝 
+---- r2 ----
+PASS R2a 根换链接拒绝(symlink) | 快照项目根已变成链接或联接
+PASS R2b 目录链接快照拒绝(symlink) | 快照不跟随符号链接或目录联接
+PASS R2c 文件符号链接快照拒绝 
+---- r3 ----
+PASS R3a 快照排除 node_modules/.git | ['src/a.py']
+PASS R3b 排除目录修改不计变更 | []
+PASS R3c 排除目录新增不计变更 
+PASS R3d1 自定义排除进快照 
+PASS R3d 自定义排除持久到比较 
+---- r4 ----
+PASS R4a 文件数上限拒绝 | 项目文件数超过快照上限 3
+PASS R4b 非正上限拒绝 
+PASS R4c 字节上限拒绝 | 项目内容超过字节上限
+PASS R4d 跨根比较拒绝 | 快照与归档项目根不一致
+---- r5 ----
+PASS R5a 无 ArtifactStore 明确 skipped | {'archived': [], 'skipped': ['no_artifact_store']}
+PASS R5b 不同目录同名文件不碰撞 | {'file_9429ee66f4d0d8109253e27a2ce977b1ee67417578839c8051a87199686e61a2', 'file_ee23daf635289afb7a42cb820d3432602656eb446917f29fa3bb69bbd40d0fb6'}
+PASS R5c 归档身份=全相对路径摘要 
+PASS R5d 空文件按 skip:empty | ['empty.txt:empty']
+PASS R5e 删除文件 skip:deleted | ['b/one.py:deleted', 'empty.txt:empty']
+PASS R5f 新增文件被归档 | ['a/one.py', 'new.txt']
+---- r6 ----
+PASS R6a 修改文件恢复原内容 
+PASS R6b 删除文件可重建 
+PASS R6c 未知新文件不删除 | ['gone/g.py', 'keep.py']
+PASS R6d touched 只含实际恢复项 | ['gone/g.py', 'keep.py']
+PASS R6e 路径变目录拒绝 | 快照文件路径已变成目录
+PASS R6f 拒绝发生在破坏前 
+---- r7 ----
+PASS R7a 绑定记录含精确身份 | {'pack_id': 'coding_pack', 'root': 'C:\\Users\\lhang\\AppData\\Local\\Temp\\p18g_5hpf8rme', 'task_id': 't1'}
+PASS R7b 同根重复安装幂等 
+PASS R7c 跨根拒绝 | 注册表已绑定其他项目，请使用独立注册表
+PASS R7d 契约变化拒绝沿用 | 注册表编码能力已变化，拒绝沿用旧消费绑定
+PASS R7e 存量编码工具拒覆盖 | 已有编码工具缺少项目绑定，拒绝覆盖
+---- r8 ----
+PASS R8pre 快照时点语法通过 
+PASS R8a 破损文件 executed=True 
+PASS R8b returncode 非零且记录 | rc=1 ok=False err_class=contract_violation
+PASS R8b2 好文件不受影响 
+PASS R8d 回滚后语法检查恢复通过 | rc=0 touched=['bad.py']
+PASS R8e 回滚内容与快照一致 
+
+=== 18-G 探针：41/41 通过 ===

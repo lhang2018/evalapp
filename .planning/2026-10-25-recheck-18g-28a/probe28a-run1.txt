@@ -1,0 +1,41 @@
+---- r1 ----
+PASS R1a 引用不在正文拒绝 | 引用片段不在本次抓取的正文中
+PASS R1b 引用在正文接受且保留原文 | beta gamma
+PASS R1c 空白归一匹配 
+PASS R1d 空引用自动摘录 | alpha beta gamma delta
+---- r2 ----
+PASS R2a 默认 stance=mentions | mentions
+PASS R2b 仅提及 → unknown 不判可信 | unknown|['来源仅提及该主题，未直接支持结论，不判为可信']
+PASS R2c 显式supports → supported 0.7 | supported|0.7
+PASS R2d 双发布者置信 0.9 | 0.9
+---- r3 ----
+PASS R3a 摘要=原始字节sha256 | caf13b20f61ba931.. vs caf13b20f61ba931..
+PASS R3b source_id 前缀=摘要前12位 | src_caf13b20f61b_5cfceb
+---- r4 ----
+PASS R4a 默认2MiB上限拒绝 | 来源内容超过字节上限
+PASS R4b 非正上限拒绝 
+---- r5 ----
+PASS R5a 未来 valid_from → unknown 不支持 | unknown|['结论适用时间尚未开始']
+PASS R5b NaN valid_from | 适用时间必须是有限时间戳
+PASS R5c Infinity valid_from | 适用时间必须是有限时间戳
+PASS R5d 反向时间窗拒绝 | 适用时间窗起点不能晚于终点
+PASS R5e 非有限核验时钟拒绝 | 核验时钟必须为有限时间戳
+FAIL R5f 过期 → stale 优先于支持 | stale
+---- r6 ----
+PASS R6a 不可访问来源不入支持 | unknown|inaccessible=1
+PASS R6b 缺损记录（缺发布者/引文/摘要）不入支持 | unknown
+PASS R6c 非http(s)来源不入支持 | unknown
+PASS R6d 不可访问反对不判矛盾 | unknown
+---- r7 ----
+PASS R7a 正常supported入 delivered 且引用完整 | {"claims": 1, "delivered": 1, "conflicts": 0, "unverified": 0, "fixture_citations": 0}
+PASS R7b 无引用supported拒绝 | 拒绝把无引用结论列为 supported: c7f
+PASS R7c 无效引用supported拒绝 | supported 结论引用记录无效: c7f
+PASS R7d model_only supported拒绝 | 模型自述不得单独判为可信: c7f
+PASS R7e fixture引用标注并计数 | {"claims": 1, "delivered": 1, "conflicts": 0, "unverified": 0, "fixture_citations": 1}
+---- r8 ----
+PASS R8a 支持与反对并存 → contradicted | contradicted|['来源冲突：1 条支持、1 条反对']
+FAIL R8b 冲突进入 conflicts 且双方引用可见 | {"claims": 1, "delivered": 0, "conflicts": 1, "unverified": 0, "fixture_citations": 1}
+
+=== 28-A 探针：27/29 通过 ===
+FAIL: R5f 过期 → stale 优先于支持 | stale
+FAIL: R8b 冲突进入 conflicts 且双方引用可见 | {"claims": 1, "delivered": 0, "conflicts": 1, "unverified": 0, "fixture_citations": 1}
