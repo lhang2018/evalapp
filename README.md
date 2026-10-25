@@ -11,6 +11,26 @@
 
 **新增设计从这里开始：[README 新增设计梳理](docs/README新增设计梳理与实施映射_2026-10-25.md)** → [产品目标形态与实施路线](docs/产品目标形态与实施路线_2026-10-25.md) → [设计源语料与提取状态](chat/README.md)。新增内容明确八个产品模块、28 UX 和 17 条验收用例；ALN-23—29 已正式登记，见[需求拆分与分期实施](docs/协作开发/需求拆分与分期实施_2026-10-25.md)。
 
+## 环境异常与规避（2026-10-25）
+
+开发环境自身的异常会让**验收结论失真**或**操作被环境拦住**。已实测复现的条目、
+取证命令与规避做法见 **[环境异常与规避](docs/协作开发/环境异常与规避_2026-10-25.md)**。
+最容易踩到的三条先记在这里：
+
+| 现象 | 根因 | 规避 |
+|---|---|---|
+| 后台跑全量被中止、无 pytest 输出 | pytest 清理自己的临时目录，删除量 1867 超守卫阈值 50（审计日志 `file-safety.bulk-delete.approved`；历史 34 次全部命中 pytest 临时目录） | 输出重定向到文件再读：`pytest tests/ -q > run.log 2>&1; tail -6 run.log` |
+| `pytest` 不带路径参数报 **5471 errors** | 主工作区 `outputs/` 下有 62 份历史复核仓库副本，各含完整 `tests/` 目录，被重复收集 | **永远显式带 `tests/`**；全量验收用干净 worktree（`git worktree add <dir> <commit> --detach`） |
+| `pytest: command not found` / `No module named pytest` | 只有系统 Python 3.10.11 装了 pytest，managed 3.13.x 没有 | 用绝对路径 `C:/Users/lhang/AppData/Local/Programs/Python/Python310/python.exe -m pytest ...`；`python3` 是 Windows 原生解释器，**认不到 `/tmp`** |
+
+判定"是不是我的代码问题"之前，先查环境守卫事件：
+
+```bash
+grep -h "bulk-delete\|blocked\|Dangerous" ~/.workbuddy/audit-log/$(date +%Y-%m-%d).jsonl | head -3
+```
+
+**任何"环境导致"的结论，都要有一条可复现命令 + 一条日志/输出佐证**，不能只写"被环境误伤"。
+
 ## 快速开始（无需 LLM Key）
 
 ```bash

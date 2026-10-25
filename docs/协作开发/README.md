@@ -47,6 +47,15 @@ python tools/scan_all_ledgers.py
 
 文档检查器证明映射、认领与引用一致，不证明业务功能完成。发布时以约定范围重跑后端、客户端、类型检查和真实环境用例，逐项绑定同一候选。
 
+### 跑测试时的环境约束（2026-10-25 实测）
+
+- **pytest 只在系统 Python 3.10.11**：`C:/Users/lhang/AppData/Local/Programs/Python/Python310/python.exe`（managed 3.13.x 无 pytest）。`python3` 是 Windows 原生解释器，认不到 `/tmp`。
+- **pytest 必须显式带 `tests/` 路径**：主工作区 `outputs/` 下有 62 份历史复核仓库副本，不带路径会收集到 5471 个重复测试文件并报 5471 errors；干净 worktree 无此问题。
+- **全量验收固定用干净 worktree**（`git worktree add <dir> <commit> --detach`），避免主工作区的在途改动与历史副本污染结果。
+- **后台跑全量把输出重定向到文件**（`pytest tests/ -q > run.log 2>&1`）：pytest 清理自身临时目录会触发环境的批量删除守卫（实测删除量 1867、阈值 50），管道方式可能被中止。
+
+完整条目、取证命令与审计日志查法见[环境异常与规避](环境异常与规避_2026-10-25.md)。
+
 ## 设计与历史记录
 
 - [正式版1.0](../EvoAgent_全量详细设计正式版_1.0/)：需求与权威契约。

@@ -27,8 +27,11 @@
 - 历史实例：组合运行 7 失败，重跑 89 全过；单独重跑两文件 15/15 过（2026-10-22 记录）。
 
 ## 环境备忘
-- pytest 只在系统 Python 3.10.11：`C:/Users/lhang/AppData/Local/Programs/Python/Python310/python.exe`（managed 3.13.12 无 pytest）。
-- `docs/` 与 `资料/` 下文件 shell 的 `cat`/`wc` 会被沙箱拦截，必须用 Read 工具读。
+- pytest 只在系统 Python 3.10.11：`C:/Users/lhang/AppData/Local/Programs/Python/Python310/python.exe`（managed 3.13.14 无 pytest）。
+- **pytest 必须显式带 `tests/` 路径**：主工作区 `outputs/` 有 62 份历史复核仓库副本，不带路径会报 5471 errors；全量用干净 worktree 跑。
+- **后台跑全量用输出重定向**（`> run.log 2>&1`）：pytest 清理自身临时目录触发环境批量删除守卫（实测 count 1867 / threshold 50，历史 34 次全命中 pytest 临时目录）。
+- 完整条目与取证查法见 `docs/协作开发/环境异常与规避_2026-10-25.md`；查守卫事件：`grep bulk-delete ~/.workbuddy/audit-log/$(date +%F).jsonl`。
+- ~~`docs/` 与 `资料/` 下 cat/wc 会被沙箱拦截~~ —— **2026-10-25 实测已可正常读取，该条作废**。
 - 跑测试用 vitest（客户端 node --test），python3 是 Windows 原生 Python，认不到 /tmp。
 
 ## 认领流程（唯一来源）
