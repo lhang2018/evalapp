@@ -4645,13 +4645,24 @@
       "workpackage": "ALN-08",
       "title": "生产评测集、价格档案与费用对账",
       "stream": "models",
-      "owner": null,
+      "owner": "dsh-lead",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "17854f2dc93cec32a3fb845a650838d9dff2821b",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-25",
+          "scope": "价格档案(来源+有效期+币种+区间不重叠)+未知只计数不造金额+计量与账单逐行对账原因码+代表性任务集来源/脱敏/覆盖声明；13项专项与相关域53项回归通过，全量零失败",
+          "source_commit": "957369be958691748430db8b6a1c4c5b9c7f5d9e",
+          "functional_commit": "957369be958691748430db8b6a1c4c5b9c7f5d9e",
+          "source_tree": "501d8d84592d7296236fdab71ff3fd0ad334f0bf",
+          "result": "专项13 passed；计量/预算13 passed；相关域53 passed；全量1868 passed/0 failed/1 skipped。价格/账单为明确标注夹具，未接真实供应商账单；代表任务集只验证结构与校验",
+          "log": ".planning/2026-10-25-aln08p/backend-tests.txt",
+          "delivery": "docs/协作开发/交付/ALN-08-P-生产评测集、价格档案与费用对账.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/08-P-生产评测集、价格档案与费用对账.md",
       "shared_files": [
         "evoagent/core/budget.py",
@@ -4666,9 +4677,19 @@
         "UX-25",
         "G4"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
-      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-      "prerequisites": "供应商价格/账单与脱敏真实任务集"
+      "next_step": "待独立复核：价格来源/有效期与区间不重叠、未知只计数不造金额、账单逐行原因码与后续项、任务集来源与脱敏校验的证据见交付文档与 .planning/2026-10-25-aln08p/；审阅人未定，不自批为独立验收；真实供应商账单接入与运行时结算接线属其他卡，ALN-08整包不关闭",
+      "working_basis": "以17854f2dc93cec32a3fb845a650838d9dff2821b（认领时feature/user-direction HEAD）作为接手锚点；最终提交957369be958691748430db8b6a1c4c5b9c7f5d9e；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
+      "prerequisites": "供应商价格/账单与脱敏真实任务集",
+      "delivered_commit": "957369be958691748430db8b6a1c4c5b9c7f5d9e",
+      "delivery": "docs/协作开发/交付/ALN-08-P-生产评测集、价格档案与费用对账.md",
+      "ownership_history": [
+        {
+          "date": "2026-10-25",
+          "from": "待认领",
+          "to": "dsh-lead",
+          "reason": "用户指示继续；08-P 依赖 08-M 已 accepted，写入面只在 models/ 新增三个模块与一个 schema 域模块，不改 budget.py/metering.py。认领期间台账曾被并发整文件覆写丢失本行，交付时按实际提交补登"
+        }
+      ]
     },
     {
       "id": "ALN-09-H",
@@ -4803,11 +4824,11 @@
       "workpackage": "ALN-11",
       "title": "生产签名与端侧安装退役回执",
       "stream": "android",
-      "owner": null,
+      "owner": "claude-main",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "078b9cc4dabbc1437361daa97a07c6a3897b0eeb",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/11-P-生产签名与端侧安装退役回执.md",
@@ -4833,7 +4854,7 @@
         "G6"
       ],
       "next_step": "按卡实施并提交证据；未经复核不记accepted",
-      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "working_basis": "2026-10-25 claude-main 认领开工。base_commit 078b9cc 为实际接手锚点（基线仍 candidate，prepared_candidate 21899e6 未发布）。复用 03-P identity.py 的生产身份签发/撤销与端侧 trust.ts+rsa.ts 验签、11-A 下载验签装载回执与 11-W 健康回滚；本卡补齐生产信任联验、安装/激活/退役回执与灰度回滚。共享文件精确修改点：evoagent/release/delivery.py（ACTIONS 增 retired、record_apply 绑定 signing_key_id 与退役语义、reconcile 输出信任绑定字段）、evoagent/release/signing.py（仅新增生产身份验签辅助，不改既有 HMAC 契约）、evoagent/release/manager.py（退役版本状态迁移）；evoagent/release/identity.py 为本人 03-P 新增文件继续扩展；android-app 侧只新增 src/install/ 独占模块与测试，不改 App.tsx 与在途的 src/offline/evidence.ts、src/features/voice/。不触碰并行会话在途文件。",
       "prerequisites": "可连接设备与生产或标注测试的签名材料"
     },
     {
@@ -5021,11 +5042,11 @@
       "workpackage": "ALN-15",
       "title": "设备资源准入与核心任务优先",
       "stream": "runtime",
-      "owner": null,
+      "owner": "zcode-next",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "3edc7903cfb2533772ad6df3e7462d8f0efa1b01",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/15-D-设备资源准入与核心任务优先.md",
@@ -5065,8 +5086,8 @@
         "G4",
         "G5"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
-      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "next_step": "设计 ResourceAdmission：压力采样→准入决策→低优暂停/恢复，核心状态不损坏",
+      "working_basis": "2026-10-25 zcode-next 认领。复用 15-A/15-R 预算账本与 15-P 池原子预留；写入边界 core/ + goals/；真实设备测量另验（本地用可控压力源模拟）。",
       "prerequisites": "真实设备或受控宿主资源测量"
     },
     {
