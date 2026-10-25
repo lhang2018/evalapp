@@ -5433,13 +5433,24 @@
    "workpackage": "ALN-20",
    "title": "固定外部Runtime真实PoC",
    "stream": "runtime",
-   "owner": null,
+   "owner": "dsh-lead",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "33529bef6b4bb54dc6c3a2d8385b8e0e36f38ea0",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-25",
+     "scope": "固定外部Runtime真实PoC：Ollama 0.40.11 + ornith-1.5:9b(digest固定) 真实生成、五类能力委派既有权威、版本/摘要漂移fail-closed、失败隔离、AC-1..4采用裁决adopt；两次独立运行身份/矩阵/裁决一致",
+     "source_commit": "da066db5c25de88632a1407abe6b06a6283915d2",
+     "functional_commit": "da066db5c25de88632a1407abe6b06a6283915d2",
+     "source_tree": "c148b4125f07b531ca88a2b752c46c57f42f5d56",
+     "result": "专项7 passed；runtime域67 passed；全量1890 passed/0 failed/1 skipped。真实生成冷8.504s/41 tokens、热1.015s；事件/取消/沙箱委派与失败隔离全过；矩阵新增external_ollama_http行。边界：本机真实外部进程非生产部署，任务级主链采用不在本卡",
+     "log": ".planning/2026-10-25-aln20p/poc-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-20-P-固定外部Runtime真实PoC.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/20-P-固定外部Runtime真实PoC.md",
    "shared_files": [],
    "requirement_batch": "PRODUCT-2026-10-25",
@@ -5452,9 +5463,19 @@
     "G2",
     "G3"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
-   "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-   "prerequisites": "固定外部运行时及可用安装环境"
+   "next_step": "待独立复核：固定版本+模型摘要绑定、真实生成执行、五类能力委派等价、版本漂移fail-closed与失败隔离、AC-1..4采用裁决的证据见交付文档与 .planning/2026-10-25-aln20p/；审阅人未定，不自批为独立验收；任务级主链采用与生产环境属整包后续，ALN-20整包不关闭",
+   "working_basis": "以33529bef6b4bb54dc6c3a2d8385b8e0e36f38ea0（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
+   "prerequisites": "固定外部运行时及可用安装环境",
+   "ownership_history": [
+    {
+     "date": "2026-10-25",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户指示继续；20-P 是当前 READY 卡（依赖 20-A accepted）且 shared_files 为空、无并行冲突；本机存在固定版本外部运行时（Ollama 0.40.11 + 本地模型），满足真实 PoC 环境"
+    }
+   ],
+   "delivered_commit": "da066db5c25de88632a1407abe6b06a6283915d2",
+   "delivery": "docs/协作开发/交付/ALN-20-P-固定外部Runtime真实PoC.md"
   },
   {
    "id": "ALN-21-A",

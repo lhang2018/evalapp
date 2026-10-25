@@ -1,0 +1,7 @@
+{
+  "same_identity": true,
+  "same_verdict": true,
+  "same_matrix": true,
+  "latency_1": 8.504,
+  "latency_2": 1.015
+}
