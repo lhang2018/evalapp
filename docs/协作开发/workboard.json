@@ -4512,14 +4512,14 @@
    "reviewer": "zcode-main",
    "branch": "feature/user-direction",
    "base_commit": "1f2c0b0162e2681c338eeae033a47ab50212d44a",
-   "status": "accepted",
+   "status": "review",
    "blocker": null,
    "evidence": [
     {
      "date": "2026-10-25",
      "scope": "外部事实核验与可信交付层：真实HTTP来源记录(URL/发布者/获取时间/正文sha256/引用片段)、五态fail-closed交叉核验(支持/矛盾/推断/未知/过期)、无外部证据不凭模型自述判可信、不可访问来源不计证据、交付只包含有可访问引用的结论；真实抓取 example.com 可达+摘要，夹具矩阵标注fixture",
-     "source_commit": "fbb6612414bf8dcb8d201d8ce8a4bf001ff95883",
-     "functional_commit": "fbb6612414bf8dcb8d201d8ce8a4bf001ff95883",
+     "source_commit": "fbb6612414bf8dcb8d201d8ce8a4bf001ff95833",
+     "functional_commit": "fbb6612414bf8dcb8d201d8ce8a4bf001ff95833",
      "source_tree": "b268d923f27d7576f67d220e66e89d6e9dac4427",
      "result": "专项11 passed/1 skipped(pytest内公网用例，独立运行真实抓取成功)；全量2040 passed/0 failed/2 skipped(434.71s)。真实抓取 example.com accessible=true latency 8.471s digest 25ddf2c8…；五态矩阵 verdict_ok=true。边界：仅示例静态页、未接真实事实数据源、未自动抽取Claim、未接任务主链/API/App",
      "log": ".planning/2026-10-25-aln28a/verification-evidence.json",
@@ -4551,8 +4551,8 @@
    "requirement_refs": [
     "A-61"
    ],
-   "next_step": "待独立复核：五态fail-closed、真实来源可达+摘要、冲突双方可见、模型自述不判可信、不可访问不计证据、交付只含可访问引用结论的证据见交付文档与 .planning/2026-10-25-aln28a/；审阅人未定，不自批；自动抽取Claim、真实事实数据源、API/App接线属后续，ALN-28整包不关闭",
-   "working_basis": "以1f2c0b0162e2681c338eeae033a47ab50212d44a（feature/user-direction HEAD）作为实际接手锚点；最终提交fbb6612414bf8dcb8d201d8ce8a4bf001ff95883；基线仍为candidate、prepared_candidate 21899e6 未发布",
+   "next_step": "按固定修复提交a1b3a31独立复核：正文引用/来源记录/未来与非法时间窗/实际交付守卫/默认提及语义；生产/App/真实环境范围依原交付另验，不关闭整包。",
+   "working_basis": "以1f2c0b0162e2681c338eeae033a47ab50212d44a（feature/user-direction HEAD）作为实际接手锚点；最终提交fbb6612414bf8dcb8d201d8ce8a4bf001ff95833；基线仍为candidate、prepared_candidate 21899e6 未发布",
    "prerequisites": "合法可用的外部数据源/服务；P2后续，不阻塞本地首卡",
    "ownership_history": [
     {
@@ -4562,8 +4562,26 @@
      "reason": "用户指示接卡；28-A 依赖 24-A/16-P（review，待审接口可用），写入边界 evoagent/verification/ 为新建包，不需要动共享文件"
     }
    ],
-   "delivered_commit": "fbb6612414bf8dcb8d201d8ce8a4bf001ff95883",
-   "delivery": "docs/协作开发/交付/ALN-28-A-外部事实核验与可信交付.md"
+   "delivered_commit": "fbb6612414bf8dcb8d201d8ce8a4bf001ff95833",
+   "delivery": "docs/协作开发/交付/ALN-28-A-外部事实核验与可信交付.md",
+   "review_history": [
+    {
+     "date": "2026-10-25",
+     "previous_status": "accepted",
+     "previous_reviewer": "zcode-main",
+     "reason": "负向探针确认缺陷；原复核引用旧提交但描述本批当时未提交字段，完整修复需固定版本复查",
+     "report": "docs/协作开发/验收/2026-10-25-第三批交叉审查与真实性修复.md"
+    }
+   ],
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-25-DEVELOPED-3",
+    "date": "2026-10-25",
+    "reviewer": "codex-runtime",
+    "fix_commit": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
+    "scope": "正文引用/来源记录/未来与非法时间窗/实际交付守卫/默认提及语义",
+    "report": "docs/协作开发/验收/2026-10-25-第三批交叉审查与真实性修复.md",
+    "status": "fixes_delivered_pending_independent_recheck"
+   }
   },
   {
    "id": "ALN-29-C",
@@ -4708,10 +4726,10 @@
    "title": "稳定版本、更新控制与回滚体验",
    "stream": "android",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "zcode-main",
    "branch": "feature/user-direction",
    "base_commit": "bae3914bc8b8b26e836cbc3190cb5df930859dc6",
-   "status": "review",
+   "status": "accepted",
    "blocker": null,
    "evidence": [
     {
@@ -4733,6 +4751,11 @@
      "result": "专项12 passed；发布域168 passed；全量2053 passed/0 failed/1 skipped(414.01s)。实测证据 .planning/2026-10-25-aln29e/release-evidence.json all_checks_pass=true(真实HMAC签名摘要、坏包拒绝错误可见、回滚same_version_binding=true)。边界：HBAC测试密钥非生产RSA身份、客户端UI未接、api未接线、真机更新/回滚未复验",
      "log": ".planning/2026-10-25-aln29e/release-evidence.json",
      "delivery": "docs/协作开发/交付/ALN-29-E-稳定版本、更新控制与回滚体验.md"
+    },
+    {
+     "date": "2026-10-25",
+     "scope": "独立复核（zcode-main）：独立部署双版本探针——R2稳定拒实验refuse、R3实验显式开启install+requires_restart+must_rebind（GLOBAL-01热切换守卫）、R4固定版already_active、R5固定拒切refuse、R6 explain可读字段；决定结构不热切+通道隔离+降级仅走回滚入口三语义确认；转accepted",
+     "review_report": "docs/协作开发/验收/2026-10-25-ALN-29-E独立复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/29-E-稳定版本、更新控制与回滚体验.md",
@@ -5487,7 +5510,7 @@
    "reviewer": "zcode-next",
    "branch": "feature/user-direction",
    "base_commit": "e7338e29e46ee80a2d8d337da14091b5fbc01c86",
-   "status": "accepted",
+   "status": "review",
    "blocker": null,
    "evidence": [
     "代码: 07edc6b features/pipeline/chain.ts（classifyPipeline/resultView/uploadPayload）+ 9项测试",
@@ -5530,10 +5553,29 @@
     "G0",
     "G1"
    ],
-   "next_step": "复核通过；解锁21-A；App挂载待23-F串行；真机执行按12-V另采",
+   "next_step": "按固定修复提交a1b3a31独立复核：受支持原生提议/身份/不猜动作/设备回执与任务状态区分；生产/App/真实环境范围依原交付另验，不关闭整包。",
    "working_basis": "2026-10-25 zcode-main 认领开工。依赖全部满足（23-C review/07-C review/06-R accepted）。复用已交付的 23-A 契约、23-B 模式、23-C 工作区、23-D 状态映射、24-B 能力六档、29-C 反馈、11-W 真机链路、12-A 协议协议；本卡连成完整链路。",
    "prerequisites": "可连接且授权的Android设备",
-   "ownership_history": []
+   "ownership_history": [],
+   "review_history": [
+    {
+     "date": "2026-10-25",
+     "previous_status": "accepted",
+     "previous_reviewer": "zcode-next",
+     "reason": "负向探针确认缺陷；原复核引用旧提交但描述本批当时未提交字段，完整修复需固定版本复查",
+     "report": "docs/协作开发/验收/2026-10-25-第三批交叉审查与真实性修复.md"
+    }
+   ],
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-25-DEVELOPED-3",
+    "date": "2026-10-25",
+    "reviewer": "codex-runtime",
+    "fix_commit": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
+    "scope": "受支持原生提议/身份/不猜动作/设备回执与任务状态区分",
+    "report": "docs/协作开发/验收/2026-10-25-第三批交叉审查与真实性修复.md",
+    "status": "fixes_delivered_pending_independent_recheck"
+   },
+   "delivery": "docs/协作开发/交付/ALN-12-E-自然语言任务主链.md"
   },
   {
    "id": "ALN-12-V",
@@ -5880,7 +5922,7 @@
    "reviewer": "zcode-main",
    "branch": "feature/user-direction",
    "base_commit": "d5579f51f72b77e070db38bf539a2b93338b9122",
-   "status": "accepted",
+   "status": "review",
    "blocker": null,
    "evidence": [
     "代码: 054a0bd9（coding_consumption.py 消费运行时 + 6 项专项含真实执行内核 E2E）",
@@ -5917,9 +5959,27 @@
     "F02",
     "A-60"
    ],
-   "next_step": "待独立复核（快照上限/skip_dirs 适配性/restore 不删未知文件取舍/安装幂等语义）",
+   "next_step": "按固定修复提交a1b3a31独立复核：快照恢复/路径与根边界/排除目录/消费注册表根绑定/真实语法失败证据；生产/App/真实环境范围依原交付另验，不关闭整包。",
    "working_basis": "2026-10-25 zcode-next 认领（12-V 因真机被用户占用转 blocked 让位）。复用 18-A~F 编程工具集、06-R 精确版本消费、24-A ArtifactStore；写入边界 experts/+tools/+android-app/src（客户端仅证据投影如需）。受控真实项目=临时目录内真实 Python 文件（非单测夹具）。",
-   "prerequisites": "受控真实项目"
+   "prerequisites": "受控真实项目",
+   "review_history": [
+    {
+     "date": "2026-10-25",
+     "previous_status": "accepted",
+     "previous_reviewer": "zcode-main",
+     "reason": "负向探针确认缺陷；原复核引用旧提交但描述本批当时未提交字段，完整修复需固定版本复查",
+     "report": "docs/协作开发/验收/2026-10-25-第三批交叉审查与真实性修复.md"
+    }
+   ],
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-25-DEVELOPED-3",
+    "date": "2026-10-25",
+    "reviewer": "codex-runtime",
+    "fix_commit": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
+    "scope": "快照恢复/路径与根边界/排除目录/消费注册表根绑定/真实语法失败证据",
+    "report": "docs/协作开发/验收/2026-10-25-第三批交叉审查与真实性修复.md",
+    "status": "fixes_delivered_pending_independent_recheck"
+   }
   },
   {
    "id": "ALN-18-L",
@@ -7633,6 +7693,121 @@
    "independent_review": false,
    "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
    "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+  },
+  {
+   "id": "discovered-8828fdc55a4b",
+   "title": "feat(ALN-29-E): 更新控制与回滚体验——版本角色可理解/GLOBAL-01 热切换守卫/拒绝与回滚证据可见",
+   "workpackage": "ALN-29",
+   "source_commit": "8828fdc55a4bd59942087ff67a38042d8b83a72c",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "android-app/App.tsx",
+    "android-app/src/update/control.ts",
+    "android-app/test/update/control.test.ts"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+   "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+  },
+  {
+   "id": "discovered-a1b3a3183b05",
+   "title": "fix(review): 加固项目快照与事实引用并修正设备任务提议",
+   "workpackage": "ALN-00",
+   "source_commit": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "android-app/src/features/pipeline/chain.ts",
+    "android-app/test/offline/developedReview3.test.ts",
+    "android-app/test/offline/pipeline.test.ts",
+    "evoagent/tools/coding_consumption.py",
+    "evoagent/verification/claims.py",
+    "evoagent/verification/crosscheck.py",
+    "evoagent/verification/delivery.py",
+    "evoagent/verification/sources.py",
+    "tests/test_coding_consumption.py",
+    "tests/test_developed_review_3.py",
+    "tests/test_fact_verification.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+   "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+  },
+  {
+   "id": "discovered-632fe5200c0a",
+   "title": "feat(ALN-25-A): 有来源的主动帮助——授权范围+证据四级分类+高价值建议门禁",
+   "workpackage": "ALN-25",
+   "source_commit": "632fe5200c0a17ad7a0bb6cf713a0181788ca3b9",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/goals/assist.py",
+    "tests/test_proactive_assist.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+   "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+  },
+  {
+   "id": "discovered-662c25898b7f",
+   "title": "feat(ALN-26-A): 能力缺口证据与主动规划候选",
+   "workpackage": "ALN-26",
+   "source_commit": "662c25898b7f3e82ea898cfd69439a43cb8702bb",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/goals/gap_planner.py",
+    "tests/test_gap_planner.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+   "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+  },
+  {
+   "id": "discovered-e16dbfeedd48",
+   "title": "feat(ALN-29-E): 发布通道、更新控制与回滚体验",
+   "workpackage": "ALN-29",
+   "source_commit": "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/release/channels.py",
+    "tests/test_release_channels.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+   "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+  },
+  {
+   "id": "discovered-8ca1ba1f03a0",
+   "title": "feat(ALN-18-L): ????????????????????/????/????",
+   "workpackage": "ALN-18",
+   "source_commit": "8ca1ba1f03a0b286cda92107b6e502511498d8f0",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/tools/refactor.py",
+    "tests/test_refactor.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+   "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+  },
+  {
+   "id": "discovered-fbb6612414bf",
+   "title": "feat(ALN-28-A): 外部事实核验与可信交付切片",
+   "workpackage": "ALN-28",
+   "source_commit": "fbb6612414bf8dcb8d201d8ce8a4bf001ff95833",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/verification/__init__.py",
+    "evoagent/verification/report.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+   "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
   }
  ],
  "requirement_batches": [
@@ -7684,6 +7859,23 @@
    ],
    "status": "fixes_delivered_pending_independent_recheck",
    "product_acceptance_added": false,
+   "published": false
+  },
+  {
+   "id": "REVIEW-2026-10-25-DEVELOPED-3",
+   "date": "2026-10-25",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-18-G",
+    "ALN-28-A",
+    "ALN-12-E"
+   ],
+   "report": "docs/协作开发/验收/2026-10-25-第三批交叉审查与真实性修复.md",
+   "evidence": ".planning/2026-10-25-developed-review-3/committed-evidence.json",
+   "fix_commit": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "device_tested": false,
    "published": false
   }
  ]
