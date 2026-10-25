@@ -58,6 +58,12 @@ def render(board):
         for item in additions:
             delta_lines.append(f"| {item['title']} | {item['workpackage']} | `{item['source_commit']}` | {item['status']} |")
         lines[index:index] = delta_lines + [""]
+    incremental = board["baseline"].get("latest_incremental_verification")
+    if incremental:
+        index = lines.index("## 子任务认领与交付")
+        lines[index:index] = [f"最新增量源码验证：`{incremental['source_commit']}`；"
+            f"客户端 **{incremental['client_passed']} passed**、类型检查通过。",
+            f"范围：{incremental['scope']}；[证据](../../{incremental['evidence']})。", ""]
     execution = board.get("execution_queue")
     if execution:
         index = lines.index("## 子任务认领与交付")

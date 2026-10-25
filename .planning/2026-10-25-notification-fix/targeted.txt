@@ -1,0 +1,59 @@
+(node:129736) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/notificationReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ native false is not an accepted notification post (1.0786ms)
+✔ native undefined is not an accepted notification post (0.1383ms)
+✔ native null is not an accepted notification post (0.0842ms)
+✔ native "true" is not an accepted notification post (0.0742ms)
+✔ native {"ok":true} is not an accepted notification post (1.2581ms)
+✔ accepted and refused native posts are counted separately (0.4756ms)
+✔ FAILED without failure text cannot be reported as success (0.2174ms)
+✔ CANCELLED with or without a reason is a cancellation notification (0.1943ms)
+✔ SUCCEEDED is not overridden by an old failure reason (0.1084ms)
+✔ nonterminal or unknown server status cannot produce a terminal notification (0.1918ms)
+(node:145768) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/notifications.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ notification id is stable, positive, and task-specific (0.6592ms)
+✔ non-terminal tasks produce no notification (0.1907ms)
+✔ terminal task uses result, failure reason, or goal as body (0.2438ms)
+✔ notification body collapses whitespace and truncates (0.1486ms)
+✔ only transitions into DONE are selected (1.313ms)
+✔ transitions are delivered once each with the stable id (0.1794ms)
+✔ missing native module degrades to a no-op (0.2359ms)
+✔ notification failure never breaks the sync path (0.3246ms)
+(node:143416) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/background.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ offline health check skips sync without throwing (2.2819ms)
+✔ online run flushes events and tasks before refreshing (0.3645ms)
+✔ flush failure is reported and refresh is skipped (0.2588ms)
+✔ refresh failure never rejects the headless task (0.3219ms)
+✔ background interval is clamped and rounded (0.2027ms)
+(node:139160) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/backgroundNotificationReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[background-sync] online=true flushed=true refreshed=true notified=0 error=none
+[background-sync] online=true flushed=true refreshed=true notified=0 error=none
+[background-sync] online=true flushed=true refreshed=true notified=0 error=none
+[background-sync] online=false flushed=false refreshed=false notified=0 error=offline
+[background-sync] online=true flushed=true refreshed=true notified=1 error=none
+[background-sync] online=true flushed=true refreshed=false notified=0 error=sync upload failed
+✔ native-lookup notification failure preserves actual successful sync and refresh (21.3823ms)
+✔ after-read notification failure preserves actual successful sync and refresh (0.8091ms)
+✔ before-read notification failure preserves actual successful sync and refresh (0.7651ms)
+✔ offline sync retains its error and does not invoke the notification bridge (0.2419ms)
+✔ actual background assembly still posts a successful transition (0.9691ms)
+✔ a resolved unsuccessful SyncResult is preserved as a flush failure, without notification (0.8846ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 181.3016

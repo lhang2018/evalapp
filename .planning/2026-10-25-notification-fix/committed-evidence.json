@@ -1,0 +1,57 @@
+{
+  "source_commit": "271378ef264939f4cc302dcfe0331becb31503d3",
+  "source_tree": "3d2f46ecc08f29d078fc9840e11af8fb31acc9ce",
+  "results": [
+    {
+      "name": "client",
+      "command": [
+        "node",
+        "--test",
+        "test/offline/*.test.ts",
+        "test/device/*.test.ts",
+        "test/update/*.test.ts"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-25-notification-fix/client.txt",
+      "sha256": "8d923b46fe4d131dbf48ccb2e6f49c264bd13b50bfde1482ab6b8b675d12ecd8",
+      "sha256_basis": "lf_normalized_text"
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-25-notification-fix/typecheck.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256_basis": "lf_normalized_text"
+    },
+    {
+      "name": "android-build",
+      "command": [
+        "cmd",
+        "/c",
+        "gradlew.bat",
+        ":app:assembleDebug",
+        "-PreactNativeArchitectures=arm64-v8a",
+        "--console=plain"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-25-notification-fix/android-build.txt",
+      "sha256": "7e56f0048c9f184e4ab6feeddc3241694e572bbaceb6767431765a0b99fc1e31",
+      "sha256_basis": "lf_normalized_text"
+    }
+  ],
+  "backend_evidence_reused_from": "f550d9063f7773f5b18893decde668fbc001f7ae",
+  "dependency_scope": "identical package-lock; reuse isolated npm ci dependencies (TypeScript5.9.3), JDK17/SDK/Gradle caches; no fresh dependency install",
+  "device_verified": false,
+  "apk": {
+    "path": "E:\\evalapp\\outputs\\notification-fix-271378e\\android-app\\android\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
+    "sha256": "cec15af3ba5f3b6cc1951b8b43ba8c2a6999b3df6f616dd7c5a68c7a5b228e4f",
+    "size": 156283051,
+    "installed": false,
+    "js_delivery": "debug APK; JS requires Metro from the matching source"
+  }
+}

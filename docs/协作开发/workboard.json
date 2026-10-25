@@ -242,17 +242,33 @@
       "production_release": false
     },
     "latest_incremental_verification": {
-      "source_commit": "4860c12218da4aa6af49c1f1c440726c1d23f0bc",
-      "client_passed": 236,
+      "source_commit": "271378ef264939f4cc302dcfe0331becb31503d3",
+      "source_tree": "3d2f46ecc08f29d078fc9840e11af8fb31acc9ce",
+      "client_passed": 252,
       "typecheck": "passed",
-      "evidence": ".planning/2026-10-25-new-additions/verification.json",
+      "android_build": "passed",
+      "device_verified": false,
+      "evidence": ".planning/2026-10-25-notification-fix/committed-evidence.json",
       "python_evidence_mode": "reused_identical_backend_and_test_trees",
       "python_source_commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
       "python_passed": 1661,
       "python_skipped": 1,
-      "source_tree": "0fc58293c39850524d215bb14b1f95ca4fe3d00c",
-      "scope": "新HEAD客户端/类型检查实测；Python源码与tests相对f550d90零差异，后端1661/1沿用而非本轮重跑；不替换候选或扩大真机证明"
-    }
+      "scope": "精确Git归档客户端252、TypeScript5.9.3与ARM64构建；后端同树沿用1661/1，非本轮重跑；原生通知实际投递待真机"
+    },
+    "incremental_verification_history": [
+      {
+        "source_commit": "4860c12218da4aa6af49c1f1c440726c1d23f0bc",
+        "client_passed": 236,
+        "typecheck": "passed",
+        "evidence": ".planning/2026-10-25-new-additions/verification.json",
+        "python_evidence_mode": "reused_identical_backend_and_test_trees",
+        "python_source_commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
+        "python_passed": 1661,
+        "python_skipped": 1,
+        "source_tree": "0fc58293c39850524d215bb14b1f95ca4fe3d00c",
+        "scope": "新HEAD客户端/类型检查实测；Python源码与tests相对f550d90零差异，后端1661/1沿用而非本轮重跑；不替换候选或扩大真机证明"
+      }
+    ]
   },
   "streams": [
     {
@@ -3821,6 +3837,27 @@
       "evidence": ".planning/2026-10-25-new-additions/verification.json",
       "report": "docs/协作开发/验收/2026-10-25-新增提交识别与现状校准.md",
       "scope": "实际提交6个文件；新增8项客户端测试；本轮仅核对登记/自动化，未独立接受该功能或验证新原生通知APK",
+      "candidate_included": false,
+      "device_verified": false
+    },
+    {
+      "id": "notification-review-fix",
+      "title": "通知回执、终态与后台同步可靠性修复",
+      "workpackage": "ALN-12",
+      "source_commit": "271378ef264939f4cc302dcfe0331becb31503d3",
+      "status": "fixed_pending_device_validation",
+      "files": [
+        "android-app/android/app/src/main/java/com/evoagent/NotificationModule.kt",
+        "android-app/src/device/notifications.ts",
+        "android-app/src/offline/backgroundRunner.ts",
+        "android-app/test/device/notificationReview.test.ts",
+        "android-app/test/offline/backgroundNotificationReview.test.ts"
+      ],
+      "author": "codex-runtime",
+      "independent_review": false,
+      "evidence": ".planning/2026-10-25-notification-fix/committed-evidence.json",
+      "report": "docs/协作开发/验收/2026-10-25-通知功能修复与复验.md",
+      "scope": "严格原生回执/权威终态/关闭channel/通知隔离/真实上传失败传播；16项新增探针，客户端252和类型检查、ARM64构建通过；未安装到真机",
       "candidate_included": false,
       "device_verified": false
     }

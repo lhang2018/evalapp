@@ -1,0 +1,26 @@
+{
+  "before_commit": "cb813f33a51e34fa374cf2a64fcd6190655d3264",
+  "probe_source_commit": "271378ef264939f4cc302dcfe0331becb31503d3",
+  "command": [
+    "node",
+    "--test",
+    "android-app/test/device/notificationReview.test.ts",
+    "android-app/test/offline/backgroundNotificationReview.test.ts"
+  ],
+  "probes": [
+    {
+      "path": "android-app/test/device/notificationReview.test.ts",
+      "sha256": "415ad679177b4ce3d6784213ad87d497d58d619e47ca7823eb7e6f44ede38354"
+    },
+    {
+      "path": "android-app/test/offline/backgroundNotificationReview.test.ts",
+      "sha256": "01ec096145908cb5c17a15ae7dad68bf464c709772cf87fcff1b313bc3b59a16"
+    }
+  ],
+  "exit_code": 1,
+  "passed": 1,
+  "failed": 15,
+  "log": ".planning/2026-10-25-notification-fix/before-committed.txt",
+  "sha256": "4f599f175c91dc59c6265c0a423659237200ec0867c70bc5de3bbcf342f16ab9",
+  "scope": "actual background assembly; native ports and HTTP explicit fixtures; original author tests unchanged"
+}

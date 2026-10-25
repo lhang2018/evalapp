@@ -1,0 +1,44 @@
+(node:123860) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/backgroundNotificationReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[background-sync] online=true flushed=true refreshed=true notified=0 error=none
+[background-sync] online=true flushed=true refreshed=true notified=0 error=none
+[background-sync] online=true flushed=true refreshed=true notified=0 error=none
+[background-sync] online=false flushed=false refreshed=false notified=0 error=offline
+[background-sync] online=true flushed=true refreshed=true notified=1 error=none
+[background-sync] online=true flushed=true refreshed=true notified=1 error=none
+✔ native-lookup notification failure preserves actual successful sync and refresh (23.1277ms)
+✔ after-read notification failure preserves actual successful sync and refresh (0.8212ms)
+✔ before-read notification failure preserves actual successful sync and refresh (0.6561ms)
+✔ offline sync retains its error and does not invoke the notification bridge (0.2029ms)
+✔ actual background assembly still posts a successful transition (0.9093ms)
+✖ a resolved unsuccessful SyncResult is preserved as a flush failure, without notification (1.7606ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 5
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 159.9558
+
+✖ failing tests:
+
+test at android-app\test\offline\backgroundNotificationReview.test.ts:108:1
+✖ a resolved unsuccessful SyncResult is preserved as a flush failure, without notification (1.7606ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/backgroundNotificationReview.test.ts:113:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

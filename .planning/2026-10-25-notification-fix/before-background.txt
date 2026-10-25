@@ -1,0 +1,96 @@
+(node:133204) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/backgroundNotificationReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[background-sync] failed: Error: notification bridge failure
+[background-sync] failed: Error: notification after-read failure
+[background-sync] failed: Error: notification before-read failure
+[background-sync] online=false flushed=false refreshed=false notified=0 error=offline
+[background-sync] online=true flushed=true refreshed=true notified=1 error=none
+✖ native-lookup notification failure preserves actual successful sync and refresh (20.2249ms)
+✖ after-read notification failure preserves actual successful sync and refresh (0.9502ms)
+✖ before-read notification failure preserves actual successful sync and refresh (0.2175ms)
+✖ offline sync retains its error and does not invoke the notification bridge (0.4046ms)
+✔ actual background assembly still posts a successful transition (0.9481ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 1
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 154.6617
+
+✖ failing tests:
+
+test at android-app\test\offline\backgroundNotificationReview.test.ts:71:3
+✖ native-lookup notification failure preserves actual successful sync and refresh (20.2249ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/backgroundNotificationReview.test.ts:74:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\offline\backgroundNotificationReview.test.ts:71:3
+✖ after-read notification failure preserves actual successful sync and refresh (0.9502ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/backgroundNotificationReview.test.ts:74:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\offline\backgroundNotificationReview.test.ts:71:3
+✖ before-read notification failure preserves actual successful sync and refresh (0.2175ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/backgroundNotificationReview.test.ts:74:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\offline\backgroundNotificationReview.test.ts:84:1
+✖ offline sync retains its error and does not invoke the notification bridge (0.4046ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/backgroundNotificationReview.test.ts:90:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
