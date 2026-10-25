@@ -3402,7 +3402,7 @@
       "owner": "zcode-main",
       "reviewer": null,
       "branch": "feature/user-direction",
-      "base_commit": "5e3972e",
+      "base_commit": "5e3972e56e593981250b264180043be5b9a7043d",
       "status": "in_progress",
       "ownership_history": [
         {
@@ -4831,9 +4831,20 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-25",
+          "scope": "provider/expert 池原子预留 + 旧 Goal 家族用量迁移；隔离树验证，排除共享脏树他人改动",
+          "source_commit": "4091484ecd6d02c3422658e6ffdf0819b2fda2b1",
+          "functional_commit": "4091484ecd6d02c3422658e6ffdf0819b2fda2b1",
+          "source_tree": "816d51044cee1ffbdf08ea044092d6dfe1947079",
+          "result": "special 22 passed; budget domain 110 passed; isolated full 1723 passed/1 skipped; dirty-workspace 18 failures belong to other authors' uncommitted files",
+          "log": ".planning/2026-10-25-aln15p/evidence.json",
+          "delivery": "docs/协作开发/交付/ALN-15-P-Provider-Expert预算原子化与旧Goal迁移.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/15-P-Provider-Expert预算原子化与旧Goal迁移.md",
       "shared_files": [
         "evoagent/core/budget.py",
@@ -4849,9 +4860,11 @@
         "GLOBAL",
         "G4"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "next_step": "待独立复核：并发不超留/迁移可回退且余额一致/未知金额不假定零的证据见交付文档与 .planning/2026-10-25-aln15p/；审阅人未定，不自批为独立验收",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-      "prerequisites": "可重复并发和迁移夹具"
+      "prerequisites": "可重复并发和迁移夹具",
+      "delivered_commit": "4091484ecd6d02c3422658e6ffdf0819b2fda2b1",
+      "delivery": "docs/协作开发/交付/ALN-15-P-Provider-Expert预算原子化与旧Goal迁移.md"
     },
     {
       "id": "ALN-15-D",
@@ -5819,21 +5832,8 @@
       ]
     }
   ],
-  "execution_note": "新增分期计划已登记；29-A已交付review，23-A已认领待开工。每张卡实际owner与独占路径以本表为准，本会话WIP=1。其他线按真实认领推进；待审接口可用于独立实现，不代表接受或发布。baseline仍candidate，published_commit为空。",
-  "execution_queue": {
-    "mode": "codex-runtime本会话串行；其他开发者按独占卡并行",
-    "owner": "codex-runtime",
-    "wip_limit": 1,
-    "active_task": null,
-    "next_task": "ALN-23-A",
-    "items": [
-      {
-        "id": "ALN-23-A",
-        "state": "claimed",
-        "condition": "验收公共尺子已交付；开工更新真实base_commit，复用Task权威并协调共享API/App文件"
-      }
-    ]
-  },
+  "execution_note": "新增分期计划已登记；29-A已交付review，23-A由zcode-main独占卡推进（实现提交0fda873），24-B在途；原串行队列已归档，当前无单开发者队列。每张卡实际owner与独占路径以本表为准。其他线按真实认领推进；待审接口可用于独立实现，不代表接受或发布。baseline仍candidate，published_commit为空。",
+  "execution_queue": null,
   "peer_review_batch": {
     "date": "2026-10-23",
     "reviewer": "codex-runtime",
@@ -5964,6 +5964,24 @@
             "id": "ALN-23-A",
             "state": "claimed",
             "condition": "29-A交付后按Task权威开发统一契约，实际开工更新base_commit"
+          }
+        ]
+      }
+    },
+    {
+      "date": "2026-10-25",
+      "reason": "29-A 已交付 review；23-A 由 zcode-main 独占卡推进（实现提交 0fda873），其 24-B 仍在途，原 codex-runtime 本会话串行已不成立。归档队列，待两卡交付后重建；未改变任何卡的 owner/status。",
+      "queue": {
+        "mode": "codex-runtime本会话串行；其他开发者按独占卡并行",
+        "owner": "zcode-main",
+        "wip_limit": 1,
+        "active_task": "ALN-23-A",
+        "next_task": "ALN-23-A",
+        "items": [
+          {
+            "id": "ALN-23-A",
+            "state": "claimed",
+            "condition": "验收公共尺子已交付；开工更新真实base_commit，复用Task权威并协调共享API/App文件"
           }
         ]
       }

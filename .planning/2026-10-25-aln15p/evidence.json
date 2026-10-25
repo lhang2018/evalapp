@@ -1,0 +1,44 @@
+{
+  "card": "ALN-15-P",
+  "title": "Provider/Expert预算原子化与旧Goal迁移",
+  "author": "opencode-evo",
+  "date": "2026-10-25",
+  "branch": "feature/user-direction",
+  "claimed_base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
+  "functional_commit": "4091484ecd6d02c3422658e6ffdf0819b2fda2b1",
+  "source_tree": "816d51044cee1ffbdf08ea044092d6dfe1947079",
+  "commit_parent": "91af82743a39e07abb03cf25d1c891323f649cf8",
+  "delivery": "docs/协作开发/交付/ALN-15-P-Provider-Expert预算原子化与旧Goal迁移.md",
+  "isolation": {
+    "method": "git worktree add <tmp> HEAD(d1272c9) + copy this card's 4 source files and 2 test files",
+    "note": "shared workspace contained other authors' uncommitted edits; isolated tree pins this card only"
+  },
+  "commands": [
+    {
+      "cmd": "python -X utf8 -m pytest tests/test_budget_pool_atomization.py tests/test_goal_budget_migration.py -q --no-header",
+      "result": "22 passed"
+    },
+    {
+      "cmd": "python -X utf8 -m pytest tests/test_budget_hierarchy.py tests/test_runtime_reservations.py tests/test_budget_reservations.py tests/test_budget_pool_atomization.py tests/test_goal_budget_migration.py -q --no-header",
+      "result": "110 passed"
+    },
+    {
+      "cmd": "python -X utf8 -m pytest tests -q --no-header  (isolated tree)",
+      "result": "1723 passed, 1 skipped in 369.32s",
+      "log": ".planning/2026-10-25-aln15p/isolated-full.log"
+    },
+    {
+      "cmd": "python -X utf8 -m pytest tests -q --no-header  (shared dirty workspace, reference only)",
+      "result": "1733 passed, 18 failed",
+      "note": "all failures in other authors' uncommitted file domains (feedback_api/controller/developed_review); isolated tree 159/159 for the same domains"
+    }
+  ],
+  "behavior": [
+    "atomic provider/expert holds (BEGIN IMMEDIATE) with immutable per-period accounts",
+    "repeated check reuses the undispatched hold (legacy check idempotence)",
+    "unknown cost holds the upper bound and is never treated as free",
+    "multi-pool check failure rolls back holds created in that pass",
+    "legacy pool ledger mirror and memory-ledger fallback unchanged",
+    "goal migration: idempotent key goal-migration:v1|goal|task, binding marker without legacy_usage, verify zero-diff, rollback only undispatched"
+  ]
+}
