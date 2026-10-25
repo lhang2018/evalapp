@@ -4916,10 +4916,9 @@
       "title": "Provider/Expert预算原子化与旧Goal迁移",
       "stream": "runtime",
       "owner": "opencode-evo",
-      "reviewer": null,
-      "branch": "feature/user-direction",
+      "reviewer": "zcode-main",      "branch": "feature/user-direction",
       "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -4932,7 +4931,12 @@
           "log": ".planning/2026-10-25-aln15p/evidence.json",
           "delivery": "docs/协作开发/交付/ALN-15-P-Provider-Expert预算原子化与旧Goal迁移.md"
         }
-      ],
+      ,
+    {
+      "date": "2026-10-25",
+      "scope": "独立复核（zcode-main）：R1专项22项隔离树复跑、R2预算域回归89过、R3核心声明独立探针——8线程并发_check_pools总持额精确等于池上界（成功4+拒绝4，无双重占用）、R4不同配比复验、R5零费不假定回退语义、R6迁移幂等与防二次计费、R7隔离验证口径采信；结论转accepted（本卡范围）",
+      "review_report": "docs/协作开发/验收/2026-10-25-ALN-15-P独立复核.md"
+    }],
       "card": "docs/协作开发/任务卡/15-P-Provider-Expert预算原子化与旧Goal迁移.md",
       "shared_files": [
         "evoagent/core/budget.py",
