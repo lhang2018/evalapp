@@ -12,8 +12,12 @@ SOURCE_ROOTS = ("evoagent", "android-app", "tests")
 
 
 def check(root: Path, head_ref: str = "HEAD"):
+    # A source archive can be inside another repository. Git pathspecs must be
+    # rooted at the object repository, while card files belong to the archive.
+    repository = Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"], cwd=root).decode().strip())
+
     def git(*args):
-        return subprocess.check_output(["git", *args], cwd=root)
+        return subprocess.check_output(["git", *args], cwd=repository)
 
     board = json.loads((root / "docs/协作开发/workboard.json").read_text(encoding="utf-8"))
     base = board["baseline"]["prepared_candidate"]["commit"]
@@ -25,7 +29,7 @@ def check(root: Path, head_ref: str = "HEAD"):
         if not re.fullmatch(r"[0-9a-f]{40}", commit):
             errors.append("change entry needs an exact source commit: " + entry.get("id", "?"))
             continue
-        ancestor = subprocess.run(["git", "merge-base", "--is-ancestor", commit, head], cwd=root, capture_output=True)
+        ancestor = subprocess.run(["git", "merge-base", "--is-ancestor", commit, head], cwd=repository, capture_output=True)
         if ancestor.returncode:
             errors.append("change entry is not part of HEAD: " + entry.get("id", "?"))
             continue
@@ -38,9 +42,8 @@ def check(root: Path, head_ref: str = "HEAD"):
             # A later unregistered edit to the same filename must also be found.
             if path in changed and git("ls-tree", "-z", commit, "--", path) == git("ls-tree", "-z", head, "--", path):
                 covered.add(path)
-    cards = set(git("ls-files", "-z", "--cached", "--others", "--exclude-standard", "--",
-                    "docs/协作开发/任务卡").decode().split("\0")) - {""}
-    cards = {path for path in cards if path.endswith(".md") and (root / path).is_file()}
+    directory = root / "docs/协作开发/任务卡"
+    cards = {path.relative_to(root).as_posix() for path in directory.rglob("*.md") if path.is_file()}
     registered = {card["card"] for card in board["dispatches"]}
     unknown = sorted(cards - registered)
     missing = sorted(registered - cards)

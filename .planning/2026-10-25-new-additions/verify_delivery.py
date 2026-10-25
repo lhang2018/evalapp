@@ -43,7 +43,7 @@ assert len(new["post_candidate_changes"]) == 1
 entry = new["post_candidate_changes"][0]
 assert entry["status"] == "committed_pending_acceptance"
 assert len(entry["files"]) == 6 and entry["candidate_included"] is False and entry["device_verified"] is False
-assert json.loads(blob(prefix + "coverage-smoke.json"))["passed"] == 7
+assert json.loads(blob(prefix + "coverage-smoke.json"))["passed"] == 8
 snapshot = root / "outputs" / ("new-additions-delivery-" + commit[:7])
 snapshot.mkdir(exist_ok=False)
 with zipfile.ZipFile(io.BytesIO(git("archive", "--format=zip", commit))) as archive:

@@ -1,5 +1,5 @@
 {
-  "passed": 7,
+  "passed": 8,
   "scenarios": [
     "new source found",
     "registered source accepted",
@@ -7,8 +7,9 @@
     "registered card accepted",
     "later same-file edit found",
     "latest file version accepted",
-    "false file claim rejected"
+    "false file claim rejected",
+    "archive files checked against backing Git objects"
   ],
-  "fixture": "E:\\evalapp\\outputs\\coverage-smoke-dntrwzx_",
+  "fixture": "E:\\evalapp\\outputs\\coverage-smoke-kk0b7rrg",
   "scope": "real isolated Git fixture; no product behavior test"
 }

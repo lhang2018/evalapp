@@ -1,9 +1,11 @@
 """Exercise discovery against real isolated Git history, including same-file edits."""
 import importlib.util
+import io
 import json
 from pathlib import Path
 import subprocess
 import tempfile
+import zipfile
 
 root = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location("coverage_checker", root / "tools/check_source_coverage.py")
@@ -65,8 +67,19 @@ assert checker.check(fixture)["ok"]
 board["post_candidate_changes"][-1]["files"].append("evoagent/not-in-commit.py")
 save()
 assert not checker.check(fixture)["ok"]
-result = dict(passed=7, scenarios=["new source found", "registered source accepted", "new Chinese task card found",
-    "registered card accepted", "later same-file edit found", "latest file version accepted", "false file claim rejected"],
+board["post_candidate_changes"][-1]["files"].pop()
+save()
+git("add", "docs")
+git("commit", "-m", "fixture metadata")
+metadata = git("rev-parse", "HEAD")
+archive_path = fixture / "archive"
+archive_path.mkdir()
+with zipfile.ZipFile(io.BytesIO(subprocess.check_output(["git", "archive", "--format=zip", metadata], cwd=fixture))) as archive:
+    archive.extractall(archive_path)
+assert checker.check(archive_path, metadata)["ok"]
+result = dict(passed=8, scenarios=["new source found", "registered source accepted", "new Chinese task card found",
+    "registered card accepted", "later same-file edit found", "latest file version accepted", "false file claim rejected",
+    "archive files checked against backing Git objects"],
     fixture=str(fixture), scope="real isolated Git fixture; no product behavior test")
 (Path(__file__).parent / "coverage-smoke.json").write_text(json.dumps(result, indent=2), encoding="utf-8", newline="\n")
 print(json.dumps(result, indent=2))
