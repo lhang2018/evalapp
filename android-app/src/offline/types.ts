@@ -165,8 +165,12 @@ export interface LocalTask {
   created_at: number;
   updated_at: number;
   last_sync_error?: string | null;
+  /** Goal 关联（G-01 目标注册表） */
+  goal_id?: string | null;
   /** 统一任务契约（ALN-23-A）：随任务持久化并在提交时透传服务端 */
   contract?: TaskContractInput | null;
+  /** 产物元数据（ALN-24-A 交付层写入） */
+  result_evidence?: Array<Record<string, unknown>> | null;
 }
 
 export interface OfflineState {

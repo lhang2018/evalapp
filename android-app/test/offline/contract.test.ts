@@ -36,7 +36,7 @@ test("旧任务（无契约字段）兼容", () => {
 
 test("acceptance_criteria 兼容非标准格式", () => {
   const v = contractViewOf({
-    acceptance_criteria: [{ criterion: "结构化条目" }] as Array<Record<string, unknown>>,
+    acceptance_criteria: ["纯文本条目", { criterion: "结构化条目" }] as any,
   });
   assert.deepEqual(v.acceptanceCriteria, ["纯文本条目", "结构化条目"]);
 });
