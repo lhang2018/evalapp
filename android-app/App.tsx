@@ -114,6 +114,14 @@ import type {
   NativeVoiceModuleLike,
   VoiceCapability,
 } from "./src/device/voice.ts";
+import {
+  applyTranscription,
+  buildVoiceTaskInput,
+  describeVoiceScope,
+  editVoiceEntry,
+  voiceEntrySummary,
+} from "./src/features/voice/entry.ts";
+import type { VoiceEntry } from "./src/features/voice/entry.ts";
 
 const POLL_MS = 5000;
 const DEFAULT_BASE_URL = "http://10.0.2.2:8300";
@@ -239,6 +247,7 @@ export default function App(): React.JSX.Element {
   );
   const [voiceBusy, setVoiceBusy] = useState(false);
   const [voiceMessage, setVoiceMessage] = useState<string | null>(null);
+  const [voiceEntry, setVoiceEntry] = useState<VoiceEntry | null>(null);
   const [speakingTask, setSpeakingTask] = useState<string | null>(null);
 
   // 服务器地址：模拟器默认 10.0.2.2；真机可填局域网 IP（或 adb reverse 后用 127.0.0.1）
@@ -716,6 +725,7 @@ export default function App(): React.JSX.Element {
           `${record.outcome === "succeeded" ? "成功" : "失败"}` +
           `，任务 ${task.local_task_id}`);
         setGoal("");
+        setVoiceEntry(null);
         setError(null);
         await reloadLocal();
         if (online) await flush(true);
@@ -723,6 +733,7 @@ export default function App(): React.JSX.Element {
       }
       const task = await services.tasks.submit(text, intent, "low");
       setGoal("");
+      setVoiceEntry(null);
       setError(null);
       await reloadLocal();
       if (online) {
@@ -768,15 +779,26 @@ export default function App(): React.JSX.Element {
     setVoiceBusy(true);
     try {
       const result = await services.voice.transcribe(15000);
-      if (result.status === "transcribed") {
-        setGoal(result.transcript);
+      const capability = await services.voice.status();
+      const entry = applyTranscription(result, capability);
+      setVoiceEntry(entry);
+      // 转写只填入与文字输入同一个 goal；确认后走同一提交路径，绝不自动提交
+      const bridged = buildVoiceTaskInput(entry);
+      if (bridged.ok) {
+        setGoal(bridged.goal);
       }
-      setVoiceMessage(result.message);
+      setVoiceMessage(voiceEntrySummary(entry) || entry.message);
     } finally {
       setVoiceBusy(false);
       await loadVoiceStatus();
     }
   }, [voiceBusy, services, loadVoiceStatus]);
+
+  // 文字与语音共用同一个 goal 输入框；用户编辑语音草稿即记录为已修正
+  const updateGoal = useCallback((text: string) => {
+    setGoal(text);
+    setVoiceEntry((entry) => (entry ? editVoiceEntry(entry, text) : entry));
+  }, []);
 
   const cancelVoiceInput = useCallback(async () => {
     await services.voice.cancel();
@@ -1431,7 +1453,7 @@ export default function App(): React.JSX.Element {
               style={s.input}
               placeholder="输入任务目标，例如：查询现在几点了"
               value={goal}
-              onChangeText={setGoal}
+              onChangeText={updateGoal}
             />
             <View style={s.voiceAction}>
               <Button
@@ -1445,6 +1467,9 @@ export default function App(): React.JSX.Element {
             </View>
           </View>
           {voiceMessage && <Text style={s.hint}>{voiceMessage}</Text>}
+          {voiceEntry?.status === "transcribed" && (
+            <Text style={s.hint}>语音范围：{voiceEntry.scope.note}</Text>
+          )}
           {busy ? (
             <ActivityIndicator />
           ) : (
@@ -1632,6 +1657,9 @@ export default function App(): React.JSX.Element {
             <Text style={s.hint}>
               语音只在点击时使用：识别文本填入任务输入框，不自动提交；
               朗读仅播放任务结果文本。
+              {voiceCapability
+                ? `范围：${describeVoiceScope(voiceCapability).note}。`
+                : ""}
             </Text>
             <Text style={s.hint}>文件/通知：当前版本未使用</Text>
             <Button title="打开应用权限设置" onPress={() => void Linking.openSettings()} />
