@@ -1,0 +1,701 @@
+{
+ "task": "ALN-28-A 外部事实核验与可信交付",
+ "measured_at": 1792924281.435716,
+ "real_fetch": {
+  "url": "https://example.com/",
+  "accessible": true,
+  "latency_s": 0.317,
+  "status_ok": true,
+  "content_digest": "25ddf2c883e0d1958ea971d279a7e4f0fd446724ee3db7db19dadabd4a62e484",
+  "publisher": "example.com",
+  "quote": "Example Domain",
+  "fixture": false,
+  "measured_at": 1792924281.435716
+ },
+ "real_source_delivery": {
+  "topic": "真实来源引用示例",
+  "generated_at": 1792924281.435716,
+  "delivered": [
+   {
+    "claim_id": "c_real_page",
+    "statement": "example.com 页面包含 “Example Domain” 文案",
+    "state": "supported",
+    "confidence": 0.7,
+    "supporting": [
+     {
+      "source_id": "src_real_example",
+      "url": "https://example.com/",
+      "publisher": "example.com",
+      "retrieved_at": 1792924281.435716,
+      "content_digest": "25ddf2c883e0d1958ea971d279a7e4f0fd446724ee3db7db19dadabd4a62e484",
+      "quote": "Example Domain",
+      "trust": "primary",
+      "fixture": false
+     }
+    ],
+    "conflicting": [],
+    "mentions": [],
+    "inaccessible": [],
+    "applicable_window": {
+     "valid_from": null,
+     "valid_until": null
+    },
+    "reasons": [
+     "可访问来源直接支持（1 条，1 个发布者）"
+    ],
+    "model_only": false,
+    "policy": "无外部证据不得仅凭模型自述判可信"
+   }
+  ],
+  "conflicts": [],
+  "unverified": [],
+  "citations": [
+   {
+    "source_id": "src_real_example",
+    "url": "https://example.com/",
+    "publisher": "example.com",
+    "retrieved_at": 1792924281.435716,
+    "content_digest": "25ddf2c883e0d1958ea971d279a7e4f0fd446724ee3db7db19dadabd4a62e484",
+    "quote": "Example Domain",
+    "trust": "primary",
+    "fixture": false
+   }
+  ],
+  "counts": {
+   "claims": 1,
+   "delivered": 1,
+   "conflicts": 0,
+   "unverified": 0,
+   "fixture_citations": 0
+  },
+  "policy": "无外部证据不得仅凭模型自述判可信",
+  "rules": {
+   "citation_accessible_required": true,
+   "model_only_trust": false,
+   "conflicts_visible": true,
+   "applicable_window_required": true,
+   "fixture_citations_labelled": true
+  }
+ },
+ "fixture_matrix": {
+  "sources_fixture": [
+   {
+    "source_id": "src_fixture_2b2b7c8101c6",
+    "url": "fixture://k_supported/fixture-a/supports",
+    "publisher": "fixture-a",
+    "retrieved_at": 1792924281.7528524,
+    "content_digest": "2b2b7c8101c628c09c9cb9dc2068351fb02eafcd1ab0680e3655743c4adcd000",
+    "quote": "夹具：结论 A 成立（来源一）",
+    "claim_key": "k_supported",
+    "stance": "supports",
+    "trust": "secondary",
+    "accessible": true,
+    "fetch_error": "",
+    "fixture": true
+   },
+   {
+    "source_id": "src_fixture_533553e81f5f",
+    "url": "fixture://k_supported/fixture-b/supports",
+    "publisher": "fixture-b",
+    "retrieved_at": 1792924281.7528524,
+    "content_digest": "533553e81f5fc549cc4e0cb36e011ef8e0970b898e069d1cc5284af43ddbf425",
+    "quote": "夹具：结论 A 成立（来源二）",
+    "claim_key": "k_supported",
+    "stance": "supports",
+    "trust": "secondary",
+    "accessible": true,
+    "fetch_error": "",
+    "fixture": true
+   },
+   {
+    "source_id": "src_fixture_0796f6c7d8db",
+    "url": "fixture://k_conflict/fixture-c/supports",
+    "publisher": "fixture-c",
+    "retrieved_at": 1792924281.7528524,
+    "content_digest": "0796f6c7d8dbeda8e770aae945a00a6c43e11d353ec6f218911ec140f00186bb",
+    "quote": "夹具：结论 B 成立",
+    "claim_key": "k_conflict",
+    "stance": "supports",
+    "trust": "secondary",
+    "accessible": true,
+    "fetch_error": "",
+    "fixture": true
+   },
+   {
+    "source_id": "src_fixture_8720e16b3bb3",
+    "url": "fixture://k_conflict/fixture-d/contradicts",
+    "publisher": "fixture-d",
+    "retrieved_at": 1792924281.7528524,
+    "content_digest": "8720e16b3bb3d6dc6bba57865f9a4de9ea3c07ab0c2024b90931074fbc3d14b8",
+    "quote": "夹具：结论 B 不成立",
+    "claim_key": "k_conflict",
+    "stance": "contradicts",
+    "trust": "secondary",
+    "accessible": true,
+    "fetch_error": "",
+    "fixture": true
+   },
+   {
+    "source_id": "src_fixture_cfc7a45499b7",
+    "url": "fixture://k_stale/fixture-e/supports",
+    "publisher": "fixture-e",
+    "retrieved_at": 1792924281.7528524,
+    "content_digest": "cfc7a45499b7b93067c69a3f072d1b07d78928d71d0d815a7e867f2b99c0776c",
+    "quote": "夹具：结论 C 在旧窗口成立",
+    "claim_key": "k_stale",
+    "stance": "supports",
+    "trust": "secondary",
+    "accessible": true,
+    "fetch_error": "",
+    "fixture": true
+   },
+   {
+    "source_id": "src_fixture_b90a5337573b",
+    "url": "fixture://k_mentions/fixture-f/mentions",
+    "publisher": "fixture-f",
+    "retrieved_at": 1792924281.7528524,
+    "content_digest": "b90a5337573b231122f53a2be0c451b52df5a49b2df596b9ce361141ffb1f08c",
+    "quote": "夹具：提到主题 D，但未下结论",
+    "claim_key": "k_mentions",
+    "stance": "mentions",
+    "trust": "secondary",
+    "accessible": true,
+    "fetch_error": "",
+    "fixture": true
+   },
+   {
+    "source_id": "src_fixture_92c4038aaf85",
+    "url": "fixture://k_unreachable/fixture-g/supports",
+    "publisher": "fixture-g",
+    "retrieved_at": 1792924281.7528524,
+    "content_digest": "92c4038aaf85549e6a5c421fe38b3a9738b4890ac768a8a543dd2a2e8b397ea2",
+    "quote": "夹具：不可访问来源",
+    "claim_key": "k_unreachable",
+    "stance": "supports",
+    "trust": "secondary",
+    "accessible": false,
+    "fetch_error": "fixture inaccessible",
+    "fixture": true
+   }
+  ],
+  "verdicts": {
+   "c_supported": {
+    "claim_id": "c_supported",
+    "statement": "结论 A 成立",
+    "state": "supported",
+    "confidence": 0.9,
+    "supporting": [
+     {
+      "source_id": "src_fixture_2b2b7c8101c6",
+      "url": "fixture://k_supported/fixture-a/supports",
+      "publisher": "fixture-a",
+      "retrieved_at": 1792924281.7528524,
+      "content_digest": "2b2b7c8101c628c09c9cb9dc2068351fb02eafcd1ab0680e3655743c4adcd000",
+      "quote": "夹具：结论 A 成立（来源一）",
+      "trust": "secondary",
+      "fixture": true
+     },
+     {
+      "source_id": "src_fixture_533553e81f5f",
+      "url": "fixture://k_supported/fixture-b/supports",
+      "publisher": "fixture-b",
+      "retrieved_at": 1792924281.7528524,
+      "content_digest": "533553e81f5fc549cc4e0cb36e011ef8e0970b898e069d1cc5284af43ddbf425",
+      "quote": "夹具：结论 A 成立（来源二）",
+      "trust": "secondary",
+      "fixture": true
+     }
+    ],
+    "conflicting": [],
+    "mentions": [],
+    "inaccessible": [],
+    "applicable_window": {
+     "valid_from": null,
+     "valid_until": null
+    },
+    "reasons": [
+     "可访问来源直接支持（2 条，2 个发布者）"
+    ],
+    "model_only": false,
+    "policy": "无外部证据不得仅凭模型自述判可信"
+   },
+   "c_conflict": {
+    "claim_id": "c_conflict",
+    "statement": "结论 B 成立",
+    "state": "contradicted",
+    "confidence": 0.4,
+    "supporting": [
+     {
+      "source_id": "src_fixture_0796f6c7d8db",
+      "url": "fixture://k_conflict/fixture-c/supports",
+      "publisher": "fixture-c",
+      "retrieved_at": 1792924281.7528524,
+      "content_digest": "0796f6c7d8dbeda8e770aae945a00a6c43e11d353ec6f218911ec140f00186bb",
+      "quote": "夹具：结论 B 成立",
+      "trust": "secondary",
+      "fixture": true
+     }
+    ],
+    "conflicting": [
+     {
+      "source_id": "src_fixture_8720e16b3bb3",
+      "url": "fixture://k_conflict/fixture-d/contradicts",
+      "publisher": "fixture-d",
+      "retrieved_at": 1792924281.7528524,
+      "content_digest": "8720e16b3bb3d6dc6bba57865f9a4de9ea3c07ab0c2024b90931074fbc3d14b8",
+      "quote": "夹具：结论 B 不成立",
+      "trust": "secondary",
+      "fixture": true
+     }
+    ],
+    "mentions": [],
+    "inaccessible": [],
+    "applicable_window": {
+     "valid_from": null,
+     "valid_until": null
+    },
+    "reasons": [
+     "来源冲突：1 条支持、1 条反对"
+    ],
+    "model_only": false,
+    "policy": "无外部证据不得仅凭模型自述判可信"
+   },
+   "c_inferred": {
+    "claim_id": "c_inferred",
+    "statement": "结论 I 由内部事实推导",
+    "state": "inferred",
+    "confidence": 0.5,
+    "supporting": [],
+    "conflicting": [],
+    "mentions": [],
+    "inaccessible": [],
+    "applicable_window": {
+     "valid_from": null,
+     "valid_until": null
+    },
+    "reasons": [
+     "由内部已核验事实推导，非外部直接支持"
+    ],
+    "model_only": true,
+    "policy": "无外部证据不得仅凭模型自述判可信"
+   },
+   "c_unknown": {
+    "claim_id": "c_unknown",
+    "statement": "模型自述结论 U 成立",
+    "state": "unknown",
+    "confidence": 0.0,
+    "supporting": [],
+    "conflicting": [],
+    "mentions": [],
+    "inaccessible": [],
+    "applicable_window": {
+     "valid_from": null,
+     "valid_until": null
+    },
+    "reasons": [
+     "未提供外部来源：模型自述不得判为可信"
+    ],
+    "model_only": true,
+    "policy": "无外部证据不得仅凭模型自述判可信"
+   },
+   "c_stale": {
+    "claim_id": "c_stale",
+    "statement": "结论 C 成立",
+    "state": "stale",
+    "confidence": 0.3,
+    "supporting": [
+     {
+      "source_id": "src_fixture_cfc7a45499b7",
+      "url": "fixture://k_stale/fixture-e/supports",
+      "publisher": "fixture-e",
+      "retrieved_at": 1792924281.7528524,
+      "content_digest": "cfc7a45499b7b93067c69a3f072d1b07d78928d71d0d815a7e867f2b99c0776c",
+      "quote": "夹具：结论 C 在旧窗口成立",
+      "trust": "secondary",
+      "fixture": true
+     }
+    ],
+    "conflicting": [],
+    "mentions": [],
+    "inaccessible": [],
+    "applicable_window": {
+     "valid_from": null,
+     "valid_until": 1792920681.435716
+    },
+    "reasons": [
+     "适用时间已过：valid_until=1792920681.435716 早于当前 1792924281.435716"
+    ],
+    "model_only": false,
+    "policy": "无外部证据不得仅凭模型自述判可信"
+   },
+   "c_mentions": {
+    "claim_id": "c_mentions",
+    "statement": "结论 D 成立",
+    "state": "unknown",
+    "confidence": 0.0,
+    "supporting": [],
+    "conflicting": [],
+    "mentions": [
+     {
+      "source_id": "src_fixture_b90a5337573b",
+      "url": "fixture://k_mentions/fixture-f/mentions",
+      "publisher": "fixture-f",
+      "retrieved_at": 1792924281.7528524,
+      "content_digest": "b90a5337573b231122f53a2be0c451b52df5a49b2df596b9ce361141ffb1f08c",
+      "quote": "夹具：提到主题 D，但未下结论",
+      "trust": "secondary",
+      "fixture": true
+     }
+    ],
+    "inaccessible": [],
+    "applicable_window": {
+     "valid_from": null,
+     "valid_until": null
+    },
+    "reasons": [
+     "来源仅提及该主题，未直接支持结论，不判为可信"
+    ],
+    "model_only": true,
+    "policy": "无外部证据不得仅凭模型自述判可信"
+   },
+   "c_unreachable": {
+    "claim_id": "c_unreachable",
+    "statement": "结论 G 成立",
+    "state": "unknown",
+    "confidence": 0.0,
+    "supporting": [],
+    "conflicting": [],
+    "mentions": [],
+    "inaccessible": [
+     {
+      "source_id": "src_fixture_92c4038aaf85",
+      "url": "fixture://k_unreachable/fixture-g/supports",
+      "publisher": "fixture-g",
+      "retrieved_at": 1792924281.7528524,
+      "content_digest": "92c4038aaf85549e6a5c421fe38b3a9738b4890ac768a8a543dd2a2e8b397ea2",
+      "quote": "夹具：不可访问来源",
+      "trust": "secondary",
+      "fixture": true
+     }
+    ],
+    "applicable_window": {
+     "valid_from": null,
+     "valid_until": null
+    },
+    "reasons": [
+     "未提供外部来源：模型自述不得判为可信",
+     "1 个来源不可访问，未计入证据"
+    ],
+    "model_only": true,
+    "policy": "无外部证据不得仅凭模型自述判可信"
+   }
+  },
+  "delivery": {
+   "topic": "ALN-28-A 本地对照矩阵",
+   "generated_at": 1792924281.435716,
+   "delivered": [
+    {
+     "claim_id": "c_supported",
+     "statement": "结论 A 成立",
+     "state": "supported",
+     "confidence": 0.9,
+     "supporting": [
+      {
+       "source_id": "src_fixture_2b2b7c8101c6",
+       "url": "fixture://k_supported/fixture-a/supports",
+       "publisher": "fixture-a",
+       "retrieved_at": 1792924281.7528524,
+       "content_digest": "2b2b7c8101c628c09c9cb9dc2068351fb02eafcd1ab0680e3655743c4adcd000",
+       "quote": "夹具：结论 A 成立（来源一）",
+       "trust": "secondary",
+       "fixture": true
+      },
+      {
+       "source_id": "src_fixture_533553e81f5f",
+       "url": "fixture://k_supported/fixture-b/supports",
+       "publisher": "fixture-b",
+       "retrieved_at": 1792924281.7528524,
+       "content_digest": "533553e81f5fc549cc4e0cb36e011ef8e0970b898e069d1cc5284af43ddbf425",
+       "quote": "夹具：结论 A 成立（来源二）",
+       "trust": "secondary",
+       "fixture": true
+      }
+     ],
+     "conflicting": [],
+     "mentions": [],
+     "inaccessible": [],
+     "applicable_window": {
+      "valid_from": null,
+      "valid_until": null
+     },
+     "reasons": [
+      "可访问来源直接支持（2 条，2 个发布者）"
+     ],
+     "model_only": false,
+     "policy": "无外部证据不得仅凭模型自述判可信"
+    }
+   ],
+   "conflicts": [
+    {
+     "claim_id": "c_conflict",
+     "statement": "结论 B 成立",
+     "state": "contradicted",
+     "confidence": 0.4,
+     "supporting": [
+      {
+       "source_id": "src_fixture_0796f6c7d8db",
+       "url": "fixture://k_conflict/fixture-c/supports",
+       "publisher": "fixture-c",
+       "retrieved_at": 1792924281.7528524,
+       "content_digest": "0796f6c7d8dbeda8e770aae945a00a6c43e11d353ec6f218911ec140f00186bb",
+       "quote": "夹具：结论 B 成立",
+       "trust": "secondary",
+       "fixture": true
+      }
+     ],
+     "conflicting": [
+      {
+       "source_id": "src_fixture_8720e16b3bb3",
+       "url": "fixture://k_conflict/fixture-d/contradicts",
+       "publisher": "fixture-d",
+       "retrieved_at": 1792924281.7528524,
+       "content_digest": "8720e16b3bb3d6dc6bba57865f9a4de9ea3c07ab0c2024b90931074fbc3d14b8",
+       "quote": "夹具：结论 B 不成立",
+       "trust": "secondary",
+       "fixture": true
+      }
+     ],
+     "mentions": [],
+     "inaccessible": [],
+     "applicable_window": {
+      "valid_from": null,
+      "valid_until": null
+     },
+     "reasons": [
+      "来源冲突：1 条支持、1 条反对"
+     ],
+     "model_only": false,
+     "policy": "无外部证据不得仅凭模型自述判可信"
+    }
+   ],
+   "unverified": [
+    {
+     "claim_id": "c_inferred",
+     "statement": "结论 I 由内部事实推导",
+     "state": "inferred",
+     "confidence": 0.5,
+     "supporting": [],
+     "conflicting": [],
+     "mentions": [],
+     "inaccessible": [],
+     "applicable_window": {
+      "valid_from": null,
+      "valid_until": null
+     },
+     "reasons": [
+      "由内部已核验事实推导，非外部直接支持"
+     ],
+     "model_only": true,
+     "policy": "无外部证据不得仅凭模型自述判可信"
+    },
+    {
+     "claim_id": "c_unknown",
+     "statement": "模型自述结论 U 成立",
+     "state": "unknown",
+     "confidence": 0.0,
+     "supporting": [],
+     "conflicting": [],
+     "mentions": [],
+     "inaccessible": [],
+     "applicable_window": {
+      "valid_from": null,
+      "valid_until": null
+     },
+     "reasons": [
+      "未提供外部来源：模型自述不得判为可信"
+     ],
+     "model_only": true,
+     "policy": "无外部证据不得仅凭模型自述判可信"
+    },
+    {
+     "claim_id": "c_stale",
+     "statement": "结论 C 成立",
+     "state": "stale",
+     "confidence": 0.3,
+     "supporting": [
+      {
+       "source_id": "src_fixture_cfc7a45499b7",
+       "url": "fixture://k_stale/fixture-e/supports",
+       "publisher": "fixture-e",
+       "retrieved_at": 1792924281.7528524,
+       "content_digest": "cfc7a45499b7b93067c69a3f072d1b07d78928d71d0d815a7e867f2b99c0776c",
+       "quote": "夹具：结论 C 在旧窗口成立",
+       "trust": "secondary",
+       "fixture": true
+      }
+     ],
+     "conflicting": [],
+     "mentions": [],
+     "inaccessible": [],
+     "applicable_window": {
+      "valid_from": null,
+      "valid_until": 1792920681.435716
+     },
+     "reasons": [
+      "适用时间已过：valid_until=1792920681.435716 早于当前 1792924281.435716"
+     ],
+     "model_only": false,
+     "policy": "无外部证据不得仅凭模型自述判可信"
+    },
+    {
+     "claim_id": "c_mentions",
+     "statement": "结论 D 成立",
+     "state": "unknown",
+     "confidence": 0.0,
+     "supporting": [],
+     "conflicting": [],
+     "mentions": [
+      {
+       "source_id": "src_fixture_b90a5337573b",
+       "url": "fixture://k_mentions/fixture-f/mentions",
+       "publisher": "fixture-f",
+       "retrieved_at": 1792924281.7528524,
+       "content_digest": "b90a5337573b231122f53a2be0c451b52df5a49b2df596b9ce361141ffb1f08c",
+       "quote": "夹具：提到主题 D，但未下结论",
+       "trust": "secondary",
+       "fixture": true
+      }
+     ],
+     "inaccessible": [],
+     "applicable_window": {
+      "valid_from": null,
+      "valid_until": null
+     },
+     "reasons": [
+      "来源仅提及该主题，未直接支持结论，不判为可信"
+     ],
+     "model_only": true,
+     "policy": "无外部证据不得仅凭模型自述判可信"
+    },
+    {
+     "claim_id": "c_unreachable",
+     "statement": "结论 G 成立",
+     "state": "unknown",
+     "confidence": 0.0,
+     "supporting": [],
+     "conflicting": [],
+     "mentions": [],
+     "inaccessible": [
+      {
+       "source_id": "src_fixture_92c4038aaf85",
+       "url": "fixture://k_unreachable/fixture-g/supports",
+       "publisher": "fixture-g",
+       "retrieved_at": 1792924281.7528524,
+       "content_digest": "92c4038aaf85549e6a5c421fe38b3a9738b4890ac768a8a543dd2a2e8b397ea2",
+       "quote": "夹具：不可访问来源",
+       "trust": "secondary",
+       "fixture": true
+      }
+     ],
+     "applicable_window": {
+      "valid_from": null,
+      "valid_until": null
+     },
+     "reasons": [
+      "未提供外部来源：模型自述不得判为可信",
+      "1 个来源不可访问，未计入证据"
+     ],
+     "model_only": true,
+     "policy": "无外部证据不得仅凭模型自述判可信"
+    }
+   ],
+   "citations": [
+    {
+     "source_id": "src_fixture_2b2b7c8101c6",
+     "url": "fixture://k_supported/fixture-a/supports",
+     "publisher": "fixture-a",
+     "retrieved_at": 1792924281.7528524,
+     "content_digest": "2b2b7c8101c628c09c9cb9dc2068351fb02eafcd1ab0680e3655743c4adcd000",
+     "quote": "夹具：结论 A 成立（来源一）",
+     "trust": "secondary",
+     "fixture": true
+    },
+    {
+     "source_id": "src_fixture_533553e81f5f",
+     "url": "fixture://k_supported/fixture-b/supports",
+     "publisher": "fixture-b",
+     "retrieved_at": 1792924281.7528524,
+     "content_digest": "533553e81f5fc549cc4e0cb36e011ef8e0970b898e069d1cc5284af43ddbf425",
+     "quote": "夹具：结论 A 成立（来源二）",
+     "trust": "secondary",
+     "fixture": true
+    },
+    {
+     "source_id": "src_fixture_0796f6c7d8db",
+     "url": "fixture://k_conflict/fixture-c/supports",
+     "publisher": "fixture-c",
+     "retrieved_at": 1792924281.7528524,
+     "content_digest": "0796f6c7d8dbeda8e770aae945a00a6c43e11d353ec6f218911ec140f00186bb",
+     "quote": "夹具：结论 B 成立",
+     "trust": "secondary",
+     "fixture": true
+    },
+    {
+     "source_id": "src_fixture_8720e16b3bb3",
+     "url": "fixture://k_conflict/fixture-d/contradicts",
+     "publisher": "fixture-d",
+     "retrieved_at": 1792924281.7528524,
+     "content_digest": "8720e16b3bb3d6dc6bba57865f9a4de9ea3c07ab0c2024b90931074fbc3d14b8",
+     "quote": "夹具：结论 B 不成立",
+     "trust": "secondary",
+     "fixture": true
+    },
+    {
+     "source_id": "src_fixture_cfc7a45499b7",
+     "url": "fixture://k_stale/fixture-e/supports",
+     "publisher": "fixture-e",
+     "retrieved_at": 1792924281.7528524,
+     "content_digest": "cfc7a45499b7b93067c69a3f072d1b07d78928d71d0d815a7e867f2b99c0776c",
+     "quote": "夹具：结论 C 在旧窗口成立",
+     "trust": "secondary",
+     "fixture": true
+    },
+    {
+     "source_id": "src_fixture_b90a5337573b",
+     "url": "fixture://k_mentions/fixture-f/mentions",
+     "publisher": "fixture-f",
+     "retrieved_at": 1792924281.7528524,
+     "content_digest": "b90a5337573b231122f53a2be0c451b52df5a49b2df596b9ce361141ffb1f08c",
+     "quote": "夹具：提到主题 D，但未下结论",
+     "trust": "secondary",
+     "fixture": true
+    }
+   ],
+   "counts": {
+    "claims": 7,
+    "delivered": 1,
+    "conflicts": 1,
+    "unverified": 5,
+    "fixture_citations": 6
+   },
+   "policy": "无外部证据不得仅凭模型自述判可信",
+   "rules": {
+    "citation_accessible_required": true,
+    "model_only_trust": false,
+    "conflicts_visible": true,
+    "applicable_window_required": true,
+    "fixture_citations_labelled": true
+   }
+  },
+  "expected_states": {
+   "c_supported": "supported",
+   "c_conflict": "contradicted",
+   "c_inferred": "inferred",
+   "c_unknown": "unknown",
+   "c_stale": "stale",
+   "c_mentions": "unknown",
+   "c_unreachable": "unknown"
+  }
+ },
+ "verdict_ok": true
+}
