@@ -3360,10 +3360,9 @@
       "title": "首发冻结范围与八道发布门禁",
       "stream": "integration",
       "owner": "claude-main",
-      "reviewer": null,
-      "branch": "main",
+      "reviewer": "zcode-main",      "branch": "main",
       "base_commit": "029a9987eeffff1fc502987f3d6a6bdfa8722ec4",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         "docs/协作开发/验收/ALN-29-B-首发冻结范围与八道发布门禁.md",
@@ -3372,7 +3371,12 @@
         "tests/test_release_gates.py：14 项通过",
         ".planning/2026-10-25-aln29-b/mutation_test.py：变异 7/7 捕获",
         "干净 worktree 固定源码 029a998：pytest 1675 passed / 1 skipped"
-      ],
+      ,
+    {
+      "date": "2026-10-25",
+      "scope": "独立复核（zcode-main）：R1判别力14项独立复跑全过、R2/R3结构0与require-release 2三层退出语义、R4冻结范围13项逐项、R5八门禁全untested且G6与published_commit自洽、R6三规则代码化无加权、R8变异判别力（含自曝M2无判别力并修复）；结论转accepted（验收公共尺子范围）",
+      "review_report": "docs/协作开发/验收/2026-10-25-ALN-29-B独立复核.md"
+    }],
       "card": "docs/协作开发/任务卡/29-B-首发冻结范围与八道发布门禁.md",
       "shared_files": [
         "tools/check_collaboration_plan.py"
