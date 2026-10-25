@@ -35,7 +35,8 @@ _PATTERNS = (
     ("api_key", re.compile(
         r"(?i)\b(api[_-]?key|token|secret|password)\s*[:=]\s*"
         r"[\"']?[^\s\"',;]{6,}")),
-    ("openai", re.compile(r"\bsk-[A-Za-z0-9]{8,}\b")),
+    ("openai", re.compile(r"\bsk-[A-Za-z0-9_-]{8,}\b")),
+    ("stripe", re.compile(r"\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{6,}\b")),
     ("github", re.compile(r"\bghp_[A-Za-z0-9]{20,}\b")),
     ("aws", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
     ("pem", re.compile(

@@ -3,6 +3,11 @@
  *
  * 纯 TS 便于单测；原生模块缺失时静默降级。通知是尽力而为，
  * 不改变任务状态，也不替代界面内的状态展示。
+ *
+ * 12-V 复核修复：后台同步可能在前台自动同步之后才运行，此时 `before`
+ * 快照里任务已经是 DONE，"仅按本次 run 的 before/after 跃迁"会漏发。
+ * 因此增加持久化投递标记：只要 after 中任务为 DONE 且本地标记不是 DONE，
+ * 就补发一次并在投递被系统接受后写入标记（失败不写，留待下次重试）。
  */
 
 import type { LocalTask } from "../offline/types.ts";
@@ -15,11 +20,19 @@ export interface NativeNotificationModuleLike {
   notifyTaskUpdate(id: number, title: string, body: string): Promise<boolean>;
 }
 
+/** 持久化"已投递"标记的最小存储接口（AsyncStorage 兼容）。 */
+export interface NotificationMarkerStore {
+  getItem(key: string): Promise<string | null>;
+  setItem(key: string, value: string): Promise<void>;
+}
+
 export interface TaskNotification {
   id: number;
   title: string;
   body: string;
 }
+
+const NOTIFIED_PREFIX = "evoagent_task_notified:";
 
 /** FNV-1a 31 位：同一任务的通知始终复用同一 ID，避免反复堆叠。 */
 export function notificationIdFor(localTaskId: string): number {
@@ -62,9 +75,14 @@ export function describeTerminalTask(task: LocalTask): TaskNotification | null {
 
 export class TaskNotifier {
   private readonly module: NativeNotificationModuleLike | null;
+  private readonly store: NotificationMarkerStore | null;
 
-  constructor(module: NativeNotificationModuleLike | null) {
+  constructor(
+    module: NativeNotificationModuleLike | null,
+    store: NotificationMarkerStore | null = null,
+  ) {
     this.module = module;
+    this.store = store;
   }
 
   /** 只挑出本次刷新中从非终态进入 DONE 的任务；新增任务不补发提醒。 */
@@ -80,13 +98,39 @@ export class TaskNotifier {
     );
   }
 
+  /** 持久化标记未写过的终态任务（覆盖"同步已先行完成"的窗口）。 */
+  private async unmarkedTerminal(after: LocalTask[]): Promise<LocalTask[]> {
+    if (!this.store) return [];
+    const rows: LocalTask[] = [];
+    for (const task of after) {
+      if (task.status !== "DONE") continue;
+      try {
+        const marked = await this.store.getItem(
+          NOTIFIED_PREFIX + task.local_task_id,
+        );
+        if (marked !== "DONE") rows.push(task);
+      } catch {
+        // 标记读取失败时退化为"仅本次跃迁"，不阻断同步
+      }
+    }
+    return rows;
+  }
+
   async notifyTransitions(
     before: LocalTask[],
     after: LocalTask[],
   ): Promise<number> {
     if (!this.module) return 0;
+    const candidates = this.completed(before, after);
+    const seen = new Set(candidates.map((task) => task.local_task_id));
+    for (const task of await this.unmarkedTerminal(after)) {
+      if (!seen.has(task.local_task_id)) {
+        seen.add(task.local_task_id);
+        candidates.push(task);
+      }
+    }
     let posted = 0;
-    for (const task of this.completed(before, after)) {
+    for (const task of candidates) {
       const notice = describeTerminalTask(task);
       if (!notice) continue;
       try {
@@ -95,7 +139,19 @@ export class TaskNotifier {
           notice.title,
           notice.body,
         );
-        if (accepted === true) posted += 1;
+        if (accepted === true) {
+          posted += 1;
+          if (this.store) {
+            try {
+              await this.store.setItem(
+                NOTIFIED_PREFIX + task.local_task_id,
+                "DONE",
+              );
+            } catch {
+              // 标记写入失败只影响去重，不影响本次投递
+            }
+          }
+        }
       } catch {
         // 通知失败不影响同步与任务状态
       }

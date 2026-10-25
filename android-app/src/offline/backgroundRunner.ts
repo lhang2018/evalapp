@@ -53,11 +53,13 @@ export async function runStoredBackgroundSync(): Promise<BackgroundSyncResult> {
       refresh: () => tasks.refresh(),
     });
     // 只有完成刷新才比较终态；桥初始化和通知读盘也属于尽力而为。
+    // 12-V 复核修复：即使读不到 before 快照，也交给带持久化标记的通知器
+    // 补发"同步已先行完成"的终态任务（标记去重，不会重复提醒）。
     let notified = 0;
-    if (result.refreshed && before !== null) {
+    if (result.refreshed) {
       try {
-        notified = await createTaskNotifier().notifyTransitions(
-          before,
+        notified = await createTaskNotifier(asyncStorageStore).notifyTransitions(
+          before ?? [],
           await tasks.list(),
         );
       } catch {
