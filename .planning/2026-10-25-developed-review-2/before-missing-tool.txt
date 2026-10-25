@@ -1,0 +1,34 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+F                                                                        [100%]
+================================== FAILURES ===================================
+_________ test_runtime_mode_router_does_not_grant_unregistered_tools __________
+
+retry_app = <evoagent.app.App object at 0x0000017C0B262770>
+
+    def test_runtime_mode_router_does_not_grant_unregistered_tools(retry_app):
+        from evoagent.core.task import Task
+        from evoagent.core.budget import BudgetController,BudgetLimits
+        bad=WorkflowDef(workflow_id="a_missing",version="1",nodes=[
+            WorkflowNode(node_id="n",tool="review_missing_tool",args={})])
+        good=WorkflowDef(workflow_id="z_valid",version="1",nodes=[
+            WorkflowNode(node_id="n",tool="calculate",args={"expression":"1+1"})])
+        retry_app._workflows.update({bad.workflow_id:bad,good.workflow_id:good})
+        expert=retry_app.experts.get("general")
+        expert.workflow_ids=[bad.workflow_id,good.workflow_id]
+        expert.tool_whitelist=None
+        task=Task(user_goal="calculation",intent="general")
+        retry_app.db.save_task(task)
+        selection=retry_app.controller._select_execution_mode(task,expert,
+            BudgetController(BudgetLimits()))
+>       assert selection.workflow_id==good.workflow_id
+E       AssertionError: assert 'a_missing' == 'z_valid'
+E         
+E         - z_valid
+E         + a_missing
+
+tests\test_developed_review_2.py:261: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_developed_review_2.py::test_runtime_mode_router_does_not_grant_unregistered_tools
+1 failed in 0.57s

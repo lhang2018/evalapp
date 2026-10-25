@@ -1,0 +1,65 @@
+{
+  "commit": "df29a2e200d085901404bccf1dc739e9d3b01ef5",
+  "source_paths": [
+    {
+      "path": "android-app/src/features/budget/view.ts",
+      "git_blob": "266c0a665f5b7ff8705f6ebde4c9e93b8aa2534a",
+      "workspace_matches_followup_commit": true
+    },
+    {
+      "path": "android-app/src/features/controls/paths.ts",
+      "git_blob": "22cd0d92098cd1bc257b2a06e86b628f589147b3",
+      "workspace_matches_followup_commit": true
+    },
+    {
+      "path": "android-app/test/offline/budget.test.ts",
+      "git_blob": "dbfbcf25ffa7452ba13f73f58e63dbed75b7f9bf",
+      "workspace_matches_followup_commit": true
+    },
+    {
+      "path": "android-app/test/offline/controls.test.ts",
+      "git_blob": "c08ff0cacf733cb3f3072845dcdeded85cea2fc4",
+      "workspace_matches_followup_commit": true
+    },
+    {
+      "path": "android-app/test/offline/developedReview2.test.ts",
+      "git_blob": "9c487fa219e84077dc62882ba69a303b356af799",
+      "workspace_matches_followup_commit": true
+    },
+    {
+      "path": "evoagent/api/artifacts_api.py",
+      "git_blob": "eb397f4f8c375d5946b442ff409be21a9b815540",
+      "workspace_matches_followup_commit": true
+    },
+    {
+      "path": "evoagent/core/authorization.py",
+      "git_blob": "484ab9f8c8cb3629f441bda7ad465c63fb24bfc2",
+      "workspace_matches_followup_commit": true
+    },
+    {
+      "path": "evoagent/core/controller.py",
+      "git_blob": "714916ae1360870c34f15e96f1a79718f9e10853",
+      "workspace_matches_followup_commit": true
+    },
+    {
+      "path": "evoagent/delivery/artifacts.py",
+      "git_blob": "ccf9d0d658e8fff381c7f21d578f8ead5af3a5ed",
+      "workspace_matches_followup_commit": true
+    },
+    {
+      "path": "evoagent/planning/binding.py",
+      "git_blob": "f5e08511b5de446235e616ff6f4ae21f6cc378d0",
+      "workspace_matches_followup_commit": true
+    },
+    {
+      "path": "evoagent/routing/mode_router.py",
+      "git_blob": "a56e35f3443b0fd8b11f1ccf93f87343e8613418",
+      "workspace_matches_followup_commit": true
+    },
+    {
+      "path": "tests/test_developed_review_2.py",
+      "git_blob": "7cfda567b277cb984e127b22d05b9874fdd96379",
+      "workspace_matches_followup_commit": true
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "runtime_fix_commit": "0cf66722d00ab59f1405c6bca7f322c1bf893a9c",
+  "followup_commit": "df29a2e200d085901404bccf1dc739e9d3b01ef5",
+  "snapshot": {
+    "source_commit": "0cf66722d00ab59f1405c6bca7f322c1bf893a9c",
+    "source_tree": "e0c14dc41d6110046b788b0c95b12d0a680472ee",
+    "snapshot": "E:\\evalapp\\outputs\\developed-review2-0cf6672",
+    "archive_sha256": "3eac508f44fb3646afc4628fd605ffe58643ca5658a1974dc2dfb5b48338ac2d",
+    "scope": "exact Git archive; concurrent dirty files excluded; no worktree"
+  },
+  "fixed_full_backend_initial": {
+    "passed": 2059,
+    "failed": 1,
+    "skipped": 1,
+    "failed_test": "tests/test_model_migration.py::TestMigrationApi::test_migration_chain_via_api",
+    "observed": "regression returned blocked instead of evaluated; initial result retained"
+  },
+  "fixed_full_backend_diagnostic_rerun": {
+    "summary": "2060 passed, 1 skipped in 405.08s (0:06:45)",
+    "scope": "same exact 0cf6672 archive; added observation-only pytest failure diagnostic plugin, no product source changes"
+  },
+  "migration_followup": {
+    "related_tests_passed": 36,
+    "isolated_api_chain_repeats_passed": 4,
+    "cause": "unconfirmed; no policy threshold loosened and no test deleted"
+  },
+  "fixed_client_passed": 328,
+  "fixed_typecheck": "passed",
+  "typescript": "5.9.3",
+  "dependencies": "existing installed node_modules reused through junction; no npm ci claim",
+  "followup_targeted_passed": 108,
+  "followup_scope": "7 relevant Python test modules; exact owned source/test blobs matched df29a2e",
+  "product_acceptance_added": false,
+  "device_tested_for_new_code": false,
+  "independent_review_of_new_fixes": false,
+  "published_by_this_review": false,
+  "logs": [
+    {
+      "path": ".planning/2026-10-25-developed-review-2/before-client.txt",
+      "sha256_lf": "de8b3b51c0315f70a528d513dc85c6e7d70f14f7a846029c8579fb1078e2a89c"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/before-missing-tool.txt",
+      "sha256_lf": "7a0c52481a90ab7e2aa0fa3aa53c407e82a94c09f77d7ef5c038cb14ee7f6407"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/before-python.txt",
+      "sha256_lf": "3c7f94fefe1a647a8c2dd05cb1227f24b19faaea09091392ca5359d39735d880"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/collaboration-check.txt",
+      "sha256_lf": "a89e2e21d2cec4e39c540a6fb61cf9445eb132b3dc7b8f2728a1b748d08d7e82"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/combined-python.txt",
+      "sha256_lf": "1c58c1cd8d7c0ca4fa6670222f96244df5db20f490aeab560b43a926676de89d"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/final-followup-python.txt",
+      "sha256_lf": "129e6c699f7518b63296c53d7dc3f82a87babae2ea11430d8551b4b98624e704"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/final-targeted-python.txt",
+      "sha256_lf": "d2e76864a44b896523cc883f87ae458649c004269987baa6ce2149724d54a75a"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/fixed-full-client.txt",
+      "sha256_lf": "58cc38911661c606e7afe0b76594998e51119f3553862512ea783ee62c61e551"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/fixed-full-python-diagnostic-rerun.txt",
+      "sha256_lf": "bbe27748bab42016ccd486232aa79b33059f87f1d10c58ce924daa685ed8fda2"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/fixed-full-python.txt",
+      "sha256_lf": "a322a30b8ad82a44634fd096d2c07aaab51f265ce31537cff08d60690e8bb037"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/fixed-import.txt",
+      "sha256_lf": "6bc7930e65bef0837efe082d182cee2cfd1e940f153d60b162f19e99cc949153"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/fixed-typecheck.txt",
+      "sha256_lf": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/fixed-typescript-version.txt",
+      "sha256_lf": "4985b444236c5acdb5b850e5d754975e130eed5b033c53f201cdf471e83d7f13"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/followup-targeted.txt",
+      "sha256_lf": "ed6a3b7c61fdd94f67945e2431322abe58ca8f2c484e71a318a08f09b607c4e9"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/full-client.txt",
+      "sha256_lf": "d966b6d516290e0db2470020c1a85ca0856179afa1dcbc98ee51fc3100199921"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/migration-diagnostic.txt",
+      "sha256_lf": "519d04c2e52c897a2befff25ea595f261187596a154c0e5451d8145da5c2e49d"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/retry-execution.txt",
+      "sha256_lf": "67c5e35dfa0aeb240b097a4e4beaca8c327fe1ff11cead5a91deacc7f5fcaa27"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/retry-targeted.txt",
+      "sha256_lf": "637591d49dedf9df999adf9795ed22f7a8a623e1b6ad77f6cbcb84d6c4300120"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/targeted-client.txt",
+      "sha256_lf": "033dbdfd620f2bd94776eed8c16d0bc43aa6cacd5adaa23a5d23679681156c97"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/targeted-python.txt",
+      "sha256_lf": "797dff2133261ba4ac0b7039afdc201dc1a227188db1f217d2d6973ed387bd06"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/typecheck.txt",
+      "sha256_lf": "8cbafc7cf12a272ca79c7f62f9f8e7f22c469fc231061b69b5d974a20906718d"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/fixed-source.json",
+      "sha256_lf": "1f139a4d7514932237faee75fb59438176cc488ec452772e5c08fe2c3f491f62"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/targeted-source.json",
+      "sha256_lf": "4ee59dfb06329eb1fb0b3fa18016d1406c4db9394c144c5a7ca7538ba1f00963"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/claims-check.json",
+      "sha256_lf": "277fe7a7f9eb451efb90efdbbd9a3bcd57c88405402560765c7e10d9352e5291"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/ledgers-check.json",
+      "sha256_lf": "8e24e24ba5d341e3cdb4fa014068890247aa4cdc451d4695d9d35d12d0321070"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-2/migration_failure_diagnostic.py",
+      "sha256_lf": "91293fa5bd94e73b60f018c1de3530af3975b4d15407793483acc6ef7b416b9c"
+    }
+  ]
+}
