@@ -195,7 +195,18 @@ codex-runtime 正在其上改动，本卡按纪律不擅自修改，应由 29-A 
 4. **ALN-29-B 依赖 ALN-29-A**（用例骨架与断言）尚未交付；本卡独立成立，不以 29-A 为前置。
 5. **协作校验器剩一条断言需 ALN-29-A 作者放宽**（新增七包后"恰好 23 个"的断言已过期），
    在其修好之前，`check_collaboration_plan.py` 固定为红。
+   → **已闭环**：29-A 作者已放宽该断言，候选 `21899e6` 上 `check_collaboration_plan` 通过。
 6. 审阅人待定：按纪律**不自批**，本卡须由 codex-runtime 或第三方复核后方可记 accepted。
+
+### 后续闭环（14:55）
+
+- 本定位报告所指的 ALN-29-C schema 幂等缺陷已由 `21899e6` 修复（表内 UNIQUE 约束 + 并发兜底），
+  复验 `tests/test_collab_base.py` 32 passed。
+- 偶发的 `test_chunk_size_and_index_validation` 在后续全量中未再复现，按协议不作数。
+- 候选 `21899e6` 上五个校验器（含本卡的 `check_release_gates`）全部通过；
+  本卡 14 项测试在候选上通过。
+- 候选刷新后服务端计数为 **1701 passed / 1 skipped**、客户端 **268 passed**、类型检查 0 错
+  （由 ALN-00-B 的候选刷新提交登记，非本卡实测）。
 
 ## 十一、下一步
 
