@@ -3918,13 +3918,17 @@
    "workpackage": "ALN-24",
    "title": "任务历史、项目空间与跨会话延续",
    "stream": "android",
-   "owner": null,
+   "owner": "zcode-main",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "33529bef6b4bb54dc6c3a2d8385b8e0e36f38ea0",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    "代码: a6eca36 features/projects/space.ts（groupByProject/projectSummary/continuationContext）+ 5项测试",
+    "测试: projects.test 5项（归集/摘要去重/延续上下文/全完成空openTasks/无goal_id按intent）",
+    "不建立第二套 Task 状态——只做只读归集；LocalTask 扩展 goal_id+result_evidence"
+   ],
    "card": "docs/协作开发/任务卡/24-C-任务历史、项目空间与跨会话延续.md",
    "shared_files": [
     "evoagent/api/server.py",
@@ -3954,8 +3958,8 @@
     "UX-15",
     "UX-16"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
-   "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+   "next_step": "待独立复核（审阅人待定）；项目空间 App UI 挂载属后续 UI 卡",
+   "working_basis": "2026-10-25 zcode-main 认领开工。23-C 工作区投影和 24-A 产物交付层均已交付 review；本卡消费两者构建项目空间与跨会话延续。",
    "prerequisites": "仅需仓库与本地测试环境"
   },
   {
