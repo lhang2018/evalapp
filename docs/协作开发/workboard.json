@@ -4731,9 +4731,20 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "89accb658a8ce5aa49c7e74d0e45904c2eda6b97",
-      "status": "claimed",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-25",
+          "scope": "真实宿主候选对照基准：按精确资产版本+摘要执行、重复执行可复现判定、覆盖/遗漏说明、依赖回归与越界/超时fail-closed、发布前后收益链与回滚触发；8项专项+相关域73项通过",
+          "source_commit": "8f7625ed31f04ae21ff2bb01aee263baebe1da68",
+          "functional_commit": "8f7625ed31f04ae21ff2bb01aee263baebe1da68",
+          "source_tree": "7f2610bfe89269ecf4d985bd8b11f1cfb38ce8b7",
+          "result": "专项8 passed；相关域73 passed；全量1842 passed/1 failed/1 skipped，唯一失败为GAP_ANALYSIS.md:177 cli.py:232 已存在漂移(02-P交付时在干净HEAD worktree复现)，与本卡无关",
+          "log": ".planning/2026-10-25-aln10e/backend-tests.txt",
+          "delivery": "docs/协作开发/交付/ALN-10-E-真实候选收益与依赖回归证据.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/10-E-真实候选收益与依赖回归证据.md",
       "shared_files": [
         "evoagent/evolution/controller.py",
@@ -4761,9 +4772,11 @@
         "B-97",
         "G1"
       ],
-      "next_step": "先读 09-H 隔离宿主/真实资产与 10-H 独立门禁交付，按卡建立真实宿主上的候选对照基准、覆盖/遗漏与发布前后收益链；证据绑定精确commit、命令与日志，未经复核不记accepted",
-      "working_basis": "以89accb658a8ce5aa49c7e74d0e45904c2eda6b97（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
+      "next_step": "待独立复核：真实资产版本+摘要绑定、重复执行可复现、覆盖/遗漏与越界/超时fail-closed、依赖回归阻止发布、发布前后收益链与回滚触发的证据见交付文档与 .planning/2026-10-25-aln10e/；审阅人未定，不自批为独立验收；生产评测集与发布门禁自动接线属其他卡，ALN-10整包不关闭",
+      "working_basis": "以89accb658a8ce5aa49c7e74d0e45904c2eda6b97（认领时feature/user-direction HEAD）作为接手锚点；最终提交8f7625ed31f04ae21ff2bb01aee263baebe1da68；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
       "prerequisites": "代表性基准/对照环境",
+      "delivered_commit": "8f7625ed31f04ae21ff2bb01aee263baebe1da68",
+      "delivery": "docs/协作开发/交付/ALN-10-E-真实候选收益与依赖回归证据.md",
       "ownership_history": [
         {
           "date": "2026-10-25",
