@@ -34,7 +34,7 @@ export class NativeDeviceTransport implements DeviceTransport {
   async isAvailable(): Promise<boolean> {
     if (!this.module) return false;
     try {
-      return await this.module.isServiceEnabled();
+      return (await this.module.isServiceEnabled()) === true;
     } catch {
       return false;
     }
@@ -45,7 +45,7 @@ export class NativeDeviceTransport implements DeviceTransport {
     if (!this.module?.snapshot) return null;
     try {
       const response = await this.module.snapshot();
-      if (!response?.ok) return null;
+      if (response?.ok !== true) return null;
       return normalizeSnapshot(response.evidence);
     } catch {
       return null;
@@ -71,11 +71,14 @@ export class NativeDeviceTransport implements DeviceTransport {
       if (!response) {
         return { status: "unverified", message: "原生模块无返回" };
       }
-      if (!response.ok) {
+      if (response.ok === false) {
         return {
           status: "failed",
           message: response.message ?? "系统拒绝执行",
         };
+      }
+      if (response.ok !== true) {
+        return { status: "unverified", message: "原生模块返回无效执行状态，需核对" };
       }
       return {
         status: "verified",

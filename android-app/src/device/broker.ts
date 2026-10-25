@@ -105,16 +105,12 @@ export class DeviceBroker {
     this.identities.set(action.action_id, identity);
     this.record(action, risk, "prepared"); // Claim before the first async boundary.
 
-    if (this.stopped) {
-      const message =
-        `安全停止：连续 ${this.consecutiveUnverified} 次设备操作未通过验证，需人工恢复`;
-      this.record(action, risk, "denied", message);
-      return { status: "denied", message };
-    }
+    const initiallyStopped = this.rejectIfStopped(action, risk);
+    if (initiallyStopped) return initiallyStopped;
 
     let available = false;
     try {
-      available = await this.transport.isAvailable();
+      available = (await this.transport.isAvailable()) === true;
     } catch {
       available = false;
     }
@@ -123,12 +119,17 @@ export class DeviceBroker {
       this.record(action, risk, "unavailable", message);
       return { status: "unavailable", message };
     }
+    const stoppedAfterAvailability = this.rejectIfStopped(action, risk);
+    if (stoppedAfterAvailability) return stoppedAfterAvailability;
 
     if (risk === "high") {
       let allowed = false;
       if (this.confirm) {
         try {
-          allowed = await this.confirm(action, risk);
+          // 确认回调只查看快照，不得修改已计算身份的待执行动作。
+          allowed = (await this.confirm(
+            JSON.parse(JSON.stringify(action)) as DeviceAction, risk,
+          )) === true;
         } catch {
           allowed = false;
         }
@@ -139,6 +140,10 @@ export class DeviceBroker {
         return { status: "denied", message };
       }
     }
+
+    // 等待期间其他动作可能触发安全停止；下发前重新检查。
+    const stoppedBeforeDispatch = this.rejectIfStopped(action, risk);
+    if (stoppedBeforeDispatch) return stoppedBeforeDispatch;
 
     this.record(action, risk, "prepared");
     this.record(action, risk, "dispatched");
@@ -170,6 +175,14 @@ export class DeviceBroker {
       result.evidence,
     );
     return result;
+  }
+
+  private rejectIfStopped(action: DeviceAction, risk: DeviceRisk): DeviceResult | null {
+    if (!this.stopped) return null;
+    const message =
+      `安全停止：连续 ${this.consecutiveUnverified} 次设备操作未通过验证，需人工恢复`;
+    this.record(action, risk, "denied", message);
+    return { status: "denied", message };
   }
 
   private verifyResult(action: DeviceAction, result: DeviceResult): DeviceResult {
