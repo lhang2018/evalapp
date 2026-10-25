@@ -1,0 +1,20 @@
+{
+ "task": "ALN-12-V 通知投递真机复验（修复后）",
+ "date": "2026-10-25",
+ "commit_under_test": "147a4898cb2231a9585897a3bff74ce41f6c5053",
+ "js_bundle_sha256": "7b83540cb7be5207f2895592dd840b95fcc1274830f9ed177762f87a2fbedb56",
+ "attempts": [
+  "离线排队(待上传1)+切后台+恢复 adb reverse 8300+cmd jobscheduler run -f <job> ×4（job 61/62/63/64）",
+  "前台点击立即同步（前台同步成功：待上传1→0，checkpoint 31→34）",
+  "设备白名单 + standby bucket active 后再次强制"
+ ],
+ "observed": {
+  "evoagent_notifications": 0,
+  "logcat_background_sync_lines": 0,
+  "workmanager_workspec_state": "ENQUEUED(0), run_attempt_count=0, period_count=21",
+  "foreground_sync": "成功（任务同步并产生结果）"
+ },
+ "diagnosis": "后台 WorkManager 的 SyncWorker 从未真正执行（WorkSpec 一直 ENQUEUED 且 run_attempt_count=0），推测为设备无已验证互联网连接（约束含 INTERNET&TRUSTED&VALIDATED；本机仅 adb reverse 到宿主）。因此通知未出现不能归因于通知逻辑本身，需在具备真实联网的设备上复验。",
+ "fix_status": "通知补发修复（持久化标记）已由 node 5 项 + 客户端 358 项/tsc 0 验证；真机端到端仍待联网设备复验",
+ "boundary": "本机为真实 Android 16 设备，但无已验证互联网；adb reverse 只提供到宿主后端的通道"
+}

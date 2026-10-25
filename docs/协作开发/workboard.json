@@ -5738,6 +5738,16 @@
      "result": "已修复并自检通过；按用户流程仍需另一名审阅人复核（修复者不自评/不自收）；12-V 真机通知复验待解锁设备",
      "log": ".planning/2026-10-25-review-fixes/backend-tests.txt",
      "delivery": "docs/协作开发/验收/2026-10-25-复核问题修复记录-29C-12V.md"
+    },
+    {
+     "date": "2026-10-25",
+     "scope": "12-V 修复后真机复验（用户解锁设备）：加载修复后 JS(bundle 7b83540c)后，离线排队→前台同步成功，但后台 WorkManager 强制运行4次仍无通知；WorkManager DB 显示 SyncWorker 从未执行(ENQUEUED/attempts=0)，诊断为设备无已验证互联网(仅 adb reverse)，端到端通知复验未完成，需联网设备复验",
+     "source_commit": "147a4898cb2231a9585897a3bff74ce41f6c5053",
+     "functional_commit": "",
+     "source_tree": "",
+     "result": "通知修复已由 node 5项+客户端358项/tsc0 验证；真机端到端因设备无验证网络未完成；设备已恢复(移除白名单/还原偏好/停Metro/锁屏)，未清用户数据",
+     "log": ".planning/2026-10-25-aln12v/notification-fix-verification.json",
+     "delivery": "docs/协作开发/验收/2026-10-25-复核问题修复记录-29C-12V.md"
     }
    ],
    "card": "docs/协作开发/任务卡/12-V-通知、离线与系统重启真机矩阵.md",
@@ -5759,7 +5769,7 @@
     "G0",
     "G3"
    ],
-   "next_step": "通知投递缺口已修复：147a489 增加持久化投递标记补发（同步先行完成也补发一次、失败重试），新增5项node回归、客户端358+tsc0错、python全量2190/0/1；仍需另一名审阅人复核，且真机通知复验需解锁设备后补证（修复者 dsh-lead 不自评）",
+   "next_step": "通知补发修复(147a489)已由 node/客户端测试覆盖；真机复验在无已验证互联网的设备上未观测到通知——WorkManager SyncWorker 从未执行(ENQUEUED,attempts=0)，需联网设备复验端到端；仍需另一名审阅人复核(修复者不自评)",
    "working_basis": "以61451f3ff2251dd042d19d74e10bad87eb05a46d（feature/user-direction HEAD，执行起点）作为实际接手锚点；最终证据提交6806f57a9513bb206d14bb67613b4d5bbcc737ab；基线仍为candidate、prepared_candidate 21899e6 未发布",
    "prerequisites": "可连接设备，记录APK/JS精确版本",
    "delivered_commit": "6806f57a9513bb206d14bb67613b4d5bbcc737ab",
@@ -5776,6 +5786,12 @@
      "from": "review",
      "to": "review",
      "reason": "复核发现通知投递缺口，修复147a489（持久化标记补发）；等待另一审阅人复核与真机复验"
+    },
+    {
+     "date": "2026-10-25",
+     "from": "review",
+     "to": "review",
+     "reason": "用户解锁设备复验：定位到 WorkManager 后台任务未执行（设备无验证网络）而非通知逻辑；端到端待联网设备复验"
     }
    ]
   },
