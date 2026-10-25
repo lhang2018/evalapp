@@ -4074,10 +4074,10 @@
    "title": "用户记忆、隐私与纠正删除路径",
    "stream": "models",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "zcode-main",
    "branch": "feature/user-direction",
    "base_commit": "c98439a414861f9f99b1f2c2116346e1556d95fa",
-   "status": "review",
+   "status": "accepted",
    "blocker": null,
    "evidence": [
     {
@@ -4089,6 +4089,11 @@
      "result": "专项9 passed；记忆/接口域92 passed；全量1974 passed/2 failed/1 skipped，2项失败在他人ALN-07-C系 test_peer_action_binding_review.py 且工作区有他人未提交 planning/binding.py 改动，本卡未改绑定/规划/ReAct。operator视角需24-C身份接线(当前仅admin)、备份与跨端未追删、装配器过滤未接",
      "log": ".planning/2026-10-25-aln24d/backend-tests.txt",
      "delivery": "docs/协作开发/交付/ALN-24-D-用户记忆、隐私与纠正删除路径.md"
+    },
+    {
+     "date": "2026-10-25",
+     "scope": "独立复核（zcode-main）：独立构建MemoryStore探针——R2来源可见+无证据快照、R3纠错回检verified_in_retrieval=True（杭州召回/上海不再含旧）、R4删除deleted=1+retained=3层+fully_erased=False不假成功、R5 deny优先shared=False；GLOBAL-02红线+不假成功+禁止优先三语义确认；转accepted",
+     "review_report": "docs/协作开发/验收/2026-10-25-ALN-24-D独立复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/24-D-用户记忆、隐私与纠正删除路径.md",
@@ -4272,11 +4277,11 @@
    "workpackage": "ALN-25",
    "title": "主动强度、停止与资源非干扰",
    "stream": "runtime",
-   "owner": null,
+   "owner": "zcode-next",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
+   "status": "in_progress",
    "blocker": null,
    "evidence": [],
    "card": "docs/协作开发/任务卡/25-B-主动强度、停止与资源非干扰.md",
@@ -4302,8 +4307,8 @@
     "F04",
     "G5"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
-   "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+   "next_step": "proactivity.py：四档强度/独立预算队列/无进展停止/关闭开关",
+   "working_basis": "2026-10-25 zcode-next 认领。复用 15-D ResourceGovernor（已accepted）、25-A ProactiveAssistService（已accepted）、BudgetLedger 既有池语义；写入边界 goals/ + budget.py + android-app（客户端开关投影）；资源压力实测用可控压力源（真机测量另验）。",
    "prerequisites": "设备或宿主资源测量环境；单纯Mock预算计数不算非干扰验收"
   },
   {
@@ -5907,9 +5912,18 @@
    "reviewer": null,
    "branch": "feature/user-direction",
    "base_commit": "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7",
-   "status": "in_progress",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-25",
+     "scope": "跨文件语义与固定语言服务门禁：tokenize 跨模块引用分析 + 版本门禁 + 诊断前后对照 + 歧义澄清；新增 evoagent/tools/refactor.py 与 12 项测试",
+     "result": "test_refactor 12 passed；refactor+coding_tools 联合 63 passed；后端全量 2072 passed / 13 failed(并行在途文件，与本卡无关) / 1 skipped",
+     "command": "python -m pytest tests/test_refactor.py -q; python -m pytest tests/test_refactor.py tests/test_coding_tools.py -q; python -m pytest tests/ -q",
+     "log": ".planning/2026-10-25-aln18l/backend-tests.txt",
+     "delivery": "docs/协作开发/交付/ALN-18-L-跨文件语义与LSP能力扩展.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/18-L-跨文件语义与LSP能力扩展.md",
    "shared_files": [
     "evoagent/tools/registry.py",
@@ -5926,7 +5940,8 @@
     "A-60",
     "A-70"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
+   "next_step": "待独立复核（审阅人待定）；语义级 LSP 真实接入、能力包注册与编程专家运行时消费另卡",
+   "delivery": "docs/协作开发/交付/ALN-18-L-跨文件语义与LSP能力扩展.md",
    "working_basis": "2026-10-25 zcode-main 认领开工。base_commit e16dbfe 为实际接手锚点（基线仍 candidate，prepared_candidate 21899e6 未发布）。新增独占模块 evoagent/tools/refactor.py（跨文件 AST 引用分析 + 固定语言服务版本与不可用诚实降级 + 诊断前后对照 + 歧义重构澄清），仅新增文件与测试，不改 coding/registry 等共享文件。",
    "prerequisites": "语言服务依赖与真实项目",
    "ownership_history": [
