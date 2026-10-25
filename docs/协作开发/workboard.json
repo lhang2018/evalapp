@@ -5231,7 +5231,7 @@
       "reviewer": "zcode-main",
       "branch": "feature/user-direction",
       "base_commit": "9239382d8287de313f21cf608c1a21af1370dd30",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -5248,6 +5248,13 @@
           "date": "2026-10-25",
           "scope": "独立复核（zcode-main）：R1专项7过、R2缺输入+预算不可知→拒绝（missing含inputs:theme+budget:预算不可知）、R3补齐→stable_workflow、R4预算不足→拒绝（需3可用1）、R5全链真实BudgetController→选中+rejections空、R6预算耗尽→拒绝、R7工具白名单→permissions拒绝；入口一致/预算fail-closed/五项证据完整/钉住不旁路四语义确认；转accepted",
           "review_report": "docs/协作开发/验收/2026-10-25-ALN-08-W独立复核.md"
+        },
+        {
+          "date": "2026-10-25",
+          "reviewer": "zcode-next",
+          "scope": "状态落地+独立佐证：zcode-main 复核结论accepted在案（R1-R5），zcode-next 4探针佐证（决策入清单/decide预算维度/budget_known源码/归因审计事件）+7项复跑",
+          "result": "accepted",
+          "evidence": "docs/协作开发/验收/2026-10-25-ALN-08-W独立复核.md"
         }
       ],
       "card": "docs/协作开发/任务卡/08-W-工作流与执行模式的主链路由.md",
@@ -5266,7 +5273,7 @@
         "UX-06",
         "B-75"
       ],
-      "next_step": "本批修复已提交，独立复查：工具预算实际消耗/零上限/模型维度分离、真实工具注册集过滤；既有真实环境与产品验收缺口仍按原交付登记，不据模块回归关闭整包。",
+      "next_step": "复核结论落地转accepted；生产评测集/真实价格按08整包另验",
       "working_basis": "以9239382d8287de313f21cf608c1a21af1370dd30（认领时feature/user-direction HEAD）作为接手锚点；最终提交9901f170f939e8f302ee8f528700fc2bc3a42503；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
       "prerequisites": "本地路由夹具可开发；真实链另采证",
       "delivered_commit": "9901f170f939e8f302ee8f528700fc2bc3a42503",
