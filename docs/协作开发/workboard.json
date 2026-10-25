@@ -5233,13 +5233,24 @@
    "workpackage": "ALN-12",
    "title": "通知、离线与系统重启真机矩阵",
    "stream": "android",
-   "owner": "zcode-next",
+   "owner": "dsh-lead",
    "reviewer": null,
    "branch": "feature/user-direction",
-   "base_commit": "b4fb8643de979ed71402db252b9cf980d5b43c21",
-   "status": "blocked",
+   "base_commit": "61451f3ff2251dd042d19d74e10bad87eb05a46d",
+   "status": "review",
    "blocker": "真机 5748d823 当前处于用户私人使用状态（2026-10-25 17:2x UI dump 显示非 EvoAgent 界面），自动化操作会误触用户数据，立即停止。dumpsys/dump 输出未写入任何证据文件。需设备空闲窗口或用户明确授权时段后重启矩阵（通知三态+离线/杀进程/物理重启方案已备）。",
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-25",
+     "scope": "真机矩阵：在线自然语言任务链、离线排队(1/500)、重连幂等回放、adb reboot 后 14/14 本地任务与队列恢复、精确版本绑定(APK/JS/设备)；通知投递未观测(权限allow、headless同步成功但dumpsys计数0)",
+     "source_commit": "6806f57a9513bb206d14bb67613b4d5bbcc737ab",
+     "functional_commit": "6806f57a9513bb206d14bb67613b4d5bbcc737ab",
+     "source_tree": "4b5460e13bb1a487a0de24796b89f2ee63c5061b",
+     "result": "真机验证卡不改产品源码；在线 3e1cf341048b SUCCEEDED、离线待上传1→回放 a3ee7b879193、重启14/14任务保留且队列保留、证据29个文件哈希。通知子项未观测→按未验证/疑似缺陷记录，不冒充通过；debug APK+Metro工作树JS≠发布包，adb reboot≠物理断电；设备已恢复(还原prefs/停Metro/关屏)未清数据",
+     "log": ".planning/2026-10-25-aln12v/device-matrix-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-12-V-通知、离线与系统重启真机矩阵.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/12-V-通知、离线与系统重启真机矩阵.md",
    "shared_files": [
     "android-app/src/api.ts",
@@ -5259,9 +5270,19 @@
     "G0",
     "G3"
    ],
-   "next_step": "设备空闲后按已准备方案执行矩阵；环境步骤（服务端/反向代理/权限授予）可复用",
-   "working_basis": "2026-10-25 zcode-next 认领，真机 5748d823 已重连。设备上 APK 为 debug 构建（原生 Oct 22 + Metro 加载当前 JS），通知模块已随 0b8d7dd 落库。矩阵：通知成功/失败/取消真实投递+渠道关闭不误计；离线提交/杀进程/物理重启回执不重复副作用。",
-   "prerequisites": "可连接设备，记录APK/JS精确版本"
+   "next_step": "待独立复核：真机矩阵证据(在线/离线排队/重连回放/重启恢复)、精确版本绑定与通知未观测记录见交付文档与 .planning/2026-10-25-aln12v/；审阅人未定，不自批；通知投递疑点需实现方排查，发布包/OTA与Doze场景待复验；设备为用户私人手机，复验需用户在场解锁",
+   "working_basis": "以61451f3ff2251dd042d19d74e10bad87eb05a46d（feature/user-direction HEAD，执行起点）作为实际接手锚点；最终证据提交6806f57a9513bb206d14bb67613b4d5bbcc737ab；基线仍为candidate、prepared_candidate 21899e6 未发布",
+   "prerequisites": "可连接设备，记录APK/JS精确版本",
+   "delivered_commit": "6806f57a9513bb206d14bb67613b4d5bbcc737ab",
+   "delivery": "docs/协作开发/交付/ALN-12-V-通知、离线与系统重启真机矩阵.md",
+   "ownership_history": [
+    {
+     "date": "2026-10-25",
+     "from": "zcode-next(blocked：设备私人使用)",
+     "to": "dsh-lead",
+     "reason": "用户明确提供设备解锁PIN并指示继续；执行真机矩阵后设备状态已还原（撤销debug host、停Metro、关屏、未清数据）；原blocked记录保留在历史中"
+    }
+   ]
   },
   {
    "id": "ALN-13-P",
