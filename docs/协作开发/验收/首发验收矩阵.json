@@ -1,0 +1,455 @@
+{
+  "schema_version": 1,
+  "scope": "17 original first-release scenarios; recorded observations are not independent acceptance",
+  "source": {
+    "path": "chat/extracted/157_qa.md",
+    "sha256_lf": "dca22746940532640a187bbddc9b208934877abd59603e5187b1ce712144f678"
+  },
+  "default_status": "not_run",
+  "cases": [
+    {
+      "id": "UX-F01-01",
+      "scenario": "简单问答",
+      "source_condition": "直接回答，不启动无必要的复杂任务",
+      "initial_status": "not_run",
+      "steps": [
+        "输入可直接回答的概念问题，不要求执行外部操作",
+        "采集回答及实际新建计划/工作流记录，确认未启动不必要复杂任务"
+      ],
+      "assertions": [
+        [
+          "answer.present",
+          "eq",
+          true
+        ],
+        [
+          "execution.unnecessary_complex_tasks",
+          "eq",
+          0
+        ]
+      ]
+    },
+    {
+      "id": "UX-F01-02",
+      "scenario": "连续追问",
+      "source_condition": "正确继承相关上下文",
+      "initial_status": "not_run",
+      "steps": [
+        "在同一会话提出依赖前文的追问，并保留一条明确约束",
+        "核对后续回答使用相关上下文且未丢弃该约束"
+      ],
+      "assertions": [
+        [
+          "context.relevant_retained",
+          "eq",
+          true
+        ],
+        [
+          "context.confirmed_constraints_retained",
+          "eq",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "UX-F02-01",
+      "scenario": "多步骤报告",
+      "source_condition": "真实生成产物并通过验收",
+      "initial_status": "not_run",
+      "steps": [
+        "提交带格式与质量要求的多步骤报告任务",
+        "实际生成文件并从交付入口打开，调用逻辑独立验收器检查必选条件"
+      ],
+      "assertions": [
+        [
+          "artifacts.count",
+          "gte",
+          1
+        ],
+        [
+          "artifacts.accessible",
+          "eq",
+          true
+        ],
+        [
+          "verification.independent",
+          "eq",
+          true
+        ],
+        [
+          "verification.required_passed",
+          "eq",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "UX-F02-02",
+      "scenario": "工具执行失败",
+      "source_condition": "识别故障并采取有界恢复策略",
+      "initial_status": "not_run",
+      "steps": [
+        "在多步骤任务中注入一次可定位的工具失败，设置有限重试预算",
+        "采集失败识别、实际重试次数、上限和终止/恢复记录"
+      ],
+      "assertions": [
+        [
+          "fault.detected",
+          "eq",
+          true
+        ],
+        [
+          "recovery.bounded",
+          "eq",
+          true
+        ],
+        [
+          "recovery.attempts",
+          "lte_path",
+          "recovery.limit"
+        ],
+        [
+          "recovery.terminated",
+          "eq",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "UX-F02-03",
+      "scenario": "验收失败",
+      "source_condition": "不标记为全部完成",
+      "initial_status": "not_run",
+      "steps": [
+        "生成不满足至少一条强制验收条件的产物",
+        "确认验收失败项可见，任务未显示全部完成"
+      ],
+      "assertions": [
+        [
+          "verification.required_passed",
+          "eq",
+          false
+        ],
+        [
+          "delivery.fully_completed",
+          "eq",
+          false
+        ],
+        [
+          "verification.failed_items_preserved",
+          "eq",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "UX-F03-01",
+      "scenario": "执行中增加约束",
+      "source_condition": "评估影响并更新计划",
+      "initial_status": "not_run",
+      "steps": [
+        "在执行中追加会影响产物的新约束",
+        "采集约束保留、依赖影响分析和计划修订记录"
+      ],
+      "assertions": [
+        [
+          "constraints.new_retained",
+          "eq",
+          true
+        ],
+        [
+          "plan.impact_assessed",
+          "eq",
+          true
+        ],
+        [
+          "plan.revision_updated",
+          "eq",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "UX-F03-02",
+      "scenario": "执行中改变目标",
+      "source_condition": "保留历史并重新评估受影响步骤",
+      "initial_status": "not_run",
+      "steps": [
+        "在已有完成步骤的任务中改变目标",
+        "核对历史保留、受影响步骤重评估和未受影响结果复用"
+      ],
+      "assertions": [
+        [
+          "history.preserved",
+          "eq",
+          true
+        ],
+        [
+          "plan.affected_reevaluated",
+          "eq",
+          true
+        ],
+        [
+          "results.unaffected_reused",
+          "eq",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "UX-F03-03",
+      "scenario": "取消任务",
+      "source_condition": "阻止新增非必要动作并正确处理在途操作",
+      "initial_status": "not_run",
+      "steps": [
+        "任务有在途操作时请求取消",
+        "核对不再新增非必要动作，并完成在途操作查询/核对或明确未知处置"
+      ],
+      "assertions": [
+        [
+          "execution.new_nonessential_actions",
+          "eq",
+          0
+        ],
+        [
+          "inflight.reconciled",
+          "eq",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "UX-F03-04",
+      "scenario": "重启后恢复",
+      "source_condition": "状态真实，外部副作用不被盲目重放",
+      "initial_status": "not_run",
+      "steps": [
+        "在检查点后实际退出/重启目标运行环境，再发起恢复",
+        "核对权威状态、外部回执与盲目重放次数，记录实际重启方式"
+      ],
+      "assertions": [
+        [
+          "restart.performed",
+          "eq",
+          true
+        ],
+        [
+          "recovery.authoritative_state",
+          "eq",
+          true
+        ],
+        [
+          "side_effects.blind_replays",
+          "eq",
+          0
+        ]
+      ]
+    },
+    {
+      "id": "UX-F03-05",
+      "scenario": "状态未知的外部操作",
+      "source_condition": "先对账，再决定是否继续",
+      "initial_status": "not_run",
+      "steps": [
+        "制造已提交外部动作但本地回执未知的状态",
+        "采集先对账、后决定继续的事件顺序和实际外部执行次数"
+      ],
+      "assertions": [
+        [
+          "reconciliation.before_resume",
+          "eq",
+          true
+        ],
+        [
+          "side_effects.blind_replays",
+          "eq",
+          0
+        ]
+      ]
+    },
+    {
+      "id": "UX-F04-01",
+      "scenario": "整理近期工作",
+      "source_condition": "只使用授权来源，事实可追溯",
+      "initial_status": "not_run",
+      "steps": [
+        "选择明确授权的项目/会话范围，触发近期工作整理",
+        "逐项核对摘要事实来源，区分事实、推断和未知"
+      ],
+      "assertions": [
+        [
+          "sources.only_authorized",
+          "eq",
+          true
+        ],
+        [
+          "facts.traceable",
+          "eq",
+          true
+        ],
+        [
+          "facts.unknowns_distinguished",
+          "eq",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "UX-F04-02",
+      "scenario": "没有高价值机会",
+      "source_condition": "不强行生成无关建议",
+      "initial_status": "not_run",
+      "steps": [
+        "提供没有高价值机会的近期工作样本",
+        "确认机会评分不达门槛时不会强行输出建议"
+      ],
+      "assertions": [
+        [
+          "opportunities.high_value_count",
+          "eq",
+          0
+        ],
+        [
+          "suggestions.count",
+          "eq",
+          0
+        ]
+      ]
+    },
+    {
+      "id": "UX-F04-03",
+      "scenario": "主任务与主动分析并行",
+      "source_condition": "主动分析不能使主任务越过资源门槛",
+      "initial_status": "not_run",
+      "steps": [
+        "并行运行核心任务与主动分析，施加可测量资源压力",
+        "按预先声明阈值采样，核对主动让出资源且未修改核心状态"
+      ],
+      "assertions": [
+        [
+          "core.resource_threshold_satisfied",
+          "eq",
+          true
+        ],
+        [
+          "core.resource_samples",
+          "gte",
+          1
+        ],
+        [
+          "proactive.yielded_under_pressure",
+          "eq",
+          true
+        ],
+        [
+          "proactive.core_state_mutations",
+          "eq",
+          0
+        ]
+      ]
+    },
+    {
+      "id": "UX-F04-04",
+      "scenario": "关闭主动帮助",
+      "source_condition": "不再启动新的非必要主动任务",
+      "initial_status": "not_run",
+      "steps": [
+        "关闭主动帮助后再次触发调度，同时保留核心任务和安全提示场景",
+        "核对无新增非必要主动任务，核心执行和必要安全提示可用"
+      ],
+      "assertions": [
+        [
+          "control.proactive_disabled",
+          "eq",
+          true
+        ],
+        [
+          "scheduling.new_nonessential_tasks",
+          "eq",
+          0
+        ],
+        [
+          "core.execution_available",
+          "eq",
+          true
+        ],
+        [
+          "safety.hints_available",
+          "eq",
+          true
+        ]
+      ]
+    },
+    {
+      "id": "UX-GLOBAL-01",
+      "scenario": "后台版本更新",
+      "source_condition": "当前运行绑定的配置不被无约束热切换",
+      "initial_status": "not_run",
+      "steps": [
+        "运行任务绑定版本A，期间尝试后台激活版本B",
+        "核对该运行前后Manifest绑定保持A，未发生无约束热切换"
+      ],
+      "assertions": [
+        [
+          "run.manifest_after",
+          "eq_path",
+          "run.manifest_before"
+        ],
+        [
+          "update.current_run_hot_swap",
+          "eq",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "UX-GLOBAL-02",
+      "scenario": "用户纠正摘要",
+      "source_condition": "后续处理使用纠正后的事实",
+      "initial_status": "not_run",
+      "steps": [
+        "让用户纠正一条已进入摘要的事实，再触发后续处理",
+        "核对使用纠正后的事实，没有复用已知过时结论"
+      ],
+      "assertions": [
+        [
+          "corrections.used",
+          "eq",
+          true
+        ],
+        [
+          "facts.obsolete_reused",
+          "eq",
+          false
+        ]
+      ]
+    },
+    {
+      "id": "UX-GLOBAL-03",
+      "scenario": "预算耗尽",
+      "source_condition": "停止新增调用并保留可用成果",
+      "initial_status": "not_run",
+      "steps": [
+        "保留已完成产物后耗尽任务预算",
+        "核对不再新增调用，已生成可用成果仍可访问"
+      ],
+      "assertions": [
+        [
+          "budget.exhausted",
+          "eq",
+          true
+        ],
+        [
+          "calls.new_after_exhaustion",
+          "eq",
+          0
+        ],
+        [
+          "artifacts.available_preserved",
+          "eq",
+          true
+        ]
+      ]
+    }
+  ]
+}

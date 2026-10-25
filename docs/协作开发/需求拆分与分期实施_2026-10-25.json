@@ -1,0 +1,1438 @@
+{
+  "id": "PRODUCT-2026-10-25",
+  "authorized_by": "user_request",
+  "request": "先根据现状和设计以及预期对需求进行拆分一起一起认领开发",
+  "source_commit": "5e2b7e36ffbc225a33c7c09c8214bf70133ba2da",
+  "sources": [
+    "chat/extracted/156_qa.md",
+    "chat/extracted/157_qa.md",
+    "chat/extracted/154_qa.md",
+    "docs/README新增设计梳理与实施映射_2026-10-25.md",
+    "docs/全量对齐与下一步实施计划_2026-10-22.md"
+  ],
+  "new_workpackages": [
+    {
+      "id": "ALN-23",
+      "priority": "P0",
+      "title": "任务入口、聊天/工作模式与任务工作区",
+      "depends_on": [
+        "ALN-04",
+        "ALN-07",
+        "ALN-12"
+      ],
+      "stream": "android",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "F01/F02/F03真实入口、计划、控制与恢复闭环；UX01—10逐项验收",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
+    },
+    {
+      "id": "ALN-24",
+      "priority": "P0",
+      "title": "成果交付、项目记忆与能力信任中心",
+      "depends_on": [
+        "ALN-01",
+        "ALN-03",
+        "ALN-05",
+        "ALN-06",
+        "ALN-23"
+      ],
+      "stream": "android",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "真实产物可访问和继续修改；项目/记忆/能力/权限/隐私/成本按UX11—17、22—25逐项验收",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
+    },
+    {
+      "id": "ALN-25",
+      "priority": "P1",
+      "title": "主动帮助与机会发现",
+      "depends_on": [
+        "ALN-05",
+        "ALN-13",
+        "ALN-14",
+        "ALN-15",
+        "ALN-23"
+      ],
+      "stream": "models",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "授权来源到建议的可追溯闭环；F04全通过，含关闭和资源非干扰实测",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
+    },
+    {
+      "id": "ALN-26",
+      "priority": "P1",
+      "title": "能力缺口主动规划与动态编排",
+      "depends_on": [
+        "ALN-06",
+        "ALN-07",
+        "ALN-09",
+        "ALN-10"
+      ],
+      "stream": "runtime",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "A-59/A-60从缺口证据到候选计划、动态团队契约与冲突处理有实际任务证据",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
+    },
+    {
+      "id": "ALN-27",
+      "priority": "P1",
+      "title": "经验迁移与可组合能力资产",
+      "depends_on": [
+        "ALN-05",
+        "ALN-06",
+        "ALN-10"
+      ],
+      "stream": "assets",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "A-69/A-70来源、适用域、撤销与跨专家迁移/组合工作流在真实消费路径有效",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
+    },
+    {
+      "id": "ALN-28",
+      "priority": "P2",
+      "title": "外部事实核验与可信交付",
+      "depends_on": [
+        "ALN-05",
+        "ALN-09",
+        "ALN-16"
+      ],
+      "stream": "models",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "A-61外部证据获取、交叉核验、矛盾与未知标注可复现；外部数据源未就绪不宣称通过",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
+    },
+    {
+      "id": "ALN-29",
+      "priority": "P0",
+      "title": "首发范围、发布门禁与用户反馈闭环",
+      "depends_on": [
+        "ALN-00",
+        "ALN-10",
+        "ALN-11",
+        "ALN-16",
+        "ALN-23",
+        "ALN-24",
+        "ALN-25"
+      ],
+      "stream": "integration",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "28UX范围表、17用例及G0—G7同版本证据齐备；发布决定独立于开发完成",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "ALN-29-A",
+      "workpackage": "ALN-29",
+      "title": "首发17用例的验收骨架与可执行断言",
+      "stream": "integration",
+      "phase": 0,
+      "depends_on": [],
+      "requirement_refs": [
+        "F01",
+        "F02",
+        "F03",
+        "F04",
+        "GLOBAL"
+      ],
+      "write_paths": [
+        "tools/check_collaboration_plan.py",
+        "tools/check_product_acceptance.py",
+        "tools/product_acceptance.py",
+        "tools/tests/",
+        "docs/协作开发/验收/首发验收矩阵.json"
+      ],
+      "goal": "把原文17用例落为可执行的事实断言、证据格式和未测试状态，供后续实现共同使用",
+      "acceptance": "17项编号/场景/条件与原文一致；无证据全部未测试；缺断言、错误版本、篡改证据、字段缺失不得通过；夹具不算真实验收",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-29-B",
+      "workpackage": "ALN-29",
+      "title": "首发冻结范围与八道发布门禁",
+      "stream": "integration",
+      "phase": 0,
+      "depends_on": [
+        "ALN-29-A"
+      ],
+      "requirement_refs": [
+        "UX-26",
+        "UX-27",
+        "UX-28",
+        "G0",
+        "G1",
+        "G2",
+        "G3",
+        "G4",
+        "G5",
+        "G6",
+        "G7"
+      ],
+      "write_paths": [
+        "tools/",
+        "docs/协作开发/验收/"
+      ],
+      "goal": "把EA-REL-005的范围与G0—G7编成版本绑定证据表，明确命令/人工评估/真机条件",
+      "acceptance": "八项逐项可复核；未运行不记通过；结构验证与功能/真机/发布决定分离；无完整证据不开放生产",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-23-A",
+      "workpackage": "ALN-23",
+      "title": "统一任务契约对外模型",
+      "stream": "runtime",
+      "phase": 1,
+      "depends_on": [
+        "ALN-29-A"
+      ],
+      "requirement_refs": [
+        "UX-01",
+        "UX-03",
+        "F02"
+      ],
+      "write_paths": [
+        "evoagent/core/task.py",
+        "evoagent/planning/intent.py",
+        "evoagent/api/",
+        "evoagent/cli.py",
+        "android-app/src/api.ts"
+      ],
+      "goal": "沿用Task权威，对齐自然语言目标/约束/产物/验收条件及REST、CLI、客户端边界",
+      "acceptance": "三入口字段同源；明确兼容默认值与非法输入；general提示不能无条件屏蔽真实分类；明确约束不丢失",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-23-B",
+      "workpackage": "ALN-23",
+      "title": "聊天与工作模式及上下文转换",
+      "stream": "runtime",
+      "phase": 1,
+      "depends_on": [
+        "ALN-23-A"
+      ],
+      "requirement_refs": [
+        "UX-04",
+        "UX-05",
+        "UX-06",
+        "F01"
+      ],
+      "write_paths": [
+        "evoagent/core/controller.py",
+        "evoagent/planning/",
+        "android-app/src/",
+        "android-app/App.tsx"
+      ],
+      "goal": "直接问答轻量完成；需要工具/产物时复用上下文进入正式任务，不复制执行内核",
+      "acceptance": "F01-01/02与转工作场景通过；保留纠正和已确认约束；不无故重复已完成步骤",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-23-D",
+      "workpackage": "ALN-23",
+      "title": "用户可见状态与权威任务状态映射",
+      "stream": "runtime",
+      "phase": 1,
+      "depends_on": [
+        "ALN-23-A"
+      ],
+      "requirement_refs": [
+        "UX-08",
+        "F02",
+        "F03"
+      ],
+      "write_paths": [
+        "evoagent/api/",
+        "android-app/src/",
+        "android-app/App.tsx"
+      ],
+      "goal": "形成状态与等待原因的单一映射，协调两份产品规格的展示措辞并保留内部Task状态契约",
+      "acceptance": "九态语义、暂停/待澄清/等待网络原因有映射；状态来自Task/事件；模型文字不能伪造完成或进度",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-23-C",
+      "workpackage": "ALN-23",
+      "title": "任务工作区与真实计划进度",
+      "stream": "android",
+      "phase": 1,
+      "depends_on": [
+        "ALN-23-A",
+        "ALN-23-B",
+        "ALN-23-D"
+      ],
+      "requirement_refs": [
+        "UX-07",
+        "UX-08",
+        "F02"
+      ],
+      "write_paths": [
+        "android-app/src/",
+        "android-app/App.tsx",
+        "evoagent/api/"
+      ],
+      "goal": "展示目标、计划、节点依赖、真实阶段与用户待办，复用Task/Run/Node标识",
+      "acceptance": "六种节点态可辨；阶段有权威记录；无依据不显示百分比；部分成果和待授权可见",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-24-A",
+      "workpackage": "ALN-24",
+      "title": "真实成果交付、验收与局部修改",
+      "stream": "assets",
+      "phase": 1,
+      "depends_on": [
+        "ALN-23-C"
+      ],
+      "requirement_refs": [
+        "UX-11",
+        "UX-12",
+        "UX-13",
+        "F02"
+      ],
+      "write_paths": [
+        "evoagent/",
+        "android-app/src/",
+        "android-app/App.tsx"
+      ],
+      "goal": "定义产物标识/版本/校验/可访问性，与Task.result和result_evidence复用；提供预览下载及局部修改路径",
+      "acceptance": "F02-01/03有真实文件、独立验收、限制和摘要；无文件不显示下载；变更只重做受影响产物",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-23-E",
+      "workpackage": "ALN-23",
+      "title": "用户控制、目标变更与安全恢复",
+      "stream": "android",
+      "phase": 2,
+      "depends_on": [
+        "ALN-23-C",
+        "ALN-07-C"
+      ],
+      "requirement_refs": [
+        "UX-09",
+        "UX-10",
+        "F03"
+      ],
+      "write_paths": [
+        "android-app/src/",
+        "android-app/App.tsx",
+        "evoagent/api/",
+        "evoagent/core/controller.py"
+      ],
+      "goal": "接通暂停/取消/继续/变更与恢复用户路径，保留历史及未知外部动作",
+      "acceptance": "F03-01—05逐项有执行与重启证据；授权不随目标扩大；未知副作用先对账，不盲目重放",
+      "prerequisites": "设备路径验收需要已授权真机；可先做后端/客户端自动化"
+    },
+    {
+      "id": "ALN-23-F",
+      "workpackage": "ALN-23",
+      "title": "语音输入与文字任务共用入口",
+      "stream": "android",
+      "phase": 3,
+      "depends_on": [
+        "ALN-23-A",
+        "ALN-23-B"
+      ],
+      "requirement_refs": [
+        "UX-02"
+      ],
+      "write_paths": [
+        "android-app/src/",
+        "android-app/android/",
+        "android-app/App.tsx"
+      ],
+      "goal": "语音转写进入同一任务契约，声明识别/播报及离线范围",
+      "acceptance": "转写完成不等于执行成功；转写错误可修正；高风险外部动作仍走动作授权",
+      "prerequisites": "真实语音组件、权限和设备可用；缺依赖明确显示不可用"
+    },
+    {
+      "id": "ALN-24-B",
+      "workpackage": "ALN-24",
+      "title": "能力状态、权限与渐进授权",
+      "stream": "android",
+      "phase": 2,
+      "depends_on": [
+        "ALN-23-A"
+      ],
+      "requirement_refs": [
+        "UX-22",
+        "UX-23"
+      ],
+      "write_paths": [
+        "android-app/src/",
+        "android-app/App.tsx",
+        "evoagent/api/"
+      ],
+      "goal": "复用注册表、依赖与权限服务展示能力状态、授权和撤销，避免配置存在即显示可用",
+      "acceptance": "能力六档及具体原因可见；依赖外部服务如实展示；拒绝/撤销后受保护动作不能执行",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-24-C",
+      "workpackage": "ALN-24",
+      "title": "任务历史、项目空间与跨会话延续",
+      "stream": "android",
+      "phase": 3,
+      "depends_on": [
+        "ALN-23-C",
+        "ALN-24-A"
+      ],
+      "requirement_refs": [
+        "UX-14",
+        "UX-15",
+        "UX-16"
+      ],
+      "write_paths": [
+        "android-app/src/",
+        "android-app/App.tsx",
+        "evoagent/api/",
+        "evoagent/memory/"
+      ],
+      "goal": "按项目归集任务与成果，恢复已确认目标、约束、产物与历史，不建立第二套Task状态",
+      "acceptance": "跨会话延续引用原任务/项目；历史不被覆盖；隔离项目上下文，已完成步骤不重复执行",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-24-D",
+      "workpackage": "ALN-24",
+      "title": "用户记忆、隐私与纠正删除路径",
+      "stream": "models",
+      "phase": 3,
+      "depends_on": [
+        "ALN-24-C",
+        "ALN-16-P"
+      ],
+      "requirement_refs": [
+        "UX-17",
+        "UX-24",
+        "GLOBAL"
+      ],
+      "write_paths": [
+        "android-app/src/",
+        "android-app/App.tsx",
+        "evoagent/memory/",
+        "evoagent/api/"
+      ],
+      "goal": "用户可看来源、纠错、删除与调整记忆/分析范围，消费现有命名空间和删除服务",
+      "acceptance": "GLOBAL-02后续使用纠正事实；缓存和服务端范围一致；保留项/失败项明确，不宣称未验证的全域擦除",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-24-E",
+      "workpackage": "ALN-24",
+      "title": "成本与资源的用户可见控制",
+      "stream": "android",
+      "phase": 2,
+      "depends_on": [
+        "ALN-23-C"
+      ],
+      "requirement_refs": [
+        "UX-25",
+        "GLOBAL"
+      ],
+      "write_paths": [
+        "android-app/src/",
+        "android-app/App.tsx",
+        "evoagent/api/"
+      ],
+      "goal": "展示预估/实际/未知成本与预算停止原因，复用现有账本而非另算余额",
+      "acceptance": "GLOBAL-03预算耗尽停止新增调用且保留成果；unknown不能当0金额；调整额度不能绕过动作准入",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-25-A",
+      "workpackage": "ALN-25",
+      "title": "有来源的主动帮助与机会建议",
+      "stream": "models",
+      "phase": 3,
+      "depends_on": [
+        "ALN-24-C"
+      ],
+      "requirement_refs": [
+        "UX-18",
+        "UX-19",
+        "UX-20",
+        "F04"
+      ],
+      "write_paths": [
+        "evoagent/goals/",
+        "evoagent/memory/",
+        "android-app/src/",
+        "android-app/App.tsx"
+      ],
+      "goal": "复用OpportunityService/GoalGovernor，接授权工作范围、近期整理与建议交付",
+      "acceptance": "F04-01/02有来源/事实推断未知区分；无高价值机会可不建议；建议含收益、权限和成本，不能自动外部执行",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-25-B",
+      "workpackage": "ALN-25",
+      "title": "主动强度、停止与资源非干扰",
+      "stream": "runtime",
+      "phase": 3,
+      "depends_on": [
+        "ALN-25-A",
+        "ALN-15-D"
+      ],
+      "requirement_refs": [
+        "UX-21",
+        "F04",
+        "G5"
+      ],
+      "write_paths": [
+        "evoagent/goals/",
+        "evoagent/core/budget.py",
+        "android-app/src/",
+        "android-app/App.tsx"
+      ],
+      "goal": "四档主动程度、独立预算/队列、有限范围和无进展停止；核心任务优先",
+      "acceptance": "F04-03/04在资源压力下实测；主动失败不修改核心状态；关闭不启动新非必要任务且保留安全提示",
+      "prerequisites": "设备或宿主资源测量环境；单纯Mock预算计数不算非干扰验收"
+    },
+    {
+      "id": "ALN-26-A",
+      "workpackage": "ALN-26",
+      "title": "能力缺口证据与主动规划候选",
+      "stream": "runtime",
+      "phase": 4,
+      "depends_on": [
+        "ALN-25-A",
+        "ALN-06-R"
+      ],
+      "requirement_refs": [
+        "A-59"
+      ],
+      "write_paths": [
+        "evoagent/goals/",
+        "evoagent/evolution/"
+      ],
+      "goal": "从真实失败/用户目标与能力清单识别缺口，生成有范围、收益和成本的候选规划",
+      "acceptance": "缺口非泛泛建议；证据可追溯、可去重、可人工确认；不绕过候选评测与发布",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-26-B",
+      "workpackage": "ALN-26",
+      "title": "动态团队与跨专家协作契约",
+      "stream": "runtime",
+      "phase": 4,
+      "depends_on": [
+        "ALN-26-A",
+        "ALN-07-C"
+      ],
+      "requirement_refs": [
+        "A-53",
+        "A-60"
+      ],
+      "write_paths": [
+        "evoagent/experts/",
+        "evoagent/planning/",
+        "evoagent/workflows/"
+      ],
+      "goal": "复用ExpertRegistry与DAG做团队角色、输入输出、冲突和失败恢复",
+      "acceptance": "真实跨专家任务有契约与唯一状态写入者；冲突可解释；局部失败不越权重放外部动作",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-27-A",
+      "workpackage": "ALN-27",
+      "title": "故障经验沉淀与跨专家迁移验证",
+      "stream": "assets",
+      "phase": 4,
+      "depends_on": [
+        "ALN-06-R",
+        "ALN-10-E"
+      ],
+      "requirement_refs": [
+        "A-69",
+        "B-81",
+        "B-88"
+      ],
+      "write_paths": [
+        "evoagent/memory/",
+        "evoagent/knowledge/",
+        "evoagent/evolution/"
+      ],
+      "goal": "知识有来源/可信度/适用域/版本与撤销，注入前检查适用性并验证迁移效果",
+      "acceptance": "不适用条目不注入；错误经验可撤销；跨专家前后对照证明收益，不能用命中率代替任务质量",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-27-B",
+      "workpackage": "ALN-27",
+      "title": "可组合能力与动态工作流资产",
+      "stream": "assets",
+      "phase": 4,
+      "depends_on": [
+        "ALN-26-B",
+        "ALN-27-A"
+      ],
+      "requirement_refs": [
+        "A-70",
+        "B-85"
+      ],
+      "write_paths": [
+        "evoagent/workflows/",
+        "evoagent/experts/",
+        "evoagent/assets/"
+      ],
+      "goal": "把验证过的跨专家流程沉淀成可组合、版本固定的能力资产",
+      "acceptance": "依赖闭包与输入输出兼容；重用有真实执行证据；升级不改变已在运行的组合版本",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-28-A",
+      "workpackage": "ALN-28",
+      "title": "外部事实核验与可信交付",
+      "stream": "models",
+      "phase": 5,
+      "depends_on": [
+        "ALN-24-A",
+        "ALN-16-P"
+      ],
+      "requirement_refs": [
+        "A-61"
+      ],
+      "write_paths": [
+        "evoagent/verification/",
+        "evoagent/memory/",
+        "evoagent/api/"
+      ],
+      "goal": "对外部事实收集来源并交叉核验，区分矛盾、推断、未知和适用时间",
+      "acceptance": "引用可访问且支持结论；来源冲突可见；无外部证据不得仅凭模型自述判可信",
+      "prerequisites": "合法可用的外部数据源/服务；P2后续，不阻塞本地首卡"
+    },
+    {
+      "id": "ALN-29-C",
+      "workpackage": "ALN-29",
+      "title": "问题反馈与运行证据关联",
+      "stream": "integration",
+      "phase": 3,
+      "depends_on": [
+        "ALN-23-C"
+      ],
+      "requirement_refs": [
+        "UX-26"
+      ],
+      "write_paths": [
+        "evoagent/api/",
+        "evoagent/observability/",
+        "android-app/src/",
+        "android-app/App.tsx"
+      ],
+      "goal": "用户反馈绑定真实task/run/manifest与可授权的最小证据",
+      "acceptance": "反馈不泄露凭据；来源与时间可定位；重复反馈可聚合，未验证原因不能当成根因",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-29-D",
+      "workpackage": "ALN-29",
+      "title": "改进效果与用户收益说明",
+      "stream": "integration",
+      "phase": 4,
+      "depends_on": [
+        "ALN-29-C",
+        "ALN-10-E"
+      ],
+      "requirement_refs": [
+        "UX-27"
+      ],
+      "write_paths": [
+        "evoagent/api/",
+        "evoagent/evolution/",
+        "android-app/src/",
+        "android-app/App.tsx"
+      ],
+      "goal": "把候选、评测与发布后效果翻译成可核验的用户变化说明",
+      "acceptance": "说明区分候选/发布/观测结果；无真实对照不声称收益；退化与限制可见",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-29-E",
+      "workpackage": "ALN-29",
+      "title": "稳定版本、更新控制与回滚体验",
+      "stream": "android",
+      "phase": 3,
+      "depends_on": [
+        "ALN-11-P",
+        "ALN-24-B"
+      ],
+      "requirement_refs": [
+        "UX-28",
+        "GLOBAL"
+      ],
+      "write_paths": [
+        "android-app/src/",
+        "android-app/App.tsx",
+        "evoagent/release/"
+      ],
+      "goal": "用户能理解稳定/实验版本、控制更新并查看真实回滚结果",
+      "acceptance": "GLOBAL-01运行绑定不可无约束热切换；拒绝坏包可见；生产签名与回滚证据绑定同一版本",
+      "prerequisites": "生产信任材料与可连接设备"
+    },
+    {
+      "id": "ALN-02-P",
+      "workpackage": "ALN-02",
+      "title": "真实供应商副作用与进程故障恢复",
+      "stream": "runtime",
+      "phase": 2,
+      "depends_on": [
+        "ALN-02-A"
+      ],
+      "requirement_refs": [
+        "UX-10",
+        "F03"
+      ],
+      "write_paths": [
+        "evoagent/tools/",
+        "evoagent/core/"
+      ],
+      "goal": "真实外部适配器消费副作用预记账，验证崩溃和超时不重复执行",
+      "acceptance": "外部状态未知先对账；进程退出窗口、重试/补偿受限且有真实回执",
+      "prerequisites": "真实供应商或受控外部测试服务"
+    },
+    {
+      "id": "ALN-03-P",
+      "workpackage": "ALN-03",
+      "title": "生产信任根与元数据制品联验",
+      "stream": "assets",
+      "phase": 2,
+      "depends_on": [
+        "ALN-03-S"
+      ],
+      "requirement_refs": [
+        "G2",
+        "G6"
+      ],
+      "write_paths": [
+        "evoagent/release/"
+      ],
+      "goal": "生产公钥身份、元数据签名与实际制品字节一致消费",
+      "acceptance": "错密钥/篡改元数据/篡改制品均拒绝；密钥轮换可追溯，不分发签名私钥",
+      "prerequisites": "生产或明确标注测试信任材料"
+    },
+    {
+      "id": "ALN-04-V",
+      "workpackage": "ALN-04",
+      "title": "组合状态与生产身份恢复矩阵",
+      "stream": "runtime",
+      "phase": 2,
+      "depends_on": [
+        "ALN-04-R",
+        "ALN-04-UI"
+      ],
+      "requirement_refs": [
+        "F03",
+        "G3"
+      ],
+      "write_paths": [
+        "evoagent/core/",
+        "evoagent/api/"
+      ],
+      "goal": "扩展已验收四路径，验证组合任务/审批/节点状态与生产身份恢复",
+      "acceptance": "旧授权不跨身份复用；未知在途保留；覆盖检查点、重启与组合资产",
+      "prerequisites": "真实部署身份与故障注入环境"
+    },
+    {
+      "id": "ALN-06-R",
+      "workpackage": "ALN-06",
+      "title": "精确能力版本的运行时消费",
+      "stream": "runtime",
+      "phase": 1,
+      "depends_on": [
+        "ALN-06-A"
+      ],
+      "requirement_refs": [
+        "GLOBAL",
+        "G6"
+      ],
+      "write_paths": [
+        "evoagent/assets/",
+        "evoagent/core/controller.py",
+        "evoagent/experts/"
+      ],
+      "goal": "执行步骤消费不可变资产/依赖闭包，不仅存储和声明版本",
+      "acceptance": "实际工具/专家引用精确版本与digest；退役不可新绑定；旧run版本保持固定",
+      "prerequisites": "本地制品及运行环境"
+    },
+    {
+      "id": "ALN-07-C",
+      "workpackage": "ALN-07",
+      "title": "原子绑定、精确步骤授权与对账消费",
+      "stream": "runtime",
+      "phase": 1,
+      "depends_on": [
+        "ALN-07-B",
+        "ALN-07-P"
+      ],
+      "requirement_refs": [
+        "UX-09",
+        "UX-10",
+        "F03"
+      ],
+      "write_paths": [
+        "evoagent/core/",
+        "evoagent/planning/",
+        "evoagent/workflows/"
+      ],
+      "goal": "消除绑定崩溃窗口，将授权范围与步骤/版本/副作用对账原子消费",
+      "acceptance": "崩溃重启无半绑定；授权不扩大/重复消费；真实恢复先对账后决定",
+      "prerequisites": "可重复故障注入"
+    },
+    {
+      "id": "ALN-08-W",
+      "workpackage": "ALN-08",
+      "title": "工作流与执行模式的主链路由",
+      "stream": "models",
+      "phase": 2,
+      "depends_on": [
+        "ALN-23-A",
+        "ALN-08-R"
+      ],
+      "requirement_refs": [
+        "UX-03",
+        "UX-06",
+        "B-75"
+      ],
+      "write_paths": [
+        "evoagent/routing/",
+        "evoagent/core/controller.py",
+        "evoagent/workflows/"
+      ],
+      "goal": "路由进入工作流/执行模式实际选择并保留拒绝/降级证据",
+      "acceptance": "入口与评测一致；不可用默认不旁路使用；决策与真实执行归因一致",
+      "prerequisites": "本地路由夹具可开发；真实链另采证"
+    },
+    {
+      "id": "ALN-08-P",
+      "workpackage": "ALN-08",
+      "title": "生产评测集、价格档案与费用对账",
+      "stream": "models",
+      "phase": 3,
+      "depends_on": [
+        "ALN-08-M"
+      ],
+      "requirement_refs": [
+        "UX-25",
+        "G4"
+      ],
+      "write_paths": [
+        "evoagent/routing/",
+        "evoagent/models/",
+        "evoagent/core/budget.py"
+      ],
+      "goal": "建立代表性任务集、真实供应商版本价格与未知费用后续对账",
+      "acceptance": "价格有来源/有效期；未知只计数不造金额；计量与账单差异可解释",
+      "prerequisites": "供应商价格/账单与脱敏真实任务集"
+    },
+    {
+      "id": "ALN-09-H",
+      "workpackage": "ALN-09",
+      "title": "真实候选宿主、持久队列与进程隔离",
+      "stream": "assets",
+      "phase": 2,
+      "depends_on": [
+        "ALN-09-F"
+      ],
+      "requirement_refs": [
+        "B-78",
+        "G2",
+        "G3"
+      ],
+      "write_paths": [
+        "evoagent/evolution/",
+        "evoagent/sandbox/"
+      ],
+      "goal": "隔离宿主执行真实候选资产，持久问题队列并验证多进程恢复",
+      "acceptance": "超时强杀；网络/凭据边界；崩溃后队列和候选身份可恢复",
+      "prerequisites": "受控宿主与真实候选制品"
+    },
+    {
+      "id": "ALN-10-E",
+      "workpackage": "ALN-10",
+      "title": "真实候选收益与依赖回归证据",
+      "stream": "assets",
+      "phase": 3,
+      "depends_on": [
+        "ALN-09-H",
+        "ALN-10-H"
+      ],
+      "requirement_refs": [
+        "B-76",
+        "B-77",
+        "B-78",
+        "B-79",
+        "B-96",
+        "B-97",
+        "G1"
+      ],
+      "write_paths": [
+        "evoagent/evaluation/",
+        "evoagent/evolution/"
+      ],
+      "goal": "消费真实宿主/制品版本，建立依赖回归范围和发布前后收益链",
+      "acceptance": "实际覆盖有范围/遗漏说明；对照可复现；退化阻止发布或触发既定回滚",
+      "prerequisites": "代表性基准/对照环境"
+    },
+    {
+      "id": "ALN-11-P",
+      "workpackage": "ALN-11",
+      "title": "生产签名与端侧安装退役回执",
+      "stream": "android",
+      "phase": 2,
+      "depends_on": [
+        "ALN-03-P",
+        "ALN-11-W"
+      ],
+      "requirement_refs": [
+        "G0",
+        "G6"
+      ],
+      "write_paths": [
+        "android-app/src/",
+        "android-app/android/",
+        "evoagent/release/"
+      ],
+      "goal": "联验生产信任、公钥验签、安装/激活/退役回执与灰度回滚",
+      "acceptance": "回执绑定真实设备/制品；坏包拒绝与回滚旧能力实测；断联不冒充已安装",
+      "prerequisites": "可连接设备与生产或标注测试的签名材料"
+    },
+    {
+      "id": "ALN-12-E",
+      "workpackage": "ALN-12",
+      "title": "自然语言手机App真实任务主链",
+      "stream": "android",
+      "phase": 2,
+      "depends_on": [
+        "ALN-23-C",
+        "ALN-07-C",
+        "ALN-06-R"
+      ],
+      "requirement_refs": [
+        "F02",
+        "F03",
+        "G0",
+        "G1"
+      ],
+      "write_paths": [
+        "android-app/src/",
+        "android-app/android/",
+        "android-app/App.tsx",
+        "evoagent/api/"
+      ],
+      "goal": "从自然语言到真实设备动作、授权、回执、成果的完整链路",
+      "acceptance": "明确授权后真机执行；task/run/effect一致；夹具transport不能算真机动作",
+      "prerequisites": "可连接且授权的Android设备"
+    },
+    {
+      "id": "ALN-12-V",
+      "workpackage": "ALN-12",
+      "title": "通知、离线与系统重启真机矩阵",
+      "stream": "android",
+      "phase": 2,
+      "depends_on": [
+        "ALN-12-A"
+      ],
+      "requirement_refs": [
+        "F03",
+        "G0",
+        "G3"
+      ],
+      "write_paths": [
+        "android-app/src/",
+        "android-app/android/"
+      ],
+      "goal": "验证271378e后通知新APK以及离线/杀进程/物理重启组合行为",
+      "acceptance": "成功/失败/取消通知真实；渠道关闭不误计投递；系统重启回执不重复副作用",
+      "prerequisites": "可连接设备，记录APK/JS精确版本"
+    },
+    {
+      "id": "ALN-13-P",
+      "workpackage": "ALN-13",
+      "title": "生产长期目标推进与周期守护",
+      "stream": "runtime",
+      "phase": 3,
+      "depends_on": [
+        "ALN-13-A",
+        "ALN-14-A"
+      ],
+      "requirement_refs": [
+        "F04",
+        "B-90",
+        "B-91"
+      ],
+      "write_paths": [
+        "evoagent/goals/"
+      ],
+      "goal": "消费现有Goal/Opportunity服务做有授权周期推进与负载守护",
+      "acceptance": "停止/预算/授权持续有效；无进展停止；真实负载不饿死主任务",
+      "prerequisites": "运行时调度与负载环境"
+    },
+    {
+      "id": "ALN-15-P",
+      "workpackage": "ALN-15",
+      "title": "Provider/Expert预算原子化与旧Goal迁移",
+      "stream": "runtime",
+      "phase": 2,
+      "depends_on": [
+        "ALN-15-R"
+      ],
+      "requirement_refs": [
+        "GLOBAL",
+        "G4"
+      ],
+      "write_paths": [
+        "evoagent/core/budget.py",
+        "evoagent/goals/",
+        "evoagent/models/"
+      ],
+      "goal": "补provider/expert预留原子性与旧Goal账户迁移，复用总账",
+      "acceptance": "并发不超留；迁移可回退且余额一致；供应商未知金额不得假定零",
+      "prerequisites": "可重复并发和迁移夹具"
+    },
+    {
+      "id": "ALN-15-D",
+      "workpackage": "ALN-15",
+      "title": "设备资源准入与核心任务优先",
+      "stream": "runtime",
+      "phase": 3,
+      "depends_on": [
+        "ALN-15-P"
+      ],
+      "requirement_refs": [
+        "F04",
+        "G4",
+        "G5"
+      ],
+      "write_paths": [
+        "evoagent/core/",
+        "evoagent/goals/",
+        "android-app/src/"
+      ],
+      "goal": "CPU/内存/模型资源准入、低优先暂停及恢复，向主动帮助提供统一能力",
+      "acceptance": "资源压力下主任务满足明确阈值；主动分析让出资源；停止不损坏核心状态",
+      "prerequisites": "真实设备或受控宿主资源测量"
+    },
+    {
+      "id": "ALN-16-P",
+      "workpackage": "ALN-16",
+      "title": "业务仓储与端侧隐私凭证治理",
+      "stream": "integration",
+      "phase": 3,
+      "depends_on": [
+        "ALN-16-X"
+      ],
+      "requirement_refs": [
+        "UX-17",
+        "UX-24",
+        "G2"
+      ],
+      "write_paths": [
+        "evoagent/api/",
+        "evoagent/memory/",
+        "evoagent/observability/",
+        "android-app/src/"
+      ],
+      "goal": "覆盖尚未接入的业务仓储、缓存和端侧EvidenceEvent，明确IAM及删除边界",
+      "acceptance": "受信身份隔离；最小证据与脱敏；实际删除/保留/失败可对账",
+      "prerequisites": "生产身份/存储范围及端侧测试环境"
+    },
+    {
+      "id": "ALN-17-P",
+      "workpackage": "ALN-17",
+      "title": "空机部署、组合恢复与RTO/RPO",
+      "stream": "integration",
+      "phase": 4,
+      "depends_on": [
+        "ALN-17-A",
+        "ALN-11-P"
+      ],
+      "requirement_refs": [
+        "G0",
+        "G3",
+        "G7"
+      ],
+      "write_paths": [
+        "evoagent/recovery/",
+        "evoagent/deployment/"
+      ],
+      "goal": "空环境部署并恢复组合资产、身份、账本与备份，测量RTO/RPO",
+      "acceptance": "固定备份/版本可复现；不兼容拒绝；失败回退与真实时间/损失窗口记录",
+      "prerequisites": "干净部署环境与真实备份"
+    },
+    {
+      "id": "ALN-18-G",
+      "workpackage": "ALN-18",
+      "title": "App与编程专家真实消费能力包",
+      "stream": "runtime",
+      "phase": 4,
+      "depends_on": [
+        "ALN-18-F",
+        "ALN-06-R",
+        "ALN-24-A"
+      ],
+      "requirement_refs": [
+        "F02",
+        "A-60"
+      ],
+      "write_paths": [
+        "evoagent/experts/",
+        "evoagent/tools/",
+        "android-app/src/"
+      ],
+      "goal": "在真实项目通过编程专家/用户任务消费现有包，而非仅调用工具单测",
+      "acceptance": "跨文件修改/验收/回滚闭环；包生命周期与精确版本记录；未实现LSP不宣称支持",
+      "prerequisites": "受控真实项目"
+    },
+    {
+      "id": "ALN-18-L",
+      "workpackage": "ALN-18",
+      "title": "跨文件语义与LSP能力扩展",
+      "stream": "runtime",
+      "phase": 5,
+      "depends_on": [
+        "ALN-18-G"
+      ],
+      "requirement_refs": [
+        "A-60",
+        "A-70"
+      ],
+      "write_paths": [
+        "evoagent/tools/",
+        "evoagent/experts/"
+      ],
+      "goal": "按真实编程任务引入语言服务与跨文件语义验证",
+      "acceptance": "固定语言服务版本；诊断/修改前后对照；无法确定的重构请求澄清",
+      "prerequisites": "语言服务依赖与真实项目"
+    },
+    {
+      "id": "ALN-19-A",
+      "workpackage": "ALN-19",
+      "title": "真实音视频供应商漫剧纵切片",
+      "stream": "assets",
+      "phase": 5,
+      "depends_on": [
+        "ALN-24-A",
+        "ALN-15-P"
+      ],
+      "requirement_refs": [
+        "F02"
+      ],
+      "write_paths": [
+        "evoagent/experts/",
+        "evoagent/tools/"
+      ],
+      "goal": "按原ALN19关闭标准接真实音视频制品和计划/评测/费用",
+      "acceptance": "真实生成可播放产物；费用/版本/授权可追溯；失败有界恢复",
+      "prerequisites": "真实服务配置与预算"
+    },
+    {
+      "id": "ALN-20-P",
+      "workpackage": "ALN-20",
+      "title": "固定外部Runtime真实PoC",
+      "stream": "runtime",
+      "phase": 4,
+      "depends_on": [
+        "ALN-20-A"
+      ],
+      "requirement_refs": [
+        "B-75",
+        "G2",
+        "G3"
+      ],
+      "write_paths": [
+        "evoagent/runtime/",
+        "evoagent/adapters/"
+      ],
+      "goal": "固定外部Harness/Runtime版本真实执行并验证主链采用边界",
+      "acceptance": "兼容矩阵与真实版本一致；不绕过授权/账本/停止；失败隔离",
+      "prerequisites": "固定外部运行时及可用安装环境"
+    },
+    {
+      "id": "ALN-21-A",
+      "workpackage": "ALN-21",
+      "title": "Windows或平板扩展验证",
+      "stream": "android",
+      "phase": 5,
+      "depends_on": [
+        "ALN-17-P",
+        "ALN-20-P",
+        "ALN-12-E"
+      ],
+      "requirement_refs": [
+        "G0",
+        "G3"
+      ],
+      "write_paths": [
+        "android-app/",
+        "evoagent/"
+      ],
+      "goal": "Android稳定后按原ALN21范围验证后续终端部署与状态恢复",
+      "acceptance": "固定端版本/身份/回执；终端差异明确；不复制第二套执行权威",
+      "prerequisites": "目标终端"
+    },
+    {
+      "id": "ALN-22-A",
+      "workpackage": "ALN-22",
+      "title": "原全量范围与新增产品证据汇总",
+      "stream": "integration",
+      "phase": 5,
+      "depends_on": [
+        "ALN-29-B",
+        "ALN-29-E",
+        "ALN-17-P",
+        "ALN-19-A",
+        "ALN-21-A"
+      ],
+      "requirement_refs": [
+        "G0",
+        "G1",
+        "G2",
+        "G3",
+        "G4",
+        "G5",
+        "G6",
+        "G7"
+      ],
+      "write_paths": [
+        "docs/协作开发/验收/",
+        "tools/"
+      ],
+      "goal": "汇总原23包和新增产品包证据，各自关闭标准分开验证",
+      "acceptance": "所有未满足项显式保留；精确版本证据齐备；开发完成不等于发布批准",
+      "prerequisites": "原包依赖和真实外部环境逐项满足"
+    }
+  ],
+  "ux_coverage": {
+    "UX-01": [
+      "ALN-23-A"
+    ],
+    "UX-02": [
+      "ALN-23-F"
+    ],
+    "UX-03": [
+      "ALN-23-A",
+      "ALN-08-W"
+    ],
+    "UX-04": [
+      "ALN-23-B"
+    ],
+    "UX-05": [
+      "ALN-23-B"
+    ],
+    "UX-06": [
+      "ALN-23-B",
+      "ALN-08-W"
+    ],
+    "UX-07": [
+      "ALN-23-C"
+    ],
+    "UX-08": [
+      "ALN-23-D",
+      "ALN-23-C"
+    ],
+    "UX-09": [
+      "ALN-23-E",
+      "ALN-07-C"
+    ],
+    "UX-10": [
+      "ALN-23-E",
+      "ALN-02-P",
+      "ALN-07-C"
+    ],
+    "UX-11": [
+      "ALN-24-A"
+    ],
+    "UX-12": [
+      "ALN-24-A"
+    ],
+    "UX-13": [
+      "ALN-24-A"
+    ],
+    "UX-14": [
+      "ALN-24-C"
+    ],
+    "UX-15": [
+      "ALN-24-C"
+    ],
+    "UX-16": [
+      "ALN-24-C"
+    ],
+    "UX-17": [
+      "ALN-24-D",
+      "ALN-16-P"
+    ],
+    "UX-18": [
+      "ALN-25-A"
+    ],
+    "UX-19": [
+      "ALN-25-A"
+    ],
+    "UX-20": [
+      "ALN-25-A"
+    ],
+    "UX-21": [
+      "ALN-25-B"
+    ],
+    "UX-22": [
+      "ALN-24-B"
+    ],
+    "UX-23": [
+      "ALN-24-B"
+    ],
+    "UX-24": [
+      "ALN-24-D",
+      "ALN-16-P"
+    ],
+    "UX-25": [
+      "ALN-24-E",
+      "ALN-08-P"
+    ],
+    "UX-26": [
+      "ALN-29-B",
+      "ALN-29-C"
+    ],
+    "UX-27": [
+      "ALN-29-B",
+      "ALN-29-D"
+    ],
+    "UX-28": [
+      "ALN-29-B",
+      "ALN-29-E"
+    ]
+  },
+  "acceptance_coverage": {
+    "UX-F01-01": [
+      "ALN-23-B"
+    ],
+    "UX-F01-02": [
+      "ALN-23-B"
+    ],
+    "UX-F02-01": [
+      "ALN-23-C",
+      "ALN-24-A",
+      "ALN-12-E"
+    ],
+    "UX-F02-02": [
+      "ALN-02-P",
+      "ALN-23-E"
+    ],
+    "UX-F02-03": [
+      "ALN-24-A"
+    ],
+    "UX-F03-01": [
+      "ALN-23-E",
+      "ALN-07-C",
+      "ALN-12-V"
+    ],
+    "UX-F03-02": [
+      "ALN-23-E",
+      "ALN-07-C",
+      "ALN-12-V"
+    ],
+    "UX-F03-03": [
+      "ALN-23-E",
+      "ALN-07-C",
+      "ALN-12-V"
+    ],
+    "UX-F03-04": [
+      "ALN-23-E",
+      "ALN-07-C",
+      "ALN-12-V"
+    ],
+    "UX-F03-05": [
+      "ALN-23-E",
+      "ALN-07-C",
+      "ALN-12-V"
+    ],
+    "UX-F04-01": [
+      "ALN-25-A"
+    ],
+    "UX-F04-02": [
+      "ALN-25-A"
+    ],
+    "UX-F04-03": [
+      "ALN-25-B",
+      "ALN-15-D"
+    ],
+    "UX-F04-04": [
+      "ALN-25-B"
+    ],
+    "UX-GLOBAL-01": [
+      "ALN-06-R",
+      "ALN-29-E"
+    ],
+    "UX-GLOBAL-02": [
+      "ALN-24-D"
+    ],
+    "UX-GLOBAL-03": [
+      "ALN-24-E",
+      "ALN-15-P"
+    ]
+  },
+  "technical_coverage": ".planning/2026-10-25-readme-design-review/design-mapping.json",
+  "dependency_note": "包依赖约束整包关闭；卡片depends_on约束实际接口接线，允许使用已交付待审接口准备实现，不能跳过验收",
+  "phases": {
+    "0": "验收公共尺子",
+    "1": "任务与真实成果纵切片",
+    "2": "控制恢复与已有运行时缺口",
+    "3": "项目信任、有限主动帮助与资源实测",
+    "4": "迁移/团队/外部Runtime与生产恢复",
+    "5": "P2场景与全量收口"
+  }
+}

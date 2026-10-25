@@ -3407,11 +3407,11 @@
       "workpackage": "ALN-23",
       "title": "聊天与工作模式及上下文转换",
       "stream": "runtime",
-      "owner": null,
+      "owner": "zcode-main",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/23-B-聊天与工作模式及上下文转换.md",
@@ -3442,18 +3442,22 @@
       ],
       "next_step": "按卡实施并提交证据；未经复核不记accepted",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-      "prerequisites": "仅需仓库与本地测试环境"
+      "prerequisites": "仅需仓库与本地测试环境",
+      "claim_metadata_calibration": {
+        "original_base_commit": "5de4d00",
+        "reason": "展开已存在Git对象；保留原认领者、状态与接手时点"
+      }
     },
     {
       "id": "ALN-23-D",
       "workpackage": "ALN-23",
       "title": "用户可见状态与权威任务状态映射",
       "stream": "runtime",
-      "owner": null,
+      "owner": "zcode-main",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/23-D-用户可见状态与权威任务状态映射.md",
@@ -3483,7 +3487,11 @@
       ],
       "next_step": "按卡实施并提交证据；未经复核不记accepted",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-      "prerequisites": "仅需仓库与本地测试环境"
+      "prerequisites": "仅需仓库与本地测试环境",
+      "claim_metadata_calibration": {
+        "original_base_commit": "5de4d00",
+        "reason": "展开已存在Git对象；保留原认领者、状态与接手时点"
+      }
     },
     {
       "id": "ALN-23-C",
@@ -4133,11 +4141,11 @@
       "workpackage": "ALN-29",
       "title": "问题反馈与运行证据关联",
       "stream": "integration",
-      "owner": null,
+      "owner": "zcode-main",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/29-C-问题反馈与运行证据关联.md",
@@ -4166,7 +4174,11 @@
       ],
       "next_step": "按卡实施并提交证据；未经复核不记accepted",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-      "prerequisites": "仅需仓库与本地测试环境"
+      "prerequisites": "仅需仓库与本地测试环境",
+      "claim_metadata_calibration": {
+        "original_base_commit": "5de4d00",
+        "reason": "展开已存在Git对象；保留原认领者、状态与接手时点"
+      }
     },
     {
       "id": "ALN-29-D",
@@ -4391,11 +4403,11 @@
       "workpackage": "ALN-06",
       "title": "精确能力版本的运行时消费",
       "stream": "runtime",
-      "owner": null,
+      "owner": "zcode-next",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "main",
+      "base_commit": "bf706e8a2764a332f5e4fd6aaecb8e7ee1c799d3",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/06-R-精确能力版本的运行时消费.md",
@@ -4412,8 +4424,8 @@
         "GLOBAL",
         "G6"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
-      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "next_step": "实现执行步骤对不可变资产/依赖闭包的精确版本+digest消费绑定；退役拒新绑定；旧run版本固定",
+      "working_basis": "2026-10-25 zcode-next（新身份，承接原zcode-main流）按分期阶段1认领开工。base_commit bf706e8 为实际接手锚点。依赖ALN-06-A已accepted。写入边界：evoagent/assets/（新增）+ controller/experts最小接线；server.py与check_collaboration_plan.py有其他会话在途改动，本卡不触碰。",
       "prerequisites": "本地制品及运行环境"
     },
     {
@@ -5929,6 +5941,86 @@
       "scope": "严格原生回执/权威终态/关闭channel/通知隔离/真实上传失败传播；16项新增探针，客户端252和类型检查、ARM64构建通过；未安装到真机",
       "candidate_included": false,
       "device_verified": false
+    },
+    {
+      "id": "discovered-b59e58677d22",
+      "title": "feat(ALN-24-B): 能力六档状态投影——服务端端点+客户端视图与守卫",
+      "workpackage": "ALN-24",
+      "source_commit": "b59e58677d22b75a1927e897695d41a797bca68c",
+      "status": "source_registered_pending_validation",
+      "files": [
+        "android-app/src/features/capabilities/status.ts",
+        "android-app/test/offline/capabilities.test.ts",
+        "evoagent/api/capabilities_api.py",
+        "evoagent/api/server.py",
+        "tests/test_capability_status.py"
+      ],
+      "candidate_included": false,
+      "independent_review": false,
+      "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+      "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+    },
+    {
+      "id": "discovered-b40863c1f45f",
+      "title": "feat(ALN-23-D): 用户可见任务状态映射——九态+等待原因+防伪造完成",
+      "workpackage": "ALN-23",
+      "source_commit": "b40863c1f45f5480954578b6962b549200f0d3bc",
+      "status": "source_registered_pending_validation",
+      "files": [
+        "android-app/src/features/taskview/state.ts",
+        "android-app/test/offline/taskview.test.ts"
+      ],
+      "candidate_included": false,
+      "independent_review": false,
+      "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+      "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+    },
+    {
+      "id": "discovered-029a9987eeff",
+      "title": "feat(ALN-29-B): 首发冻结范围与八道发布门禁落成机器可校验证据表",
+      "workpackage": "ALN-29",
+      "source_commit": "029a9987eeffff1fc502987f3d6a6bdfa8722ec4",
+      "status": "source_registered_pending_validation",
+      "files": [
+        "tests/test_release_gates.py"
+      ],
+      "candidate_included": false,
+      "independent_review": false,
+      "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+      "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+    },
+    {
+      "id": "discovered-1c390edd9b70",
+      "title": "feat(ALN-29-C): 用户反馈与运行证据关联——绑定真实task/run+凭据防线+聚合+根因纪律",
+      "workpackage": "ALN-29",
+      "source_commit": "1c390edd9b704dc073eda9ab20adb9f95425e907",
+      "status": "source_registered_pending_validation",
+      "files": [
+        "evoagent/api/feedback_api.py",
+        "evoagent/api/server.py",
+        "evoagent/core/schema/feedback.py",
+        "evoagent/observability/feedback.py",
+        "tests/test_feedback.py"
+      ],
+      "candidate_included": false,
+      "independent_review": false,
+      "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+      "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+    },
+    {
+      "id": "discovered-d8aa054b9747",
+      "title": "feat(ALN-23-B): 聊天/工作模式判定与上下文转换——轻量问答+复用上下文进任务",
+      "workpackage": "ALN-23",
+      "source_commit": "d8aa054b974737849367c25c7810d0eafaacc316",
+      "status": "source_registered_pending_validation",
+      "files": [
+        "android-app/src/features/modes/transition.ts",
+        "android-app/test/offline/modes.test.ts"
+      ],
+      "candidate_included": false,
+      "independent_review": false,
+      "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+      "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
     }
   ],
   "requirement_batches": [

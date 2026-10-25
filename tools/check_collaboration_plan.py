@@ -80,7 +80,7 @@ def render(board):
         lines.append(f"| {card['id']} | {roles[card['stream']]} | {card['owner'] or '待认领'} | "
             f"{card['reviewer'] or '待定'} | {card['status']} | [{card['title']}]({card['card'].split('docs/协作开发/', 1)[1]}) |")
     lines += ["", board.get("execution_note", "基线发布之前，非集成任务只准备接口、夹具和独立草稿；接线、集成与验收等待共同基线和原工作包依赖。"),
-        "", "## 23 个工作包总账", "", "planned 表示整包后续范围待实施；已交付切片单独记录为局部已验证，不表示已独立验收。",
+        "", f"## {len(board['workpackages'])} 个工作包总账", "", "planned 表示整包后续范围待实施；已交付切片单独记录为局部已验证，不表示已独立验收。",
         "needs_recheck 表示不能照历史快照重复开发；先核对已提交/在途行为再细化。", "",
         "| ALN | 优先级 | 工作包 | 当前进度 | 推荐协调角色 | 协调人 | 原始依赖 | 下一项工作 |",
         "|---|---|---|---|---|---|---|---|"]
@@ -88,7 +88,7 @@ def render(board):
         lines.append(f"| {package['id']} | {package['priority']} | {package['title']} | "
             f"{labels[package['delivery_state']]} | {roles[package['stream']]} | {package['owner'] or '待认领'} | "
             f"{', '.join(package['depends_on']) or '无'} | {package['next_step']} |")
-    lines += ["", "每个工作包的完整交付与关闭标准仍以[原实施计划](../全量对齐与下一步实施计划_2026-10-22.md)为准。",
+    lines += ["", "原23包关闭标准以[原实施计划](../全量对齐与下一步实施计划_2026-10-22.md)为准；新增包及缺口卡见[分期需求拆分](需求拆分与分期实施_2026-10-25.md)。",
         "ALN-04-R 与 ALN-04-UI 是同一工作包内分离文件/职责的子任务，不能各自宣布父工作包已全部完成。",
         "后续细分需补任务卡、独占边界和认领记录，不能只填一句‘继续某模块’。", "",
         "## 认领字段", "", "- owner/reviewer：实际接手和审阅人；未分配保留 null。",
@@ -99,21 +99,91 @@ def render(board):
     return "\n".join(lines)
 
 
+def validate_batches(board):
+    """Register extensions explicitly while keeping the original package contract."""
+    errors, packages, tasks = [], {}, {}
+    batches = board.get("requirement_batches", [])
+    batch_ids = [b.get("id") for b in batches]
+    if len(batch_ids) != len(set(batch_ids)):
+        errors.append("duplicate requirement batch ids")
+    registered = {t["id"]: t for t in board["dispatches"]}
+    for batch in batches:
+        try:
+            path = (ROOT / batch["plan"]).resolve()
+            if not path.is_relative_to(ROOT.resolve()):
+                raise ValueError("plan outside repository")
+            plan = json.loads(path.read_text(encoding="utf-8"))
+            if plan["id"] != batch["id"] or plan["authorized_by"] != "user_request" or not plan["request"]:
+                raise ValueError("missing user-authorized requirement provenance")
+            for source in plan["sources"]:
+                resolved = (ROOT / source).resolve()
+                if not resolved.is_relative_to(ROOT.resolve()) or not resolved.is_file():
+                    raise ValueError("missing or external requirement source")
+            for package in plan["new_workpackages"]:
+                if package["id"] in packages:
+                    raise ValueError("duplicate extension package")
+                if not package.get("closure_criteria") or not package.get("source_refs"):
+                    raise ValueError("extension needs source and closure criteria")
+                packages[package["id"]] = package
+            for task in plan["tasks"]:
+                identity = task["id"]
+                if identity in tasks:
+                    raise ValueError("duplicate planned task")
+                tasks[identity] = task
+                current = registered.get(identity)
+                if not current:
+                    errors.append("planned task not registered: " + identity)
+                    continue
+                for key in ("workpackage", "title", "depends_on", "phase", "requirement_refs"):
+                    if current.get(key) != task.get(key):
+                        errors.append(f"{identity}: differs from requirement plan ({key})")
+                if current.get("requirement_batch") != batch["id"]:
+                    errors.append("task missing requirement batch: " + identity)
+                if current["status"] not in {"unclaimed", "blocked"}:
+                    if not current.get("branch") or not re.fullmatch(r"[0-9a-f]{40}", current.get("base_commit") or ""):
+                        errors.append("new claimed task needs actual branch/base_commit: " + identity)
+            ux = plan["ux_coverage"]
+            cases = plan["acceptance_coverage"]
+            if set(ux) != {f"UX-{n:02}" for n in range(1, 29)}:
+                errors.append("product plan must cover all 28 UX ids")
+            expected_cases = {f"UX-F{family:02}-{n:02}" for family, count in [(1,2),(2,3),(3,5),(4,4)] for n in range(1,count+1)}
+            expected_cases |= {f"UX-GLOBAL-{n:02}" for n in range(1,4)}
+            if set(cases) != expected_cases:
+                errors.append("product plan must cover all 17 acceptance ids")
+            local = {t["id"]: t for t in plan["tasks"]}
+            for ux_id, owners in ux.items():
+                if not owners or any(t not in local or ux_id not in local[t]["requirement_refs"] for t in owners):
+                    errors.append("unmapped UX requirement: " + ux_id)
+            for case_id, owners in cases.items():
+                if not owners or not set(owners).issubset(local):
+                    errors.append("unmapped acceptance case: " + case_id)
+        except (KeyError, ValueError, TypeError, OSError) as exc:
+            errors.append(f"invalid requirement batch {batch.get('id')}: {exc}")
+    return errors, packages, tasks
+
+
 def validate(board):
     errors = []
+    batch_errors, extensions, planned_tasks = validate_batches(board)
+    errors.extend(batch_errors)
     original = json.loads(ORIGINAL.read_text(encoding="utf-8"))
     originals = {item[0]: item for item in original["workpackages"]}
     streams = [entry["id"] for entry in board["streams"]]
     packages = board["workpackages"]
     ids = [entry["id"] for entry in packages]
-    if len(ids) != len(set(ids)) or set(ids) != set(originals) or len(ids) != 23:
-        errors.append("workpackages must cover the original 23 ALN ids exactly once")
+    if set(extensions) & set(originals):
+        errors.append("requirement extensions cannot replace original packages")
+    if len(ids) != len(set(ids)) or set(ids) != set(originals) | set(extensions):
+        errors.append("workpackages must cover original ids and explicitly registered extensions exactly once")
     if len(streams) != len(set(streams)):
         errors.append("duplicate stream ids")
     for item in packages:
         old = originals.get(item["id"])
         if old and (item["depends_on"] != old[3] or item["title"] != old[2]):
             errors.append(f"{item['id']}: changed original dependencies/title")
+        extension = extensions.get(item["id"])
+        if extension and any(item.get(k) != extension.get(k) for k in ("title", "depends_on", "closure_criteria", "source_refs")):
+            errors.append(f"{item['id']}: differs from registered extension contract")
         if item["stream"] not in streams or item["delivery_state"] not in DELIVERY_STATES:
             errors.append(f"{item['id']}: invalid role or delivery state")
     graph = {item["id"]: item["depends_on"] for item in packages}
@@ -147,6 +217,14 @@ def validate(board):
     dispatch_ids = [item["id"] for item in dispatches]
     if len(dispatch_ids) != len(set(dispatch_ids)):
         errors.append("duplicate dispatch ids")
+    task_graph = {item["id"]: item.get("depends_on", []) for item in dispatches}
+    visiting.clear()
+    visited.clear()
+    package_graph = graph
+    graph = task_graph
+    for identity in task_graph:
+        visit(identity)
+    graph = package_graph
     for item in dispatches:
         if item["workpackage"] not in graph or item["stream"] not in streams:
             errors.append("unknown parent/stream for " + item["id"])
@@ -191,6 +269,9 @@ def validate(board):
         queued = [item for item in dispatches if item["id"] in queue_ids]
         if any(item["owner"] != execution["owner"] or item["status"] not in {"claimed", "blocked", "in_progress"} for item in queued):
             errors.append("queue tasks must belong to the developer and remain pending implementation")
+        active = [item["id"] for item in dispatches if item["owner"] == execution["owner"] and item["status"] == "in_progress"]
+        if len(active) > 1 or (active_task and active != [active_task]) or (not active_task and active):
+            errors.append("active task must match the single in-progress dispatch")
     if baseline["status"] not in ("candidate", "published"):
         errors.append("invalid baseline status")
     if baseline["status"] == "published" and not re.fullmatch(r"[0-9a-f]{40}", baseline["published_commit"] or ""):

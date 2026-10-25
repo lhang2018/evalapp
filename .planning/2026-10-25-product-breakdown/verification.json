@@ -1,0 +1,168 @@
+{
+  "verification_anchor": "e56aae7a614dd085ed8ce779c60c680260c9023e",
+  "scope": "current working tree tool changes; concurrent source work excluded from this card",
+  "checks": [
+    {
+      "name": "tool-tests",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "-m",
+        "pytest",
+        "tools/tests/test_product_acceptance.py",
+        "tools/tests/test_product_backlog.py",
+        "-q"
+      ],
+      "returncode": 0,
+      "expected_returncode": 0,
+      "ok": true,
+      "log": ".planning/2026-10-25-product-breakdown/tool-tests.txt"
+    },
+    {
+      "name": "matrix",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "tools/check_product_acceptance.py",
+        "--source-commit",
+        "e56aae7a614dd085ed8ce779c60c680260c9023e"
+      ],
+      "returncode": 0,
+      "expected_returncode": 0,
+      "ok": true,
+      "log": ".planning/2026-10-25-product-breakdown/matrix.txt"
+    },
+    {
+      "name": "matrix-require-pass",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "tools/check_product_acceptance.py",
+        "--source-commit",
+        "e56aae7a614dd085ed8ce779c60c680260c9023e",
+        "--require-pass"
+      ],
+      "returncode": 1,
+      "expected_returncode": 1,
+      "ok": true,
+      "log": ".planning/2026-10-25-product-breakdown/matrix-require-pass.txt"
+    },
+    {
+      "name": "collaboration",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "tools/check_collaboration_plan.py"
+      ],
+      "returncode": 0,
+      "expected_returncode": 0,
+      "ok": true,
+      "log": ".planning/2026-10-25-product-breakdown/collaboration.txt"
+    },
+    {
+      "name": "prepared",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "tools/check_collaboration_plan.py",
+        "--verify-prepared"
+      ],
+      "returncode": 0,
+      "expected_returncode": 0,
+      "ok": true,
+      "log": ".planning/2026-10-25-product-breakdown/prepared.txt"
+    },
+    {
+      "name": "source-coverage",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "tools/check_source_coverage.py",
+        "--head",
+        "e56aae7a614dd085ed8ce779c60c680260c9023e"
+      ],
+      "returncode": 0,
+      "expected_returncode": 0,
+      "ok": true,
+      "log": ".planning/2026-10-25-product-breakdown/source-coverage.txt"
+    },
+    {
+      "name": "original-design",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        ".planning/2026-10-22-design-alignment/verify_alignment_plan.py"
+      ],
+      "returncode": 0,
+      "expected_returncode": 0,
+      "ok": true,
+      "log": ".planning/2026-10-25-product-breakdown/original-design.txt"
+    },
+    {
+      "name": "claims",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "tools/verify_claims.py",
+        "--check"
+      ],
+      "returncode": 0,
+      "expected_returncode": 0,
+      "ok": true,
+      "log": ".planning/2026-10-25-product-breakdown/claims.txt"
+    },
+    {
+      "name": "ledger",
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "tools/scan_all_ledgers.py"
+      ],
+      "returncode": 0,
+      "expected_returncode": 0,
+      "ok": true,
+      "log": ".planning/2026-10-25-product-breakdown/ledger.txt"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "tools/check_collaboration_plan.py",
+      "sha256_lf": "3974776b6aa4f851efc1d1070bda4fa2cfeb77d0ef9d476d40068de4569f6652"
+    },
+    {
+      "path": "tools/product_acceptance.py",
+      "sha256_lf": "1d56829e71e0e0e908bd7ec317c8cdb6b31c807248f3b363bc35787283258caf"
+    },
+    {
+      "path": "tools/check_product_acceptance.py",
+      "sha256_lf": "494ab5ef301c20814333478578ce3ec8180616a16faec606f042aacba7c0aaf5"
+    },
+    {
+      "path": "tools/tests/test_product_acceptance.py",
+      "sha256_lf": "2d9d167d0ec7e929a3109feb4376acb629948c4844db75414160a6720f28a351"
+    },
+    {
+      "path": "tools/tests/test_product_backlog.py",
+      "sha256_lf": "9d818113ed73797c1238879e6c76ba41123102f24dbac227edeb0ec8faf04073"
+    },
+    {
+      "path": "docs/协作开发/验收/首发验收矩阵.json",
+      "sha256_lf": "d5d370b6c90b7ed6ae36e78f51b52c0ed26bb6013dd8dcb84a74f0f5d167eeab"
+    }
+  ],
+  "local_links": 55,
+  "missing_links": [],
+  "business_tests_rerun": false,
+  "device_tests_rerun": false,
+  "product_cases_not_run": 17,
+  "ok": true
+}
