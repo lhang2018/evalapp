@@ -9,6 +9,7 @@ import { asyncStorageStore } from "../storage/asyncStorage.ts";
 import { ClientTransport } from "./apiTransport.ts";
 import { runBackgroundSync } from "./background.ts";
 import type { BackgroundSyncResult } from "./background.ts";
+import type { LocalTask } from "./types.ts";
 import { BACKGROUND_SYNC_TASK } from "./background.ts";
 import { EventQueue } from "./queue.ts";
 import { OfflineRepository } from "./storage.ts";
@@ -35,17 +36,34 @@ export async function runStoredBackgroundSync(): Promise<BackgroundSyncResult> {
       `client-manifest-${APP_VERSION}`,
     );
     const sync = new SyncEngine(queue, transport, tasks);
-    const before = await tasks.list();
+    // 通知快照是附加能力；读取失败不阻断实际同步。
+    let before: LocalTask[] | null = null;
+    try {
+      before = await tasks.list();
+    } catch {
+      // 缺少可靠的前态时跳过通知，不补发或猜测任务跃迁。
+    }
     const result = await runBackgroundSync({
       health: () => client.health(),
-      flush: () => sync.flush(false),
+      flush: async () => {
+        const flushed = await sync.flush(false);
+        if (!flushed.ok) throw new Error(flushed.error ?? "同步失败");
+        return flushed;
+      },
       refresh: () => tasks.refresh(),
     });
-    // 终态跃迁才提醒；通知失败不影响同步结果
-    const notified = await createTaskNotifier().notifyTransitions(
-      before,
-      await tasks.list(),
-    );
+    // 只有完成刷新才比较终态；桥初始化和通知读盘也属于尽力而为。
+    let notified = 0;
+    if (result.refreshed && before !== null) {
+      try {
+        notified = await createTaskNotifier().notifyTransitions(
+          before,
+          await tasks.list(),
+        );
+      } catch {
+        // 保留真实同步结果，不能因通知错误改写ran/online/refreshed。
+      }
+    }
     console.log(
       `[background-sync] online=${result.online} flushed=${result.ran} ` +
         `refreshed=${result.refreshed} notified=${notified} ` +

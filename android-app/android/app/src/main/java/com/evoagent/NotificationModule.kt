@@ -39,6 +39,12 @@ class NotificationModule(
             val manager =
                 reactContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             ensureChannel(manager)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                manager.getNotificationChannel(CHANNEL_ID)?.importance == NotificationManager.IMPORTANCE_NONE
+            ) {
+                promise.resolve(false)
+                return
+            }
             val builder = NotificationCompat.Builder(reactContext, CHANNEL_ID)
                 .setSmallIcon(notificationIcon())
                 .setContentTitle(title.take(MAX_TITLE_CHARS))

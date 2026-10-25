@@ -11,7 +11,8 @@ export const MAX_NOTIFICATION_TITLE_CHARS = 80;
 export const MAX_NOTIFICATION_BODY_CHARS = 240;
 
 export interface NativeNotificationModuleLike {
-  notifyTaskUpdate(id: number, title: string, body: string): Promise<unknown>;
+  /** true只表示系统接受本次投递请求，不证明用户已经收到或阅读。 */
+  notifyTaskUpdate(id: number, title: string, body: string): Promise<boolean>;
 }
 
 export interface TaskNotification {
@@ -39,21 +40,23 @@ function collapse(value: unknown, maxChars: number): string {
 
 export function describeTerminalTask(task: LocalTask): TaskNotification | null {
   if (task.status !== "DONE") return null;
+  const status = task.server_status;
+  if (status && !["SUCCEEDED", "FAILED", "CANCELLED"].includes(status)) return null;
   const failure = collapse(task.failure_reason, MAX_NOTIFICATION_BODY_CHARS);
   const result = collapse(task.result, MAX_NOTIFICATION_BODY_CHARS);
   const goal = collapse(task.goal, MAX_NOTIFICATION_BODY_CHARS);
-  const failed = Boolean(failure);
+  // 服务端终态优先；无server_status的旧记录/离线任务保留兼容推导。
+  const cancelled = status === "CANCELLED";
+  const failed = status === "FAILED" || (!status && Boolean(failure));
   return {
     id: notificationIdFor(task.local_task_id),
     title: collapse(
-      failed ? "任务失败" : "任务完成",
+      cancelled ? "任务已取消" : failed ? "任务失败" : "任务完成",
       MAX_NOTIFICATION_TITLE_CHARS,
     ),
     body:
-      failure ||
-      result ||
-      goal ||
-      (failed ? "任务执行失败" : "任务已完成"),
+      cancelled ? failure || "任务已取消" : failed ? failure || "任务执行失败"
+        : result || goal || "任务已完成",
   };
 }
 
@@ -82,21 +85,21 @@ export class TaskNotifier {
     after: LocalTask[],
   ): Promise<number> {
     if (!this.module) return 0;
-    let delivered = 0;
+    let posted = 0;
     for (const task of this.completed(before, after)) {
       const notice = describeTerminalTask(task);
       if (!notice) continue;
       try {
-        await this.module.notifyTaskUpdate(
+        const accepted = await this.module.notifyTaskUpdate(
           notice.id,
           notice.title,
           notice.body,
         );
-        delivered += 1;
+        if (accepted === true) posted += 1;
       } catch {
         // 通知失败不影响同步与任务状态
       }
     }
-    return delivered;
+    return posted;
   }
 }
