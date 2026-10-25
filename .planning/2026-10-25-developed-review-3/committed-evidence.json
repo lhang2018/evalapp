@@ -118,8 +118,28 @@
     {
       "path": ".planning/2026-10-25-developed-review-3/typecheck.txt",
       "sha256_lf": "8cbafc7cf12a272ca79c7f62f9f8e7f22c469fc231061b69b5d974a20906718d"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-3/final-metadata-check.txt",
+      "sha256_lf": "a89e2e21d2cec4e39c540a6fb61cf9445eb132b3dc7b8f2728a1b748d08d7e82"
     }
   ],
   "review_metadata_observed_in": "6a8501233f0ec0f7b4fce74d97fd13facd6e6b0d",
-  "review_metadata_note": "shared board updates were included by a concurrent metadata commit; verified three cards remain review with this exact fix anchor; no duplicate board/formatting commit"
+  "review_metadata_note": "shared board updates were included by a concurrent metadata commit; verified three cards remain review with this exact fix anchor; no duplicate board/formatting commit",
+  "post_review_metadata_registration": {
+    "commits": [
+      "37465abf86b6fdc844d107cd3a3c65bdf9d2156a",
+      "704ec42b56f2054ac3d1ee1f3ef73ba42861e46f"
+    ],
+    "source_paths": 4,
+    "scope": "new concurrent commits registered as pending validation only; not included in a1b3a31 code-test claims",
+    "metadata_check": {
+      "scope": "collaboration metadata only",
+      "workpackages": 30,
+      "dispatches": 87,
+      "baseline": "candidate",
+      "errors": [],
+      "ok": true
+    }
+  }
 }

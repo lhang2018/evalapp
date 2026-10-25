@@ -7821,6 +7821,36 @@
       "independent_review": false,
       "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
       "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+    },
+    {
+      "id": "discovered-37465abf86b6",
+      "title": "feat(ALN-26-B): 动态团队与跨专家协作契约",
+      "workpackage": "ALN-26",
+      "source_commit": "37465abf86b6fdc844d107cd3a3c65bdf9d2156a",
+      "status": "source_registered_pending_validation",
+      "files": [
+        "evoagent/experts/team.py",
+        "tests/test_team_contract.py"
+      ],
+      "candidate_included": false,
+      "independent_review": false,
+      "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+      "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+    },
+    {
+      "id": "discovered-704ec42b56f2",
+      "title": "feat(ALN-25-B): 主动强度、停止与资源非干扰——四档/独立预算/无进展停止/关闭即停",
+      "workpackage": "ALN-25",
+      "source_commit": "704ec42b56f2054ac3d1ee1f3ef73ba42861e46f",
+      "status": "source_registered_pending_validation",
+      "files": [
+        "evoagent/goals/proactivity.py",
+        "tests/test_proactivity.py"
+      ],
+      "candidate_included": false,
+      "independent_review": false,
+      "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+      "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
     }
   ],
   "requirement_batches": [
