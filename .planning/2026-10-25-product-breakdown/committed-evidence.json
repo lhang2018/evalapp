@@ -1,0 +1,80 @@
+{
+  "source_commit": "5066a511221730358fa711c90bc1264b92dd771b",
+  "source_tree": "cf11b246a7830d8f816572cb66b807b60d0976a5",
+  "scope": "ALN-29-A tools and metadata only; observed third-party source registration is not feature acceptance",
+  "verification_anchor": "e56aae7a614dd085ed8ce779c60c680260c9023e",
+  "unit_tests_passed": 65,
+  "product_cases": {
+    "passed": 0,
+    "failed": 0,
+    "not_run": 17
+  },
+  "source_files": [
+    {
+      "path": "tools/check_collaboration_plan.py",
+      "sha256_lf": "3974776b6aa4f851efc1d1070bda4fa2cfeb77d0ef9d476d40068de4569f6652"
+    },
+    {
+      "path": "tools/product_acceptance.py",
+      "sha256_lf": "1d56829e71e0e0e908bd7ec317c8cdb6b31c807248f3b363bc35787283258caf"
+    },
+    {
+      "path": "tools/check_product_acceptance.py",
+      "sha256_lf": "494ab5ef301c20814333478578ce3ec8180616a16faec606f042aacba7c0aaf5"
+    },
+    {
+      "path": "tools/tests/test_product_acceptance.py",
+      "sha256_lf": "2d9d167d0ec7e929a3109feb4376acb629948c4844db75414160a6720f28a351"
+    },
+    {
+      "path": "tools/tests/test_product_backlog.py",
+      "sha256_lf": "9d818113ed73797c1238879e6c76ba41123102f24dbac227edeb0ec8faf04073"
+    },
+    {
+      "path": "docs/协作开发/验收/首发验收矩阵.json",
+      "sha256_lf": "d5d370b6c90b7ed6ae36e78f51b52c0ed26bb6013dd8dcb84a74f0f5d167eeab"
+    }
+  ],
+  "logs": [
+    {
+      "path": ".planning/2026-10-25-product-breakdown/tool-tests.txt",
+      "sha256_lf": "fa3fa507dcbd9f1a59c35d0996e506de2cc34d1d2f9bb75687cb7b1b5b0a3401"
+    },
+    {
+      "path": ".planning/2026-10-25-product-breakdown/matrix.txt",
+      "sha256_lf": "f4af58a9f74c41b5a5cbae3c3cbb36cf5b61fa56669e40f1ee1c8d77a90371e7"
+    },
+    {
+      "path": ".planning/2026-10-25-product-breakdown/matrix-require-pass.txt",
+      "sha256_lf": "f4af58a9f74c41b5a5cbae3c3cbb36cf5b61fa56669e40f1ee1c8d77a90371e7"
+    },
+    {
+      "path": ".planning/2026-10-25-product-breakdown/collaboration.txt",
+      "sha256_lf": "a89e2e21d2cec4e39c540a6fb61cf9445eb132b3dc7b8f2728a1b748d08d7e82"
+    },
+    {
+      "path": ".planning/2026-10-25-product-breakdown/prepared.txt",
+      "sha256_lf": "a89e2e21d2cec4e39c540a6fb61cf9445eb132b3dc7b8f2728a1b748d08d7e82"
+    },
+    {
+      "path": ".planning/2026-10-25-product-breakdown/source-coverage.txt",
+      "sha256_lf": "1a0973c28f5bd8ea53762248521751de4846402358e577bede800619330c0a44"
+    },
+    {
+      "path": ".planning/2026-10-25-product-breakdown/original-design.txt",
+      "sha256_lf": "efa249a6b0f6427752ebc215f025a1d70954b67ef244ead420a330ff8335d49f"
+    },
+    {
+      "path": ".planning/2026-10-25-product-breakdown/claims.txt",
+      "sha256_lf": "4b9234d562f3f2cedab4d5d84cfe6a8936ac46ae0b54263810a9e2be888bed8e"
+    },
+    {
+      "path": ".planning/2026-10-25-product-breakdown/ledger.txt",
+      "sha256_lf": "ff54fd08fbec54789a83db026ba94e9e3999ae9e4720572a112275bb6e7e86be"
+    }
+  ],
+  "business_tests_rerun": false,
+  "device_tests_rerun": false,
+  "independent_review": false,
+  "matrix_check_not_product_success": true
+}

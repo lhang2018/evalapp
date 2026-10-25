@@ -3298,9 +3298,18 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "5e2b7e36ffbc225a33c7c09c8214bf70133ba2da",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-25",
+          "source_commit": "5066a511221730358fa711c90bc1264b92dd771b",
+          "result": "65 tool tests passed; 17 product cases not_run; require-pass correctly exits 1",
+          "command": "python -X utf8 -m pytest tools/tests/test_product_acceptance.py tools/tests/test_product_backlog.py -q",
+          "log": ".planning/2026-10-25-product-breakdown/tool-tests.txt",
+          "evidence": ".planning/2026-10-25-product-breakdown/committed-evidence.json"
+        }
+      ],
       "card": "docs/协作开发/任务卡/29-A-首发17用例的验收骨架与可执行断言.md",
       "shared_files": [
         "tools/check_collaboration_plan.py"
@@ -3315,9 +3324,11 @@
         "F04",
         "GLOBAL"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "next_step": "等待独立复核验收工具与台账扩展；17产品用例仍全部未测试；本会话转下一张23-A",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-      "prerequisites": "仅需仓库与本地测试环境"
+      "prerequisites": "仅需仓库与本地测试环境",
+      "delivered_commit": "5066a511221730358fa711c90bc1264b92dd771b",
+      "delivery": "docs/协作开发/交付/ALN-29-A-首发验收骨架与断言.md"
     },
     {
       "id": "ALN-29-B",
@@ -4438,11 +4449,11 @@
       "workpackage": "ALN-07",
       "title": "原子绑定、精确步骤授权与对账消费",
       "stream": "runtime",
-      "owner": null,
+      "owner": "zcode-next",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "d8ee3551aab5bb7a80936880a13cd7d828edbff3",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/07-C-原子绑定、精确步骤授权与对账消费.md",
@@ -4481,8 +4492,8 @@
         "UX-10",
         "F03"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
-      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "next_step": "侦察 07-B 绑定写入时序、授权发放/消费链、恢复路径对账缺口",
+      "working_basis": "2026-10-25 zcode-next 认领开工（WIP=1，本流内无其他在途卡）。锚点 d8ee355。复用 07-B ActionBindings/07-E reconcile/04-R 恢复；写入边界 core/planning/workflows；server.py、budget.py 等他会在途文件不触碰。",
       "prerequisites": "可重复故障注入"
     },
     {
@@ -5761,8 +5772,8 @@
       ],
       "stream": "integration",
       "owner": null,
-      "delivery_state": "planned",
-      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "delivery_state": "partial_verified",
+      "next_step": "29-A验收骨架65工具探针通过并交付review；17产品用例未运行，其他门禁/反馈/版本体验按各卡独立推进",
       "requirement_batch": "PRODUCT-2026-10-25",
       "closure_criteria": "28UX范围表、17用例及G0—G7同版本证据齐备；发布决定独立于开发完成",
       "source_refs": [
@@ -5773,23 +5784,18 @@
       ]
     }
   ],
-  "execution_note": "按新增分期计划逐卡开发，WIP=1。已认领29-A和23-A；其余新增卡owner=null。包依赖约束关闭，卡依赖约束接线；待审接口可用于实现，不代表已接受或发布。基线仍candidate，published_commit为空。",
+  "execution_note": "新增分期计划已登记；29-A已交付review，23-A已认领待开工。每张卡实际owner与独占路径以本表为准，本会话WIP=1。其他线按真实认领推进；待审接口可用于独立实现，不代表接受或发布。baseline仍candidate，published_commit为空。",
   "execution_queue": {
-    "mode": "当前项目单会话串行；其他开发者按待认领卡独立接手",
+    "mode": "codex-runtime本会话串行；其他开发者按独占卡并行",
     "owner": "codex-runtime",
     "wip_limit": 1,
-    "active_task": "ALN-29-A",
+    "active_task": null,
     "next_task": "ALN-23-A",
     "items": [
       {
-        "id": "ALN-29-A",
-        "state": "in_progress",
-        "condition": "先交付17条用例的断言、证据格式及未测试语义"
-      },
-      {
         "id": "ALN-23-A",
         "state": "claimed",
-        "condition": "29-A交付后按Task权威开发统一契约，实际开工更新base_commit"
+        "condition": "验收公共尺子已交付；开工更新真实base_commit，复用Task权威并协调共享API/App文件"
       }
     ]
   },
@@ -5903,6 +5909,29 @@
         }
       ],
       "archived_reason": "初始队列已交付，00-B技术准备已齐转review；后续父包缺口待另拆卡"
+    },
+    {
+      "date": "2026-10-25",
+      "reason": "29-A交付review，保留23-A已认领队列；未自行接受29-A",
+      "queue": {
+        "mode": "当前项目单会话串行；其他开发者按待认领卡独立接手",
+        "owner": "codex-runtime",
+        "wip_limit": 1,
+        "active_task": "ALN-29-A",
+        "next_task": "ALN-23-A",
+        "items": [
+          {
+            "id": "ALN-29-A",
+            "state": "in_progress",
+            "condition": "先交付17条用例的断言、证据格式及未测试语义"
+          },
+          {
+            "id": "ALN-23-A",
+            "state": "claimed",
+            "condition": "29-A交付后按Task权威开发统一契约，实际开工更新base_commit"
+          }
+        ]
+      }
     }
   ],
   "post_candidate_changes": [
@@ -6021,6 +6050,23 @@
       "files": [
         "android-app/src/features/modes/transition.ts",
         "android-app/test/offline/modes.test.ts"
+      ],
+      "candidate_included": false,
+      "independent_review": false,
+      "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+      "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+    },
+    {
+      "id": "discovered-f4fe5773e6e9",
+      "title": "feat(ALN-06-R): 精确能力版本的运行时消费——执行步绑定不可变资产 ref+digest",
+      "workpackage": "ALN-06",
+      "source_commit": "f4fe5773e6e9ac5945f1c6e99ef774beb079bb1f",
+      "status": "source_registered_pending_validation",
+      "files": [
+        "evoagent/assets/consumption.py",
+        "evoagent/assets/repository.py",
+        "evoagent/core/controller.py",
+        "tests/test_asset_consumption.py"
       ],
       "candidate_included": false,
       "independent_review": false,
