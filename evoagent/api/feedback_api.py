@@ -6,6 +6,7 @@
   恒为 unverified 的根因纪律说明）。
 """
 
+import json
 from .routes import get, post
 
 
@@ -15,28 +16,41 @@ def submit_feedback(ctx):
     if not isinstance(body, dict):
         return ctx.json(400, {"error": "请求体必须是对象"})
     app = ctx.app
-    task_id = body.get("task_id") or None
-    run_id = body.get("run_id") or None
+    for field in ("task_id", "run_id"):
+        if body.get(field) is not None and not isinstance(body[field], str):
+            return ctx.json(400, {"error": f"{field} 必须是字符串"})
+    task_id = (body.get("task_id") or "").strip() or None
+    run_id = (body.get("run_id") or "").strip() or None
     if task_id and app.db.get_task(task_id) is None:
         return ctx.json(404, {"error": "任务不存在，无法关联反馈"})
     if run_id:
-        row = app.db._conn.execute(
-            "SELECT run_id FROM task_runs WHERE run_id=?", (run_id,)).fetchone()
+        with app.db._lock:
+            row = app.db._conn.execute(
+                "SELECT task_id, version_manifest FROM task_runs WHERE run_id=?",
+                (run_id,)).fetchone()
         if row is None:
             return ctx.json(404, {"error": "运行不存在，无法关联反馈"})
+        if task_id is not None and row["task_id"] != task_id:
+            return ctx.json(400, {"error": "运行不属于指定任务"})
+        task_id = row["task_id"]
+        if app.db.get_task(task_id) is None:
+            return ctx.json(404, {"error": "运行关联的任务不存在"})
     manifest_id = None
-    if task_id:
+    if run_id:
+        manifest_id = json.loads(row["version_manifest"] or "{}").get(
+            "runtime_manifest_id")
+    elif task_id:
         task = app.db.get_task(task_id)
         manifest_id = (task.runtime_manifest or {}).get(
             "runtime_manifest_id")
     from ..observability.feedback import FeedbackError, FeedbackStore
-    store = FeedbackStore(app.db._conn)
+    store = FeedbackStore(app.db._conn, lock=app.db._lock)
     try:
         out = store.submit(
             category=body.get("category", ""),
             text=body.get("text", ""),
             task_id=task_id, run_id=run_id, manifest_id=manifest_id,
-            evidence_refs=body.get("evidence_refs") or [])
+            evidence_refs=body.get("evidence_refs", []))
     except FeedbackError as exc:
         return ctx.json(400, {"error": str(exc)})
     return ctx.json(201, out)
@@ -47,7 +61,7 @@ def list_feedback(ctx):
     if ctx.auth.role != "admin":
         return ctx.json(403, {"error": "该操作需要 admin 权限"})
     from ..observability.feedback import FeedbackStore
-    store = FeedbackStore(ctx.app.db._conn)
+    store = FeedbackStore(ctx.app.db._conn, lock=ctx.app.db._lock)
     task_id = ctx.query.get("task_id") or None
     return ctx.json(200, {"feedback": store.list_recent(task_id=task_id)})
 
@@ -57,6 +71,6 @@ def get_feedback(ctx):
     if ctx.auth.role != "admin":
         return ctx.json(403, {"error": "该操作需要 admin 权限"})
     from ..observability.feedback import FeedbackStore
-    store = FeedbackStore(ctx.app.db._conn)
+    store = FeedbackStore(ctx.app.db._conn, lock=ctx.app.db._lock)
     row = store.get(ctx.path.split("/")[-1])
     return ctx.json(200, row) if row else ctx.json(404, {"error": "反馈不存在"})

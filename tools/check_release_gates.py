@@ -105,6 +105,9 @@ def validate(evidence, board):
 
 
 def summarize(evidence, board):
+    # Consumers may call summarize directly, and the CLI prints a summary even
+    # after validation errors. An invalid table must never show a ready result.
+    structurally_valid = not validate(evidence, board)
     gates = evidence.get("gates", [])
     required = evidence.get("frozen_range", {}).get("required", [])
     passed = [gate["id"] for gate in gates if gate.get("status") == "pass"]
@@ -122,7 +125,10 @@ def summarize(evidence, board):
         "range_passed": range_passed,
         "range_not_passed": range_missing,
         "published_commit": ((board or {}).get("baseline") or {}).get("published_commit"),
-        "release_ready": not failed and not untested and not range_missing and not blocking,
+        "scope": "declared evidence metadata only; not execution or publication approval",
+        "release_ready": (structurally_valid and len(passed) == len(GATE_IDS)
+                          and len(range_passed) == len(RANGE_IDS)
+                          and not failed and not untested and not range_missing and not blocking),
     }
 
 
@@ -200,4 +206,10 @@ def main():
 
 
 if __name__ == "__main__":
+    # A parent's -X utf8 flag is not inherited by subprocesses on Windows.
+    # Keep the CLI's Chinese text and status symbols decodable in captured logs.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
     sys.exit(main())

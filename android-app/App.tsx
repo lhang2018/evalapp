@@ -214,6 +214,8 @@ export default function App(): React.JSX.Element {
   const [feedbackBusy, setFeedbackBusy] = useState<string | null>(null);
   const [capabilityViews, setCapabilityViews] = useState<
     UserCapabilityView[] | null>(null);
+  const [capabilityLoadError, setCapabilityLoadError] = useState<string | null>(null);
+  const [capabilityRefresh, setCapabilityRefresh] = useState(0);
   const [exportPreview, setExportPreview] = useState<ExportPreview | null>(null);
   const [exporting, setExporting] = useState(false);
   const [exportSensitive, setExportSensitive] = useState(false);
@@ -344,7 +346,9 @@ export default function App(): React.JSX.Element {
         ...m,
         [task.local_task_id]: out.aggregated
           ? `已并入同类反馈（第 ${out.count} 条）`
-          : "已提交，将关联此任务的运行证据",
+          : task.server_task_id || task.current_run_id
+            ? "已提交，将关联此任务的运行证据"
+            : "已提交反馈；本地任务尚未关联服务端运行",
       }));
       setFeedbackDrafts((d) => ({ ...d, [task.local_task_id]: "" }));
     } catch (e) {
@@ -357,17 +361,6 @@ export default function App(): React.JSX.Element {
       setFeedbackBusy(null);
     }
   }, [services, feedbackDrafts, feedbackBusy]);
-
-  const loadCapabilityViews = useCallback(async () => {
-    try {
-      const payload = await services.client.capabilitiesStatus();
-      setCapabilityViews(projectUserCapabilities(payload, {
-        accessibilityAvailable: deviceAvailable,
-      }));
-    } catch {
-      setCapabilityViews(null);
-    }
-  }, [services, deviceAvailable]);
 
   const reloadLocal = useCallback(async () => {
     setLocalTasks(await services.tasks.list());
@@ -495,10 +488,21 @@ export default function App(): React.JSX.Element {
   );
 
   useEffect(() => {
-    if (section === "permissions" && capabilityViews === null) {
-      void loadCapabilityViews();
-    }
-  }, [section, capabilityViews, loadCapabilityViews]);
+    if (section !== "permissions") return;
+    let active = true;
+    setCapabilityViews(null);
+    setCapabilityLoadError(null);
+    void services.client.capabilitiesStatus().then((payload) => {
+      if (active) setCapabilityViews(projectUserCapabilities(payload, {
+        accessibilityAvailable: deviceAvailable,
+      }));
+    }).catch((error) => {
+      if (active) setCapabilityLoadError(
+        error instanceof Error ? error.message : "能力状态加载失败");
+    });
+    // A response from an old server/device context must not replace the current view.
+    return () => { active = false; };
+  }, [section, services, deviceAvailable, capabilityRefresh]);
 
   useEffect(() => {
     void loadCenter(section);
@@ -1507,7 +1511,8 @@ export default function App(): React.JSX.Element {
                   )}
                 </View>
               )}
-              {!!task.waiting_approvals?.length && task.server_task_id && (
+              {taskViewOf(task).wait.needsUserAction &&
+                !!task.waiting_approvals?.length && task.server_task_id && (
                 <ApprovalPanel client={services.client} ids={task.waiting_approvals}
                   taskId={task.server_task_id} online={online} />
               )}
@@ -1637,11 +1642,13 @@ export default function App(): React.JSX.Element {
               状态来自服务端权威投影：可用 / 待授权 / 已拒绝 / 依赖缺失 /
               未验证 / 未注册；被拒绝的能力不会执行。
             </Text>
-            {capabilityViews === null && (
-              <Text style={s.hint}>
-                {section === "permissions" ? "加载中…" : "进入本页后加载"}
-              </Text>
+            {!!capabilityLoadError && (
+              <Text style={s.hint}>能力状态不可用：{capabilityLoadError}</Text>
             )}
+            {capabilityViews === null && !capabilityLoadError && (
+              <Text style={s.hint}>加载中…</Text>
+            )}
+            <Button title="刷新能力状态" onPress={() => setCapabilityRefresh((n) => n + 1)} />
             {(capabilityViews ?? []).map((cap) => (
               <View key={cap.tool_id} style={s.gap}>
                 <Text style={s.mono}>

@@ -1,0 +1,509 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+.............................................FFFFFFFFFFFFFF............. [ 57%]
+......................................................                   [100%]
+================================== FAILURES ===================================
+_ ReleaseGateValidatorTest.test_all_gates_passed_and_published_means_release_ready _
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_all_gates_passed_and_published_means_release_ready>
+
+    def test_all_gates_passed_and_published_means_release_ready(self):
+        """八道门禁与十三项范围全部通过且已发布 —— 才允许判定可发布。"""
+        evidence, board = load_repo()
+        board["baseline"]["published_commit"] = "a" * 40
+        for gate in evidence["gates"]:
+            gate["status"] = "pass"
+            gate["evidence"] = [{"kind": "command", "ref": "cmd", "result": "ok", "at": "2026-10-25"}]
+        for item in evidence["frozen_range"]["required"]:
+            item["status"] = "pass"
+            item["evidence"] = [{"kind": "command", "ref": "cmd", "result": "ok", "at": "2026-10-25"}]
+        completed = run_cli(evidence, board, "--require-release")
+>       self.assertEqual(completed.returncode, 0, completed.stdout)
+E       AssertionError: 1 != 0 :
+
+tests\test_release_gates.py:194: AssertionError
+________ ReleaseGateValidatorTest.test_fail_without_reason_is_rejected ________
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_fail_without_reason_is_rejected>
+
+    def test_fail_without_reason_is_rejected(self):
+        """标记 fail 却不写明原因与失败路径 —— 必须被判错。"""
+        evidence, board = load_repo()
+        find(evidence["gates"], "G3")["status"] = "fail"
+        find(evidence["gates"], "G3")["reason"] = ""
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("reason", completed.stdout)
+E       AssertionError: 'reason' not found in ''
+
+tests\test_release_gates.py:114: AssertionError
+_ ReleaseGateValidatorTest.test_g6_pass_without_published_commit_is_rejected __
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_g6_pass_without_published_commit_is_rejected>
+
+    def test_g6_pass_without_published_commit_is_rejected(self):
+        """没有已发布版本却把 G6 判为通过 —— 与台账事实矛盾，必须被判错。"""
+        evidence, board = load_repo()
+        board["baseline"]["published_commit"] = None
+        find(evidence["gates"], "G6")["status"] = "pass"
+        find(evidence["gates"], "G6")["evidence"] = [
+            {"kind": "report", "ref": "docs/协作开发/验收/ALN-03-P-*.md", "result": "联验通过",
+             "at": "2026-10-25"}]
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("published_commit", completed.stdout)
+E       AssertionError: 'published_commit' not found in ''
+
+tests\test_release_gates.py:164: AssertionError
+_____ ReleaseGateValidatorTest.test_hard_blocking_failure_blocks_release ______
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_hard_blocking_failure_blocks_release>
+
+    def test_hard_blocking_failure_blocks_release(self):
+        """硬性门禁失败时，即使其余全通过也不得放行。"""
+        evidence, board = load_repo()
+        board["baseline"]["published_commit"] = "0" * 40
+        for gate in evidence["gates"]:
+            gate["status"] = "pass"
+            gate["evidence"] = [{"kind": "command", "ref": "cmd", "result": "ok", "at": "2026-10-25"}]
+        for item in evidence["frozen_range"]["required"]:
+            item["status"] = "pass"
+            item["evidence"] = [{"kind": "command", "ref": "cmd", "result": "ok", "at": "2026-10-25"}]
+        find(evidence["gates"], "G2")["status"] = "fail"
+        find(evidence["gates"], "G2")["reason"] = "未授权高风险动作发生 1 次"
+        find(evidence["gates"], "G2")["evidence"] = []
+        completed = run_cli(evidence, board, "--require-release")
+>       self.assertEqual(completed.returncode, 2)
+E       AssertionError: 1 != 2
+
+tests\test_release_gates.py:180: AssertionError
+_______ ReleaseGateValidatorTest.test_missing_evidence_file_is_reported _______
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_missing_evidence_file_is_reported>
+
+    def test_missing_evidence_file_is_reported(self):
+        """证据表不存在时明确报错，不静默放行。"""
+        with tempfile.TemporaryDirectory(prefix="aln29b-") as tmp:
+            completed = subprocess.run(
+                [sys.executable, str(SCRIPT), "--evidence", str(Path(tmp) / "nope.json")],
+                capture_output=True, text=True, encoding="utf-8", cwd=str(tmp),
+            )
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("证据表不存在", completed.stdout)
+E       AssertionError: '证据表不存在' not found in ''
+
+tests\test_release_gates.py:205: AssertionError
+___________ ReleaseGateValidatorTest.test_missing_gate_is_rejected ____________
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_missing_gate_is_rejected>
+
+    def test_missing_gate_is_rejected(self):
+        """少一道门禁 —— 必须被判错，且错误信息要指出缺哪一道。"""
+        evidence, board = load_repo()
+        evidence["gates"] = [gate for gate in evidence["gates"] if gate["id"] != "G5"]
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("G5", completed.stdout)
+E       AssertionError: 'G5' not found in ''
+
+tests\test_release_gates.py:122: AssertionError
+________ ReleaseGateValidatorTest.test_missing_range_item_is_rejected _________
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_missing_range_item_is_rejected>
+
+    def test_missing_range_item_is_rejected(self):
+        """首发范围缺项 —— 必须被判错，且错误信息要指出缺哪一项。"""
+        evidence, board = load_repo()
+        evidence["frozen_range"]["required"] = [
+            item for item in evidence["frozen_range"]["required"] if item["id"] != "R07"]
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("R07", completed.stdout)
+E       AssertionError: 'R07' not found in ''
+
+tests\test_release_gates.py:143: AssertionError
+___ ReleaseGateValidatorTest.test_pass_with_incomplete_evidence_is_rejected ___
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_pass_with_incomplete_evidence_is_rejected>
+
+    def test_pass_with_incomplete_evidence_is_rejected(self):
+        """证据缺 ref 或 result —— 必须被判错。"""
+        evidence, board = load_repo()
+        find(evidence["gates"], "G1")["status"] = "pass"
+        find(evidence["gates"], "G1")["evidence"] = [{"kind": "command", "ref": "", "result": ""}]
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("缺少", completed.stdout)
+E       AssertionError: '缺少' not found in ''
+
+tests\test_release_gates.py:95: AssertionError
+_______ ReleaseGateValidatorTest.test_pass_without_evidence_is_rejected _______
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_pass_without_evidence_is_rejected>
+
+    def test_pass_without_evidence_is_rejected(self):
+        """标记 pass 却没有证据 —— 必须被判错。"""
+        evidence, board = load_repo()
+        find(evidence["gates"], "G1")["status"] = "pass"
+        find(evidence["gates"], "G1")["evidence"] = []
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("没有证据", completed.stdout)
+E       AssertionError: '没有证据' not found in ''
+
+tests\test_release_gates.py:86: AssertionError
+__________ ReleaseGateValidatorTest.test_renumbered_gate_is_rejected __________
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_renumbered_gate_is_rejected>
+
+    def test_renumbered_gate_is_rejected(self):
+        """门禁数量对但编号错（G5 写成 G8）—— 同样必须被判错。
+    
+        只数数量不校验编号的实现会漏掉这种错位，因此断言必须指向具体编号。
+        """
+        evidence, board = load_repo()
+        find(evidence["gates"], "G5")["id"] = "G8"
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("G5", completed.stdout)
+E       AssertionError: 'G5' not found in ''
+
+tests\test_release_gates.py:134: AssertionError
+_______ ReleaseGateValidatorTest.test_renumbered_range_item_is_rejected _______
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_renumbered_range_item_is_rejected>
+
+    def test_renumbered_range_item_is_rejected(self):
+        """范围项数量对但编号错（R07 写成 R14）—— 同样必须被判错。"""
+        evidence, board = load_repo()
+        find(evidence["frozen_range"]["required"], "R07")["id"] = "R14"
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("R07", completed.stdout)
+E       AssertionError: 'R07' not found in ''
+
+tests\test_release_gates.py:152: AssertionError
+___ ReleaseGateValidatorTest.test_repo_evidence_table_is_structurally_valid ___
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_repo_evidence_table_is_structurally_valid>
+
+    def test_repo_evidence_table_is_structurally_valid(self):
+        """仓库内证据表必须自洽：G0—G7 与 R01—R13 齐全、状态合法。"""
+        evidence, board = load_repo()
+        completed = run_cli(evidence, board)
+>       self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+E       TypeError: can only concatenate str (not "NoneType") to str
+
+tests\test_release_gates.py:54: TypeError
+____ ReleaseGateValidatorTest.test_untested_gate_is_not_counted_as_passed _____
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_untested_gate_is_not_counted_as_passed>
+
+    def test_untested_gate_is_not_counted_as_passed(self):
+        """未运行的门禁不得因其他指标提升而被计为通过。
+    
+        隔离要求：其余七道门禁与十三项范围全部置为通过且已发布，
+        只留 G0 未测试。若“未测试”不阻止发布，本用例必须失败。
+        """
+        evidence, board = load_repo()
+        board["baseline"]["published_commit"] = "b" * 40
+        for gate in evidence["gates"]:
+            gate["status"] = "pass"
+            gate["evidence"] = [{"kind": "command", "ref": "cmd", "result": "ok", "at": "2026-10-25"}]
+        for item in evidence["frozen_range"]["required"]:
+            item["status"] = "pass"
+            item["evidence"] = [{"kind": "command", "ref": "cmd", "result": "ok", "at": "2026-10-25"}]
+        find(evidence["gates"], "G0")["status"] = "untested"
+        find(evidence["gates"], "G0")["evidence"] = []
+        completed = run_cli(evidence, board, "--require-release")
+>       self.assertEqual(completed.returncode, 2, completed.stdout)
+E       AssertionError: 1 != 2 :
+
+tests\test_release_gates.py:75: AssertionError
+______ ReleaseGateValidatorTest.test_untested_with_evidence_is_rejected _______
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_untested_with_evidence_is_rejected>
+
+    def test_untested_with_evidence_is_rejected(self):
+        """标记 untested 却挂证据 —— 状态与证据矛盾，必须被判错。"""
+        evidence, board = load_repo()
+        find(evidence["gates"], "G2")["evidence"] = [
+            {"kind": "command", "ref": "pytest tests/test_aln01_authorization.py",
+             "result": "12 passed", "at": "2026-10-25"}]
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("状态与证据矛盾", completed.stdout)
+E       AssertionError: '状态与证据矛盾' not found in ''
+
+tests\test_release_gates.py:105: AssertionError
+============================== warnings summary ===============================
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_all_gates_passed_and_published_means_release_ready
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-28 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_fail_without_reason_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-30 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_g6_pass_without_published_commit_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-32 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_hard_blocking_failure_blocks_release
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-34 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_missing_evidence_file_is_reported
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-36 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 221: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_missing_gate_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-38 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_missing_range_item_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-40 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_pass_with_incomplete_evidence_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-42 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_pass_without_evidence_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-44 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_renumbered_gate_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-46 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_renumbered_range_item_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-48 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_repo_evidence_table_is_structurally_valid
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-50 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_untested_gate_is_not_counted_as_passed
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-52 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_untested_with_evidence_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-54 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_all_gates_passed_and_published_means_release_ready
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_fail_without_reason_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_g6_pass_without_published_commit_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_hard_blocking_failure_blocks_release
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_missing_evidence_file_is_reported
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_missing_gate_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_missing_range_item_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_pass_with_incomplete_evidence_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_pass_without_evidence_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_renumbered_gate_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_renumbered_range_item_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_repo_evidence_table_is_structurally_valid
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_untested_gate_is_not_counted_as_passed
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_untested_with_evidence_is_rejected
+14 failed, 112 passed, 14 warnings in 12.48s

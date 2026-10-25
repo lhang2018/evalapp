@@ -176,6 +176,8 @@ class RuntimeAssetBinder:
         for ref, record in (bindings or {}).items():
             binding = record if isinstance(record, AssetBinding) \
                 else AssetBinding.from_dict(record)
+            if binding.ref != ref:
+                raise ConsumptionError(f"绑定记录身份与索引不一致: {ref}")
             try:
                 asset = self.repository.get_exact(ref)
             except AssetError as exc:
@@ -186,3 +188,8 @@ class RuntimeAssetBinder:
                     f"{ref} 内容摘要与绑定时不一致"
                     f"（{asset.content_digest[:12]}… != "
                     f"{binding.content_digest[:12]}…），拒绝续跑")
+            if binding.asset_type != asset.asset_type:
+                raise ConsumptionError(f"绑定资产类型不一致: {ref}")
+            for dependency in asset.dependency_refs:
+                if dependency not in bindings:
+                    raise AssetBindingMissing(f"旧运行缺少依赖绑定: {dependency}")

@@ -174,7 +174,7 @@
 - 判定：标 ✅「成功/失败案例→候选；评测证据绑定」
 - 实际：`evolution/diagnostics.py:529-558` `promote_to_candidate` 的证据门禁是真的（无证据直接 raise、模型假设须先过探针）。但：
   - **只覆盖失败证据**：`DiagnosticCase` 全部来自 `record_failure`（`:255`）。成功运行→进化候选的路径**不存在**（成功运行只产出**工作流**候选，不是进化候选）。
-  - **手工入口无证据校验**：`api/server.py:1091` `evidence=body.get("evidence") or []` 与 `cli.py:232` 接受**调用方自述的任意字符串数组**，`propose_candidate` 原样存入，**不校验是否真实存在于运行记录中** —— 绕过 `promote_to_candidate` 即可零证据建候选。
+  - **手工入口无证据校验**：`api/server.py:1091` `evidence=body.get("evidence") or []` 与 `cli.py::cmd_propose` 接受**调用方自述的任意字符串数组**，`propose_candidate` 原样存入，**不校验是否真实存在于运行记录中** —— 绕过 `promote_to_candidate` 即可零证据建候选。
 
 ### 3.11 E-12 失败案例转回归资产：最后一环断裂
 

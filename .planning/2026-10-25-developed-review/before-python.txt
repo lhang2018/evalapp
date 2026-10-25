@@ -1,0 +1,341 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFFFFFF                                                        [100%]
+================================== FAILURES ===================================
+______ test_capability_read_never_calls_confirmation_or_writes_approval _______
+
+app = <evoagent.app.App object at 0x000001C3AA7A5630>
+
+    def test_capability_read_never_calls_confirmation_or_writes_approval(app):
+        confirmation=Mock(return_value=True)
+        notes=Mock()
+        app.permissions=PermissionController("confirm",confirmation,SimpleNamespace(note_decision=notes))
+        collect(SimpleNamespace(app=app))
+>       assert confirmation.call_count==0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = <Mock id='1939890956480'>.call_count
+
+tests\test_developed_review.py:50: AssertionError
+______________ test_capability_projection_respects_declared_risk ______________
+
+app = <evoagent.app.App object at 0x000001C3AA922950>
+
+    def test_capability_projection_respects_declared_risk(app):
+        app.tools.register(ToolContract(tool_id="review_risky",description="explicit high risk",
+            input_schema={"type":"object"},risk_class="critical",health_check=lambda:True),lambda args:None)
+        by_id={c["tool_id"]:c for c in collect(SimpleNamespace(app=app))["capabilities"]}
+>       assert by_id["review_risky"]["state"]=="permission_required"
+E       AssertionError: assert 'ready' == 'permission_required'
+E         
+E         - permission_required
+E         + ready
+
+tests\test_developed_review.py:57: AssertionError
+__________________ test_feedback_rejects_mismatched_task_run __________________
+
+app = <evoagent.app.App object at 0x000001C3AA7FFD90>
+
+    def test_feedback_rejects_mismatched_task_run(app):
+        seed_runs(app)
+        status,_=feedback(app,dict(category="bug",text="mismatch",task_id="review_a",run_id="run_b"))
+>       assert status==400
+E       assert 201 == 400
+
+tests\test_developed_review.py:63: AssertionError
+___________ test_run_only_feedback_uses_that_runs_task_and_manifest ___________
+
+app = <evoagent.app.App object at 0x000001C3AA9725C0>
+
+    def test_run_only_feedback_uses_that_runs_task_and_manifest(app):
+        seed_runs(app)
+        status,result=feedback(app,dict(category="bug",text="run-only",run_id="run_a"))
+        assert status==201
+        stored=FeedbackStore(app.db._conn).get(result["feedback_id"])
+>       assert stored["task_id"]=="review_a"
+E       AssertionError: assert None == 'review_a'
+
+tests\test_developed_review.py:70: AssertionError
+_____________ test_feedback_reference_cannot_smuggle_credentials ______________
+
+app = <evoagent.app.App object at 0x000001C3AA987C70>
+
+    def test_feedback_reference_cannot_smuggle_credentials(app):
+        status,_=feedback(app,dict(category="bug",text="normal text",evidence_refs=["sk-"+"x"*24]))
+>       assert status==400
+E       assert 201 == 400
+
+tests\test_developed_review.py:75: AssertionError
+____________ test_feedback_invalid_fields_are_client_errors[bad0] _____________
+
+app = <evoagent.app.App object at 0x000001C3AA82FBE0>
+bad = {'category': ['bug']}
+
+    @pytest.mark.parametrize("bad",[
+        {"category":["bug"]},{"text":{"nested":"x"}},{"evidence_refs":"evt_1"},
+        {"evidence_refs":[7]},{"task_id":["bad"]},{"run_id":["bad"]},
+    ])
+    def test_feedback_invalid_fields_are_client_errors(app,bad):
+>       status,_=feedback(app,{"category":"bug","text":"normal",**bad})
+
+tests\test_developed_review.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_developed_review.py:29: in feedback
+    return submit_feedback(SimpleNamespace(app=app,body=body,json=lambda status,payload:(status,payload)))
+evoagent\api\feedback_api.py:35: in submit_feedback
+    out = store.submit(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.observability.feedback.FeedbackStore object at 0x000001C3AA82F970>
+
+    def submit(self, *, category: str, text: str,
+               task_id: Optional[str] = None,
+               run_id: Optional[str] = None,
+               manifest_id: Optional[str] = None,
+               evidence_refs: Optional[List[str]] = None,
+               now: Optional[float] = None) -> Dict[str, Any]:
+>       category = (category or "").strip().lower()
+E       AttributeError: 'list' object has no attribute 'strip'
+
+evoagent\observability\feedback.py:46: AttributeError
+____________ test_feedback_invalid_fields_are_client_errors[bad1] _____________
+
+app = <evoagent.app.App object at 0x000001C3AA9C1600>
+bad = {'text': {'nested': 'x'}}
+
+    @pytest.mark.parametrize("bad",[
+        {"category":["bug"]},{"text":{"nested":"x"}},{"evidence_refs":"evt_1"},
+        {"evidence_refs":[7]},{"task_id":["bad"]},{"run_id":["bad"]},
+    ])
+    def test_feedback_invalid_fields_are_client_errors(app,bad):
+>       status,_=feedback(app,{"category":"bug","text":"normal",**bad})
+
+tests\test_developed_review.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_developed_review.py:29: in feedback
+    return submit_feedback(SimpleNamespace(app=app,body=body,json=lambda status,payload:(status,payload)))
+evoagent\api\feedback_api.py:35: in submit_feedback
+    out = store.submit(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.observability.feedback.FeedbackStore object at 0x000001C3AA9C14E0>
+
+    def submit(self, *, category: str, text: str,
+               task_id: Optional[str] = None,
+               run_id: Optional[str] = None,
+               manifest_id: Optional[str] = None,
+               evidence_refs: Optional[List[str]] = None,
+               now: Optional[float] = None) -> Dict[str, Any]:
+        category = (category or "").strip().lower()
+        if category not in _CATEGORY:
+            raise FeedbackError(f"未知反馈类型: {category or '(空)'}")
+>       text = (text or "").strip()
+E       AttributeError: 'dict' object has no attribute 'strip'
+
+evoagent\observability\feedback.py:49: AttributeError
+____________ test_feedback_invalid_fields_are_client_errors[bad2] _____________
+
+app = <evoagent.app.App object at 0x000001C3AA82FFA0>
+bad = {'evidence_refs': 'evt_1'}
+
+    @pytest.mark.parametrize("bad",[
+        {"category":["bug"]},{"text":{"nested":"x"}},{"evidence_refs":"evt_1"},
+        {"evidence_refs":[7]},{"task_id":["bad"]},{"run_id":["bad"]},
+    ])
+    def test_feedback_invalid_fields_are_client_errors(app,bad):
+        status,_=feedback(app,{"category":"bug","text":"normal",**bad})
+>       assert status==400
+E       assert 201 == 400
+
+tests\test_developed_review.py:83: AssertionError
+____________ test_feedback_invalid_fields_are_client_errors[bad3] _____________
+
+app = <evoagent.app.App object at 0x000001C3AA989630>
+bad = {'evidence_refs': [7]}
+
+    @pytest.mark.parametrize("bad",[
+        {"category":["bug"]},{"text":{"nested":"x"}},{"evidence_refs":"evt_1"},
+        {"evidence_refs":[7]},{"task_id":["bad"]},{"run_id":["bad"]},
+    ])
+    def test_feedback_invalid_fields_are_client_errors(app,bad):
+        status,_=feedback(app,{"category":"bug","text":"normal",**bad})
+>       assert status==400
+E       assert 201 == 400
+
+tests\test_developed_review.py:83: AssertionError
+____________ test_feedback_invalid_fields_are_client_errors[bad4] _____________
+
+app = <evoagent.app.App object at 0x000001C3AA82FB50>
+bad = {'task_id': ['bad']}
+
+    @pytest.mark.parametrize("bad",[
+        {"category":["bug"]},{"text":{"nested":"x"}},{"evidence_refs":"evt_1"},
+        {"evidence_refs":[7]},{"task_id":["bad"]},{"run_id":["bad"]},
+    ])
+    def test_feedback_invalid_fields_are_client_errors(app,bad):
+>       status,_=feedback(app,{"category":"bug","text":"normal",**bad})
+
+tests\test_developed_review.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_developed_review.py:29: in feedback
+    return submit_feedback(SimpleNamespace(app=app,body=body,json=lambda status,payload:(status,payload)))
+evoagent\api\feedback_api.py:20: in submit_feedback
+    if task_id and app.db.get_task(task_id) is None:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.core.persistence.Database object at 0x000001C3AA82DF90>
+task_id = ['bad']
+
+    def get_task(self, task_id: str) -> Optional[Task]:
+        with self._lock:
+>           row = self._conn.execute(
+                "SELECT data FROM tasks WHERE task_id=?", (task_id,)).fetchone()
+E           sqlite3.InterfaceError: Error binding parameter 0 - probably unsupported type.
+
+evoagent\core\persistence.py:66: InterfaceError
+____________ test_feedback_invalid_fields_are_client_errors[bad5] _____________
+
+app = <evoagent.app.App object at 0x000001C3AAA3F5B0>, bad = {'run_id': ['bad']}
+
+    @pytest.mark.parametrize("bad",[
+        {"category":["bug"]},{"text":{"nested":"x"}},{"evidence_refs":"evt_1"},
+        {"evidence_refs":[7]},{"task_id":["bad"]},{"run_id":["bad"]},
+    ])
+    def test_feedback_invalid_fields_are_client_errors(app,bad):
+>       status,_=feedback(app,{"category":"bug","text":"normal",**bad})
+
+tests\test_developed_review.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_developed_review.py:29: in feedback
+    return submit_feedback(SimpleNamespace(app=app,body=body,json=lambda status,payload:(status,payload)))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+ctx = namespace(app=<evoagent.app.App object at 0x000001C3AAA3F5B0>, body={'category': 'bug', 'text': 'normal', 'run_id': ['bad']}, json=<function feedback.<locals>.<lambda> at 0x000001C3AAA66320>)
+
+    @post("/feedback")
+    def submit_feedback(ctx):
+        body = ctx.body
+        if not isinstance(body, dict):
+            return ctx.json(400, {"error": "请求体必须是对象"})
+        app = ctx.app
+        task_id = body.get("task_id") or None
+        run_id = body.get("run_id") or None
+        if task_id and app.db.get_task(task_id) is None:
+            return ctx.json(404, {"error": "任务不存在，无法关联反馈"})
+        if run_id:
+>           row = app.db._conn.execute(
+                "SELECT run_id FROM task_runs WHERE run_id=?", (run_id,)).fetchone()
+E           sqlite3.InterfaceError: Error binding parameter 0 - probably unsupported type.
+
+evoagent\api\feedback_api.py:23: InterfaceError
+_____________ test_feedback_does_not_merge_distinct_long_messages _____________
+
+app = <evoagent.app.App object at 0x000001C3AA7FEA40>
+
+    def test_feedback_does_not_merge_distinct_long_messages(app):
+        store=FeedbackStore(app.db._conn)
+        first=store.submit(category="bug",text="x"*130+" first")
+        second=store.submit(category="bug",text="x"*130+" second")
+>       assert first["feedback_id"]!=second["feedback_id"]
+E       AssertionError: assert 'fb_615c8149e7254751' != 'fb_615c8149e7254751'
+
+tests\test_developed_review.py:89: AssertionError
+_________________ test_feedback_aggregation_keeps_run_context _________________
+
+app = <evoagent.app.App object at 0x000001C3AAA3C100>
+
+    def test_feedback_aggregation_keeps_run_context(app):
+        store=FeedbackStore(app.db._conn)
+        first=store.submit(category="bug",text="same",task_id="task",run_id="run1")
+        second=store.submit(category="bug",text="same",task_id="task",run_id="run2")
+>       assert first["feedback_id"]!=second["feedback_id"]
+E       AssertionError: assert 'fb_e17ae58866544698' != 'fb_e17ae58866544698'
+
+tests\test_developed_review.py:95: AssertionError
+____________ test_feedback_cannot_commit_an_unrelated_transaction _____________
+
+app = <evoagent.app.App object at 0x000001C3AAA26620>
+
+    def test_feedback_cannot_commit_an_unrelated_transaction(app):
+        conn=app.db._conn
+        conn.execute("CREATE TABLE review_pending(value TEXT)")
+        conn.commit()
+        conn.execute("INSERT INTO review_pending VALUES ('uncommitted')")
+        try:
+>           with pytest.raises(FeedbackError):
+E           Failed: DID NOT RAISE <class 'evoagent.observability.feedback.FeedbackError'>
+
+tests\test_developed_review.py:103: Failed
+_____ test_new_binding_consumes_actual_expert_version_not_highest_catalog _____
+
+app = <evoagent.app.App object at 0x000001C3AAA1ED40>
+
+    def test_new_binding_consumes_actual_expert_version_not_highest_catalog(app):
+        repo=repository_for(app.db)
+        expert=app.experts.get("general")
+        promote(repo,expert_to_asset(expert))
+        newer=copy.deepcopy(expert);newer.version="99.0.0"
+        promote(repo,expert_to_asset(newer))
+        app.controller.asset_binder=RuntimeAssetBinder(repo)
+        task=Task(task_id="review_bind",user_goal="review")
+        app.controller._bind_task_assets(task,expert=expert)
+>       assert set(task.runtime_manifest["asset_bindings"])=={f"expert:{expert.expert_id}@{expert.version}"}
+E       AssertionError: assert {'expert:general@99.0.0'} == {'expert:general@1.0.0'}
+E         
+E         Extra items in the left set:
+E         'expert:general@99.0.0'
+E         Extra items in the right set:
+E         'expert:general@1.0.0'
+E         Use -v to get more diff
+
+tests\test_developed_review.py:118: AssertionError
+___________ test_pinned_binding_rejects_changed_execution_identity ____________
+
+app = <evoagent.app.App object at 0x000001C3AA424CD0>
+
+    def test_pinned_binding_rejects_changed_execution_identity(app):
+        repo=repository_for(app.db)
+        workflow=WorkflowDef(workflow_id="review_wf",version="1.0.0",
+            nodes=[WorkflowNode(node_id="a",tool="calculate",args={"expression":"1+1"})])
+        promote(repo,workflow_to_asset(workflow))
+        app.controller.asset_binder=RuntimeAssetBinder(repo)
+        task=Task(task_id="review_pinned",user_goal="review")
+        app.controller._bind_task_assets(task,workflow=workflow)
+        workflow.version="2.0.0"
+>       with pytest.raises(ConsumptionError):
+E       Failed: DID NOT RAISE <class 'evoagent.assets.consumption.ConsumptionError'>
+
+tests\test_developed_review.py:129: Failed
+_____________ test_pinned_record_identity_must_match_mapping_key ______________
+
+app = <evoagent.app.App object at 0x000001C3AA9E7520>
+
+    def test_pinned_record_identity_must_match_mapping_key(app):
+        repo=repository_for(app.db)
+        expert=app.experts.get("general");promote(repo,expert_to_asset(expert))
+        binder=RuntimeAssetBinder(repo)
+        bindings=binder.bind("expert",expert.expert_id)
+        next(iter(bindings.values()))["ref"]="expert:other@1.0.0"
+>       with pytest.raises(ConsumptionError):
+E       Failed: DID NOT RAISE <class 'evoagent.assets.consumption.ConsumptionError'>
+
+tests\test_developed_review.py:138: Failed
+=========================== short test summary info ===========================
+FAILED tests/test_developed_review.py::test_capability_read_never_calls_confirmation_or_writes_approval
+FAILED tests/test_developed_review.py::test_capability_projection_respects_declared_risk
+FAILED tests/test_developed_review.py::test_feedback_rejects_mismatched_task_run
+FAILED tests/test_developed_review.py::test_run_only_feedback_uses_that_runs_task_and_manifest
+FAILED tests/test_developed_review.py::test_feedback_reference_cannot_smuggle_credentials
+FAILED tests/test_developed_review.py::test_feedback_invalid_fields_are_client_errors[bad0]
+FAILED tests/test_developed_review.py::test_feedback_invalid_fields_are_client_errors[bad1]
+FAILED tests/test_developed_review.py::test_feedback_invalid_fields_are_client_errors[bad2]
+FAILED tests/test_developed_review.py::test_feedback_invalid_fields_are_client_errors[bad3]
+FAILED tests/test_developed_review.py::test_feedback_invalid_fields_are_client_errors[bad4]
+FAILED tests/test_developed_review.py::test_feedback_invalid_fields_are_client_errors[bad5]
+FAILED tests/test_developed_review.py::test_feedback_does_not_merge_distinct_long_messages
+FAILED tests/test_developed_review.py::test_feedback_aggregation_keeps_run_context
+FAILED tests/test_developed_review.py::test_feedback_cannot_commit_an_unrelated_transaction
+FAILED tests/test_developed_review.py::test_new_binding_consumes_actual_expert_version_not_highest_catalog
+FAILED tests/test_developed_review.py::test_pinned_binding_rejects_changed_execution_identity
+FAILED tests/test_developed_review.py::test_pinned_record_identity_must_match_mapping_key
+17 failed in 4.14s

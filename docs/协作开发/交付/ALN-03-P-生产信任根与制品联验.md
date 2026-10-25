@@ -74,7 +74,7 @@ size(十进制) / key_id`。
 | 端侧 rsa.ts 联验 | 真实 import 端侧实现验服务端签名 → PASS（测试内固定执行） |
 | Node crypto JWK 通道 | PASS（`.planning/aln03p-crosscheck.mjs`） |
 | 变异测试 | 5 处缺陷注入 → **5/5 捕获** |
-| 隔离全量 | 固定源码 worktree（commit 见台账）→ 见台账 evidence |
+| 隔离全量 | 固定源码 `a038f21`：**1797 passed / 2 failed / 1 skipped**（490s）。两失败均非本卡引入，定位见 [隔离全量失败定位](../验收/2026-10-25-ALN-03-P隔离全量失败定位.md)：①台账漂移属 ALN-15-R（cc57ef6 改 cli.py 行号未同步 GAP_ANALYSIS）；②phantom classifier call 属 ALN-15-P（4091484，父提交 37 passed、该提交起单跑即失败）。本卡 30 项测试在全量中全过。 |
 
 ## 七、验收对照（卡片要求 → 落点）
 

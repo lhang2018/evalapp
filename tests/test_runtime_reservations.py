@@ -127,9 +127,18 @@ def test_real_controller_classification_planning_and_react_each_allocate_once(ap
 def test_explicit_hint_does_not_allocate_a_phantom_classifier_call(app):
     provider = Provider(free=True)
     install(app, provider)
-    task = app.controller.submit_task("answer", intent="general", wait=True)
+    # general is now the weak fallback hint (ALN-23-A), not an explicit route.
+    task = app.controller.submit_task("answer", intent="note_taking", wait=True)
     assert provider.calls == 2
     assert [r["context"]["phase"] for r in records(app, task)] == ["planning", "react"]
+
+def test_general_fallback_hint_accounts_for_real_classification(app):
+    provider = Provider(free=True)
+    install(app, provider)
+    task = app.controller.submit_task("answer", intent="general", wait=True)
+    assert provider.calls == 3
+    assert [r["context"]["phase"] for r in records(app, task)] == [
+        "classification", "planning", "react"]
 
 
 def test_two_real_tasks_share_one_goal_allocation(app):

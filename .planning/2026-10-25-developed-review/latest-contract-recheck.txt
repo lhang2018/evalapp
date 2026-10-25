@@ -1,0 +1,45 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+.F..........................................F..............              [100%]
+================================== FAILURES ===================================
+_______ test_explicit_hint_does_not_allocate_a_phantom_classifier_call ________
+
+app = <evoagent.app.App object at 0x000002533D3AB280>
+
+    def test_explicit_hint_does_not_allocate_a_phantom_classifier_call(app):
+        provider = Provider(free=True)
+        install(app, provider)
+        task = app.controller.submit_task("answer", intent="general", wait=True)
+>       assert provider.calls == 2
+E       assert 3 == 2
+E        +  where 3 = <test_runtime_reservations.Provider object at 0x000002533D3ABE50>.calls
+
+tests\test_runtime_reservations.py:131: AssertionError
+_________________ TestNoDrift.test_all_ledgers_have_no_drift __________________
+
+self = <test_ledger_drift.TestNoDrift testMethod=test_all_ledgers_have_no_drift>
+
+    def test_all_ledgers_have_no_drift(self):
+        rep = sal.scan(DOCS)
+>       self.assertEqual(
+            rep["problems"], [],
+            f"台账存在 {len(rep['problems'])} 处引用问题："
+            f"{[(p['doc'], p['doc_line'], p['kind']) for p in rep['problems'][:5]]}")
+E       AssertionError: Lists differ: [{'doc': 'GAP_ANALYSIS.md', 'doc_line': 17[65 chars]空行'}] != []
+E       
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       {'doc': 'GAP_ANALYSIS.md', 'doc_line': 177, 'kind': 'bare_points_to_blank', 'detail': '裸引用 `cli.py:232` 指向空行'}
+E       
+E       + []
+E       - [{'detail': '裸引用 `cli.py:232` 指向空行',
+E       -   'doc': 'GAP_ANALYSIS.md',
+E       -   'doc_line': 177,
+E       -   'kind': 'bare_points_to_blank'}] : 台账存在 1 处引用问题：[('GAP_ANALYSIS.md', 177, 'bare_points_to_blank')]
+
+tests\test_ledger_drift.py:30: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_runtime_reservations.py::test_explicit_hint_does_not_allocate_a_phantom_classifier_call
+FAILED tests/test_ledger_drift.py::TestNoDrift::test_all_ledgers_have_no_drift
+2 failed, 57 passed in 18.13s

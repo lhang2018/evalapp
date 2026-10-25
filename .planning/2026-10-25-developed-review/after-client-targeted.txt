@@ -1,0 +1,36 @@
+(node:50988) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/developedReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 概念问答包含文件/报告/运行词仍应保持轻量聊天 (0.805ms)
+✔ 过去的纠正不覆盖后来明确的新目标，约束不被当目标 (0.9641ms)
+✔ 服务端终态不保留过期审批或网络等待动作 (0.3208ms)
+✔ 已回答的澄清不能继续要求用户补充 (0.1333ms)
+(node:50580) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/modes.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 模式判定：显式切换优先于输入特征 (0.9576ms)
+✔ 模式判定：请求代为执行/需要产物/需要工具 → work (0.5227ms)
+✔ 模式判定：直接问答轻量完成 → chat (0.2073ms)
+✔ 聊天转工作：goal 取最后目标；纠正口径优先 (0.2624ms)
+✔ 聊天转工作：仅确认过的讨论升级为约束 (0.1673ms)
+✔ 聊天转工作：已完成要点只进摘要，不重复执行 (0.235ms)
+✔ 聊天转工作：讨论≠执行——assistant 结论不产生待办 (0.126ms)
+(node:50524) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/taskview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 服务端九态语义逐态映射，终态判定不受模型文字影响 (1.5633ms)
+✔ 终态判定：仅服务端终态有效 (0.2366ms)
+✔ 等待原因来自权威字段：审批/澄清/中断/网络 (0.3881ms)
+✔ 离线本地阶段：无服务端状态按本地展示，DONE 不宣称服务端已验证 (0.2347ms)
+✔ 暂停任务给出可继续/取消的等待原因 (0.2092ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 134.0758

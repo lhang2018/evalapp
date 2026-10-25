@@ -1,0 +1,106 @@
+(node:31196) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/developedReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ 概念问答包含文件/报告/运行词仍应保持轻量聊天 (3.3532ms)
+✖ 过去的纠正不覆盖后来明确的新目标，约束不被当目标 (0.4099ms)
+✖ 服务端终态不保留过期审批或网络等待动作 (0.2869ms)
+✖ 已回答的澄清不能继续要求用户补充 (0.1361ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 0
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 108.877
+
+✖ failing tests:
+
+test at android-app\test\offline\developedReview.test.ts:7:1
+✖ 概念问答包含文件/报告/运行词仍应保持轻量聊天 (3.3532ms)
+  AssertionError [ERR_ASSERTION]: 什么是文件？
+  
+  'work' !== 'chat'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/developedReview.test.ts:9:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'work',
+    expected: 'chat',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\offline\developedReview.test.ts:15:1
+✖ 过去的纠正不覆盖后来明确的新目标，约束不被当目标 (0.4099ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '改成财务部分'
+  - '把这些整理成报告'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/developedReview.test.ts:21:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '改成财务部分',
+    expected: '把这些整理成报告',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\offline\developedReview.test.ts:26:1
+✖ 服务端终态不保留过期审批或网络等待动作 (0.2869ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  '等待你审批确认' !== null
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/developedReview.test.ts:34:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '等待你审批确认',
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at android-app\test\offline\developedReview.test.ts:39:1
+✖ 已回答的澄清不能继续要求用户补充 (0.1361ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/developedReview.test.ts:40:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

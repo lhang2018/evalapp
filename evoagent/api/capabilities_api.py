@@ -18,18 +18,21 @@ health 只读 ToolRegistry.health()（F-04 三值语义）。
 
 from .routes import get
 from ..core.permissions import PermissionDecision
+from ..core.task import RiskLevel
 
 
-def _dry_decision(permissions, tool_id: str, side_effect: str):
+def _dry_decision(permissions, tool_id: str, side_effect: str, contract=None):
     """干跑既有权限裁决链；返回 PermissionDecision。"""
-    try:
-        return permissions.check_tool(tool_id, {}, risk=None,
-                                      side_effect=side_effect)
-    except TypeError:
-        # risk 为必填位置参数的旧签名兜底
-        from ..core.task import RiskLevel
-        return permissions.check_tool(tool_id, {}, risk=RiskLevel.LOW,
-                                      side_effect=side_effect)
+    risk = (RiskLevel.CRITICAL if side_effect == "destructive" else
+            RiskLevel.HIGH if side_effect in ("local", "external") else RiskLevel.LOW)
+    declared = contract.declared_risk() if contract and contract.risk_declared else None
+    order = {level: i for i, level in enumerate(
+        (RiskLevel.LOW, RiskLevel.MEDIUM, RiskLevel.HIGH, RiskLevel.CRITICAL))}
+    lifted = declared is not None and order[declared] > order[risk]
+    if lifted:
+        risk = declared
+    return permissions.check_tool(tool_id, {}, risk=risk, side_effect=side_effect,
+                                  lifted=lifted, dry_run=True)
 
 
 def project_capability(tool_id: str, *, registered: bool, version: str,
@@ -76,15 +79,19 @@ def collect(ctx) -> dict:
         note = policy.note if policy else ""
         explicit_deny = bool(policy and
                              policy.decision == PermissionDecision.DENY)
-        dry = _dry_decision(permissions, tool_id, side_effect)
+        dry = _dry_decision(permissions, tool_id, side_effect,
+                            rt.contract if registered else None)
         capabilities.append(project_capability(
             tool_id, registered=registered, version=version,
             health=health.get(tool_id) if registered else None,
             dry=dry, explicit_deny=explicit_deny,
             high_risk_mode=permissions.high_risk_mode,
             note=note,
-            high_risk=tool_id in getattr(permissions, "high_risk_ops",
-                                         set())))
+            high_risk=(tool_id in getattr(permissions, "high_risk_ops", set())
+                       or side_effect in ("local", "external", "destructive")
+                       or (registered and rt.contract.risk_declared and
+                           rt.contract.declared_risk() in
+                           (RiskLevel.MEDIUM, RiskLevel.HIGH, RiskLevel.CRITICAL)))))
     order = {"unregistered": 0, "denied": 1, "permission_required": 2,
              "dependency_missing": 3, "unverified": 4, "ready": 5}
     capabilities.sort(key=lambda c: (order.get(c["state"], 9),

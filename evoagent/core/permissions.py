@@ -58,7 +58,8 @@ class PermissionController:
                    lifted: bool = False, task_id: str = "", *,
                    require_confirmation: bool = False,
                    authorization_context: Optional[Dict] = None,
-                   run_id: str = "", confirmed: bool = False) -> PermissionDecision:
+                   run_id: str = "", confirmed: bool = False,
+                   dry_run: bool = False) -> PermissionDecision:
         """工具调用前权限校验。裁决链：显式策略 > 副作用登记 > 高风险名单。
 
         lifted（契约 §4，GAP ⑤b）：工具契约风险声明高于副作用推导时
@@ -74,7 +75,8 @@ class PermissionController:
                 or side_effect in ("local", "external", "destructive") \
                 or lifted or require_confirmation:
             return self._decide_high_risk(tool_id, args, task_id=task_id,
-                context=authorization_context, run_id=run_id, confirmed=confirmed)
+                context=authorization_context, run_id=run_id, confirmed=confirmed,
+                dry_run=dry_run)
         return PermissionDecision.ALLOW
 
     def check_op(self, op_name: str, args: Dict, *, task_id=None,
@@ -89,7 +91,14 @@ class PermissionController:
         return PermissionDecision.ALLOW
 
     def _decide_high_risk(self, op: str, args: Dict,
-                          task_id: str = "", context=None, run_id="", confirmed=False) -> PermissionDecision:
+                          task_id: str = "", context=None, run_id="", confirmed=False,
+                          dry_run=False) -> PermissionDecision:
+        # Status projections must not prompt, create/consume approvals or audit a
+        # fictitious execution. Keep the same policy gate without executing it.
+        if dry_run:
+            return (PermissionDecision.ALLOW if self.high_risk_mode == "allow"
+                    else PermissionDecision.DENY if self.high_risk_mode == "deny"
+                    else PermissionDecision.CONFIRM)
         if self.high_risk_mode == "allow":
             decision = PermissionDecision.ALLOW
         elif self.high_risk_mode == "deny":

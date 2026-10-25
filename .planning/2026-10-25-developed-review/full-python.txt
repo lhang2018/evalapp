@@ -1,0 +1,933 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  4%]
+........................................................................ [  8%]
+........................................................................ [ 12%]
+........................................................................ [ 16%]
+........................................................................ [ 20%]
+........................................................................ [ 24%]
+........................................................................ [ 28%]
+........................................................................ [ 32%]
+........................................................................ [ 36%]
+........................................................................ [ 40%]
+........................................................................ [ 44%]
+........................................................................ [ 48%]
+...........................................F............................ [ 52%]
+........................................................................ [ 56%]
+........................................................................ [ 60%]
+........................................................................ [ 64%]
+........................................................................ [ 68%]
+........................................................................ [ 72%]
+........................................................................ [ 76%]
+.............FFFFFFFFFFFFFF............................................. [ 80%]
+........................................................................ [ 84%]
+...................................F.................................... [ 89%]
+.....................................FF..FF............................. [ 93%]
+..........................................s............................. [ 97%]
+...................................................                      [100%]
+================================== FAILURES ===================================
+_________________ TestNoDrift.test_all_ledgers_have_no_drift __________________
+
+self = <test_ledger_drift.TestNoDrift testMethod=test_all_ledgers_have_no_drift>
+
+    def test_all_ledgers_have_no_drift(self):
+        rep = sal.scan(DOCS)
+>       self.assertEqual(
+            rep["problems"], [],
+            f"台账存在 {len(rep['problems'])} 处引用问题："
+            f"{[(p['doc'], p['doc_line'], p['kind']) for p in rep['problems'][:5]]}")
+E       AssertionError: Lists differ: [{'doc': 'GAP_ANALYSIS.md', 'doc_line': 17[65 chars]空行'}] != []
+E       
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       {'doc': 'GAP_ANALYSIS.md', 'doc_line': 177, 'kind': 'bare_points_to_blank', 'detail': '裸引用 `cli.py:232` 指向空行'}
+E       
+E       + []
+E       - [{'detail': '裸引用 `cli.py:232` 指向空行',
+E       -   'doc': 'GAP_ANALYSIS.md',
+E       -   'doc_line': 177,
+E       -   'kind': 'bare_points_to_blank'}] : 台账存在 1 处引用问题：[('GAP_ANALYSIS.md', 177, 'bare_points_to_blank')]
+
+tests\test_ledger_drift.py:30: AssertionError
+_ ReleaseGateValidatorTest.test_all_gates_passed_and_published_means_release_ready _
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_all_gates_passed_and_published_means_release_ready>
+
+    def test_all_gates_passed_and_published_means_release_ready(self):
+        """八道门禁与十三项范围全部通过且已发布 —— 才允许判定可发布。"""
+        evidence, board = load_repo()
+        board["baseline"]["published_commit"] = "a" * 40
+        for gate in evidence["gates"]:
+            gate["status"] = "pass"
+            gate["evidence"] = [{"kind": "command", "ref": "cmd", "result": "ok", "at": "2026-10-25"}]
+        for item in evidence["frozen_range"]["required"]:
+            item["status"] = "pass"
+            item["evidence"] = [{"kind": "command", "ref": "cmd", "result": "ok", "at": "2026-10-25"}]
+        completed = run_cli(evidence, board, "--require-release")
+>       self.assertEqual(completed.returncode, 0, completed.stdout)
+E       AssertionError: 1 != 0 :
+
+tests\test_release_gates.py:194: AssertionError
+________ ReleaseGateValidatorTest.test_fail_without_reason_is_rejected ________
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_fail_without_reason_is_rejected>
+
+    def test_fail_without_reason_is_rejected(self):
+        """标记 fail 却不写明原因与失败路径 —— 必须被判错。"""
+        evidence, board = load_repo()
+        find(evidence["gates"], "G3")["status"] = "fail"
+        find(evidence["gates"], "G3")["reason"] = ""
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("reason", completed.stdout)
+E       AssertionError: 'reason' not found in ''
+
+tests\test_release_gates.py:114: AssertionError
+_ ReleaseGateValidatorTest.test_g6_pass_without_published_commit_is_rejected __
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_g6_pass_without_published_commit_is_rejected>
+
+    def test_g6_pass_without_published_commit_is_rejected(self):
+        """没有已发布版本却把 G6 判为通过 —— 与台账事实矛盾，必须被判错。"""
+        evidence, board = load_repo()
+        board["baseline"]["published_commit"] = None
+        find(evidence["gates"], "G6")["status"] = "pass"
+        find(evidence["gates"], "G6")["evidence"] = [
+            {"kind": "report", "ref": "docs/协作开发/验收/ALN-03-P-*.md", "result": "联验通过",
+             "at": "2026-10-25"}]
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("published_commit", completed.stdout)
+E       AssertionError: 'published_commit' not found in ''
+
+tests\test_release_gates.py:164: AssertionError
+_____ ReleaseGateValidatorTest.test_hard_blocking_failure_blocks_release ______
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_hard_blocking_failure_blocks_release>
+
+    def test_hard_blocking_failure_blocks_release(self):
+        """硬性门禁失败时，即使其余全通过也不得放行。"""
+        evidence, board = load_repo()
+        board["baseline"]["published_commit"] = "0" * 40
+        for gate in evidence["gates"]:
+            gate["status"] = "pass"
+            gate["evidence"] = [{"kind": "command", "ref": "cmd", "result": "ok", "at": "2026-10-25"}]
+        for item in evidence["frozen_range"]["required"]:
+            item["status"] = "pass"
+            item["evidence"] = [{"kind": "command", "ref": "cmd", "result": "ok", "at": "2026-10-25"}]
+        find(evidence["gates"], "G2")["status"] = "fail"
+        find(evidence["gates"], "G2")["reason"] = "未授权高风险动作发生 1 次"
+        find(evidence["gates"], "G2")["evidence"] = []
+        completed = run_cli(evidence, board, "--require-release")
+>       self.assertEqual(completed.returncode, 2)
+E       AssertionError: 1 != 2
+
+tests\test_release_gates.py:180: AssertionError
+_______ ReleaseGateValidatorTest.test_missing_evidence_file_is_reported _______
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_missing_evidence_file_is_reported>
+
+    def test_missing_evidence_file_is_reported(self):
+        """证据表不存在时明确报错，不静默放行。"""
+        with tempfile.TemporaryDirectory(prefix="aln29b-") as tmp:
+            completed = subprocess.run(
+                [sys.executable, str(SCRIPT), "--evidence", str(Path(tmp) / "nope.json")],
+                capture_output=True, text=True, encoding="utf-8", cwd=str(tmp),
+            )
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("证据表不存在", completed.stdout)
+E       AssertionError: '证据表不存在' not found in ''
+
+tests\test_release_gates.py:205: AssertionError
+___________ ReleaseGateValidatorTest.test_missing_gate_is_rejected ____________
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_missing_gate_is_rejected>
+
+    def test_missing_gate_is_rejected(self):
+        """少一道门禁 —— 必须被判错，且错误信息要指出缺哪一道。"""
+        evidence, board = load_repo()
+        evidence["gates"] = [gate for gate in evidence["gates"] if gate["id"] != "G5"]
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("G5", completed.stdout)
+E       AssertionError: 'G5' not found in ''
+
+tests\test_release_gates.py:122: AssertionError
+________ ReleaseGateValidatorTest.test_missing_range_item_is_rejected _________
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_missing_range_item_is_rejected>
+
+    def test_missing_range_item_is_rejected(self):
+        """首发范围缺项 —— 必须被判错，且错误信息要指出缺哪一项。"""
+        evidence, board = load_repo()
+        evidence["frozen_range"]["required"] = [
+            item for item in evidence["frozen_range"]["required"] if item["id"] != "R07"]
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("R07", completed.stdout)
+E       AssertionError: 'R07' not found in ''
+
+tests\test_release_gates.py:143: AssertionError
+___ ReleaseGateValidatorTest.test_pass_with_incomplete_evidence_is_rejected ___
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_pass_with_incomplete_evidence_is_rejected>
+
+    def test_pass_with_incomplete_evidence_is_rejected(self):
+        """证据缺 ref 或 result —— 必须被判错。"""
+        evidence, board = load_repo()
+        find(evidence["gates"], "G1")["status"] = "pass"
+        find(evidence["gates"], "G1")["evidence"] = [{"kind": "command", "ref": "", "result": ""}]
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("缺少", completed.stdout)
+E       AssertionError: '缺少' not found in ''
+
+tests\test_release_gates.py:95: AssertionError
+_______ ReleaseGateValidatorTest.test_pass_without_evidence_is_rejected _______
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_pass_without_evidence_is_rejected>
+
+    def test_pass_without_evidence_is_rejected(self):
+        """标记 pass 却没有证据 —— 必须被判错。"""
+        evidence, board = load_repo()
+        find(evidence["gates"], "G1")["status"] = "pass"
+        find(evidence["gates"], "G1")["evidence"] = []
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("没有证据", completed.stdout)
+E       AssertionError: '没有证据' not found in ''
+
+tests\test_release_gates.py:86: AssertionError
+__________ ReleaseGateValidatorTest.test_renumbered_gate_is_rejected __________
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_renumbered_gate_is_rejected>
+
+    def test_renumbered_gate_is_rejected(self):
+        """门禁数量对但编号错（G5 写成 G8）—— 同样必须被判错。
+    
+        只数数量不校验编号的实现会漏掉这种错位，因此断言必须指向具体编号。
+        """
+        evidence, board = load_repo()
+        find(evidence["gates"], "G5")["id"] = "G8"
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("G5", completed.stdout)
+E       AssertionError: 'G5' not found in ''
+
+tests\test_release_gates.py:134: AssertionError
+_______ ReleaseGateValidatorTest.test_renumbered_range_item_is_rejected _______
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_renumbered_range_item_is_rejected>
+
+    def test_renumbered_range_item_is_rejected(self):
+        """范围项数量对但编号错（R07 写成 R14）—— 同样必须被判错。"""
+        evidence, board = load_repo()
+        find(evidence["frozen_range"]["required"], "R07")["id"] = "R14"
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("R07", completed.stdout)
+E       AssertionError: 'R07' not found in ''
+
+tests\test_release_gates.py:152: AssertionError
+___ ReleaseGateValidatorTest.test_repo_evidence_table_is_structurally_valid ___
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_repo_evidence_table_is_structurally_valid>
+
+    def test_repo_evidence_table_is_structurally_valid(self):
+        """仓库内证据表必须自洽：G0—G7 与 R01—R13 齐全、状态合法。"""
+        evidence, board = load_repo()
+        completed = run_cli(evidence, board)
+>       self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+E       TypeError: can only concatenate str (not "NoneType") to str
+
+tests\test_release_gates.py:54: TypeError
+____ ReleaseGateValidatorTest.test_untested_gate_is_not_counted_as_passed _____
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_untested_gate_is_not_counted_as_passed>
+
+    def test_untested_gate_is_not_counted_as_passed(self):
+        """未运行的门禁不得因其他指标提升而被计为通过。
+    
+        隔离要求：其余七道门禁与十三项范围全部置为通过且已发布，
+        只留 G0 未测试。若“未测试”不阻止发布，本用例必须失败。
+        """
+        evidence, board = load_repo()
+        board["baseline"]["published_commit"] = "b" * 40
+        for gate in evidence["gates"]:
+            gate["status"] = "pass"
+            gate["evidence"] = [{"kind": "command", "ref": "cmd", "result": "ok", "at": "2026-10-25"}]
+        for item in evidence["frozen_range"]["required"]:
+            item["status"] = "pass"
+            item["evidence"] = [{"kind": "command", "ref": "cmd", "result": "ok", "at": "2026-10-25"}]
+        find(evidence["gates"], "G0")["status"] = "untested"
+        find(evidence["gates"], "G0")["evidence"] = []
+        completed = run_cli(evidence, board, "--require-release")
+>       self.assertEqual(completed.returncode, 2, completed.stdout)
+E       AssertionError: 1 != 2 :
+
+tests\test_release_gates.py:75: AssertionError
+______ ReleaseGateValidatorTest.test_untested_with_evidence_is_rejected _______
+
+self = <test_release_gates.ReleaseGateValidatorTest testMethod=test_untested_with_evidence_is_rejected>
+
+    def test_untested_with_evidence_is_rejected(self):
+        """标记 untested 却挂证据 —— 状态与证据矛盾，必须被判错。"""
+        evidence, board = load_repo()
+        find(evidence["gates"], "G2")["evidence"] = [
+            {"kind": "command", "ref": "pytest tests/test_aln01_authorization.py",
+             "result": "12 passed", "at": "2026-10-25"}]
+        completed = run_cli(evidence, board)
+        self.assertEqual(completed.returncode, 1)
+>       self.assertIn("状态与证据矛盾", completed.stdout)
+E       AssertionError: '状态与证据矛盾' not found in ''
+
+tests\test_release_gates.py:105: AssertionError
+_______ test_explicit_hint_does_not_allocate_a_phantom_classifier_call ________
+
+app = <evoagent.app.App object at 0x000001F770D09000>
+
+    def test_explicit_hint_does_not_allocate_a_phantom_classifier_call(app):
+        provider = Provider(free=True)
+        install(app, provider)
+        task = app.controller.submit_task("answer", intent="general", wait=True)
+>       assert provider.calls == 2
+E       assert 3 == 2
+E        +  where 3 = <test_runtime_reservations.Provider object at 0x000001F770D08670>.calls
+
+tests\test_runtime_reservations.py:131: AssertionError
+_____________ TestTaskContractEntries.test_cli_entry_same_fields ______________
+
+self = <test_task_contract_entries.TestTaskContractEntries testMethod=test_cli_entry_same_fields>
+
+>   ???
+E   ImportError: cannot import name 'build_parser' from 'evoagent.cli' (E:\evalapp\evoagent\cli.py)
+
+tests\test_task_contract_entries.py:100: ImportError
+_________ TestTaskContractEntries.test_cmd_task_with_contract_kwargs __________
+
+self = <test_task_contract_entries.TestTaskContractEntries testMethod=test_cmd_task_with_contract_kwargs>
+
+>   ???
+E   AttributeError: 'str' object has no attribute 'intent'
+
+tests\test_task_contract_entries.py:159: AttributeError
+---------------------------- Captured stdout call -----------------------------
+{
+ "task_id": "d4503263240e",
+ "parent_task_id": null,
+ "current_run_id": "run_45d1e2c125a546dea3d93e6f25c858ab",
+ "parent_run_id": null,
+ "waiting_request": null,
+ "waiting_approvals": [
+  "apr_ca7051698c754f1db6c93587d3c7b868"
+ ],
+ "user_answers": [],
+ "goal_id": null,
+ "authorization_ref": "auth_37fc63c990d4494c84b3a8591ce91a2a",
+ "memory_binding_ref": "mb_5da4f6c62c044102bc1b8e9bd786a4a7",
+ "memory_identity": {
+  "user_id": "local:host",
+  "project_id": "default:local:host",
+  "session_id": "default:local:host",
+  "task_id": "d4503263240e",
+  "expert_id": ""
+ },
+ "origin": "user",
+ "user_goal": "帮我记个笔记：采购清单",
+ "intent": "note_taking",
+ "domain": "mobile_operation",
+ "target_object": "",
+ "expected_output": "",
+ "complexity": "moderate",
+ "required_tools": [
+  "file_write"
+ ],
+ "required_permissions": [],
+ "requires_network": false,
+ "workflow_suitable": false,
+ "open_questions": [],
+ "constraints": [
+  "先列采购项"
+ ],
+ "risk_level": "low",
+ "acceptance_criteria": [],
+ "budget_policy": {},
+ "execution_plan_ref": "plan_main",
+ "workflow_ref": null,
+ "runtime_manifest": {
+  "source": "user",
+  "run_id": "run_45d1e2c125a546dea3d93e6f25c858ab",
+  "runtime_manifest_id": "manifest_run_45d1e2c125a546dea3d93e6f25c858ab",
+  "run_lease": {
+   "owner_id": "worker_aa45200b122044d5ba44856c69d88a16",
+   "generation": 1
+  },
+  "aggregate_budget": {
+   "schema_version": 1,
+   "account_id": "task:77d444c55c7e0f0203e4636f70efc117454498b2b1f62b2eb2bba8831f4333d1",
+   "additional_accounts": [
+    "runtime:day:2026-10-25"
+   ],
+   "goal_ids": [],
+   "task_id": "d4503263240e",
+   "legacy_usage": null
+  },
+  "intent_classification": {
+   "method": "heuristic_fallback",
+   "confidence": 0.6
+  },
+  "model_route": {
+   "model_id": "mock-1",
+   "provider": "builtin",
+   "intent": "note_taking",
+   "domain": "mobile_operation",
+   "source": "router"
+  },
+  "execution_plan": {
+   "plan_id": "plan_main",
+   "goal": "帮我记个笔记：采购清单",
+   "steps": [
+    {
+     "step_id": "s1",
+     "description": "解析目标并收集上下文: 帮我记个笔记：采购清单",
+     "deps": [],
+     "tool_hint": null,
+     "acceptance": null,
+     "state": "running"
+    },
+    {
+     "step_id": "s2",
+     "description": "执行核心动作",
+     "deps": [
+      "s1"
+     ],
+     "tool_hint": "file_write",
+     "acceptance": null,
+     "state": "pending"
+    },
+    {
+     "step_id": "s3",
+     "description": "验证结果并总结",
+     "deps": [
+      "s2"
+     ],
+     "tool_hint": null,
+     "acceptance": null,
+     "state": "pending"
+    }
+   ],
+   "original_goal": "帮我记个笔记：采购清单",
+   "immutable_constraints": [
+    "先列采购项"
+   ],
+   "completed_work": [],
+   "change_reasons": [
+    "model_plan_failed:ValueError"
+   ],
+   "reserved_budget_hint": {
+    "max_model_calls": 10
+   },
+   "risks": [
+    "涉及本地/设备副作用，需权限确认"
+   ],
+   "acceptance_criteria": [
+    {
+     "type": "result_nonempty"
+    }
+   ],
+   "created_at": 1792913621.7308903,
+   "revisions": [],
+   "execution_mode": "",
+   "selection_rationale": "",
+   "recovery_policies": [
+    {
+     "category": "side_effect_requires_approval",
+     "action": "require_approval",
+     "applies_to_intent": "note_taking",
+     "params": {},
+     "rationale": "涉及本地/设备副作用，需权限确认"
+    }
+   ]
+  },
+  "authorization_ref": "auth_37fc63c990d4494c84b3a8591ce91a2a",
+  "expert_ref": "mobile_operation/1.0.0",
+  "context": {
+   "memory_candidates": 0,
+   "memory_used": 0,
+   "chars_before": 203,
+   "chars_after": 203,
+   "dropped_memories": 0,
+   "dropped_results": 0,
+   "dropped_tool_docs": 0,
+   "dropped_evidence": 0,
+   "compression_summary": "",
+   "quality": {
+    "constraint_retention": 1.0,
+    "expired_memories": 0,
+    "cross_domain_candidates": 0,
+    "untrusted_instructions": 0,
+    "untrusted_excluded": 0,
+    "overflow": false,
+    "missing_state": false,
+    "unnecessary_history_candidates": 0,
+    "compression_applied": false,
+    "budget_chars": 6000
+   },
+   "manifest_id": "ctx_f89a0ba61603ebcd",
+   "manifest_digest": "f89a0ba61603ebcdac11e8607b714e60730ff5828807f3e2e6689d8b740580b4"
+  },
+  "context_manifest_ref": "ctx_f89a0ba61603ebcd",
+  "plan_progress": {
+   "steps": {
+    "s1": "running",
+    "s2": "pending",
+    "s3": "pending"
+   },
+   "done": [],
+   "failed": [],
+   "pending": [
+    "s1",
+    "s2",
+    "s3"
+   ],
+   "change_reasons": [
+    "model_plan_failed:ValueError"
+   ]
+  }
+ },
+ "task_status": "SUSPENDED",
+ "checkpoint_ref": null,
+ "result": null,
+ "result_evidence": [],
+ "failure_reason": null,
+ "confidence": 0.6,
+ "version_manifest": {
+  "release_id": "10d16a1dd6",
+  "version": "v0.1.0",
+  "artifact_digest": "e80a72f9192f0cf7e793d71e8fd743855cb7ff239d716a0c8be6300cdbab1597",
+  "code_commit": "local",
+  "model_adapter_version": "mock",
+  "prompt_version": "v0",
+  "tools_version": "builtin-1.0.0",
+  "workflow_versions": [],
+  "env_version": "local",
+  "created_at": "2026-10-25T07:33:41+00:00",
+  "core_version": "0.1.0",
+  "runtime_adapter": {
+   "name": "mock",
+   "version": "mock"
+  },
+  "model_profile_ref": "mock-1/mock",
+  "router_policy_ref": "adapter/mock",
+  "context_policy_ref": "env/local",
+  "evaluation_suite_ref": null,
+  "expert_ref": "mobile_operation/1.0.0",
+  "workflow_ref": null,
+  "tool_versions": [
+   {
+    "tool_id": "calculate",
+    "version": "1.0.0"
+   },
+   {
+    "tool_id": "current_time",
+    "version": "1.0.0"
+   },
+   {
+    "tool_id": "file_read",
+    "version": "1.0.0"
+   },
+   {
+    "tool_id": "file_write",
+    "version": "1.0.0"
+   },
+   {
+    "tool_id": "fs_list",
+    "version": "1.0.0"
+   },
+   {
+    "tool_id": "git_read",
+    "version": "1.0.0"
+   },
+   {
+    "tool_id": "http_get",
+    "version": "1.0.0"
+   },
+   {
+    "tool_id": "mock_compose",
+    "version": "1.0.0"
+   },
+   {
+    "tool_id": "mock_dubbing",
+    "version": "1.0.0"
+   },
+   {
+    "tool_id": "mock_script_gen",
+    "version": "1.0.0"
+   },
+   {
+    "tool_id": "mock_video_clip",
+    "version": "1.0.0"
+   }
+  ],
+  "environment_digest": "d40cd8ac2b248b6450b8d2ca441059f62e6334e474b7a73631bdce056808bf86",
+  "task_id": "d4503263240e",
+  "memory_binding_ref": "mb_5da4f6c62c044102bc1b8e9bd786a4a7",
+  "memory_identity": {
+   "user_id": "local:host",
+   "project_id": "default:local:host",
+   "session_id": "default:local:host",
+   "task_id": "d4503263240e",
+   "expert_id": ""
+  },
+  "device_id": null,
+  "installation_id": null,
+  "app_version": null,
+  "source": "user",
+  "run_id": "run_45d1e2c125a546dea3d93e6f25c858ab",
+  "parent_run_id": null,
+  "runtime_manifest_id": "manifest_run_45d1e2c125a546dea3d93e6f25c858ab"
+ },
+ "created_at": 1792913621.5994198,
+ "updated_at": 1792913621.8718884
+}
+_________ TestTaskContractEntries.test_illegal_model_fields_rejected __________
+
+self = <test_task_contract_entries.TestTaskContractEntries testMethod=test_illegal_model_fields_rejected>
+
+>   ???
+
+tests\test_task_contract_entries.py:92: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_task_contract_entries.py:41: in _post_task
+    with urllib.request.urlopen(req, timeout=10) as r:
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:216: in urlopen
+    return opener.open(url, data, timeout)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:525: in open
+    response = meth(req, response)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:634: in http_response
+    response = self.parent.error(
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:563: in error
+    return self._call_chain(*args)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:496: in _call_chain
+    result = func(*args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <urllib.request.HTTPDefaultErrorHandler object at 0x000001F76E47C7C0>
+req = <urllib.request.Request object at 0x000001F773053EE0>
+fp = <http.client.HTTPResponse object at 0x000001F7730A06D0>, code = 400
+msg = 'Bad Request'
+hdrs = <http.client.HTTPMessage object at 0x000001F7730BFDF0>
+
+    def http_error_default(self, req, fp, code, msg, hdrs):
+>       raise HTTPError(req.full_url, code, msg, hdrs, fp)
+E       urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:643: HTTPError
+---------------------------- Captured stdout call -----------------------------
+EvoAgent API: http://127.0.0.1:13079  (GET /health)
+_______ TestTaskContractEntries.test_rest_entry_persists_full_contract ________
+
+self = <test_task_contract_entries.TestTaskContractEntries testMethod=test_rest_entry_persists_full_contract>
+
+            srv.shutdown()
+    
+    def test_rest_entry_persists_full_contract(self):
+        st, out = self._post_task({
+            "goal": "帮我把采购笔记整理成对比报告",
+            "intent": "general",
+            "constraints": ["用中文", "不超过三页"],
+            "acceptance_criteria": [{"criterion": "包含数据来源"}],
+            "required_tools": ["file_write"],
+            "required_permissions": ["file"],
+            "open_questions": ["数据来源优先级？"],
+            "expected_output": "markdown 报告",
+            "target_object": "实验数据",
+            "complexity": "moderate",
+        })
+        self.assertEqual(st, 202, out)
+        task = self.app.db.get_task(out["task_id"])
+>       self.assertIsNotNone(task)
+E       AssertionError: 'general' != 'note_taking'
+E       - general
+E       + note_taking
+
+tests\test_task_contract_entries.py:63: AssertionError
+---------------------------- Captured stdout call -----------------------------
+EvoAgent API: http://127.0.0.1:13086  (GET /health)
+============================== warnings summary ===============================
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_all_gates_passed_and_published_means_release_ready
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-982 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_fail_without_reason_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-984 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_g6_pass_without_published_commit_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-986 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_hard_blocking_failure_blocks_release
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-988 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_missing_evidence_file_is_reported
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-990 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 221: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_missing_gate_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-992 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_missing_range_item_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-994 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_pass_with_incomplete_evidence_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-996 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_pass_without_evidence_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-998 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_renumbered_gate_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-1000 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_renumbered_range_item_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-1002 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_repo_evidence_table_is_structurally_valid
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-1004 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_untested_gate_is_not_counted_as_passed
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-1006 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+tests/test_release_gates.py::ReleaseGateValidatorTest::test_untested_with_evidence_is_rejected
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-1008 (_readerthread)
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1515, in _readerthread
+      buffer.append(fh.read())
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\codecs.py", line 322, in decode
+      (result, consumed) = self._buffer_decode(data, self.errors, final)
+  UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbe in position 220: invalid start byte
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_ledger_drift.py::TestNoDrift::test_all_ledgers_have_no_drift
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_all_gates_passed_and_published_means_release_ready
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_fail_without_reason_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_g6_pass_without_published_commit_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_hard_blocking_failure_blocks_release
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_missing_evidence_file_is_reported
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_missing_gate_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_missing_range_item_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_pass_with_incomplete_evidence_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_pass_without_evidence_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_renumbered_gate_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_renumbered_range_item_is_rejected
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_repo_evidence_table_is_structurally_valid
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_untested_gate_is_not_counted_as_passed
+FAILED tests/test_release_gates.py::ReleaseGateValidatorTest::test_untested_with_evidence_is_rejected
+FAILED tests/test_runtime_reservations.py::test_explicit_hint_does_not_allocate_a_phantom_classifier_call
+FAILED tests/test_task_contract_entries.py::TestTaskContractEntries::test_cli_entry_same_fields
+FAILED tests/test_task_contract_entries.py::TestTaskContractEntries::test_cmd_task_with_contract_kwargs
+FAILED tests/test_task_contract_entries.py::TestTaskContractEntries::test_illegal_model_fields_rejected
+FAILED tests/test_task_contract_entries.py::TestTaskContractEntries::test_rest_entry_persists_full_contract
+20 failed, 1758 passed, 1 skipped, 14 warnings in 377.53s (0:06:17)

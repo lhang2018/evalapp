@@ -1,0 +1,64 @@
+--- a/evoagent/core/controller.py
++++ b/evoagent/core/controller.py
+@@ -953,10 +953,10 @@
+                 self._unregister_active(task.task_id)
+                 return gated
+         task.runtime_manifest["resume_versions"] = copy.deepcopy(task.version_manifest)
+-        if self.asset_binder is not None and task.runtime_manifest.get("asset_bindings"):
+-            # 旧 run 版本固定：恢复只验证绑定仍存在且摘要一致，不重新绑定
+-            self.asset_binder.verify_pinned(task.runtime_manifest["asset_bindings"])
+-        try:
++        # Verification failures also release the active-task registration.
++        try:
++            if self.asset_binder is not None and task.runtime_manifest.get("asset_bindings"):
++                self.asset_binder.verify_pinned(task.runtime_manifest["asset_bindings"])
+             run_id, started = self.runs.begin(task, task.version_manifest, recovery=recovery)
+         except BaseException:
+             self._unregister_active(task.task_id)
+@@ -1289,7 +1289,9 @@
+             if workflow is not None:
+                 pinned = existing.get(f"workflow:{workflow.workflow_id}"
+                                       f"@{workflow.version}")
+-                if pinned is not None and content_digest(
++                if pinned is None:
++                    raise ConsumptionError("当前执行实体未包含在冻结资产绑定中")
++                if content_digest(
+                         workflow_to_asset(workflow).content) != pinned["content_digest"]:
+                     raise ConsumptionError(
+                         f"工作流库内容与绑定资产摘要不一致（续跑）: "
+@@ -1297,7 +1299,9 @@
+             if expert is not None:
+                 pinned = existing.get(f"expert:{expert.expert_id}"
+                                       f"@{expert.version}")
+-                if pinned is not None and content_digest(
++                if pinned is None:
++                    raise ConsumptionError("当前执行实体未包含在冻结资产绑定中")
++                if content_digest(
+                         expert_to_asset(expert).content) != pinned["content_digest"]:
+                     raise ConsumptionError(
+                         f"专家注册表内容与绑定资产摘要不一致（续跑）: "
+@@ -1310,7 +1314,8 @@
+         from ..assets.consumption import ConsumptionError
+         if workflow is not None:
+             bindings.update(self.asset_binder.bind(
+-                "workflow", workflow.workflow_id))
++                "workflow", workflow.workflow_id,
++                prefer_ref=f"workflow:{workflow.workflow_id}@{workflow.version}"))
+             bound = bindings.get(f"workflow:{workflow.workflow_id}"
+                                  f"@{workflow.version}")
+             if bound is None:
+@@ -1322,9 +1327,13 @@
+                     f"工作流库内容与绑定资产摘要不一致: "
+                     f"{workflow.workflow_id}@{workflow.version}")
+         if expert is not None:
+-            bindings.update(self.asset_binder.bind("expert", expert.expert_id))
++            bindings.update(self.asset_binder.bind(
++                "expert", expert.expert_id,
++                prefer_ref=f"expert:{expert.expert_id}@{expert.version}"))
+             bound = bindings.get(f"expert:{expert.expert_id}"
+                                  f"@{expert.version}")
++            if bound is None:
++                raise ConsumptionError("专家绑定版本与执行版本不一致")
+             if bound is not None:
+                 drift = content_digest(expert_to_asset(expert).content)
+                 if drift != bound["content_digest"]:
