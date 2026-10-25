@@ -4203,9 +4203,18 @@
    "reviewer": null,
    "branch": "feature/user-direction",
    "base_commit": "0cf66722d00ab59f1405c6bca7f322c1bf893a9c",
-   "status": "in_progress",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-25",
+     "scope": "新增 evoagent/goals/assist.py（ProactiveAssistService 只读分析：授权范围白名单+记忆作用域过24-D策略fail-closed、近期整理证据四级分类 user_stated/recorded/inferred/unconfirmed、建议交付高价值门禁+四段式+建议≠授权不自动执行）与 tests/test_proactive_assist.py；不改任何共享文件",
+     "result": "新增测试31项全过；相关既有套件114 passed无回归；隔离全量（干净HEAD+本卡改动）2023 passed/1 skipped/0 failed；变异测试12/12捕获0存活。出口证据对应卡验收三条：F04-01来源可追溯（范围记录+逐条ref）、F04-02无高价值不建议（withheld=no_high_value_opportunity）、四段式含收益/权限/成本且零副作用",
+     "command": "python -m pytest tests/test_proactive_assist.py -q; python -m pytest tests/test_goal_opportunities.py tests/test_goal_governance.py tests/test_user_memory_control.py tests/test_goal_scheduler.py -q; python -m pytest tests/ -q（隔离worktree）; python .planning/2026-10-25-aln25a/mutation_test.py",
+     "log": ".planning/2026-10-25-aln25a/iso-full-server.log; mutation-results.log",
+     "delivery": "docs/协作开发/交付/ALN-25-A-有来源的主动帮助与机会建议.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/25-A-有来源的主动帮助与机会建议.md",
    "shared_files": [
     "android-app/App.tsx",
@@ -4231,9 +4240,18 @@
     "UX-20",
     "F04"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
+   "next_step": "待独立复核（审阅人待定），不自批；保留缺口：app.py 装配注入 MemoryControlService、HTTP 端点与结果持久化、App.tsx 入口（UX-21 归 25-B 同批）；F04-03/04 归 25-B",
    "working_basis": "2026-10-25 claude-main 认领开工，base_commit 0cf6672（并行在途：runtime/matrix.py 等未提交改动，不触碰）。精确修改点：新增 evoagent/goals/assist.py（独占新文件，ProactiveAssistService）与 tests/test_proactive_assist.py；不改 workboard.shared_files 登记的 store.py/context.py/binding.py 等共享文件。复用 OpportunityService（opportunities.py discover/assess/ranked/register）、GoalGovernor（governance.py report/reconcile）与 24-D MemoryControlService.scope_allowed 范围策略（memory_scope_policy 表）；app.py 装配与 API 端点属共享集成文件不在本卡写入边界，留保留缺口。需求锚点 UX-18/UX-19/UX-20 与 F04，出口证据引用 UX-F04-01/02 验收条件；F04-03/04（资源隔离/关闭主动帮助）归 25-B。",
-   "prerequisites": "仅需仓库与本地测试环境"
+   "prerequisites": "仅需仓库与本地测试环境",
+   "delivery": "docs/协作开发/交付/ALN-25-A-有来源的主动帮助与机会建议.md",
+   "ownership_history": [
+    {
+     "date": "2026-10-25",
+     "from": "待认领",
+     "to": "claude-main",
+     "reason": "用户指示继续认领；依赖 24-C 已 accepted；写入边界 evoagent/goals/ 与 App.tsx 当时无在途改动（git status 实时为准）；stream=models 纯本地测试环境，出口锚点 UX-F04-01/02"
+    }
+   ]
   },
   {
    "id": "ALN-25-B",
@@ -4639,11 +4657,11 @@
    "workpackage": "ALN-29",
    "title": "稳定版本、更新控制与回滚体验",
    "stream": "android",
-   "owner": null,
+   "owner": "zcode-next",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7",
+   "status": "in_progress",
    "blocker": null,
    "evidence": [],
    "card": "docs/协作开发/任务卡/29-E-稳定版本、更新控制与回滚体验.md",
@@ -4669,8 +4687,8 @@
     "UX-28",
     "GLOBAL"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
-   "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+   "next_step": "control.ts 视图/守卫/证据投影 + App 接线 + 测试",
+   "working_basis": "2026-10-25 zcode-next 认领。11-P/24-B 已accepted。交付=客户端更新控制视图层（control.ts 纯TS+App.tsx接线，GLOBAL-01 经既有 activationAllowed 钩子守卫）；生产信任材料联测与真机体验另验（记缺口）。",
    "prerequisites": "生产信任材料与可连接设备"
   },
   {
@@ -5485,10 +5503,10 @@
    "title": "生产长期目标推进与周期守护",
    "stream": "runtime",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "zcode-main",
    "branch": "feature/user-direction",
    "base_commit": "41fc372cf7e7d38bc27679f5e91ccc0844c7d091",
-   "status": "review",
+   "status": "accepted",
    "blocker": null,
    "evidence": [
     {
@@ -5500,6 +5518,11 @@
      "result": "专项10 passed；goal域112 passed；全量1815 passed/3 failed/1 skipped，3项失败均为他人未提交改动(budget线、cli.py漂移、release/identity.py运行期新建)，本卡仅新增文件未改既有模块",
      "log": ".planning/2026-10-25-aln13p/backend-tests.txt",
      "delivery": "docs/协作开发/交付/ALN-13-P-生产长期目标推进与周期守护.md"
+    },
+    {
+     "date": "2026-10-25",
+     "scope": "独立复核（zcode-main）：R1专项10过独立复跑、R2 primary_load_guard advances=0（前台任务不饿死）、R3清除前台后推进>0、R4 goal域112项回归、R5多进程租约/失败退避/幂等推进专项覆盖；转accepted",
+     "review_report": "docs/协作开发/验收/2026-10-25-ALN-13-P独立复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/13-P-生产长期目标推进与周期守护.md",
@@ -5804,11 +5827,11 @@
    "workpackage": "ALN-18",
    "title": "跨文件语义与LSP能力扩展",
    "stream": "runtime",
-   "owner": null,
+   "owner": "zcode-main",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7",
+   "status": "in_progress",
    "blocker": null,
    "evidence": [],
    "card": "docs/协作开发/任务卡/18-L-跨文件语义与LSP能力扩展.md",
@@ -5828,8 +5851,16 @@
     "A-70"
    ],
    "next_step": "按卡实施并提交证据；未经复核不记accepted",
-   "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-   "prerequisites": "语言服务依赖与真实项目"
+   "working_basis": "2026-10-25 zcode-main 认领开工。base_commit e16dbfe 为实际接手锚点（基线仍 candidate，prepared_candidate 21899e6 未发布）。新增独占模块 evoagent/tools/refactor.py（跨文件 AST 引用分析 + 固定语言服务版本与不可用诚实降级 + 诊断前后对照 + 歧义重构澄清），仅新增文件与测试，不改 coding/registry 等共享文件。",
+   "prerequisites": "语言服务依赖与真实项目",
+   "ownership_history": [
+    {
+     "date": "2026-10-25",
+     "from": "待认领",
+     "to": "zcode-main",
+     "reason": "用户指示继续开发；18-L 依赖 ALN-18-G 已交付 review，纯本地新模块与在途卡无文件重叠"
+    }
+   ]
   },
   {
    "id": "ALN-19-A",
