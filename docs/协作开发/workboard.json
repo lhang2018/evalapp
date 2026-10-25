@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "updated_at": "2026-10-25",
+ "updated_at": "2026-10-26",
  "purpose": "协作认领；不替代正式契约、原始 ALN 依赖或功能验收",
  "baseline": {
   "status": "published",
@@ -262,18 +262,13 @@
    "production_release": false
   },
   "latest_incremental_verification": {
-   "source_commit": "271378ef264939f4cc302dcfe0331becb31503d3",
-   "source_tree": "3d2f46ecc08f29d078fc9840e11af8fb31acc9ce",
-   "client_passed": 252,
+   "source_commit": "60e58e3dac99d310dec0fb113017ec77ee709a86",
+   "source_tree": "6eaf50a0b14506d24f34a85eb2861af85546d944",
+   "client_passed": 372,
    "typecheck": "passed",
-   "android_build": "passed",
    "device_verified": false,
-   "evidence": ".planning/2026-10-25-notification-fix/committed-evidence.json",
-   "python_evidence_mode": "reused_identical_backend_and_test_trees",
-   "python_source_commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
-   "python_passed": 1661,
-   "python_skipped": 1,
-   "scope": "精确Git归档客户端252、TypeScript5.9.3与ARM64构建；后端同树沿用1661/1，非本轮重跑；原生通知实际投递待真机"
+   "evidence": ".planning/2026-10-25-developed-review-6/validation.json",
+   "scope": "固定Git归档客户端372/372与TypeScript5.9.3通过；本轮仅客户端，未重跑Python或Android原生构建，未操作真机；不替换已发布基线"
   },
   "incremental_verification_history": [
    {
@@ -287,6 +282,20 @@
     "python_skipped": 1,
     "source_tree": "0fc58293c39850524d215bb14b1f95ca4fe3d00c",
     "scope": "新HEAD客户端/类型检查实测；Python源码与tests相对f550d90零差异，后端1661/1沿用而非本轮重跑；不替换候选或扩大真机证明"
+   },
+   {
+    "source_commit": "271378ef264939f4cc302dcfe0331becb31503d3",
+    "source_tree": "3d2f46ecc08f29d078fc9840e11af8fb31acc9ce",
+    "client_passed": 252,
+    "typecheck": "passed",
+    "android_build": "passed",
+    "device_verified": false,
+    "evidence": ".planning/2026-10-25-notification-fix/committed-evidence.json",
+    "python_evidence_mode": "reused_identical_backend_and_test_trees",
+    "python_source_commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
+    "python_passed": 1661,
+    "python_skipped": 1,
+    "scope": "精确Git归档客户端252、TypeScript5.9.3与ARM64构建；后端同树沿用1661/1，非本轮重跑；原生通知实际投递待真机"
    }
   ]
  },
@@ -5804,6 +5813,16 @@
      "result": "已收尾并通过客户端全量；真机端到端通知复验仍受设备无已验证互联网限制；需另一审阅人复核（claude 已停止复核，修复者不自评）",
      "log": "",
      "delivery": "docs/协作开发/验收/2026-10-25-复核问题修复记录-29C-12V.md"
+    },
+    {
+     "date": "2026-10-26",
+     "scope": "接续通知恢复复核：快照读取失败与基线读取失败两项缺陷修复；真实组装层回归、投递拒绝与标记写失败边界",
+     "source_commit": "60e58e3dac99d310dec0fb113017ec77ee709a86",
+     "functional_commit": "60e58e3dac99d310dec0fb113017ec77ee709a86",
+     "source_tree": "6eaf50a0b14506d24f34a85eb2861af85546d944",
+     "result": "固定Git归档客户端372 passed/0 failed，tsc退出码0；本轮新临时目录与junction已清理。修复者codex-runtime不自批；未操作真机，端到端缺口保留",
+     "log": ".planning/2026-10-25-developed-review-6/validation.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-第六批通知恢复接续复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/12-V-通知、离线与系统重启真机矩阵.md",
@@ -5825,7 +5844,7 @@
     "G0",
     "G3"
    ],
-   "next_step": "claude 复核已停止、其未提交改动已由 dsh-lead 收尾(3283819)：基线化接线+测试8→13项，通知相关node37/客户端366/tsc0全绿；仍需另一名审阅人复核(zcode-main/zcode-next)，且真机端到端通知复验需有验证互联网的设备",
+   "next_step": "codex-runtime 接续 Claude 复核，发现并修复 3283819 的两项异常窗口(60e58e3)：前态缺失不建空基线，基线读取失败不覆盖待补发标记；固定提交客户端372/372、tsc0。新增修复待另一审阅人复核；真机通知端到端仍需授权空闲窗口与有已验证互联网的设备，不关闭整卡。",
    "working_basis": "以61451f3ff2251dd042d19d74e10bad87eb05a46d（feature/user-direction HEAD，执行起点）作为实际接手锚点；最终证据提交6806f57a9513bb206d14bb67613b4d5bbcc737ab；基线仍为candidate、prepared_candidate 21899e6 未发布",
    "prerequisites": "可连接设备，记录APK/JS精确版本",
    "delivered_commit": "6806f57a9513bb206d14bb67613b4d5bbcc737ab",
@@ -5854,6 +5873,12 @@
      "from": "review(claude-main 停止复核)",
      "to": "review",
      "reason": "接续 claude 半成品改动收尾并提交3283819；reviewer置空待他人复核"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review(claude-main 停止，dsh-lead 已收尾3283819)",
+     "to": "review",
+     "reason": "用户指派 codex-runtime 接续复核；新增60e58e3修复并验证，原owner/交付历史保留，修复待独立复核与真机验收"
     }
    ]
   },
@@ -8181,6 +8206,23 @@
    "independent_review": false,
    "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
    "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+  },
+  {
+   "id": "discovered-60e58e3dac99",
+   "title": "fix(ALN-12-V): 保留通知基线读取失败时的待补发状态",
+   "workpackage": "ALN-12",
+   "source_commit": "60e58e3dac99d310dec0fb113017ec77ee709a86",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "android-app/src/device/notifications.ts",
+    "android-app/src/offline/backgroundRunner.ts",
+    "android-app/test/device/notificationRecovery.test.ts",
+    "android-app/test/offline/backgroundNotificationReview.test.ts"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-第六批通知恢复接续复核.md",
+   "scope": "固定提交客户端372/372与tsc0；尚未独立接受，未纳入已发布基线，真机通知端到端未完成"
   }
  ],
  "requirement_batches": [
@@ -8287,6 +8329,23 @@
    "fix_commit": "3331898fcddb78b4b271db152fbd408b7c981889",
    "report": "docs/协作开发/验收/2026-10-25-第五批补绑凭据与重构复核.md",
    "evidence": ".planning/2026-10-25-developed-review-5/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false
+  },
+  {
+   "id": "REVIEW-2026-10-26-DEVELOPED-6",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-12-V"
+   ],
+   "fixed_cards": [
+    "ALN-12-V"
+   ],
+   "fix_commit": "60e58e3dac99d310dec0fb113017ec77ee709a86",
+   "report": "docs/协作开发/验收/2026-10-26-第六批通知恢复接续复核.md",
+   "evidence": ".planning/2026-10-25-developed-review-6/validation.json",
    "status": "fixes_delivered_pending_independent_recheck",
    "product_acceptance_added": false,
    "published_by_review": false

@@ -1,0 +1,53 @@
+(node:78048) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/notificationRecovery.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 没有标记存储时保持旧语义：同步已先行完成不补发 (0.8755ms)
+✔ 同步已先行完成时用持久化标记补发一次且不重复 (0.4064ms)
+✔ 本次跃迁仍会投递并写入标记（不因标记路径重复） (0.192ms)
+✔ 投递失败不写标记，下次 run 重试 (0.3184ms)
+✔ 标记读取失败时退化为跃迁判断且不崩溃 (0.2158ms)
+✔ 已有持久标记会抑制陈旧快照中的重复跃迁 (0.1555ms)
+✔ 首次初始化只基线化历史终态，后续新终态仍会通知 (0.3028ms)
+✔ 并发通知器共享串行门禁，不会同时穿过标记检查 (0.6979ms)
+✔ 无标记存储时 initializeExisting 是安全空操作 (0.1449ms)
+✔ initializeExisting 幂等：基线就绪后不再重复写标记 (0.1729ms)
+✔ 基线写失败不抛错且保持未就绪，恢复后补发可用 (0.1913ms)
+✔ 基线读取失败时补发被禁用但不崩溃 (0.0977ms)
+✔ 任务标记读取失败但基线就绪时仍按跃迁投递 (0.1497ms)
+✔ 基线读取暂时失败不得把待补发任务误写为历史已通知 (0.1784ms)
+✔ 系统拒绝投递不写标记，下一通知器仍可补发 (0.1434ms)
+✔ 系统接受后标记写失败允许重试，不能宣称恰好一次 (0.2951ms)
+(node:75864) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/backgroundNotificationReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[background-sync] online=true flushed=true refreshed=true notified=0 error=none
+[background-sync] online=true flushed=true refreshed=true notified=0 error=none
+[background-sync] online=true flushed=true refreshed=true notified=0 error=none
+[background-sync] online=false flushed=false refreshed=false notified=0 error=offline
+[background-sync] online=true flushed=true refreshed=true notified=1 error=none
+[background-sync] online=true flushed=true refreshed=false notified=0 error=sync upload failed
+[background-sync] online=true flushed=true refreshed=true notified=1 error=none
+[background-sync] online=true flushed=true refreshed=false notified=0 error=sync upload failed
+[background-sync] online=true flushed=true refreshed=true notified=0 error=none
+[background-sync] online=true flushed=true refreshed=false notified=0 error=sync upload failed
+[background-sync] online=true flushed=true refreshed=true notified=1 error=none
+[background-sync] online=true flushed=true refreshed=false notified=0 error=sync upload failed
+✔ native-lookup notification failure preserves actual successful sync and refresh (19.6327ms)
+✔ after-read notification failure preserves actual successful sync and refresh (0.8612ms)
+✔ before-read notification failure preserves actual successful sync and refresh (0.9859ms)
+✔ offline sync retains its error and does not invoke the notification bridge (0.233ms)
+✔ actual background assembly still posts a successful transition (0.7269ms)
+✔ a resolved unsuccessful SyncResult is preserved as a flush failure, without notification (0.9039ms)
+✔ assembly baselines historical DONE before refresh but not a newly completed task (1.0822ms)
+✔ missing pre-sync snapshot cannot establish an empty baseline and replay history (0.8178ms)
+✔ a missing snapshot preserves recovery when an earlier reliable baseline exists (1.6861ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 153.3178
