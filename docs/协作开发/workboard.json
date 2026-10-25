@@ -6027,7 +6027,7 @@
       "reviewer": "zcode-main",
       "branch": "feature/user-direction",
       "base_commit": "d5579f51f72b77e070db38bf539a2b93338b9122",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         "代码: 054a0bd9（coding_consumption.py 消费运行时 + 6 项专项含真实执行内核 E2E）",
@@ -6038,6 +6038,13 @@
           "date": "2026-10-25",
           "scope": "独立复核（zcode-main）：独立构造真实项目探针——R2安装绑定(pack_id/tool_ids/root)、R3 coding_edit磁盘真实变化（内容断言）、R4快照回滚恢复、R5无LSP宣称、R6非法根ConsumptionError拒；磁盘事实断言+消费语义绑定06-R+破坏性回滚闭环确认；转accepted",
           "review_report": "docs/协作开发/验收/2026-10-25-ALN-18-G独立复核.md"
+        },
+        {
+          "date": "2026-10-25",
+          "scope": "固定提交a1b3a31独立复验（zcode-main，detached worktree固定树）：41/41独立探针——R1根冻结+四类路径穿越全拒、R2根换链接/junction与项目内符号链接拒不跟随、R3排除规则持久且比较同规则、R4上限与跨根拒绝、R5归档身份=全相对路径sha256不碰撞+空文件skip:empty+删除skip:deleted、R6预检先行（路径变目录在破坏前整体拒绝）+删除可重建+未知新文件不删、R7注册表同根幂等/跨根拒/契约篡改拒沿用/存量未绑定拒覆盖、R8真实语法失败E2E（compileall rc=1 executed=True→快照回滚→rc=0）；交付测试复跑92 passed+collab_base 32 passed",
+          "review_report": "docs/协作开发/验收/2026-10-25-ALN-18-G固定提交复验.md",
+          "probes": ".planning/2026-10-25-recheck-18g-28a/probe_18g.py",
+          "result": "accepted"
         }
       ],
       "card": "docs/协作开发/任务卡/18-G-App与编程专家真实消费能力包.md",
@@ -6064,7 +6071,7 @@
         "F02",
         "A-60"
       ],
-      "next_step": "按固定修复提交a1b3a31独立复核：快照恢复/路径与根边界/排除目录/消费注册表根绑定/真实语法失败证据；生产/App/真实环境范围依原交付另验，不关闭整包。",
+      "next_step": "固定提交a1b3a31独立复验通过转accepted；App自动装配/端侧消费/coding_test重场景E2E/LSP不做按ALN-18整包另验，不关闭整包。",
       "working_basis": "2026-10-25 zcode-next 认领（12-V 因真机被用户占用转 blocked 让位）。复用 18-A~F 编程工具集、06-R 精确版本消费、24-A ArtifactStore；写入边界 experts/+tools/+android-app/src（客户端仅证据投影如需）。受控真实项目=临时目录内真实 Python 文件（非单测夹具）。",
       "prerequisites": "受控真实项目",
       "review_history": [
@@ -6083,7 +6090,8 @@
         "fix_commit": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
         "scope": "快照恢复/路径与根边界/排除目录/消费注册表根绑定/真实语法失败证据",
         "report": "docs/协作开发/验收/2026-10-25-第三批交叉审查与真实性修复.md",
-        "status": "fixes_delivered_pending_independent_recheck"
+        "status": "independent_recheck_passed",
+        "recheck_report": "docs/协作开发/验收/2026-10-25-ALN-18-G固定提交复验.md"
       }
     },
     {
