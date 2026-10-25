@@ -3677,9 +3677,14 @@
    "reviewer": null,
    "branch": "feature/user-direction",
    "base_commit": "957369be958691748430db8b6a1c4c5b9c7f5d9e",
-   "status": "in_progress",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    "代码: 3edc790 ArtifactStore+API端点 + 5cea1aa 产物用户视图组件",
+    "测试: test_delivery_artifacts 8项 + artifactsView.test 6项；E2E探针（真实运行→产物→列表→预览→删除→归零）",
+    "交付: docs/协作开发/交付/ALN-24-A-真实成果交付验收与局部修改.md",
+    "App产物卡片挂载等23-F语音会话App.tsx提交后串行合入"
+   ],
    "card": "docs/协作开发/任务卡/24-A-真实成果交付、验收与局部修改.md",
    "shared_files": [
     "evoagent/core/controller.py",
@@ -3754,7 +3759,7 @@
     "UX-13",
     "F02"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
+   "next_step": "待独立复核（审阅人待定）；App产物卡片挂载等23-F提交后串行",
    "working_basis": "2026-10-25 zcode-main 认领开工。23-C工作区投影已交付review，本卡消费其 checkpoint 权威数据构建产物交付层。产物标识/校验/预览下载/局部修改；与Task.result_evidence复用，不建第二套产物权威。",
    "prerequisites": "仅需仓库与本地测试环境"
   },
@@ -3767,9 +3772,13 @@
    "reviewer": null,
    "branch": "feature/user-direction",
    "base_commit": "9901f170f939e8f302ee8f528700fc2bc3a42503",
-   "status": "in_progress",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    "代码: af5e66e features/controls/paths.ts（availableControls/planGoalChange/checkRecoverySafety）",
+    "测试: controls.test 6项（取消+暂停/暂停继续/终态零动作/确认重提/目标变更/安全恢复）；客户端314全绿",
+    "验收对齐: F03-01~05语义在客户端投影层就绪；授权不随目标扩大；未知副作用先对账"
+   ],
    "card": "docs/协作开发/任务卡/23-E-用户控制、目标变更与安全恢复.md",
    "shared_files": [
     "evoagent/core/controller.py",
@@ -3797,7 +3806,7 @@
     "UX-10",
     "F03"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
+   "next_step": "待独立复核（审阅人待定）；App控制路径UI挂载等23-A/F提交后串行",
    "working_basis": "2026-10-25 zcode-main 认领开工。23-C 工作区投影已交付review，07-C 原子绑定已交付review；本卡消费两者产出构建用户控制路径。",
    "prerequisites": "设备路径验收需要已授权真机；可先做后端/客户端自动化"
   },
@@ -4213,9 +4222,18 @@
    "reviewer": null,
    "branch": "feature/user-direction",
    "base_commit": "af5e66e3abba81f43e91031781b315b42f5dea9a",
-   "status": "in_progress",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-25",
+     "scope": "故障经验知识库：来源/可信度/适用域/版本与撤销 + 注入前适用性门禁 + 跨专家前后对照迁移验证；新增 evoagent/knowledge/ 独占模块与 21 项测试",
+     "result": "tests/test_knowledge.py 21 passed；后端全量 1889 passed / 1 failed(附件响应头，与本卡无关) / 1 skipped",
+     "command": "python -m pytest tests/test_knowledge.py -q; python -m pytest tests/ -q",
+     "log": ".planning/2026-10-25-aln27a/backend-tests.txt",
+     "delivery": "docs/协作开发/交付/ALN-27-A-故障经验沉淀与跨专家迁移验证.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/27-A-故障经验沉淀与跨专家迁移验证.md",
    "shared_files": [
     "evoagent/evolution/controller.py",
@@ -4242,7 +4260,8 @@
     "B-81",
     "B-88"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
+   "next_step": "待独立复核（审阅人待定）；真实注入路径（记忆/上下文装配、专家运行时）与真实前后数据集接入另验，本卡只交付门禁与验证器",
+   "delivery": "docs/协作开发/交付/ALN-27-A-故障经验沉淀与跨专家迁移验证.md",
    "working_basis": "2026-10-25 zcode-main 认领开工。base_commit af5e66e 为实际接手锚点（基线仍 candidate，prepared_candidate 21899e6 未发布）。新增独占模块 evoagent/knowledge/（来源/可信度/适用域/版本与撤销 + 注入前适用性门禁 + 跨专家前后对照迁移验证），仅新增文件与测试，不改 controller/api/shared 既有文件。",
    "prerequisites": "仅需仓库与本地测试环境",
    "ownership_history": [
@@ -5300,13 +5319,24 @@
    "workpackage": "ALN-17",
    "title": "空机部署、组合恢复与RTO/RPO",
    "stream": "integration",
-   "owner": null,
+   "owner": "dsh-lead",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "26749474e41827b4e775b491ffe00bbe57928e15",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-25",
+     "scope": "空机部署(三库+部署身份+结构/版本校验) + 组合恢复(安全备份→恢复→行数/身份对账) + 真实RTO/RPO与损失窗口 + 不兼容拒绝与失败回退；8项专项与备份域27项回归通过，全量零失败",
+     "source_commit": "b38c5aceb03220bf96ce18d960f9c2b4ebc0a977",
+     "functional_commit": "b38c5aceb03220bf96ce18d960f9c2b4ebc0a977",
+     "source_tree": "d37d4b9bea2c0f3398a1eae91fb1d881fe1c2621",
+     "result": "专项8 passed；备份/恢复域27 passed；全量1898 passed/0 failed/1 skipped。实测证据 .planning/2026-10-25-aln17p/rto-rpo-evidence.json：兼容恢复 RTO 0.025s/RPO 0.086s、伪造高版本备份被拒且不动数据、受控故障回退行数复原。边界：依赖 ALN-11-P(生产中签名,在途)未消费，签名制品恢复与真实空机生产环境未验",
+     "log": ".planning/2026-10-25-aln17p/rto-rpo-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-17-P-空机部署、组合恢复与RTO-RPO.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/17-P-空机部署、组合恢复与RTO-RPO.md",
    "shared_files": [],
    "requirement_batch": "PRODUCT-2026-10-25",
@@ -5320,9 +5350,19 @@
     "G3",
     "G7"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
-   "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-   "prerequisites": "干净部署环境与真实备份"
+   "next_step": "待独立复核：空机部署结构/版本校验、组合恢复行数与实例身份对账、真实RTO/RPO与损失窗口、不兼容拒绝不动数据、受控故障回退行数复原的证据见交付文档与 .planning/2026-10-25-aln17p/；审阅人未定，不自批为独立验收；生产空机环境与签名制品恢复(依赖ALN-11-P)属后续，ALN-17整包不关闭",
+   "working_basis": "以26749474e41827b4e775b491ffe00bbe57928e15（feature/user-direction HEAD）作为实际接手锚点；最终提交b38c5aceb03220bf96ce18d960f9c2b4ebc0a977；基线仍为candidate、prepared_candidate 21899e6 未发布",
+   "prerequisites": "干净部署环境与真实备份",
+   "delivered_commit": "b38c5aceb03220bf96ce18d960f9c2b4ebc0a977",
+   "delivery": "docs/协作开发/交付/ALN-17-P-空机部署、组合恢复与RTO-RPO.md",
+   "ownership_history": [
+    {
+     "date": "2026-10-25",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户指示继续；17-P 写入边界 recovery/deployment 为新建包、shared_files 为空无冲突；依赖 ALN-11-P 在途，本卡先交付不消费签名制品的部署/恢复与RTO/RPO"
+    }
+   ]
   },
   {
    "id": "ALN-18-G",
