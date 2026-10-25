@@ -4405,11 +4405,16 @@
       "stream": "runtime",
       "owner": "zcode-next",
       "reviewer": null,
-      "branch": "main",
+      "branch": "feature/user-direction",
       "base_commit": "bf706e8a2764a332f5e4fd6aaecb8e7ee1c799d3",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        "代码: 本卡提交 feat(ALN-06-R)（assets/consumption.py 新增绑定协议；repository.versions_of 只读扩展；controller 可选 asset_binder 三处接线；15 项专项测试）",
+        "测试: 专项 15 passed；相关回归 115 passed；全量 1699 passed / 1 skipped / 0 failed（goal_opportunities 瞬态失败经 stash 对照排除，与本卡无关）",
+        "交付: docs/协作开发/交付/ALN-06-R-精确能力版本的运行时消费.md（绑定/退役拒绑/旧run固定/库漂移拒绝语义与证据）",
+        "未注入 binder 时 controller 行为零差异（专项断言）；生产装配与 App/专家真实消费链按 ALN-06 整包另验"
+      ],
       "card": "docs/协作开发/任务卡/06-R-精确能力版本的运行时消费.md",
       "shared_files": [
         "evoagent/core/controller.py",
@@ -4424,8 +4429,8 @@
         "GLOBAL",
         "G6"
       ],
-      "next_step": "实现执行步骤对不可变资产/依赖闭包的精确版本+digest消费绑定；退役拒新绑定；旧run版本固定",
-      "working_basis": "2026-10-25 zcode-next（新身份，承接原zcode-main流）按分期阶段1认领开工。base_commit bf706e8 为实际接手锚点。依赖ALN-06-A已accepted。写入边界：evoagent/assets/（新增）+ controller/experts最小接线；server.py与check_collaboration_plan.py有其他会话在途改动，本卡不触碰。",
+      "next_step": "待独立复核（漂移判定规范化/pinned 豁免状态的安全论证/版本选择规则）；App 装配注入与内置专家资产化流程按整包范围另行推进",
+      "working_basis": "2026-10-25 zcode-next（新身份，承接原zcode-main流）按分期阶段1认领开工。base_commit bf706e8 为实际接手锚点。依赖ALN-06-A已accepted。写入边界：evoagent/assets/（新增）+ controller/experts最小接线；server.py与check_collaboration_plan.py有其他会话在途改动，本卡不触碰。 实际交付在 feature/user-direction 分支（随项目切换）。",
       "prerequisites": "本地制品及运行环境"
     },
     {
