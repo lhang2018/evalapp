@@ -68,14 +68,22 @@ export function isTerminalServerStatus(status: string): boolean {
 export function waitReasonOf(task: {
   server_status?: string;
   waiting_approvals?: string[];
-  waiting_request?: { request_id?: string; question?: string } | null;
+  waiting_request?: {
+    request_id?: string;
+    question?: string;
+    answered?: boolean;
+  } | null;
   last_sync_error?: string | null;
   status?: string;
 }): TaskWaitReason {
+  // 服务端终态：任何等待动作/原因都过期，一律清零
+  if (task.server_status && isTerminalServerStatus(task.server_status)) {
+    return { reason: null, needsUserAction: false };
+  }
   if (task.waiting_approvals && task.waiting_approvals.length) {
     return { reason: "等待你审批确认", needsUserAction: true };
   }
-  if (task.waiting_request) {
+  if (task.waiting_request && !task.waiting_request.answered) {
     return { reason: "等待你补充信息", needsUserAction: true };
   }
   if (task.status === "NEEDS_RECONCILE") {

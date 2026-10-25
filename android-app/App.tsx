@@ -68,6 +68,12 @@ import { DeviceBroker } from "./src/device/broker.ts";
 import { NativeDeviceTransport } from "./src/device/nativeTransport.ts";
 import type { NativeDeviceModuleLike } from "./src/device/nativeTransport.ts";
 import { formatLocalTime } from "./src/offline/policy.ts";
+import { taskViewOf } from "./src/features/taskview/state.ts";
+import {
+  canExecute,
+  projectUserCapabilities,
+} from "./src/features/capabilities/status.ts";
+import type { UserCapabilityView } from "./src/features/capabilities/status.ts";
 import { UpdateManager } from "./src/update/manager.ts";
 import { ApiUpdateTransport } from "./src/update/apiTransport.ts";
 import { TrustedKeyRing } from "./src/update/trust.ts";
@@ -202,6 +208,12 @@ export default function App(): React.JSX.Element {
   const [bundleMessage, setBundleMessage] = useState<string | null>(null);
   const [bundleBusy, setBundleBusy] = useState(false);
   const [runtimeView, setRuntimeView] = useState<BundleRuntimeState | null>(null);
+  const [feedbackDrafts, setFeedbackDrafts] = useState<
+    Record<string, string>>({});
+  const [feedbackMsgs, setFeedbackMsgs] = useState<Record<string, string>>({});
+  const [feedbackBusy, setFeedbackBusy] = useState<string | null>(null);
+  const [capabilityViews, setCapabilityViews] = useState<
+    UserCapabilityView[] | null>(null);
   const [exportPreview, setExportPreview] = useState<ExportPreview | null>(null);
   const [exporting, setExporting] = useState(false);
   const [exportSensitive, setExportSensitive] = useState(false);
@@ -316,6 +328,46 @@ export default function App(): React.JSX.Element {
       voice: new VoiceService(voiceModule ?? null),
     };
   }, [baseUrl]);
+
+  const submitFeedback = useCallback(async (task: LocalTask) => {
+    const text = (feedbackDrafts[task.local_task_id] ?? "").trim();
+    if (!text || feedbackBusy !== null) return;
+    setFeedbackBusy(task.local_task_id);
+    try {
+      const out = await services.client.postFeedback({
+        category: "problem",
+        text,
+        task_id: task.server_task_id ?? undefined,
+        run_id: task.current_run_id ?? undefined,
+      });
+      setFeedbackMsgs((m) => ({
+        ...m,
+        [task.local_task_id]: out.aggregated
+          ? `已并入同类反馈（第 ${out.count} 条）`
+          : "已提交，将关联此任务的运行证据",
+      }));
+      setFeedbackDrafts((d) => ({ ...d, [task.local_task_id]: "" }));
+    } catch (e) {
+      setFeedbackMsgs((m) => ({
+        ...m,
+        [task.local_task_id]:
+          e instanceof Error ? e.message : String(e),
+      }));
+    } finally {
+      setFeedbackBusy(null);
+    }
+  }, [services, feedbackDrafts, feedbackBusy]);
+
+  const loadCapabilityViews = useCallback(async () => {
+    try {
+      const payload = await services.client.capabilitiesStatus();
+      setCapabilityViews(projectUserCapabilities(payload, {
+        accessibilityAvailable: deviceAvailable,
+      }));
+    } catch {
+      setCapabilityViews(null);
+    }
+  }, [services, deviceAvailable]);
 
   const reloadLocal = useCallback(async () => {
     setLocalTasks(await services.tasks.list());
@@ -441,6 +493,12 @@ export default function App(): React.JSX.Element {
     },
     [online, services]
   );
+
+  useEffect(() => {
+    if (section === "permissions" && capabilityViews === null) {
+      void loadCapabilityViews();
+    }
+  }, [section, capabilityViews, loadCapabilityViews]);
 
   useEffect(() => {
     void loadCenter(section);
@@ -1395,7 +1453,7 @@ export default function App(): React.JSX.Element {
             <View key={task.local_task_id} style={s.card}>
               <View style={s.row}>
                 <Text style={[s.status, statusColor(task.status)]}>
-                  {task.status}
+                  {taskViewOf(task).label}
                 </Text>
                 {task.status === "NEEDS_RECONCILE" && (
                   <View style={s.action}>
@@ -1417,6 +1475,38 @@ export default function App(): React.JSX.Element {
                   )}
               </View>
               <Text style={s.goal}>{task.goal}</Text>
+              {taskViewOf(task).wait.reason && (
+                <Text style={s.hint}>等待：{taskViewOf(task).wait.reason}</Text>
+              )}
+              {(task.server_status === "SUCCEEDED" ||
+                task.server_status === "FAILED" ||
+                task.server_status === "CANCELLED" ||
+                task.status === "DONE") && (
+                <View style={s.gap}>
+                  <TextInput
+                    style={s.input}
+                    placeholder="反馈问题（自动绑定此任务与运行证据）"
+                    value={feedbackDrafts[task.local_task_id] ?? ""}
+                    onChangeText={(value) => setFeedbackDrafts((d) => ({
+                      ...d, [task.local_task_id]: value,
+                    }))}
+                    maxLength={4000}
+                    multiline
+                  />
+                  <Button
+                    title={feedbackBusy === task.local_task_id
+                      ? "提交中…" : "提交反馈"}
+                    disabled={feedbackBusy !== null ||
+                      !(feedbackDrafts[task.local_task_id] ?? "").trim()}
+                    onPress={() => void submitFeedback(task)}
+                  />
+                  {!!feedbackMsgs[task.local_task_id] && (
+                    <Text style={s.hint}>
+                      {feedbackMsgs[task.local_task_id]}
+                    </Text>
+                  )}
+                </View>
+              )}
               {!!task.waiting_approvals?.length && task.server_task_id && (
                 <ApprovalPanel client={services.client} ids={task.waiting_approvals}
                   taskId={task.server_task_id} online={online} />
@@ -1540,6 +1630,41 @@ export default function App(): React.JSX.Element {
             </Text>
             <Text style={s.hint}>文件/通知：当前版本未使用</Text>
             <Button title="打开应用权限设置" onPress={() => void Linking.openSettings()} />
+          </View>
+          <View style={s.card}>
+            <Text style={s.goal}>能力状态（六档）</Text>
+            <Text style={s.hint}>
+              状态来自服务端权威投影：可用 / 待授权 / 已拒绝 / 依赖缺失 /
+              未验证 / 未注册；被拒绝的能力不会执行。
+            </Text>
+            {capabilityViews === null && (
+              <Text style={s.hint}>
+                {section === "permissions" ? "加载中…" : "进入本页后加载"}
+              </Text>
+            )}
+            {(capabilityViews ?? []).map((cap) => (
+              <View key={cap.tool_id} style={s.gap}>
+                <Text style={s.mono}>
+                  {cap.tool_id} · {cap.version || "—"}
+                </Text>
+                <Text style={s.hint}>
+                  {cap.state === "ready"
+                    ? "✅ 可用"
+                    : cap.state === "needs_permission"
+                    ? "⏳ 待授权"
+                    : cap.state === "blocked"
+                    ? "⛔ 不可执行"
+                    : cap.state === "needs_setup"
+                    ? "🛠 需要设置"
+                    : "❔ 未知"}
+                  {" · "}
+                  {cap.reason}
+                </Text>
+                {!!cap.recovery && (
+                  <Text style={s.hint}>恢复路径：{cap.recovery}</Text>
+                )}
+              </View>
+            ))}
           </View>
           <Text style={s.section}>无障碍设备操作</Text>
           <Text style={s.hint}>

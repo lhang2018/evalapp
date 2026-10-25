@@ -25,6 +25,7 @@ import type {
 } from "./update/types.ts";
 import { headerFileName } from "./offline/packageImport.ts";
 import type { UserInputRequest } from "./offline/types.ts";
+import type { CapabilitiesStatusPayload } from "./features/capabilities/status.ts";
 
 export interface TaskInfo {
   current_run_id?: string | null;
@@ -568,6 +569,21 @@ export class EvoAgentClient {
 
   version() {
     return this.req<VersionInfo>("/version");
+  }
+
+  capabilitiesStatus() {
+    return this.req<CapabilitiesStatusPayload>("/capabilities/status");
+  }
+
+  postFeedback(input: {
+    category: string;
+    text: string;
+    task_id?: string;
+    run_id?: string;
+    evidence_refs?: string[];
+  }) {
+    return this.req<{ feedback_id: string; aggregated: boolean; count: number }>(
+      "/feedback", { method: "POST", body: JSON.stringify(input) });
   }
 }
 

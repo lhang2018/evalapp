@@ -36,6 +36,11 @@ const CHAT_SIGNALS: RegExp[] = [
   /[?？]\s*$/,
 ];
 
+/** 疑问/解释型开场：概念问答保持轻量聊天（即使提到文件/运行等词）。 */
+const QUESTION_STARTS = /^(什么是|为什么|如何|怎么|怎样|解释一下|解释|讲讲|聊聊|帮我解释|帮我看看|帮我理解|帮我对比一下原理|你觉得)/;
+/** 复合执行句：解释之后接明确的执行段（然后/再/接着 + 生成/打开等）。 */
+const EXECUTION_AFTER_SPLIT = /(然后|再|接着|同时)[^。？?]*?(帮我|生成|打开|保存|整理|发送|跑|执行)/;
+
 export function classifyMode(
   input: string,
   opts: { explicit?: ChatMode | null } = {},
@@ -46,6 +51,12 @@ export function classifyMode(
   const text = (input || "").trim();
   if (!text) {
     return { mode: "chat", source: "default", signal: null };
+  }
+  if (EXECUTION_AFTER_SPLIT.test(text)) {
+    return { mode: "work", source: "input_signal", signal: "复合请求包含执行段" };
+  }
+  if (QUESTION_STARTS.test(text)) {
+    return { mode: "chat", source: "input_signal", signal: null };
   }
   for (const [pat, label] of WORK_SIGNALS) {
     if (pat.test(text)) {
@@ -99,9 +110,12 @@ export interface TaskSeed {
  */
 export function buildTaskSeed(turns: ChatTurn[]): TaskSeed {
   const users = turns.filter((t) => t.role === "user" && t.text.trim());
-  const goal = users.length
-    ? (users.findLast((t) => t.correction) ?? users[users.length - 1]).text.trim()
-    : "";
+  // 后来明确的新目标覆盖过去的纠正；确认的约束是参数不是目标，
+  // goal 取最后一条非约束的用户消息
+  const goalCandidates = users.filter((t) => !t.confirmed);
+  const goal = goalCandidates.length
+    ? goalCandidates[goalCandidates.length - 1].text.trim()
+    : (users[users.length - 1]?.text.trim() ?? "");
   const constraints: string[] = [];
   const corrections: string[] = [];
   const completedDigest: string[] = [];
