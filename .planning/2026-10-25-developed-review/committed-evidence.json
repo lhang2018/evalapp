@@ -1,0 +1,87 @@
+{
+  "runtime_source_commit": "6b6a1234b125937f61b007cf4e2189e891d5f656",
+  "evidence_correction_commit": "9239382d8287de313f21cf608c1a21af1370dd30",
+  "controller_fix_also_in": "0fda8736327a2931be52dedb47a1466bcda88424",
+  "snapshot": {
+    "source_commit": "6b6a1234b125937f61b007cf4e2189e891d5f656",
+    "source_tree": "f37c6932afb6f034b7556919caf9a85aebc4c0b7",
+    "snapshot": "E:\\evalapp\\outputs\\developed-review-6b6a123",
+    "archive_sha256": "a849a35dffb59ff14b9baeb805294098017c9e383b3cb022614cfbcbaa36c9c4",
+    "scope": "exact Git archive under current project; no managed worktree; concurrent dirty files excluded"
+  },
+  "fixed_full_backend": {
+    "passed": 1892,
+    "skipped": 1,
+    "warnings": 2,
+    "scope": "exact 6b6a123 Git archive, tests + tools/tests"
+  },
+  "fixed_client_passed": 272,
+  "fixed_typecheck": "passed",
+  "typescript": "5.9.3",
+  "dependencies": "existing installed node_modules reused; no npm ci claim",
+  "subsequent_checks": {
+    "targeted": 126,
+    "runtime_and_ledger": 53,
+    "cleanup_and_withdrawal": 12,
+    "collector_output": 3
+  },
+  "product_cases": {
+    "passed": 0,
+    "failed": 0,
+    "not_run": 17
+  },
+  "withdrawn_cases": 8,
+  "device_tested_for_new_code": false,
+  "independent_review_of_new_fixes": false,
+  "published_by_this_review": false,
+  "logs": [
+    {
+      "path": ".planning/2026-10-25-developed-review/fixed-full-python.txt",
+      "sha256_lf": "ab552962e8ba2bf5eb00d3ed2afd959c2f67812141050f5114bf2b9e19989338"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review/fixed-full-client.txt",
+      "sha256_lf": "8cb00c2b7ebb4a8686c605c1001d9619441442fc105f1dd0c3ecd81de5f98a0c"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review/fixed-typecheck.txt",
+      "sha256_lf": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review/fixed-typescript-version.txt",
+      "sha256_lf": "4985b444236c5acdb5b850e5d754975e130eed5b033c53f201cdf471e83d7f13"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review/fixed-import.txt",
+      "sha256_lf": "b5cce21d4117b088a8dd80118d7a5906d827524be272dd84366c0bbe57204a0b"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review/final-targeted.txt",
+      "sha256_lf": "7507eb5e7c6081e3ff157891204e4d7285c3e98bd54a8e6cf0b788debb8c59de"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review/compatibility-recheck.txt",
+      "sha256_lf": "5d7464e2df877e1f84a3bdb4036b92f23d7c9e77715efe8a70edd4de75445cc7"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review/final-cleanup-and-evidence-tests.txt",
+      "sha256_lf": "833d5a98a026780e373b8d4bdcab0b44a8db832791917ef6b84a303165eec1af"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review/phase1-withdrawal-tests.txt",
+      "sha256_lf": "e953ca91f4cc8bf7af20dc2fa1e44818478844af1e8391afa76fe04d451be6fb"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review/collector-tests.txt",
+      "sha256_lf": "539d2abc2f969f87a7e6e943aa1c004bfadb1efef359b97863b50b570fd740cc"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review/phase1-corrected-matrix.json",
+      "sha256_lf": "e6f31c9dfcb1d54cf3ff7b22185ce5c21af0add324606caebb00316047b35fab"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review/component-collector.txt",
+      "sha256_lf": "38c84140889d5dde7d45f8f1376984da8a4aaf9d92ad5f53d34d699b4f975f8e"
+    }
+  ]
+}
