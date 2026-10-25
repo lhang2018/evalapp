@@ -3413,7 +3413,7 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "5e3972e56e593981250b264180043be5b9a7043d",
-      "status": "in_progress",
+      "status": "review",
       "ownership_history": [
         {
           "date": "2026-10-25",
@@ -3423,7 +3423,12 @@
         }
       ],
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        "代码: 0fda873 三入口同源（REST基准+CLI补齐+客户端TaskContractInput全链透传）；9862a79 契约文档",
+        "测试: test_task_contract_entries 7项（REST全契约/general不屏蔽/显式短路/真general/非法拒绝/CLI-REST逐字段同源/cmd_task注入）",
+        "契约: docs/协作开发/设计/ALN-23-任务契约对外模型.md（14字段权威表+三入口语义+general规则）",
+        "App: GET /tasks/{id} 返回 to_dict() 含全部契约字段（服务端就绪）；客户端 submit 链 TaskContractInput 签名就位待聊天面板UI接线"
+      ],
       "card": "docs/协作开发/任务卡/23-A-统一任务契约对外模型.md",
       "shared_files": [
         "evoagent/core/task.py",
@@ -3446,7 +3451,7 @@
         "UX-03",
         "F02"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "next_step": "待独立复核（审阅人待定）；客户端聊天面板UI属后续卡；23-A验收四条已全有测试覆盖",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
       "prerequisites": "仅需仓库与本地测试环境"
     },
@@ -4722,11 +4727,11 @@
       "workpackage": "ALN-10",
       "title": "真实候选收益与依赖回归证据",
       "stream": "assets",
-      "owner": null,
+      "owner": "dsh-lead",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "89accb658a8ce5aa49c7e74d0e45904c2eda6b97",
+      "status": "claimed",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/10-E-真实候选收益与依赖回归证据.md",
@@ -4756,9 +4761,17 @@
         "B-97",
         "G1"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
-      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-      "prerequisites": "代表性基准/对照环境"
+      "next_step": "先读 09-H 隔离宿主/真实资产与 10-H 独立门禁交付，按卡建立真实宿主上的候选对照基准、覆盖/遗漏与发布前后收益链；证据绑定精确commit、命令与日志，未经复核不记accepted",
+      "working_basis": "以89accb658a8ce5aa49c7e74d0e45904c2eda6b97（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
+      "prerequisites": "代表性基准/对照环境",
+      "ownership_history": [
+        {
+          "date": "2026-10-25",
+          "from": "待认领",
+          "to": "dsh-lead",
+          "reason": "用户指示继续；09-H 已被独立复核 accepted，10-E 依赖满足。写入边界 evoagent/evaluation/ + evolution/，只新增基准模块，不改 evolution 既有接受切片"
+        }
+      ]
     },
     {
       "id": "ALN-11-P",
@@ -5036,11 +5049,11 @@
       "workpackage": "ALN-16",
       "title": "业务仓储与端侧隐私凭证治理",
       "stream": "integration",
-      "owner": null,
+      "owner": "zcode-next",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "89accb658a8ce5aa49c7e74d0e45904c2eda6b97",
+      "status": "in_progress",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/16-P-业务仓储与端侧隐私凭证治理.md",
@@ -5071,8 +5084,8 @@
         "UX-24",
         "G2"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
-      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "next_step": "侦察业务仓储接入缺口、端侧 EvidenceEvent、删除对账边界",
+      "working_basis": "2026-10-25 zcode-next 认领。复用 16-A/R/X 已交付的 EvidenceEvent/credentials/export 切片；写入边界 api/memory/observability/android-app/src；server.py 并行在途不碰。",
       "prerequisites": "生产身份/存储范围及端侧测试环境"
     },
     {
