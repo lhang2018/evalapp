@@ -106,7 +106,7 @@
 
 #### WP-0.3 工作流审批节点生产链路修复
 - **主题**：R-06 / A-01｜**现状**：引擎有 `WAITING_AUTH` 状态码，生产链路恒放行且不可恢复
-- **问题**：`controller.py:424` 传的 `workflow_node_confirm` **不在** `permissions.py:41-44` 的 `high_risk_ops` 名单 → `check_op` 恒返回 ALLOW；`engine.py:80` `if node.state != PENDING: continue` 使 `WAITING_AUTH` 节点重跑时被永久跳过 → 任务卡死。
+- **问题**：`controller.py:470` 传的 `workflow_node_confirm` **不在** `permissions.py:41-44` 的 `high_risk_ops` 名单 → `check_op` 恒返回 ALLOW；`engine.py:80` `if node.state != PENDING: continue` 使 `WAITING_AUTH` 节点重跑时被永久跳过 → 任务卡死。
 - **交付**：审批 op 纳入高风险判定；审批请求落库并带 `approval_id`（绑定动作摘要/目标对象/范围/有效期/**一次性语义**）；`POST` 审批接口 + `WAITING_AUTH` 节点的恢复路径；补偿动作改为真实回滚语义（当前 `_try_compensate` 空参执行、`ctx` 未用、异常全吞、只处理失败单节点）。
 - **边界**：`evoagent/core/permissions.py`、`evoagent/workflows/engine.py`、`evoagent/api/server.py`（新增端点）
 - **验收**：构造需审批工作流 → 节点真实阻塞 → 审批后继续；拒绝则安全停止；`WAITING_AUTH` 可恢复不卡死。
@@ -254,7 +254,7 @@ ALN-13-A已按09卷完成Goal基础与运行时授权接线，具体[契约](doc
 - **验收**：失败案例能复现；回归集随真实失败增长。
 
 #### WP-3.3 进化并发与停止条件（E-13）
-- **交付**：进化侧并发上限（当前无 Semaphore，任务侧的 `BoundedSemaphore` 不覆盖进化实验）；"重复失败即停止"条件（当前 `react/engine.py:235` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关，概念被混淆）；实验失败率熔断。
+- **交付**：进化侧并发上限（当前无 Semaphore，任务侧的 `BoundedSemaphore` 不覆盖进化实验）；"重复失败即停止"条件（当前 `react/engine.py:36` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关，概念被混淆）；实验失败率熔断。
 - **前置**：WP-3.1
 
 #### WP-3.4 候选证据门禁收紧（E-09 / C-11）

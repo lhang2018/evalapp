@@ -101,7 +101,7 @@
 
 - 判定：标 ✅「提交/确认/失败/对账状态；unknown 不盲重试」
 - 实际：**无账本实体、无持久化表**（`core/persistence.py` 30 张表无 side_effect 表）。最接近的 `Checkpoint.pending_side_effects`（`core/checkpoint.py:29`）是**恒空死字段**：
-  - 唯一写入点 `controller.py:544`：`cp.pending_side_effects = extras.get("pending_side_effects", [])`
+  - 唯一写入点 `controller.py:542`：`cp.pending_side_effects = extras.get("pending_side_effects", [])`
   - 唯一传 `extras` 的调用方 `controller.py:391` 只传 `budget` 与 `plan` → **该字段生产环境恒为 `[]`**
   - 恢复门禁 `evoagent/core/controller.py:584` 因此**恒不触发**
   - `tests/test_control.py:149` 是**测试自己塞值**才让该分支变绿 —— 自证式测试
@@ -132,7 +132,7 @@
 
 - 判定：标 ✅「依赖/条件/并发/重试/审批/检查点/补偿」
 - 实际：SKIPPED ✅（`engine.py:92-106`）、并发 ✅（`:160-172`）、重试 ✅（`:180-206`）、检查点续跑 ✅（`:254-271`）。**审批与补偿在生产链路是断的**：
-  - **审批永不阻塞**：`controller.py:424` 传 `check_op("workflow_node_confirm", …)`，但该 op 名**不在** `permissions.py:41-44` 的 `high_risk_ops` 名单内；`check_op`（`:64-67`）对不在名单的 op 直接 `return ALLOW`。API 路径下 `app.py:92` 注入的 `confirm_callback` 由宿主注入，服务端默认 `None` → 恒 ALLOW。（`cli.py:38` 有个仅 CLI 生效的回调，属测试便利）
+  - **审批永不阻塞**：`controller.py:470` 传 `check_op("workflow_node_confirm", …)`，但该 op 名**不在** `permissions.py:41-44` 的 `high_risk_ops` 名单内；`check_op`（`:64-67`）对不在名单的 op 直接 `return ALLOW`。API 路径下 `app.py:92` 注入的 `confirm_callback` 由宿主注入，服务端默认 `None` → 恒 ALLOW。（`cli.py:38` 有个仅 CLI 生效的回调，属测试便利）
   - **审批请求不落库、无 approve 接口、无恢复路径**：`engine.py:80` `if node.state != PENDING: continue` → 重跑时 `WAITING_AUTH` 节点被**永久跳过**，任务卡死。
   - **历史补偿缺口已接续（ALN-02-A）**：现通过 `compensate`（`evoagent/workflows/compensation.py::compensate`）绑定原参数/持久结果、逆序恢复上游，并经只读工具独立验证后标记compensated；示例移除了只读列目录冒充补偿的配置。真实文件、审批等待和未知结果分支见 `tests/test_aln02_receipts.py`，新补丁待独立审阅。
 
@@ -195,7 +195,7 @@
 | R-04 Planner 计划修订 | ✅→🔹 | `_risks_for`（`evoagent/planning/planner.py::_risks_for`）是按 intent 硬编码的风险文案，不是可执行恢复策略；**无 replan/revise**，`ExecutionPlan.adjust` 全库唯一调用方是 `evoagent/react/engine.py:232` 的"同工具连续失败≥3 次"追加固定模板步骤 |
 | R-03 路由质量评测 | ✅→⬜ | **无任何路由评测集/指标**。`evolution/datasets.py` 两个内置集共 4 用例全为 `time_query`/`computation` 通用任务，**零个路由/分类评测用例**；无准确率/混淆矩阵/top-k/回退率/弃权率 |
 | E-01 运行事件与 Trace | ✅→🔹 | 无 node 级字段；成本/时延/结果全在 `payload` 自由字典，`events.py:275-279` 靠 `payload.get("latency_s")` 取值，**缺失静默计 0 → 时延聚合被无声低估**，任何依赖它做门禁或收益判定的结论不可靠 |
-| E-13 独立进化控制器 | ✅→🔹 | 预算池 ✅、次数上限 ✅；**并发控制缺失**（进化侧无 Semaphore）、**"重复失败即停止"不存在**（`react/engine.py:235` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关） |
+| E-13 独立进化控制器 | ✅→🔹 | 预算池 ✅、次数上限 ✅；**并发控制缺失**（进化侧无 Semaphore）、**"重复失败即停止"不存在**（`react/engine.py:36` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关） |
 | E-06 评测集版本/覆盖 | 🔹 | `datasets.py` 全文 47 行 4 用例；无注册/版本演进机制，无覆盖率台账 |
 | O-05 Runtime Manifest | ✅→🔹 | 独立表 ✅、每次运行落一份 ✅；但 `_version_manifest()` 依赖 `releases.current_release_id`，未发布时返回 `{"version":"unreleased"}` → **组件版本退化为空** |
 | O-08 离线降级与恢复 | 🔹→⬜ | `offline/policy.ts:8` `OFFLINE_INTENTS = ["time_query"]` —— **仅此一项**；`degrade/degrade_matrix/offline_capable` 在客户端仅命中测试断言，**无任何降级矩阵声明** |
