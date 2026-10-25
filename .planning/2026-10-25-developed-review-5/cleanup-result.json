@@ -1,0 +1,34 @@
+{
+  "scope": "only newly owned review5 TemporaryDirectory scopes; previous review4 cache is untouched",
+  "temporary_scopes_removed": [
+    {
+      "record": ".planning/2026-10-25-developed-review-5/before-source.json",
+      "owned_directory": "E:\\evalapp\\outputs\\review5-pjxxs6n3",
+      "removed": true
+    },
+    {
+      "record": ".planning/2026-10-25-developed-review-5/combined-source.json",
+      "owned_directory": "E:\\evalapp\\outputs\\review5-ah1esr_s",
+      "removed": true
+    },
+    {
+      "record": ".planning/2026-10-25-developed-review-5/final-boundary-source.json",
+      "owned_directory": "E:\\evalapp\\outputs\\review5-2wzxle9w",
+      "removed": true
+    },
+    {
+      "record": ".planning/2026-10-25-developed-review-5/fixed-source.json",
+      "owned_directory": "E:\\evalapp\\outputs\\review5-5fpmml8h",
+      "removed": true
+    },
+    {
+      "record": ".planning/2026-10-25-developed-review-5/targeted-source.json",
+      "owned_directory": "E:\\evalapp\\outputs\\review5-1bcvyx_5",
+      "removed": true
+    }
+  ],
+  "pytest_cache_provider": "disabled",
+  "bytecode_generation": "disabled",
+  "permanent_dependencies_removed": false,
+  "project_data_removed": false
+}

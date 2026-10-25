@@ -1,0 +1,12 @@
+{
+  "pytest_arguments": [
+    "tests/test_developed_review_5.py",
+    "-q"
+  ],
+  "snapshot_commit": null,
+  "owned_temp_directory": "E:\\evalapp\\outputs\\review5-pjxxs6n3",
+  "source_path_when_tested": "E:\\evalapp",
+  "exit_code": 1,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+}

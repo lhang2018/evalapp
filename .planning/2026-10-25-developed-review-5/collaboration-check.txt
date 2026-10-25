@@ -1,0 +1,8 @@
+{
+  "scope": "collaboration metadata only",
+  "workpackages": 30,
+  "dispatches": 87,
+  "baseline": "published",
+  "errors": [],
+  "ok": true
+}

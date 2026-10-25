@@ -1,0 +1,24 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+..............................F......................................... [ 54%]
+.............................................................            [100%]
+================================== FAILURES ===================================
+___________ RenameAnalysisTest.test_apply_plan_with_real_patch_tool ___________
+
+self = <test_refactor.RenameAnalysisTest testMethod=test_apply_plan_with_real_patch_tool>
+
+    def test_apply_plan_with_real_patch_tool(self):
+        with TemporaryDirectory() as tmp:
+            root = make_project(Path(tmp), STARTER)
+            before = collect_diagnostics(root)
+            decision = analyze_rename(root, "helper", "compute")
+            _, run = coding_patch_tool(str(root))
+            result = run({"edits": list(decision.edits)})
+>           self.assertTrue(result.ok, result.error)
+E           AssertionError: False is not true : pkg/main.py: old_text 命中 0 处，要求唯一，未写盘
+
+tests\test_refactor.py:101: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_refactor.py::RenameAnalysisTest::test_apply_plan_with_real_patch_tool
+1 failed, 132 passed in 23.81s

@@ -1,0 +1,22 @@
+{
+  "pytest_arguments": [
+    "tests/test_developed_review_5.py",
+    "tests/test_refactor.py",
+    "tests/test_coding_tools.py",
+    "tests/test_credential_pattern_coverage.py",
+    "tests/test_feedback.py",
+    "tests/test_observability.py",
+    "tests/test_observability_repository.py",
+    "tests/test_observability_evidence.py",
+    "tests/test_binding_atomicity.py",
+    "tests/test_action_binding.py",
+    "tests/test_peer_action_binding_review.py",
+    "-q"
+  ],
+  "snapshot_commit": null,
+  "owned_temp_directory": "E:\\evalapp\\outputs\\review5-ah1esr_s",
+  "source_path_when_tested": "E:\\evalapp",
+  "exit_code": 0,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+}

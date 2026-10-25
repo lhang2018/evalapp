@@ -4784,7 +4784,7 @@
    "requirement_refs": [
     "UX-26"
    ],
-   "next_step": "复核发现（凭据模式覆盖）已修复：147a489 放宽 sk-/新增 stripe 模式+5项回归；修复者 dsh-lead 已自检但不自评，仍需另一名审阅人（非修复者，建议 zcode-main/zcode-next）复核后方可恢复 accepted",
+   "next_step": "按第五批固定源码复查：嵌入JSON/敏感键名别名/集合及导出脱敏，凭据反馈拒绝入库；生产装配/真实语义服务等原验收缺口不自动关闭。",
    "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
    "prerequisites": "仅需仓库与本地测试环境",
    "claim_metadata_calibration": {
@@ -4792,18 +4792,14 @@
     "reason": "展开已存在Git对象；保留原认领者、状态与接手时点"
    },
    "latest_code_review": {
+    "id": "REVIEW-2026-10-25-DEVELOPED-5",
     "date": "2026-10-25",
     "reviewer": "codex-runtime",
-    "findings": [
-     "R02",
-     "R03"
-    ],
-    "result": "fixes_delivered_pending_independent_recheck",
-    "runtime_source_commit": "6b6a1234b125937f61b007cf4e2189e891d5f656",
-    "evidence_correction_commit": "9239382d8287de313f21cf608c1a21af1370dd30",
-    "report": "docs/协作开发/验收/2026-10-25-已开发切片交叉审查与修复.md",
-    "evidence": ".planning/2026-10-25-developed-review/committed-evidence.json",
-    "independent_review_of_fixes": false
+    "reviewed_commit": "3331898fcddb78b4b271db152fbd408b7c981889",
+    "scope": "嵌入JSON/敏感键名别名/集合及导出脱敏，凭据反馈拒绝入库",
+    "report": "docs/协作开发/验收/2026-10-25-第五批补绑凭据与重构复核.md",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "fix_commit": "3331898fcddb78b4b271db152fbd408b7c981889"
    },
    "ownership_history": [
     {
@@ -5308,7 +5304,7 @@
     "UX-10",
     "F03"
    ],
-   "next_step": "本批修复已提交，独立复查：意图与绑定同事务、双向唯一匹配、run/时间与fencing边界；既有真实环境与产品验收缺口仍按原交付登记，不据模块回归关闭整包。",
+   "next_step": "按第五批固定源码复查：绑定/意图原子回滚与竞争歧义只读再检未见新阻断；不自批此前0cf6672修复；生产装配/真实语义服务等原验收缺口不自动关闭。",
    "working_basis": "2026-10-25 zcode-next 认领开工（WIP=1，本流内无其他在途卡）。锚点 d8ee355。复用 07-B ActionBindings/07-E reconcile/04-R 恢复；写入边界 core/planning/workflows；server.py、budget.py 等他会在途文件不触碰。",
    "prerequisites": "可重复故障注入",
    "review_history": [
@@ -5321,27 +5317,13 @@
     }
    ],
    "latest_code_review": {
-    "id": "REVIEW-2026-10-25-DEVELOPED-2",
+    "id": "REVIEW-2026-10-25-DEVELOPED-5",
     "date": "2026-10-25",
     "reviewer": "codex-runtime",
-    "cards": [
-     "ALN-24-A",
-     "ALN-07-C",
-     "ALN-04-V",
-     "ALN-08-W",
-     "ALN-23-E",
-     "ALN-24-E"
-    ],
-    "report": "docs/协作开发/验收/2026-10-25-第二批交叉审查与恢复边界修复.md",
-    "evidence": ".planning/2026-10-25-developed-review-2/committed-evidence.json",
-    "fix_commits": [
-     "0cf66722d00ab59f1405c6bca7f322c1bf893a9c",
-     "df29a2e200d085901404bccf1dc739e9d3b01ef5"
-    ],
-    "status": "fixes_delivered_pending_independent_recheck",
-    "product_acceptance_added": false,
-    "published": false,
-    "scope": "意图与绑定同事务、双向唯一匹配、run/时间与fencing边界"
+    "reviewed_commit": "3331898fcddb78b4b271db152fbd408b7c981889",
+    "scope": "绑定/意图原子回滚与竞争歧义只读再检未见新阻断；不自批此前0cf6672修复",
+    "report": "docs/协作开发/验收/2026-10-25-第五批补绑凭据与重构复核.md",
+    "status": "rechecked_pending_independent_acceptance"
    }
   },
   {
@@ -5777,7 +5759,7 @@
    "title": "通知、离线与系统重启真机矩阵",
    "stream": "android",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "claude-main",
    "branch": "feature/user-direction",
    "base_commit": "61451f3ff2251dd042d19d74e10bad87eb05a46d",
    "status": "review",
@@ -6221,7 +6203,7 @@
    "title": "跨文件语义与LSP能力扩展",
    "stream": "runtime",
    "owner": "zcode-main",
-   "reviewer": null,
+   "reviewer": "claude-main",
    "branch": "feature/user-direction",
    "base_commit": "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7",
    "status": "review",
@@ -6252,7 +6234,7 @@
     "A-60",
     "A-70"
    ],
-   "next_step": "待独立复核（审阅人待定）；语义级 LSP 真实接入、能力包注册与编程专家运行时消费另卡",
+   "next_step": "按第五批固定源码复查：唯一静态符号归属/歧义拒绝/f-string/CRLF/编译诊断/文件范围；生产装配/真实语义服务等原验收缺口不自动关闭。",
    "delivery": "docs/协作开发/交付/ALN-18-L-跨文件语义与LSP能力扩展.md",
    "working_basis": "2026-10-25 zcode-main 认领开工。base_commit e16dbfe 为实际接手锚点（基线仍 candidate，prepared_candidate 21899e6 未发布）。新增独占模块 evoagent/tools/refactor.py（跨文件 AST 引用分析 + 固定语言服务版本与不可用诚实降级 + 诊断前后对照 + 歧义重构澄清），仅新增文件与测试，不改 coding/registry 等共享文件。",
    "prerequisites": "语言服务依赖与真实项目",
@@ -6263,7 +6245,17 @@
      "to": "zcode-main",
      "reason": "用户指示继续开发；18-L 依赖 ALN-18-G 已交付 review，纯本地新模块与在途卡无文件重叠"
     }
-   ]
+   ],
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-25-DEVELOPED-5",
+    "date": "2026-10-25",
+    "reviewer": "codex-runtime",
+    "reviewed_commit": "3331898fcddb78b4b271db152fbd408b7c981889",
+    "scope": "唯一静态符号归属/歧义拒绝/f-string/CRLF/编译诊断/文件范围",
+    "report": "docs/协作开发/验收/2026-10-25-第五批补绑凭据与重构复核.md",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "fix_commit": "3331898fcddb78b4b271db152fbd408b7c981889"
+   }
   },
   {
    "id": "ALN-19-A",
@@ -8157,6 +8149,22 @@
    "independent_review": false,
    "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
    "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+  },
+  {
+   "id": "discovered-3331898fcddb",
+   "title": "fix(review): 限定重构符号归属并补齐凭据防线",
+   "workpackage": "ALN-00",
+   "source_commit": "3331898fcddb78b4b271db152fbd408b7c981889",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/observability/credentials.py",
+    "evoagent/tools/refactor.py",
+    "tests/test_developed_review_5.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+   "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
   }
  ],
  "requirement_batches": [
@@ -8243,6 +8251,29 @@
    "status": "fixes_delivered_pending_independent_recheck",
    "product_acceptance_added": false,
    "published": false
+  },
+  {
+   "id": "REVIEW-2026-10-25-DEVELOPED-5",
+   "date": "2026-10-25",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-07-C",
+    "ALN-29-C",
+    "ALN-18-L"
+   ],
+   "fixed_cards": [
+    "ALN-29-C",
+    "ALN-18-L"
+   ],
+   "read_only_recheck_cards": [
+    "ALN-07-C"
+   ],
+   "fix_commit": "3331898fcddb78b4b271db152fbd408b7c981889",
+   "report": "docs/协作开发/验收/2026-10-25-第五批补绑凭据与重构复核.md",
+   "evidence": ".planning/2026-10-25-developed-review-5/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false
   }
  ]
 }

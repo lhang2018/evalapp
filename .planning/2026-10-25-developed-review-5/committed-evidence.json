@@ -1,0 +1,164 @@
+{
+  "fix_commit": "3331898fcddb78b4b271db152fbd408b7c981889",
+  "snapshot": {
+    "pytest_arguments": [
+      "tests",
+      "tools/tests",
+      "--deselect=tests/test_fact_verification.py::test_real_http_source_is_accessible_and_cited",
+      "-q"
+    ],
+    "snapshot_commit": "3331898fcddb78b4b271db152fbd408b7c981889",
+    "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+    "owned_temp_directory": "E:\\evalapp\\outputs\\review5-5fpmml8h",
+    "source_tree": "e1d4da962dcea1d00a4fb9ef5a1b8bea754f7f7f",
+    "archive_sha256": "e4f440c0f56c5b4bb9945e0f77993a3842e4584bf9f2cf9f6b4ce4c079e4f6a3",
+    "source_path_when_tested": "E:\\evalapp\\outputs\\review5-5fpmml8h\\source",
+    "module_source_probe": "E:\\evalapp\\outputs\\review5-5fpmml8h\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-5fpmml8h\\source\\evoagent\\tools\\refactor.py\n",
+    "exit_code": 0,
+    "temporary_data_removed": true,
+    "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+  },
+  "initial_negative": {
+    "failed": 23,
+    "passed": 3
+  },
+  "initial_related": {
+    "passed": 132,
+    "failed": 1,
+    "failure": "CRLF old_text disagreed with coding_patch universal-newline reads; fixed, no assertion weakened"
+  },
+  "related_passed": 189,
+  "final_boundary_passed": 50,
+  "fixed_full_backend": {
+    "passed": 2293,
+    "failed": 0,
+    "skipped": 1,
+    "deselected": 1,
+    "scope": "exact Git archive; public HTTP test explicitly deselected"
+  },
+  "fixed_cards": [
+    "ALN-29-C",
+    "ALN-18-L"
+  ],
+  "read_only_recheck_cards": [
+    "ALN-07-C"
+  ],
+  "binding_implementation_changed": false,
+  "independent_acceptance_of_new_fixes": false,
+  "independent_acceptance_of_prior_07c_fix": false,
+  "device_tested": false,
+  "network_tested": false,
+  "client_tests_rerun": false,
+  "product_acceptance_added": false,
+  "published_by_this_review": false,
+  "cleanup": {
+    "scope": "only newly owned review5 TemporaryDirectory scopes; previous review4 cache is untouched",
+    "temporary_scopes_removed": [
+      {
+        "record": ".planning/2026-10-25-developed-review-5/before-source.json",
+        "owned_directory": "E:\\evalapp\\outputs\\review5-pjxxs6n3",
+        "removed": true
+      },
+      {
+        "record": ".planning/2026-10-25-developed-review-5/combined-source.json",
+        "owned_directory": "E:\\evalapp\\outputs\\review5-ah1esr_s",
+        "removed": true
+      },
+      {
+        "record": ".planning/2026-10-25-developed-review-5/final-boundary-source.json",
+        "owned_directory": "E:\\evalapp\\outputs\\review5-2wzxle9w",
+        "removed": true
+      },
+      {
+        "record": ".planning/2026-10-25-developed-review-5/fixed-source.json",
+        "owned_directory": "E:\\evalapp\\outputs\\review5-5fpmml8h",
+        "removed": true
+      },
+      {
+        "record": ".planning/2026-10-25-developed-review-5/targeted-source.json",
+        "owned_directory": "E:\\evalapp\\outputs\\review5-1bcvyx_5",
+        "removed": true
+      }
+    ],
+    "pytest_cache_provider": "disabled",
+    "bytecode_generation": "disabled",
+    "permanent_dependencies_removed": false,
+    "project_data_removed": false
+  },
+  "logs": [
+    {
+      "path": ".planning/2026-10-25-developed-review-5/before-python.txt",
+      "sha256_lf": "054bdfe3b5e6193216f08c4a51bb8f3ecde9ec09f812cefd655149cf56ae7aab"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/before-source.json",
+      "sha256_lf": "adbe925e1ad82516ca7f1b0bab7a0b1c9ff1e9d31e26a033c4c0f6d2a5366f7d"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/board-indent.txt",
+      "sha256_lf": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/claims-check.json",
+      "sha256_lf": "38a66e222da4efeed1f41407eab9d372ec1a30d1976612fa1997c591ea7a765e"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/cleanup-result.json",
+      "sha256_lf": "d52af3e3d4195038cfd34db2043470fe323a32f54a50fb5a27fb0749eee5e700"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/collaboration-check.txt",
+      "sha256_lf": "78db5e794cfd7918871faf7d7f035e54d0c08f5bf5dc185a4e4b14a5ec4e3469"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/combined-python.txt",
+      "sha256_lf": "071373e2f09ca4d659f244a4ac3edab914beea0a9ea88ea00ecad1b75b512c5e"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/combined-source.json",
+      "sha256_lf": "4a005b274b586c0482e599010c26f7dcd48b5664d1b3dbfd6dff12d7dbb93fe6"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/final-boundary-source.json",
+      "sha256_lf": "d58af1cf748252dad4a53f8f9df563a66605d55a2ae80f8c5fbd159d8792d245"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/final-boundary.txt",
+      "sha256_lf": "1f7ce20a13d64eca47220cc2d9fc99d50d8b04ab0ed6377418237a6c0eaf4b57"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/fixed-full-python.txt",
+      "sha256_lf": "433bc775ce7c674460b803299cef05903f5ff3ca751f495c63975430a36f341b"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/fixed-source.json",
+      "sha256_lf": "a5436a4a1726a3ba8879c991af1d97f82bb5e3811b8dd76a2d2622074a1afc8c"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/ledgers-check.json",
+      "sha256_lf": "8e24e24ba5d341e3cdb4fa014068890247aa4cdc451d4695d9d35d12d0321070"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/run_scoped_pytest.py",
+      "sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/targeted-python.txt",
+      "sha256_lf": "18d8a4a065da14743250d6afda418ec2433010e77efb31f34cb946d0c73e29d6"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-5/targeted-source.json",
+      "sha256_lf": "e21290e1eb04cb82680f55108f4ec159f047f8249d8b45738f77f963ca14a215"
+    }
+  ],
+  "preserved_concurrent_metadata": [
+    {
+      "card": "ALN-12-V",
+      "fields": [
+        "reviewer"
+      ],
+      "reviewer": "claude-main",
+      "scope": "preserve the independently claimed reviewer only; not source, delivery or acceptance"
+    }
+  ]
+}
