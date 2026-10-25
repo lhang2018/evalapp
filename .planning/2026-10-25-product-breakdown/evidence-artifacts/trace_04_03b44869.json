@@ -1,0 +1,32 @@
+[
+ {
+  "event_id": "4e8ae16af02f4d729e115630bc98d2b6",
+  "event_type": "run_interrupted",
+  "task_id": "03b448698291",
+  "run_id": "run_8b1dd31c662449139035ccf9cb2e6ba5",
+  "component_id": "runtime_controller",
+  "component_version": "0.1.0",
+  "timestamp": 1792915514.2250843,
+  "severity": "warn",
+  "correlation_id": null,
+  "causation_id": null,
+  "payload": {
+   "reason": "缺少包含累计预算的恢复检查点"
+  },
+  "privacy_classification": "standard",
+  "privacy_level": "internal",
+  "sync_status": "local",
+  "sequence_no": null,
+  "runtime_manifest_id": "manifest_run_8b1dd31c662449139035ccf9cb2e6ba5",
+  "clock_source": "server",
+  "attachment_refs": [],
+  "schema_version": "1.0",
+  "payload_ref": null,
+  "origin": "server",
+  "trust": "trusted",
+  "fault_level": "none",
+  "untrusted_origin": null,
+  "refs": {},
+  "redacted": false
+ }
+]

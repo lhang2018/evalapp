@@ -1,0 +1,30 @@
+[
+ {
+  "event_id": "5f3bb0b0d1ae47f2a75a02c48d17df31",
+  "event_type": "task_cancelled",
+  "task_id": "c72c924a531d",
+  "run_id": null,
+  "component_id": "runtime_controller",
+  "component_version": "0.1.0",
+  "timestamp": 1792915420.255862,
+  "severity": "info",
+  "correlation_id": null,
+  "causation_id": null,
+  "payload": {},
+  "privacy_classification": "standard",
+  "privacy_level": "internal",
+  "sync_status": "local",
+  "sequence_no": null,
+  "runtime_manifest_id": null,
+  "clock_source": "server",
+  "attachment_refs": [],
+  "schema_version": "1.0",
+  "payload_ref": null,
+  "origin": "server",
+  "trust": "trusted",
+  "fault_level": "none",
+  "untrusted_origin": null,
+  "refs": {},
+  "redacted": false
+ }
+]

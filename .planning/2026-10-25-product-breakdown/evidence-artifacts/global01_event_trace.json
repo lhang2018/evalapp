@@ -1,0 +1,6 @@
+{
+ "source": "11-W 真机健康回滚证据（设备KV bundle_runtime_v1）",
+ "binding_before_rollback": "workflow:wf_demo@v2.0.0",
+ "binding_after_rollback": "workflow:wf_demo@v2.0.0",
+ "manifest_stable": true
+}
