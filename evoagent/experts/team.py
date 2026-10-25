@@ -19,13 +19,23 @@
 
 import hashlib
 import json
+import math
+from copy import deepcopy
 import time
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from .registry import Expert, ExpertRegistry
 
 STATUSES = ("proposed", "active", "completed", "aborted")
+
+
+def _strings(values, name):
+    if not isinstance(values, (list, tuple)) or any(
+        not isinstance(v, str) or not v.strip() for v in values
+    ):
+        raise TeamContractError(name + "必须为非空字符串数组")
+    return tuple(values)
 
 
 class TeamContractError(ValueError):
@@ -41,14 +51,26 @@ class TeamRole:
     role_id: str
     expert_id: str
     domain: str
-    capabilities: List[str]
-    responsibilities: List[str] = field(default_factory=list)
-    outputs: List[str] = field(default_factory=list)
-    state_artifacts: List[str] = field(default_factory=list)
-    external_actions: List[str] = field(default_factory=list)
+    capabilities: Sequence[str]
+    responsibilities: Sequence[str] = field(default_factory=list)
+    outputs: Sequence[str] = field(default_factory=list)
+    state_artifacts: Sequence[str] = field(default_factory=list)
+    external_actions: Sequence[str] = field(default_factory=list)
+
+    def __post_init__(self):
+        for name in (
+            "capabilities",
+            "responsibilities",
+            "outputs",
+            "state_artifacts",
+            "external_actions",
+        ):
+            object.__setattr__(self, name, _strings(getattr(self, name), name))
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        return {
+            k: list(v) if isinstance(v, tuple) else v for k, v in asdict(self).items()
+        }
 
 
 @dataclass(frozen=True)
@@ -56,22 +78,42 @@ class Handoff:
     handoff_id: str
     from_role: str
     to_role: str
-    input_refs: List[str]
-    context_scope: List[str] = field(default_factory=list)
+    input_refs: Sequence[str]
+    context_scope: Sequence[str] = field(default_factory=list)
     budget_units: float = 0.0
 
+    def __post_init__(self):
+        for name in ("input_refs", "context_scope"):
+            object.__setattr__(self, name, _strings(getattr(self, name), name))
+        if (
+            type(self.budget_units) not in (int, float)
+            or not math.isfinite(self.budget_units)
+            or self.budget_units < 0
+        ):
+            raise TeamContractError("交接预算必须为有限非负数")
+
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        return {
+            k: list(v) if isinstance(v, tuple) else v for k, v in asdict(self).items()
+        }
 
 
 class TeamContract:
-    def __init__(self, *, contract_id: str, task_intent: str, domain: str,
-                 roles: List[TeamRole], task_ref: str = "", clock=None):
+    def __init__(
+        self,
+        *,
+        contract_id: str,
+        task_intent: str,
+        domain: str,
+        roles: List[TeamRole],
+        task_ref: str = "",
+        clock=None,
+    ):
         self.contract_id = contract_id
         self.task_intent = task_intent
         self.domain = domain
         self.task_ref = task_ref
-        self.roles: List[TeamRole] = list(roles)
+        self.roles = tuple(roles)
         self.handoffs: List[Handoff] = []
         self.state_writers: Dict[str, str] = {}
         for role in self.roles:
@@ -80,30 +122,49 @@ class TeamContract:
         self.status = "proposed"
         self.failures: Dict[str, str] = {}
         self.transitions: List[Dict[str, Any]] = []
+        self._completed_roles = set()
         self.created_at = (clock or time.time)()
         self.revision = 1
 
     # ---- 序列化与校验 ----
     def to_dict(self) -> Dict[str, Any]:
-        return {"contract_id": self.contract_id,
-                "task_intent": self.task_intent, "domain": self.domain,
-                "task_ref": self.task_ref,
-                "roles": [role.to_dict() for role in self.roles],
-                "handoffs": [item.to_dict() for item in self.handoffs],
-                "state_writers": dict(self.state_writers),
-                "status": self.status, "failures": dict(self.failures),
-                "transitions": list(self.transitions),
-                "created_at": self.created_at, "revision": self.revision}
+        return {
+            "contract_id": self.contract_id,
+            "task_intent": self.task_intent,
+            "domain": self.domain,
+            "task_ref": self.task_ref,
+            "roles": [role.to_dict() for role in self.roles],
+            "handoffs": [item.to_dict() for item in self.handoffs],
+            "state_writers": dict(self.state_writers),
+            "status": self.status,
+            "completed_roles": sorted(self._completed_roles),
+            "failures": dict(self.failures),
+            "transitions": deepcopy(self.transitions),
+            "created_at": self.created_at,
+            "revision": self.revision,
+        }
 
     def digest(self) -> str:
-        body = {key: value for key, value in self.to_dict().items()
-                if key not in ("transitions", "created_at", "revision")}
-        return hashlib.sha256(json.dumps(body, ensure_ascii=False,
-                                         sort_keys=True).encode()).hexdigest()
+        body = {
+            key: value
+            for key, value in self.to_dict().items()
+            if key not in ("transitions", "created_at", "revision")
+        }
+        return hashlib.sha256(
+            json.dumps(
+                body, ensure_ascii=False, sort_keys=True, allow_nan=False
+            ).encode()
+        ).hexdigest()
 
     def validate(self) -> Dict[str, Any]:
         errors: List[str] = []
         role_ids = [role.role_id for role in self.roles]
+        if not self.roles or any(
+            not isinstance(v, str) or not v.strip() for v in role_ids
+        ):
+            errors.append("角色列表与身份不能为空")
+        if self.status not in STATUSES:
+            errors.append("契约状态非法")
         if len(set(role_ids)) != len(role_ids):
             errors.append("角色 ID 重复")
         writers: Dict[str, str] = {}
@@ -114,8 +175,11 @@ class TeamContract:
                 if artifact in writers and writers[artifact] != role.role_id:
                     errors.append(
                         f"状态物 {artifact} 存在多个写入者: "
-                        f"{writers[artifact]} / {role.role_id}")
+                        f"{writers[artifact]} / {role.role_id}"
+                    )
                 writers[artifact] = role.role_id
+        if writers != self.state_writers:
+            errors.append("状态写入者映射与角色声明不一致")
         if not self.state_writers:
             errors.append("契约没有状态写入者")
         for artifact, writer in self.state_writers.items():
@@ -130,6 +194,27 @@ class TeamContract:
                 errors.append("交接引用了不存在的角色: " + handoff.handoff_id)
             if handoff.from_role == handoff.to_role:
                 errors.append("角色不能交接给自己: " + handoff.handoff_id)
+            producer = next(
+                (r for r in self.roles if r.role_id == handoff.from_role), None
+            )
+            if producer is not None:
+                if not handoff.input_refs or set(handoff.input_refs) - set(
+                    producer.outputs
+                ):
+                    errors.append("交接输入不属于生产角色输出: " + handoff.handoff_id)
+                allowed_context = set(producer.outputs) | (
+                    {self.task_ref} if self.task_ref else set()
+                )
+                if set(handoff.context_scope) - allowed_context:
+                    errors.append(
+                        "交接上下文超出本任务与生产角色输出: " + handoff.handoff_id
+                    )
+            if (
+                type(handoff.budget_units) not in (int, float)
+                or not math.isfinite(handoff.budget_units)
+                or handoff.budget_units < 0
+            ):
+                errors.append("交接预算无效: " + handoff.handoff_id)
         return {"ok": not errors, "errors": errors}
 
     # ---- 唯一状态写入者推进 ----
@@ -137,30 +222,71 @@ class TeamContract:
         return self.state_writers.get(artifact)
 
     def advance(self, *, role_id: str, actor: str = "") -> Dict[str, Any]:
+        check = self.validate()
+        if not check["ok"]:
+            return {"ok": False, "reason": "契约无效: " + "; ".join(check["errors"])}
+        if self.status == "active" and self.failures:
+            return {"ok": False, "reason": "仍有失败角色，不能完成整个契约"}
         if role_id not in {role.role_id for role in self.roles}:
             return {"ok": False, "reason": "角色不在契约中: " + role_id}
         if role_id in self.failures:
             return {"ok": False, "reason": "失败角色不能推进契约状态: " + role_id}
         is_writer = role_id in set(self.state_writers.values())
         if not is_writer:
-            return {"ok": False,
-                    "reason": "非唯一状态写入者，不能推进契约状态: " + role_id}
+            return {
+                "ok": False,
+                "reason": "非唯一状态写入者，不能推进契约状态: " + role_id,
+            }
         order = {"proposed": "active", "active": "completed"}
         if self.status not in order:
             return {"ok": False, "reason": "契约已处于终态: " + self.status}
+        if self.status == "active":
+            pending = set(self.state_writers.values()) - (
+                self._completed_roles | {role_id}
+            )
+            if pending:
+                if role_id not in self._completed_roles:
+                    self._completed_roles.add(role_id)
+                    self.revision += 1
+                    self.transitions.append(
+                        {
+                            "from": "active",
+                            "to": "active",
+                            "role_id": role_id,
+                            "actor": actor,
+                            "at": time.time(),
+                            "event": "role_completed",
+                        }
+                    )
+                return {
+                    "ok": True,
+                    "status": "active",
+                    "previous": "active",
+                    "awaiting_roles": sorted(pending),
+                }
+            self._completed_roles.add(role_id)
         previous, self.status = self.status, order[self.status]
-        self.transitions.append({"from": previous, "to": self.status,
-                                 "role_id": role_id, "actor": actor,
-                                 "at": time.time()})
+        self.transitions.append(
+            {
+                "from": previous,
+                "to": self.status,
+                "role_id": role_id,
+                "actor": actor,
+                "at": time.time(),
+            }
+        )
         self.revision += 1
         return {"ok": True, "status": self.status, "previous": previous}
 
     # ---- 失败与恢复 ----
     def fail(self, role_id: str, reason: str) -> Dict[str, Any]:
+        if self.status not in ("proposed", "active"):
+            raise TeamContractError("终态契约不能修改失败记录")
         if role_id not in {role.role_id for role in self.roles}:
             raise TeamContractError("角色不在契约中: " + role_id)
         if not reason.strip():
             raise TeamContractError("失败原因不得为空")
+        self._completed_roles.discard(role_id)
         self.failures[role_id] = reason
         self.revision += 1
         return {"ok": True, "role_id": role_id, "reason": reason}
@@ -170,26 +296,45 @@ class TeamContract:
         external = []
         for role in self.roles:
             if role.role_id in self.failures:
-                external.extend({"role_id": role.role_id, "action": action}
-                                for action in role.external_actions)
-        return {"failed_roles": failed_roles,
-                "auto_replay": False,
-                "requires_confirmation": bool(external),
-                "external_actions": external,
-                "note": ("局部失败不自动重放外部动作；需人工确认后由原角色"
-                         "（唯一写入者）恢复") if external else "无外部动作，可安全重试"}
+                external.extend(
+                    {"role_id": role.role_id, "action": action}
+                    for action in role.external_actions
+                )
+        return {
+            "failed_roles": failed_roles,
+            "auto_replay": False,
+            "requires_confirmation": bool(external),
+            "external_actions": external,
+            "note": (
+                "局部失败不自动重放外部动作；需人工确认后由原角色（唯一写入者）恢复"
+            )
+            if external
+            else "无外部动作，可安全重试",
+        }
 
-    def authorize_external_action(self, *, role_id: str, action: str,
-                                  confirmed: bool = False) -> Dict[str, Any]:
+    def authorize_external_action(
+        self, *, role_id: str, action: str, confirmed: bool = False
+    ) -> Dict[str, Any]:
+        check = self.validate()
+        if not check["ok"]:
+            return {"ok": False, "reason": "契约无效: " + "; ".join(check["errors"])}
+        if type(confirmed) is not bool:
+            return {"ok": False, "reason": "确认必须是明确布尔值"}
         role = next((item for item in self.roles if item.role_id == role_id), None)
         if role is None:
             return {"ok": False, "reason": "角色不在契约中: " + role_id}
+        if role_id in self._completed_roles:
+            return {"ok": False, "reason": "角色已确认完成，禁止追加外部动作"}
         if role_id in self.failures and not confirmed:
-            return {"ok": False,
-                    "reason": "角色已失败，外部动作需人工确认后重放: " + action}
+            return {
+                "ok": False,
+                "reason": "角色已失败，外部动作需人工确认后重放: " + action,
+            }
         if action not in role.external_actions:
-            return {"ok": False,
-                    "reason": "该动作不属于此角色（不越权代执行）: " + action}
+            return {
+                "ok": False,
+                "reason": "该动作不属于此角色（不越权代执行）: " + action,
+            }
         if self.status not in ("active",):
             return {"ok": False, "reason": "契约未激活，禁止执行外部动作"}
         return {"ok": True, "role_id": role_id, "action": action}
@@ -213,39 +358,53 @@ class TeamPlanner:
             for capability in expert.capabilities:
                 owners.setdefault(capability, []).append(expert)
         for capability in self.registry.capabilities():
-            owners.setdefault(capability.capability_id, [])
+            if capability.status != "active":
+                owners[capability.capability_id] = []
+            else:
+                owners.setdefault(capability.capability_id, [])
         return owners
 
-    def _pick_expert(self, capability: str, intent: str, domain: str,
-                     owners: Dict[str, List[Expert]]) -> Expert:
+    def _pick_expert(
+        self, capability: str, intent: str, domain: str, owners: Dict[str, List[Expert]]
+    ) -> Expert:
         candidates = owners.get(capability) or []
         if not candidates:
             raise TeamFormationError("能力目录缺少能力: " + capability)
         if len(candidates) == 1:
             return candidates[0]
-        intent_hits = [expert for expert in candidates
-                       if intent in expert.applicable_intents]
+        intent_hits = [
+            expert for expert in candidates if intent in expert.applicable_intents
+        ]
         if len(intent_hits) == 1:
             return intent_hits[0]
-        domain_hits = [expert for expert in candidates
-                       if expert.expert_id == domain]
+        domain_hits = [expert for expert in candidates if expert.expert_id == domain]
         if len(domain_hits) == 1:
             return domain_hits[0]
         raise TeamFormationError(
-            "能力归属冲突，无法唯一指派: " + capability + " 候选="
-            + ",".join(sorted(expert.expert_id for expert in candidates)))
+            "能力归属冲突，无法唯一指派: "
+            + capability
+            + " 候选="
+            + ",".join(sorted(expert.expert_id for expert in candidates))
+        )
 
-    def form(self, *, intent: str, domain: str,
-             required_capabilities: List[str], task_ref: str = "",
-             contract_id: str = "") -> TeamContract:
+    def form(
+        self,
+        *,
+        intent: str,
+        domain: str,
+        required_capabilities: Sequence[str],
+        task_ref: str = "",
+        contract_id: str = "",
+    ) -> TeamContract:
         if not isinstance(required_capabilities, list) or not required_capabilities:
             raise TeamFormationError("required_capabilities 必须是非空数组")
-        if any(not isinstance(cap, str) or not cap.strip()
-               for cap in required_capabilities):
+        if any(
+            not isinstance(cap, str) or not cap.strip() for cap in required_capabilities
+        ):
             raise TeamFormationError("能力 id 必须是非空字符串")
+        required_capabilities = sorted(set(required_capabilities))
         owners = self._capability_owners()
-        missing = sorted({cap for cap in required_capabilities
-                          if not owners.get(cap)})
+        missing = sorted({cap for cap in required_capabilities if not owners.get(cap)})
         if missing:
             raise TeamFormationError("能力缺口，无法成组: " + ", ".join(missing))
         assigned: Dict[str, List[str]] = {}
@@ -256,61 +415,110 @@ class TeamPlanner:
         for expert_id, capabilities in sorted(assigned.items()):
             expert = self.registry.get(expert_id)
             role_id = "role_" + expert_id
-            roles.append(TeamRole(
-                role_id=role_id, expert_id=expert_id,
-                domain=(expert.domain_description or "")[:40],
-                capabilities=sorted(capabilities),
-                responsibilities=[f"负责能力: {cap}" for cap in sorted(capabilities)],
-                outputs=[f"{role_id}:output:" + cap for cap in sorted(capabilities)],
-                state_artifacts=[f"{role_id}:artifact:" + cap
-                                 for cap in sorted(capabilities)],
-                external_actions=[]))
+            roles.append(
+                TeamRole(
+                    role_id=role_id,
+                    expert_id=expert_id,
+                    domain=(expert.domain_description or "")[:40],
+                    capabilities=sorted(capabilities),
+                    responsibilities=[
+                        f"负责能力: {cap}" for cap in sorted(capabilities)
+                    ],
+                    outputs=[
+                        f"{role_id}:output:" + cap for cap in sorted(capabilities)
+                    ],
+                    state_artifacts=[
+                        f"{role_id}:artifact:" + cap for cap in sorted(capabilities)
+                    ],
+                    external_actions=[],
+                )
+            )
         if len(roles) > len(self._expert_pool()):
             raise TeamFormationError("角色数超过专家数上限")
         contract = TeamContract(
-            contract_id=contract_id or ("team_" + hashlib.sha256(
-                (intent + "|" + domain + "|" + ",".join(sorted(required_capabilities)))
-                .encode()).hexdigest()[:12]),
-            task_intent=intent, domain=domain, roles=roles,
-            task_ref=task_ref, clock=self.clock)
+            contract_id=contract_id
+            or (
+                "team_"
+                + hashlib.sha256(
+                    (
+                        intent
+                        + "|"
+                        + domain
+                        + "|"
+                        + ",".join(sorted(required_capabilities))
+                    ).encode()
+                ).hexdigest()[:12]
+            ),
+            task_intent=intent,
+            domain=domain,
+            roles=roles,
+            task_ref=task_ref,
+            clock=self.clock,
+        )
         check = contract.validate()
         if not check["ok"]:
             raise TeamFormationError("契约校验失败: " + "; ".join(check["errors"]))
         return contract
 
-    def add_handoff(self, contract: TeamContract, *, from_role: str,
-                    to_role: str, input_refs: List[str],
-                    context_scope: Optional[List[str]] = None,
-                    budget_units: float = 0.0) -> Dict[str, Any]:
+    def add_handoff(
+        self,
+        contract: TeamContract,
+        *,
+        from_role: str,
+        to_role: str,
+        input_refs: Sequence[str],
+        context_scope: Optional[List[str]] = None,
+        budget_units: float = 0.0,
+    ) -> Dict[str, Any]:
+        if contract.status not in ("proposed", "active"):
+            raise TeamContractError("终态契约不能添加交接")
+        before = contract.validate()
+        if not before["ok"]:
+            raise TeamContractError("契约无效: " + "; ".join(before["errors"]))
         roles = {role.role_id: role for role in contract.roles}
         if from_role not in roles or to_role not in roles:
             raise TeamContractError("交接角色不存在")
         if from_role == to_role:
             raise TeamContractError("角色不能交接给自己")
+        input_refs = list(_strings(input_refs, "input_refs"))
         if not input_refs:
             raise TeamContractError("交接必须声明输入引用")
         producer_outputs = set(roles[from_role].outputs)
         unknown = [ref for ref in input_refs if ref not in producer_outputs]
         if unknown:
-            raise TeamContractError(
-                "交接输入不属于生产角色输出: " + ", ".join(unknown))
-        scope = list(context_scope or [])
+            raise TeamContractError("交接输入不属于生产角色输出: " + ", ".join(unknown))
+        scope = list(_strings(context_scope or (), "context_scope"))
         if contract.task_ref and contract.task_ref not in scope:
             scope.append(contract.task_ref)
-        if budget_units < 0:
-            raise TeamContractError("交接预算不能为负")
+        if (
+            type(budget_units) not in (int, float)
+            or not math.isfinite(budget_units)
+            or budget_units < 0
+        ):
+            raise TeamContractError("交接预算必须为有限非负数")
         handoff = Handoff(
-            handoff_id="ho_" + hashlib.sha256(
-                (contract.contract_id + "|" + from_role + "|" + to_role + "|"
-                 + ",".join(input_refs)).encode()).hexdigest()[:10],
-            from_role=from_role, to_role=to_role,
-            input_refs=list(input_refs), context_scope=scope,
-            budget_units=float(budget_units))
+            handoff_id="ho_"
+            + hashlib.sha256(
+                (
+                    contract.contract_id
+                    + "|"
+                    + from_role
+                    + "|"
+                    + to_role
+                    + "|"
+                    + ",".join(input_refs)
+                ).encode()
+            ).hexdigest()[:10],
+            from_role=from_role,
+            to_role=to_role,
+            input_refs=list(input_refs),
+            context_scope=scope,
+            budget_units=float(budget_units),
+        )
         contract.handoffs.append(handoff)
         check = contract.validate()
         if not check["ok"]:
             contract.handoffs.pop()
             raise TeamContractError("交接破坏契约: " + "; ".join(check["errors"]))
         contract.revision += 1
-        return {"ok": True, "handoff": handoff.to_dict(),
-                "digest": contract.digest()}
+        return {"ok": True, "handoff": handoff.to_dict(), "digest": contract.digest()}

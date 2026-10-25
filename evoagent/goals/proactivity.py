@@ -27,10 +27,10 @@ PROACTIVITY_LEVELS = ("off", "low", "normal", "high")
 
 #: 各档策略：主动侧每日模型调用上限/并发上限/是否允许主动发起
 _LEVEL_POLICY = {
-    "off":    {"max_model_calls": 0,  "max_concurrent": 0,  "may_start": False},
-    "low":    {"max_model_calls": 5,  "max_concurrent": 1,  "may_start": True},
-    "normal": {"max_model_calls": 25, "max_concurrent": 2,  "may_start": True},
-    "high":   {"max_model_calls": 60, "max_concurrent": 3,  "may_start": True},
+    "off": {"max_model_calls": 0, "max_concurrent": 0, "may_start": False},
+    "low": {"max_model_calls": 5, "max_concurrent": 1, "may_start": True},
+    "normal": {"max_model_calls": 25, "max_concurrent": 2, "may_start": True},
+    "high": {"max_model_calls": 60, "max_concurrent": 3, "may_start": True},
 }
 
 #: 无进展停止（G-06）：连续无收益尝试达到阈值即停
@@ -54,24 +54,32 @@ class ProactivityDecision:
     allowed: bool
     level: str
     reasons: List[str]
-    safety_notice: Optional[str] = None   # off 档保留的安全提示
+    safety_notice: Optional[str] = None  # off 档保留的安全提示
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"allowed": self.allowed, "level": self.level,
-                "reasons": list(self.reasons),
-                "safety_notice": self.safety_notice}
+        return {
+            "allowed": self.allowed,
+            "level": self.level,
+            "reasons": list(self.reasons),
+            "safety_notice": self.safety_notice,
+        }
 
 
 class ProactivityGovernor:
     """主动侧运行策略：档位 + 独立预算/并发 + 无进展停止 + 资源让位。"""
 
-    def __init__(self, *, level: str = "normal",
-                 resource_governor: Optional[Any] = None,
-                 ledger: Optional[Any] = None,
-                 clock: Optional[Callable[[], float]] = None):
+    def __init__(
+        self,
+        *,
+        level: str = "normal",
+        resource_governor: Optional[Any] = None,
+        ledger: Optional[Any] = None,
+        clock: Optional[Callable[[], float]] = None,
+    ):
+        level_policy(level)
         self.level = level
-        self.resource_governor = resource_governor   # 15-D ResourceGovernor
-        self.ledger = ledger                         # BudgetLedger（scope=proactive 池）
+        self.resource_governor = resource_governor  # 15-D ResourceGovernor
+        self.ledger = ledger  # BudgetLedger（scope=proactive 池）
         self._clock = clock or time.time
         self._no_progress_streak = 0
         self._stopped_for_no_progress = False
@@ -81,60 +89,83 @@ class ProactivityGovernor:
         但禁止新主动启动并给出安全提示。"""
         level_policy(level)  # 校验
         previous, self.level = self.level, level
-        if level == "off":
+        if level != previous:
+            self._no_progress_streak = 0
             self._stopped_for_no_progress = False
-        return {"previous": previous, "level": level,
-                "notice": self._off_notice() if level == "off" else None}
+        return {
+            "previous": previous,
+            "level": level,
+            "notice": self._off_notice() if level == "off" else None,
+        }
 
     @staticmethod
     def _off_notice() -> str:
-        return ("主动帮助已关闭：不再自动分析或发起建议任务；"
-                "已保存的机会与建议保留可查，随时可重新开启。")
+        return (
+            "主动帮助已关闭：不再自动分析或发起建议任务；"
+            "已保存的机会与建议保留可查，随时可重新开启。"
+        )
 
     # ---- 启动决策（F04-04：关闭不启动新非必要任务） ----
 
     def may_start(self, *, concurrent_proactive: int = 0) -> ProactivityDecision:
         policy = level_policy(self.level)
+        if type(concurrent_proactive) is not int or concurrent_proactive < 0:
+            raise ProactivityError("主动并发数必须是非负整数")
         reasons: List[str] = []
         if not policy["may_start"]:
             return ProactivityDecision(
-                False, self.level, ["主动帮助已关闭（off 档）"],
-                self._off_notice())
+                False, self.level, ["主动帮助已关闭（off 档）"], self._off_notice()
+            )
         if self._stopped_for_no_progress:
-            reasons.append(
-                f"连续无收益已达上限，主动侧已停（需用户重置或调档）")
+            reasons.append(f"连续无收益已达上限，主动侧已停（需用户重置或调档）")
         if concurrent_proactive >= policy["max_concurrent"]:
             reasons.append(
-                f"主动并发已达上限 {policy['max_concurrent']}（核心任务不受此限）")
+                f"主动并发已达上限 {policy['max_concurrent']}（核心任务不受此限）"
+            )
         # 独立预算池（与核心任务分账）
         if self.ledger is not None:
             try:
-                self.ledger.check("proactive",
-                                  max_model_calls=policy["max_model_calls"])
-            except Exception as exc:   # BudgetExceeded 等独立预算拒绝
+                self.ledger.check(
+                    "proactive", max_model_calls=policy["max_model_calls"]
+                )
+            except Exception as exc:  # BudgetExceeded 等独立预算拒绝
                 reasons.append(f"主动预算池已尽: {exc}")
         # 资源非干扰（F04-03）：高压时主动侧让位——15-D 既有决策器
         if self.resource_governor is not None:
-            decision = self.resource_governor.admit("opportunity")
-            if decision.decision == "defer":
-                reasons.append(f"资源压力让位核心任务: {decision.reason}")
-        return ProactivityDecision(
-            len(reasons) == 0, self.level, reasons,
-            None if len(reasons) == 0 else None)
+            try:
+                decision = self.resource_governor.admit("opportunity")
+                if decision.decision != "admit":
+                    reasons.append(f"资源压力让位核心任务或状态未知: {decision.reason}")
+            except Exception as exc:
+                reasons.append(f"主动资源准入不可用: {type(exc).__name__}")
+        return ProactivityDecision(len(reasons) == 0, self.level, reasons, None)
 
     # ---- 无进展停止（G-06 口径；主动失败不改核心状态） ----
 
     def record_attempt(self, *, had_benefit: bool) -> Dict[str, Any]:
         """记录一次主动尝试的收益结果。零写入核心状态。"""
-        limit = NO_PROGRESS_LIMIT[self.level]
+        level_policy(self.level)
+        if type(had_benefit) is not bool:
+            raise ProactivityError("收益结果必须是布尔值")
+        limit = NO_PROGRESS_LIMIT.get(self.level, 0)
+        if self.level == "off":
+            return {
+                "streak": self._no_progress_streak,
+                "limit": 0,
+                "stopped": self._stopped_for_no_progress,
+                "ignored": True,
+            }
         if had_benefit:
             self._no_progress_streak = 0
         else:
             self._no_progress_streak += 1
             if self._no_progress_streak >= limit:
                 self._stopped_for_no_progress = True
-        return {"streak": self._no_progress_streak, "limit": limit,
-                "stopped": self._stopped_for_no_progress}
+        return {
+            "streak": self._no_progress_streak,
+            "limit": limit,
+            "stopped": self._stopped_for_no_progress,
+        }
 
     def reset_no_progress(self) -> None:
         self._no_progress_streak = 0
@@ -145,13 +176,19 @@ class ProactivityGovernor:
     def handle_failure(self, reason: str) -> Dict[str, Any]:
         """主动侧失败的处置：只记决策层状态与提示，不触碰任务/账本。"""
         self.record_attempt(had_benefit=False)
-        return {"isolated": True, "reason": reason,
-                "core_state_touched": False,
-                "notice": "主动分析失败已隔离；你的任务与数据不受影响。"}
+        return {
+            "isolated": True,
+            "reason": reason,
+            "core_state_touched": False,
+            "notice": "主动分析失败已隔离；你的任务与数据不受影响。",
+        }
 
     def status(self) -> Dict[str, Any]:
         policy = level_policy(self.level)
-        return {"level": self.level, **policy,
-                "no_progress_streak": self._no_progress_streak,
-                "no_progress_limit": NO_PROGRESS_LIMIT[self.level],
-                "stopped_for_no_progress": self._stopped_for_no_progress}
+        return {
+            "level": self.level,
+            **policy,
+            "no_progress_streak": self._no_progress_streak,
+            "no_progress_limit": NO_PROGRESS_LIMIT.get(self.level, 0),
+            "stopped_for_no_progress": self._stopped_for_no_progress,
+        }
