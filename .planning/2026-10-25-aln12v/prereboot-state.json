@@ -1,0 +1,107 @@
+{
+ "state_digest": "2947efb5ab5f2148fe03d34ac1d4f609bc2fb3b38dc114dc49b776d74b624034",
+ "state_bytes": 12248,
+ "tasks": [
+  {
+   "local_task_id": "local_rt_offline_1",
+   "status": "DONE",
+   "goal": "审批演示：断网路径（真机）",
+   "server_task_id": "9f9ce3874a88",
+   "current_run_id": "run_954db00b63c947858bf056a709461c30"
+  },
+  {
+   "local_task_id": "local_rt_expire_1",
+   "status": "WAITING_DEPENDENCY",
+   "goal": "审批演示：过期路径（真机）",
+   "server_task_id": "b0f2e3173c65",
+   "current_run_id": "run_43fb4113023b479ea2a348590da9a69d"
+  },
+  {
+   "local_task_id": "local_rt_reject_1",
+   "status": "DONE",
+   "goal": "审批演示：拒绝路径（真机）",
+   "server_task_id": "65ed5ad7b9f6",
+   "current_run_id": "run_46b98b902be04e45bc95f3077b0c37bf"
+  },
+  {
+   "local_task_id": "local_rt_approve_1",
+   "status": "DONE",
+   "goal": "审批演示：批准路径（真机）",
+   "server_task_id": "a15c5d4718e3",
+   "current_run_id": "run_9410c0526fb94539ba3f2db1fe040ed3"
+  },
+  {
+   "local_task_id": "local_mvg3qx4n01pu7hkbbl9x",
+   "status": "DONE",
+   "goal": "Explain idempotency in three sentences",
+   "server_task_id": "ad9a328ce93c",
+   "current_run_id": null
+  },
+  {
+   "local_task_id": "local_mvgrmqik02av21gjp63s",
+   "status": "DONE",
+   "goal": "我在什么位置",
+   "server_task_id": "1b77c9fc60b7",
+   "current_run_id": null
+  },
+  {
+   "local_task_id": "local_mvguum9901pv5qtshpfe",
+   "status": "DONE",
+   "goal": "write a note to notes/demo.txt",
+   "server_task_id": "c8ffacc36398",
+   "current_run_id": null
+  },
+  {
+   "local_task_id": "local_mvgveyn306bxuy34yvxd",
+   "status": "DONE",
+   "goal": "background notification check",
+   "server_task_id": "ae8bb269b755",
+   "current_run_id": null
+  },
+  {
+   "local_task_id": "local_mvjp7wtf02mrcx2nffmj",
+   "status": "DONE",
+   "goal": "现在几点了",
+   "server_task_id": null,
+   "current_run_id": null
+  },
+  {
+   "local_task_id": "local_mvjp8lwx06slmlig3vty",
+   "status": "DONE",
+   "goal": "帮我查一下我的位置",
+   "server_task_id": "6ab0d270b14f",
+   "current_run_id": "run_a414fd1271a3491dbccfa632e6e9c99d"
+  },
+  {
+   "local_task_id": "local_mvno55t703mdt6l0gwr3",
+   "status": "DONE",
+   "goal": "calculate 1+1",
+   "server_task_id": "3e1cf341048b",
+   "current_run_id": "run_7f5b75f3a0054db68d99eb07e6442117"
+  },
+  {
+   "local_task_id": "local_mvno777001i0msr1iuqa",
+   "status": "DONE",
+   "goal": "calculate 5+6",
+   "server_task_id": "a3ee7b879193",
+   "current_run_id": "run_8695e8e204f54387864d986a2f3c6a8f"
+  },
+  {
+   "local_task_id": "local_mvnobn7601cceucefidp",
+   "status": "DONE",
+   "goal": "calculate",
+   "server_task_id": "3ee9cd585c67",
+   "current_run_id": "run_12779f2c5b89452eaef80c5d7644a8d5"
+  },
+  {
+   "local_task_id": "local_mvnodexq09ew2v2kj2cm",
+   "status": "DONE",
+   "goal": "calculate",
+   "server_task_id": "b4c98a2c95a0",
+   "current_run_id": "run_1645c170c4554f1ebfbbdf512ec9238b"
+  }
+ ],
+ "queue": [],
+ "checkpoint": null,
+ "dead_letters": 0
+}

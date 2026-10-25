@@ -1,0 +1,223 @@
+{
+ "task": "ALN-12-V 通知、离线与系统重启真机矩阵",
+ "collected_at": 1792923729.4332418,
+ "device": {
+  "serial": "5748d823",
+  "model": "24018RPACC",
+  "android": "16",
+  "build": "BP2A.250605.031.A3"
+ },
+ "app": {
+  "package": "com.evoagent",
+  "version_name": "0.1.0",
+  "version_code": 1,
+  "apk_sha256": "7b72b7997e842ba806841352dfc2e1494617a73f4dacbeb7d30ee85599fdeda2",
+  "js_bundle_sha256": "a0eb06f5af793b0590bab6937785483b61c46c61ae8a67abf3494cccd57b4e9f",
+  "js_bundle_bytes": 6558625,
+  "js_source": "Metro dev server 8081 serving working tree; bundle built 2026-10-25T18:08+08:00 when repo HEAD was 61451f3 (ALN-29-D docs); working tree also contained other authors' uncommitted changes at build time",
+  "accessibility_service": "com.evoagent/.DeviceAccessibilityService (enabled)",
+  "post_notification_permission": "allow",
+  "js_build_head": "61451f3"
+ },
+ "notification_probe": {
+  "attempted": true,
+  "method": "离线排队任务→后台 WorkManager SyncWorker（headless JS）→恢复 adb reverse 8300→cmd jobscheduler run -f com.evoagent 58",
+  "result": "not_observed",
+  "details": {
+   "evoagent_notifications_after": 0,
+   "background_sync_evidence": "后台任务后后端出现新任务 b4c98a2c95a0(calculate) 与 3ee9cd585c67(calculate)，说明 headless 同步执行成功",
+   "limitation": "未在 dumpsys notification 中观测到 com.evoagent 通知；logcat 中也无 [background-sync] 行（缓冲/时序），不宣称通知已投递，按未验证记录"
+  }
+ },
+ "online_baseline": {
+  "ui": {
+   "queue_line": "",
+   "banner": [],
+   "results": []
+  },
+  "backend_task": {
+   "task_id": "3e1cf341048b",
+   "status": "SUCCEEDED",
+   "goal": "calculate 1+1"
+  }
+ },
+ "offline_queue": {
+  "ui_queued": {
+   "queue_line": "待上传 1 · 在传 0 · 隔离 0 · 仅本地 0 · 死信 0 · 容量 1/500（0%） · checkpoint 22/500",
+   "banner": [
+    "离线 · 任务保存在本机",
+    "已离线保存；联网后自动以幂等键提交"
+   ],
+   "results": [
+    "结果: 计算结果：2",
+    "结果: 已按通用流程处理：帮我查一下我的位置",
+    "结果: 本地时间: 2026-10-22 23:31:19",
+    "结果: 已按通用流程处理：background notification check"
+   ]
+  },
+  "queued_line": "待上传 1 · 容量 1/500",
+  "backend_before_replay": "无新任务（latest=3e1cf341048b）",
+  "persisted_state_key": "offline_state_v1",
+  "persisted_state_digest": "2947efb5ab5f2148fe03d34ac1d4f609bc2fb3b38dc114dc49b776d74b624034",
+  "local_tasks_persisted": 14
+ },
+ "replay_on_reconnect": {
+  "ui_after_sync": {
+   "queue_line": "待上传 0 · 在传 0 · 隔离 0 · 仅本地 0 · 死信 0 · 容量 0/500（0%） · checkpoint 25/500",
+   "banner": [
+    "在线 · 事件自动同步",
+    "离线状态"
+   ],
+   "results": [
+    "结果: 计算结果：11",
+    "结果: 计算结果：2",
+    "结果: 已按通用流程处理：帮我查一下我的位置",
+    "结果: 本地时间: 2026-10-22 23:31:19"
+   ]
+  },
+  "result_line": "结果: 计算结果：11",
+  "queue_after": "待上传 0 · checkpoint 22→25",
+  "backend_new_task": {
+   "task_id": "a3ee7b879193",
+   "status": "SUCCEEDED",
+   "goal": "calculate 5+6"
+  }
+ },
+ "reboot_recovery": {
+  "pre_digest": "2947efb5ab5f2148fe03d34ac1d4f609bc2fb3b38dc114dc49b776d74b624034",
+  "post_digest": "7871aee2f4edb3121cf92e9a6fdb0d302da0bdae60c579fa6f5e75a961b1abb3",
+  "task_ids_preserved": true,
+  "pre_task_count": 14,
+  "post_task_count": 14,
+  "status_changes": {},
+  "queue_preserved": true
+ },
+ "backend_after_reboot": {
+  "task_count": 13,
+  "calculate_tasks": [
+   "b4c98a2c95a0",
+   "3ee9cd585c67"
+  ]
+ },
+ "artifacts": {
+  "RKStorage-postboot.db": {
+   "sha256": "48f5699e7a91b1e275a3955de35f0d44c9651b4f97c612147da20252f55f493e",
+   "bytes": 69632
+  },
+  "RKStorage-prereboot.db": {
+   "sha256": "db7889144379701a1da3ed287a8b949ff289c2b8969b72d537483728c0ad1511",
+   "bytes": 69632
+  },
+  "_ui_submit.xml": {
+   "sha256": "5cd0f50742dd4be35a74773fbd3188e253699d886f94803c1df44bf562e7f3b9",
+   "bytes": 37189
+  },
+  "after-sync.png": {
+   "sha256": "50c45cb0da54ba932f3a80519acbbc5034614c03cf7a198be5c08993bd150001",
+   "bytes": 378342
+  },
+  "offline-submitted.png": {
+   "sha256": "1a4e9ae0b8d1887f27b923ef271b39b5f5056d1f5903276b210c0065834d0ecc",
+   "bytes": 394742
+  },
+  "online-success.png": {
+   "sha256": "937c051435c53925ec13014d909f4f6c1bab4e1921520e36f7b38d774d5fe734",
+   "bytes": 398344
+  },
+  "postboot.png": {
+   "sha256": "c5bd477f92d12cffbbf7f48b5728cefa7acf9498cf34b359ecd0aa6d24593c5e",
+   "bytes": 353971
+  },
+  "prefs-debug.xml": {
+   "sha256": "90a34658210a8db876ceded36b3e4abc39a826920146fce58ebc7ea3bdc035a2",
+   "bytes": 186
+  },
+  "prefs-original.xml": {
+   "sha256": "5955644642c0a7ce88b3fd7cb8bc360c99fbc2a3b6f8188e115f5c670647a88b",
+   "bytes": 256
+  },
+  "prereboot-state.json": {
+   "sha256": "150aad7ebff5d6066da79706a929793d5720d89f0b2402744c1f41f17af80e31",
+   "bytes": 3131
+  },
+  "reboot-compare.json": {
+   "sha256": "7a8c45d7bb10ce5bde11f23a1c318947964745910b0d20780176ab4e646a1c07",
+   "bytes": 4302
+  },
+  "submit_task.py": {
+   "sha256": "2e0f56e51afc97ffaf4e7cb423e24352d2463f3cb0ab0387e6b422a446e78d05",
+   "bytes": 3210
+  },
+  "ui-after-sync.xml": {
+   "sha256": "24fd58a180c6dca3767a45e69380747ddb12f9a9d6cdfa535b1c128a06e7adc4",
+   "bytes": 35787
+  },
+  "ui-initial.xml": {
+   "sha256": "dedd85bc659e136acac246a440b2c848724e85425e1efa25a45d311627500243",
+   "bytes": 2971
+  },
+  "ui-offline-78.xml": {
+   "sha256": "40538cb3c58aa954a428140fbcb5c988e8d65f55fbfac5feb874de6321e3d420",
+   "bytes": 14443
+  },
+  "ui-offline-submitted.xml": {
+   "sha256": "19e94443036b42e0cdd7ddae696971c2beed3d76764e518b81ab9b1f693830b4",
+   "bytes": 37321
+  },
+  "ui-offline-tab.xml": {
+   "sha256": "3d9e468e6573285e39945e878b06a8512a1c775314a3b7ee01f212c180ab4536",
+   "bytes": 35454
+  },
+  "ui-offline.xml": {
+   "sha256": "a859ec0c66af74ccd6fa1476d3b9fc7ed9c5868204e00bcf8fef5d7c56d524ae",
+   "bytes": 35855
+  },
+  "ui-offline2.xml": {
+   "sha256": "02d76a0b5f8be7b6059a2832c2e6da73f6cdc0493fedfb92bd5f00167727efa2",
+   "bytes": 38848
+  },
+  "ui-offline3.xml": {
+   "sha256": "34a017357063f3d2202de9256f62a7a5c653c24cc4ea8ca4f7aa7d103a58c57d",
+   "bytes": 25016
+  },
+  "ui-online.xml": {
+   "sha256": "66d13aaf3efb064c37b5b2e257b87139f67f345501bf88d165f8cf1c84f32980",
+   "bytes": 35885
+  },
+  "ui-online2.xml": {
+   "sha256": "40538cb3c58aa954a428140fbcb5c988e8d65f55fbfac5feb874de6321e3d420",
+   "bytes": 14443
+  },
+  "ui-postboot.xml": {
+   "sha256": "5c6f14b94969fcbf4a54348f01251cbab12679abc0beff5bf925a9183187d11e",
+   "bytes": 35704
+  },
+  "ui-prereboot.xml": {
+   "sha256": "736c4edd0e21653ad8b50764c07e701734cfed833bfbb67ecb9acd29b73dec82",
+   "bytes": 25423
+  },
+  "ui-relaunch.xml": {
+   "sha256": "5b19a47228d81f9713706771fa9844d6e57e349eb7148fd2751a1e37bd48624e",
+   "bytes": 35924
+  },
+  "ui-submit.xml": {
+   "sha256": "66d13aaf3efb064c37b5b2e257b87139f67f345501bf88d165f8cf1c84f32980",
+   "bytes": 35885
+  },
+  "ui-submit2.xml": {
+   "sha256": "a859ec0c66af74ccd6fa1476d3b9fc7ed9c5868204e00bcf8fef5d7c56d524ae",
+   "bytes": 35855
+  },
+  "ui_nodes.py": {
+   "sha256": "08b9bd2fb66e9b2d212bcc7e6ed5c0221c65044023f520ddd697a9665a41cdb0",
+   "bytes": 573
+  },
+  "uiop.py": {
+   "sha256": "29f807f89ccf876f10cfed6493260b96f0bd1481b06a491a445b1fc24cf3eced",
+   "bytes": 2504
+  }
+ },
+ "collected_commit": "a40ef427d82e92f22f0cfeadcdb6741a1091fb7c",
+ "artifact_count": 29,
+ "deleted_artifacts_note": "index.bundle.js(6558625B, sha256 a0eb06f5...)、online2.png 等大体积中间产物在证据归档前删除，哈希见本文件 app.js_bundle_sha256"
+}
