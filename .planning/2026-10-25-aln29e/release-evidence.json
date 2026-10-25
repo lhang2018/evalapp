@@ -1,0 +1,321 @@
+{
+ "task": "ALN-29-E 发布通道、更新控制与回滚体验",
+ "measured_at": 1792924958.136797,
+ "manifests": [
+  {
+   "release_id": "rel_100",
+   "version": "v1.0.0",
+   "channel": "stable",
+   "artifact_digest": "894b657f13ad16da706243b55a190d286787666a5aa525940f3c7c7a56fec0fc",
+   "signing_key_id": "server-hmac-1",
+   "signature_version": "hmac-sha256-v2",
+   "signed_by": "d0b7953db2f48a7ae3034a89…"
+  },
+  {
+   "release_id": "rel_110",
+   "version": "v1.1.0",
+   "channel": "stable",
+   "artifact_digest": "c78e65c56cb2b3cfa799e3e8702da0490d30643146edc4ff7fa7891c1800c1d6",
+   "signing_key_id": "server-hmac-1",
+   "signature_version": "hmac-sha256-v2",
+   "signed_by": "37f5b843feeb668e80fbf3b0…"
+  },
+  {
+   "release_id": "rel_200b",
+   "version": "v2.0.0",
+   "channel": "experimental",
+   "artifact_digest": "4ca32323b539d1701e934c42a5285ede55b8e842f839e049190c91f8735f75a6",
+   "signing_key_id": "server-hmac-1",
+   "signature_version": "hmac-sha256-v2",
+   "signed_by": "1eccb4544f57521e4b72eaaa…"
+  }
+ ],
+ "deploy": [
+  {
+   "ok": true,
+   "release_id": "rel_100",
+   "at": 1792924958.1377957,
+   "gray_percent": 100,
+   "previous": null,
+   "version": "v1.0.0",
+   "verification": {
+    "release_id": "rel_100",
+    "version": "v1.0.0",
+    "channel": "stable",
+    "context": "deploy",
+    "at": 1792924958.1377957,
+    "signature_version": "hmac-sha256-v2",
+    "key_id": "server-hmac-1",
+    "payload_digest": "894b657f13ad16da706243b55a190d286787666a5aa525940f3c7c7a56fec0fc",
+    "artifact_digest": "894b657f13ad16da706243b55a190d286787666a5aa525940f3c7c7a56fec0fc",
+    "ok": true,
+    "errors": [],
+    "compatibility_relaxed": false
+   }
+  },
+  {
+   "ok": true,
+   "release_id": "rel_110",
+   "at": 1792924958.1377957,
+   "gray_percent": 100,
+   "previous": "rel_100",
+   "version": "v1.1.0",
+   "verification": {
+    "release_id": "rel_110",
+    "version": "v1.1.0",
+    "channel": "stable",
+    "context": "deploy",
+    "at": 1792924958.1377957,
+    "signature_version": "hmac-sha256-v2",
+    "key_id": "server-hmac-1",
+    "payload_digest": "c78e65c56cb2b3cfa799e3e8702da0490d30643146edc4ff7fa7891c1800c1d6",
+    "artifact_digest": "c78e65c56cb2b3cfa799e3e8702da0490d30643146edc4ff7fa7891c1800c1d6",
+    "ok": true,
+    "errors": [],
+    "compatibility_relaxed": false
+   }
+  }
+ ],
+ "stable_install_refuses_experimental": {
+  "ok": false,
+  "decision": "refuse",
+  "release_id": "rel_200b",
+  "reasons": [
+   "稳定通道安装不会收到实验版本（如需体验请显式切换到实验通道）"
+  ]
+ },
+ "experimental_opt_in": {
+  "ok": true,
+  "preference": {
+   "installation_id": "install-demo",
+   "channel": "experimental",
+   "auto_update": true,
+   "allow_experimental": true,
+   "pinned_release_id": null,
+   "actor": "demo",
+   "reason": "实测实验通道",
+   "updated_at": 1792924958.1377957
+  }
+ },
+ "experimental_install_decision": {
+  "ok": true,
+  "decision": "install",
+  "release_id": "rel_200b",
+  "reasons": [
+   "版本签名与摘要校验通过",
+   "实验版本"
+  ],
+  "release": {
+   "version": "v2.0.0",
+   "channel": "experimental",
+   "artifact_digest": "4ca32323b539d1701e934c42a5285ede55b8e842f839e049190c91f8735f75a6"
+  },
+  "verification": {
+   "ok": true,
+   "artifact_digest": "4ca32323b539d1701e934c42a5285ede55b8e842f839e049190c91f8735f75a6",
+   "key_id": "server-hmac-1"
+  },
+  "activation": {
+   "requires_restart": true,
+   "must_rebind_release_identity": true,
+   "note": "运行绑定不可无约束热切换：切换版本需重启应用并重新绑定该版本的发布身份（签名/摘要）后才生效"
+  }
+ },
+ "rollback_evidence": {
+  "ok": true,
+  "evidence": {
+   "rollback": {
+    "ok": true,
+    "from": "rel_110",
+    "to": "rel_100",
+    "reason": "实测回滚",
+    "at": 1792924958.138797
+   },
+   "target": {
+    "release_id": "rel_100",
+    "version": "v1.0.0",
+    "channel": "stable",
+    "artifact_digest": "894b657f13ad16da706243b55a190d286787666a5aa525940f3c7c7a56fec0fc"
+   },
+   "verification": {
+    "ok": true,
+    "artifact_digest": "894b657f13ad16da706243b55a190d286787666a5aa525940f3c7c7a56fec0fc",
+    "key_id": "server-hmac-1",
+    "signature_ok": true,
+    "errors": []
+   },
+   "same_version_binding": true,
+   "irreversible_warning": null,
+   "actor": "demo",
+   "explanation": {
+    "installation_id": "install-demo",
+    "channel": "experimental",
+    "auto_update": true,
+    "allow_experimental": true,
+    "pinned_release_id": null,
+    "current": {
+     "release_id": "rel_100",
+     "version": "v1.0.0",
+     "channel": "stable"
+    },
+    "stable_versions": [
+     {
+      "release_id": "rel_110",
+      "version": "v1.1.0",
+      "channel": "stable",
+      "artifact_digest": "c78e65c56cb2b3cfa799e3e8702da0490d30643146edc4ff7fa7891c1800c1d6"
+     },
+     {
+      "release_id": "rel_100",
+      "version": "v1.0.0",
+      "channel": "stable",
+      "artifact_digest": "894b657f13ad16da706243b55a190d286787666a5aa525940f3c7c7a56fec0fc"
+     }
+    ],
+    "experimental_versions": [
+     {
+      "release_id": "rel_200b",
+      "version": "v2.0.0",
+      "channel": "experimental",
+      "artifact_digest": "4ca32323b539d1701e934c42a5285ede55b8e842f839e049190c91f8735f75a6"
+     },
+     {
+      "release_id": "rel_110",
+      "version": "v1.1.0",
+      "channel": "stable",
+      "artifact_digest": "c78e65c56cb2b3cfa799e3e8702da0490d30643146edc4ff7fa7891c1800c1d6"
+     },
+     {
+      "release_id": "rel_100",
+      "version": "v1.0.0",
+      "channel": "stable",
+      "artifact_digest": "894b657f13ad16da706243b55a190d286787666a5aa525940f3c7c7a56fec0fc"
+     }
+    ],
+    "latest_rollback": {
+     "from": "rel_110",
+     "to": "rel_100",
+     "reason": "实测回滚",
+     "at": 1792924958.138797,
+     "target_version": "v1.0.0",
+     "verified": true,
+     "reasons": []
+    },
+    "notes": [
+     "稳定版本经过评测与门禁，默认只接收稳定通道更新",
+     "实验版本可能不稳定，需显式开启；出问题可随时回滚",
+     "更新前会校验发布签名与制品摘要；坏包会被拒绝并显示原因",
+     "当前为实验通道：可能收到不稳定版本"
+    ]
+   }
+  }
+ },
+ "bad_package_refusal": {
+  "ok": false,
+  "decision": "refuse",
+  "release_id": "rel_bad",
+  "reasons": [
+   "坏包/签名或摘要不匹配，拒绝更新"
+  ],
+  "verification": {
+   "ok": false,
+   "errors": [
+    "签名不匹配"
+   ],
+   "artifact_digest": "ee7928d5215f7b5de59aebb90277e67422ff0d245aa52c1921cb8d32d74ea86e",
+   "key_id": "server-hmac-1"
+  }
+ },
+ "explanation": {
+  "installation_id": "install-demo",
+  "channel": "experimental",
+  "auto_update": true,
+  "allow_experimental": true,
+  "pinned_release_id": null,
+  "current": {
+   "release_id": "rel_100",
+   "version": "v1.0.0",
+   "channel": "stable"
+  },
+  "stable_versions": [
+   {
+    "release_id": "rel_110",
+    "version": "v1.1.0",
+    "channel": "stable",
+    "artifact_digest": "c78e65c56cb2b3cfa799e3e8702da0490d30643146edc4ff7fa7891c1800c1d6"
+   },
+   {
+    "release_id": "rel_100",
+    "version": "v1.0.0",
+    "channel": "stable",
+    "artifact_digest": "894b657f13ad16da706243b55a190d286787666a5aa525940f3c7c7a56fec0fc"
+   }
+  ],
+  "experimental_versions": [
+   {
+    "release_id": "rel_200b",
+    "version": "v2.0.0",
+    "channel": "experimental",
+    "artifact_digest": "4ca32323b539d1701e934c42a5285ede55b8e842f839e049190c91f8735f75a6"
+   },
+   {
+    "release_id": "rel_110",
+    "version": "v1.1.0",
+    "channel": "stable",
+    "artifact_digest": "c78e65c56cb2b3cfa799e3e8702da0490d30643146edc4ff7fa7891c1800c1d6"
+   },
+   {
+    "release_id": "rel_100",
+    "version": "v1.0.0",
+    "channel": "stable",
+    "artifact_digest": "894b657f13ad16da706243b55a190d286787666a5aa525940f3c7c7a56fec0fc"
+   }
+  ],
+  "latest_rollback": {
+   "from": "rel_110",
+   "to": "rel_100",
+   "reason": "实测回滚",
+   "at": 1792924958.138797,
+   "target_version": "v1.0.0",
+   "verified": true,
+   "reasons": []
+  },
+  "notes": [
+   "稳定版本经过评测与门禁，默认只接收稳定通道更新",
+   "实验版本可能不稳定，需显式开启；出问题可随时回滚",
+   "更新前会校验发布签名与制品摘要；坏包会被拒绝并显示原因",
+   "当前为实验通道：可能收到不稳定版本"
+  ]
+ },
+ "history": {
+  "installation_id": "install-demo",
+  "decisions": [
+   {
+    "installation_id": "install-demo",
+    "release_id": "rel_200b",
+    "decision": "install",
+    "ok": true,
+    "at": 1792924958.1377957
+   },
+   {
+    "installation_id": "install-demo",
+    "decision": "rollback",
+    "ok": true,
+    "at": 1792924958.138797,
+    "to": "rel_100",
+    "reason": "实测回滚"
+   }
+  ]
+ },
+ "checks": {
+  "stable_refused_experimental": true,
+  "experimental_install_requires_restart": true,
+  "no_hot_switch": true,
+  "rollback_ok": true,
+  "rollback_same_version_binding": true,
+  "rollback_signature_verified": true,
+  "bad_package_refused": true,
+  "bad_package_errors_visible": true
+ },
+ "all_checks_pass": true
+}
