@@ -31,6 +31,7 @@ from ..tools.registry import ToolRegistry
 from ..assets.entity import AssetError
 from ..workflows.engine import WorkflowEngine
 from ..workflows.models import WorkflowDef, WorkflowNodeState
+from ..routing.mode_router import DYNAMIC, HYBRID, STABLE, ModeRouter
 from ..config import Config
 from .budget import (BudgetController, BudgetExceeded, BudgetLimits,
                      BudgetUsage)
@@ -61,7 +62,9 @@ class RuntimeController:
                  diagnostics: Any = None, classifier: Any = None,
                  ledger: Optional[Any] = None,
                  audit: Any = None, memory_bindings=None,
-                 asset_binder: Any = None):
+                 asset_binder: Any = None,
+                 resource_governor: Any = None,
+                 mode_router: Any = None):
         self.cfg = config
         self.db = db
         self.bus = bus
@@ -83,6 +86,9 @@ class RuntimeController:
         self.permissions = permissions
         self.releases = releases
         self.wf_lookup = wf_lookup or (lambda wid: None)
+        # ALN-08-W：执行模式主链路由（与评测共用 WorkflowMatcher.select 入口）；
+        # 未注入时按同一实现自建，保证主链与评测入口一致。
+        self.mode_router = mode_router if mode_router is not None else ModeRouter(self.wf_lookup)
         self.diagnostics = diagnostics
         self.classifier = classifier
         self.ledger = ledger
@@ -96,6 +102,9 @@ class RuntimeController:
         # 绑定专家/工作流的精确资产版本（ref+digest），恢复/续跑只验证
         # 不重绑；未注入时行为与既有完全一致。
         self.asset_binder = asset_binder
+        # ALN-15-D：资源准入决策器（可选）。注入后后台任务在资源高压下
+        # 准入 defer（挂起可恢复）与运行中让位；未注入行为不变。
+        self.resource_governor = resource_governor
         # 并发管理（Arch 3.2 管理并发和取消）
         self._active: Dict[str, threading.Event] = {}
         self._lock = threading.Lock()
@@ -235,6 +244,25 @@ class RuntimeController:
             version_manifest["workflow_ref"] = {
                 "id": task.workflow_ref,
                 "version": getattr(wf, "version", None) if wf else None}
+        # ALN-15-D：资源准入——后台来源任务在资源高压时 defer 为
+        # SUSPENDED（检查点/状态完好，压力回落由 resume 恢复）；
+        # 前台（user）任务不受后台让位影响，仅绝对上限时暂缓。
+        if self.resource_governor is not None:
+            decision = self.resource_governor.admit(task.origin)
+            if decision.decision != "defer":
+                # 过期的 defer 标记随成功准入清除（清单反映当前事实）
+                task.runtime_manifest.pop("resource_deferred", None)
+            if decision.decision == "defer":
+                # 任务保持 CREATED（不转状态——状态机无 CREATED→SUSPENDED，
+                # 且 defer 本就不该扰动核心状态）：稍后重新 execute 即恢复，
+                # 核心状态零扰动。
+                self._unregister_active(task.task_id)
+                task.failure_reason = None
+                task.runtime_manifest["resource_deferred"] = decision.to_dict()
+                self.db.save_task(task)
+                self._emit(task, "task_resource_deferred",
+                           decision.to_dict(), severity="warn")
+                return task
         # GAP ⑤c：任务级运行时清单快照并入 run manifest（source/
         # model_override/device/manifest_extras 等执行前已知事实）；
         # 已算出的契约实值不覆盖，为 null 的契约字段（如
@@ -381,18 +409,33 @@ class RuntimeController:
 
     # ---- Phase 2: 规划 ----
     def _plan(self, task: Task, budget: BudgetController) -> Task:
-        # 已注册工作流直接就绪（PRD 11.3：固定流程不必重新发明计划）
+        # PRD 11.3：固定流程不必重新发明计划。ALN-08-W 起，主链不再静态取
+        # 「专家登记的第一个工作流」，而是与评测同一入口显式选择执行模式：
+        # 五项检查全过才走工作流；不可用时明确降级为动态规划并保留拒绝证据。
         expert = self.experts.get(task.domain) or self.experts.route(task.intent)
-        if task.workflow_ref is None and expert and expert.workflow_ids \
-                and task.intent in expert.applicable_intents:
-            task.workflow_ref = expert.workflow_ids[0]
+        selection = self._select_execution_mode(task, expert, budget)
+        if selection.mode in (STABLE, HYBRID) and selection.workflow_id:
+            wf = self.wf_lookup(selection.workflow_id)
+            if wf is not None:
+                task.workflow_ref = selection.workflow_id
+                task.runtime_manifest["execution_mode"] = selection.mode
+                hints = [n.tool for n in wf.nodes]
+                self._enrich_task_model(task, hints, len(hints),
+                                        has_workflow=True)
+                task = self._move(task, TaskStatus.READY)
+                return task
         if task.workflow_ref:
-            wf = self.wf_lookup(task.workflow_ref)
-            hints = [n.tool for n in wf.nodes] if wf is not None else []
-            self._enrich_task_model(task, hints, len(hints),
-                                    has_workflow=True)
-            task = self._move(task, TaskStatus.READY)
-            return task
+            # 显式登记过的默认工作流不可用：不旁路使用，清空并留拒绝证据
+            task.runtime_manifest["workflow_ref_rejected"] = {
+                "workflow_ref": task.workflow_ref,
+                "selected_mode": selection.mode,
+                "rationale": selection.rationale,
+            }
+            self._emit(task, "workflow_ref_rejected",
+                       task.runtime_manifest["workflow_ref_rejected"],
+                       severity="warn")
+            task.workflow_ref = None
+        task.runtime_manifest["execution_mode"] = DYNAMIC
         task = self._move(task, TaskStatus.PLANNING)
         model = self._route_model(task)
         self._bind_model_pool(budget, model)
@@ -421,6 +464,48 @@ class RuntimeController:
                                 len(plan.steps))
         task = self._move(task, TaskStatus.READY)
         return task
+
+    # ---- ALN-08-W：执行模式选择与归因 ----
+    def _select_execution_mode(self, task: Task, expert: Any,
+                               budget: BudgetController):
+        """用主链模式路由器选择执行模式，并把决策与拒绝原因落进运行清单。
+
+        任务已钉住工作流（提交/恢复/API 指定）时，只把该工作流作为候选：
+        可用则走它，不可用则显式拒绝并降级，绝不静默换成别的流程。
+        """
+        pinned = task.workflow_ref
+        workflow_ids = ([pinned] if pinned
+                        else list(getattr(expert, "workflow_ids", []) or []))
+        manifest = task.runtime_manifest or {}
+        selection = self.mode_router.decide(
+            goal=task.user_goal, intent=task.intent,
+            workflow_ids=workflow_ids,
+            provided_inputs=list(manifest.get("match_inputs") or []),
+            tool_whitelist=getattr(expert, "tool_whitelist", None),
+            model_version=str((manifest.get("model_route") or {}).get("model_id") or ""),
+            budget=budget)
+        task.runtime_manifest["mode_selection"] = selection.to_dict()
+        task.runtime_manifest["mode_rejections"] = self.mode_router.rejections(selection)
+        self._emit(task, "execution_mode_selected", {
+            "mode": selection.mode,
+            "workflow_id": selection.workflow_id,
+            "rationale": selection.rationale,
+            "rejected": task.runtime_manifest["mode_rejections"]})
+        return selection
+
+    def _record_mode_attribution(self, task: Task, actual_mode: str,
+                                 workflow_id: str = "") -> None:
+        """执行前记录「决策 vs 实际」，不一致必须显式告警（不得静默掩盖）。"""
+        decision = self.mode_router.selection_from_manifest(
+            (task.runtime_manifest or {}).get("mode_selection"))
+        if decision is None:
+            return
+        attribution = self.mode_router.attribution(decision, actual_mode, workflow_id)
+        task.runtime_manifest["mode_attribution"] = attribution
+        if not attribution["consistent"]:
+            self._emit(task, "execution_mode_mismatch", attribution, severity="warn")
+            self._audit("execution_mode_mismatch", target=task.task_id,
+                        outcome="warn", detail_stage="mode_attribution")
 
     def _enrich_task_model(self, task: Task, tool_hints: List[str],
                            step_count: int, *, has_workflow: bool = False) -> None:
@@ -481,7 +566,9 @@ class RuntimeController:
         if start:
             task = self._move(task, TaskStatus.RUNNING)
         if task.workflow_ref:
+            self._record_mode_attribution(task, STABLE, task.workflow_ref)
             return self._run_workflow(task, budget)
+        self._record_mode_attribution(task, DYNAMIC)
         return self._run_react(task, budget)
 
     def _run_react(self, task: Task, budget: BudgetController) -> Task:
