@@ -117,3 +117,48 @@ test('a resolved unsuccessful SyncResult is preserved as a flush failure, withou
   assert.equal(state.nativeLookups, 0);
   assert.equal(state.posted, 0);
 });
+
+const BASELINE = 'evoagent_task_notified:baseline:v1';
+const HISTORICAL_MARKER = 'evoagent_task_notified:historical-local';
+
+function addHistoricalTask() {
+  const initial = JSON.parse(state.data.get(STATE_KEY)!);
+  initial.tasks.push({ ...initial.tasks[0], local_task_id: 'historical-local',
+    client_request_id: 'historical-request', server_task_id: 'historical-server',
+    status: 'DONE', server_status: 'SUCCEEDED', result: 'historical result' });
+  state.data.set(STATE_KEY, JSON.stringify(initial));
+}
+
+test('assembly baselines historical DONE before refresh but not a newly completed task', async () => {
+  reset('success');
+  addHistoricalTask();
+  const result = await runStoredBackgroundSync();
+  assert.equal(result.refreshed, true);
+  assert.equal(state.data.get(BASELINE), 'READY');
+  assert.equal(state.data.get(HISTORICAL_MARKER), 'DONE');
+  assert.equal(state.posted, 1);
+  await runStoredBackgroundSync();
+  assert.equal(state.posted, 1);
+});
+
+test('missing pre-sync snapshot cannot establish an empty baseline and replay history', async () => {
+  reset('before-read');
+  addHistoricalTask();
+  const result = await runStoredBackgroundSync();
+  assert.equal(result.refreshed, true);
+  assert.equal(state.data.has(BASELINE), false);
+  assert.equal(state.posted, 0);
+  await runStoredBackgroundSync();
+  assert.equal(state.data.get(BASELINE), 'READY');
+  assert.equal(state.posted, 0);
+});
+
+test('a missing snapshot preserves recovery when an earlier reliable baseline exists', async () => {
+  reset('before-read');
+  state.data.set(BASELINE, 'READY');
+  const result = await runStoredBackgroundSync();
+  assert.equal(result.refreshed, true);
+  assert.equal(state.posted, 1);
+  await runStoredBackgroundSync();
+  assert.equal(state.posted, 1);
+});

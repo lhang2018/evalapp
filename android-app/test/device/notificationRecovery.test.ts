@@ -216,3 +216,43 @@ test("任务标记读取失败但基线就绪时仍按跃迁投递", async () =>
   assert.equal(await notifier.notifyTransitions([before], [after]), 1);
   assert.equal(module.calls.length, 1);
 });
+
+test("基线读取暂时失败不得把待补发任务误写为历史已通知", async () => {
+  const module = new FakeModule();
+  const store = new FakeStore();
+  const notifier = new TaskNotifier(module, store);
+  await notifier.initializeExisting([]);
+  const done = task({ status: "DONE", server_status: "SUCCEEDED" });
+  store.failReadPrefixes = [BASELINE];
+  await notifier.initializeExisting([done]);
+  assert.equal(store.rows.has(`${MARKER}local-1`), false);
+  store.failReadPrefixes = [];
+  assert.equal(await notifier.notifyTransitions([done], [done]), 1);
+});
+
+test("系统拒绝投递不写标记，下一通知器仍可补发", async () => {
+  const store = new FakeStore();
+  const rejected = new TaskNotifier({ notifyTaskUpdate: async () => false }, store);
+  await rejected.initializeExisting([]);
+  const done = task({ status: "DONE", server_status: "SUCCEEDED" });
+  assert.equal(await rejected.notifyTransitions([done], [done]), 0);
+  assert.equal(store.rows.has(`${MARKER}local-1`), false);
+  const accepted = new TaskNotifier(new FakeModule(), store);
+  assert.equal(await accepted.notifyTransitions([done], [done]), 1);
+});
+
+test("系统接受后标记写失败允许重试，不能宣称恰好一次", async () => {
+  const store = new FakeStore();
+  const module = new FakeModule();
+  const notifier = new TaskNotifier(module, store);
+  await notifier.initializeExisting([]);
+  const done = task({ status: "DONE", server_status: "SUCCEEDED" });
+  store.failWrite = true;
+  assert.equal(await notifier.notifyTransitions([done], [done]), 1);
+  assert.equal(store.rows.has(`${MARKER}local-1`), false);
+  store.failWrite = false;
+  assert.equal(await new TaskNotifier(module, store).notifyTransitions([done], [done]), 1);
+  assert.equal(module.calls.length, 2);
+  assert.equal(module.calls[0].id, module.calls[1].id);
+  assert.equal(await notifier.notifyTransitions([done], [done]), 0);
+});

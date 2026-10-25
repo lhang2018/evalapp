@@ -1,13 +1,13 @@
 /**
- * 后台任务完成提醒（PRD 64）：只提醒状态跃迁到终态的任务。
+ * 后台任务完成提醒（PRD 64）：提醒新终态，并补发可靠基线建立后的未投递终态。
  *
  * 纯 TS 便于单测；原生模块缺失时静默降级。通知是尽力而为，
  * 不改变任务状态，也不替代界面内的状态展示。
  *
  * 12-V 复核修复：后台同步可能在前台自动同步之后才运行，此时 `before`
  * 快照里任务已经是 DONE，"仅按本次 run 的 before/after 跃迁"会漏发。
- * 因此增加持久化投递标记：只要 after 中任务为 DONE 且本地标记不是 DONE，
- * 就补发一次并在投递被系统接受后写入标记（失败不写，留待下次重试）。
+ * 因此增加持久化投递标记：建立历史基线后，对未标记 DONE 补发，
+ * 在投递被系统接受后写标记。投递与标记非原子，写失败/进程退出可能重复。
  */
 
 import type { LocalTask } from "../offline/types.ts";
@@ -35,6 +35,7 @@ export interface TaskNotification {
 const NOTIFIED_PREFIX = "evoagent_task_notified:";
 const BASELINE_KEY = `${NOTIFIED_PREFIX}baseline:v1`;
 
+// 只串行同一 JS 运行时内的通知器；不提供跨进程恰好一次保证。
 let notificationSerial: Promise<void> = Promise.resolve();
 
 async function serialized<T>(operation: () => Promise<T>): Promise<T> {
@@ -125,14 +126,16 @@ export class TaskNotifier {
    */
   static async primeBaseline(
     store: NotificationMarkerStore | null,
-    tasks: LocalTask[],
+    tasks: LocalTask[] | null,
   ): Promise<void> {
-    if (!store) return;
+    // null 表示前态不可读，不能当作可信空库开启历史补发。
+    if (!store || tasks === null) return;
     await serialized(async () => {
       try {
         if (await store.getItem(BASELINE_KEY) === "READY") return;
       } catch {
-        // 读取失败时继续尝试写入基线；写入失败会保持未就绪，下次 run 重试
+        // 未知是否已完成基线，不能覆盖待补发任务的标记；下次读取成功再重试。
+        return;
       }
       try {
         for (const task of tasks) {
