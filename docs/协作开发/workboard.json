@@ -28,33 +28,52 @@
     },
     "initial_head_commit": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
     "prepared_candidate": {
-      "commit": "532a3646aeb35d0510ba7dab6c9c74e403cfd675",
-      "source_tree": "cd9a3ffc7bdfb7c020faee40855478f3375d354d",
+      "commit": "21899e6",
+      "source_tree": "c8e3bc8d79fec081199544321137b5cb82a08b71",
       "status": "verified_ready_for_publication_decision",
-      "replaces": "f550d90（业务源码零差异，仅追加评估文档与被引用证据入库）",
       "clean_before_and_after": true,
-      "python_passed": 1661,
+      "python_passed": 1701,
       "python_skipped": 1,
-      "client_passed": 228,
+      "client_passed": 268,
       "typecheck": "passed",
-      "worktree": "detached /e/evalapp-candidate @532a364",
+      "dependency_scope": "21899e6 完整 HEAD detached worktree 三件套重跑：后端1701/1、客户端268/0、typecheck 0错误（tsc 5.3.3+按package.json安装依赖）。含 PRODUCT-2026-10-25 批次已交付部分（06-R/29-A/29-B/29-C/23-B/23-D/24-B）与全部已接受 40 卡；通知/后台在途未提交文件不在候选 tree。期间发现并修复 schema 幂等违规（feedback UNIQUE INDEX→表内约束），修复后全量重跑。前候选 532a3646（1661/1）被本候选取代",
       "evidence": [
         {
-          "path": ".planning/2026-10-24-aln00b-clean2/backend-tests.txt",
-          "sha256": "890094696047df21e80c187450f5db47022174de376a9beaadbe2d0aa1e89ad1",
-          "sha256_basis": "lf_normalized_text"
+          "path": ".planning/2026-10-25-aln00b-refresh/backend-tests.txt",
+          "sha256": "90f4fa013aeb7148d7dd751b4270a7ed4c7d0f0ce74d96013a0afa80b99dd9e8"
         },
         {
-          "path": ".planning/2026-10-24-aln00b-clean2/client-tests.txt",
-          "sha256": "de03181ec7d27410e70b815afb9b57a3bf39405122b2e1123959f22abca78adc",
-          "sha256_basis": "lf_normalized_text"
+          "path": ".planning/2026-10-25-aln00b-refresh/client-tests.txt",
+          "sha256": "aeab817d1f00bb504b9ef0f3cc8f61fce3bcaa9771ebe4938274e8c9f99c3531"
         },
         {
-          "path": ".planning/2026-10-24-aln00b-clean2/typecheck.txt",
-          "sha256": "e8408be3f605d2a340ee19e6e73f25f4c3bd1bc350be1370f6d7dd92f08c7bf9",
-          "sha256_basis": "lf_normalized_text"
+          "path": ".planning/2026-10-25-aln00b-refresh/typecheck.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "note": "空文件（tsc 0错误无输出，exit 0）"
         }
-      ]
+      ],
+      "excluded_paths": [
+        "android-app/android/app/src/main/java/com/evoagent/DevicePackage.kt",
+        "android-app/src/offline/backgroundRunner.ts",
+        "android-app/android/app/src/main/java/com/evoagent/NotificationModule.kt",
+        "android-app/src/device/nativeNotifications.ts",
+        "android-app/src/device/notifications.ts",
+        "android-app/test/device/notifications.test.ts",
+        ".workbuddy/"
+      ],
+      "remaining_review": [
+        "ALN-00-B（本候选的发布决策门，唯一 review 卡）",
+        "PRODUCT 批次 in_progress：15-P/06-R 已交付 review；23-A claimed；24-B/23-D/23-B/29-C 逻辑层交付待 App 接线"
+      ],
+      "tools": {
+        "python": "3.10.11",
+        "node": "v24.16.0",
+        "typescript": "5.3.3",
+        "git": "git version 2.43.0.windows.1",
+        "platform": "Windows-10-10.0.19045-SP0"
+      },
+      "verified_at": "2026-10-25T21:30+08:00",
+      "verified_by": "zcode-main（00-B owner；候选准备非发布，published_commit 由独立复核后填写）"
     },
     "acceptance_review": {
       "reviewed_commit": "8692637064389736695f433337c8d09e0bdcdafb",

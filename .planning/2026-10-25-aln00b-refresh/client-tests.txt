@@ -1,0 +1,407 @@
+npm warn Unknown user config "sass_binary_site". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> evoagent-mobile@0.1.0 test:offline
+> node --test "test/offline/*.test.ts" "test/device/*.test.ts" "test/update/*.test.ts"
+
+(node:47784) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/device/broker.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ high-risk actions require independent confirmation (2.7242ms)
+✔ confirmed high-risk action executes and records evidence (1.8342ms)
+✔ transport errors become failed rather than throwing (0.7813ms)
+✔ verified results without evidence are downgraded to unverified (0.428ms)
+✔ repeating an action_id never replays the device action (0.8963ms)
+✔ dispatched-but-unverified actions are not replayed (0.6122ms)
+✔ missing native module reports unavailable without crashing (0.4604ms)
+✔ click results are verified only when the UI actually changed (1.9769ms)
+✔ permission dialogs downgrade otherwise successful clicks (0.6981ms)
+✔ consecutive unverified actions trigger a safety stop until resumed (0.9201ms)
+✔ verified actions reset the consecutive failure counter (0.4514ms)
+✔ native transport passes through evidence and failure messages (0.4804ms)
+(node:47356) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/device/failureMatrix.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 矩阵覆盖任务卡要求的全部故障类别 (1.4555ms)
+✔ 每个条目六要素齐备：可见状态/降级/重试/停止/对账/设备动作规则 (0.2998ms)
+✔ 服务端不可达/断网：退避重试 + 死信不静默丢弃 + 幂等对账 (44.7384ms)
+✔ 模型故障：预算约束 + 不本地伪造结果 + 未知计费对账 (3.4408ms)
+✔ 进程被杀/重启：持久化恢复 + NEEDS_RECONCILE + 未验证动作不重放 (0.409ms)
+✔ 同步冲突：隔离区 + 人工处理 + 失联不当作未执行 (0.416ms)
+✔ 资源与权限：低电量推迟、低空间 critical 永不清理、无障碍不自动重试 (0.2841ms)
+✔ 全矩阵设备动作规则一致：未知副作用永不自动重放 (0.3081ms)
+✔ 查询入口：已知类别返回对应条目，未知类别按服务端不可达降级 (0.3373ms)
+(node:8604) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/device/notificationReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ native false is not an accepted notification post (2.2185ms)
+✔ native undefined is not an accepted notification post (0.9848ms)
+✔ native null is not an accepted notification post (0.4845ms)
+✔ native "true" is not an accepted notification post (1.7234ms)
+✔ native {"ok":true} is not an accepted notification post (0.3013ms)
+✔ accepted and refused native posts are counted separately (0.3381ms)
+✔ FAILED without failure text cannot be reported as success (0.1663ms)
+✔ CANCELLED with or without a reason is a cancellation notification (0.4087ms)
+✔ SUCCEEDED is not overridden by an old failure reason (0.2219ms)
+✔ nonterminal or unknown server status cannot produce a terminal notification (0.3799ms)
+(node:34580) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/device/notifications.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ notification id is stable, positive, and task-specific (1.2542ms)
+✔ non-terminal tasks produce no notification (0.3878ms)
+✔ terminal task uses result, failure reason, or goal as body (43.6152ms)
+✔ notification body collapses whitespace and truncates (0.3294ms)
+✔ only transitions into DONE are selected (2.5273ms)
+✔ transitions are delivered once each with the stable id (0.4147ms)
+✔ missing native module degrades to a no-op (0.1874ms)
+✔ notification failure never breaks the sync path (0.2838ms)
+(node:25072) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/device/observation.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ identical snapshots do not verify an action (1.7688ms)
+✔ new text after the action verifies it (2.7673ms)
+✔ package switch verifies launch (0.4731ms)
+✔ expected text absent is reported as unverified (0.2798ms)
+✔ permission dialog package is recognized and blocks verification (0.3768ms)
+✔ permission dialog by keywords requires allow, deny and permission word (0.3716ms)
+✔ missing snapshots never verify (0.1731ms)
+✔ native snapshots are normalized with limits and empty input rejected (12.7041ms)
+(node:34664) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/device/peerTaskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ two ledger instances sharing durable storage claim an action only once (5.4593ms)
+✔ cached action id cannot be reused with a different task_id (2.081ms)
+✔ cached action id cannot be reused with a different run_id (2.7416ms)
+✔ cached action id cannot be reused with a different effect_id (0.9888ms)
+✔ cached action id cannot be reused with a different target (1.8569ms)
+✔ proposal owns nested input snapshots (0.2449ms)
+✔ retention does not make an already dispatched action executable again after restart (1.3956ms)
+✔ pending proposal is not evicted to permit replay (0.7805ms)
+✔ invalid persisted ledger is rejected rather than becoming an empty execution history (0.3803ms)
+✔ missing broker journal after dispatch remains unknown (0.8456ms)
+✔ journal receipt cannot refer to another action (0.3175ms)
+✔ upload never contains expected screen text or recipient targets (0.319ms)
+✔ explicit low risk cannot downgrade a known high risk device operation (0.2384ms)
+✔ raw broker concurrent duplicates cannot both dispatch (0.3244ms)
+✔ raw broker never returns another task's cached action receipt (0.2093ms)
+(node:39904) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/device/taskGaps.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 缺口1：DeviceAction/ActionJournalEntry 无 task_id/run_id/effect_id 关联 (2.294ms)
+✔ 缺口2：broker 幂等日志不持久化——重启后同 action_id 会重复下发 (0.8155ms)
+✔ 缺口3：无统一 effect 引用与回执投影——任务侧拿不到可上传的回执 (0.3585ms)
+(node:11296) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/device/taskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 缺口证明：任务链路引用随动作进入 broker 日志（task→action→effect 可追溯） (4.4804ms)
+✔ createProposal：引用完整且稳定，run_id 缺省派生自任务，风险按 broker 同表推导 (0.5768ms)
+✔ proposalToAction：预期观察映射 expect_text，引用随动作下发 (0.2254ms)
+✔ 执行成功：回执终态 verified、证据与时间戳齐备，任务链可查 (0.8864ms)
+✔ 同一 action_id 重放：返回原回执，不重复下发，原始证据保留 (2.008ms)
+✔ 未知副作用（unverified）不是终态：不自动重放，需人工对账 (2.1502ms)
+✔ 高风险无确认：终态 denied；重放不重复询问、不下发 (0.8937ms)
+✔ 无障碍未授权：终态 unavailable，重试需新提议（新 action_id） (0.9328ms)
+✔ 失败动作不自动重放：同一 action_id 返回原失败回执 (0.6605ms)
+✔ 中断恢复：先落提议后下发——崩溃窗口（已记账无回执）不自动重发 (1.1226ms)
+✔ 台账持久化：重启（新实例）后提议、回执与任务链完整 (1.0284ms)
+✔ 台账容量上界：超出 limit 淘汰最旧条目 (1.5084ms)
+✔ 上传投影：回执只含引用与状态，提议脱敏文本目标，本地保留字段列明 (0.6211ms)
+(node:19384) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/device/voice.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ missing native module degrades to unavailable without throwing (4.125ms)
+✔ native capability is normalized with engine names (0.4781ms)
+✔ capability failure is treated as unavailable (0.2736ms)
+✔ timeout is clamped to the supported window (0.1945ms)
+✔ transcription trims text and forwards the clamped timeout (0.2738ms)
+✔ empty result never carries stale transcript (0.1282ms)
+✔ denied and unknown statuses are mapped safely (0.1532ms)
+✔ module exceptions become failed with the error message (0.2425ms)
+✔ speech text collapses whitespace and caps length (0.2492ms)
+✔ speak sends prepared text to the native module (0.3429ms)
+✔ empty speech input fails without calling the module (0.1824ms)
+✔ normalizeSpeakResult maps unknown statuses to failed (0.1542ms)
+✔ cancel and stop delegate to the native module (0.1566ms)
+(node:25068) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/approvals.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ shows full binding, accepts once, and does not equate acceptance with task success (4.7169ms)
+✔ reject and per-approval state are independent (0.4404ms)
+✔ expiration and offline mode disable decisions while retaining details (0.7744ms)
+✔ status or binding changes on re-read require review before decision (0.4552ms)
+✔ HTTP 401 errors never echo a credential or server error body (0.604ms)
+✔ HTTP 403 errors never echo a credential or server error body (0.2271ms)
+✔ HTTP 404 errors never echo a credential or server error body (0.478ms)
+✔ HTTP 409 errors never echo a credential or server error body (0.227ms)
+✔ HTTP 500 errors never echo a credential or server error body (0.4992ms)
+✔ an ambiguous POST is checked by the same approval id before any retry (0.6806ms)
+✔ responses from a previous credential or disposed page cannot enable a button (0.4066ms)
+✔ a response for another task cannot be approved (0.2135ms)
+(node:46768) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/attachments.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ add requires explicit consent and non-empty bytes (2.2825ms)
+✔ add records digest, chunk plan and pending status (23.54ms)
+✔ flush uploads every chunk, verifies digest and marks complete (35.6778ms)
+✔ flush resumes from server-reported chunk progress (7.4455ms)
+✔ network failure marks failed and a later flush retries (5.4501ms)
+✔ chunk digest mismatch is rejected before completion (1.158ms)
+✔ full digest mismatch clears progress and retry re-uploads (2.7417ms)
+✔ server 422 on complete clears progress for full retry (1.8817ms)
+✔ after restart bytes are gone and flush reports failure (0.7287ms)
+✔ re-adding identical content reuses the record and resumes chunks (9.5467ms)
+✔ re-adding completed content does not upload again (1.0231ms)
+✔ different content creates a separate attachment (0.5898ms)
+✔ queue carries attachment refs and rejects invalid ones (2.1899ms)
+(node:28364) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/background.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ offline health check skips sync without throwing (2.2459ms)
+✔ online run flushes events and tasks before refreshing (1.5695ms)
+✔ flush failure is reported and refresh is skipped (0.383ms)
+✔ refresh failure never rejects the headless task (0.3094ms)
+✔ background interval is clamped and rounded (0.361ms)
+(node:47508) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/backgroundNative.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ missing native module degrades to unavailable (1.6127ms)
+✔ status maps native values and treats zero as no attempt (1.1643ms)
+✔ enable clamps invalid intervals before calling native (0.225ms)
+✔ disable and run-now delegate once (2.2005ms)
+(node:32100) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/backgroundNotificationReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[background-sync] online=true flushed=true refreshed=true notified=0 error=none
+[background-sync] online=true flushed=true refreshed=true notified=0 error=none
+[background-sync] online=true flushed=true refreshed=true notified=0 error=none
+[background-sync] online=false flushed=false refreshed=false notified=0 error=offline
+[background-sync] online=true flushed=true refreshed=true notified=1 error=none
+[background-sync] online=true flushed=true refreshed=false notified=0 error=sync upload failed
+✔ native-lookup notification failure preserves actual successful sync and refresh (44.7427ms)
+✔ after-read notification failure preserves actual successful sync and refresh (2.6239ms)
+✔ before-read notification failure preserves actual successful sync and refresh (3.4066ms)
+✔ offline sync retains its error and does not invoke the notification bridge (7.4316ms)
+✔ actual background assembly still posts a successful transition (2.49ms)
+✔ a resolved unsuccessful SyncResult is preserved as a flush failure, without notification (2.8557ms)
+(node:27968) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/capabilities.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 六档服务端状态逐档投影为用户视图与恢复路径 (1.306ms)
+✔ 未知状态不伪装可用：fallback 归为 unknown (0.293ms)
+✔ 拒绝/撤销后受保护动作不能执行：blocked 守卫 (0.1753ms)
+✔ 设备动作能力在本机无障碍未开启时覆盖为待设置 (0.1923ms)
+(node:11496) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/export.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ sha256 and crc32 match standard vectors (1.5692ms)
+✔ builds a self-consistent package with manifest and checksums (23.8896ms)
+✔ filters by task, time range, failure, and capability (5.8712ms)
+✔ redacts sensitive payloads by default and secret keys always (4.9654ms)
+✔ attachments are opt-in, filtered, and redacted by sensitivity (6.3959ms)
+✔ export is read-only and deterministic for a fixed clock (2.0881ms)
+✔ exportTo cleans up the temp file when delivery fails (3.1278ms)
+(node:36452) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/importApi.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ diagnostics import posts raw zip with an admin token (1.4336ms)
+✔ import errors keep the server status and message (0.8121ms)
+(node:21836) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/modes.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 模式判定：显式切换优先于输入特征 (1.1851ms)
+✔ 模式判定：请求代为执行/需要产物/需要工具 → work (0.5326ms)
+✔ 模式判定：直接问答轻量完成 → chat (0.4322ms)
+✔ 聊天转工作：goal 取最后目标；纠正口径优先 (0.2852ms)
+✔ 聊天转工作：仅确认过的讨论升级为约束 (0.1754ms)
+✔ 聊天转工作：已完成要点只进摘要，不重复执行 (0.4484ms)
+✔ 聊天转工作：讨论≠执行——assistant 结论不产生待办 (0.2081ms)
+(node:23572) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/packageImport.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ picked package decodes bytes and keeps the file name (3.3887ms)
+✔ cancelled or missing picks surface the native message (0.6901ms)
+✔ invalid, empty, and oversized packages are rejected (1.2076ms)
+✔ HTTP header file names are ASCII and path-free (0.711ms)
+(node:44216) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/queue.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ queue keeps FIFO order, dedupes, and numbers events per run (24.1902ms)
+✔ queue rejects new events when capacity reached (7.1718ms)
+✔ expired non-critical events are dropped with loss markers (2.0912ms)
+✔ capacity evicts lower tiers for critical events and warns (9.1852ms)
+✔ critical events can displace normal ones under capacity pressure (6.2034ms)
+✔ claim marks events in flight and stale batches are recovered (1.8508ms)
+✔ checkpoint only advances over confirmed continuous prefix (1.011ms)
+✔ sensitive events stay local and are never uploaded (1.2053ms)
+✔ secret payloads are rejected before entering the queue (0.4125ms)
+✔ rejected events are quarantined and stay reviewable (3.0912ms)
+✔ repeated failures move an event to dead letters (1.5743ms)
+✔ legacy snapshots migrate to the sync state machine (0.4807ms)
+✔ corrupted snapshots fall back to an empty state (0.2163ms)
+(node:6324) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/sync.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ flush uploads pending events and advances checkpoint (7.133ms)
+✔ network failure keeps events and backs off before retrying (1.7416ms)
+✔ permanently rejected events are quarantined, not retried forever (1.9694ms)
+✔ HTTP 400 rejection details quarantine the batch (0.8402ms)
+✔ a persisted in-flight batch is recovered on the next session (1.0976ms)
+✔ duplicate acknowledgements also remove local events (0.5517ms)
+✔ event sync runs before task submission on reconnect (4.4623ms)
+✔ server receipts are persisted locally with counts and deduped (0.9816ms)
+✔ repeated failures raise and success clears the unavailable warning (1.497ms)
+✔ stale last success with pending events raises the unavailable warning (0.6803ms)
+(node:14676) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/taskAnswer.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ answer sends the question id and answer to the task endpoint (40.9418ms)
+✔ approval requests send the admin credential only on the explicit admin call (1.6523ms)
+(node:45188) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/tasks.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ offline time_query completes locally without server submission (5.3153ms)
+✔ offline submission is stored with a stable idempotency key (0.8356ms)
+✔ flushPending submits with the same client_request_id across retries (1.7564ms)
+✔ interrupted submissions require explicit reconciliation (1.1106ms)
+✔ refresh maps server statuses into local states (1.4145ms)
+✔ failed server tasks become DONE with a failure reason (0.8572ms)
+✔ mapServerStatus covers terminal and waiting states (0.2335ms)
+✔ clarification and run identity persist across client restart and clear on resume (0.8232ms)
+✔ pending approval ids persist and clear after task resumes (2.9651ms)
+(node:16664) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/taskview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 服务端九态语义逐态映射，终态判定不受模型文字影响 (1.2951ms)
+✔ 终态判定：仅服务端终态有效 (0.195ms)
+✔ 等待原因来自权威字段：审批/澄清/中断/网络 (0.3673ms)
+✔ 离线本地阶段：无服务端状态按本地展示，DONE 不宣称服务端已验证 (0.2212ms)
+✔ 暂停任务给出可继续/取消的等待原因 (0.175ms)
+(node:16668) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/offline/transport.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ millisecond timestamps are converted to seconds (1.8219ms)
+✔ second timestamps pass through unchanged (0.306ms)
+✔ run identity, sequence and manifest are forwarded with the batch id (0.2354ms)
+(node:36460) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/update/artifact.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ downloader resumes from the staged offset and renames after digest check (7.197ms)
+✔ downloader rejects bad digest and truncated sources without renaming (1.888ms)
+✔ downloader refuses when free space is below the next chunk (0.7166ms)
+✔ trusted key ring verifies real artifact bytes and rejects tampering (72.0747ms)
+✔ prepare downloads and verifies before allowing activation (73.9979ms)
+✔ prepare rejects an untrusted signing key before downloading (74.2142ms)
+✔ prepare blocks missing permissions, incompatible app and bad signature (16.5446ms)
+✔ low free space and store failures never reach activation (30.831ms)
+✔ bundle apply failure keeps the active slot and reports activation_failed (70.6889ms)
+✔ a restart before activation does not switch slots without a verifier/applier (57.506ms)
+✔ failed receipts persist and flush with the same apply id (63.66ms)
+✔ real artifact cannot use the legacy verify shortcut (41.9946ms)
+✔ activation rechecks actual bytes before calling the applier (60.8425ms)
+✔ activation rechecks permission revocation (26.4757ms)
+✔ activation rechecks signing key expiry (65.7896ms)
+✔ unknown-length downloads enforce the byte cap before appending (0.2252ms)
+✔ cached files cannot evade the download byte cap (0.1044ms)
+✔ release IDs cannot escape the staging directory (34.7799ms)
+✔ short App versions are compared with zero-filled segments (20.9344ms)
+✔ real rollback reapplies the known-good bundle before reporting success (31.2269ms)
+✔ failed rollback apply preserves the active slot and does not report success (24.7334ms)
+✔ unacknowledged receipts are retained beyond fifty events (15.1334ms)
+✔ concurrent health checks cannot overwrite each other's receipts (36.2322ms)
+✔ unconfirmed releases cannot replace the last known healthy bundle (40.4369ms)
+(node:44832) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/update/bundleRuntime.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 没有活动包时执行前拒绝，工具不被调用 (1.9715ms)
+✔ 旧版包（未内嵌 workflow_def）不可执行，仅展示 (1.3367ms)
+✔ 未注册工具在执行前拒绝 (1.1685ms)
+✔ 不兼容版本与权限不足在执行前拒绝 (2.236ms)
+✔ 非法 workflow（环/重复ID/未知依赖/标识不一致）在执行前拒绝 (3.0915ms)
+✔ 装载层拒绝非法 workflow_def，非法包不会成为活动包 (0.7769ms)
+✔ 同一输入在更新前后使用各自版本 workflow，输出与证据绑定版本 (2.0179ms)
+✔ DAG 按依赖执行并传递上游输出；失败阻断下游并校验输出契约 (1.6262ms)
+✔ 探针：执行成功且期望相符才算 healthy (1.326ms)
+✔ 探针：期望不符或执行失败为 unhealthy (1.4232ms)
+✔ 探针：超时无结果为 unknown，不标健康 (23.3524ms)
+✔ 探针：已激活但非法的包被判 unhealthy（执行前拒绝） (0.3968ms)
+✔ declaresIntent 只匹配活动包声明的意图 (0.2624ms)
+✔ 健康失败自动回滚后，原健康包真实可执行且版本关联跨重启保留 (44.579ms)
+✔ versionAtLeast 语义与更新管理器一致 (0.0988ms)
+✔ validateWorkflowDef 拒绝无可执行体与非法参数 (0.0693ms)
+(node:8704) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/update/manager.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ init generates and persists an installation id (2.428ms)
+✔ check accepts a signed capability target (1.659ms)
+✔ check blocks target without artifact digest (0.6947ms)
+✔ check blocks unsigned target (0.3381ms)
+✔ check blocks native binary updates that need the app store (0.4173ms)
+✔ network failure during check marks phase failed and rethrows (1.4457ms)
+✔ verify refuses when storage headroom is insufficient (0.9936ms)
+✔ verify stores a pending candidate after integrity and space checks (1.4617ms)
+✔ activate requires a verified candidate (1.2739ms)
+✔ verify without a candidate throws (0.4611ms)
+✔ activate switches the inactive slot and keeps the previous release (2.6559ms)
+✔ health check success promotes the active slot to last known good (1.0347ms)
+✔ health check failure rolls back to the last known good release (1.3911ms)
+✔ rollback without a known good release throws (0.6746ms)
+✔ report upload failure keeps the local activation and records the error (0.5474ms)
+✔ corrupted state falls back to an empty slot state (0.2377ms)
+✔ candidate sync stores server stages without changing the active slot (0.6549ms)
+✔ candidate sync failure records an error and keeps local state (0.5763ms)
+✔ state persisted before candidate sync defaults to an empty list (0.3123ms)
+(node:43688) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/update/nativeArtifact.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ base64 codec round-trips arbitrary bytes and UTF-8 text (2.7108ms)
+✔ production trust never accepts the bundled development key (2.9097ms)
+✔ bundle applier installs to the slot and points the active marker (1.1677ms)
+✔ bundle applier checks the bytes it reads against the verified digest (1.0198ms)
+✔ bundle applier rejects invalid payloads without touching the marker (0.7401ms)
+✔ range source slices full responses and parses totals (5.7618ms)
+(node:8628) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp-clean/android-app/test/update/peerBundleReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp-clean\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ normal execution has a hard wait bound and never dispatches a dependent after a late timeout (60.0647ms)
+✔ a health result cannot certify an active bundle switched during the probe (0.8126ms)
+✔ recovery must satisfy the restored bundle expectation (0.8854ms)
+✔ recovery cannot call the same failed release a rollback (0.5088ms)
+✔ active marker and slot contents must refer to the same artifact (0.1439ms)
+✔ update manager validates the probe artifact inside its serialized health decision (0.6417ms)
+ℹ tests 268
+ℹ suites 0
+ℹ pass 268
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1470.0948
