@@ -3449,9 +3449,13 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        "代码: d8aa054",
+        "测试: 代码: d8aa054 模式判定/种子投影 + d1272c9 App接线; 23-A: 0fda873 契约字段同源（constraints 进 LocalTask.contract 透传链）",
+        "交付: docs/协作开发/交付/ALN-23-B-聊天工作模式与上下文转换.md"
+      ],
       "card": "docs/协作开发/任务卡/23-B-聊天与工作模式及上下文转换.md",
       "shared_files": [
         "evoagent/core/controller.py",
@@ -3478,7 +3482,7 @@
         "UX-06",
         "F01"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "next_step": "待独立复核（审阅人待定）；App 接线已上屏（d1272c9），真机操作证据按整包验收另采",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
       "prerequisites": "仅需仓库与本地测试环境",
       "claim_metadata_calibration": {
@@ -3495,9 +3499,13 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        "代码: b40863c",
+        "测试: 代码: b40863c 映射层 + d1272c9 任务行接线（taskViewOf.label + 等待原因行）",
+        "交付: docs/协作开发/交付/ALN-23-D-用户可见状态映射.md"
+      ],
       "card": "docs/协作开发/任务卡/23-D-用户可见状态与权威任务状态映射.md",
       "shared_files": [
         "evoagent/api/server.py",
@@ -3523,7 +3531,7 @@
         "F02",
         "F03"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "next_step": "待独立复核（审阅人待定）；App 接线已上屏（d1272c9），真机操作证据按整包验收另采",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
       "prerequisites": "仅需仓库与本地测试环境",
       "claim_metadata_calibration": {
@@ -3751,9 +3759,13 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        "代码: b59e586",
+        "测试: 代码: b59e586 GET /capabilities/status 六档投影 + d1272c9 权限页能力卡；server.py 仅导入行（shared_files 登记内）",
+        "交付: docs/协作开发/交付/ALN-24-B-能力状态权限与渐进授权.md"
+      ],
       "card": "docs/协作开发/任务卡/24-B-能力状态、权限与渐进授权.md",
       "shared_files": [
         "evoagent/api/server.py",
@@ -3778,7 +3790,7 @@
         "UX-22",
         "UX-23"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "next_step": "待独立复核（审阅人待定）；App 接线已上屏（d1272c9），真机操作证据按整包验收另采",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
       "prerequisites": "仅需仓库与本地测试环境"
     },
@@ -4183,9 +4195,13 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        "代码: 1c390ed",
+        "测试: 代码: 1c390ed 全链（schema域表+store+API）+ 21899e6 schema幂等修复 + d1272c9 App入口",
+        "交付: docs/协作开发/交付/ALN-29-C-问题反馈与运行证据关联.md"
+      ],
       "card": "docs/协作开发/任务卡/29-C-问题反馈与运行证据关联.md",
       "shared_files": [
         "evoagent/api/server.py",
@@ -4210,7 +4226,7 @@
       "requirement_refs": [
         "UX-26"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "next_step": "待独立复核（审阅人待定）；App 接线已上屏（d1272c9），真机操作证据按整包验收另采",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
       "prerequisites": "仅需仓库与本地测试环境",
       "claim_metadata_calibration": {

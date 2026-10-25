@@ -1,0 +1,28 @@
+# ALN-29-C 交付：问题反馈与运行证据关联
+
+任务：ALN-29-C（PRODUCT-2026-10-25，父包 ALN-29）
+负责人：zcode-main；审阅人：待定；基线：`5e2b7e3`
+分支/commit：feature/user-direction `1c390ed`（全链）+ `21899e6`（schema 幂等修复）+ `d1272c9`（App 入口）
+认领状态：delivered（review，待独立复核）
+
+## 行为变化
+- POST /feedback：反馈绑定真实 task/run（不存在 404）并自动关联
+  runtime_manifest_id；文本经凭据防线（scrub_text+contains_secret，
+  泄漏拒绝入库）；重复反馈按 agg_key 聚合计数不产生新行。
+- GET /feedback{,/{id}}：admin 审计面。
+- **根因纪律**：cause_status 恒为 unverified（用户报告是现象），
+  本模块不提供改写入口。
+- App 终态任务卡反馈入口（d1272c9）：聚合提示"已并入同类反馈（第 N 条）"。
+
+## 验证
+- test_feedback 6 项（绑定+unverified/未知 task-run 404/秘密拒绝且不落库/
+  聚合/admin 列表/空与非法类别）。
+- schema 域表经 DOMAIN/TABLES 自动发现；发现并修复 UNIQUE INDEX 违反
+  schema 幂等规范（改表内约束+并发兜底，21899e6）。
+- 候选验证：21899e6 干净树全量 1701/1 + 客户端 268 + tsc 0 错。
+
+## 范围与缺口
+- 反馈正文读取沿用 admin 审计面；未验证原因不进根因统计。
+- App 反馈入口仅终态任务可见（进行中任务的取消/重试在 24-A）。
+
+审阅结论：待审
