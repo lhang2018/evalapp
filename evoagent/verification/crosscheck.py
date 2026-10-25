@@ -12,6 +12,7 @@
 """
 
 import time
+import math
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
@@ -60,13 +61,17 @@ class FactCrossChecker:
 
     def verify(self, claim: Claim, sources: List[SourceRecord], *,
                now: Optional[float] = None) -> Verdict:
+        claim.__post_init__()
         now = self.clock() if now is None else now
+        if type(now) not in (int, float) or not math.isfinite(now):
+            raise ValueError("核验时钟必须为有限时间戳")
         matched = [s for s in sources if s.claim_key == claim.claim_key]
-        accessible = [s for s in matched if s.accessible]
+        accessible = [s for s in matched if not s.evidence_problem()]
         supports = [s for s in accessible if s.stance == "supports"]
         contradicts = [s for s in accessible if s.stance == "contradicts"]
         mentions = [s for s in accessible if s.stance == "mentions"]
-        inaccessible = [s.citation() for s in matched if not s.accessible]
+        inaccessible = [{**s.citation(), "reason": s.evidence_problem()}
+                        for s in matched if s.evidence_problem()]
         supporting = [s.citation() for s in supports]
         conflicting = [s.citation() for s in contradicts]
         mention_refs = [s.citation() for s in mentions]
@@ -77,6 +82,10 @@ class FactCrossChecker:
             confidence = 0.3
             reasons.append(
                 f"适用时间已过：valid_until={claim.valid_until} 早于当前 {now}")
+        elif claim.valid_from is not None and now < claim.valid_from:
+            state = ClaimState.UNKNOWN.value
+            confidence = 0.0
+            reasons.append("结论适用时间尚未开始")
         elif contradicts:
             state = ClaimState.CONTRADICTED.value
             confidence = 0.4
@@ -105,7 +114,7 @@ class FactCrossChecker:
             reasons.append("未提供外部来源：模型自述不得判为可信")
 
         if inaccessible:
-            reasons.append(f"{len(inaccessible)} 个来源不可访问，未计入证据")
+            reasons.append(f"{len(inaccessible)} 个来源不可访问或记录无效，未计入证据")
         model_only = bool(claim.model_generated and not supports)
 
         return Verdict(

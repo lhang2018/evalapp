@@ -8,6 +8,7 @@
 """
 
 import time
+import math
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import Any, Dict, Optional
@@ -32,6 +33,15 @@ class Claim:
     applies_to: str = ""
     derived_from_internal: bool = False
     notes: str = ""
+
+    def __post_init__(self):
+        if any(not isinstance(v, str) or not v.strip() for v in (self.claim_id, self.statement, self.claim_key)):
+            raise ValueError("结论身份、正文和匹配键不能为空")
+        for value in (self.valid_from, self.valid_until):
+            if value is not None and (type(value) not in (int, float) or not math.isfinite(value)):
+                raise ValueError("适用时间必须是有限时间戳")
+        if self.valid_from is not None and self.valid_until is not None and self.valid_from > self.valid_until:
+            raise ValueError("适用时间窗起点不能晚于终点")
 
     def is_expired(self, now: float) -> bool:
         return self.valid_until is not None and now > self.valid_until

@@ -1,126 +1,71 @@
-/**
- * 自然语言任务主链（ALN-12-E）：从用户输入到设备动作/回执/成果的完整链路。
- *
- * 本模块把已交付的各层（23-A 契约 / 23-B 模式 / 23-C 工作区 / 23-D 状态
- * 映射 / 24-B 能力六档 / 29-C 反馈 / 11-W 设备链路 / 12-A 协议）连成
- * 一条端到端流程，纯逻辑层可单测，App 层只做挂载。
- *
- * 链路步骤：
- * 1. classifyMode 判定 chat/work
- * 2. work 时 createProposal → broker 授权确认 → DeviceBroker.execute
- * 3. 结果投影为 taskViewOf 用户状态 + receiptForUpload 最小上传载荷
- * 4. 未知副作用永不自动重放，重试=新提议新 action_id
- * 5. 产物经 ArtifactStore 落盘，元数据进 result_evidence
+/** Device proposal preparation and receipt projection (ALN-12-E).
+ * App/broker execution and artifact generation remain separate integration work.
  */
-
 import type { LocalTask } from "../../offline/types.ts";
-import { classifyMode, type ChatMode, type ModeDecision } from "../modes/transition.ts";
-import { createProposal, executeProposal } from "../../device/taskProtocol.ts";
-import type { DeviceActionProposal, TaskActionLedger, ActionReceipt } from "../../device/taskProtocol.ts";
-import type { DeviceBrokerLike } from "../../device/taskProtocol.ts";
+import { classifyMode, type ChatMode } from "../modes/transition.ts";
+import type { ProposalInput, ActionReceipt } from "../../device/taskProtocol.ts";
+import { isTerminalJournalState, receiptForUpload } from "../../device/taskProtocol.ts";
 import { taskViewOf } from "../taskview/state.ts";
-import { receiptForUpload } from "../../device/taskProtocol.ts";
-
-// ---- 输入分类 ----
 
 export interface TaskPipelineInput {
   text: string;
-  /** 用户显式选择的模式（聊天/工作切换按钮），null = 自动判定 */
   modeOverride: ChatMode | null;
+  task_id?: string;
+  run_id?: string;
 }
-
 export interface PipelineDecision {
   mode: ChatMode;
-  /** work 模式时的设备动作提议参数 */
-  proposalInput: {
-    task_id: string;
-    run_id: string;
-    kind: string;
-    target: string;
-    args: Record<string, unknown>;
-  } | null;
+  proposalInput: ProposalInput | null;
+  /** Work that cannot form an exact supported action must enter task planning. */
+  planningReason: string | null;
 }
 
-/**
- * 步骤 1-2：判定模式，work 时解析设备动作参数。
- * chat 模式不需要设备动作（轻量回答）。
- */
-export function classifyPipeline(
-  input: TaskPipelineInput,
-): PipelineDecision {
-  const mode = classifyMode(input.text, {
-    explicit: input.modeOverride,
-  });
-  if (mode.mode === "chat") {
-    return { mode: "chat", proposalInput: null };
-  }
-  // work 模式：从输入提取设备动作参数
-  const kind = /打开|launch/.test(input.text) ? "open_app" : "click_text";
-  const target = /设置|settings/i.test(input.text)
-    ? "com.android.settings" : "";
-  return {
-    mode: "work",
-    proposalInput: {
-      task_id: "",
-      run_id: "",
-      kind,
-      target,
-      args: {},
-    },
-  };
+export function classifyPipeline(input: TaskPipelineInput): PipelineDecision {
+  const mode = classifyMode(input.text, { explicit: input.modeOverride }).mode;
+  if (mode === "chat") return { mode, proposalInput: null, planningReason: null };
+  const settings = /^(?:(?:请你|请|帮我|替我)\s*)?(?:打开|启动)\s*(?:系统)?设置[。！!]?$/i.test(input.text.trim())
+    || /^(?:please\s+)?(?:open|launch)\s+(?:system\s+)?settings[.!]?$/i.test(input.text.trim());
+  if (!settings) return { mode, proposalInput: null, planningReason: "需要进一步规划或确认具体动作与目标" };
+  if (!input.task_id?.trim()) return { mode, proposalInput: null, planningReason: "设备动作需要任务身份" };
+  return { mode, planningReason: null, proposalInput: {
+    task_id: input.task_id, run_id: input.run_id, kind: "launch_intent",
+    target: "com.android.settings", args: {},
+    expected_observation: { expect_package: "com.android.settings" },
+  }};
 }
-
-// ---- 执行结果投影 ----
 
 export interface PipelineResult {
-  /** 用户可见状态 */
   state: string;
+  /** Device action outcome; one action never establishes whole-task success. */
   label: string;
-  /** 产物/证据引用（上传用最小投影） */
+  taskLabel: string | null;
   uploadRefs: Record<string, unknown>;
-  /** 未知副作用提示 */
   sideEffectWarning: string | null;
 }
-
-/**
- * 步骤 3-4：执行完成后投影用户可见状态与上传载荷。
- * 只用权威数据（任务状态 + 回执），模型文字无效。
- */
-export function resultView(
-  receipt: ActionReceipt,
-  task?: LocalTask,
-): PipelineResult {
-  const upload = receiptForUpload(receipt);
-  const warning = !receipt.terminal && receipt.state === "unverified"
-    ? "结果未确认，禁止自动重放"
-    : receipt.state === "denied"
-    ? "操作已被拒绝"
-    : receipt.state === "unavailable"
-    ? "设备服务不可用"
-    : null;
+const LABELS: Record<ActionReceipt["state"], string> = {
+  prepared: "设备操作已准备", dispatched: "设备操作已下发，等待核验",
+  verified: "设备操作已核验", unverified: "设备操作结果未确认",
+  failed: "设备操作失败", denied: "设备操作已被拒绝", unavailable: "设备服务不可用",
+};
+export function resultView(receipt: ActionReceipt, task?: LocalTask): PipelineResult {
+  if (task && task.local_task_id !== receipt.task_id) throw new Error("回执与任务身份不一致");
+  if (task?.current_run_id && task.current_run_id !== receipt.run_id) throw new Error("回执与当前运行身份不一致");
+  const known = Object.prototype.hasOwnProperty.call(LABELS, receipt.state);
+  const inconsistent = !known || receipt.terminal !== isTerminalJournalState(receipt.state);
+  const warning = inconsistent ? "回执状态不一致，需核对，禁止自动重放"
+    : receipt.state === "unverified" || receipt.state === "dispatched" ? "结果未确认，禁止自动重放"
+    : receipt.state === "denied" ? "操作已被拒绝"
+    : receipt.state === "unavailable" ? "设备服务不可用"
+    : receipt.state === "failed" ? "设备操作失败" : null;
   return {
     state: receipt.state,
-    label: taskViewOf(
-      task ?? ({
-        local_task_id: receipt.task_id,
-        client_request_id: receipt.action_id,
-        goal: "", intent: "", risk_level: receipt.risk,
-        status: receipt.terminal ? "DONE" : "SUBMITTED",
-        created_at: 0, updated_at: 0,
-        server_status: receipt.state === "verified" ? "SUCCEEDED" : undefined,
-      } as LocalTask),
-    ).label,
-    uploadRefs: {...upload} as Record<string, unknown>,
-    sideEffectWarning: warning,
+    label: inconsistent ? "设备操作状态待核对" : LABELS[receipt.state] ?? "设备操作状态未知",
+    taskLabel: task ? taskViewOf(task).label : null,
+    uploadRefs: { ...receiptForUpload(receipt) }, sideEffectWarning: warning,
   };
 }
 
-// ---- 上传载荷守卫 ----
-
-/**
- * 上传载荷守卫：只含引用与状态（不含参数/文本目标/消息/证据内容）。
- * ALN-12-A 隐私基线：敏感内容默认不进入上传载荷。
- */
+/** Upload only the existing minimal receipt projection, never raw evidence. */
 export function uploadPayload(receipt: ActionReceipt): Record<string, unknown> {
-  return {...receiptForUpload(receipt)} as Record<string, unknown>;
+  return { ...receiptForUpload(receipt) };
 }

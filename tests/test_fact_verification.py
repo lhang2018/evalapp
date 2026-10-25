@@ -144,12 +144,18 @@ def test_delivery_guard_rejects_supported_without_citation():
         TrustedDelivery.assert_deliverable(model_only)
 
 
-def test_report_cli_writes_matrix_evidence(tmp_path):
+def test_report_cli_writes_matrix_evidence(tmp_path, monkeypatch):
+    # CLI/matrix is deterministic offline; public fetch has its own separate test.
+    def unavailable(*args, **kwargs):
+        raise SourceFetchError("offline test source unavailable")
+    monkeypatch.setattr("evoagent.verification.report.fetch_source", unavailable)
     out = tmp_path / "evidence.json"
     code = report_main(["--out", str(out)])
     assert code == 0
     data = json.loads(out.read_text(encoding="utf-8"))
     assert data["verdict_ok"] is True
+    assert data["real_fetch"]["accessible"] is False
+    assert data["real_source_delivery"] is None
     states = {cid: v["state"] for cid, v in data["fixture_matrix"]["verdicts"].items()}
     assert states["c_supported"] == "supported"
     assert states["c_conflict"] == "contradicted"

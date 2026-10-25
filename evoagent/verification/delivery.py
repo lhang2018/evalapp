@@ -38,6 +38,7 @@ class TrustedDelivery:
         conflicts: List[Dict[str, Any]] = []
         unverified: List[Dict[str, Any]] = []
         for verdict in verdicts:
+            self.assert_deliverable(verdict)
             if verdict.state == "supported":
                 if not verdict.supporting:
                     raise DeliveryError(
@@ -90,6 +91,9 @@ class TrustedDelivery:
         if verdict.state == "supported" and not verdict.supporting:
             raise DeliveryError(
                 "拒绝把无引用结论列为 supported: " + verdict.claim_id)
+        if verdict.state == "supported" and any(
+                not isinstance(c, dict) or SourceRecord.from_dict(c).evidence_problem() for c in verdict.supporting):
+            raise DeliveryError("supported 结论引用记录无效: " + verdict.claim_id)
         if verdict.state == "supported" and verdict.model_only:
             raise DeliveryError(
                 "模型自述不得单独判为可信: " + verdict.claim_id)

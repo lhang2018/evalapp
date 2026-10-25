@@ -19,12 +19,12 @@ test("概念问题 → chat 模式", () => {
 
 test("请求执行 → work 模式", () => {
   const d = classifyPipeline({
-    text: "帮我打开设置",
+    text: "帮我打开设置", task_id: "t1", run_id: "r1",
     modeOverride: null,
   });
   assert.equal(d.mode, "work");
   assert.ok(d.proposalInput);
-  assert.equal(d.proposalInput!.kind, "open_app");
+  assert.equal(d.proposalInput!.kind, "launch_intent");
 });
 
 test("用户显式切换优先", () => {
@@ -40,7 +40,7 @@ test("用户显式切换优先", () => {
 function receipt(overrides: Partial<ActionReceipt> = {}): ActionReceipt {
   return {
     effect_id: "fx1", action_id: "act1", proposal_id: "p1",
-    task_id: "t1", run_id: "r1", kind: "open_app", risk: "low",
+    task_id: "t1", run_id: "r1", kind: "launch_intent", risk: "low",
     state: "verified", terminal: true, replayed: false,
     message: "执行成功", evidence: { node_text: "设置" },
     occurred_at: 1, recorded_at: 2,
@@ -80,7 +80,7 @@ test("chat → 无设备动作；work → 设备动作并投影", () => {
   const chat = classifyPipeline({ text: "你好", modeOverride: null });
   assert.equal(chat.mode, "chat");
 
-  const work = classifyPipeline({ text: "帮我打开设置", modeOverride: null });
+  const work = classifyPipeline({ text: "帮我打开设置", task_id: "t1", run_id: "r1", modeOverride: null });
   assert.equal(work.mode, "work");
 
   const r = resultView(receipt({ state: "verified" }));

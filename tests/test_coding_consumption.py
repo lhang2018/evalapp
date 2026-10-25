@@ -61,6 +61,7 @@ class RealConsumptionTest(unittest.TestCase):
         self.runtime = CodingPackRuntime(self.app.tools)
 
     def tearDown(self):
+        self.app.memory.close()
         self.app.db.close()
         shutil.rmtree(self.tmp, ignore_errors=True)
 
@@ -104,6 +105,7 @@ class RealConsumptionTest(unittest.TestCase):
             self.assertIn("a + b + 0", fh.read())
 
     def test_snapshot_restore_rollback_loop(self):
+        self.runtime.install_for_task("t3", self.project)
         snapshot = snapshot_project(self.project)
         # 破坏性修改（语法错误）+ 新增文件
         with open(self.project + "/calc/ops.py", "w") as fh:
@@ -112,9 +114,12 @@ class RealConsumptionTest(unittest.TestCase):
             fh.write("x = 1\n")
         # 验收工具真实执行：语法检查失败
         result = self.app.tools.execute(
-            "coding_syntax_check", {"subdir": "calc"},
+            "coding_syntax_check", {"targets": ["calc"]},
             task_id="t3", run_id="run_t3")
         self.assertFalse(result.ok)
+        self.assertTrue(result.executed, result.error)
+        self.assertEqual(result.error_class, "contract_violation")
+        self.assertNotEqual(result.evidence["returncode"], 0)
         # 回滚闭环：快照恢复 → 语法恢复 → 新增文件由调用方按
         # changed_paths 处置（明确列出，不越权删除）
         touched = restore_snapshot(snapshot)
@@ -123,6 +128,11 @@ class RealConsumptionTest(unittest.TestCase):
             self.assertIn("return a + b\n", fh.read())
         self.assertIn("calc/extra.py",
                       snapshot.changed_paths(self.project))
+        verified = self.app.tools.execute("coding_syntax_check", {"targets": ["calc"]},
+            task_id="t3", run_id="run_t3_restored")
+        self.assertTrue(verified.ok, verified.error)
+        self.assertTrue(verified.executed)
+        self.assertEqual(verified.evidence["returncode"], 0)
 
     def test_archive_modified_consumes_artifact_store(self):
         artifact_store = self.app.releases and None  # 24-A Store 独立实例
