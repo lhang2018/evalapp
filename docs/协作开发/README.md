@@ -1,28 +1,30 @@
 # 协作开发入口
 
-更新时间2026-10-24；结构化状态以[workboard.json](workboard.json)为准，[认领表](开发任务认领表.md)由工具生成。
+更新时间2026-10-25；结构化状态以[workboard.json](workboard.json)为准，[认领表](开发任务认领表.md)由工具生成。
 
 当前41张子卡为**40 accepted、1 review、0 blocked**。04-UI、07-B、11-W、12-A、20-A既定切片已统一复验接受；00-B新候选与真机模块回归已齐，从blocked转review，等待发布决定。原作者/旧独立复核和本轮非独立复验区分记录，见[统一验收](验收/2026-10-24-全部待审核统一验收.md)、[新候选交付](交付/ALN-00-B-新候选与真机回归.md)。
 
 ## 当前安排
 
-初始开发队列已交付；00-B候选现为f550d90，包含07466fb及证据校验修复，干净全量、独立安装依赖、Android构建与约定真机模块回归通过。00-B不再因旧候选遗漏而阻塞，待按原规则独立接受，或用户明确授权以本轮非独立复验发布共享开发基线。baseline仍candidate、published_commit为空。
+初始开发队列已交付；00-B当前准备候选为532a364（3587d04已登记），与f550d90业务源码相同，追加当时的评估与证据归档。较早候选已含07466fb修复，00-B待按原规则独立接受，或用户明确授权发布共享开发基线。baseline仍candidate、published_commit为空。
+
+候选之后新增0b8d7dd任务终态通知功能（6文件、8项新增测试），已登记为committed_pending_acceptance；尚未纳入532a364候选，也未验收该原生通知功能。固定4860c12客户端实测236通过及类型检查通过，见[新增识别校准](验收/2026-10-25-新增提交识别与现状校准.md)。
 
 后续实施重点仍是父包缺口：自然语言手机App主链/真机全矩阵、精确步骤授权与原子绑定/对账消费、固定外部Runtime PoC，以及生产签名/价格/多端与组合恢复。子卡接受不代表23个父包全量完成，见[当前设计差距](../项目现状与审阅进展_2026-10-24.md)。
 
 ## 代码与发布现状
 
 - 固定f550d90新归档：后端**1661通过/1跳过**、客户端**228通过**、npm ci后TypeScript5.9.3、Android ARM64构建及五项检查通过。[证据](../../.planning/2026-10-24-baseline-device/candidate-validation.json)。
-- 最新APK+JS已重新安装到真机，Hermes模块回归9/9：真实存储、下载验签、硬超时、实际强杀恢复、坏包回滚与旧能力执行。动作transport与更新服务为明确夹具，无障碍未授权，不能称点击或自然语言端到端。[真机绑定证据](../../.planning/2026-10-24-baseline-device/device-attestation.json)。旧04-UI/11-W取证继续保留历史采集归属。
+- f550d90版本APK+JS已重新安装到真机，Hermes模块回归9/9：真实存储、下载验签、硬超时、实际强杀恢复、坏包回滚与旧能力执行。动作transport与更新服务为明确夹具，无障碍未授权，不能称点击或自然语言端到端，也不覆盖后来新增的原生通知。[真机绑定证据](../../.planning/2026-10-24-baseline-device/device-attestation.json)。旧04-UI/11-W取证继续保留历史采集归属。
 - 12-A接受的是正式任务卡首份协议/矩阵；自然语言执行全链与物理重启矩阵仍待实施。20-A接受协议与兼容矩阵，真实固定外部PoC仍待实测。
-- 07f11e5候选1653/1+207与更早22c50ca/aafca22/cc0aa3a验证均保留各自时点；prepared_candidate已更新f550d90，本轮没有发布。
+- 07f11e5候选1653/1+207与更早22c50ca/aafca22/cc0aa3a验证均保留各自时点；prepared_candidate当前为532a364，本轮没有发布。最新HEAD客户端236与候选228分开记录；后端同树沿用1661/1，未声称重跑。
 
 ## 接手与共享文件
 
 1. 先读任务卡及[共享文件规则](协作规则与共享文件.md)，确认实际代码和已有交付，避免重复开发。
 2. 在workboard记录owner、实际branch/base_commit与状态；base_commit是实际接手锚点，尚未发布时必须注明并非已发布基线。
 3. 当前由同一会话串行处理共享文件；新增接线范围先补卡片和shared_files，不复制第二套授权、Goal、预算或副作用权威。
-4. 保留既有未提交的通知、DevicePackage、backgroundRunner、test_e12_e13及历史日志。接手不等于整包吞入，不用重置/清理消除它们。
+4. 通知、DevicePackage和backgroundRunner相关实现已在0b8d7dd提交；后续仍保留实际存在的未提交内容，不用重置/清理消除他人工作。
 5. 完成后按[交付模板](交付模板.md)记录精确提交、测试、迁移、兼容和未完成范围。review保留独立审阅要求，只有一个开发者不意味着可以自审自收。
 
 重新加入其他开发者时，再根据独占路径安排并行或独立分支/工作树；不能把当前的单会话串行授权推及未来并发覆盖。
@@ -34,6 +36,7 @@ $env:PYTHONUTF8='1'
 $env:PYTHONIOENCODING='utf-8'
 python tools/check_collaboration_plan.py --render
 python tools/check_collaboration_plan.py --verify-prepared
+python tools/check_collaboration_plan.py --verify-current
 python .planning/2026-10-22-design-alignment/verify_alignment_plan.py
 python tools/verify_claims.py --check
 python tools/scan_all_ledgers.py

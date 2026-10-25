@@ -1,0 +1,34 @@
+{
+  "source_commit": "4860c12218da4aa6af49c1f1c440726c1d23f0bc",
+  "source_tree": "0fc58293c39850524d215bb14b1f95ca4fe3d00c",
+  "backend_unchanged_from_f550d90": true,
+  "dependency_scope": "Same package-lock; dependencies from prior isolated npm ci snapshot, TypeScript5.9.3; not freshly installed",
+  "results": [
+    {
+      "name": "client",
+      "command": [
+        "node",
+        "--test",
+        "test/offline/*.test.ts",
+        "test/device/*.test.ts",
+        "test/update/*.test.ts"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-25-new-additions/client.txt",
+      "sha256": "7e0463c703643fb70738666f61b8915aa7ca868bf4554d121e1f1d0dd0cf8d4c",
+      "tail": "le switched during the probe (1.2405ms)\n✔ recovery must satisfy the restored bundle expectation (1.3506ms)\n✔ recovery cannot call the same failed release a rollback (0.5815ms)\n✔ active marker and slot contents must refer to the same artifact (0.1505ms)\n✔ update manager validates the probe artifact inside its serialized health decision (0.7797ms)\nℹ tests 236\nℹ suites 0\nℹ pass 236\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1217.5582\n"
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0,
+      "log": ".planning/2026-10-25-new-additions/typecheck.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tail": ""
+    }
+  ]
+}

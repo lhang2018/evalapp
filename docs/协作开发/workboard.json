@@ -240,6 +240,18 @@
       "independent": false,
       "report": "docs/协作开发/交付/ALN-00-B-新候选与真机回归.md",
       "production_release": false
+    },
+    "latest_incremental_verification": {
+      "source_commit": "4860c12218da4aa6af49c1f1c440726c1d23f0bc",
+      "client_passed": 236,
+      "typecheck": "passed",
+      "evidence": ".planning/2026-10-25-new-additions/verification.json",
+      "python_evidence_mode": "reused_identical_backend_and_test_trees",
+      "python_source_commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
+      "python_passed": 1661,
+      "python_skipped": 1,
+      "source_tree": "0fc58293c39850524d215bb14b1f95ca4fe3d00c",
+      "scope": "新HEAD客户端/类型检查实测；Python源码与tests相对f550d90零差异，后端1661/1沿用而非本轮重跑；不替换候选或扩大真机证明"
     }
   },
   "streams": [
@@ -3789,6 +3801,28 @@
         }
       ],
       "archived_reason": "初始队列已交付，00-B技术准备已齐转review；后续父包缺口待另拆卡"
+    }
+  ],
+  "post_candidate_changes": [
+    {
+      "id": "notification-transitions",
+      "title": "任务终态跃迁通知与后台同步接线",
+      "workpackage": "ALN-12",
+      "source_commit": "0b8d7dddbc5ba856367b6656be30535faa7e8541",
+      "status": "committed_pending_acceptance",
+      "files": [
+        "android-app/android/app/src/main/java/com/evoagent/DevicePackage.kt",
+        "android-app/android/app/src/main/java/com/evoagent/NotificationModule.kt",
+        "android-app/src/device/nativeNotifications.ts",
+        "android-app/src/device/notifications.ts",
+        "android-app/src/offline/backgroundRunner.ts",
+        "android-app/test/device/notifications.test.ts"
+      ],
+      "evidence": ".planning/2026-10-25-new-additions/verification.json",
+      "report": "docs/协作开发/验收/2026-10-25-新增提交识别与现状校准.md",
+      "scope": "实际提交6个文件；新增8项客户端测试；本轮仅核对登记/自动化，未独立接受该功能或验证新原生通知APK",
+      "candidate_included": false,
+      "device_verified": false
     }
   ]
 }

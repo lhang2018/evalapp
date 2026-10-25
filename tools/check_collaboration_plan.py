@@ -44,6 +44,20 @@ def render(board):
             f"后端 **{verification['python_passed']} passed / {verification['python_skipped']} skipped**，"
             f"客户端 **{verification['client_passed']} passed**，类型检查通过。",
             f"范围：{verification['scope']}；[核验证据]({verification['evidence']})。", ""]
+    prepared = board["baseline"].get("prepared_candidate")
+    if prepared:
+        index = lines.index("## 子任务认领与交付")
+        lines[index:index] = [f"当前准备候选：`{prepared['commit']}`；状态：`{prepared['status']}`；"
+            f"后端 **{prepared['python_passed']} passed / {prepared['python_skipped']} skipped**，"
+            f"客户端 **{prepared['client_passed']} passed**。候选准备不等于正式发布。", ""]
+    additions = board.get("post_candidate_changes", [])
+    if additions:
+        index = lines.index("## 子任务认领与交付")
+        delta_lines = ["## 候选之后的新增提交", "", "以下内容单独登记，不自动纳入候选或视为验收通过。", "",
+            "| 新增内容 | 工作包 | 源码提交 | 当前状态 |", "|---|---|---|---|"]
+        for item in additions:
+            delta_lines.append(f"| {item['title']} | {item['workpackage']} | `{item['source_commit']}` | {item['status']} |")
+        lines[index:index] = delta_lines + [""]
     execution = board.get("execution_queue")
     if execution:
         index = lines.index("## 子任务认领与交付")
@@ -222,6 +236,8 @@ def main():
     parser.add_argument("--render", action="store_true")
     parser.add_argument("--verify-snapshot", action="store_true")
     parser.add_argument("--verify-prepared", action="store_true")
+    parser.add_argument("--verify-current", action="store_true",
+                        help="detect committed post-candidate source changes and new task cards missing from the board")
     args = parser.parse_args()
     board = json.loads(BOARD.read_text(encoding="utf-8"))
     if args.render:
@@ -231,6 +247,9 @@ def main():
         errors.extend(verify_snapshot(board))
     if args.verify_prepared:
         errors.extend(verify_prepared(board))
+    if args.verify_current:
+        from check_source_coverage import check
+        errors.extend(check(ROOT)["errors"])
     print(json.dumps({"scope": "collaboration metadata only", "workpackages": len(board["workpackages"]),
         "dispatches": len(board["dispatches"]), "baseline": board["baseline"]["status"],
         "errors": errors, "ok": not errors}, ensure_ascii=False, indent=2))

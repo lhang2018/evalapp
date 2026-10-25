@@ -1,0 +1,14 @@
+{
+  "passed": 7,
+  "scenarios": [
+    "new source found",
+    "registered source accepted",
+    "new Chinese task card found",
+    "registered card accepted",
+    "later same-file edit found",
+    "latest file version accepted",
+    "false file claim rejected"
+  ],
+  "fixture": "E:\\evalapp\\outputs\\coverage-smoke-dntrwzx_",
+  "scope": "real isolated Git fixture; no product behavior test"
+}
