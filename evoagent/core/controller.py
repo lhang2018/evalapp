@@ -477,11 +477,15 @@ class RuntimeController:
         workflow_ids = ([pinned] if pinned
                         else list(getattr(expert, "workflow_ids", []) or []))
         manifest = task.runtime_manifest or {}
+        registered_tools = {item["tool_id"] for item in self.tools.version_inventory()}
+        whitelist = getattr(expert, "tool_whitelist", None)
+        available_tools = (registered_tools if whitelist is None
+                           else registered_tools.intersection(whitelist))
         selection = self.mode_router.decide(
             goal=task.user_goal, intent=task.intent,
             workflow_ids=workflow_ids,
             provided_inputs=list(manifest.get("match_inputs") or []),
-            tool_whitelist=getattr(expert, "tool_whitelist", None),
+            tool_whitelist=available_tools,
             model_version=str((manifest.get("model_route") or {}).get("model_id") or ""),
             budget=budget)
         task.runtime_manifest["mode_selection"] = selection.to_dict()

@@ -223,3 +223,40 @@ def test_explicit_source_revision_change_invalidates_automatic_retry(retry_app,t
     with pytest.raises(PermissionError):
         retry_app.tools.authorizations.check(child.task_id,contract,
             {"path":str(tmp_path/"allowed"/"a.txt")},principal="user:alice")
+
+def test_failed_task_can_execute_retry_inside_original_scope(retry_app,tmp_path):
+    import test_peer_action_binding_review as peers
+    parent,_,_=scoped_retry(retry_app,tmp_path)
+    output=tmp_path/"allowed"/"actual.txt";output.parent.mkdir(exist_ok=True)
+    retry_app.permissions.high_risk_mode="allow"
+    def write(args):
+        Path(args["path"]).write_text("within scope",encoding="utf-8")
+        return peers.good()
+    retry_app.tools.register(peers.ToolContract("write",side_effect_level="local",
+        permission_requirements=["file"],input_schema={"type":"object","required":["path"]}),write)
+    retry_app.controller.planner.make_plan=lambda *a,**k:peers.plan(peers.step("s","write"))
+    retry_app.controller.router.route=lambda *a,**k:peers.ScriptModel([
+        peers.Action("tool_call",tool="write",args={"path":str(output)})])
+    result=retry_app.controller.resume_task(parent.task_id,wait=True)
+    assert result.task_status.value=="SUCCEEDED",result.failure_reason
+    assert result.parent_task_id==parent.task_id and output.read_text(encoding="utf-8")=="within scope"
+    grant=retry_app.tools.authorizations.current(result.task_id)
+    assert grant["policy"]["path_roots"]==[str((tmp_path/"allowed").resolve())]
+
+def test_runtime_mode_router_does_not_grant_unregistered_tools(retry_app):
+    from evoagent.core.task import Task
+    from evoagent.core.budget import BudgetController,BudgetLimits
+    bad=WorkflowDef(workflow_id="a_missing",version="1",nodes=[
+        WorkflowNode(node_id="n",tool="review_missing_tool",args={})])
+    good=WorkflowDef(workflow_id="z_valid",version="1",nodes=[
+        WorkflowNode(node_id="n",tool="calculate",args={"expression":"1+1"})])
+    retry_app._workflows.update({bad.workflow_id:bad,good.workflow_id:good})
+    expert=retry_app.experts.get("general")
+    expert.workflow_ids=[bad.workflow_id,good.workflow_id]
+    expert.tool_whitelist=None
+    task=Task(user_goal="calculation",intent="general")
+    retry_app.db.save_task(task)
+    selection=retry_app.controller._select_execution_mode(task,expert,
+        BudgetController(BudgetLimits()))
+    assert selection.workflow_id==good.workflow_id
+    assert any(v.workflow_id==bad.workflow_id and not v.applicable for v in selection.verdicts)
