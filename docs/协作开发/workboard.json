@@ -4463,17 +4463,21 @@
       "title": "精确能力版本的运行时消费",
       "stream": "runtime",
       "owner": "zcode-next",
-      "reviewer": null,
-      "branch": "feature/user-direction",
+      "reviewer": "zcode-main",      "branch": "feature/user-direction",
       "base_commit": "bf706e8a2764a332f5e4fd6aaecb8e7ee1c799d3",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         "代码: 本卡提交 feat(ALN-06-R)（assets/consumption.py 新增绑定协议；repository.versions_of 只读扩展；controller 可选 asset_binder 三处接线；15 项专项测试）",
         "测试: 专项 15 passed；相关回归 115 passed；全量 1699 passed / 1 skipped / 0 failed（goal_opportunities 瞬态失败经 stash 对照排除，与本卡无关）",
         "交付: docs/协作开发/交付/ALN-06-R-精确能力版本的运行时消费.md（绑定/退役拒绑/旧run固定/库漂移拒绝语义与证据）",
         "未注入 binder 时 controller 行为零差异（专项断言）；生产装配与 App/专家真实消费链按 ALN-06 整包另验"
-      ],
+      ,
+    {
+      "date": "2026-10-25",
+      "scope": "独立复核（zcode-main）：R1专项15过独立复跑、R2相关回归64过、R3退役拒绑AssetNotConsumable、R4旧run版本固定豁免、R5库漂移digest可检测、R6零差异声明（binder可选前置）、R7绑定内容完整；语义审查三重点（created_from_task排除/pinned豁免边界/versions_of确定性）均确认；结论转accepted（本卡范围）",
+      "review_report": "docs/协作开发/验收/2026-10-25-ALN-06-R独立复核.md"
+    }],
       "card": "docs/协作开发/任务卡/06-R-精确能力版本的运行时消费.md",
       "shared_files": [
         "evoagent/core/controller.py",
