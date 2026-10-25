@@ -3314,7 +3314,8 @@
       "title": "首发17用例的验收骨架与可执行断言",
       "stream": "integration",
       "owner": "codex-runtime",
-      "reviewer": "zcode-main",      "branch": "feature/user-direction",
+      "reviewer": "zcode-main",
+      "branch": "feature/user-direction",
       "base_commit": "5e2b7e36ffbc225a33c7c09c8214bf70133ba2da",
       "status": "accepted",
       "blocker": null,
@@ -3326,13 +3327,13 @@
           "command": "python -X utf8 -m pytest tools/tests/test_product_acceptance.py tools/tests/test_product_backlog.py -q",
           "log": ".planning/2026-10-25-product-breakdown/tool-tests.txt",
           "evidence": ".planning/2026-10-25-product-breakdown/committed-evidence.json"
+        },
+        {
+          "date": "2026-10-25",
+          "scope": "独立复核（zcode-main）：R1工具测试65过独立复跑、R2/R3默认0退出与require-pass 1语义、R4矩阵17例48条具名断言、R5证据15/15 LF哈希、R6探针判别力；结论转accepted（骨架范围），17用例产品级通过仍以--require-pass全绿为准",
+          "review_report": "docs/协作开发/验收/2026-10-25-ALN-29-A独立复核.md"
         }
-      ,
-    {
-      "date": "2026-10-25",
-      "scope": "独立复核（zcode-main）：R1工具测试65过独立复跑、R2/R3默认0退出与require-pass 1语义、R4矩阵17例48条具名断言、R5证据15/15 LF哈希、R6探针判别力；结论转accepted（骨架范围），17用例产品级通过仍以--require-pass全绿为准",
-      "review_report": "docs/协作开发/验收/2026-10-25-ALN-29-A独立复核.md"
-    }],
+      ],
       "card": "docs/协作开发/任务卡/29-A-首发17用例的验收骨架与可执行断言.md",
       "shared_files": [
         "tools/check_collaboration_plan.py"
@@ -4500,9 +4501,14 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "d8ee3551aab5bb7a80936880a13cd7d828edbff3",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        "代码: 58de0e8（binding.py 意图API+heal/engine 前置登记/schema intents 表+13项专项）；controller._reconciliation_gate 部分已随并行会话 0fda873 入库（提交卷入，内容一致）",
+        "测试: 专项 13 passed；相关回归 156 passed（07-B/reconcile/ownership/continuation/approvals/boundaries）；全量 1769/1/2failed 中 ledger_drift(GAP_ANALYSIS 裸引用漂移,非本卡) 与 runtime_reservations(并行15-P在途) 均经核实与本卡无关",
+        "交付: docs/协作开发/交付/ALN-07-C-原子绑定精确步骤授权与对账消费.md（含与 leases 未决副作用层的分工、07-E matched 语义澄清）",
+        "遗留: reconciliation WAITING_USER 的用户裁决入口属 04-UI/23-E；heal 多候选人工裁决 API 未做"
+      ],
       "card": "docs/协作开发/任务卡/07-C-原子绑定、精确步骤授权与对账消费.md",
       "shared_files": [
         "evoagent/core/controller.py",
@@ -4539,7 +4545,7 @@
         "UX-10",
         "F03"
       ],
-      "next_step": "侦察 07-B 绑定写入时序、授权发放/消费链、恢复路径对账缺口",
+      "next_step": "待独立复核（意图尽力而为语义/heal 防重复归因论证/两层门禁分工）；裁决入口与人工 heal 另卡",
       "working_basis": "2026-10-25 zcode-next 认领开工（WIP=1，本流内无其他在途卡）。锚点 d8ee355。复用 07-B ActionBindings/07-E reconcile/04-R 恢复；写入边界 core/planning/workflows；server.py、budget.py 等他会在途文件不触碰。",
       "prerequisites": "可重复故障注入"
     },
