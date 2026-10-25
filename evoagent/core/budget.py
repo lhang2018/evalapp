@@ -105,6 +105,15 @@ class BudgetLedger:
         from .reservations import BudgetReservations
         return BudgetReservations(self, clock=clock)
 
+    def pool_reservations(self, *, clock=None):
+        """ALN-15-P：provider/expert 旧池的原子共享预留服务。
+
+        仅当账本有 Database 后端时可用；无 Database 的内存账本保持
+        非原子旧检查（PRD 55 语义不变）。
+        """
+        from .pool_reservations import PoolReservations
+        return PoolReservations(self, clock=clock)
+
     @staticmethod
     def _keys(scope: str, at: Optional[float] = None):
         ts = at if at is not None else time.time()
@@ -191,6 +200,8 @@ class BudgetController:
         self.pools: List[PoolLimit] = []
         self._violations: Dict[str, str] = {}
         self._lock = threading.RLock()
+        # ALN-15-P：已原子持额的池（scope → 持额记录），随调用结算/退款
+        self._pool_holds: Dict[str, Dict] = {}
         self.on_change = None
         self.authority_check = None
         self._scope_budgets = {}
@@ -218,9 +229,132 @@ class BudgetController:
                                     max_cost=max_cost))
 
     def _check_pools(self) -> None:
-        for p in self.pools:
-            self.ledger.check(p.scope, max_model_calls=p.max_model_calls,
-                              max_cost=p.max_cost, period=p.period)
+        """检查全部绑定池；任一池拒绝时回滚本轮已建立的持额。"""
+        acquired: List[str] = []
+        try:
+            for p in self.pools:
+                hold = self._request_pool_hold(p)
+                if hold is not None:
+                    # ALN-15-P：原子持额成功（后续由结算/未知/退款关闭）
+                    acquired.append(p.scope)
+                    continue
+                self.ledger.check(p.scope, max_model_calls=p.max_model_calls,
+                                  max_cost=p.max_cost, period=p.period)
+        except BudgetExceeded:
+            # 部分成功的持额不能悬挂：本次检查失败 = 调用未发起，
+            # 未下发的持额立即退款（已下发的不可能出现在同一检查内）。
+            for scope in acquired:
+                entry = self._pool_holds.pop(scope, None)
+                if entry is not None and entry["state"] == "reserved":
+                    try:
+                        self._pool_service().refund(entry["reservation_id"])
+                    except Exception:  # noqa: BLE001 TTL 扫描兜底
+                        pass
+            raise
+
+    def _request_pool_hold(self, pool: PoolLimit) -> Optional[Dict]:
+        """对 provider/expert 池做原子持额；不可原子化时返回 None 回退旧检查。
+
+        回退条件：无 Database 后端、缺正数费用上界（不假定零费）、
+        账户参数不可满足。持额失败（Capacity）如实抛 BudgetExceeded。
+        """
+        from .pool_reservations import POOL_PREFIXES
+        if (not any(pool.scope.startswith(prefix) for prefix in POOL_PREFIXES)
+                or self.ledger is None or self.ledger.db is None
+                or pool.max_model_calls is None or pool.max_model_calls <= 0
+                or pool.max_cost is None):
+            return None
+        upper = self.limits.max_cost_per_model_call
+        if upper <= 0:
+            return None
+        with self._lock:
+            # 旧 check 是幂等检查：同一控制器在调用真正发起前的重复检查
+            # 必须复用同一笔持额，而不是每次新建再退款。
+            existing = self._pool_holds.get(pool.scope)
+            if existing is not None and existing["state"] == "reserved":
+                try:
+                    record = self._pool_service().get(
+                        existing["reservation_id"])
+                except KeyError:
+                    record = None
+                if (record is not None and record["state"] == "reserved"
+                        and record["expires_at"] > time.time()):
+                    return record
+            # 上一次持额未走完（检查后未下发）→ 视为被取代，立即退款；
+            # 已下发未结算的由 TTL 扫描转 unknown（不下发不退款）。
+            stale = self._pool_holds.pop(pool.scope, None)
+            if stale is not None and stale["state"] == "reserved":
+                try:
+                    self._pool_service().refund(stale["reservation_id"])
+                except Exception:  # noqa: BLE001 退款失败交给 TTL 扫描
+                    pass
+            pool_cost = min(float(pool.max_cost),
+                            float(self.limits.max_cost_per_model_call))
+            service = self._pool_service()
+            try:
+                # 幂等准备周期账户（同参数重放同账户），随后原子持额
+                service.prepare(pool.scope, max_model_calls=pool.max_model_calls,
+                                max_cost=pool.max_cost, period=pool.period)
+                reservation = service.hold(
+                    pool.scope, cost_upper=pool_cost, calls_upper=1,
+                    period=pool.period,
+                    ttl_seconds=max(1, int(self.limits.max_seconds)))
+            except BudgetExceeded:
+                raise
+            except (KeyError, ValueError):
+                return None  # 参数不可原子化（如账户未准备/上界缺失）→ 旧检查
+            self._pool_holds[pool.scope] = {
+                "state": "reserved", "pool": pool,
+                "reservation_id": reservation["reservation_id"],
+            }
+            return reservation
+
+    def _pool_service(self):
+        if not hasattr(self, "_pool_reservation_service"):
+            self._pool_reservation_service = self.ledger.pool_reservations()
+        return self._pool_reservation_service
+
+    def _dispatch_pool_holds(self) -> None:
+        """调用已真实发起：一次性领取持额，崩溃窗口后按未验证对账。"""
+        if not self._pool_holds:
+            return
+        for entry in self._pool_holds.values():
+            if entry["state"] == "reserved":
+                try:
+                    self._pool_service().mark_dispatched(
+                        entry["reservation_id"])
+                    entry["state"] = "dispatched"
+                except Exception:  # noqa: BLE001 重复领取/过期由扫描兜底
+                    pass
+
+    def _settle_pool_holds(self, *, cost: float = 0.0, unknown: bool) -> None:
+        """结算本次已持额的调用：有真实金额按金额、未知按对账。
+
+        未知成本不得假定零：unknown 持续占用持额（上界），须显式对账。
+        """
+        from .pool_reservations import pool_micros
+        for key, entry in list(self._pool_holds.items()):
+            if entry["state"] != "dispatched":
+                continue
+            service = self._pool_service()
+            try:
+                if unknown:
+                    service.unknown(entry["reservation_id"],
+                                    evidence_ref="budget-pool:unknown|"
+                                                 + entry["reservation_id"])
+                else:
+                    account = service.account_for(
+                        entry["pool"].scope, entry["pool"].period)
+                    actual = {k: 0 for k in account["limits"]}
+                    actual["model_calls"] = 1
+                    actual["cost_micros"] = pool_micros(
+                        max(0.0, float(cost)))
+                    service.settle(entry["reservation_id"], actual,
+                                   evidence_ref="budget-pool:execution|"
+                                                + entry["reservation_id"])
+            except Exception:  # noqa: BLE001 结算异常交给 TTL 扫描
+                continue
+            self._pool_holds.pop(key, None)
 
     def _record_scopes(self, **kw: Any) -> None:
         if self.ledger is not None:
@@ -278,6 +412,7 @@ class BudgetController:
             self.usage.cost += cost
             self._attribute(self.usage.model_usage, model_id, cost)
             self._record_scopes(model_calls=1, cost=cost)
+            self._dispatch_pool_holds()
             if cost > self.limits.max_cost_per_model_call:
                 self._violations["model_call_cost"] = (
                     f"单次模型调用成本 {cost} > "
@@ -292,6 +427,7 @@ class BudgetController:
                 usage = self.usage.model_usage.setdefault(model_id, {"calls": 0, "cost": 0.0})
                 usage["cost"] += cost
             self._record_scopes(cost=cost)
+            self._settle_pool_holds(cost=cost, unknown=False)
             if cost > self.limits.max_cost_per_model_call:
                 self._violations["model_call_cost"] = f"单次模型调用成本 {cost} > {self.limits.max_cost_per_model_call}"
 
@@ -309,6 +445,7 @@ class BudgetController:
                     model_id, {"calls": 0, "cost": 0.0})
                 bucket["unknown_costs"] = int(
                     bucket.get("unknown_costs", 0)) + 1
+            self._settle_pool_holds(cost=0.0, unknown=True)
             self.persist_usage()
 
     def record_tool_call(self, tool_id: Optional[str] = None,

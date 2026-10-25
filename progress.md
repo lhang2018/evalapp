@@ -1639,3 +1639,8 @@
 - 结论：自动化复核通过；真机自然语言执行/断网/杀进程/重启一致性证据未采集 → 整卡保持 review(automation_accepted_device_pending)，不转 accepted
 - 本批性质注记：同日两卡（ALN-11-W→ALN-12-A）均为干净树独立复验并出报告；ALN-13-A 已被 claude-main 认领，未撞车
 
+### ALN-15-P 开发完成（2026-10-25，review，待独立复核）
+- 认领并实现 provider/expert 池原子预留 + 旧 Goal 迁移：新增 core/pool_reservations.py（周期不可变池账户 pool-v1:<scope>:<period>:<stamp>、BEGIN IMMEDIATE 原子持额、重复 check 复用未下发持额、未知成本挂上界不假定零费、过期未下发退款/已下发转 unknown）；core/budget.py 接线（_check_pools 原子优先/旧检查回退、多池失败回滚本轮持额；record→dispatch、settle→settle、mark_unknown→unknown）；goals/budget_migration.py（幂等 key goal-migration:v1|goal|task、binding 标记不含 legacy_usage 防二次计费、verify 零差异、rollback 仅退未下发）
+- 验证：专项 22 passed（池 15 + 迁移 7）；预算域 110 passed；隔离全量（干净 d1272c9 + 本卡文件）1723 passed/1 skipped；共享脏树 1733/18 failed 全部落在他人未提交文件域（feedback/developed_review/controller 显式 hint 多调用），隔离树对照 159/159 通过
+- 观察：旧池直接调用 BudgetLedger.check 的路径无池原子性（本卡只覆盖 BudgetController 绑定池）；迁移标记与 15-R task 账户双口径需整包联调
+- 结论：转 review，审阅人未定保留 null，不自批为独立验收
