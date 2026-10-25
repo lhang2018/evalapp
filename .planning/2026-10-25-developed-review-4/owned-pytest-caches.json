@@ -1,0 +1,30 @@
+[
+  {
+    "path": "C:\\Users\\lhang\\AppData\\Local\\Temp\\pytest-of-lhang\\pytest-512",
+    "exists": false,
+    "proof": [
+      ".planning/2026-10-25-developed-review-2/before-python.txt"
+    ]
+  },
+  {
+    "path": "C:\\Users\\lhang\\AppData\\Local\\Temp\\pytest-of-lhang\\pytest-549",
+    "exists": false,
+    "proof": [
+      ".planning/2026-10-25-developed-review-3/before-python.txt"
+    ]
+  },
+  {
+    "path": "C:\\Users\\lhang\\AppData\\Local\\Temp\\pytest-of-lhang\\pytest-555",
+    "exists": false,
+    "proof": [
+      ".planning/2026-10-25-developed-review-3/final-targeted-python.txt"
+    ]
+  },
+  {
+    "path": "C:\\Users\\lhang\\AppData\\Local\\Temp\\pytest-of-lhang\\pytest-587",
+    "exists": false,
+    "proof": [
+      ".planning/2026-10-25-developed-review-4/final-targeted-python-2.txt"
+    ]
+  }
+]

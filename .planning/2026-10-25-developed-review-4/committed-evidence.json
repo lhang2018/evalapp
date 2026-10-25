@@ -1,0 +1,141 @@
+{
+  "fix_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+  "snapshot": {
+    "source_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+    "source_tree": "2459cd3f11103d20ea47b3b0a6af1bc54c3a500a",
+    "snapshot": "E:\\evalapp\\outputs\\developed-review4-6ae4b30",
+    "archive_sha256": "3cdff2a26d697e135d6c68283ccbba98a56cf4ae8a73bb97eb87bdcf5237f51a",
+    "scope": "exact Git archive, excludes concurrent dirty files; disposable snapshot to be deleted after validation per user request"
+  },
+  "initial_negative_failed": 31,
+  "later_completion_probe_before_fix": "failed, preserved before-completion.txt",
+  "preceding_targeted_passed": 224,
+  "final_team_and_boundary_passed": 48,
+  "fixed_full_backend_initial": {
+    "passed": 2259,
+    "failed": 1,
+    "skipped": 1,
+    "deselected": 1,
+    "failure": "test_git_flow.py::TestGitFlow::test_non_repository_rejected; TEMP inside parent repository"
+  },
+  "fixed_full_backend": {
+    "passed": 2260,
+    "failed": 0,
+    "skipped": 1,
+    "deselected": 1,
+    "scope": "same exact 6ae4b30 Git archive; isolated TEMP + GIT_CEILING_DIRECTORIES",
+    "command": "python -X utf8 -m pytest tests tools/tests --deselect=tests/test_fact_verification.py::test_real_http_source_is_accessible_and_cited --basetemp=E:/evalapp/outputs/review4-tmp/full-isolated -q"
+  },
+  "fixed_git_recheck_passed": 7,
+  "temporary_environment": {
+    "TEMP": "E:/evalapp/outputs/review4-tmp",
+    "GIT_CEILING_DIRECTORIES": "E:/evalapp/outputs/review4-tmp",
+    "reason": "C disk full; stop Git parent discovery within disposable test directories"
+  },
+  "network_tested_for_new_code": false,
+  "device_tested": false,
+  "client_tests_rerun": false,
+  "product_acceptance_added": false,
+  "independent_review_of_new_fix": false,
+  "published_by_this_review": false,
+  "published_baseline_observed": "21899e6ac5019599881727bcbe24662e57325368",
+  "baseline_note": "published by another session while this review ran; the new fix remains post-baseline",
+  "cleanup": {
+    "executed": false,
+    "reason": "automatic approval review rejected cache cleanup and the safer junction-only unlink; tool returned blocked by policy with no further reason",
+    "action": "remove validated review snapshots, archives and test caches after validation; detach dependency junctions without following them first",
+    "removed_paths": [],
+    "removed_bytes": 0,
+    "plan": ".planning/2026-10-25-developed-review-4/cleanup-plan.json",
+    "estimated_bytes_in_plan": 1790000548,
+    "preserved": [
+      "source code",
+      "validation logs",
+      "evidence manifests",
+      "project data",
+      "installed dependencies"
+    ]
+  },
+  "logs": [
+    {
+      "path": ".planning/2026-10-25-developed-review-4/before-completion.txt",
+      "sha256_lf": "98697ebf8ddbc2fe66d03ba7ece8b6b5fd581eaeebc044af836937d4d8e5cf9d"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/before-python.txt",
+      "sha256_lf": "50610bf668088ee9a3b083d94cb79b6d8ef2e00e951384cc3913e8ab2b4f4f4a"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/board-indent.txt",
+      "sha256_lf": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/claims-check.json",
+      "sha256_lf": "a47bcc884b203d846f2c69d1c61980cde3ffb57bf70adb79b5ab2b30724314fd"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/cleanup-plan.json",
+      "sha256_lf": "aa6178d582c8c0168d551035d8b7494404907b0da60e046880fb6205d3dbe95f"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/cleanup-result.json",
+      "sha256_lf": "e18b5b41b7fdf2f53741d30eaa0c080634485171beeb2d53a53e50bce658dc0c"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/collaboration-check.txt",
+      "sha256_lf": "78db5e794cfd7918871faf7d7f035e54d0c08f5bf5dc185a4e4b14a5ec4e3469"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/combined-python.txt",
+      "sha256_lf": "ace94952c766f3dafc0ccc2da422dca7aa998dfc946b608edc0e59e75d0a9175"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/final-targeted-python-2.txt",
+      "sha256_lf": "848d850c92399f3e0b82b945181d8a60b75f62382e5ed4bc09f0dca0962e923a"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/final-targeted-python-e.txt",
+      "sha256_lf": "0a1a846d26595b07239a27320698235bc1c9173472c1d85161485211032a970d"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/final-targeted-python.txt",
+      "sha256_lf": "7e46b50409d2a9caff584869a6847f4cac8870d1deebaa540311153850836bd4"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/final-team-boundary.txt",
+      "sha256_lf": "15b147b530c542f843ab3aff581c464c5ea31e311627f33e5550ff512318d8f3"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/fixed-full-python-isolated.txt",
+      "sha256_lf": "9efa228002deb2b18c53153fe57b7d36b987ea792d52deb432f83fbdb182063c"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/fixed-full-python.txt",
+      "sha256_lf": "32cd0dbd51eeaea726144625b3aed6b9696123c2e7bd9eb9f87d492c3077338e"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/fixed-git-flow-recheck.txt",
+      "sha256_lf": "512c7b5b72fb57571b70718949d8b32672f985abca7657d37e2dbd30143b1d73"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/fixed-import.txt",
+      "sha256_lf": "f7544fab0a69b09b51084377fe285e45c11866b12b021e16fcbe81fbff03981e"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/fixed-source.json",
+      "sha256_lf": "4151d788a46e53d4b35f10a87f3f41e00a1bc14a9d172059909744748b39768f"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/ledgers-check.json",
+      "sha256_lf": "8e24e24ba5d341e3cdb4fa014068890247aa4cdc451d4695d9d35d12d0321070"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/owned-pytest-caches.json",
+      "sha256_lf": "ef4aaab3d9c797b7e0fd9977a750bcc4ffbc7b45924b8922633b0222185cef33"
+    },
+    {
+      "path": ".planning/2026-10-25-developed-review-4/targeted-python.txt",
+      "sha256_lf": "b1e44f6d88554dad50007fdae037a751813f5c981edee3063fef7ead1a86a1bd"
+    }
+  ]
+}

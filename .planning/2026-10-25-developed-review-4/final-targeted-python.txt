@@ -1,0 +1,46 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+................................F....................................... [ 46%]
+........................................................................ [ 92%]
+...........                                                              [100%]
+================================== FAILURES ===================================
+________ test_real_composition_can_only_bind_after_explicit_evaluation ________
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000002BC6F7E1690>
+
+    def test_real_composition_can_only_bind_after_explicit_evaluation(repo):
+        from evoagent.assets.consumption import RuntimeAssetBinder, AssetNotConsumable
+    
+        a = asset(repo, "source", {"produced_outputs": ["text"]})
+        result = compose(repo, [str(a.ref)], new_asset_id="skill:combo", new_version="1")
+        binder = RuntimeAssetBinder(repo)
+        with pytest.raises(AssetNotConsumable):
+            binder.bind("skill", "combo", prefer_ref=result.asset_ref)
+        # Test evaluation evidence is explicit; this does not claim real production evaluation.
+>       _promote(repo, repo.get_exact(result.asset_ref))
+
+tests\test_developed_review_4.py:354: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_asset_composition.py:27: in _promote
+    asset = repo.transition(asset.asset_id, asset.version, state,
+evoagent\assets\repository.py:204: in transition
+    ensure_transition(asset.lifecycle_state, to_state)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+from_state = 'draft', to_state = 'validating'
+
+    def ensure_transition(from_state: str, to_state: str) -> None:
+        if from_state == to_state:
+            raise LifecycleError(f"状态未变化: {from_state}")
+        if not can_transition(from_state, to_state):
+            allowed = ALLOWED_TRANSITIONS.get(from_state, ())
+>           raise LifecycleError(
+                f"非法生命周期迁移 {from_state} -> {to_state}；"
+                f"允许: {list(allowed)}")
+E           evoagent.assets.entity.LifecycleError: 非法生命周期迁移 draft -> validating；允许: ['candidate', 'retired']
+
+evoagent\assets\entity.py:184: LifecycleError
+=========================== short test summary info ===========================
+FAILED tests/test_developed_review_4.py::test_real_composition_can_only_bind_after_explicit_evaluation
+1 failed, 154 passed in 7.95s

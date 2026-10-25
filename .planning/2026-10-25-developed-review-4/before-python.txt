@@ -1,0 +1,366 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF                                          [100%]
+================================== FAILURES ===================================
+__________ test_off_accepts_late_attempt_and_status_without_crashing __________
+
+    def test_off_accepts_late_attempt_and_status_without_crashing():
+        g=ProactivityGovernor(level='off')
+>       g.record_attempt(had_benefit=False)
+
+tests\test_developed_review_4.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001CFB6520370>
+
+    def record_attempt(self, *, had_benefit: bool) -> Dict[str, Any]:
+        """记录一次主动尝试的收益结果。零写入核心状态。"""
+>       limit = NO_PROGRESS_LIMIT[self.level]
+E       KeyError: 'off'
+
+evoagent\goals\proactivity.py:129: KeyError
+______________ test_user_level_change_releases_no_progress_stop _______________
+
+    def test_user_level_change_releases_no_progress_stop():
+        g=ProactivityGovernor(level='low')
+        g.record_attempt(had_benefit=False);g.record_attempt(had_benefit=False)
+        g.set_level('high')
+>       assert g.may_start().allowed and g.status()['no_progress_streak']==0
+E       AssertionError: assert (False)
+E        +  where False = ProactivityDecision(allowed=False, level='high', reasons=['连续无收益已达上限，主动侧已停（需用户重置或调档）'], safety_notice=None).allowed
+E        +    where ProactivityDecision(allowed=False, level='high', reasons=['连续无收益已达上限，主动侧已停（需用户重置或调档）'], safety_notice=None) = may_start()
+E        +      where may_start = <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001CFB662BC10>.may_start
+
+tests\test_developed_review_4.py:30: AssertionError
+_______________ test_invalid_concurrency_cannot_be_allowed[-1] ________________
+
+count = -1
+
+    @pytest.mark.parametrize('count',[-1,float('nan'),True])
+    def test_invalid_concurrency_cannot_be_allowed(count):
+>       with pytest.raises(ProactivityError):ProactivityGovernor().may_start(concurrent_proactive=count)
+E       Failed: DID NOT RAISE <class 'evoagent.goals.proactivity.ProactivityError'>
+
+tests\test_developed_review_4.py:35: Failed
+_______________ test_invalid_concurrency_cannot_be_allowed[nan] _______________
+
+count = nan
+
+    @pytest.mark.parametrize('count',[-1,float('nan'),True])
+    def test_invalid_concurrency_cannot_be_allowed(count):
+>       with pytest.raises(ProactivityError):ProactivityGovernor().may_start(concurrent_proactive=count)
+E       Failed: DID NOT RAISE <class 'evoagent.goals.proactivity.ProactivityError'>
+
+tests\test_developed_review_4.py:35: Failed
+______________ test_invalid_concurrency_cannot_be_allowed[True] _______________
+
+count = True
+
+    @pytest.mark.parametrize('count',[-1,float('nan'),True])
+    def test_invalid_concurrency_cannot_be_allowed(count):
+>       with pytest.raises(ProactivityError):ProactivityGovernor().may_start(concurrent_proactive=count)
+E       Failed: DID NOT RAISE <class 'evoagent.goals.proactivity.ProactivityError'>
+
+tests\test_developed_review_4.py:35: Failed
+_________________ test_nonboolean_benefit_cannot_clear_streak _________________
+
+    def test_nonboolean_benefit_cannot_clear_streak():
+>       with pytest.raises(ProactivityError):ProactivityGovernor().record_attempt(had_benefit='false')
+E       Failed: DID NOT RAISE <class 'evoagent.goals.proactivity.ProactivityError'>
+
+tests\test_developed_review_4.py:39: Failed
+_______________ test_unknown_resource_decision_is_not_admission _______________
+
+    def test_unknown_resource_decision_is_not_admission():
+        class Unknown:
+            def admit(self,*a):return type('Decision',(),{'decision':'unknown','reason':'unavailable'})()
+>       assert not ProactivityGovernor(resource_governor=Unknown()).may_start().allowed
+E       AssertionError: assert not True
+E        +  where True = ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None).allowed
+E        +    where ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None) = may_start()
+E        +      where may_start = <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001CFB6523EB0>.may_start
+E        +        where <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001CFB6523EB0> = ProactivityGovernor(resource_governor=<test_developed_review_4.test_unknown_resource_decision_is_not_admission.<locals>.Unknown object at 0x000001CFB6521360>)
+E        +          where <test_developed_review_4.test_unknown_resource_decision_is_not_admission.<locals>.Unknown object at 0x000001CFB6521360> = <class 'test_developed_review_4.test_unknown_resource_decision_is_not_admission.<locals>.Unknown'>()
+
+tests\test_developed_review_4.py:45: AssertionError
+____________________ test_invalid_contract_cannot_advance _____________________
+
+    def test_invalid_contract_cannot_advance():
+        c=contract([role('a'),role('b')])
+>       assert not c.advance(role_id='a')['ok'] and c.status=='proposed'
+E       assert (not True)
+
+tests\test_developed_review_4.py:58: AssertionError
+_______________ test_writer_map_drift_cannot_authorize_observer _______________
+
+    def test_writer_map_drift_cannot_authorize_observer():
+        c=contract([role('a'),role('b',artifact='')]);c.state_writers['state']='b'
+>       assert not c.advance(role_id='b')['ok']
+E       assert not True
+
+tests\test_developed_review_4.py:63: AssertionError
+_____________ test_other_role_failure_prevents_global_completion ______________
+
+    def test_other_role_failure_prevents_global_completion():
+        c=contract([role('a','one'),role('b','two')]);assert c.advance(role_id='a')['ok']
+        c.fail('b','failed')
+>       assert not c.advance(role_id='a')['ok'] and c.status=='active'
+E       assert (not True)
+
+tests\test_developed_review_4.py:69: AssertionError
+__________________ test_forged_handoff_cannot_be_authorized ___________________
+
+    def test_forged_handoff_cannot_be_authorized():
+        c=contract([role('a','one',('send',)),role('b','two')]);c.status='active'
+        c.handoffs.append(Handoff('h','a','b',['not-an-output']))
+>       assert not c.authorize_external_action(role_id='a',action='send')['ok']
+E       assert not True
+
+tests\test_developed_review_4.py:75: AssertionError
+____________ test_handoff_rejects_nonfinite_or_boolean_budget[nan] ____________
+
+budget = nan
+
+    @pytest.mark.parametrize('budget',[math.nan,math.inf,True])
+    def test_handoff_rejects_nonfinite_or_boolean_budget(budget):
+        c=contract([role('a','one'),role('b','two')])
+>       with pytest.raises(TeamContractError):TeamPlanner(builtin_experts()).add_handoff(c,from_role='a',to_role='b',input_refs=['a:out'],budget_units=budget)
+E       Failed: DID NOT RAISE <class 'evoagent.experts.team.TeamContractError'>
+
+tests\test_developed_review_4.py:81: Failed
+____________ test_handoff_rejects_nonfinite_or_boolean_budget[inf] ____________
+
+budget = inf
+
+    @pytest.mark.parametrize('budget',[math.nan,math.inf,True])
+    def test_handoff_rejects_nonfinite_or_boolean_budget(budget):
+        c=contract([role('a','one'),role('b','two')])
+>       with pytest.raises(TeamContractError):TeamPlanner(builtin_experts()).add_handoff(c,from_role='a',to_role='b',input_refs=['a:out'],budget_units=budget)
+E       Failed: DID NOT RAISE <class 'evoagent.experts.team.TeamContractError'>
+
+tests\test_developed_review_4.py:81: Failed
+___________ test_handoff_rejects_nonfinite_or_boolean_budget[True] ____________
+
+budget = True
+
+    @pytest.mark.parametrize('budget',[math.nan,math.inf,True])
+    def test_handoff_rejects_nonfinite_or_boolean_budget(budget):
+        c=contract([role('a','one'),role('b','two')])
+>       with pytest.raises(TeamContractError):TeamPlanner(builtin_experts()).add_handoff(c,from_role='a',to_role='b',input_refs=['a:out'],budget_units=budget)
+E       Failed: DID NOT RAISE <class 'evoagent.experts.team.TeamContractError'>
+
+tests\test_developed_review_4.py:81: Failed
+______________ test_handoff_cannot_request_foreign_task_context _______________
+
+    def test_handoff_cannot_request_foreign_task_context():
+        c=contract([role('a','one'),role('b','two')])
+>       with pytest.raises(TeamContractError):TeamPlanner(builtin_experts()).add_handoff(c,from_role='a',to_role='b',input_refs=['a:out'],context_scope=['task:private'])
+E       Failed: DID NOT RAISE <class 'evoagent.experts.team.TeamContractError'>
+
+tests\test_developed_review_4.py:87: Failed
+____________ test_truthy_confirmation_is_not_explicit_confirmation ____________
+
+    def test_truthy_confirmation_is_not_explicit_confirmation():
+        c=contract([role('a',actions=('send',))]);c.status='active';c.fail('a','timeout')
+>       assert not c.authorize_external_action(role_id='a',action='send',confirmed='false')['ok']
+E       assert not True
+
+tests\test_developed_review_4.py:92: AssertionError
+__________ test_external_role_list_cannot_expand_contract_permission __________
+
+    def test_external_role_list_cannot_expand_contract_permission():
+        actions=['read'];r=TeamRole('a','a','d',['cap'],state_artifacts=['state'],external_actions=actions)
+        c=contract([r]);c.status='active';actions.append('send')
+>       assert not c.authorize_external_action(role_id='a',action='send')['ok']
+E       assert not True
+
+tests\test_developed_review_4.py:98: AssertionError
+__________________ test_disabled_capability_cannot_form_team __________________
+
+    def test_disabled_capability_cannot_form_team():
+        reg=ExpertRegistry();reg.register_expert(Expert(expert_id='x',capabilities=['cap']))
+        reg.register_capability(CapabilityEntry('cap','1','d','disabled',status='disabled'))
+>       with pytest.raises(TeamFormationError):TeamPlanner(reg).form(intent='i',domain='d',required_capabilities=['cap'])
+E       Failed: DID NOT RAISE <class 'evoagent.experts.team.TeamFormationError'>
+
+tests\test_developed_review_4.py:104: Failed
+________ test_one_failure_plus_its_goal_is_not_two_independent_events _________
+
+app = <evoagent.app.App object at 0x000001CFB662A140>
+
+    def test_one_failure_plus_its_goal_is_not_two_independent_events(app):
+        goal=app.goals.create('goal',actor='user',success_criteria=['success'])
+        add_failure(app,goal['goal_id'])
+>       assert not planner(app).analyze()['gaps']
+E       AssertionError: assert not [{'capability': 'missing_capability:absent_domain:absent_intent', 'distinct_goals': 1, 'distinct_tasks': 1, 'domain': 'absent_domain', ...}]
+
+tests\test_developed_review_4.py:125: AssertionError
+____________ test_analysis_cannot_inflate_counts_or_erase_evidence ____________
+
+app = <evoagent.app.App object at 0x000001CFB61BC1F0>
+
+    def test_analysis_cannot_inflate_counts_or_erase_evidence(app):
+        add_failure(app);add_failure(app);p=planner(app);analysis=p.analyze()
+        analysis['gaps'][0]['evidence_refs']=[];analysis['gaps'][0]['evidence_count']=100
+>       assert not p.plan_candidates(analysis=analysis)['planned']
+E       AssertionError: assert not [{'actor': 'gap-planner', 'benefit': {'affected_tasks': 2, 'evidence_count': 100, 'severity': 'medium'}, 'candidate_id': 'cand_001', 'candidate_status': 'CANDIDATE_CREATED', ...}]
+
+tests\test_developed_review_4.py:131: AssertionError
+_______________ test_stale_analysis_cannot_plan_recovered_tasks _______________
+
+app = <evoagent.app.App object at 0x000001CFB663D870>
+
+    def test_stale_analysis_cannot_plan_recovered_tasks(app):
+        tasks=[add_failure(app),add_failure(app)];p=planner(app);analysis=p.analyze()
+        for t in tasks:t.task_status=TaskStatus.SUCCEEDED;t.failure_reason='';app.db.save_task(t)
+>       assert not p.plan_candidates(analysis=analysis)['planned']
+E       AssertionError: assert not [{'actor': 'gap-planner', 'benefit': {'affected_tasks': 2, 'evidence_count': 2, 'severity': 'medium'}, 'candidate_id': 'cand_001', 'candidate_status': 'CANDIDATE_CREATED', ...}]
+
+tests\test_developed_review_4.py:138: AssertionError
+______________________ test_empty_refs_are_not_traceable ______________________
+
+app = <evoagent.app.App object at 0x000001CFB6630820>
+
+    def test_empty_refs_are_not_traceable(app):
+>       assert not planner(app).traceability({'evidence_refs':[]})['ok']
+E       assert not True
+
+tests\test_developed_review_4.py:142: AssertionError
+______________ test_repeated_planning_reuses_evolution_candidate ______________
+
+app = <evoagent.app.App object at 0x000001CFB662B040>
+
+    def test_repeated_planning_reuses_evolution_candidate(app):
+        add_failure(app);add_failure(app);p=planner(app)
+        first=p.plan_candidates();second=p.plan_candidates()
+>       assert first['planned'][0]['candidate_id']==second['planned'][0]['candidate_id']
+E       AssertionError: assert 'cand_001' == 'cand_002'
+E         
+E         - cand_002
+E         ?        ^
+E         + cand_001
+E         ?        ^
+
+tests\test_developed_review_4.py:148: AssertionError
+_________________ test_no_backend_is_not_registered_candidate _________________
+
+app = <evoagent.app.App object at 0x000001CFB66F9600>
+
+    def test_no_backend_is_not_registered_candidate(app):
+        add_failure(app);add_failure(app)
+        out=CapabilityGapPlanner(app.db,experts=app.experts).plan_candidates()
+>       assert not out['planned'] and out['rejected']
+E       AssertionError: assert (not [{'actor': 'gap-planner', 'benefit': {'affected_tasks': 2, 'evidence_count': 2, 'severity': 'medium'}, 'candidate_id': None, 'candidate_status': None, ...}])
+
+tests\test_developed_review_4.py:155: AssertionError
+__________ test_fallback_requires_two_events_even_with_threshold_one __________
+
+app = <evoagent.app.App object at 0x000001CFB66293F0>
+
+    def test_fallback_requires_two_events_even_with_threshold_one(app):
+        t=add_failure(app);t.task_status=TaskStatus.SUCCEEDED;t.failure_reason='';app.db.save_task(t)
+>       assert not planner(app,min_evidence=1).analyze()['gaps']
+E       AssertionError: assert not [{'capability': 'missing_capability:absent_domain:absent_intent', 'distinct_goals': 0, 'distinct_tasks': 1, 'domain': 'absent_domain', ...}]
+
+tests\test_developed_review_4.py:160: AssertionError
+_____________ test_compose_reads_real_payload_and_registers_draft _____________
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000001CFB6752950>
+
+    def test_compose_reads_real_payload_and_registers_draft(repo):
+        a=asset(repo,'a',{'required_inputs':['source'],'produced_outputs':['text']})
+        b=asset(repo,'b',{'required_inputs':['text'],'produced_outputs':['summary']})
+        result=compose(repo,[str(a.ref),str(b.ref)],new_asset_id='skill:combo',new_version='1')
+>       assert result.io.required_inputs==('source',) and result.io.produced_outputs==('summary',)
+E       AssertionError: assert (() == ('source',)
+E         
+E         Right contains one more item: 'source'
+E         Use -v to get more diff)
+
+tests\test_developed_review_4.py:177: AssertionError
+______ test_compose_rejects_incompatible_real_chain_before_registration _______
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000001CFB663DF30>
+
+    def test_compose_rejects_incompatible_real_chain_before_registration(repo):
+        a=asset(repo,'a',{'produced_outputs':['image']});b=asset(repo,'b',{'required_inputs':['text']})
+>       with pytest.raises(ComposeError):compose(repo,[str(a.ref),str(b.ref)],new_asset_id='skill:bad',new_version='1')
+E       Failed: DID NOT RAISE <class 'evoagent.assets.composition.ComposeError'>
+
+tests\test_developed_review_4.py:186: Failed
+_________________ test_compose_cannot_override_a_broken_chain _________________
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000001CFB66A2AA0>
+
+    def test_compose_cannot_override_a_broken_chain(repo):
+        a=asset(repo,'a',{'produced_outputs':['image']});b=asset(repo,'b',{'required_inputs':['text']})
+>       with pytest.raises(ComposeError):compose(repo,[str(a.ref),str(b.ref)],new_asset_id='skill:bad',new_version='1',io_overrides=AssetIO())
+E       Failed: DID NOT RAISE <class 'evoagent.assets.composition.ComposeError'>
+
+tests\test_developed_review_4.py:192: Failed
+________________ test_compose_rejects_unverified_dependencies _________________
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000001CFB66E50C0>
+
+    def test_compose_rejects_unverified_dependencies(repo):
+        a=asset(repo,'a',{},active=False)
+>       with pytest.raises(ComposeError):compose(repo,[str(a.ref)],new_asset_id='skill:bad',new_version='1')
+E       Failed: DID NOT RAISE <class 'evoagent.assets.composition.ComposeError'>
+
+tests\test_developed_review_4.py:197: Failed
+_______________ test_dependency_cycle_is_not_a_complete_closure _______________
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000001CFB6751840>
+
+    def test_dependency_cycle_is_not_a_complete_closure(repo):
+        a=asset(repo,'a',{},deps=('skill:b@1',),active=False)
+        asset(repo,'b',{},deps=('skill:a@1',),active=False)
+>       with pytest.raises(ComposeError):dependency_closure(repo,str(a.ref))
+E       Failed: DID NOT RAISE <class 'evoagent.assets.composition.ComposeError'>
+
+tests\test_developed_review_4.py:203: Failed
+_______________ test_typed_downstream_needs_known_producer_type _______________
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000001CFB675C8E0>
+
+    def test_typed_downstream_needs_known_producer_type(repo):
+        a=asset(repo,'a',{'produced_outputs':['text']})
+        b=asset(repo,'b',{'required_inputs':['text'],'input_types':{'text':'string'}})
+>       with pytest.raises(ComposeError):compose(repo,[str(a.ref),str(b.ref)],new_asset_id='skill:bad',new_version='1')
+E       Failed: DID NOT RAISE <class 'evoagent.assets.composition.ComposeError'>
+
+tests\test_developed_review_4.py:209: Failed
+=========================== short test summary info ===========================
+FAILED tests/test_developed_review_4.py::test_off_accepts_late_attempt_and_status_without_crashing
+FAILED tests/test_developed_review_4.py::test_user_level_change_releases_no_progress_stop
+FAILED tests/test_developed_review_4.py::test_invalid_concurrency_cannot_be_allowed[-1]
+FAILED tests/test_developed_review_4.py::test_invalid_concurrency_cannot_be_allowed[nan]
+FAILED tests/test_developed_review_4.py::test_invalid_concurrency_cannot_be_allowed[True]
+FAILED tests/test_developed_review_4.py::test_nonboolean_benefit_cannot_clear_streak
+FAILED tests/test_developed_review_4.py::test_unknown_resource_decision_is_not_admission
+FAILED tests/test_developed_review_4.py::test_invalid_contract_cannot_advance
+FAILED tests/test_developed_review_4.py::test_writer_map_drift_cannot_authorize_observer
+FAILED tests/test_developed_review_4.py::test_other_role_failure_prevents_global_completion
+FAILED tests/test_developed_review_4.py::test_forged_handoff_cannot_be_authorized
+FAILED tests/test_developed_review_4.py::test_handoff_rejects_nonfinite_or_boolean_budget[nan]
+FAILED tests/test_developed_review_4.py::test_handoff_rejects_nonfinite_or_boolean_budget[inf]
+FAILED tests/test_developed_review_4.py::test_handoff_rejects_nonfinite_or_boolean_budget[True]
+FAILED tests/test_developed_review_4.py::test_handoff_cannot_request_foreign_task_context
+FAILED tests/test_developed_review_4.py::test_truthy_confirmation_is_not_explicit_confirmation
+FAILED tests/test_developed_review_4.py::test_external_role_list_cannot_expand_contract_permission
+FAILED tests/test_developed_review_4.py::test_disabled_capability_cannot_form_team
+FAILED tests/test_developed_review_4.py::test_one_failure_plus_its_goal_is_not_two_independent_events
+FAILED tests/test_developed_review_4.py::test_analysis_cannot_inflate_counts_or_erase_evidence
+FAILED tests/test_developed_review_4.py::test_stale_analysis_cannot_plan_recovered_tasks
+FAILED tests/test_developed_review_4.py::test_empty_refs_are_not_traceable - ...
+FAILED tests/test_developed_review_4.py::test_repeated_planning_reuses_evolution_candidate
+FAILED tests/test_developed_review_4.py::test_no_backend_is_not_registered_candidate
+FAILED tests/test_developed_review_4.py::test_fallback_requires_two_events_even_with_threshold_one
+FAILED tests/test_developed_review_4.py::test_compose_reads_real_payload_and_registers_draft
+FAILED tests/test_developed_review_4.py::test_compose_rejects_incompatible_real_chain_before_registration
+FAILED tests/test_developed_review_4.py::test_compose_cannot_override_a_broken_chain
+FAILED tests/test_developed_review_4.py::test_compose_rejects_unverified_dependencies
+FAILED tests/test_developed_review_4.py::test_dependency_cycle_is_not_a_complete_closure
+FAILED tests/test_developed_review_4.py::test_typed_downstream_needs_known_producer_type
+31 failed in 2.38s

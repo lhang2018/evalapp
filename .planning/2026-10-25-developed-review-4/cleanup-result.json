@@ -1,0 +1,16 @@
+{
+  "executed": false,
+  "reason": "automatic approval review rejected cache cleanup and the safer junction-only unlink; tool returned blocked by policy with no further reason",
+  "action": "remove validated review snapshots, archives and test caches after validation; detach dependency junctions without following them first",
+  "removed_paths": [],
+  "removed_bytes": 0,
+  "plan": ".planning/2026-10-25-developed-review-4/cleanup-plan.json",
+  "estimated_bytes_in_plan": 1790000548,
+  "preserved": [
+    "source code",
+    "validation logs",
+    "evidence manifests",
+    "project data",
+    "installed dependencies"
+  ]
+}

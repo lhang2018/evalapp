@@ -1,0 +1,21 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+F                                                                        [100%]
+================================== FAILURES ===================================
+___________ test_all_state_writers_must_acknowledge_team_completion ___________
+
+    def test_all_state_writers_must_acknowledge_team_completion():
+        c=contract([role('a','one',('send',)),role('b','two')])
+        assert c.advance(role_id='a')['status']=='active'
+        waiting=c.advance(role_id='a')
+>       assert waiting['status']=='active' and waiting['awaiting_roles']==['b']
+E       AssertionError: assert ('completed' == 'active'
+E         
+E         - active
+E         + completed)
+
+tests\test_developed_review_4.py:411: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_developed_review_4.py::test_all_state_writers_must_acknowledge_team_completion
+1 failed in 0.32s

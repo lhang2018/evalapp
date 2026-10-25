@@ -4349,9 +4349,18 @@
     "F04",
     "G5"
    ],
-   "next_step": "待独立复核（无进展阈值取值/检查次序/off不中断在途任务语义）",
+   "next_step": "按固定提交6ae4b30独立复查：off与调档/回调/严格并发收益类型/资源未知拒绝；主链装配/真实业务与资源验收依交付保留，不关闭整包。",
    "working_basis": "2026-10-25 zcode-next 认领。复用 15-D ResourceGovernor（已accepted）、25-A ProactiveAssistService（已accepted）、BudgetLedger 既有池语义；写入边界 goals/ + budget.py + android-app（客户端开关投影）；资源压力实测用可控压力源（真机测量另验）。",
-   "prerequisites": "设备或宿主资源测量环境；单纯Mock预算计数不算非干扰验收"
+   "prerequisites": "设备或宿主资源测量环境；单纯Mock预算计数不算非干扰验收",
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-25-DEVELOPED-4",
+    "date": "2026-10-25",
+    "reviewer": "codex-runtime",
+    "fix_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+    "scope": "off与调档/回调/严格并发收益类型/资源未知拒绝",
+    "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
+    "status": "fixes_delivered_pending_independent_recheck"
+   }
   },
   {
    "id": "ALN-26-A",
@@ -4362,7 +4371,7 @@
    "reviewer": "zcode-next",
    "branch": "feature/user-direction",
    "base_commit": "95f3e38aaeae06434edbe6b8d8d832e02640cc61",
-   "status": "accepted",
+   "status": "review",
    "blocker": null,
    "evidence": [
     {
@@ -4405,7 +4414,7 @@
    "requirement_refs": [
     "A-59"
    ],
-   "next_step": "复核通过转accepted",
+   "next_step": "按固定提交6ae4b30独立复查：权威快照复核/独立证据阈值/候选实际登记与去重；主链装配/真实业务与资源验收依交付保留，不关闭整包。",
    "working_basis": "以95f3e38aaeae06434edbe6b8d8d832e02640cc61（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布",
    "prerequisites": "仅需仓库与本地测试环境",
    "ownership_history": [
@@ -4417,7 +4426,25 @@
     }
    ],
    "delivered_commit": "662c25898b7f3e82ea898cfd69439a43cb8702bb",
-   "delivery": "docs/协作开发/交付/ALN-26-A-能力缺口证据与主动规划候选.md"
+   "delivery": "docs/协作开发/交付/ALN-26-A-能力缺口证据与主动规划候选.md",
+   "review_history": [
+    {
+     "date": "2026-10-25",
+     "previous_status": "accepted",
+     "previous_reviewer": "zcode-next",
+     "reason": "后续负向探针确认旧审查未覆盖的边界缺陷，本次完整修复待固定提交复查",
+     "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md"
+    }
+   ],
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-25-DEVELOPED-4",
+    "date": "2026-10-25",
+    "reviewer": "codex-runtime",
+    "fix_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+    "scope": "权威快照复核/独立证据阈值/候选实际登记与去重",
+    "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
+    "status": "fixes_delivered_pending_independent_recheck"
+   }
   },
   {
    "id": "ALN-26-B",
@@ -4461,7 +4488,7 @@
     "A-53",
     "A-60"
    ],
-   "next_step": "待独立复核：真实能力目录成组/缺口与歧义拒绝、唯一状态写入者推进、交接校验、局部失败不自动重放外部动作与不越权的证据见交付文档与 .planning/2026-10-25-aln26b/；审阅人未定，不自批；运行时接线/契约持久化/外部动作与预算绑定属后续，ALN-26整包不关闭",
+   "next_step": "按固定提交6ae4b30独立复查：契约准入/唯一写入者与全员完成/交接范围预算及失败隔离；主链装配/真实业务与资源验收依交付保留，不关闭整包。",
    "working_basis": "以6a8501233f0ec0f7b4fce74d97fd13facd6e6b0d（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布",
    "prerequisites": "仅需仓库与本地测试环境",
    "ownership_history": [
@@ -4473,7 +4500,16 @@
     }
    ],
    "delivered_commit": "37465abf86b6fdc844d107cd3a3c65bdf9d2156a",
-   "delivery": "docs/协作开发/交付/ALN-26-B-动态团队与跨专家协作契约.md"
+   "delivery": "docs/协作开发/交付/ALN-26-B-动态团队与跨专家协作契约.md",
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-25-DEVELOPED-4",
+    "date": "2026-10-25",
+    "reviewer": "codex-runtime",
+    "fix_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+    "scope": "契约准入/唯一写入者与全员完成/交接范围预算及失败隔离",
+    "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
+    "status": "fixes_delivered_pending_independent_recheck"
+   }
   },
   {
    "id": "ALN-27-A",
@@ -4551,7 +4587,7 @@
    "reviewer": "zcode-next",
    "branch": "feature/user-direction",
    "base_commit": "2782cd25ef690d5286f76345f4eb838d8c6b19ad",
-   "status": "accepted",
+   "status": "review",
    "blocker": null,
    "evidence": [
     "代码: 3a716d0 assets/composition.py（dependency_closure/check_io_compatibility/compose）+ 10项测试",
@@ -4580,9 +4616,28 @@
     "A-70",
     "B-85"
    ],
-   "next_step": "复核通过；owner 补交付文档",
+   "next_step": "按固定提交6ae4b30独立复查：真实IO与仓储draft/完整依赖摘要/评测后绑定与升级稳定；主链装配/真实业务与资源验收依交付保留，不关闭整包。",
    "working_basis": "2026-10-25 zcode-main 认领开工。依赖 26-B(claimed) + 27-A(accepted) 已满足。复用 06-R 精确消费绑定 + 27-A 经验沉淀 + 07-W 工作流匹配，构建可组合能力资产层。",
-   "prerequisites": "仅需仓库与本地测试环境"
+   "prerequisites": "仅需仓库与本地测试环境",
+   "review_history": [
+    {
+     "date": "2026-10-25",
+     "previous_status": "accepted",
+     "previous_reviewer": "zcode-next",
+     "reason": "后续负向探针确认旧审查未覆盖的边界缺陷，本次完整修复待固定提交复查",
+     "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md"
+    }
+   ],
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-25-DEVELOPED-4",
+    "date": "2026-10-25",
+    "reviewer": "codex-runtime",
+    "fix_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+    "scope": "真实IO与仓储draft/完整依赖摘要/评测后绑定与升级稳定",
+    "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
+    "status": "fixes_delivered_pending_independent_recheck"
+   },
+   "delivery": "docs/协作开发/交付/ALN-27-B-可组合能力与动态工作流资产.md"
   },
   {
    "id": "ALN-28-A",
@@ -8034,6 +8089,74 @@
    "independent_review": false,
    "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
    "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+  },
+  {
+   "id": "discovered-147a4898cb22",
+   "title": "fix(review): 修复复核发现——29-C凭据模式覆盖 + 12-V通知补发",
+   "workpackage": "ALN-00",
+   "source_commit": "147a4898cb2231a9585897a3bff74ce41f6c5053",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "android-app/src/device/nativeNotifications.ts",
+    "android-app/src/device/notifications.ts",
+    "android-app/src/offline/backgroundRunner.ts",
+    "android-app/test/device/notificationRecovery.test.ts",
+    "evoagent/observability/credentials.py",
+    "tests/test_credential_pattern_coverage.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+   "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+  },
+  {
+   "id": "discovered-6ae4b30525e3",
+   "title": "fix(review): 修复主动规划证据、团队推进与真实组合资产",
+   "workpackage": "ALN-00",
+   "source_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/assets/composition.py",
+    "evoagent/experts/team.py",
+    "evoagent/goals/gap_planner.py",
+    "evoagent/goals/proactivity.py",
+    "tests/test_developed_review_4.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+   "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+  },
+  {
+   "id": "discovered-dbd32a1feceb",
+   "title": "feat(ALN-21-A): Windows 终端扩展验证——平台词汇表扩展+真实击杀恢复+回执链实测",
+   "workpackage": "ALN-21",
+   "source_commit": "dbd32a1feceb89377471d4a8079440a8d48efd3f",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/release/delivery.py",
+    "evoagent/release/manager.py",
+    "tests/test_release_signing.py",
+    "tests/test_windows_terminal_validation.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+   "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
+  },
+  {
+   "id": "discovered-3a716d090743",
+   "title": "feat(ALN-27-B): 可组合能力资产——依赖闭包+IO兼容+版本固定组合",
+   "workpackage": "ALN-27",
+   "source_commit": "3a716d090743c7716a987b21df149b8dabc35e71",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "tests/test_asset_composition.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/需求拆分与分期实施_2026-10-25.md",
+   "scope": "仅按Git对象发现并登记这些提交路径；不替原作者宣布卡片完成、审阅接受、真机通过或纳入候选"
   }
  ],
  "requirement_batches": [
@@ -8102,6 +8225,23 @@
    "status": "fixes_delivered_pending_independent_recheck",
    "product_acceptance_added": false,
    "device_tested": false,
+   "published": false
+  },
+  {
+   "id": "REVIEW-2026-10-25-DEVELOPED-4",
+   "date": "2026-10-25",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-25-B",
+    "ALN-26-A",
+    "ALN-26-B",
+    "ALN-27-B"
+   ],
+   "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
+   "evidence": ".planning/2026-10-25-developed-review-4/committed-evidence.json",
+   "fix_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
    "published": false
   }
  ]

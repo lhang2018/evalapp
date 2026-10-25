@@ -1,0 +1,7 @@
+{
+  "source_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+  "source_tree": "2459cd3f11103d20ea47b3b0a6af1bc54c3a500a",
+  "snapshot": "E:\\evalapp\\outputs\\developed-review4-6ae4b30",
+  "archive_sha256": "3cdff2a26d697e135d6c68283ccbba98a56cf4ae8a73bb97eb87bdcf5237f51a",
+  "scope": "exact Git archive, excludes concurrent dirty files; disposable snapshot to be deleted after validation per user request"
+}
