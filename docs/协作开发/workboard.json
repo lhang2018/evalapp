@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-24",
+  "updated_at": "2026-10-25",
   "purpose": "协作认领；不替代正式契约、原始 ALN 依赖或功能验收",
   "baseline": {
     "status": "candidate",
@@ -3288,6 +3288,1887 @@
         "log": ".planning/2026-10-23-pr-review3/",
         "result": "13根独立探针前后对照（A组7+B组6）：D1/D1b/P1/P2/P3通过；包版本1.5.1回滚链1.5.0完整；定向回归210 passed；固定全量1416/1；无改测试凑绿"
       }
+    },
+    {
+      "id": "ALN-29-A",
+      "workpackage": "ALN-29",
+      "title": "首发17用例的验收骨架与可执行断言",
+      "stream": "integration",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "feature/user-direction",
+      "base_commit": "5e2b7e36ffbc225a33c7c09c8214bf70133ba2da",
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/29-A-首发17用例的验收骨架与可执行断言.md",
+      "shared_files": [
+        "tools/check_collaboration_plan.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [],
+      "phase": 0,
+      "requirement_refs": [
+        "F01",
+        "F02",
+        "F03",
+        "F04",
+        "GLOBAL"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-29-B",
+      "workpackage": "ALN-29",
+      "title": "首发冻结范围与八道发布门禁",
+      "stream": "integration",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/29-B-首发冻结范围与八道发布门禁.md",
+      "shared_files": [
+        "tools/check_collaboration_plan.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-29-A"
+      ],
+      "phase": 0,
+      "requirement_refs": [
+        "UX-26",
+        "UX-27",
+        "UX-28",
+        "G0",
+        "G1",
+        "G2",
+        "G3",
+        "G4",
+        "G5",
+        "G6",
+        "G7"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-23-A",
+      "workpackage": "ALN-23",
+      "title": "统一任务契约对外模型",
+      "stream": "runtime",
+      "owner": "codex-runtime",
+      "reviewer": null,
+      "branch": "feature/user-direction",
+      "base_commit": "5e2b7e36ffbc225a33c7c09c8214bf70133ba2da",
+      "status": "claimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/23-A-统一任务契约对外模型.md",
+      "shared_files": [
+        "evoagent/core/task.py",
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "evoagent/cli.py",
+        "android-app/src/api.ts",
+        "evoagent/planning/intent.py",
+        "evoagent/api/goals_api.py",
+        "evoagent/api/memory_context_api.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-29-A"
+      ],
+      "phase": 1,
+      "requirement_refs": [
+        "UX-01",
+        "UX-03",
+        "F02"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-23-B",
+      "workpackage": "ALN-23",
+      "title": "聊天与工作模式及上下文转换",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/23-B-聊天与工作模式及上下文转换.md",
+      "shared_files": [
+        "evoagent/core/controller.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/planning/intent.py",
+        "evoagent/planning/planner.py",
+        "evoagent/planning/matching.py",
+        "evoagent/planning/contracts.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-23-A"
+      ],
+      "phase": 1,
+      "requirement_refs": [
+        "UX-04",
+        "UX-05",
+        "UX-06",
+        "F01"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-23-D",
+      "workpackage": "ALN-23",
+      "title": "用户可见状态与权威任务状态映射",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/23-D-用户可见状态与权威任务状态映射.md",
+      "shared_files": [
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/api/goals_api.py",
+        "evoagent/api/memory_context_api.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-23-A"
+      ],
+      "phase": 1,
+      "requirement_refs": [
+        "UX-08",
+        "F02",
+        "F03"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-23-C",
+      "workpackage": "ALN-23",
+      "title": "任务工作区与真实计划进度",
+      "stream": "android",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/23-C-任务工作区与真实计划进度.md",
+      "shared_files": [
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/api/goals_api.py",
+        "evoagent/api/memory_context_api.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-23-A",
+        "ALN-23-B",
+        "ALN-23-D"
+      ],
+      "phase": 1,
+      "requirement_refs": [
+        "UX-07",
+        "UX-08",
+        "F02"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-24-A",
+      "workpackage": "ALN-24",
+      "title": "真实成果交付、验收与局部修改",
+      "stream": "assets",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/24-A-真实成果交付、验收与局部修改.md",
+      "shared_files": [
+        "evoagent/core/controller.py",
+        "evoagent/core/runs.py",
+        "evoagent/core/task.py",
+        "evoagent/core/state_machine.py",
+        "evoagent/react/engine.py",
+        "evoagent/workflows/engine.py",
+        "evoagent/tools/registry.py",
+        "evoagent/core/permissions.py",
+        "evoagent/core/approvals.py",
+        "evoagent/core/side_effects.py",
+        "evoagent/core/persistence.py",
+        "evoagent/core/schema/migrations.py",
+        "evoagent/core/contracts.py",
+        "evoagent/core/events.py",
+        "evoagent/core/budget.py",
+        "evoagent/tools/contract.py",
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "evoagent/app.py",
+        "evoagent/cli.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/release/manager.py",
+        "evoagent/release/delivery.py",
+        "evoagent/evolution/controller.py",
+        "evoagent/evolution/evaluator.py",
+        "evoagent/evolution/regression.py",
+        "evoagent/evolution/runner.py",
+        "evoagent/evolution/candidates.py",
+        "evoagent/evolution/monitor.py",
+        "evoagent/evolution/benefit.py",
+        "evoagent/experts/registry.py",
+        "evoagent/memory/context.py",
+        "evoagent/models/metering.py",
+        "evoagent/planning/intent.py",
+        "evoagent/planning/planner.py",
+        "evoagent/evolution/routing_eval.py",
+        "evoagent/goals/store.py",
+        "evoagent/config.py",
+        "evoagent/core/runtime_budget.py",
+        "evoagent/core/reservations.py",
+        "evoagent/core/schema/reservations.py",
+        "evoagent/evolution/experiment_budget.py",
+        "evoagent/api/goals_api.py",
+        "evoagent/tools/coding.py",
+        "evoagent/memory/store.py",
+        "evoagent/release/signing.py",
+        "evoagent/planning/matching.py",
+        "evoagent/planning/contracts.py",
+        "evoagent/api/memory_context_api.py",
+        "evoagent/core/schema/memory_context.py",
+        "evoagent/memory/binding.py",
+        "evoagent/observability/export.py",
+        "evoagent/core/log_layers.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-23-C"
+      ],
+      "phase": 1,
+      "requirement_refs": [
+        "UX-11",
+        "UX-12",
+        "UX-13",
+        "F02"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-23-E",
+      "workpackage": "ALN-23",
+      "title": "用户控制、目标变更与安全恢复",
+      "stream": "android",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/23-E-用户控制、目标变更与安全恢复.md",
+      "shared_files": [
+        "evoagent/core/controller.py",
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/api/goals_api.py",
+        "evoagent/api/memory_context_api.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-23-C",
+        "ALN-07-C"
+      ],
+      "phase": 2,
+      "requirement_refs": [
+        "UX-09",
+        "UX-10",
+        "F03"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "设备路径验收需要已授权真机；可先做后端/客户端自动化"
+    },
+    {
+      "id": "ALN-23-F",
+      "workpackage": "ALN-23",
+      "title": "语音输入与文字任务共用入口",
+      "stream": "android",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/23-F-语音输入与文字任务共用入口.md",
+      "shared_files": [
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-23-A",
+        "ALN-23-B"
+      ],
+      "phase": 3,
+      "requirement_refs": [
+        "UX-02"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "真实语音组件、权限和设备可用；缺依赖明确显示不可用"
+    },
+    {
+      "id": "ALN-24-B",
+      "workpackage": "ALN-24",
+      "title": "能力状态、权限与渐进授权",
+      "stream": "android",
+      "owner": "zcode-main",
+      "reviewer": null,
+      "branch": "feature/user-direction",
+      "base_commit": "5de4d00",
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/24-B-能力状态、权限与渐进授权.md",
+      "shared_files": [
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/api/goals_api.py",
+        "evoagent/api/memory_context_api.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-23-A"
+      ],
+      "phase": 2,
+      "requirement_refs": [
+        "UX-22",
+        "UX-23"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-24-C",
+      "workpackage": "ALN-24",
+      "title": "任务历史、项目空间与跨会话延续",
+      "stream": "android",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/24-C-任务历史、项目空间与跨会话延续.md",
+      "shared_files": [
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/memory/context.py",
+        "evoagent/api/goals_api.py",
+        "evoagent/memory/store.py",
+        "evoagent/api/memory_context_api.py",
+        "evoagent/memory/binding.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-23-C",
+        "ALN-24-A"
+      ],
+      "phase": 3,
+      "requirement_refs": [
+        "UX-14",
+        "UX-15",
+        "UX-16"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-24-D",
+      "workpackage": "ALN-24",
+      "title": "用户记忆、隐私与纠正删除路径",
+      "stream": "models",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/24-D-用户记忆、隐私与纠正删除路径.md",
+      "shared_files": [
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/memory/context.py",
+        "evoagent/api/goals_api.py",
+        "evoagent/memory/store.py",
+        "evoagent/api/memory_context_api.py",
+        "evoagent/memory/binding.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-24-C",
+        "ALN-16-P"
+      ],
+      "phase": 3,
+      "requirement_refs": [
+        "UX-17",
+        "UX-24",
+        "GLOBAL"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-24-E",
+      "workpackage": "ALN-24",
+      "title": "成本与资源的用户可见控制",
+      "stream": "android",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/24-E-成本与资源的用户可见控制.md",
+      "shared_files": [
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/api/goals_api.py",
+        "evoagent/api/memory_context_api.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-23-C"
+      ],
+      "phase": 2,
+      "requirement_refs": [
+        "UX-25",
+        "GLOBAL"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-25-A",
+      "workpackage": "ALN-25",
+      "title": "有来源的主动帮助与机会建议",
+      "stream": "models",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/25-A-有来源的主动帮助与机会建议.md",
+      "shared_files": [
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/memory/context.py",
+        "evoagent/goals/store.py",
+        "evoagent/memory/store.py",
+        "evoagent/memory/binding.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-24-C"
+      ],
+      "phase": 3,
+      "requirement_refs": [
+        "UX-18",
+        "UX-19",
+        "UX-20",
+        "F04"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-25-B",
+      "workpackage": "ALN-25",
+      "title": "主动强度、停止与资源非干扰",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/25-B-主动强度、停止与资源非干扰.md",
+      "shared_files": [
+        "evoagent/core/budget.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/goals/store.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-25-A",
+        "ALN-15-D"
+      ],
+      "phase": 3,
+      "requirement_refs": [
+        "UX-21",
+        "F04",
+        "G5"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "设备或宿主资源测量环境；单纯Mock预算计数不算非干扰验收"
+    },
+    {
+      "id": "ALN-26-A",
+      "workpackage": "ALN-26",
+      "title": "能力缺口证据与主动规划候选",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/26-A-能力缺口证据与主动规划候选.md",
+      "shared_files": [
+        "evoagent/evolution/controller.py",
+        "evoagent/evolution/evaluator.py",
+        "evoagent/evolution/regression.py",
+        "evoagent/evolution/runner.py",
+        "evoagent/evolution/candidates.py",
+        "evoagent/evolution/monitor.py",
+        "evoagent/evolution/benefit.py",
+        "evoagent/evolution/routing_eval.py",
+        "evoagent/goals/store.py",
+        "evoagent/evolution/experiment_budget.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-25-A",
+        "ALN-06-R"
+      ],
+      "phase": 4,
+      "requirement_refs": [
+        "A-59"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-26-B",
+      "workpackage": "ALN-26",
+      "title": "动态团队与跨专家协作契约",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/26-B-动态团队与跨专家协作契约.md",
+      "shared_files": [
+        "evoagent/workflows/engine.py",
+        "evoagent/experts/registry.py",
+        "evoagent/planning/intent.py",
+        "evoagent/planning/planner.py",
+        "evoagent/planning/matching.py",
+        "evoagent/planning/contracts.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-26-A",
+        "ALN-07-C"
+      ],
+      "phase": 4,
+      "requirement_refs": [
+        "A-53",
+        "A-60"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-27-A",
+      "workpackage": "ALN-27",
+      "title": "故障经验沉淀与跨专家迁移验证",
+      "stream": "assets",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/27-A-故障经验沉淀与跨专家迁移验证.md",
+      "shared_files": [
+        "evoagent/evolution/controller.py",
+        "evoagent/evolution/evaluator.py",
+        "evoagent/evolution/regression.py",
+        "evoagent/evolution/runner.py",
+        "evoagent/evolution/candidates.py",
+        "evoagent/evolution/monitor.py",
+        "evoagent/evolution/benefit.py",
+        "evoagent/memory/context.py",
+        "evoagent/evolution/routing_eval.py",
+        "evoagent/evolution/experiment_budget.py",
+        "evoagent/memory/store.py",
+        "evoagent/memory/binding.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-06-R",
+        "ALN-10-E"
+      ],
+      "phase": 4,
+      "requirement_refs": [
+        "A-69",
+        "B-81",
+        "B-88"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-27-B",
+      "workpackage": "ALN-27",
+      "title": "可组合能力与动态工作流资产",
+      "stream": "assets",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/27-B-可组合能力与动态工作流资产.md",
+      "shared_files": [
+        "evoagent/workflows/engine.py",
+        "evoagent/experts/registry.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-26-B",
+        "ALN-27-A"
+      ],
+      "phase": 4,
+      "requirement_refs": [
+        "A-70",
+        "B-85"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-28-A",
+      "workpackage": "ALN-28",
+      "title": "外部事实核验与可信交付",
+      "stream": "models",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/28-A-外部事实核验与可信交付.md",
+      "shared_files": [
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "evoagent/memory/context.py",
+        "evoagent/api/goals_api.py",
+        "evoagent/memory/store.py",
+        "evoagent/api/memory_context_api.py",
+        "evoagent/memory/binding.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-24-A",
+        "ALN-16-P"
+      ],
+      "phase": 5,
+      "requirement_refs": [
+        "A-61"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "合法可用的外部数据源/服务；P2后续，不阻塞本地首卡"
+    },
+    {
+      "id": "ALN-29-C",
+      "workpackage": "ALN-29",
+      "title": "问题反馈与运行证据关联",
+      "stream": "integration",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/29-C-问题反馈与运行证据关联.md",
+      "shared_files": [
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/api/goals_api.py",
+        "evoagent/api/memory_context_api.py",
+        "evoagent/observability/export.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-23-C"
+      ],
+      "phase": 3,
+      "requirement_refs": [
+        "UX-26"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-29-D",
+      "workpackage": "ALN-29",
+      "title": "改进效果与用户收益说明",
+      "stream": "integration",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/29-D-改进效果与用户收益说明.md",
+      "shared_files": [
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/evolution/controller.py",
+        "evoagent/evolution/evaluator.py",
+        "evoagent/evolution/regression.py",
+        "evoagent/evolution/runner.py",
+        "evoagent/evolution/candidates.py",
+        "evoagent/evolution/monitor.py",
+        "evoagent/evolution/benefit.py",
+        "evoagent/evolution/routing_eval.py",
+        "evoagent/evolution/experiment_budget.py",
+        "evoagent/api/goals_api.py",
+        "evoagent/api/memory_context_api.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-29-C",
+        "ALN-10-E"
+      ],
+      "phase": 4,
+      "requirement_refs": [
+        "UX-27"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-29-E",
+      "workpackage": "ALN-29",
+      "title": "稳定版本、更新控制与回滚体验",
+      "stream": "android",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/29-E-稳定版本、更新控制与回滚体验.md",
+      "shared_files": [
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/release/manager.py",
+        "evoagent/release/delivery.py",
+        "evoagent/release/signing.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-11-P",
+        "ALN-24-B"
+      ],
+      "phase": 3,
+      "requirement_refs": [
+        "UX-28",
+        "GLOBAL"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "生产信任材料与可连接设备"
+    },
+    {
+      "id": "ALN-02-P",
+      "workpackage": "ALN-02",
+      "title": "真实供应商副作用与进程故障恢复",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/02-P-真实供应商副作用与进程故障恢复.md",
+      "shared_files": [
+        "evoagent/core/controller.py",
+        "evoagent/core/runs.py",
+        "evoagent/core/task.py",
+        "evoagent/core/state_machine.py",
+        "evoagent/tools/registry.py",
+        "evoagent/core/permissions.py",
+        "evoagent/core/approvals.py",
+        "evoagent/core/side_effects.py",
+        "evoagent/core/persistence.py",
+        "evoagent/core/schema/migrations.py",
+        "evoagent/core/contracts.py",
+        "evoagent/core/events.py",
+        "evoagent/core/budget.py",
+        "evoagent/tools/contract.py",
+        "evoagent/core/runtime_budget.py",
+        "evoagent/core/reservations.py",
+        "evoagent/core/schema/reservations.py",
+        "evoagent/tools/coding.py",
+        "evoagent/core/schema/memory_context.py",
+        "evoagent/core/log_layers.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-02-A"
+      ],
+      "phase": 2,
+      "requirement_refs": [
+        "UX-10",
+        "F03"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "真实供应商或受控外部测试服务"
+    },
+    {
+      "id": "ALN-03-P",
+      "workpackage": "ALN-03",
+      "title": "生产信任根与元数据制品联验",
+      "stream": "assets",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/03-P-生产信任根与元数据制品联验.md",
+      "shared_files": [
+        "evoagent/release/manager.py",
+        "evoagent/release/delivery.py",
+        "evoagent/release/signing.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-03-S"
+      ],
+      "phase": 2,
+      "requirement_refs": [
+        "G2",
+        "G6"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "生产或明确标注测试信任材料"
+    },
+    {
+      "id": "ALN-04-V",
+      "workpackage": "ALN-04",
+      "title": "组合状态与生产身份恢复矩阵",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/04-V-组合状态与生产身份恢复矩阵.md",
+      "shared_files": [
+        "evoagent/core/controller.py",
+        "evoagent/core/runs.py",
+        "evoagent/core/task.py",
+        "evoagent/core/state_machine.py",
+        "evoagent/core/permissions.py",
+        "evoagent/core/approvals.py",
+        "evoagent/core/side_effects.py",
+        "evoagent/core/persistence.py",
+        "evoagent/core/schema/migrations.py",
+        "evoagent/core/contracts.py",
+        "evoagent/core/events.py",
+        "evoagent/core/budget.py",
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "evoagent/core/runtime_budget.py",
+        "evoagent/core/reservations.py",
+        "evoagent/core/schema/reservations.py",
+        "evoagent/api/goals_api.py",
+        "evoagent/api/memory_context_api.py",
+        "evoagent/core/schema/memory_context.py",
+        "evoagent/core/log_layers.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-04-R",
+        "ALN-04-UI"
+      ],
+      "phase": 2,
+      "requirement_refs": [
+        "F03",
+        "G3"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "真实部署身份与故障注入环境"
+    },
+    {
+      "id": "ALN-06-R",
+      "workpackage": "ALN-06",
+      "title": "精确能力版本的运行时消费",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/06-R-精确能力版本的运行时消费.md",
+      "shared_files": [
+        "evoagent/core/controller.py",
+        "evoagent/experts/registry.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-06-A"
+      ],
+      "phase": 1,
+      "requirement_refs": [
+        "GLOBAL",
+        "G6"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "本地制品及运行环境"
+    },
+    {
+      "id": "ALN-07-C",
+      "workpackage": "ALN-07",
+      "title": "原子绑定、精确步骤授权与对账消费",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/07-C-原子绑定、精确步骤授权与对账消费.md",
+      "shared_files": [
+        "evoagent/core/controller.py",
+        "evoagent/core/runs.py",
+        "evoagent/core/task.py",
+        "evoagent/core/state_machine.py",
+        "evoagent/workflows/engine.py",
+        "evoagent/core/permissions.py",
+        "evoagent/core/approvals.py",
+        "evoagent/core/side_effects.py",
+        "evoagent/core/persistence.py",
+        "evoagent/core/schema/migrations.py",
+        "evoagent/core/contracts.py",
+        "evoagent/core/events.py",
+        "evoagent/core/budget.py",
+        "evoagent/planning/intent.py",
+        "evoagent/planning/planner.py",
+        "evoagent/core/runtime_budget.py",
+        "evoagent/core/reservations.py",
+        "evoagent/core/schema/reservations.py",
+        "evoagent/planning/matching.py",
+        "evoagent/planning/contracts.py",
+        "evoagent/core/schema/memory_context.py",
+        "evoagent/core/log_layers.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-07-B",
+        "ALN-07-P"
+      ],
+      "phase": 1,
+      "requirement_refs": [
+        "UX-09",
+        "UX-10",
+        "F03"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "可重复故障注入"
+    },
+    {
+      "id": "ALN-08-W",
+      "workpackage": "ALN-08",
+      "title": "工作流与执行模式的主链路由",
+      "stream": "models",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/08-W-工作流与执行模式的主链路由.md",
+      "shared_files": [
+        "evoagent/core/controller.py",
+        "evoagent/workflows/engine.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-23-A",
+        "ALN-08-R"
+      ],
+      "phase": 2,
+      "requirement_refs": [
+        "UX-03",
+        "UX-06",
+        "B-75"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "本地路由夹具可开发；真实链另采证"
+    },
+    {
+      "id": "ALN-08-P",
+      "workpackage": "ALN-08",
+      "title": "生产评测集、价格档案与费用对账",
+      "stream": "models",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/08-P-生产评测集、价格档案与费用对账.md",
+      "shared_files": [
+        "evoagent/core/budget.py",
+        "evoagent/models/metering.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-08-M"
+      ],
+      "phase": 3,
+      "requirement_refs": [
+        "UX-25",
+        "G4"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "供应商价格/账单与脱敏真实任务集"
+    },
+    {
+      "id": "ALN-09-H",
+      "workpackage": "ALN-09",
+      "title": "真实候选宿主、持久队列与进程隔离",
+      "stream": "assets",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/09-H-真实候选宿主、持久队列与进程隔离.md",
+      "shared_files": [
+        "evoagent/evolution/controller.py",
+        "evoagent/evolution/evaluator.py",
+        "evoagent/evolution/regression.py",
+        "evoagent/evolution/runner.py",
+        "evoagent/evolution/candidates.py",
+        "evoagent/evolution/monitor.py",
+        "evoagent/evolution/benefit.py",
+        "evoagent/evolution/routing_eval.py",
+        "evoagent/evolution/experiment_budget.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-09-F"
+      ],
+      "phase": 2,
+      "requirement_refs": [
+        "B-78",
+        "G2",
+        "G3"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "受控宿主与真实候选制品"
+    },
+    {
+      "id": "ALN-10-E",
+      "workpackage": "ALN-10",
+      "title": "真实候选收益与依赖回归证据",
+      "stream": "assets",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/10-E-真实候选收益与依赖回归证据.md",
+      "shared_files": [
+        "evoagent/evolution/controller.py",
+        "evoagent/evolution/evaluator.py",
+        "evoagent/evolution/regression.py",
+        "evoagent/evolution/runner.py",
+        "evoagent/evolution/candidates.py",
+        "evoagent/evolution/monitor.py",
+        "evoagent/evolution/benefit.py",
+        "evoagent/evolution/routing_eval.py",
+        "evoagent/evolution/experiment_budget.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-09-H",
+        "ALN-10-H"
+      ],
+      "phase": 3,
+      "requirement_refs": [
+        "B-76",
+        "B-77",
+        "B-78",
+        "B-79",
+        "B-96",
+        "B-97",
+        "G1"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "代表性基准/对照环境"
+    },
+    {
+      "id": "ALN-11-P",
+      "workpackage": "ALN-11",
+      "title": "生产签名与端侧安装退役回执",
+      "stream": "android",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/11-P-生产签名与端侧安装退役回执.md",
+      "shared_files": [
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/release/manager.py",
+        "evoagent/release/delivery.py",
+        "evoagent/release/signing.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-03-P",
+        "ALN-11-W"
+      ],
+      "phase": 2,
+      "requirement_refs": [
+        "G0",
+        "G6"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "可连接设备与生产或标注测试的签名材料"
+    },
+    {
+      "id": "ALN-12-E",
+      "workpackage": "ALN-12",
+      "title": "自然语言手机App真实任务主链",
+      "stream": "android",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/12-E-自然语言手机App真实任务主链.md",
+      "shared_files": [
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/api/goals_api.py",
+        "evoagent/api/memory_context_api.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-23-C",
+        "ALN-07-C",
+        "ALN-06-R"
+      ],
+      "phase": 2,
+      "requirement_refs": [
+        "F02",
+        "F03",
+        "G0",
+        "G1"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "可连接且授权的Android设备"
+    },
+    {
+      "id": "ALN-12-V",
+      "workpackage": "ALN-12",
+      "title": "通知、离线与系统重启真机矩阵",
+      "stream": "android",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/12-V-通知、离线与系统重启真机矩阵.md",
+      "shared_files": [
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-12-A"
+      ],
+      "phase": 2,
+      "requirement_refs": [
+        "F03",
+        "G0",
+        "G3"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "可连接设备，记录APK/JS精确版本"
+    },
+    {
+      "id": "ALN-13-P",
+      "workpackage": "ALN-13",
+      "title": "生产长期目标推进与周期守护",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/13-P-生产长期目标推进与周期守护.md",
+      "shared_files": [
+        "evoagent/goals/store.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-13-A",
+        "ALN-14-A"
+      ],
+      "phase": 3,
+      "requirement_refs": [
+        "F04",
+        "B-90",
+        "B-91"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "运行时调度与负载环境"
+    },
+    {
+      "id": "ALN-15-P",
+      "workpackage": "ALN-15",
+      "title": "Provider/Expert预算原子化与旧Goal迁移",
+      "stream": "runtime",
+      "owner": "opencode-evo",
+      "reviewer": null,
+      "branch": null,
+      "base_commit": "c7726e8",
+      "status": "in_progress",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/15-P-Provider-Expert预算原子化与旧Goal迁移.md",
+      "shared_files": [
+        "evoagent/core/budget.py",
+        "evoagent/models/metering.py",
+        "evoagent/goals/store.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-15-R"
+      ],
+      "phase": 2,
+      "requirement_refs": [
+        "GLOBAL",
+        "G4"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "可重复并发和迁移夹具"
+    },
+    {
+      "id": "ALN-15-D",
+      "workpackage": "ALN-15",
+      "title": "设备资源准入与核心任务优先",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/15-D-设备资源准入与核心任务优先.md",
+      "shared_files": [
+        "evoagent/core/controller.py",
+        "evoagent/core/runs.py",
+        "evoagent/core/task.py",
+        "evoagent/core/state_machine.py",
+        "evoagent/core/permissions.py",
+        "evoagent/core/approvals.py",
+        "evoagent/core/side_effects.py",
+        "evoagent/core/persistence.py",
+        "evoagent/core/schema/migrations.py",
+        "evoagent/core/contracts.py",
+        "evoagent/core/events.py",
+        "evoagent/core/budget.py",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/goals/store.py",
+        "evoagent/core/runtime_budget.py",
+        "evoagent/core/reservations.py",
+        "evoagent/core/schema/reservations.py",
+        "evoagent/core/schema/memory_context.py",
+        "evoagent/core/log_layers.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-15-P"
+      ],
+      "phase": 3,
+      "requirement_refs": [
+        "F04",
+        "G4",
+        "G5"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "真实设备或受控宿主资源测量"
+    },
+    {
+      "id": "ALN-16-P",
+      "workpackage": "ALN-16",
+      "title": "业务仓储与端侧隐私凭证治理",
+      "stream": "integration",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/16-P-业务仓储与端侧隐私凭证治理.md",
+      "shared_files": [
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/memory/context.py",
+        "evoagent/api/goals_api.py",
+        "evoagent/memory/store.py",
+        "evoagent/api/memory_context_api.py",
+        "evoagent/memory/binding.py",
+        "evoagent/observability/export.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-16-X"
+      ],
+      "phase": 3,
+      "requirement_refs": [
+        "UX-17",
+        "UX-24",
+        "G2"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "生产身份/存储范围及端侧测试环境"
+    },
+    {
+      "id": "ALN-17-P",
+      "workpackage": "ALN-17",
+      "title": "空机部署、组合恢复与RTO/RPO",
+      "stream": "integration",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/17-P-空机部署、组合恢复与RTO-RPO.md",
+      "shared_files": [],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-17-A",
+        "ALN-11-P"
+      ],
+      "phase": 4,
+      "requirement_refs": [
+        "G0",
+        "G3",
+        "G7"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "干净部署环境与真实备份"
+    },
+    {
+      "id": "ALN-18-G",
+      "workpackage": "ALN-18",
+      "title": "App与编程专家真实消费能力包",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/18-G-App与编程专家真实消费能力包.md",
+      "shared_files": [
+        "evoagent/tools/registry.py",
+        "evoagent/tools/contract.py",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/experts/registry.py",
+        "evoagent/tools/coding.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-18-F",
+        "ALN-06-R",
+        "ALN-24-A"
+      ],
+      "phase": 4,
+      "requirement_refs": [
+        "F02",
+        "A-60"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "受控真实项目"
+    },
+    {
+      "id": "ALN-18-L",
+      "workpackage": "ALN-18",
+      "title": "跨文件语义与LSP能力扩展",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/18-L-跨文件语义与LSP能力扩展.md",
+      "shared_files": [
+        "evoagent/tools/registry.py",
+        "evoagent/tools/contract.py",
+        "evoagent/experts/registry.py",
+        "evoagent/tools/coding.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-18-G"
+      ],
+      "phase": 5,
+      "requirement_refs": [
+        "A-60",
+        "A-70"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "语言服务依赖与真实项目"
+    },
+    {
+      "id": "ALN-19-A",
+      "workpackage": "ALN-19",
+      "title": "真实音视频供应商漫剧纵切片",
+      "stream": "assets",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/19-A-真实音视频供应商漫剧纵切片.md",
+      "shared_files": [
+        "evoagent/tools/registry.py",
+        "evoagent/tools/contract.py",
+        "evoagent/experts/registry.py",
+        "evoagent/tools/coding.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-24-A",
+        "ALN-15-P"
+      ],
+      "phase": 5,
+      "requirement_refs": [
+        "F02"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "真实服务配置与预算"
+    },
+    {
+      "id": "ALN-20-P",
+      "workpackage": "ALN-20",
+      "title": "固定外部Runtime真实PoC",
+      "stream": "runtime",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/20-P-固定外部Runtime真实PoC.md",
+      "shared_files": [],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-20-A"
+      ],
+      "phase": 4,
+      "requirement_refs": [
+        "B-75",
+        "G2",
+        "G3"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "固定外部运行时及可用安装环境"
+    },
+    {
+      "id": "ALN-21-A",
+      "workpackage": "ALN-21",
+      "title": "Windows或平板扩展验证",
+      "stream": "android",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/21-A-Windows或平板扩展验证.md",
+      "shared_files": [
+        "evoagent/core/controller.py",
+        "evoagent/core/runs.py",
+        "evoagent/core/task.py",
+        "evoagent/core/state_machine.py",
+        "evoagent/react/engine.py",
+        "evoagent/workflows/engine.py",
+        "evoagent/tools/registry.py",
+        "evoagent/core/permissions.py",
+        "evoagent/core/approvals.py",
+        "evoagent/core/side_effects.py",
+        "evoagent/core/persistence.py",
+        "evoagent/core/schema/migrations.py",
+        "evoagent/core/contracts.py",
+        "evoagent/core/events.py",
+        "evoagent/core/budget.py",
+        "evoagent/tools/contract.py",
+        "evoagent/api/server.py",
+        "evoagent/api/routes.py",
+        "evoagent/api/auth.py",
+        "evoagent/app.py",
+        "evoagent/cli.py",
+        "android-app/App.tsx",
+        "android-app/src/api.ts",
+        "android-app/src/offline/types.ts",
+        "android-app/src/update/workflowBundle.ts",
+        "evoagent/release/manager.py",
+        "evoagent/release/delivery.py",
+        "evoagent/evolution/controller.py",
+        "evoagent/evolution/evaluator.py",
+        "evoagent/evolution/regression.py",
+        "evoagent/evolution/runner.py",
+        "evoagent/evolution/candidates.py",
+        "evoagent/evolution/monitor.py",
+        "evoagent/evolution/benefit.py",
+        "evoagent/experts/registry.py",
+        "evoagent/memory/context.py",
+        "evoagent/models/metering.py",
+        "evoagent/planning/intent.py",
+        "evoagent/planning/planner.py",
+        "evoagent/evolution/routing_eval.py",
+        "evoagent/goals/store.py",
+        "evoagent/config.py",
+        "evoagent/core/runtime_budget.py",
+        "evoagent/core/reservations.py",
+        "evoagent/core/schema/reservations.py",
+        "evoagent/evolution/experiment_budget.py",
+        "evoagent/api/goals_api.py",
+        "evoagent/tools/coding.py",
+        "evoagent/memory/store.py",
+        "evoagent/release/signing.py",
+        "evoagent/planning/matching.py",
+        "evoagent/planning/contracts.py",
+        "evoagent/api/memory_context_api.py",
+        "evoagent/core/schema/memory_context.py",
+        "evoagent/memory/binding.py",
+        "evoagent/observability/export.py",
+        "evoagent/core/log_layers.py",
+        "android-app/src/update/manager.ts",
+        "android-app/src/device/broker.ts",
+        "android-app/src/device/taskProtocol.ts"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-17-P",
+        "ALN-20-P",
+        "ALN-12-E"
+      ],
+      "phase": 5,
+      "requirement_refs": [
+        "G0",
+        "G3"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "目标终端"
+    },
+    {
+      "id": "ALN-22-A",
+      "workpackage": "ALN-22",
+      "title": "原全量范围与新增产品证据汇总",
+      "stream": "integration",
+      "owner": null,
+      "reviewer": null,
+      "branch": null,
+      "base_commit": null,
+      "status": "unclaimed",
+      "blocker": null,
+      "evidence": [],
+      "card": "docs/协作开发/任务卡/22-A-原全量范围与新增产品证据汇总.md",
+      "shared_files": [
+        "tools/check_collaboration_plan.py"
+      ],
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "depends_on": [
+        "ALN-29-B",
+        "ALN-29-E",
+        "ALN-17-P",
+        "ALN-19-A",
+        "ALN-21-A"
+      ],
+      "phase": 5,
+      "requirement_refs": [
+        "G0",
+        "G1",
+        "G2",
+        "G3",
+        "G4",
+        "G5",
+        "G6",
+        "G7"
+      ],
+      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
+      "prerequisites": "原包依赖和真实外部环境逐项满足"
     }
   ],
   "workpackages": [
@@ -3703,10 +5584,191 @@
       "owner": null,
       "delivery_state": "planned",
       "next_step": "持续归档证据，待原始全部依赖满足后执行全量收口"
+    },
+    {
+      "id": "ALN-23",
+      "priority": "P0",
+      "title": "任务入口、聊天/工作模式与任务工作区",
+      "depends_on": [
+        "ALN-04",
+        "ALN-07",
+        "ALN-12"
+      ],
+      "stream": "android",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "F01/F02/F03真实入口、计划、控制与恢复闭环；UX01—10逐项验收",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
+    },
+    {
+      "id": "ALN-24",
+      "priority": "P0",
+      "title": "成果交付、项目记忆与能力信任中心",
+      "depends_on": [
+        "ALN-01",
+        "ALN-03",
+        "ALN-05",
+        "ALN-06",
+        "ALN-23"
+      ],
+      "stream": "android",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "真实产物可访问和继续修改；项目/记忆/能力/权限/隐私/成本按UX11—17、22—25逐项验收",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
+    },
+    {
+      "id": "ALN-25",
+      "priority": "P1",
+      "title": "主动帮助与机会发现",
+      "depends_on": [
+        "ALN-05",
+        "ALN-13",
+        "ALN-14",
+        "ALN-15",
+        "ALN-23"
+      ],
+      "stream": "models",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "授权来源到建议的可追溯闭环；F04全通过，含关闭和资源非干扰实测",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
+    },
+    {
+      "id": "ALN-26",
+      "priority": "P1",
+      "title": "能力缺口主动规划与动态编排",
+      "depends_on": [
+        "ALN-06",
+        "ALN-07",
+        "ALN-09",
+        "ALN-10"
+      ],
+      "stream": "runtime",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "A-59/A-60从缺口证据到候选计划、动态团队契约与冲突处理有实际任务证据",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
+    },
+    {
+      "id": "ALN-27",
+      "priority": "P1",
+      "title": "经验迁移与可组合能力资产",
+      "depends_on": [
+        "ALN-05",
+        "ALN-06",
+        "ALN-10"
+      ],
+      "stream": "assets",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "A-69/A-70来源、适用域、撤销与跨专家迁移/组合工作流在真实消费路径有效",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
+    },
+    {
+      "id": "ALN-28",
+      "priority": "P2",
+      "title": "外部事实核验与可信交付",
+      "depends_on": [
+        "ALN-05",
+        "ALN-09",
+        "ALN-16"
+      ],
+      "stream": "models",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "A-61外部证据获取、交叉核验、矛盾与未知标注可复现；外部数据源未就绪不宣称通过",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
+    },
+    {
+      "id": "ALN-29",
+      "priority": "P0",
+      "title": "首发范围、发布门禁与用户反馈闭环",
+      "depends_on": [
+        "ALN-00",
+        "ALN-10",
+        "ALN-11",
+        "ALN-16",
+        "ALN-23",
+        "ALN-24",
+        "ALN-25"
+      ],
+      "stream": "integration",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "28UX范围表、17用例及G0—G7同版本证据齐备；发布决定独立于开发完成",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
     }
   ],
-  "execution_note": "2026-10-24：初始开发及统一验收已交付；00-B新候选/真机模块回归完成，待发布决定。当前无实施卡在开发，后续优先补ALN-07原子绑定与对账，再打通ALN-12自然语言设备主链；不把尚未发布当所有开发的屏障。",
-  "execution_queue": null,
+  "execution_note": "按新增分期计划逐卡开发，WIP=1。已认领29-A和23-A；其余新增卡owner=null。包依赖约束关闭，卡依赖约束接线；待审接口可用于实现，不代表已接受或发布。基线仍candidate，published_commit为空。",
+  "execution_queue": {
+    "mode": "当前项目单会话串行；其他开发者按待认领卡独立接手",
+    "owner": "codex-runtime",
+    "wip_limit": 1,
+    "active_task": "ALN-29-A",
+    "next_task": "ALN-23-A",
+    "items": [
+      {
+        "id": "ALN-29-A",
+        "state": "in_progress",
+        "condition": "先交付17条用例的断言、证据格式及未测试语义"
+      },
+      {
+        "id": "ALN-23-A",
+        "state": "claimed",
+        "condition": "29-A交付后按Task权威开发统一契约，实际开工更新base_commit"
+      }
+    ]
+  },
   "peer_review_batch": {
     "date": "2026-10-23",
     "reviewer": "codex-runtime",
@@ -3860,6 +5922,12 @@
       "scope": "严格原生回执/权威终态/关闭channel/通知隔离/真实上传失败传播；16项新增探针，客户端252和类型检查、ARM64构建通过；未安装到真机",
       "candidate_included": false,
       "device_verified": false
+    }
+  ],
+  "requirement_batches": [
+    {
+      "id": "PRODUCT-2026-10-25",
+      "plan": "docs/协作开发/需求拆分与分期实施_2026-10-25.json"
     }
   ]
 }
