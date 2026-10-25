@@ -42,6 +42,7 @@ from . import routing_eval_api  # F-53 路由质量评测端点（注册表路�
 from . import memory_context_api  # ALN-05-I task/run context provenance
 from . import task_control_api  # 用户补充信息与独立运行历史
 from . import capabilities_api  # ALN-24-B 能力六档状态与渐进授权投影
+from . import feedback_api  # ALN-29-C 用户反馈与运行证据关联
 from .routes import RouteContext
 from .diagnostics_import import (
     MAX_PACKAGE_BYTES,
