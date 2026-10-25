@@ -4463,13 +4463,24 @@
    "workpackage": "ALN-29",
    "title": "改进效果与用户收益说明",
    "stream": "integration",
-   "owner": null,
+   "owner": "dsh-lead",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "f25092ca8f849e1e853e9915f7fd3d43550f52e3",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-25",
+     "scope": "用户收益说明层：候选/评测/发布/观测四阶段分开表述、无对照不声称收益(基准不可复现/regressed/无监测均fail-closed)、退化与限制可见、每条claim带basis+证据引用、scope标注；1个注册表端点；9项专项与102项演化/接口回归通过",
+     "source_commit": "b265fd12aec5df9d1eb5a5cdaadf05a505920de7",
+     "functional_commit": "b265fd12aec5df9d1eb5a5cdaadf05a505920de7",
+     "source_tree": "194fd6b68fdf2ac0cdbe6d7c0b592c7f257052e6",
+     "result": "专项9 passed；演化/接口域102 passed；全量1983 passed/1 failed/1 skipped，唯一失败为他人ALN-07-C系 test_peer_action_binding_review.py 且工作区有他人未提交 planning/binding.py，本卡未改绑定/规划/ReAct。端侧展示未接(App.tsx未改)、仅中文、基准报告与候选的自动关联待评测线接线",
+     "log": ".planning/2026-10-25-aln29d/backend-tests.txt",
+     "delivery": "docs/协作开发/交付/ALN-29-D-改进效果与用户收益说明.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/29-D-改进效果与用户收益说明.md",
    "shared_files": [
     "evoagent/api/server.py",
@@ -4503,9 +4514,19 @@
    "requirement_refs": [
     "UX-27"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
-   "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-   "prerequisites": "仅需仓库与本地测试环境"
+   "next_step": "待独立复核：四阶段拆分、无对照不声称收益(fail-closed)、退化/限制可见、claims带证据引用、端点返回与404的证据见交付文档与 .planning/2026-10-25-aln29d/；审阅人未定，不自批为独立验收；端侧展示、基准报告自动关联与监测采集接线属后续，ALN-29整包不关闭",
+   "working_basis": "以f25092ca8f849e1e853e9915f7fd3d43550f52e3（feature/user-direction HEAD）作为实际接手锚点；最终提交b265fd12aec5df9d1eb5a5cdaadf05a505920de7；基线仍为candidate、prepared_candidate 21899e6 未发布",
+   "prerequisites": "仅需仓库与本地测试环境",
+   "delivered_commit": "b265fd12aec5df9d1eb5a5cdaadf05a505920de7",
+   "delivery": "docs/协作开发/交付/ALN-29-D-改进效果与用户收益说明.md",
+   "ownership_history": [
+    {
+     "date": "2026-10-25",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户选择 P0 后端方向；29-D 依赖 29-C/10-E（均 review 待审接口可用），只新增说明模块+一个注册表端点+server.py 一行 import，不改 App/客户端"
+    }
+   ]
   },
   {
    "id": "ALN-29-E",
