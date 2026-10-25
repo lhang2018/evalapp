@@ -1,0 +1,216 @@
+{
+ "task": "ALN-26-A 能力缺口证据与主动规划候选",
+ "measured_at": 1792926092.3840334,
+ "real_data": {
+  "source": ".evoagent/evoagent.db（仓库内真实历史任务库，只读复制后分析，未修改原库）",
+  "failed_task_ids": [
+   "8d668c93ce91",
+   "ac8735a03bde"
+  ],
+  "analysis_counts": {
+   "evidence": 2,
+   "gaps": 0,
+   "insufficient": 2
+  },
+  "gaps": [],
+  "insufficient": [
+   {
+    "gap_id": "gap_814d507bfb57",
+    "capability": "capability:general:general",
+    "reason": "证据不足：1 条 < 阈值 2"
+   },
+   {
+    "gap_id": "gap_ba4edcd9f473",
+    "capability": "capability:mobile_operation:note_taking",
+    "reason": "证据不足：1 条 < 阈值 2"
+   }
+  ],
+  "planned": []
+ },
+ "fixture_matrix": {
+  "note": "fixture 明确标注：用于演示聚合/去重/阈值/候选登记，不代表生产数据",
+  "failed_task_ids": [
+   "9c8bfbf1bf4e",
+   "6a333f66ea0b",
+   "d6465c61dad4"
+  ],
+  "analysis": {
+   "counts": {
+    "evidence": 3,
+    "gaps": 1,
+    "insufficient": 1
+   },
+   "gaps": [
+    {
+     "gap_id": "gap_b409444f4104",
+     "capability": "missing_capability:unknown_domain_z:unknown_intent_x",
+     "domain": "unknown_domain_z",
+     "intent": "unknown_intent_x",
+     "kinds": [
+      "failed_task"
+     ],
+     "evidence": [
+      {
+       "kind": "failed_task",
+       "ref": "task:6a333f66ea0b",
+       "capability": "missing_capability:unknown_domain_z:unknown_intent_x",
+       "domain": "unknown_domain_z",
+       "intent": "unknown_intent_x",
+       "task_id": "6a333f66ea0b",
+       "goal_id": "",
+       "failure_reason": "工具缺失: 无可用能力",
+       "observed_at": 1792926092.774034
+      },
+      {
+       "kind": "failed_task",
+       "ref": "task:9c8bfbf1bf4e",
+       "capability": "missing_capability:unknown_domain_z:unknown_intent_x",
+       "domain": "unknown_domain_z",
+       "intent": "unknown_intent_x",
+       "task_id": "9c8bfbf1bf4e",
+       "goal_id": "",
+       "failure_reason": "工具缺失: 无可用能力",
+       "observed_at": 1792926092.774034
+      }
+     ],
+     "evidence_refs": [
+      "task:6a333f66ea0b",
+      "task:9c8bfbf1bf4e"
+     ],
+     "evidence_count": 2,
+     "distinct_tasks": 2,
+     "distinct_goals": 0,
+     "failure_reasons": [
+      "工具缺失: 无可用能力"
+     ],
+     "severity": "medium",
+     "promotable": true
+    }
+   ],
+   "insufficient": [
+    {
+     "gap_id": "gap_b57bc9770d4f",
+     "capability": "missing_capability:solo_domain:solo_intent",
+     "domain": "solo_domain",
+     "intent": "solo_intent",
+     "kinds": [
+      "failed_task"
+     ],
+     "evidence": [
+      {
+       "kind": "failed_task",
+       "ref": "task:d6465c61dad4",
+       "capability": "missing_capability:solo_domain:solo_intent",
+       "domain": "solo_domain",
+       "intent": "solo_intent",
+       "task_id": "d6465c61dad4",
+       "goal_id": "",
+       "failure_reason": "孤立失败",
+       "observed_at": 1792926092.774034
+      }
+     ],
+     "evidence_refs": [
+      "task:d6465c61dad4"
+     ],
+     "evidence_count": 1,
+     "distinct_tasks": 1,
+     "distinct_goals": 0,
+     "failure_reasons": [
+      "孤立失败"
+     ],
+     "severity": "medium",
+     "promotable": false,
+     "insufficient_reason": "证据不足：1 条 < 阈值 2"
+    }
+   ]
+  },
+  "plan": {
+   "planned": [
+    {
+     "gap_id": "gap_b409444f4104",
+     "capability": "missing_capability:unknown_domain_z:unknown_intent_x",
+     "domain": "unknown_domain_z",
+     "benefit": {
+      "affected_tasks": 2,
+      "evidence_count": 2,
+      "severity": "medium"
+     },
+     "cost": {
+      "budget_units": 2.0,
+      "basis": "按证据条数估算的单位预算（非真实账单）"
+     },
+     "evidence_refs": [
+      "task:6a333f66ea0b",
+      "task:9c8bfbf1bf4e"
+     ],
+     "candidate_id": "cand_001",
+     "candidate_status": "CANDIDATE_CREATED",
+     "status": "proposed",
+     "requires_evaluation": true,
+     "policy": "候选仅登记，不绕过评测/门禁/发布流程",
+     "actor": "gap-planner"
+    }
+   ],
+   "rejected": [],
+   "insufficient": [
+    {
+     "gap_id": "gap_b57bc9770d4f",
+     "capability": "missing_capability:solo_domain:solo_intent",
+     "domain": "solo_domain",
+     "intent": "solo_intent",
+     "kinds": [
+      "failed_task"
+     ],
+     "evidence": [
+      {
+       "kind": "failed_task",
+       "ref": "task:d6465c61dad4",
+       "capability": "missing_capability:solo_domain:solo_intent",
+       "domain": "solo_domain",
+       "intent": "solo_intent",
+       "task_id": "d6465c61dad4",
+       "goal_id": "",
+       "failure_reason": "孤立失败",
+       "observed_at": 1792926092.774034
+      }
+     ],
+     "evidence_refs": [
+      "task:d6465c61dad4"
+     ],
+     "evidence_count": 1,
+     "distinct_tasks": 1,
+     "distinct_goals": 0,
+     "failure_reasons": [
+      "孤立失败"
+     ],
+     "severity": "medium",
+     "promotable": false,
+     "insufficient_reason": "证据不足：1 条 < 阈值 2"
+    }
+   ],
+   "counts": {
+    "planned": 1,
+    "rejected": 0,
+    "insufficient": 1
+   },
+   "policy": "缺口必须有可追溯证据；证据不足不生成候选；候选只经既有评测与发布流程，规划器不做部署"
+  },
+  "traceability_reject": {
+   "ok": false,
+   "missing": [
+    "task:vanished"
+   ]
+  }
+ },
+ "checks": {
+  "real_failures_found": true,
+  "real_task_refs_traceable": true,
+  "fixture_gap_promoted": true,
+  "fixture_insufficient_visible": true,
+  "candidate_registered_through_evolution": true,
+  "candidate_requires_evaluation": true,
+  "no_bypass_release_policy": true,
+  "traceability_rejects_missing": true
+ },
+ "all_checks_pass": true
+}
