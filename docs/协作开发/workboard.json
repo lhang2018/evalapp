@@ -3314,10 +3314,9 @@
       "title": "首发17用例的验收骨架与可执行断言",
       "stream": "integration",
       "owner": "codex-runtime",
-      "reviewer": null,
-      "branch": "feature/user-direction",
+      "reviewer": "zcode-main",      "branch": "feature/user-direction",
       "base_commit": "5e2b7e36ffbc225a33c7c09c8214bf70133ba2da",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         {
@@ -3328,7 +3327,12 @@
           "log": ".planning/2026-10-25-product-breakdown/tool-tests.txt",
           "evidence": ".planning/2026-10-25-product-breakdown/committed-evidence.json"
         }
-      ],
+      ,
+    {
+      "date": "2026-10-25",
+      "scope": "独立复核（zcode-main）：R1工具测试65过独立复跑、R2/R3默认0退出与require-pass 1语义、R4矩阵17例48条具名断言、R5证据15/15 LF哈希、R6探针判别力；结论转accepted（骨架范围），17用例产品级通过仍以--require-pass全绿为准",
+      "review_report": "docs/协作开发/验收/2026-10-25-ALN-29-A独立复核.md"
+    }],
       "card": "docs/协作开发/任务卡/29-A-首发17用例的验收骨架与可执行断言.md",
       "shared_files": [
         "tools/check_collaboration_plan.py"
@@ -4825,11 +4829,11 @@
       "workpackage": "ALN-13",
       "title": "生产长期目标推进与周期守护",
       "stream": "runtime",
-      "owner": null,
+      "owner": "dsh-lead",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "41fc372cf7e7d38bc27679f5e91ccc0844c7d091",
+      "status": "claimed",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/13-P-生产长期目标推进与周期守护.md",
@@ -4847,9 +4851,17 @@
         "B-90",
         "B-91"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
-      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-      "prerequisites": "运行时调度与负载环境"
+      "next_step": "先读 GoalStore/GoalGovernor 现有 advance/report 与 13-A/14-A 交付记录，按卡补周期调度与负载守护；证据绑定精确commit、命令与日志，未经复核不记accepted",
+      "working_basis": "以41fc372cf7e7d38bc27679f5e91ccc0844c7d091（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
+      "prerequisites": "运行时调度与负载环境",
+      "ownership_history": [
+        {
+          "date": "2026-10-25",
+          "from": "待认领",
+          "to": "dsh-lead",
+          "reason": "用户指示继续；13-P 依赖 13-A/14-A 均已 accepted，写入面仅 evoagent/goals/store.py（共享文件），与在途卡无重叠；09-H 已交付转 review 后接续"
+        }
+      ]
     },
     {
       "id": "ALN-15-P",
