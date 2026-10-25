@@ -1,0 +1,210 @@
+{
+ "task": "ALN-26-B 动态团队与跨专家协作契约",
+ "measured_at": 1792926978.8353922,
+ "registry": {
+  "experts": [
+   {
+    "expert_id": "general",
+    "capabilities": [
+     "qa",
+     "planning_basic",
+     "dispatch"
+    ]
+   },
+   {
+    "expert_id": "coding",
+    "capabilities": [
+     "code_gen",
+     "debug",
+     "test",
+     "dependency_analysis"
+    ]
+   },
+   {
+    "expert_id": "travel",
+    "capabilities": [
+     "itinerary",
+     "budget_estimation",
+     "info_verification"
+    ]
+   },
+   {
+    "expert_id": "comic_drama",
+    "capabilities": [
+     "script",
+     "storyboard",
+     "video_gen",
+     "dubbing",
+     "composition"
+    ]
+   },
+   {
+    "expert_id": "mobile_operation",
+    "capabilities": [
+     "app_launch",
+     "ui_operation",
+     "state_verify"
+    ]
+   }
+  ],
+  "declared_capabilities": [
+   "file_toolset",
+   "coding_tasks"
+  ]
+ },
+ "contract": {
+  "contract_id": "team_e4c0a421ccaa",
+  "task_intent": "coding",
+  "domain": "coding",
+  "task_ref": "task:demo-cross-expert",
+  "roles": [
+   {
+    "role_id": "role_coding",
+    "expert_id": "coding",
+    "domain": "项目分析/代码生成/调试/测试/依赖分析",
+    "capabilities": [
+     "code_gen"
+    ],
+    "responsibilities": [
+     "负责能力: code_gen"
+    ],
+    "outputs": [
+     "role_coding:output:code_gen"
+    ],
+    "state_artifacts": [
+     "role_coding:artifact:code_gen"
+    ],
+    "external_actions": []
+   },
+   {
+    "role_id": "role_travel",
+    "expert_id": "travel",
+    "domain": "目的地研究/行程规划/预算估算/交通安排",
+    "capabilities": [
+     "itinerary"
+    ],
+    "responsibilities": [
+     "负责能力: itinerary"
+    ],
+    "outputs": [
+     "role_travel:output:itinerary"
+    ],
+    "state_artifacts": [
+     "role_travel:artifact:itinerary"
+    ],
+    "external_actions": []
+   }
+  ],
+  "handoffs": [
+   {
+    "handoff_id": "ho_de552bc31c",
+    "from_role": "role_coding",
+    "to_role": "role_travel",
+    "input_refs": [
+     "role_coding:output:code_gen"
+    ],
+    "context_scope": [
+     "task:demo-cross-expert"
+    ],
+    "budget_units": 0.5
+   }
+  ],
+  "state_writers": {
+   "role_coding:artifact:code_gen": "role_coding",
+   "role_travel:artifact:itinerary": "role_travel"
+  },
+  "status": "active",
+  "failures": {
+   "role_travel": "预算接口超时"
+  },
+  "transitions": [
+   {
+    "from": "proposed",
+    "to": "active",
+    "role_id": "role_coding",
+    "actor": "controller",
+    "at": 1792926978.8353922
+   }
+  ],
+  "created_at": 1792926978.8353922,
+  "revision": 4
+ },
+ "contract_digest": "b1434d01a283d7d27480a3092c261d0acbd152dcb2eb69896659124c91dc5c1b",
+ "handoff_result": {
+  "ok": true,
+  "handoff": {
+   "handoff_id": "ho_de552bc31c",
+   "from_role": "role_coding",
+   "to_role": "role_travel",
+   "input_refs": [
+    "role_coding:output:code_gen"
+   ],
+   "context_scope": [
+    "task:demo-cross-expert"
+   ],
+   "budget_units": 0.5
+  },
+  "digest": "0c45a314d7a19b41d81bb7dfecc3526a65ff8f486bce72725e9d0f43a23be6c3"
+ },
+ "advance_result": {
+  "ok": true,
+  "status": "active",
+  "previous": "proposed"
+ },
+ "failure": {
+  "ok": true,
+  "role_id": "role_travel",
+  "reason": "预算接口超时"
+ },
+ "recovery": {
+  "failed_roles": [
+   "role_travel"
+  ],
+  "auto_replay": false,
+  "requires_confirmation": false,
+  "external_actions": [],
+  "note": "无外部动作，可安全重试"
+ },
+ "negative_cases": {
+  "missing_capability": "能力缺口，无法成组: no_such_cap",
+  "ambiguous_ownership": "能力归属冲突，无法唯一指派: cap_x 候选=alpha,beta"
+ },
+ "external_action_cases": {
+  "allowed": {
+   "ok": true,
+   "role_id": "role_a",
+   "action": "send_email"
+  },
+  "denied": {
+   "ok": false,
+   "reason": "角色已失败，外部动作需人工确认后重放: send_email"
+  },
+  "confirmed": {
+   "ok": true,
+   "role_id": "role_a",
+   "action": "send_email"
+  },
+  "foreign": {
+   "ok": false,
+   "reason": "角色不在契约中: role_other"
+  }
+ },
+ "checks": {
+  "team_formed_from_real_registry": true,
+  "capabilities_covered": true,
+  "single_state_writer_each_artifact": true,
+  "contract_valid": true,
+  "handoff_created": true,
+  "only_writer_advanced": true,
+  "local_failure_recorded": [
+   "role_travel"
+  ],
+  "no_auto_replay": true,
+  "missing_capability_explained": true,
+  "conflict_explainable": true,
+  "external_action_owner_only": true,
+  "failed_role_needs_confirmation": true,
+  "manual_recovery_requires_confirmation": true
+ },
+ "all_checks_pass": true
+}
