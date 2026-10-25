@@ -63,7 +63,27 @@ export interface CheckpointSnapshot {
   pending_nodes?: string[];
   completed_nodes?: string[];
   budget_state?: { usage?: Record<string, unknown> };
+  /**
+   * 服务端权威节点态（runtime_manifest.node_runs 的 {node: state} 投影，
+   * WorkflowNodeState 原值）。存在时优先于 completed/pending 集合——
+   * failed/skipped/running/waiting_authorization 只能从这里来，
+   * 客户端永不自行推断。
+   */
+  node_states?: Record<string, string>;
 }
+
+/** WorkflowNodeState（服务端）→ 工作区六态映射（纯查表，无推断）。 */
+const SERVER_STATE_MAP: Record<string, NodeState> = {
+  success: "succeeded",
+  failed: "failed",
+  skipped: "skipped",
+  running: "running",
+  pending: "pending",
+  waiting_authorization: "blocked",
+  waiting_external: "blocked",
+  recovering: "running",
+  cancelled: "skipped",
+};
 
 /**
  * 从 checkpoint 快照 + 权威任务状态构建工作区视图。
@@ -79,10 +99,18 @@ export function workspaceFromCheckpoint(
   const pending = new Set(checkpoint?.pending_nodes ?? []);
   const outputs = checkpoint?.workflow_outputs ?? {};
 
+  const serverStates = checkpoint?.node_states ?? {};
   const nodes: WorkspaceNode[] = nodeDefs.map((def) => {
     let state: NodeState = "pending";
-    if (completed.has(def.node_id)) state = "succeeded";
-    else if (pending.has(def.node_id)) state = "pending";
+    const serverState = serverStates[def.node_id];
+    if (serverState !== undefined) {
+      // 服务端权威态优先（fail-closed：未知服务端态按 pending 保守显示）
+      state = SERVER_STATE_MAP[serverState] ?? "pending";
+    } else if (completed.has(def.node_id)) {
+      state = "succeeded";
+    } else if (pending.has(def.node_id)) {
+      state = "pending";
+    }
     // blocked 仅由服务端权威数据判定；客户端不基于 deps 推断
     return {
       node_id: def.node_id, tool: def.tool, state,

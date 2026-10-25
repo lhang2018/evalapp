@@ -3634,15 +3634,22 @@
       "title": "任务工作区与真实计划进度",
       "stream": "android",
       "owner": "zcode-main",
-      "reviewer": null,
+      "reviewer": "zcode-next",
       "branch": "feature/user-direction",
       "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
-      "status": "review",
+      "status": "accepted",
       "blocker": null,
       "evidence": [
         "代码: da85ab7 workspaceFromCheckpoint 六态投影+8项测试",
         "测试: workspace.test 8项全过；客户端280全绿/tsc 0错",
-        "交付: docs/协作开发/交付/ALN-23-C-任务工作区与真实计划进度.md"
+        "交付: docs/协作开发/交付/ALN-23-C-任务工作区与真实计划进度.md",
+        {
+          "date": "2026-10-25",
+          "reviewer": "zcode-next",
+          "scope": "独立复核发现C-23-01六态失真（四态不可达/测试标题失真）并由复核人修复：node_states 权威通道+查表映射+fail-closed；专项9项+客户端复验通过",
+          "result": "accepted_after_fix",
+          "evidence": "docs/协作开发/验收/2026-10-25-ALN-23-C独立复核.md"
+        }
       ],
       "card": "docs/协作开发/任务卡/23-C-任务工作区与真实计划进度.md",
       "shared_files": [
@@ -3671,7 +3678,7 @@
         "UX-08",
         "F02"
       ],
-      "next_step": "待独立复核（审阅人待定）；App工作区UI挂载属ALN-24-A",
+      "next_step": "修复后复核通过；node_states 通道建议 owner/第三方过目；解锁 24-A/23-E/24-C/24-E/29-C/12-E",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
       "prerequisites": "仅需仓库与本地测试环境"
     },

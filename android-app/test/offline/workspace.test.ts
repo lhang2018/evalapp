@@ -24,29 +24,48 @@ const nodeDefs = [
   { node_id: "c", tool: "report", deps: ["b"] },
 ];
 
-test("六种节点态可辨", () => {
+test("六种节点态可辨（服务端权威 node_states）", () => {
+  const defs = [
+    { node_id: "a", tool: "fetch", deps: [] },
+    { node_id: "b", tool: "process", deps: ["a"] },
+    { node_id: "c", tool: "gate", deps: ["a"] },
+    { node_id: "d", tool: "report", deps: ["b"] },
+    { node_id: "e", tool: "alt", deps: ["a"] },
+    { node_id: "f", tool: "end", deps: [] },
+  ];
   const cp = {
     completed_nodes: ["a"],
     pending_nodes: ["b"],
+    node_states: {
+      a: "success", b: "pending", c: "failed",
+      d: "skipped", e: "waiting_authorization", f: "running",
+    },
     workflow_outputs: { a: { data: 1 } },
   };
-  const ws = workspaceFromCheckpoint(task(), cp, nodeDefs);
-  assert.equal(ws.nodes[0].state, "succeeded");
-  assert.equal(ws.nodes[1].state, "pending");
-  // c 依赖 b（pending），尚未到 blocked——只有依赖失败才 blocked
-  assert.equal(ws.nodes[2].state, "pending");
+  const ws = workspaceFromCheckpoint(task(), cp, defs);
+  assert.deepEqual(ws.nodes.map((n) => n.state),
+    ["succeeded", "pending", "failed", "skipped", "blocked", "running"]);
+  // failed 通道接通：failures 非空且指向失败节点
+  assert.deepEqual(ws.failures,
+    [{ node_id: "c", error: "未知错误" }]);
 });
 
-test("依赖失败时下游 blocked", () => {
-  // 只完成 a，b 失败不在 completed 也不在 pending → 模拟失败
+test("未知服务端态按 pending 保守显示（fail-closed）", () => {
+  const cp = { node_states: { a: "mystery_state" }, workflow_outputs: {} };
+  const ws = workspaceFromCheckpoint(task(), cp, nodeDefs);
+  assert.equal(ws.nodes[0].state, "pending");
+});
+
+test("依赖失败时下游 blocked（服务端权威判定）", () => {
+  // blocked 只能来自服务端 waiting_authorization/waiting_external，
+  // 客户端不基于 deps 推断：b 失败时 c 仍按服务端态显示
   const cp = {
-    completed_nodes: ["a"],
-    pending_nodes: ["c"], // c 在 pending 但 b 既不在 completed 也不在 pending
+    node_states: { a: "success", b: "failed", c: "waiting_authorization" },
     workflow_outputs: {},
   };
   const ws = workspaceFromCheckpoint(task(), cp, nodeDefs);
-  // b 不在 completed/pending → 视为未完成
-  assert.equal(ws.nodes[1].state, "pending");
+  assert.equal(ws.nodes[1].state, "failed");
+  assert.equal(ws.nodes[2].state, "blocked");
 });
 
 test("无依据不显示百分比：部分完成但未全部终结", () => {
