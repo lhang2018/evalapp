@@ -4594,9 +4594,20 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "f7ccfcb936f4ed06dea26b84b44c01805d19dff0",
-      "status": "claimed",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        {
+          "date": "2026-10-25",
+          "scope": "隔离候选宿主 + 持久问题队列（SQLite+租约fencing+崩溃接管）+ sandbox多文件项目执行；16项专项与相关域回归138项通过",
+          "source_commit": "435d12f7bbaeef021299c87bfa6f529feaeaff5f",
+          "functional_commit": "435d12f7bbaeef021299c87bfa6f529feaeaff5f",
+          "source_tree": "ffb1b1c9ae28a2a67661126a5850c34340525a3f",
+          "result": "专项16 passed；evolution/assets/sandbox相关138 passed；全量1769 passed/2 failed/1 skipped，其中2项失败用暂存本人改动复跑证明属他人未提交改动(budget.py/core/controller.py与cli.py)，非本卡引入",
+          "log": ".planning/2026-10-25-aln09h/backend-tests.txt",
+          "delivery": "docs/协作开发/交付/ALN-09-H-真实候选宿主、持久问题队列与进程隔离.md"
+        }
+      ],
       "card": "docs/协作开发/任务卡/09-H-真实候选宿主、持久队列与进程隔离.md",
       "shared_files": [
         "evoagent/evolution/controller.py",
@@ -4619,9 +4630,11 @@
         "G2",
         "G3"
       ],
-      "next_step": "先读 evolution 现有接口与 ALN-09-F 交付记录，按卡落隔离宿主/持久队列/多进程故障恢复用例；证据绑定精确commit、命令与日志，未经复核不记accepted",
-      "working_basis": "以f7ccfcb936f4ed06dea26b84b44c01805d19dff0（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
+      "next_step": "待独立复核：票据跨进程领取/租约过期接管/fencing拒绝/候选身份恢复与真实候选资产执行证据见交付文档与 .planning/2026-10-25-aln09h/；审阅人未定，不自批为独立验收；整包ALN-09仍需真实宿主与多进程故障注入实测",
+      "working_basis": "以f7ccfcb936f4ed06dea26b84b44c01805d19dff0（认领时feature/user-direction HEAD）作为接手锚点；最终提交435d12f7bbaeef021299c87bfa6f529feaeaff5f基于会话内他人已提交的 HEAD 之上；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
       "prerequisites": "受控宿主与真实候选制品",
+      "delivered_commit": "435d12f7bbaeef021299c87bfa6f529feaeaff5f",
+      "delivery": "docs/协作开发/交付/ALN-09-H-真实候选宿主、持久问题队列与进程隔离.md",
       "ownership_history": [
         {
           "date": "2026-10-25",
