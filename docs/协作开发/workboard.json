@@ -4666,6 +4666,16 @@
    "evidence": [
     {
      "date": "2026-10-25",
+     "scope": "组合交付复核：客户端层(zcode-next commit 8828fdc: android-app/src/update/control.ts+App.tsx，node --test 5 passed——版本角色/GLOBAL-01热切换守卫/拒绝原因/回滚证据)与本卡服务端层(channels.py)互补，已写入交付文档补充节",
+     "source_commit": "8828fdc",
+     "functional_commit": "8828fdc",
+     "source_tree": "",
+     "result": "客户端 control.ts 5项 node 测试通过；与本卡服务端12项+发布域168项组合覆盖；审阅需同时看 e16dbfe 与 8828fdc",
+     "log": ".planning/2026-10-25-aln29e/release-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-29-E-稳定版本、更新控制与回滚体验.md"
+    },
+    {
+     "date": "2026-10-25",
      "scope": "发布通道/更新控制/回滚体验层：安装级stable/experimental偏好与显式实验开启、固定版本、explain用户可读说明、evaluate_update可解释决定(稳定拒实验/退役拒/固定拒切换/禁止无约束降级/坏包逐条错误可见/activation需重启且不热切换)、rollback_with_evidence真实回滚+same_version_binding+签名校验+不可逆警告；12项测试与发布域168 passed；实测证据8项检查全过",
      "source_commit": "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7",
      "functional_commit": "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7",
@@ -4698,7 +4708,7 @@
     "UX-28",
     "GLOBAL"
    ],
-   "next_step": "待独立复核：通道/更新决定/回滚证据绑定与坏包/降级/退役/固定/热切换拒绝路径的证据见交付文档与 .planning/2026-10-25-aln29e/；审阅人未定，不自批；客户端UI、生产RSA身份、API接线与真机复验属后续，ALN-29整包不关闭",
+   "next_step": "待独立复核（组合交付）：服务端 channels.py(e16dbfe)与客户端 control.ts/App.tsx(8828fdc，node 5项通过)两层互补，审阅需同时覆盖两个提交；客户端UI与生产RSA身份/真机复验属后续，ALN-29整包不关闭",
    "working_basis": "以bae3914bc8b8b26e836cbc3190cb5df930859dc6（feature/user-direction HEAD）作为实际接手锚点；最终提交e16dbfeedd48d3e58cc24d68886eb76f2d7770d7；基线仍为candidate、prepared_candidate 21899e6 未发布",
    "prerequisites": "生产信任材料与可连接设备",
    "delivered_commit": "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7",
@@ -4709,6 +4719,12 @@
      "from": "待认领",
      "to": "dsh-lead",
      "reason": "用户指示继续接卡；29-E 依赖 ALN-11-P/24-B 均已 accepted(唯一 ready 卡)，新增 channels.py 只消费 ReleaseManager，不改共享发布模块与客户端"
+    },
+    {
+     "date": "2026-10-25",
+     "from": "zcode-next(8828fdc 客户端交付)",
+     "to": "dsh-lead",
+     "reason": "同卡并发双层交付：zcode-next 交付客户端 control.ts/App.tsx，本会话交付服务端 channels.py；台账合并登记为组合交付，两个提交都纳入 review"
     }
    ]
   },
