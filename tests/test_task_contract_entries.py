@@ -22,6 +22,17 @@ class TestTaskContractEntries(unittest.TestCase):
         self.app = App(data_dir=self.tmp)
 
     def tearDown(self):
+        # REST returns 202 while its worker is still finishing the run. Closing
+        # SQLite first turns successful tests into background thread failures.
+        import time
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            with self.app.controller._lock:
+                active = bool(self.app.controller._active)
+            if not active:
+                break
+            time.sleep(0.01)
+        self.assertFalse(active, "任务工作线程未在清理前退出")
         self.app.db.close()
         self.app.memory.close()
         import shutil

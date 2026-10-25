@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "runs": [],
+  "scope": "component probes only; no product acceptance cases executed",
+  "source_scope": "working_tree",
+  "associated_head": "078b9cc4dabbc1437361daa97a07c6a3897b0eeb",
+  "component_results": [
+    {
+      "name": "python-components",
+      "returncode": 0,
+      "ok": true,
+      "artifact": {
+        "path": ".planning/2026-10-25-developed-review/component-probe-logs/python-components-699539951e7d.txt",
+        "sha256": "bd75f1a845c7211579936c3da333dd63b0b2b2ebeb3b92f79a2bdc46e5acadce"
+      }
+    },
+    {
+      "name": "client-components",
+      "returncode": 0,
+      "ok": true,
+      "artifact": {
+        "path": ".planning/2026-10-25-developed-review/component-probe-logs/client-components-3e77972d2870.txt",
+        "sha256": "59f0c8708814764a24e942ef2832f2260e7e795a9fce963f1c49b9ae88a094dd"
+      }
+    }
+  ]
+}

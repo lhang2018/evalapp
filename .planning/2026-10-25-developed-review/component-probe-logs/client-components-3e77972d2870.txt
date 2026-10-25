@@ -1,0 +1,36 @@
+(node:52276) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/capabilities.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 六档服务端状态逐档投影为用户视图与恢复路径 (0.6838ms)
+✔ 未知状态不伪装可用：fallback 归为 unknown (0.1193ms)
+✔ 拒绝/撤销后受保护动作不能执行：blocked 守卫 (0.0899ms)
+✔ 设备动作能力在本机无障碍未开启时覆盖为待设置 (0.0984ms)
+(node:13788) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/modes.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 模式判定：显式切换优先于输入特征 (0.5711ms)
+✔ 模式判定：请求代为执行/需要产物/需要工具 → work (0.3055ms)
+✔ 模式判定：直接问答轻量完成 → chat (0.1024ms)
+✔ 聊天转工作：goal 取最后目标；纠正口径优先 (0.1556ms)
+✔ 聊天转工作：仅确认过的讨论升级为约束 (0.094ms)
+✔ 聊天转工作：已完成要点只进摘要，不重复执行 (0.1437ms)
+✔ 聊天转工作：讨论≠执行——assistant 结论不产生待办 (0.6486ms)
+(node:46604) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/taskview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 服务端九态语义逐态映射，终态判定不受模型文字影响 (0.7121ms)
+✔ 终态判定：仅服务端终态有效 (0.109ms)
+✔ 等待原因来自权威字段：审批/澄清/中断/网络 (0.2365ms)
+✔ 离线本地阶段：无服务端状态按本地展示，DONE 不宣称服务端已验证 (0.1095ms)
+✔ 暂停任务给出可继续/取消的等待原因 (0.0832ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 115.4087

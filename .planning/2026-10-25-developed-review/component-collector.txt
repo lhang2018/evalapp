@@ -1,0 +1,1 @@
+{"component_suites": 2, "product_cases_passed": 0, "product_cases_not_run": 17, "out": ".planning\\2026-10-25-developed-review\\component-probes.json"}
