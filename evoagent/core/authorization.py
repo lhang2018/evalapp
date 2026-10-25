@@ -19,8 +19,12 @@ def normalize_policy(policy):
     policy = deepcopy(policy)
     if not isinstance(policy, dict):
         raise ValueError("授权策略必须为对象")
-    if set(policy) - {"tools", "permissions", "path_roots", "targets", "device_ids", "max_risk"}:
+    if set(policy) - {"tools", "permissions", "path_roots", "targets",
+                      "device_ids", "max_risk", "principal"}:
         raise ValueError("未知授权范围字段")
+    if "principal" in policy and policy["principal"] is not None and (
+            not isinstance(policy["principal"], str) or not policy["principal"]):
+        raise ValueError("授权 principal 必须是非空字符串或 null")
     for key in ("tools", "permissions"):
         if not isinstance(policy.get(key), list) or any(not isinstance(v, str) or not v for v in policy[key]):
             raise ValueError("授权必须明确列出 " + key)
@@ -39,7 +43,12 @@ class AuthorizationStore:
     def __init__(self, db):
         self.db = db
 
-    def issue(self, task_id, policy, *, actor, ttl_seconds=86400):
+    def issue(self, task_id, policy, *, actor, ttl_seconds=86400,
+              principal=None):
+        policy = dict(policy or {})
+        if principal is not None:
+            # 04-V：授权绑定提交身份；缺省不绑定（legacy 兼容）
+            policy["principal"] = principal
         policy = normalize_policy(policy)
         if not task_id or not actor:
             raise ValueError("缺少任务或授权人")
@@ -72,7 +81,8 @@ class AuthorizationStore:
             self.db.revoke_task_approvals(row["task_id"])
         return cur.rowcount == 1
 
-    def check(self, task_id, contract, args, *, expected_ref=None):
+    def check(self, task_id, contract, args, *, expected_ref=None,
+              principal=None):
         if task_id:
             from ..goals.store import GoalStore
             GoalStore(self.db).check_task(task_id, contract, args)
@@ -85,6 +95,12 @@ class AuthorizationStore:
         ref = row["authorization_ref"]
         if (expected_ref and expected_ref != ref) or row["revoked_at"] is not None or row["expires_at"] <= time.time():
             raise PermissionError("任务授权已变更、撤销或过期")
+        bound = row["policy"].get("principal")
+        if bound is not None and principal != bound:
+            # 04-V：旧授权不跨身份复用——授权绑定提交身份，其他身份
+            # （含未声明身份的请求）一律拒绝，fail-closed 不静默放行
+            raise PermissionError(
+                f"任务授权属身份 {bound}，拒绝以 {principal or '匿名'} 复用")
         check_policy(row["policy"], contract, args)
         return ref
 

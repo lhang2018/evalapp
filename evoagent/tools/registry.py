@@ -197,7 +197,10 @@ class ToolRegistry:
         if err:
             return ToolResult.error_result(f"参数校验失败: {err}", "invalid_arguments")
         try:
-            authorization_ref = self.authorizations.check(task_id, c, args) if self.authorizations else None
+            authorization_ref = self.authorizations.check(
+                task_id, c, args,
+                principal=(authorization_context or {}).get("principal")
+            ) if self.authorizations else None
         except (PermissionError, ValueError) as exc:
             return ToolResult.error_result(str(exc), "auth_or_permission")
         # A verified, task-bound cached receipt is observation, not a second
@@ -264,7 +267,9 @@ class ToolRegistry:
             assert_current_lease()
             try:
                 if self.authorizations:
-                    current_ref = self.authorizations.check(task_id, c, args, expected_ref=authorization_ref)
+                    current_ref = self.authorizations.check(
+                        task_id, c, args, expected_ref=authorization_ref,
+                        principal=(authorization_context or {}).get("principal"))
                     if current_ref != authorization_ref:
                         raise PermissionError("动作等待期间任务授权已改变")
                 if self.contract(tool_id) is not rt.contract or rt.contract.tool_version != c.tool_version:

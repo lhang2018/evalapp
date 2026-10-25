@@ -167,6 +167,9 @@ class RuntimeController:
         # 迁移回归需固定目标模型执行，不能用常规路由结果代替（PRD 20）
         if model_override:
             task.runtime_manifest["model_override"] = model_override
+        # 04-V：提交身份进入运行清单——授权发放与消费都以它为准
+        if principal_id and principal_id != "local:host":
+            task.runtime_manifest["principal_id"] = principal_id
         # 运行可追溯到安装实例与客户端版本（双端协同 §3.1）
         if device_id or installation_id or app_version:
             task.runtime_manifest["device"] = {
@@ -469,7 +472,8 @@ class RuntimeController:
                 task.authorization_ref = self.tools.authorizations.issue(task.task_id,
                     {"tools": tool_ids,
                      "permissions": sorted({p for c in contracts for p in c.permission_requirements})},
-                    actor="system:expert-scope")
+                    actor="system:expert-scope",
+                    principal=(task.runtime_manifest or {}).get("principal_id"))
                 self.db.save_task(task)
             else:
                 task.authorization_ref = grant["authorization_ref"]
@@ -545,7 +549,8 @@ class RuntimeController:
             cancel_flag=cancel_flag,
             plan=plan, model=model,
             restored_state=cp.react_state if cp else None,
-            user_replies=task.user_answers, on_checkpoint=save_progress)
+            user_replies=task.user_answers, on_checkpoint=save_progress,
+            principal=(task.runtime_manifest or {}).get("principal_id"))
         if plan is not None:
             task.runtime_manifest["execution_plan"] = plan.to_dict()
             task.runtime_manifest["plan_progress"] = _plan_progress(plan)
@@ -643,7 +648,8 @@ class RuntimeController:
             completed_tool_results=cp.task_state.get("workflow_tool_results", {}) if cp else None,
             run_id=task.current_run_id,
             allowed_tools=(self.experts.get(task.domain).tool_whitelist
-                           if self.experts.get(task.domain) else None))
+                           if self.experts.get(task.domain) else None),
+            principal=(task.runtime_manifest or {}).get("principal_id"))
         task.runtime_manifest["workflow_budget"] = wf_budget.snapshot()
         # GAP ⑤d：node_run_id（契约统一标识）入任务清单——DAG 节点执行实体
         task.runtime_manifest["node_runs"] = [

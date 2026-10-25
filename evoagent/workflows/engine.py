@@ -69,7 +69,8 @@ class WorkflowEngine:
             completed: Optional[Dict[str, Any]] = None,
             allowed_tools: Optional[List[str]] = None,
             run_id: Optional[str] = None,
-            completed_tool_results: Optional[Dict] = None
+            completed_tool_results: Optional[Dict] = None,
+            principal: Optional[str] = None
             ) -> WorkflowRunResult:
         problems = wf.validate()
         problem = validate_against_schema(ctx_input, wf.input_schema)
@@ -85,7 +86,8 @@ class WorkflowEngine:
                              "allowed_tools": allowed_tools,
                              "workflow_id": wf.workflow_id,
                              "workflow_version": wf.version,
-                             "confirmed_nodes": []}
+                             "confirmed_nodes": [],
+                             "principal": principal}
 
         done: Dict[str, Any] = {}
         for nid, output in (completed or {}).items():
@@ -405,7 +407,8 @@ class WorkflowEngine:
         authorization = {
             "scope": f"workflow:{context.get('workflow_id')}/{context.get('workflow_version')}/node:{node.node_id}",
             "workflow": context.get("workflow_id"),
-            "workflow_version": context.get("workflow_version"), "node": node.node_id}
+            "workflow_version": context.get("workflow_version"), "node": node.node_id,
+            "principal": (execution_context or {}).get("principal")}
         if node.tool:
             args = dict(node.args)
             for k, v in args.items():

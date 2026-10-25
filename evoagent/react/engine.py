@@ -70,7 +70,8 @@ class ReactEngine:
             task_id: Optional[str] = None,
             restored_state: Optional[Dict[str, Any]] = None,
             user_replies: Optional[List[Dict[str, Any]]] = None,
-            on_checkpoint: Optional[Callable[[Dict[str, Any]], None]] = None) -> ReactOutcome:
+            on_checkpoint: Optional[Callable[[Dict[str, Any]], None]] = None,
+            principal: Optional[str] = None) -> ReactOutcome:
         """执行 ReAct 循环直到 finish / 触发防循环条件。
 
         cancel_flag: 可被外部线程置位的对象（getattr(obj, 'cancelled'/'paused')）。
@@ -223,7 +224,10 @@ class ReactEngine:
                                             budget=budget,
                                             allowed_tools=allowed_tools,
                                             task_id=logical_task_id, run_id=run_id,
-                                            authorization_context={"scope": f"react:{i}"},
+                                            authorization_context={
+                                                "scope": f"react:{i}",
+                                                "principal": principal,
+                                            },
                                             effects=self.effects)
             except BudgetExceeded as e:
                 outcome.stop_reason = f"budget:{e.dimension}"
