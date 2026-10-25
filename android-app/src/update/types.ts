@@ -169,7 +169,8 @@ export interface ApplyResultRequest {
     | "activated"
     | "activation_failed"
     | "health_check"
-    | "rolled_back";
+    | "rolled_back"
+    | "retired";
   release_id?: string;
   to_release_id?: string;
   outcome?: string;

@@ -5112,9 +5112,18 @@
    "reviewer": null,
    "branch": "feature/user-direction",
    "base_commit": "078b9cc4dabbc1437361daa97a07c6a3897b0eeb",
-   "status": "in_progress",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-25",
+     "scope": "退役生命周期+退役回执+服务端权威签名身份绑定+端侧安装台账（断联不冒充已安装）；服务端 release/{manager,delivery}.py，端侧新增 src/install/ 独占模块；update/types.ts action 联合增加 retired",
+     "result": "新增测试 20+16 全过；隔离全量（干净HEAD+本卡改动）后端 1957 passed/1 skipped/0 failed、客户端 340 passed/0 failed；tsc 0 错误；变异 11/11 捕获",
+     "command": "python -m pytest tests/test_release_install_retire.py -q; node --test test/install/journal.test.ts test/install/retire.test.ts; npx tsc --noEmit; python .planning/2026-10-25-aln11p/mutation_test.py",
+     "log": ".planning/2026-10-25-aln11p/iso-full-server.log; iso-full-client.log; mutation-results.log",
+     "delivery": "docs/协作开发/交付/ALN-11-P-生产签名与端侧安装退役回执.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/11-P-生产签名与端侧安装退役回执.md",
    "shared_files": [
     "android-app/src/api.ts",
@@ -5137,9 +5146,18 @@
     "G0",
     "G6"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
-   "working_basis": "2026-10-25 claude-main 认领开工。base_commit 078b9cc 为实际接手锚点（基线仍 candidate，prepared_candidate 21899e6 未发布）。复用 03-P identity.py 的生产身份签发/撤销与端侧 trust.ts+rsa.ts 验签、11-A 下载验签装载回执与 11-W 健康回滚；本卡补齐生产信任联验、安装/激活/退役回执与灰度回滚。共享文件精确修改点：evoagent/release/delivery.py（ACTIONS 增 retired、record_apply 绑定 signing_key_id 与退役语义、reconcile 输出信任绑定字段）、evoagent/release/signing.py（仅新增生产身份验签辅助，不改既有 HMAC 契约）、evoagent/release/manager.py（退役版本状态迁移）；evoagent/release/identity.py 为本人 03-P 新增文件继续扩展；android-app 侧只新增 src/install/ 独占模块与测试，不改 App.tsx 与在途的 src/offline/evidence.ts、src/features/voice/。不触碰并行会话在途文件。",
-   "prerequisites": "可连接设备与生产或标注测试的签名材料"
+   "next_step": "待独立复核（审阅人待定）；app.py 信任根接线、真机回执投递与 App.tsx 接线按保留缺口跟进，未验证不记通过",
+   "delivery": "docs/协作开发/交付/ALN-11-P-生产签名与端侧安装退役回执.md",
+   "working_basis": "2026-10-25 claude-main 认领开工。base_commit 078b9cc 为实际接手锚点（基线仍 candidate，prepared_candidate 21899e6 未发布）。复用 03-P identity.py 的生产身份签发/撤销与端侧 trust.ts+rsa.ts 验签、11-A 下载验签装载回执与 11-W 健康回滚；本卡补齐生产信任联验、安装/激活/退役回执与灰度回滚。共享文件精确修改点：evoagent/release/delivery.py（ACTIONS 增 retired、record_apply 绑定 signing_key_id 与退役语义、reconcile 输出信任绑定字段）、evoagent/release/signing.py（认领时声明新增辅助，最终由 identity.py 既有能力承担、未改动）、evoagent/release/manager.py（退役版本状态迁移）；evoagent/release/identity.py 为本人 03-P 新增文件继续扩展；android-app 侧新增 src/install/ 独占模块与测试 + update/types.ts action 联合一行加法，不改 App.tsx 与在途的 src/offline/evidence.ts、src/features/voice/。不触碰并行会话在途文件。",
+   "prerequisites": "可连接设备与生产或标注测试的签名材料",
+   "ownership_history": [
+    {
+     "date": "2026-10-25",
+     "from": "待认领",
+     "to": "claude-main",
+     "reason": "用户指示再认领；依赖 03-P（review，按待审接口条款开发）与 11-W（accepted），写入边界与并行在途无重叠"
+    }
+   ]
   },
   {
    "id": "ALN-12-E",

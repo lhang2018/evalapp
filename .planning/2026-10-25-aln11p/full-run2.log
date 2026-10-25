@@ -1,0 +1,78 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  3%]
+........................................................................ [  7%]
+........................................................................ [ 10%]
+........................................................................ [ 14%]
+........................................................................ [ 18%]
+........................................................................ [ 21%]
+........................................................................ [ 25%]
+........................................................................ [ 29%]
+........................................................................ [ 32%]
+........................................................................ [ 36%]
+........................................................................ [ 40%]
+........................................................................ [ 43%]
+........................................................................ [ 47%]
+........................................................................ [ 50%]
+........................................................................ [ 54%]
+........................................................................ [ 58%]
+....................................................F................... [ 61%]
+........................................................................ [ 65%]
+........................................................................ [ 69%]
+........................................................................ [ 72%]
+........................................................................ [ 76%]
+........................................................................ [ 80%]
+........................................................................ [ 83%]
+........................................................................ [ 87%]
+........................................................................ [ 91%]
+........................................................................ [ 94%]
+........................s............................................... [ 98%]
+.................................                                        [100%]
+================================== FAILURES ===================================
+______ test_real_app_wires_bindings_and_persists_them_for_reconciliation ______
+
+tmp_path = WindowsPath('C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/pytest-of-lhang/pytest-90/test_real_app_wires_bindings_a0')
+
+    def test_real_app_wires_bindings_and_persists_them_for_reconciliation(tmp_path):
+        app = App(data_dir=str(tmp_path / "app"))
+        try:
+            app.permissions.high_risk_mode = "allow"
+            app.tools.register(ToolContract("current_time", side_effect_level="external"), lambda _: good())
+            app.controller.planner.make_plan = lambda *a, **k: plan(step("s", "current_time"))
+            app.controller.router.route = lambda *a, **k: ScriptModel([Action("tool_call", tool="current_time")])
+            task = app.submit("现在几点了", intent="time_query", required_tools=["current_time"], acceptance=[{"type": "tool_succeeded"}])
+            assert task.task_status == TaskStatus.SUCCEEDED, task.failure_reason
+            rows = app.controller.side_fx.history(task.task_id)
+            exported = ActionBindings(app.db).for_task(task.task_id)
+>           assert exported == {row["effect_id"]: "s" for row in rows} and exported
+E           AssertionError: assert ({} == {'eff_201a035...ebe431f': 's'}
+E             
+E             Right contains 1 more item:
+E             {'eff_201a035f69f9a186bd2eab2caebe431f': 's'}
+E             Use -v to get more diff)
+
+tests\test_peer_action_binding_review.py:259: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_peer_action_binding_review.py::test_real_app_wires_bindings_and_persists_them_for_reconciliation
+1 failed, 1975 passed, 1 skipped in 556.69s (0:09:16)
+[safe-delete][SAFE_DELETE_BULK_CONFIRM_REQUIRED] {"count":1096,"threshold":50,"scope":"turn","targets":["\\\\?\\C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\pytest-of-lhang\\garbage-1d1d52ab-73e7-4567-b623-7ab86bb05682"],"targetCount":1}
+Exception ignored in atexit callback: <function cleanup_numbered_dir at 0x000001AD76994670>
+Traceback (most recent call last):
+  File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\pathlib.py", line 370, in cleanup_numbered_dir
+    try_cleanup(path, consider_lock_dead_if_created_before)
+  File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\pathlib.py", line 341, in try_cleanup
+    maybe_delete_a_numbered_dir(path)
+  File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\pathlib.py", line 293, in maybe_delete_a_numbered_dir
+    rm_rf(garbage)
+  File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\pathlib.py", line 170, in rm_rf
+    shutil.rmtree(str(path), onerror=onerror)
+  File "C:\Users\lhang\AppData\Local\Programs\WorkBuddy\resources\app.asar.unpacked\cli\vendor\shim\sitecustomize.py", line 1249, in _safe_shutil_rmtree
+    _try_trash(abs_path, recursive=True)
+  File "C:\Users\lhang\AppData\Local\Programs\WorkBuddy\resources\app.asar.unpacked\cli\vendor\shim\sitecustomize.py", line 1016, in _try_trash
+    _check_bulk_delete_guard(abs_path)
+  File "C:\Users\lhang\AppData\Local\Programs\WorkBuddy\resources\app.asar.unpacked\cli\vendor\shim\sitecustomize.py", line 895, in _check_bulk_delete_guard
+    _exit_bulk_guard_control(
+  File "C:\Users\lhang\AppData\Local\Programs\WorkBuddy\resources\app.asar.unpacked\cli\vendor\shim\sitecustomize.py", line 868, in _exit_bulk_guard_control
+    raise SystemExit(1)
+SystemExit: 1

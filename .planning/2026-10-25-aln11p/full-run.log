@@ -1,0 +1,51 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  3%]
+........................................................................ [  7%]
+........................................................................ [ 11%]
+........................................................................ [ 15%]
+........................................................................ [ 19%]
+........................................................................ [ 22%]
+........................................................................ [ 26%]
+........................................................................ [ 30%]
+........................................................................ [ 34%]
+........................................................................ [ 38%]
+........................................................................ [ 41%]
+........................................................................ [ 45%]
+........................................................................ [ 49%]
+........................................................................ [ 53%]
+........................................................................ [ 57%]
+........................................................................ [ 60%]
+........................................................................ [ 64%]
+........................................................................ [ 68%]
+........................................................................ [ 72%]
+........................................................................ [ 76%]
+........................................................................ [ 79%]
+........................................................................ [ 83%]
+........................................................................ [ 87%]
+........................................................................ [ 91%]
+........................................................................ [ 95%]
+..........s............................................................. [ 98%]
+...................                                                      [100%]
+1890 passed, 1 skipped in 512.80s (0:08:32)
+[safe-delete][SAFE_DELETE_BULK_CONFIRM_REQUIRED] {"count":125,"threshold":50,"scope":"turn","targets":["\\\\?\\C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\pytest-of-lhang\\garbage-33aa95b9-2614-4c11-8df7-0eb65a1e8fa1"],"targetCount":1}
+Exception ignored in atexit callback: <function cleanup_numbered_dir at 0x0000026E9F594670>
+Traceback (most recent call last):
+  File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\pathlib.py", line 370, in cleanup_numbered_dir
+    try_cleanup(path, consider_lock_dead_if_created_before)
+  File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\pathlib.py", line 341, in try_cleanup
+    maybe_delete_a_numbered_dir(path)
+  File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\pathlib.py", line 293, in maybe_delete_a_numbered_dir
+    rm_rf(garbage)
+  File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\pathlib.py", line 170, in rm_rf
+    shutil.rmtree(str(path), onerror=onerror)
+  File "C:\Users\lhang\AppData\Local\Programs\WorkBuddy\resources\app.asar.unpacked\cli\vendor\shim\sitecustomize.py", line 1249, in _safe_shutil_rmtree
+    _try_trash(abs_path, recursive=True)
+  File "C:\Users\lhang\AppData\Local\Programs\WorkBuddy\resources\app.asar.unpacked\cli\vendor\shim\sitecustomize.py", line 1016, in _try_trash
+    _check_bulk_delete_guard(abs_path)
+  File "C:\Users\lhang\AppData\Local\Programs\WorkBuddy\resources\app.asar.unpacked\cli\vendor\shim\sitecustomize.py", line 895, in _check_bulk_delete_guard
+    _exit_bulk_guard_control(
+  File "C:\Users\lhang\AppData\Local\Programs\WorkBuddy\resources\app.asar.unpacked\cli\vendor\shim\sitecustomize.py", line 868, in _exit_bulk_guard_control
+    raise SystemExit(1)
+SystemExit: 1

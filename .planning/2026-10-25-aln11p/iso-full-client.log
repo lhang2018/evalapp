@@ -1,0 +1,2220 @@
+TAP version 13
+# (node:55036) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/device/broker.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: high-risk actions require independent confirmation
+ok 1 - high-risk actions require independent confirmation
+  ---
+  duration_ms: 8.9345
+  type: 'test'
+  ...
+# Subtest: confirmed high-risk action executes and records evidence
+ok 2 - confirmed high-risk action executes and records evidence
+  ---
+  duration_ms: 1.3952
+  type: 'test'
+  ...
+# Subtest: transport errors become failed rather than throwing
+ok 3 - transport errors become failed rather than throwing
+  ---
+  duration_ms: 0.7244
+  type: 'test'
+  ...
+# Subtest: verified results without evidence are downgraded to unverified
+ok 4 - verified results without evidence are downgraded to unverified
+  ---
+  duration_ms: 0.4576
+  type: 'test'
+  ...
+# Subtest: repeating an action_id never replays the device action
+ok 5 - repeating an action_id never replays the device action
+  ---
+  duration_ms: 0.6317
+  type: 'test'
+  ...
+# Subtest: dispatched-but-unverified actions are not replayed
+ok 6 - dispatched-but-unverified actions are not replayed
+  ---
+  duration_ms: 0.5364
+  type: 'test'
+  ...
+# Subtest: missing native module reports unavailable without crashing
+ok 7 - missing native module reports unavailable without crashing
+  ---
+  duration_ms: 0.8712
+  type: 'test'
+  ...
+# Subtest: click results are verified only when the UI actually changed
+ok 8 - click results are verified only when the UI actually changed
+  ---
+  duration_ms: 2.0333
+  type: 'test'
+  ...
+# Subtest: permission dialogs downgrade otherwise successful clicks
+ok 9 - permission dialogs downgrade otherwise successful clicks
+  ---
+  duration_ms: 0.9714
+  type: 'test'
+  ...
+# Subtest: consecutive unverified actions trigger a safety stop until resumed
+ok 10 - consecutive unverified actions trigger a safety stop until resumed
+  ---
+  duration_ms: 1.4747
+  type: 'test'
+  ...
+# Subtest: verified actions reset the consecutive failure counter
+ok 11 - verified actions reset the consecutive failure counter
+  ---
+  duration_ms: 0.7018
+  type: 'test'
+  ...
+# Subtest: native transport passes through evidence and failure messages
+ok 12 - native transport passes through evidence and failure messages
+  ---
+  duration_ms: 0.4128
+  type: 'test'
+  ...
+# (node:57360) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/device/failureMatrix.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 矩阵覆盖任务卡要求的全部故障类别
+ok 13 - 矩阵覆盖任务卡要求的全部故障类别
+  ---
+  duration_ms: 2.5241
+  type: 'test'
+  ...
+# Subtest: 每个条目六要素齐备：可见状态/降级/重试/停止/对账/设备动作规则
+ok 14 - 每个条目六要素齐备：可见状态/降级/重试/停止/对账/设备动作规则
+  ---
+  duration_ms: 0.3805
+  type: 'test'
+  ...
+# Subtest: 服务端不可达/断网：退避重试 + 死信不静默丢弃 + 幂等对账
+ok 15 - 服务端不可达/断网：退避重试 + 死信不静默丢弃 + 幂等对账
+  ---
+  duration_ms: 0.3761
+  type: 'test'
+  ...
+# Subtest: 模型故障：预算约束 + 不本地伪造结果 + 未知计费对账
+ok 16 - 模型故障：预算约束 + 不本地伪造结果 + 未知计费对账
+  ---
+  duration_ms: 0.3286
+  type: 'test'
+  ...
+# Subtest: 进程被杀/重启：持久化恢复 + NEEDS_RECONCILE + 未验证动作不重放
+ok 17 - 进程被杀/重启：持久化恢复 + NEEDS_RECONCILE + 未验证动作不重放
+  ---
+  duration_ms: 0.245
+  type: 'test'
+  ...
+# Subtest: 同步冲突：隔离区 + 人工处理 + 失联不当作未执行
+ok 18 - 同步冲突：隔离区 + 人工处理 + 失联不当作未执行
+  ---
+  duration_ms: 0.1513
+  type: 'test'
+  ...
+# Subtest: 资源与权限：低电量推迟、低空间 critical 永不清理、无障碍不自动重试
+ok 19 - 资源与权限：低电量推迟、低空间 critical 永不清理、无障碍不自动重试
+  ---
+  duration_ms: 0.3173
+  type: 'test'
+  ...
+# Subtest: 全矩阵设备动作规则一致：未知副作用永不自动重放
+ok 20 - 全矩阵设备动作规则一致：未知副作用永不自动重放
+  ---
+  duration_ms: 0.2557
+  type: 'test'
+  ...
+# Subtest: 查询入口：已知类别返回对应条目，未知类别按服务端不可达降级
+ok 21 - 查询入口：已知类别返回对应条目，未知类别按服务端不可达降级
+  ---
+  duration_ms: 0.387
+  type: 'test'
+  ...
+# (node:50044) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/device/notificationReview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: native false is not an accepted notification post
+ok 22 - native false is not an accepted notification post
+  ---
+  duration_ms: 1.8733
+  type: 'test'
+  ...
+# Subtest: native undefined is not an accepted notification post
+ok 23 - native undefined is not an accepted notification post
+  ---
+  duration_ms: 0.3227
+  type: 'test'
+  ...
+# Subtest: native null is not an accepted notification post
+ok 24 - native null is not an accepted notification post
+  ---
+  duration_ms: 0.1485
+  type: 'test'
+  ...
+# Subtest: native "true" is not an accepted notification post
+ok 25 - native "true" is not an accepted notification post
+  ---
+  duration_ms: 0.1305
+  type: 'test'
+  ...
+# Subtest: native {"ok":true} is not an accepted notification post
+ok 26 - native {"ok":true} is not an accepted notification post
+  ---
+  duration_ms: 0.2813
+  type: 'test'
+  ...
+# Subtest: accepted and refused native posts are counted separately
+ok 27 - accepted and refused native posts are counted separately
+  ---
+  duration_ms: 0.2866
+  type: 'test'
+  ...
+# Subtest: FAILED without failure text cannot be reported as success
+ok 28 - FAILED without failure text cannot be reported as success
+  ---
+  duration_ms: 0.2334
+  type: 'test'
+  ...
+# Subtest: CANCELLED with or without a reason is a cancellation notification
+ok 29 - CANCELLED with or without a reason is a cancellation notification
+  ---
+  duration_ms: 0.2626
+  type: 'test'
+  ...
+# Subtest: SUCCEEDED is not overridden by an old failure reason
+ok 30 - SUCCEEDED is not overridden by an old failure reason
+  ---
+  duration_ms: 0.3831
+  type: 'test'
+  ...
+# Subtest: nonterminal or unknown server status cannot produce a terminal notification
+ok 31 - nonterminal or unknown server status cannot produce a terminal notification
+  ---
+  duration_ms: 0.7139
+  type: 'test'
+  ...
+# (node:56356) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/device/notifications.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: notification id is stable, positive, and task-specific
+ok 32 - notification id is stable, positive, and task-specific
+  ---
+  duration_ms: 1.2653
+  type: 'test'
+  ...
+# Subtest: non-terminal tasks produce no notification
+ok 33 - non-terminal tasks produce no notification
+  ---
+  duration_ms: 0.5178
+  type: 'test'
+  ...
+# Subtest: terminal task uses result, failure reason, or goal as body
+ok 34 - terminal task uses result, failure reason, or goal as body
+  ---
+  duration_ms: 0.3844
+  type: 'test'
+  ...
+# Subtest: notification body collapses whitespace and truncates
+ok 35 - notification body collapses whitespace and truncates
+  ---
+  duration_ms: 0.2211
+  type: 'test'
+  ...
+# Subtest: only transitions into DONE are selected
+ok 36 - only transitions into DONE are selected
+  ---
+  duration_ms: 0.9833
+  type: 'test'
+  ...
+# Subtest: transitions are delivered once each with the stable id
+ok 37 - transitions are delivered once each with the stable id
+  ---
+  duration_ms: 0.2953
+  type: 'test'
+  ...
+# Subtest: missing native module degrades to a no-op
+ok 38 - missing native module degrades to a no-op
+  ---
+  duration_ms: 0.2207
+  type: 'test'
+  ...
+# Subtest: notification failure never breaks the sync path
+ok 39 - notification failure never breaks the sync path
+  ---
+  duration_ms: 0.2791
+  type: 'test'
+  ...
+# (node:15200) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/device/observation.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: identical snapshots do not verify an action
+ok 40 - identical snapshots do not verify an action
+  ---
+  duration_ms: 2.112
+  type: 'test'
+  ...
+# Subtest: new text after the action verifies it
+ok 41 - new text after the action verifies it
+  ---
+  duration_ms: 1.8997
+  type: 'test'
+  ...
+# Subtest: package switch verifies launch
+ok 42 - package switch verifies launch
+  ---
+  duration_ms: 0.4396
+  type: 'test'
+  ...
+# Subtest: expected text absent is reported as unverified
+ok 43 - expected text absent is reported as unverified
+  ---
+  duration_ms: 0.2271
+  type: 'test'
+  ...
+# Subtest: permission dialog package is recognized and blocks verification
+ok 44 - permission dialog package is recognized and blocks verification
+  ---
+  duration_ms: 0.5031
+  type: 'test'
+  ...
+# Subtest: permission dialog by keywords requires allow, deny and permission word
+ok 45 - permission dialog by keywords requires allow, deny and permission word
+  ---
+  duration_ms: 0.2464
+  type: 'test'
+  ...
+# Subtest: missing snapshots never verify
+ok 46 - missing snapshots never verify
+  ---
+  duration_ms: 0.1212
+  type: 'test'
+  ...
+# Subtest: native snapshots are normalized with limits and empty input rejected
+ok 47 - native snapshots are normalized with limits and empty input rejected
+  ---
+  duration_ms: 2.5548
+  type: 'test'
+  ...
+# (node:30520) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/device/peerTaskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: two ledger instances sharing durable storage claim an action only once
+ok 48 - two ledger instances sharing durable storage claim an action only once
+  ---
+  duration_ms: 6.0156
+  type: 'test'
+  ...
+# Subtest: cached action id cannot be reused with a different task_id
+ok 49 - cached action id cannot be reused with a different task_id
+  ---
+  duration_ms: 1.9014
+  type: 'test'
+  ...
+# Subtest: cached action id cannot be reused with a different run_id
+ok 50 - cached action id cannot be reused with a different run_id
+  ---
+  duration_ms: 1.6856
+  type: 'test'
+  ...
+# Subtest: cached action id cannot be reused with a different effect_id
+ok 51 - cached action id cannot be reused with a different effect_id
+  ---
+  duration_ms: 1.782
+  type: 'test'
+  ...
+# Subtest: cached action id cannot be reused with a different target
+ok 52 - cached action id cannot be reused with a different target
+  ---
+  duration_ms: 1.2258
+  type: 'test'
+  ...
+# Subtest: proposal owns nested input snapshots
+ok 53 - proposal owns nested input snapshots
+  ---
+  duration_ms: 0.2629
+  type: 'test'
+  ...
+# Subtest: retention does not make an already dispatched action executable again after restart
+ok 54 - retention does not make an already dispatched action executable again after restart
+  ---
+  duration_ms: 3.4973
+  type: 'test'
+  ...
+# Subtest: pending proposal is not evicted to permit replay
+ok 55 - pending proposal is not evicted to permit replay
+  ---
+  duration_ms: 3.3418
+  type: 'test'
+  ...
+# Subtest: invalid persisted ledger is rejected rather than becoming an empty execution history
+ok 56 - invalid persisted ledger is rejected rather than becoming an empty execution history
+  ---
+  duration_ms: 0.6595
+  type: 'test'
+  ...
+# Subtest: missing broker journal after dispatch remains unknown
+ok 57 - missing broker journal after dispatch remains unknown
+  ---
+  duration_ms: 0.8649
+  type: 'test'
+  ...
+# Subtest: journal receipt cannot refer to another action
+ok 58 - journal receipt cannot refer to another action
+  ---
+  duration_ms: 0.3485
+  type: 'test'
+  ...
+# Subtest: upload never contains expected screen text or recipient targets
+ok 59 - upload never contains expected screen text or recipient targets
+  ---
+  duration_ms: 0.3025
+  type: 'test'
+  ...
+# Subtest: explicit low risk cannot downgrade a known high risk device operation
+ok 60 - explicit low risk cannot downgrade a known high risk device operation
+  ---
+  duration_ms: 0.3879
+  type: 'test'
+  ...
+# Subtest: raw broker concurrent duplicates cannot both dispatch
+ok 61 - raw broker concurrent duplicates cannot both dispatch
+  ---
+  duration_ms: 0.5651
+  type: 'test'
+  ...
+# Subtest: raw broker never returns another task's cached action receipt
+ok 62 - raw broker never returns another task's cached action receipt
+  ---
+  duration_ms: 1.2231
+  type: 'test'
+  ...
+# (node:20412) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/device/taskGaps.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 缺口1：DeviceAction/ActionJournalEntry 无 task_id/run_id/effect_id 关联
+ok 63 - 缺口1：DeviceAction/ActionJournalEntry 无 task_id/run_id/effect_id 关联
+  ---
+  duration_ms: 2.606
+  type: 'test'
+  ...
+# Subtest: 缺口2：broker 幂等日志不持久化——重启后同 action_id 会重复下发
+ok 64 - 缺口2：broker 幂等日志不持久化——重启后同 action_id 会重复下发
+  ---
+  duration_ms: 0.8123
+  type: 'test'
+  ...
+# Subtest: 缺口3：无统一 effect 引用与回执投影——任务侧拿不到可上传的回执
+ok 65 - 缺口3：无统一 effect 引用与回执投影——任务侧拿不到可上传的回执
+  ---
+  duration_ms: 3.0738
+  type: 'test'
+  ...
+# (node:56272) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/device/taskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 缺口证明：任务链路引用随动作进入 broker 日志（task→action→effect 可追溯）
+ok 66 - 缺口证明：任务链路引用随动作进入 broker 日志（task→action→effect 可追溯）
+  ---
+  duration_ms: 8.8884
+  type: 'test'
+  ...
+# Subtest: createProposal：引用完整且稳定，run_id 缺省派生自任务，风险按 broker 同表推导
+ok 67 - createProposal：引用完整且稳定，run_id 缺省派生自任务，风险按 broker 同表推导
+  ---
+  duration_ms: 0.608
+  type: 'test'
+  ...
+# Subtest: proposalToAction：预期观察映射 expect_text，引用随动作下发
+ok 68 - proposalToAction：预期观察映射 expect_text，引用随动作下发
+  ---
+  duration_ms: 0.2561
+  type: 'test'
+  ...
+# Subtest: 执行成功：回执终态 verified、证据与时间戳齐备，任务链可查
+ok 69 - 执行成功：回执终态 verified、证据与时间戳齐备，任务链可查
+  ---
+  duration_ms: 1.1135
+  type: 'test'
+  ...
+# Subtest: 同一 action_id 重放：返回原回执，不重复下发，原始证据保留
+ok 70 - 同一 action_id 重放：返回原回执，不重复下发，原始证据保留
+  ---
+  duration_ms: 8.9057
+  type: 'test'
+  ...
+# Subtest: 未知副作用（unverified）不是终态：不自动重放，需人工对账
+ok 71 - 未知副作用（unverified）不是终态：不自动重放，需人工对账
+  ---
+  duration_ms: 3.1415
+  type: 'test'
+  ...
+# Subtest: 高风险无确认：终态 denied；重放不重复询问、不下发
+ok 72 - 高风险无确认：终态 denied；重放不重复询问、不下发
+  ---
+  duration_ms: 1.5575
+  type: 'test'
+  ...
+# Subtest: 无障碍未授权：终态 unavailable，重试需新提议（新 action_id）
+ok 73 - 无障碍未授权：终态 unavailable，重试需新提议（新 action_id）
+  ---
+  duration_ms: 2.0761
+  type: 'test'
+  ...
+# Subtest: 失败动作不自动重放：同一 action_id 返回原失败回执
+ok 74 - 失败动作不自动重放：同一 action_id 返回原失败回执
+  ---
+  duration_ms: 2.1973
+  type: 'test'
+  ...
+# Subtest: 中断恢复：先落提议后下发——崩溃窗口（已记账无回执）不自动重发
+ok 75 - 中断恢复：先落提议后下发——崩溃窗口（已记账无回执）不自动重发
+  ---
+  duration_ms: 3.3521
+  type: 'test'
+  ...
+# Subtest: 台账持久化：重启（新实例）后提议、回执与任务链完整
+ok 76 - 台账持久化：重启（新实例）后提议、回执与任务链完整
+  ---
+  duration_ms: 1.3933
+  type: 'test'
+  ...
+# Subtest: 台账容量上界：超出 limit 淘汰最旧条目
+ok 77 - 台账容量上界：超出 limit 淘汰最旧条目
+  ---
+  duration_ms: 2.7649
+  type: 'test'
+  ...
+# Subtest: 上传投影：回执只含引用与状态，提议脱敏文本目标，本地保留字段列明
+ok 78 - 上传投影：回执只含引用与状态，提议脱敏文本目标，本地保留字段列明
+  ---
+  duration_ms: 0.7251
+  type: 'test'
+  ...
+# (node:57100) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/device/voice.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: missing native module degrades to unavailable without throwing
+ok 79 - missing native module degrades to unavailable without throwing
+  ---
+  duration_ms: 1.8317
+  type: 'test'
+  ...
+# Subtest: native capability is normalized with engine names
+ok 80 - native capability is normalized with engine names
+  ---
+  duration_ms: 0.5687
+  type: 'test'
+  ...
+# Subtest: capability failure is treated as unavailable
+ok 81 - capability failure is treated as unavailable
+  ---
+  duration_ms: 0.2871
+  type: 'test'
+  ...
+# Subtest: timeout is clamped to the supported window
+ok 82 - timeout is clamped to the supported window
+  ---
+  duration_ms: 0.3555
+  type: 'test'
+  ...
+# Subtest: transcription trims text and forwards the clamped timeout
+ok 83 - transcription trims text and forwards the clamped timeout
+  ---
+  duration_ms: 0.7982
+  type: 'test'
+  ...
+# Subtest: empty result never carries stale transcript
+ok 84 - empty result never carries stale transcript
+  ---
+  duration_ms: 0.1761
+  type: 'test'
+  ...
+# Subtest: denied and unknown statuses are mapped safely
+ok 85 - denied and unknown statuses are mapped safely
+  ---
+  duration_ms: 0.2386
+  type: 'test'
+  ...
+# Subtest: module exceptions become failed with the error message
+ok 86 - module exceptions become failed with the error message
+  ---
+  duration_ms: 0.4261
+  type: 'test'
+  ...
+# Subtest: speech text collapses whitespace and caps length
+ok 87 - speech text collapses whitespace and caps length
+  ---
+  duration_ms: 0.9609
+  type: 'test'
+  ...
+# Subtest: speak sends prepared text to the native module
+ok 88 - speak sends prepared text to the native module
+  ---
+  duration_ms: 0.7445
+  type: 'test'
+  ...
+# Subtest: empty speech input fails without calling the module
+ok 89 - empty speech input fails without calling the module
+  ---
+  duration_ms: 0.2994
+  type: 'test'
+  ...
+# Subtest: normalizeSpeakResult maps unknown statuses to failed
+ok 90 - normalizeSpeakResult maps unknown statuses to failed
+  ---
+  duration_ms: 0.1525
+  type: 'test'
+  ...
+# Subtest: cancel and stop delegate to the native module
+ok 91 - cancel and stop delegate to the native module
+  ---
+  duration_ms: 0.1589
+  type: 'test'
+  ...
+# (node:37100) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/device/voiceEntry.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 转写完成不等于执行成功：只产出可提交 goal，不自动提交
+ok 92 - 转写完成不等于执行成功：只产出可提交 goal，不自动提交
+  ---
+  duration_ms: 2.1315
+  type: 'test'
+  ...
+# Subtest: 非识别成功状态一律不可提交且不保留文本
+ok 93 - 非识别成功状态一律不可提交且不保留文本
+  ---
+  duration_ms: 0.5143
+  type: 'test'
+  ...
+# Subtest: 声称识别成功但文本为空按空结果处理
+ok 94 - 声称识别成功但文本为空按空结果处理
+  ---
+  duration_ms: 0.1784
+  type: 'test'
+  ...
+# Subtest: 转写错误可修正：提交取修正文本，原始转写保留
+ok 95 - 转写错误可修正：提交取修正文本，原始转写保留
+  ---
+  duration_ms: 0.257
+  type: 'test'
+  ...
+# Subtest: 修正后清空文本变为不可提交，不退回原始转写
+ok 96 - 修正后清空文本变为不可提交，不退回原始转写
+  ---
+  duration_ms: 0.264
+  type: 'test'
+  ...
+# Subtest: 清除语音草稿回到无语音且不可提交
+ok 97 - 清除语音草稿回到无语音且不可提交
+  ---
+  duration_ms: 0.1943
+  type: 'test'
+  ...
+# Subtest: 声明识别/播报及离线范围：可用时如实标注引擎相关
+ok 98 - 声明识别/播报及离线范围：可用时如实标注引擎相关
+  ---
+  duration_ms: 0.2097
+  type: 'test'
+  ...
+# Subtest: 声明范围：缺依赖时离线与识别均标不可用
+ok 99 - 声明范围：缺依赖时离线与识别均标不可用
+  ---
+  duration_ms: 0.127
+  type: 'test'
+  ...
+# Subtest: 识别可用但麦克风未授权：范围显式标注未授权
+ok 100 - 识别可用但麦克风未授权：范围显式标注未授权
+  ---
+  duration_ms: 0.3665
+  type: 'test'
+  ...
+# Subtest: 空草稿桥接失败并给出原因，不产生提交目标
+ok 101 - 空草稿桥接失败并给出原因，不产生提交目标
+  ---
+  duration_ms: 0.501
+  type: 'test'
+  ...
+# Subtest: 重复录音以最后一次结果整体替换（不叠加）
+ok 102 - 重复录音以最后一次结果整体替换（不叠加）
+  ---
+  duration_ms: 0.2665
+  type: 'test'
+  ...
+# (node:16048) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/install/journal.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 确认后为 installed_confirmed
+ok 103 - 确认后为 installed_confirmed
+  ---
+  duration_ms: 3.3192
+  type: 'test'
+  ...
+# Subtest: 断联未确认不得冒充已安装
+ok 104 - 断联未确认不得冒充已安装
+  ---
+  duration_ms: 0.5274
+  type: 'test'
+  ...
+# Subtest: 退役（已确认）后无活动版本
+ok 105 - 退役（已确认）后无活动版本
+  ---
+  duration_ms: 0.6751
+  type: 'test'
+  ...
+# Subtest: 退役未确认为 retired_unconfirmed
+ok 106 - 退役未确认为 retired_unconfirmed
+  ---
+  duration_ms: 1.4032
+  type: 'test'
+  ...
+# Subtest: 新版本激活覆盖旧活动版本
+ok 107 - 新版本激活覆盖旧活动版本
+  ---
+  duration_ms: 0.5875
+  type: 'test'
+  ...
+# Subtest: 台账损坏按空台账恢复且不抛异常
+ok 108 - 台账损坏按空台账恢复且不抛异常
+  ---
+  duration_ms: 0.2655
+  type: 'test'
+  ...
+# Subtest: schema 版本不符按空台账恢复
+ok 109 - schema 版本不符按空台账恢复
+  ---
+  duration_ms: 0.2132
+  type: 'test'
+  ...
+# Subtest: 缺字段条目被丢弃
+ok 110 - 缺字段条目被丢弃
+  ---
+  duration_ms: 0.1769
+  type: 'test'
+  ...
+# Subtest: 条目必须绑定设备
+ok 111 - 条目必须绑定设备
+  ---
+  duration_ms: 0.8772
+  type: 'test'
+  ...
+# Subtest: confirm 对未知 apply_id 幂等无副作用
+ok 112 - confirm 对未知 apply_id 幂等无副作用
+  ---
+  duration_ms: 0.7515
+  type: 'test'
+  ...
+# (node:55380) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/install/retire.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 退役成功：回执绑定设备/版本/制品并确认
+ok 113 - 退役成功：回执绑定设备/版本/制品并确认
+  ---
+  duration_ms: 2.2789
+  type: 'test'
+  ...
+# Subtest: 退役上传失败：未确认，不冒充已退役
+ok 114 - 退役上传失败：未确认，不冒充已退役
+  ---
+  duration_ms: 1.2765
+  type: 'test'
+  ...
+# Subtest: 退役必须写明原因
+ok 115 - 退役必须写明原因
+  ---
+  duration_ms: 0.2785
+  type: 'test'
+  ...
+# Subtest: 重复退役返回待确认条目且不重复上报
+ok 116 - 重复退役返回待确认条目且不重复上报
+  ---
+  duration_ms: 1.5517
+  type: 'test'
+  ...
+# Subtest: reportInstall 上传 activated 回执；失败留待补传
+ok 117 - reportInstall 上传 activated 回执；失败留待补传
+  ---
+  duration_ms: 0.6026
+  type: 'test'
+  ...
+# Subtest: reportInstall 断联时 ok=false 且不写确认
+ok 118 - reportInstall 断联时 ok=false 且不写确认
+  ---
+  duration_ms: 0.3171
+  type: 'test'
+  ...
+# (node:56064) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/approvals.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: shows full binding, accepts once, and does not equate acceptance with task success
+ok 119 - shows full binding, accepts once, and does not equate acceptance with task success
+  ---
+  duration_ms: 2.9656
+  type: 'test'
+  ...
+# Subtest: reject and per-approval state are independent
+ok 120 - reject and per-approval state are independent
+  ---
+  duration_ms: 0.5688
+  type: 'test'
+  ...
+# Subtest: expiration and offline mode disable decisions while retaining details
+ok 121 - expiration and offline mode disable decisions while retaining details
+  ---
+  duration_ms: 0.5426
+  type: 'test'
+  ...
+# Subtest: status or binding changes on re-read require review before decision
+ok 122 - status or binding changes on re-read require review before decision
+  ---
+  duration_ms: 0.5122
+  type: 'test'
+  ...
+# Subtest: HTTP 401 errors never echo a credential or server error body
+ok 123 - HTTP 401 errors never echo a credential or server error body
+  ---
+  duration_ms: 1.2973
+  type: 'test'
+  ...
+# Subtest: HTTP 403 errors never echo a credential or server error body
+ok 124 - HTTP 403 errors never echo a credential or server error body
+  ---
+  duration_ms: 0.2507
+  type: 'test'
+  ...
+# Subtest: HTTP 404 errors never echo a credential or server error body
+ok 125 - HTTP 404 errors never echo a credential or server error body
+  ---
+  duration_ms: 0.6027
+  type: 'test'
+  ...
+# Subtest: HTTP 409 errors never echo a credential or server error body
+ok 126 - HTTP 409 errors never echo a credential or server error body
+  ---
+  duration_ms: 0.2121
+  type: 'test'
+  ...
+# Subtest: HTTP 500 errors never echo a credential or server error body
+ok 127 - HTTP 500 errors never echo a credential or server error body
+  ---
+  duration_ms: 0.4782
+  type: 'test'
+  ...
+# Subtest: an ambiguous POST is checked by the same approval id before any retry
+ok 128 - an ambiguous POST is checked by the same approval id before any retry
+  ---
+  duration_ms: 0.6739
+  type: 'test'
+  ...
+# Subtest: responses from a previous credential or disposed page cannot enable a button
+ok 129 - responses from a previous credential or disposed page cannot enable a button
+  ---
+  duration_ms: 0.4057
+  type: 'test'
+  ...
+# Subtest: a response for another task cannot be approved
+ok 130 - a response for another task cannot be approved
+  ---
+  duration_ms: 0.1845
+  type: 'test'
+  ...
+# (node:54776) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/artifactsView.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: toCardView：类型标签/大小格式/digest/可下载
+ok 131 - toCardView：类型标签/大小格式/digest/可下载
+  ---
+  duration_ms: 1.1001
+  type: 'test'
+  ...
+# Subtest: 无 sha256 或零字节不显示下载
+ok 132 - 无 sha256 或零字节不显示下载
+  ---
+  duration_ms: 0.2005
+  type: 'test'
+  ...
+# Subtest: 预览文本与截断提示
+ok 133 - 预览文本与截断提示
+  ---
+  duration_ms: 0.2136
+  type: 'test'
+  ...
+# Subtest: formatBytes 格式
+ok 134 - formatBytes 格式
+  ---
+  duration_ms: 0.2138
+  type: 'test'
+  ...
+# Subtest: rebuildPlanView：只重做受影响产物
+ok 135 - rebuildPlanView：只重做受影响产物
+  ---
+  duration_ms: 1.0137
+  type: 'test'
+  ...
+# Subtest: rebuildPlanView：无变更
+ok 136 - rebuildPlanView：无变更
+  ---
+  duration_ms: 0.2085
+  type: 'test'
+  ...
+# (node:54436) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/attachments.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: add requires explicit consent and non-empty bytes
+ok 137 - add requires explicit consent and non-empty bytes
+  ---
+  duration_ms: 2.645
+  type: 'test'
+  ...
+# Subtest: add records digest, chunk plan and pending status
+ok 138 - add records digest, chunk plan and pending status
+  ---
+  duration_ms: 58.0841
+  type: 'test'
+  ...
+# Subtest: flush uploads every chunk, verifies digest and marks complete
+ok 139 - flush uploads every chunk, verifies digest and marks complete
+  ---
+  duration_ms: 69.0947
+  type: 'test'
+  ...
+# Subtest: flush resumes from server-reported chunk progress
+ok 140 - flush resumes from server-reported chunk progress
+  ---
+  duration_ms: 27.6731
+  type: 'test'
+  ...
+# Subtest: network failure marks failed and a later flush retries
+ok 141 - network failure marks failed and a later flush retries
+  ---
+  duration_ms: 5.165
+  type: 'test'
+  ...
+# Subtest: chunk digest mismatch is rejected before completion
+ok 142 - chunk digest mismatch is rejected before completion
+  ---
+  duration_ms: 2.4569
+  type: 'test'
+  ...
+# Subtest: full digest mismatch clears progress and retry re-uploads
+ok 143 - full digest mismatch clears progress and retry re-uploads
+  ---
+  duration_ms: 2.1749
+  type: 'test'
+  ...
+# Subtest: server 422 on complete clears progress for full retry
+ok 144 - server 422 on complete clears progress for full retry
+  ---
+  duration_ms: 1.7276
+  type: 'test'
+  ...
+# Subtest: after restart bytes are gone and flush reports failure
+ok 145 - after restart bytes are gone and flush reports failure
+  ---
+  duration_ms: 1.0325
+  type: 'test'
+  ...
+# Subtest: re-adding identical content reuses the record and resumes chunks
+ok 146 - re-adding identical content reuses the record and resumes chunks
+  ---
+  duration_ms: 55.6351
+  type: 'test'
+  ...
+# Subtest: re-adding completed content does not upload again
+ok 147 - re-adding completed content does not upload again
+  ---
+  duration_ms: 2.6206
+  type: 'test'
+  ...
+# Subtest: different content creates a separate attachment
+ok 148 - different content creates a separate attachment
+  ---
+  duration_ms: 1.6184
+  type: 'test'
+  ...
+# Subtest: queue carries attachment refs and rejects invalid ones
+ok 149 - queue carries attachment refs and rejects invalid ones
+  ---
+  duration_ms: 10.0515
+  type: 'test'
+  ...
+# (node:15708) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/background.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: offline health check skips sync without throwing
+ok 150 - offline health check skips sync without throwing
+  ---
+  duration_ms: 2.3579
+  type: 'test'
+  ...
+# Subtest: online run flushes events and tasks before refreshing
+ok 151 - online run flushes events and tasks before refreshing
+  ---
+  duration_ms: 0.5766
+  type: 'test'
+  ...
+# Subtest: flush failure is reported and refresh is skipped
+ok 152 - flush failure is reported and refresh is skipped
+  ---
+  duration_ms: 0.549
+  type: 'test'
+  ...
+# Subtest: refresh failure never rejects the headless task
+ok 153 - refresh failure never rejects the headless task
+  ---
+  duration_ms: 0.519
+  type: 'test'
+  ...
+# Subtest: background interval is clamped and rounded
+ok 154 - background interval is clamped and rounded
+  ---
+  duration_ms: 0.2385
+  type: 'test'
+  ...
+# (node:53976) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/backgroundNative.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: missing native module degrades to unavailable
+ok 155 - missing native module degrades to unavailable
+  ---
+  duration_ms: 1.6323
+  type: 'test'
+  ...
+# Subtest: status maps native values and treats zero as no attempt
+ok 156 - status maps native values and treats zero as no attempt
+  ---
+  duration_ms: 1.014
+  type: 'test'
+  ...
+# Subtest: enable clamps invalid intervals before calling native
+ok 157 - enable clamps invalid intervals before calling native
+  ---
+  duration_ms: 0.2825
+  type: 'test'
+  ...
+# Subtest: disable and run-now delegate once
+ok 158 - disable and run-now delegate once
+  ---
+  duration_ms: 0.371
+  type: 'test'
+  ...
+# [background-sync] online=true flushed=true refreshed=true notified=0 error=none
+# [background-sync] online=true flushed=true refreshed=true notified=0 error=none
+# [background-sync] online=true flushed=true refreshed=true notified=0 error=none
+# [background-sync] online=false flushed=false refreshed=false notified=0 error=offline
+# [background-sync] online=true flushed=true refreshed=true notified=1 error=none
+# [background-sync] online=true flushed=true refreshed=false notified=0 error=sync upload failed
+# (node:55980) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/backgroundNotificationReview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: native-lookup notification failure preserves actual successful sync and refresh
+ok 159 - native-lookup notification failure preserves actual successful sync and refresh
+  ---
+  duration_ms: 55.0814
+  type: 'test'
+  ...
+# Subtest: after-read notification failure preserves actual successful sync and refresh
+ok 160 - after-read notification failure preserves actual successful sync and refresh
+  ---
+  duration_ms: 2.7543
+  type: 'test'
+  ...
+# Subtest: before-read notification failure preserves actual successful sync and refresh
+ok 161 - before-read notification failure preserves actual successful sync and refresh
+  ---
+  duration_ms: 2.9655
+  type: 'test'
+  ...
+# Subtest: offline sync retains its error and does not invoke the notification bridge
+ok 162 - offline sync retains its error and does not invoke the notification bridge
+  ---
+  duration_ms: 1.018
+  type: 'test'
+  ...
+# Subtest: actual background assembly still posts a successful transition
+ok 163 - actual background assembly still posts a successful transition
+  ---
+  duration_ms: 9.6494
+  type: 'test'
+  ...
+# Subtest: a resolved unsuccessful SyncResult is preserved as a flush failure, without notification
+ok 164 - a resolved unsuccessful SyncResult is preserved as a flush failure, without notification
+  ---
+  duration_ms: 3.5407
+  type: 'test'
+  ...
+# (node:51360) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/budget.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: formatCost / formatCalls 基本格式
+ok 165 - formatCost / formatCalls 基本格式
+  ---
+  duration_ms: 1.0476
+  type: 'test'
+  ...
+# Subtest: unknown 不能当 0 金额：单独标注
+ok 166 - unknown 不能当 0 金额：单独标注
+  ---
+  duration_ms: 0.616
+  type: 'test'
+  ...
+# Subtest: 预算状态三档：ok / warning(≥80%) / exhausted(=100%)
+ok 167 - 预算状态三档：ok / warning(≥80%) / exhausted(=100%)
+  ---
+  duration_ms: 0.5405
+  type: 'test'
+  ...
+# Subtest: 预算耗尽不隐藏产物（GLOBAL-03 断言）
+ok 168 - 预算耗尽不隐藏产物（GLOBAL-03 断言）
+  ---
+  duration_ms: 0.1546
+  type: 'test'
+  ...
+# Subtest: maxModelCalls 未定义时不出 warning/exhausted
+ok 169 - maxModelCalls 未定义时不出 warning/exhausted
+  ---
+  duration_ms: 0.2069
+  type: 'test'
+  ...
+# Subtest: taskBudgetView：needs_you 状态透传
+ok 170 - taskBudgetView：needs_you 状态透传
+  ---
+  duration_ms: 0.4526
+  type: 'test'
+  ...
+# (node:24408) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/capabilities.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 六档服务端状态逐档投影为用户视图与恢复路径
+ok 171 - 六档服务端状态逐档投影为用户视图与恢复路径
+  ---
+  duration_ms: 1.2522
+  type: 'test'
+  ...
+# Subtest: 未知状态不伪装可用：fallback 归为 unknown
+ok 172 - 未知状态不伪装可用：fallback 归为 unknown
+  ---
+  duration_ms: 0.2816
+  type: 'test'
+  ...
+# Subtest: 拒绝/撤销后受保护动作不能执行：blocked 守卫
+ok 173 - 拒绝/撤销后受保护动作不能执行：blocked 守卫
+  ---
+  duration_ms: 0.2044
+  type: 'test'
+  ...
+# Subtest: 设备动作能力在本机无障碍未开启时覆盖为待设置
+ok 174 - 设备动作能力在本机无障碍未开启时覆盖为待设置
+  ---
+  duration_ms: 0.3026
+  type: 'test'
+  ...
+# (node:11728) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/contract.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 契约展示：全字段投影
+ok 175 - 契约展示：全字段投影
+  ---
+  duration_ms: 1.7954
+  type: 'test'
+  ...
+# Subtest: 空契约：hasContract=false
+ok 176 - 空契约：hasContract=false
+  ---
+  duration_ms: 0.2753
+  type: 'test'
+  ...
+# Subtest: 旧任务（无契约字段）兼容
+ok 177 - 旧任务（无契约字段）兼容
+  ---
+  duration_ms: 0.1619
+  type: 'test'
+  ...
+# Subtest: acceptance_criteria 兼容非标准格式
+ok 178 - acceptance_criteria 兼容非标准格式
+  ---
+  duration_ms: 0.1709
+  type: 'test'
+  ...
+# (node:26936) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/controls.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 执行中任务：可取消和暂停
+ok 179 - 执行中任务：可取消和暂停
+  ---
+  duration_ms: 1.3555
+  type: 'test'
+  ...
+# Subtest: 暂停中任务：可继续（无暂停选项）
+ok 180 - 暂停中任务：可继续（无暂停选项）
+  ---
+  duration_ms: 0.3239
+  type: 'test'
+  ...
+# Subtest: 终态任务：无控制动作
+ok 181 - 终态任务：无控制动作
+  ---
+  duration_ms: 0.2999
+  type: 'test'
+  ...
+# Subtest: NEEDS_RECONCILE：确认重提选项
+ok 182 - NEEDS_RECONCILE：确认重提选项
+  ---
+  duration_ms: 0.2153
+  type: 'test'
+  ...
+# Subtest: 目标变更：新目标创建新任务，旧任务保留
+ok 183 - 目标变更：新目标创建新任务，旧任务保留
+  ---
+  duration_ms: 0.3469
+  type: 'test'
+  ...
+# Subtest: 安全恢复：未决副作用阻断，已决放行
+ok 184 - 安全恢复：未决副作用阻断，已决放行
+  ---
+  duration_ms: 0.4066
+  type: 'test'
+  ...
+# (node:14280) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/developedReview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 概念问答包含文件/报告/运行词仍应保持轻量聊天
+ok 185 - 概念问答包含文件/报告/运行词仍应保持轻量聊天
+  ---
+  duration_ms: 1.7842
+  type: 'test'
+  ...
+# Subtest: 过去的纠正不覆盖后来明确的新目标，约束不被当目标
+ok 186 - 过去的纠正不覆盖后来明确的新目标，约束不被当目标
+  ---
+  duration_ms: 1.1482
+  type: 'test'
+  ...
+# Subtest: 服务端终态不保留过期审批或网络等待动作
+ok 187 - 服务端终态不保留过期审批或网络等待动作
+  ---
+  duration_ms: 0.4861
+  type: 'test'
+  ...
+# Subtest: 已回答的澄清不能继续要求用户补充
+ok 188 - 已回答的澄清不能继续要求用户补充
+  ---
+  duration_ms: 0.244
+  type: 'test'
+  ...
+# (node:56316) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/evidence.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 普通事件投影为 internal/trusted，正文保留
+ok 189 - 普通事件投影为 internal/trusted，正文保留
+  ---
+  duration_ms: 2.2799
+  type: 'test'
+  ...
+# Subtest: 敏感事件类型 restricted+redacted，正文不复制
+ok 190 - 敏感事件类型 restricted+redacted，正文不复制
+  ---
+  duration_ms: 0.5122
+  type: 'test'
+  ...
+# Subtest: 未知隐私分级 fail-safe 到 restricted
+ok 191 - 未知隐私分级 fail-safe 到 restricted
+  ---
+  duration_ms: 0.3466
+  type: 'test'
+  ...
+# Subtest: 密钥载荷拒绝入证据流
+ok 192 - 密钥载荷拒绝入证据流
+  ---
+  duration_ms: 0.7503
+  type: 'test'
+  ...
+# Subtest: 故障分级推断覆盖 critical/error/warn/unknown
+ok 193 - 故障分级推断覆盖 critical/error/warn/unknown
+  ---
+  duration_ms: 0.251
+  type: 'test'
+  ...
+# (node:48356) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/export.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: sha256 and crc32 match standard vectors
+ok 194 - sha256 and crc32 match standard vectors
+  ---
+  duration_ms: 2.4502
+  type: 'test'
+  ...
+# Subtest: builds a self-consistent package with manifest and checksums
+ok 195 - builds a self-consistent package with manifest and checksums
+  ---
+  duration_ms: 18.7547
+  type: 'test'
+  ...
+# Subtest: filters by task, time range, failure, and capability
+ok 196 - filters by task, time range, failure, and capability
+  ---
+  duration_ms: 12.3157
+  type: 'test'
+  ...
+# Subtest: redacts sensitive payloads by default and secret keys always
+ok 197 - redacts sensitive payloads by default and secret keys always
+  ---
+  duration_ms: 13.3872
+  type: 'test'
+  ...
+# Subtest: attachments are opt-in, filtered, and redacted by sensitivity
+ok 198 - attachments are opt-in, filtered, and redacted by sensitivity
+  ---
+  duration_ms: 4.9655
+  type: 'test'
+  ...
+# Subtest: export is read-only and deterministic for a fixed clock
+ok 199 - export is read-only and deterministic for a fixed clock
+  ---
+  duration_ms: 2.2838
+  type: 'test'
+  ...
+# Subtest: exportTo cleans up the temp file when delivery fails
+ok 200 - exportTo cleans up the temp file when delivery fails
+  ---
+  duration_ms: 2.3087
+  type: 'test'
+  ...
+# (node:45376) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/importApi.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: diagnostics import posts raw zip with an admin token
+ok 201 - diagnostics import posts raw zip with an admin token
+  ---
+  duration_ms: 3.15
+  type: 'test'
+  ...
+# Subtest: import errors keep the server status and message
+ok 202 - import errors keep the server status and message
+  ---
+  duration_ms: 1.0912
+  type: 'test'
+  ...
+# (node:15236) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/modes.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 模式判定：显式切换优先于输入特征
+ok 203 - 模式判定：显式切换优先于输入特征
+  ---
+  duration_ms: 1.1765
+  type: 'test'
+  ...
+# Subtest: 模式判定：请求代为执行/需要产物/需要工具 → work
+ok 204 - 模式判定：请求代为执行/需要产物/需要工具 → work
+  ---
+  duration_ms: 0.9326
+  type: 'test'
+  ...
+# Subtest: 模式判定：直接问答轻量完成 → chat
+ok 205 - 模式判定：直接问答轻量完成 → chat
+  ---
+  duration_ms: 0.3913
+  type: 'test'
+  ...
+# Subtest: 聊天转工作：goal 取最后目标；纠正口径优先
+ok 206 - 聊天转工作：goal 取最后目标；纠正口径优先
+  ---
+  duration_ms: 0.609
+  type: 'test'
+  ...
+# Subtest: 聊天转工作：仅确认过的讨论升级为约束
+ok 207 - 聊天转工作：仅确认过的讨论升级为约束
+  ---
+  duration_ms: 0.24
+  type: 'test'
+  ...
+# Subtest: 聊天转工作：已完成要点只进摘要，不重复执行
+ok 208 - 聊天转工作：已完成要点只进摘要，不重复执行
+  ---
+  duration_ms: 0.3047
+  type: 'test'
+  ...
+# Subtest: 聊天转工作：讨论≠执行——assistant 结论不产生待办
+ok 209 - 聊天转工作：讨论≠执行——assistant 结论不产生待办
+  ---
+  duration_ms: 0.1406
+  type: 'test'
+  ...
+# (node:47356) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/packageImport.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: picked package decodes bytes and keeps the file name
+ok 210 - picked package decodes bytes and keeps the file name
+  ---
+  duration_ms: 2.7282
+  type: 'test'
+  ...
+# Subtest: cancelled or missing picks surface the native message
+ok 211 - cancelled or missing picks surface the native message
+  ---
+  duration_ms: 0.651
+  type: 'test'
+  ...
+# Subtest: invalid, empty, and oversized packages are rejected
+ok 212 - invalid, empty, and oversized packages are rejected
+  ---
+  duration_ms: 0.4123
+  type: 'test'
+  ...
+# Subtest: HTTP header file names are ASCII and path-free
+ok 213 - HTTP header file names are ASCII and path-free
+  ---
+  duration_ms: 0.5065
+  type: 'test'
+  ...
+# (node:55716) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/projects.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 按 goal_id 归集项目
+ok 214 - 按 goal_id 归集项目
+  ---
+  duration_ms: 1.0673
+  type: 'test'
+  ...
+# Subtest: 无 goal_id 时按 intent 归集
+ok 215 - 无 goal_id 时按 intent 归集
+  ---
+  duration_ms: 0.2375
+  type: 'test'
+  ...
+# Subtest: 项目摘要：任务数/完成数/约束去重
+ok 216 - 项目摘要：任务数/完成数/约束去重
+  ---
+  duration_ms: 1.0325
+  type: 'test'
+  ...
+# Subtest: 跨会话延续：目标/约束/产物/未完成任务
+ok 217 - 跨会话延续：目标/约束/产物/未完成任务
+  ---
+  duration_ms: 0.5275
+  type: 'test'
+  ...
+# Subtest: 跨会话延续：全部完成时 openTasks 为空
+ok 218 - 跨会话延续：全部完成时 openTasks 为空
+  ---
+  duration_ms: 0.1944
+  type: 'test'
+  ...
+# (node:55736) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/queue.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: queue keeps FIFO order, dedupes, and numbers events per run
+ok 219 - queue keeps FIFO order, dedupes, and numbers events per run
+  ---
+  duration_ms: 5.524
+  type: 'test'
+  ...
+# Subtest: queue rejects new events when capacity reached
+ok 220 - queue rejects new events when capacity reached
+  ---
+  duration_ms: 6.1249
+  type: 'test'
+  ...
+# Subtest: expired non-critical events are dropped with loss markers
+ok 221 - expired non-critical events are dropped with loss markers
+  ---
+  duration_ms: 3.0057
+  type: 'test'
+  ...
+# Subtest: capacity evicts lower tiers for critical events and warns
+ok 222 - capacity evicts lower tiers for critical events and warns
+  ---
+  duration_ms: 25.9096
+  type: 'test'
+  ...
+# Subtest: critical events can displace normal ones under capacity pressure
+ok 223 - critical events can displace normal ones under capacity pressure
+  ---
+  duration_ms: 13.284
+  type: 'test'
+  ...
+# Subtest: claim marks events in flight and stale batches are recovered
+ok 224 - claim marks events in flight and stale batches are recovered
+  ---
+  duration_ms: 2.4885
+  type: 'test'
+  ...
+# Subtest: checkpoint only advances over confirmed continuous prefix
+ok 225 - checkpoint only advances over confirmed continuous prefix
+  ---
+  duration_ms: 1.3984
+  type: 'test'
+  ...
+# Subtest: sensitive events stay local and are never uploaded
+ok 226 - sensitive events stay local and are never uploaded
+  ---
+  duration_ms: 2.913
+  type: 'test'
+  ...
+# Subtest: secret payloads are rejected before entering the queue
+ok 227 - secret payloads are rejected before entering the queue
+  ---
+  duration_ms: 0.8296
+  type: 'test'
+  ...
+# Subtest: rejected events are quarantined and stay reviewable
+ok 228 - rejected events are quarantined and stay reviewable
+  ---
+  duration_ms: 2.7158
+  type: 'test'
+  ...
+# Subtest: repeated failures move an event to dead letters
+ok 229 - repeated failures move an event to dead letters
+  ---
+  duration_ms: 2.1379
+  type: 'test'
+  ...
+# Subtest: legacy snapshots migrate to the sync state machine
+ok 230 - legacy snapshots migrate to the sync state machine
+  ---
+  duration_ms: 0.672
+  type: 'test'
+  ...
+# Subtest: corrupted snapshots fall back to an empty state
+ok 231 - corrupted snapshots fall back to an empty state
+  ---
+  duration_ms: 0.2806
+  type: 'test'
+  ...
+# (node:58156) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/sync.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: flush uploads pending events and advances checkpoint
+ok 232 - flush uploads pending events and advances checkpoint
+  ---
+  duration_ms: 6.2778
+  type: 'test'
+  ...
+# Subtest: network failure keeps events and backs off before retrying
+ok 233 - network failure keeps events and backs off before retrying
+  ---
+  duration_ms: 1.8138
+  type: 'test'
+  ...
+# Subtest: permanently rejected events are quarantined, not retried forever
+ok 234 - permanently rejected events are quarantined, not retried forever
+  ---
+  duration_ms: 2.7535
+  type: 'test'
+  ...
+# Subtest: HTTP 400 rejection details quarantine the batch
+ok 235 - HTTP 400 rejection details quarantine the batch
+  ---
+  duration_ms: 1.0884
+  type: 'test'
+  ...
+# Subtest: a persisted in-flight batch is recovered on the next session
+ok 236 - a persisted in-flight batch is recovered on the next session
+  ---
+  duration_ms: 1.171
+  type: 'test'
+  ...
+# Subtest: duplicate acknowledgements also remove local events
+ok 237 - duplicate acknowledgements also remove local events
+  ---
+  duration_ms: 0.8924
+  type: 'test'
+  ...
+# Subtest: event sync runs before task submission on reconnect
+ok 238 - event sync runs before task submission on reconnect
+  ---
+  duration_ms: 5.344
+  type: 'test'
+  ...
+# Subtest: server receipts are persisted locally with counts and deduped
+ok 239 - server receipts are persisted locally with counts and deduped
+  ---
+  duration_ms: 1.593
+  type: 'test'
+  ...
+# Subtest: repeated failures raise and success clears the unavailable warning
+ok 240 - repeated failures raise and success clears the unavailable warning
+  ---
+  duration_ms: 2.6874
+  type: 'test'
+  ...
+# Subtest: stale last success with pending events raises the unavailable warning
+ok 241 - stale last success with pending events raises the unavailable warning
+  ---
+  duration_ms: 0.9314
+  type: 'test'
+  ...
+# (node:24988) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/taskAnswer.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: answer sends the question id and answer to the task endpoint
+ok 242 - answer sends the question id and answer to the task endpoint
+  ---
+  duration_ms: 46.5155
+  type: 'test'
+  ...
+# Subtest: approval requests send the admin credential only on the explicit admin call
+ok 243 - approval requests send the admin credential only on the explicit admin call
+  ---
+  duration_ms: 2.4965
+  type: 'test'
+  ...
+# (node:57632) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/tasks.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: offline time_query completes locally without server submission
+ok 244 - offline time_query completes locally without server submission
+  ---
+  duration_ms: 6.1083
+  type: 'test'
+  ...
+# Subtest: offline submission is stored with a stable idempotency key
+ok 245 - offline submission is stored with a stable idempotency key
+  ---
+  duration_ms: 0.8251
+  type: 'test'
+  ...
+# Subtest: flushPending submits with the same client_request_id across retries
+ok 246 - flushPending submits with the same client_request_id across retries
+  ---
+  duration_ms: 2.0503
+  type: 'test'
+  ...
+# Subtest: interrupted submissions require explicit reconciliation
+ok 247 - interrupted submissions require explicit reconciliation
+  ---
+  duration_ms: 1.3951
+  type: 'test'
+  ...
+# Subtest: refresh maps server statuses into local states
+ok 248 - refresh maps server statuses into local states
+  ---
+  duration_ms: 1.6809
+  type: 'test'
+  ...
+# Subtest: failed server tasks become DONE with a failure reason
+ok 249 - failed server tasks become DONE with a failure reason
+  ---
+  duration_ms: 1.0902
+  type: 'test'
+  ...
+# Subtest: mapServerStatus covers terminal and waiting states
+ok 250 - mapServerStatus covers terminal and waiting states
+  ---
+  duration_ms: 0.2319
+  type: 'test'
+  ...
+# Subtest: clarification and run identity persist across client restart and clear on resume
+ok 251 - clarification and run identity persist across client restart and clear on resume
+  ---
+  duration_ms: 1.2154
+  type: 'test'
+  ...
+# Subtest: pending approval ids persist and clear after task resumes
+ok 252 - pending approval ids persist and clear after task resumes
+  ---
+  duration_ms: 3.8211
+  type: 'test'
+  ...
+# (node:44332) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/taskview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 服务端九态语义逐态映射，终态判定不受模型文字影响
+ok 253 - 服务端九态语义逐态映射，终态判定不受模型文字影响
+  ---
+  duration_ms: 2.7682
+  type: 'test'
+  ...
+# Subtest: 终态判定：仅服务端终态有效
+ok 254 - 终态判定：仅服务端终态有效
+  ---
+  duration_ms: 0.313
+  type: 'test'
+  ...
+# Subtest: 等待原因来自权威字段：审批/澄清/中断/网络
+ok 255 - 等待原因来自权威字段：审批/澄清/中断/网络
+  ---
+  duration_ms: 0.491
+  type: 'test'
+  ...
+# Subtest: 离线本地阶段：无服务端状态按本地展示，DONE 不宣称服务端已验证
+ok 256 - 离线本地阶段：无服务端状态按本地展示，DONE 不宣称服务端已验证
+  ---
+  duration_ms: 0.223
+  type: 'test'
+  ...
+# Subtest: 暂停任务给出可继续/取消的等待原因
+ok 257 - 暂停任务给出可继续/取消的等待原因
+  ---
+  duration_ms: 0.205
+  type: 'test'
+  ...
+# (node:41732) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/transport.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: millisecond timestamps are converted to seconds
+ok 258 - millisecond timestamps are converted to seconds
+  ---
+  duration_ms: 1.5153
+  type: 'test'
+  ...
+# Subtest: second timestamps pass through unchanged
+ok 259 - second timestamps pass through unchanged
+  ---
+  duration_ms: 0.2587
+  type: 'test'
+  ...
+# Subtest: run identity, sequence and manifest are forwarded with the batch id
+ok 260 - run identity, sequence and manifest are forwarded with the batch id
+  ---
+  duration_ms: 0.1673
+  type: 'test'
+  ...
+# (node:49716) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/offline/workspace.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 六种节点态可辨（服务端权威 node_states）
+ok 261 - 六种节点态可辨（服务端权威 node_states）
+  ---
+  duration_ms: 2.4641
+  type: 'test'
+  ...
+# Subtest: 未知服务端态按 pending 保守显示（fail-closed）
+ok 262 - 未知服务端态按 pending 保守显示（fail-closed）
+  ---
+  duration_ms: 0.2737
+  type: 'test'
+  ...
+# Subtest: 依赖失败时下游 blocked（服务端权威判定）
+ok 263 - 依赖失败时下游 blocked（服务端权威判定）
+  ---
+  duration_ms: 0.2524
+  type: 'test'
+  ...
+# Subtest: 无依据不显示百分比：部分完成但未全部终结
+ok 264 - 无依据不显示百分比：部分完成但未全部终结
+  ---
+  duration_ms: 0.1538
+  type: 'test'
+  ...
+# Subtest: 全部节点有终态时显示百分比
+ok 265 - 全部节点有终态时显示百分比
+  ---
+  duration_ms: 0.1428
+  type: 'test'
+  ...
+# Subtest: 部分成果可见
+ok 266 - 部分成果可见
+  ---
+  duration_ms: 0.2431
+  type: 'test'
+  ...
+# Subtest: 用户待办：审批和澄清
+ok 267 - 用户待办：审批和澄清
+  ---
+  duration_ms: 0.2059
+  type: 'test'
+  ...
+# Subtest: NEEDS_RECONCILE 出现在待办
+ok 268 - NEEDS_RECONCILE 出现在待办
+  ---
+  duration_ms: 0.2671
+  type: 'test'
+  ...
+# Subtest: 空 checkpoint：全部 pending、无成果、无百分比
+ok 269 - 空 checkpoint：全部 pending、无成果、无百分比
+  ---
+  duration_ms: 0.4341
+  type: 'test'
+  ...
+# (node:47184) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/update/artifact.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: downloader resumes from the staged offset and renames after digest check
+ok 270 - downloader resumes from the staged offset and renames after digest check
+  ---
+  duration_ms: 3.8034
+  type: 'test'
+  ...
+# Subtest: downloader rejects bad digest and truncated sources without renaming
+ok 271 - downloader rejects bad digest and truncated sources without renaming
+  ---
+  duration_ms: 2.8857
+  type: 'test'
+  ...
+# Subtest: downloader refuses when free space is below the next chunk
+ok 272 - downloader refuses when free space is below the next chunk
+  ---
+  duration_ms: 0.7105
+  type: 'test'
+  ...
+# Subtest: trusted key ring verifies real artifact bytes and rejects tampering
+ok 273 - trusted key ring verifies real artifact bytes and rejects tampering
+  ---
+  duration_ms: 70.6325
+  type: 'test'
+  ...
+# Subtest: prepare downloads and verifies before allowing activation
+ok 274 - prepare downloads and verifies before allowing activation
+  ---
+  duration_ms: 18.4206
+  type: 'test'
+  ...
+# Subtest: prepare rejects an untrusted signing key before downloading
+ok 275 - prepare rejects an untrusted signing key before downloading
+  ---
+  duration_ms: 27.1147
+  type: 'test'
+  ...
+# Subtest: prepare blocks missing permissions, incompatible app and bad signature
+ok 276 - prepare blocks missing permissions, incompatible app and bad signature
+  ---
+  duration_ms: 65.4109
+  type: 'test'
+  ...
+# Subtest: low free space and store failures never reach activation
+ok 277 - low free space and store failures never reach activation
+  ---
+  duration_ms: 24.357
+  type: 'test'
+  ...
+# Subtest: bundle apply failure keeps the active slot and reports activation_failed
+ok 278 - bundle apply failure keeps the active slot and reports activation_failed
+  ---
+  duration_ms: 39.3489
+  type: 'test'
+  ...
+# Subtest: a restart before activation does not switch slots without a verifier/applier
+ok 279 - a restart before activation does not switch slots without a verifier/applier
+  ---
+  duration_ms: 37.3143
+  type: 'test'
+  ...
+# Subtest: failed receipts persist and flush with the same apply id
+ok 280 - failed receipts persist and flush with the same apply id
+  ---
+  duration_ms: 42.8146
+  type: 'test'
+  ...
+# Subtest: real artifact cannot use the legacy verify shortcut
+ok 281 - real artifact cannot use the legacy verify shortcut
+  ---
+  duration_ms: 92.9926
+  type: 'test'
+  ...
+# Subtest: activation rechecks actual bytes before calling the applier
+ok 282 - activation rechecks actual bytes before calling the applier
+  ---
+  duration_ms: 55.6857
+  type: 'test'
+  ...
+# Subtest: activation rechecks permission revocation
+ok 283 - activation rechecks permission revocation
+  ---
+  duration_ms: 13.272
+  type: 'test'
+  ...
+# Subtest: activation rechecks signing key expiry
+ok 284 - activation rechecks signing key expiry
+  ---
+  duration_ms: 33.0059
+  type: 'test'
+  ...
+# Subtest: unknown-length downloads enforce the byte cap before appending
+ok 285 - unknown-length downloads enforce the byte cap before appending
+  ---
+  duration_ms: 0.3111
+  type: 'test'
+  ...
+# Subtest: cached files cannot evade the download byte cap
+ok 286 - cached files cannot evade the download byte cap
+  ---
+  duration_ms: 0.1949
+  type: 'test'
+  ...
+# Subtest: release IDs cannot escape the staging directory
+ok 287 - release IDs cannot escape the staging directory
+  ---
+  duration_ms: 11.724
+  type: 'test'
+  ...
+# Subtest: short App versions are compared with zero-filled segments
+ok 288 - short App versions are compared with zero-filled segments
+  ---
+  duration_ms: 49.0514
+  type: 'test'
+  ...
+# Subtest: real rollback reapplies the known-good bundle before reporting success
+ok 289 - real rollback reapplies the known-good bundle before reporting success
+  ---
+  duration_ms: 13.415
+  type: 'test'
+  ...
+# Subtest: failed rollback apply preserves the active slot and does not report success
+ok 290 - failed rollback apply preserves the active slot and does not report success
+  ---
+  duration_ms: 11.469
+  type: 'test'
+  ...
+# Subtest: unacknowledged receipts are retained beyond fifty events
+ok 291 - unacknowledged receipts are retained beyond fifty events
+  ---
+  duration_ms: 54.8248
+  type: 'test'
+  ...
+# Subtest: concurrent health checks cannot overwrite each other's receipts
+ok 292 - concurrent health checks cannot overwrite each other's receipts
+  ---
+  duration_ms: 66.2849
+  type: 'test'
+  ...
+# Subtest: unconfirmed releases cannot replace the last known healthy bundle
+ok 293 - unconfirmed releases cannot replace the last known healthy bundle
+  ---
+  duration_ms: 16.5427
+  type: 'test'
+  ...
+# (node:57512) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/update/bundleRuntime.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 没有活动包时执行前拒绝，工具不被调用
+ok 294 - 没有活动包时执行前拒绝，工具不被调用
+  ---
+  duration_ms: 5.005
+  type: 'test'
+  ...
+# Subtest: 旧版包（未内嵌 workflow_def）不可执行，仅展示
+ok 295 - 旧版包（未内嵌 workflow_def）不可执行，仅展示
+  ---
+  duration_ms: 1.5893
+  type: 'test'
+  ...
+# Subtest: 未注册工具在执行前拒绝
+ok 296 - 未注册工具在执行前拒绝
+  ---
+  duration_ms: 1.2369
+  type: 'test'
+  ...
+# Subtest: 不兼容版本与权限不足在执行前拒绝
+ok 297 - 不兼容版本与权限不足在执行前拒绝
+  ---
+  duration_ms: 3.577
+  type: 'test'
+  ...
+# Subtest: 非法 workflow（环/重复ID/未知依赖/标识不一致）在执行前拒绝
+ok 298 - 非法 workflow（环/重复ID/未知依赖/标识不一致）在执行前拒绝
+  ---
+  duration_ms: 2.3708
+  type: 'test'
+  ...
+# Subtest: 装载层拒绝非法 workflow_def，非法包不会成为活动包
+ok 299 - 装载层拒绝非法 workflow_def，非法包不会成为活动包
+  ---
+  duration_ms: 2.1012
+  type: 'test'
+  ...
+# Subtest: 同一输入在更新前后使用各自版本 workflow，输出与证据绑定版本
+ok 300 - 同一输入在更新前后使用各自版本 workflow，输出与证据绑定版本
+  ---
+  duration_ms: 2.7101
+  type: 'test'
+  ...
+# Subtest: DAG 按依赖执行并传递上游输出；失败阻断下游并校验输出契约
+ok 301 - DAG 按依赖执行并传递上游输出；失败阻断下游并校验输出契约
+  ---
+  duration_ms: 3.1052
+  type: 'test'
+  ...
+# Subtest: 探针：执行成功且期望相符才算 healthy
+ok 302 - 探针：执行成功且期望相符才算 healthy
+  ---
+  duration_ms: 2.2509
+  type: 'test'
+  ...
+# Subtest: 探针：期望不符或执行失败为 unhealthy
+ok 303 - 探针：期望不符或执行失败为 unhealthy
+  ---
+  duration_ms: 3.4527
+  type: 'test'
+  ...
+# Subtest: 探针：超时无结果为 unknown，不标健康
+ok 304 - 探针：超时无结果为 unknown，不标健康
+  ---
+  duration_ms: 28.9582
+  type: 'test'
+  ...
+# Subtest: 探针：已激活但非法的包被判 unhealthy（执行前拒绝）
+ok 305 - 探针：已激活但非法的包被判 unhealthy（执行前拒绝）
+  ---
+  duration_ms: 0.6671
+  type: 'test'
+  ...
+# Subtest: declaresIntent 只匹配活动包声明的意图
+ok 306 - declaresIntent 只匹配活动包声明的意图
+  ---
+  duration_ms: 0.4097
+  type: 'test'
+  ...
+# Subtest: 健康失败自动回滚后，原健康包真实可执行且版本关联跨重启保留
+ok 307 - 健康失败自动回滚后，原健康包真实可执行且版本关联跨重启保留
+  ---
+  duration_ms: 34.5787
+  type: 'test'
+  ...
+# Subtest: versionAtLeast 语义与更新管理器一致
+ok 308 - versionAtLeast 语义与更新管理器一致
+  ---
+  duration_ms: 0.1243
+  type: 'test'
+  ...
+# Subtest: validateWorkflowDef 拒绝无可执行体与非法参数
+ok 309 - validateWorkflowDef 拒绝无可执行体与非法参数
+  ---
+  duration_ms: 0.0816
+  type: 'test'
+  ...
+# (node:38704) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/update/manager.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: init generates and persists an installation id
+ok 310 - init generates and persists an installation id
+  ---
+  duration_ms: 3.6021
+  type: 'test'
+  ...
+# Subtest: check accepts a signed capability target
+ok 311 - check accepts a signed capability target
+  ---
+  duration_ms: 1.8889
+  type: 'test'
+  ...
+# Subtest: check blocks target without artifact digest
+ok 312 - check blocks target without artifact digest
+  ---
+  duration_ms: 0.3016
+  type: 'test'
+  ...
+# Subtest: check blocks unsigned target
+ok 313 - check blocks unsigned target
+  ---
+  duration_ms: 0.2133
+  type: 'test'
+  ...
+# Subtest: check blocks native binary updates that need the app store
+ok 314 - check blocks native binary updates that need the app store
+  ---
+  duration_ms: 0.2532
+  type: 'test'
+  ...
+# Subtest: network failure during check marks phase failed and rethrows
+ok 315 - network failure during check marks phase failed and rethrows
+  ---
+  duration_ms: 0.7856
+  type: 'test'
+  ...
+# Subtest: verify refuses when storage headroom is insufficient
+ok 316 - verify refuses when storage headroom is insufficient
+  ---
+  duration_ms: 0.7639
+  type: 'test'
+  ...
+# Subtest: verify stores a pending candidate after integrity and space checks
+ok 317 - verify stores a pending candidate after integrity and space checks
+  ---
+  duration_ms: 0.5515
+  type: 'test'
+  ...
+# Subtest: activate requires a verified candidate
+ok 318 - activate requires a verified candidate
+  ---
+  duration_ms: 0.8415
+  type: 'test'
+  ...
+# Subtest: verify without a candidate throws
+ok 319 - verify without a candidate throws
+  ---
+  duration_ms: 0.4421
+  type: 'test'
+  ...
+# Subtest: activate switches the inactive slot and keeps the previous release
+ok 320 - activate switches the inactive slot and keeps the previous release
+  ---
+  duration_ms: 1.1739
+  type: 'test'
+  ...
+# Subtest: health check success promotes the active slot to last known good
+ok 321 - health check success promotes the active slot to last known good
+  ---
+  duration_ms: 0.7024
+  type: 'test'
+  ...
+# Subtest: health check failure rolls back to the last known good release
+ok 322 - health check failure rolls back to the last known good release
+  ---
+  duration_ms: 2.3357
+  type: 'test'
+  ...
+# Subtest: rollback without a known good release throws
+ok 323 - rollback without a known good release throws
+  ---
+  duration_ms: 0.6256
+  type: 'test'
+  ...
+# Subtest: report upload failure keeps the local activation and records the error
+ok 324 - report upload failure keeps the local activation and records the error
+  ---
+  duration_ms: 0.7063
+  type: 'test'
+  ...
+# Subtest: corrupted state falls back to an empty slot state
+ok 325 - corrupted state falls back to an empty slot state
+  ---
+  duration_ms: 0.3923
+  type: 'test'
+  ...
+# Subtest: candidate sync stores server stages without changing the active slot
+ok 326 - candidate sync stores server stages without changing the active slot
+  ---
+  duration_ms: 1.586
+  type: 'test'
+  ...
+# Subtest: candidate sync failure records an error and keeps local state
+ok 327 - candidate sync failure records an error and keeps local state
+  ---
+  duration_ms: 2.3292
+  type: 'test'
+  ...
+# Subtest: state persisted before candidate sync defaults to an empty list
+ok 328 - state persisted before candidate sync defaults to an empty list
+  ---
+  duration_ms: 0.4276
+  type: 'test'
+  ...
+# (node:57892) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/update/nativeArtifact.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: base64 codec round-trips arbitrary bytes and UTF-8 text
+ok 329 - base64 codec round-trips arbitrary bytes and UTF-8 text
+  ---
+  duration_ms: 2.7289
+  type: 'test'
+  ...
+# Subtest: production trust never accepts the bundled development key
+ok 330 - production trust never accepts the bundled development key
+  ---
+  duration_ms: 2.5934
+  type: 'test'
+  ...
+# Subtest: bundle applier installs to the slot and points the active marker
+ok 331 - bundle applier installs to the slot and points the active marker
+  ---
+  duration_ms: 1.3442
+  type: 'test'
+  ...
+# Subtest: bundle applier checks the bytes it reads against the verified digest
+ok 332 - bundle applier checks the bytes it reads against the verified digest
+  ---
+  duration_ms: 0.8774
+  type: 'test'
+  ...
+# Subtest: bundle applier rejects invalid payloads without touching the marker
+ok 333 - bundle applier rejects invalid payloads without touching the marker
+  ---
+  duration_ms: 0.8031
+  type: 'test'
+  ...
+# Subtest: range source slices full responses and parses totals
+ok 334 - range source slices full responses and parses totals
+  ---
+  duration_ms: 11.6679
+  type: 'test'
+  ...
+# (node:20412) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/workbuddy-update-x64/aln11p-iso2/android-app/test/update/peerBundleReview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\workbuddy-update-x64\\aln11p-iso2\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: normal execution has a hard wait bound and never dispatches a dependent after a late timeout
+ok 335 - normal execution has a hard wait bound and never dispatches a dependent after a late timeout
+  ---
+  duration_ms: 69.9312
+  type: 'test'
+  ...
+# Subtest: a health result cannot certify an active bundle switched during the probe
+ok 336 - a health result cannot certify an active bundle switched during the probe
+  ---
+  duration_ms: 0.803
+  type: 'test'
+  ...
+# Subtest: recovery must satisfy the restored bundle expectation
+ok 337 - recovery must satisfy the restored bundle expectation
+  ---
+  duration_ms: 1.0243
+  type: 'test'
+  ...
+# Subtest: recovery cannot call the same failed release a rollback
+ok 338 - recovery cannot call the same failed release a rollback
+  ---
+  duration_ms: 0.6764
+  type: 'test'
+  ...
+# Subtest: active marker and slot contents must refer to the same artifact
+ok 339 - active marker and slot contents must refer to the same artifact
+  ---
+  duration_ms: 0.1593
+  type: 'test'
+  ...
+# Subtest: update manager validates the probe artifact inside its serialized health decision
+ok 340 - update manager validates the probe artifact inside its serialized health decision
+  ---
+  duration_ms: 0.7848
+  type: 'test'
+  ...
+1..340
+# tests 340
+# suites 0
+# pass 340
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1771.9878

@@ -201,6 +201,8 @@ class ReleaseManager:
         self.manifests: Dict[str, ReleaseManifest] = {}
         self.deployments: List[Dict[str, Any]] = []
         self.rollback_records: List[Dict[str, Any]] = []
+        # 退役记录（ALN-11-P）：发布后生命周期状态，与签名字段无关
+        self.retired_records: List[Dict[str, Any]] = []
         self.current_release_id: Optional[str] = None
         # 不可逆副作用记录（Arch 13.5：不能假设简单回滚可消除全部影响）
         self.irreversible_actions: List[Dict[str, Any]] = []
@@ -223,6 +225,9 @@ class ReleaseManager:
             elif ev["kind"] == "rollback":
                 self.rollback_records.append(ev["data"])
                 self.current_release_id = ev["data"].get("to")
+            elif ev["kind"] == "retire":
+                # 退役是发布后生命周期状态；恢复后不影响当前版本指针
+                self.retired_records.append(ev["data"])
 
     # ---- 发布组合 ----
     def build_manifest(self, **kwargs: Any) -> ReleaseManifest:
@@ -289,6 +294,8 @@ class ReleaseManager:
         m = self.manifests.get(release_id)
         if not m:
             return {"ok": False, "error": "manifest 不存在"}
+        if self.is_retired(release_id):
+            return {"ok": False, "error": "已退役版本不允许部署"}
         # 发布权限（PRD 81 / Arch 13.4）：核心安全边界不允许普通流程发布
         if scope == "critical":
             return {"ok": False, "error": "核心安全边界的改动不允许普通发布流程"}
@@ -338,6 +345,8 @@ class ReleaseManager:
         m = self.manifests.get(target) if target else None
         if m is None:
             return {"ok": False, "error": "回滚目标缺失"}
+        if self.is_retired(target):
+            return {"ok": False, "error": "回滚目标已退役，拒绝回滚到退役版本"}
         check = self.verify(target)
         evidence = self._record_verification(m, check, context="rollback")
         if not check.get("ok"):
@@ -355,11 +364,52 @@ class ReleaseManager:
             self.store.append_release_event("rollback", target, rec)
         return {"ok": True, **rec}
 
+    # ---- 退役（ALN-11-P：发布后生命周期）----
+    def retire(self, release_id: str, *, reason: str, actor: str) -> Dict[str, Any]:
+        """把已发布版本标记为退役；记录不删，可追溯。
+
+        退役版本不得再通过验证、部署、回滚或对账下发；已安装实例的
+        退役回执由 ReleaseDelivery.record_apply(action="retired") 记录。
+        """
+        release_id = (release_id or "").strip()
+        if not release_id:
+            return {"ok": False, "error": "缺少 release_id"}
+        if not isinstance(reason, str) or not reason.strip():
+            return {"ok": False, "error": "退役必须写明原因"}
+        if not isinstance(actor, str) or not actor.strip():
+            return {"ok": False, "error": "退役必须记录操作者"}
+        if release_id not in self.manifests:
+            return {"ok": False, "error": "manifest 不存在"}
+        if self.is_retired(release_id):
+            return {"ok": False, "error": "版本已退役"}
+        rec = {"release_id": release_id, "reason": reason.strip(),
+               "actor": actor.strip(), "at": time.time()}
+        self.retired_records.append(rec)
+        if self.store is not None:
+            self.store.append_release_event("retire", release_id, rec)
+        return {"ok": True, **rec}
+
+    def is_retired(self, release_id: Optional[str]) -> bool:
+        if not release_id:
+            return False
+        return any(rec.get("release_id") == release_id
+                   for rec in self.retired_records)
+
+    def retired_release_ids(self) -> List[str]:
+        return sorted({rec["release_id"] for rec in self.retired_records
+                       if rec.get("release_id")})
+
     # ---- 制品验证（Architecture 18.4）----
     def verify(self, release_id: str) -> Dict[str, Any]:
         m = self.manifests.get(release_id)
         if not m:
             return {"ok": False, "error": "manifest 不存在"}
+        if self.is_retired(release_id):
+            # 退役版本不得通过验证，也不得作为发布/回滚/对账目标
+            return {"ok": False, "retired": True,
+                    "artifact_digest": m.artifact_digest,
+                    "key_id": m.signing_key_id,
+                    "error": "版本已退役，不得通过验证或作为发布目标"}
         if m.signature_version != signing.SIGNATURE_VERSION:
             # 旧格式可读，但不得静默放行；必须显式迁移（重新签名）。
             return {"ok": False, "legacy": True,

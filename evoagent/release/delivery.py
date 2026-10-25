@@ -3,6 +3,13 @@
 服务端只判断“该安装实例是否兼容、是否在灰度范围内、应拿到哪个已发布版本”，
 并记录客户端下载/校验/激活/回滚结果。候选生成、评测与发布权仍属于各自控制器，
 本模块不能改变发布状态（Arch 13.4）。
+
+ALN-11-P 增量：
+- ACTIONS 增加 ``retired``：安装实例退役某个已发布版本的回执；
+- 回执绑定生产签名身份：``verified``/``activated`` 等动作按服务端清单解析
+  ``artifact_signing_key_id`` 并核对 IdentityRegistry（未登记/已撤销/过期
+  一律拒绝），回执记录解析后的身份状态，不采信客户端自报密钥；
+- reconcile 增加退役检查与签名身份信任检查，两者失败都记 blocked。
 """
 
 import hashlib
@@ -13,7 +20,11 @@ from typing import Any, Dict, List, Optional, Set
 
 PLATFORMS = ("android", "ios")
 ACTIONS = ("download_started", "verified", "activation_pending", "activated",
-           "activation_failed", "health_check", "rolled_back")
+           "activation_failed", "health_check", "rolled_back", "retired")
+# 这些动作意味着“该版本将被/已被安装实例使用”，必须绑定可用的生产签名身份
+TRUST_BOUND_ACTIONS = frozenset({
+    "verified", "activation_pending", "activated",
+})
 SLOT_KINDS = {"capability", "workflow", "model_adapter"}
 APP_VERSION_RE = re.compile(r"^[vV]?(\d+)(?:\.(\d+))?(?:\.(\d+))?")
 # 只同步已通过评测的候选阶段；评测前的假设与证据属于服务端内部状态
@@ -63,10 +74,50 @@ def _candidate_summary(cand: Any, status: str) -> Dict[str, Any]:
 
 class ReleaseDelivery:
     def __init__(self, releases: Any, store: Any,
-                 tool_ids: Optional[Set[str]] = None):
+                 tool_ids: Optional[Set[str]] = None,
+                 identity_registry: Optional[Any] = None):
         self.releases = releases
         self.store = store
         self.tool_ids = set(tool_ids or ())
+        # 生产身份登记簿（ALN-03-P identity.py）；None = 未接入信任根，
+        # 此时跳过身份核对，保持既有部署行为不变。
+        self.identity_registry = identity_registry
+
+    def set_identity_registry(self, registry: Optional[Any]) -> None:
+        """接入/更换生产身份登记簿（供宿主在装配期注入）。"""
+        self.identity_registry = registry
+
+    # ---- 生产签名身份核对（ALN-11-P）----
+    def identity_status(self, key_id: Optional[str]) -> str:
+        """服务端视角的签名身份状态。
+
+        返回值：``usable`` / ``unregistered`` / ``revoked`` /
+        ``not_yet_valid`` / ``expired`` / ``no_registry`` / ``unknown_key``。
+        """
+        if not key_id:
+            return "unknown_key"
+        registry = self.identity_registry
+        if registry is None:
+            return "no_registry"
+        identity = registry.get(key_id)
+        if identity is None:
+            return "unregistered"
+        if getattr(identity, "revoked", False):
+            return "revoked"
+        if hasattr(identity, "usable"):
+            try:
+                if identity.usable():
+                    return "usable"
+            except Exception:  # 登记簿自身异常按不可信处理
+                return "unregistered"
+        now = time.time()
+        not_before = getattr(identity, "not_before", None)
+        not_after = getattr(identity, "not_after", None)
+        if not_before is not None and now < not_before:
+            return "not_yet_valid"
+        if not_after is not None and now >= not_after:
+            return "expired"
+        return "usable"
 
     # ---- 版本对账（双端协同 §5.2 / §10.1）----
     def reconcile(self, *, installation_id: str, device_id: str = "",
@@ -100,6 +151,10 @@ class ReleaseDelivery:
         check("release_available", manifest is not None,
               "" if manifest else "尚未发布任何版本")
         if manifest is not None:
+            retired = bool(hasattr(self.releases, "is_retired")
+                           and self.releases.is_retired(manifest.release_id))
+            check("release_not_retired", not retired,
+                  "当前发布版本已退役，停止作为更新目标下发")
             check("compatibility_declared",
                   self.releases.compatibility_complete(manifest),
                   "发布兼容声明必须完整")
@@ -129,6 +184,19 @@ class ReleaseDelivery:
             check("artifact_integrity", bool(verdict.get("ok")),
                   "签名与制品摘要校验通过" if verdict.get("ok")
                   else verdict.get("error") or "签名或制品摘要校验失败")
+            identity_status = self.identity_status(
+                manifest.artifact_signing_key_id)
+            # no_registry = 服务端未接入身份登记簿：不静默放行也不误伤
+            # 既有部署——显式记录该状态；制品字节的强制验签关卡在端侧
+            # TrustedKeyRing（03-P 架构），登记簿接入后撤销/过期即阻止。
+            check("signing_identity_trusted",
+                  manifest.artifact_signing_key_id is None
+                  or identity_status in ("usable", "no_registry"),
+                  f"制品签名身份状态: {identity_status}"
+                  if identity_status == "usable"
+                  else ("服务端未接入身份登记簿，端侧验签为强制关卡"
+                        if identity_status == "no_registry"
+                        else f"制品签名身份不可信: {identity_status}"))
             if manifest.artifact_url:
                 # 声明了可下载制品就必须同时给出端侧可独立验签的完整
                 # envelope；缺任一项则不得下发为可更新目标。
@@ -166,6 +234,7 @@ class ReleaseDelivery:
                 "signed_by": manifest.signed_by,
                 "signature_ok": bool(
                     self.releases.verify(manifest.release_id).get("ok")),
+                "signing_identity_status": identity_status,
                 "rollback_target": rollback_target,
                 "min_app_version": manifest.min_app_version or "0.0.0",
                 "channel": manifest.channel or "stable",
@@ -278,6 +347,7 @@ class ReleaseDelivery:
                      outcome: str = "ok", reason: str = "",
                      to_release_id: Optional[str] = None,
                      apply_id: Optional[str] = None,
+                     signing_key_id: Optional[str] = None,
                      ) -> Dict[str, Any]:
         installation = self.store.get_installation(
             (installation_id or "").strip())
@@ -302,6 +372,34 @@ class ReleaseDelivery:
         data = dict(installation.get("data") or {})
         resolved_release = release_id or target or current
 
+        # 回执信任绑定（ALN-11-P）：身份与制品摘要一律以服务端清单为准，
+        # 不采信客户端自报值；自报密钥与清单不一致即拒绝。
+        manifest = (self.releases.manifests.get(resolved_release)
+                    if resolved_release else None)
+        server_key_id = (getattr(manifest, "artifact_signing_key_id", None)
+                         if manifest is not None else None)
+        artifact_digest = (getattr(manifest, "artifact_sha256", None)
+                           or getattr(manifest, "artifact_digest", None)
+                           if manifest is not None else None)
+        identity_status: Optional[str] = None
+        if action in TRUST_BOUND_ACTIONS and hasattr(
+                self.releases, "is_retired") \
+                and self.releases.is_retired(resolved_release):
+            # 退役版本不得被安装/激活（G6：未通过门禁的候选不能激活）
+            return {"ok": False, "error": "目标版本已退役，拒绝安装回执",
+                    "installation": installation}
+        if action in TRUST_BOUND_ACTIONS and server_key_id:
+            if signing_key_id and signing_key_id != server_key_id:
+                return {"ok": False,
+                        "error": "回执签名密钥与发布清单不一致",
+                        "installation": installation}
+            identity_status = self.identity_status(server_key_id)
+            # no_registry = 尚未接入信任根：保持既有行为，仅记录状态
+            if identity_status not in ("usable", "no_registry"):
+                return {"ok": False,
+                        "error": f"制品签名身份不可信: {identity_status}",
+                        "installation": installation}
+
         if action == "activated":
             manifest = self.releases.manifests.get(resolved_release)
             if manifest is None:
@@ -310,6 +408,19 @@ class ReleaseDelivery:
                 data["last_known_good_release_id"] = current
             data["last_activated_at"] = time.time()
             current, target, status = resolved_release, None, "activated"
+        elif action == "retired":
+            # 安装实例退役回执：退役当前版本时清空指针并保留已知良好版本，
+            # 断联/失败不影响本地状态，仅记录待确认退役。
+            if not resolved_release:
+                return {"ok": False, "error": "退役回执缺少目标版本",
+                        "installation": installation}
+            data["retired_release_id"] = resolved_release
+            data["last_retired_at"] = time.time()
+            data["last_retire_reason"] = reason[:500]
+            if current == resolved_release:
+                current, target, status = None, None, "retired"
+            elif target == resolved_release:
+                target = None
         elif action == "rolled_back":
             rollback = to_release_id or data.get("last_known_good_release_id")
             if not rollback:
@@ -348,6 +459,13 @@ class ReleaseDelivery:
             "current_release_id": current,
             "at": time.time(),
         }
+        # 信任绑定字段：以服务端清单解析值为准（ALN-11-P）
+        if server_key_id:
+            record["signing_key_id"] = server_key_id
+            record["signing_identity_status"] = identity_status or \
+                self.identity_status(server_key_id)
+        if artifact_digest:
+            record["artifact_digest"] = artifact_digest
         self.store.save_device_deployment(
             deployment_id, installation["installation_id"],
             resolved_release or "", action, outcome, record)
