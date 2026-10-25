@@ -3324,13 +3324,20 @@
       "workpackage": "ALN-29",
       "title": "首发冻结范围与八道发布门禁",
       "stream": "integration",
-      "owner": null,
+      "owner": "claude-main",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "main",
+      "base_commit": "029a9987eeffff1fc502987f3d6a6bdfa8722ec4",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        "docs/协作开发/验收/ALN-29-B-首发冻结范围与八道发布门禁.md",
+        "docs/协作开发/验收/首发门禁证据_2026-10-25.json",
+        "tools/check_release_gates.py",
+        "tests/test_release_gates.py：14 项通过",
+        ".planning/2026-10-25-aln29-b/mutation_test.py：变异 7/7 捕获",
+        "干净 worktree 固定源码 029a998：pytest 1675 passed / 1 skipped"
+      ],
       "card": "docs/协作开发/任务卡/29-B-首发冻结范围与八道发布门禁.md",
       "shared_files": [
         "tools/check_collaboration_plan.py"
@@ -3353,7 +3360,7 @@
         "G6",
         "G7"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
+      "next_step": "开发完成转 review；审阅人未定，不自批为独立验收；未触碰 ALN-29-A 在途的 tools/check_collaboration_plan.py",
       "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
       "prerequisites": "仅需仓库与本地测试环境"
     },
