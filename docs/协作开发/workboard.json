@@ -4447,9 +4447,14 @@
       "reviewer": null,
       "branch": "feature/user-direction",
       "base_commit": "a038f2195ab8bc5d571900fdf27a14e1400adf5b",
-      "status": "in_progress",
+      "status": "review",
       "blocker": null,
-      "evidence": [],
+      "evidence": [
+        "代码: 244ef88（authorization issue/check principal + registry/engine/workflows/controller 全链接线 + 10 项恢复矩阵测试）",
+        "测试: 专项 10/10；相关回归 159/159（授权/审批/边界/工作流/07-C矩阵/恢复）；全量 1827/1，唯一 ledger_drift 失败经 stash 对照核实为 integration 文档引用漂移（非本卡）",
+        "交付: docs/协作开发/交付/ALN-04-V-组合状态与生产身份恢复矩阵.md（含 fail-closed 匿名拒绝决策与缺口清单）",
+        "遗留: server.py 提交方 scope principal 接线（并行在途让位）；真实多身份部署联测另验"
+      ],
       "card": "docs/协作开发/任务卡/04-V-组合状态与生产身份恢复矩阵.md",
       "shared_files": [
         "evoagent/core/controller.py",
@@ -4485,7 +4490,7 @@
         "F03",
         "G3"
       ],
-      "next_step": "侦察授权身份绑定/组合状态恢复缺口",
+      "next_step": "待独立复核（匿名拒绝覆盖面/policy保留键取舍）；server.py 接线与生产身份联测另卡",
       "working_basis": "2026-10-25 zcode-next 认领（12-V 因真机已断开让位）。复用 04-R 四路径与 authorizations/approvals/leases 既有实现；写入边界 core/+api/；本地进程级故障注入+身份切换模拟，真实部署身份联测另验。",
       "prerequisites": "真实部署身份与故障注入环境"
     },
@@ -4654,7 +4659,8 @@
       "title": "真实候选宿主、持久队列与进程隔离",
       "stream": "assets",
       "owner": "dsh-lead",
-      "reviewer": "zcode-main",      "branch": "feature/user-direction",
+      "reviewer": "zcode-main",
+      "branch": "feature/user-direction",
       "base_commit": "f7ccfcb936f4ed06dea26b84b44c01805d19dff0",
       "status": "accepted",
       "blocker": null,
@@ -4668,13 +4674,13 @@
           "result": "专项16 passed；evolution/assets/sandbox相关138 passed；全量1769 passed/2 failed/1 skipped，其中2项失败用暂存本人改动复跑证明属他人未提交改动(budget.py/core/controller.py与cli.py)，非本卡引入",
           "log": ".planning/2026-10-25-aln09h/backend-tests.txt",
           "delivery": "docs/协作开发/交付/ALN-09-H-真实候选宿主、持久问题队列与进程隔离.md"
+        },
+        {
+          "date": "2026-10-25",
+          "scope": "独立复核（zcode-main）：R1专项16过独立复跑、R2相关域23过、R3入队幂等、R4六线程并发领取仅1成功、R5租约接管后旧token complete被LeaseLost拒、R6新持有者consumed落库、R7 attempts递增；边界自述诚实（非恶意代码强边界）；结论转accepted（本卡范围）",
+          "review_report": "docs/协作开发/验收/2026-10-25-ALN-09-H独立复核.md"
         }
-      ,
-    {
-      "date": "2026-10-25",
-      "scope": "独立复核（zcode-main）：R1专项16过独立复跑、R2相关域23过、R3入队幂等、R4六线程并发领取仅1成功、R5租约接管后旧token complete被LeaseLost拒、R6新持有者consumed落库、R7 attempts递增；边界自述诚实（非恶意代码强边界）；结论转accepted（本卡范围）",
-      "review_report": "docs/协作开发/验收/2026-10-25-ALN-09-H独立复核.md"
-    }],
+      ],
       "card": "docs/协作开发/任务卡/09-H-真实候选宿主、持久队列与进程隔离.md",
       "shared_files": [
         "evoagent/evolution/controller.py",
@@ -4929,7 +4935,8 @@
       "title": "Provider/Expert预算原子化与旧Goal迁移",
       "stream": "runtime",
       "owner": "opencode-evo",
-      "reviewer": "zcode-main",      "branch": "feature/user-direction",
+      "reviewer": "zcode-main",
+      "branch": "feature/user-direction",
       "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
       "status": "accepted",
       "blocker": null,
@@ -4943,13 +4950,13 @@
           "result": "special 22 passed; budget domain 110 passed; isolated full 1723 passed/1 skipped; dirty-workspace 18 failures belong to other authors' uncommitted files",
           "log": ".planning/2026-10-25-aln15p/evidence.json",
           "delivery": "docs/协作开发/交付/ALN-15-P-Provider-Expert预算原子化与旧Goal迁移.md"
+        },
+        {
+          "date": "2026-10-25",
+          "scope": "独立复核（zcode-main）：R1专项22项隔离树复跑、R2预算域回归89过、R3核心声明独立探针——8线程并发_check_pools总持额精确等于池上界（成功4+拒绝4，无双重占用）、R4不同配比复验、R5零费不假定回退语义、R6迁移幂等与防二次计费、R7隔离验证口径采信；结论转accepted（本卡范围）",
+          "review_report": "docs/协作开发/验收/2026-10-25-ALN-15-P独立复核.md"
         }
-      ,
-    {
-      "date": "2026-10-25",
-      "scope": "独立复核（zcode-main）：R1专项22项隔离树复跑、R2预算域回归89过、R3核心声明独立探针——8线程并发_check_pools总持额精确等于池上界（成功4+拒绝4，无双重占用）、R4不同配比复验、R5零费不假定回退语义、R6迁移幂等与防二次计费、R7隔离验证口径采信；结论转accepted（本卡范围）",
-      "review_report": "docs/协作开发/验收/2026-10-25-ALN-15-P独立复核.md"
-    }],
+      ],
       "card": "docs/协作开发/任务卡/15-P-Provider-Expert预算原子化与旧Goal迁移.md",
       "shared_files": [
         "evoagent/core/budget.py",
