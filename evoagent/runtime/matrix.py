@@ -66,6 +66,25 @@ MATRIX: Dict[str, Dict[RuntimeCapability, Dict[str, str]]] = {
         RuntimeCapability.SANDBOX: {
             "level": ABSENT, "notes": "无候选代码隔离执行"},
     },
+    # ALN-20-P：固定版本外部 Runtime（Ollama HTTP 服务 + 本地模型）。
+    # 外部 Runtime 只承接「生成执行」；五类能力全部由既有权威组件补位
+    # （AC-1/AC-2：不复制第二套工具账本/Task 状态机/权限权威）。
+    "external_ollama_http": {
+        RuntimeCapability.TOOL_INVOCATION: {
+            "level": FULL,
+            "notes": "委派 ToolRegistry.execute：权限/预算/幂等/副作用账本语义不变"},
+        RuntimeCapability.EVENT_STREAM: {
+            "level": FULL, "notes": "委派 EventBus：subscribe/emit/query_run 直通"},
+        RuntimeCapability.CANCEL: {
+            "level": FULL,
+            "notes": "委派 controller.cancel_task：协作式、幂等、终态拒绝"},
+        RuntimeCapability.RECOVERY: {
+            "level": FULL,
+            "notes": "委派 controller.recover_task：中断接管仍由既有运行租约决定"},
+        RuntimeCapability.SANDBOX: {
+            "level": FULL,
+            "notes": "委派 evolution SandboxRunner：一次性目录/无网络/超时强杀"},
+    },
 }
 
 # 采用/不采用判据：固定外部 Runtime commit 的 PoC 另卡按此裁决。

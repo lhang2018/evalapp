@@ -1,0 +1,104 @@
+{
+  "implementation": "external_ollama_http",
+  "at": 1792917965.0689566,
+  "ok": true,
+  "identity": {
+    "implementation": "external_ollama_http",
+    "version": "0.40.11",
+    "model": "ornith-1.5:9b",
+    "model_digest": "e5df7dcdd8a263994df62d610317e07be0d6af23f96fcbd8543273058fce575e",
+    "base_url": "http://127.0.0.1:11434",
+    "source": "/api/version + /api/tags"
+  },
+  "matrix": {
+    "ok": true,
+    "capabilities": [
+      {
+        "capability": "tool_invocation",
+        "supported": true,
+        "delegate": "ToolRegistry.execute"
+      },
+      {
+        "capability": "event_stream",
+        "supported": true,
+        "delegate": "EventBus"
+      },
+      {
+        "capability": "cancel",
+        "supported": true,
+        "delegate": "controller.cancel_task"
+      },
+      {
+        "capability": "recovery",
+        "supported": true,
+        "delegate": "controller.recover_task"
+      },
+      {
+        "capability": "sandbox",
+        "supported": true,
+        "delegate": "evolution.SandboxRunner"
+      }
+    ]
+  },
+  "generate": {
+    "text": "The user is asking me to only reply with \"pong\". This appears to be a test or a simple instruction. I should comply with their request and reply only with \"pong\".\n</think>\n\npong",
+    "latency_s": 8.504,
+    "eval_count": 41,
+    "total_duration_ns": 8480148400,
+    "model": "ornith-1.5:9b",
+    "requested_at": 1792917965.080953
+  },
+  "delegation": {
+    "event_stream": {
+      "emitted": true,
+      "subscriber_received": true,
+      "query_run_events": 1
+    },
+    "cancel_unknown_task": {
+      "ok": false,
+      "task_id": "poc-task-does-not-exist",
+      "status": null,
+      "error": "任务不存在"
+    },
+    "sandbox": {
+      "ok": true,
+      "output": "external-runtime-poc\r\n",
+      "error": "",
+      "violation": false
+    }
+  },
+  "failure_isolation": {
+    "unreachable": "ExternalRuntimeUnavailable",
+    "pin_mismatch": "RuntimePinMismatch"
+  },
+  "adoption": {
+    "criteria": [
+      {
+        "id": "AC-1",
+        "passed": true,
+        "basis": "五类能力全部 full（既有权威组件补位），矩阵与声明一致"
+      },
+      {
+        "id": "AC-2",
+        "passed": true,
+        "basis": "工具/事件/取消/恢复/沙箱全部委派既有权威，未复制第二套账本或 Task 状态机"
+      },
+      {
+        "id": "AC-3",
+        "passed": true,
+        "basis": "真实生成执行成功且不可达/版本漂移被显式分类拒绝；共享契约夹具见 tests/test_external_runtime_poc.py"
+      },
+      {
+        "id": "AC-4",
+        "passed": true,
+        "basis": "绑定 Runtime 版本号 + 模型内容摘要，同版本重跑结论可复现"
+      }
+    ],
+    "verdict": "adopt",
+    "limitations": [
+      "外部 Runtime 只承接生成调用；会话消息不冒充 run 级事件账本",
+      "真实主链路由到外部 Runtime（任务级采用）不在本卡范围",
+      "取消/恢复语义由既有 controller 承载，外部 Runtime 无自主中断接管能力"
+    ]
+  }
+}
