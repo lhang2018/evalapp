@@ -1,0 +1,123 @@
+{
+  "data_dir": "C:\\Users\\lhang\\AppData\\Local\\Temp\\evoagent_deploy_probe_dk18cmwd",
+  "bootstrap": {
+    "instance_id": "inst_92d48407bf2f485bac09b4a61f0aa36a",
+    "deployed_at": 1792918634.3181984,
+    "schema_version_source": 3
+  },
+  "matrix": [
+    {
+      "scenario": "compatible_restore",
+      "result": {
+        "ok": true,
+        "backup_name": "seeded_probe.zip",
+        "safety_backup": "pre_composite_20261025-165714_0682.zip",
+        "identity_preserved": true,
+        "migrations_applied": [],
+        "counts_expected": {
+          "tasks": 1,
+          "events": 1,
+          "memories": 0,
+          "release_manifests": 1
+        },
+        "counts_after": {
+          "tasks": 1,
+          "events": 1,
+          "memories": 0,
+          "release_manifests": 1
+        },
+        "counts_matched": true,
+        "counts_before_restore": {
+          "tasks": 2,
+          "events": 2,
+          "memories": 0,
+          "release_manifests": 1
+        },
+        "rto_s": 0.025,
+        "rpo_s": 0.086,
+        "data_loss_window": {
+          "from_backup_at": 1792918634.3652797,
+          "to_incident_at": 1792918634.45081,
+          "seconds": 0.086
+        },
+        "policy": {
+          "rto_target_s": 300.0,
+          "rpo_target_s": 600.0,
+          "note": "目标值为本卡配置的验收界，不构成生产 SLA 承诺",
+          "meets_targets": true
+        },
+        "timestamps": {
+          "started_at": 1792918634.4262862,
+          "finished_at": 1792918634.45081
+        },
+        "rollback": null
+      }
+    },
+    {
+      "scenario": "incompatible_refusal",
+      "elapsed_s": 0.014,
+      "result": {
+        "rejected": true,
+        "error": "备份 schema 8 高于当前程序支持 3：拒绝恢复（请先升级程序或改用匹配备份）"
+      }
+    },
+    {
+      "scenario": "failure_rollback",
+      "result": {
+        "ok": false,
+        "backup_name": "seeded_probe.zip",
+        "error": "RuntimeError: 受控故障注入：恢复中途失败",
+        "safety_backup": "pre_composite_20261025-165714_1d8e.zip",
+        "identity_preserved": true,
+        "rollback": {
+          "ok": true,
+          "rto_s": 0.028,
+          "error": null,
+          "restored": {
+            "ok": true,
+            "name": "pre_composite_20261025-165714_1d8e.zip",
+            "restored": [
+              "evoagent.db",
+              "events.db",
+              "memory.db"
+            ],
+            "safety_backup": null,
+            "counts": {
+              "tasks": 1,
+              "events": 1,
+              "memories": 0,
+              "release_manifests": 1
+            },
+            "schema_version": 3,
+            "migrations_applied": [],
+            "duration_ms": 28,
+            "counts_verified": true,
+            "restart_recommended": true
+          },
+          "counts": {
+            "tasks": 1,
+            "events": 1,
+            "memories": 0,
+            "release_manifests": 1
+          },
+          "counts_match_pre_failure": true
+        },
+        "policy": {
+          "rto_target_s": 300.0,
+          "rpo_target_s": 600.0,
+          "note": "目标值为本卡配置的验收界，不构成生产 SLA 承诺"
+        },
+        "timestamps": {
+          "started_at": 1792918634.4982984,
+          "failed_at": 1792918634.5263011
+        }
+      }
+    }
+  ],
+  "policy": {
+    "rto_target_s": 300.0,
+    "rpo_target_s": 600.0,
+    "take_safety_backup": true
+  },
+  "measured_at": 1792918634.5263011
+}
