@@ -325,10 +325,14 @@ class RuntimeController:
         if task.task_status != TaskStatus.CLASSIFYING:
             task = self._move(task, TaskStatus.CLASSIFYING)
         if self.classifier is not None:
-            # 显式 hint 短路不调用模型；无 hint 时先做预算闸门
+            # 显式 hint 短路不调用模型；无 hint 时先做预算闸门。
+            # ALN-23-A：general 提示不能无条件屏蔽真实分类——视为未指定，
+            # 交给分类器确认或覆盖（分类器回落仍是 general，语义不变）。
+            hint_for_classify = (None if intent_hint == "general"
+                                 else intent_hint)
             adapter = getattr(self.classifier, "model", None)
             model_id = None
-            if not intent_hint:
+            if not hint_for_classify:
                 try:
                     budget.check_model_call()
                 except BudgetExceeded as e:
@@ -345,7 +349,7 @@ class RuntimeController:
             token = CLASSIFICATION_BUDGET.set(budget)
             try:
                 intent, domain, conf, method = self.classifier.classify(
-                    goal, hint=intent_hint, domain_hint=domain_hint)
+                    goal, hint=hint_for_classify, domain_hint=domain_hint)
             finally:
                 CLASSIFICATION_BUDGET.reset(token)
             task.confidence = conf
@@ -946,11 +950,17 @@ class RuntimeController:
                           force: bool, *, registered=False, recovery=False) -> Task:
         if not registered:
             self._register_active(task)
+        if recovery:
+            # ALN-07-C：接管恢复先对账后决定——副作用不明时禁止自动续跑
+            gated = self._reconciliation_gate(task)
+            if gated is not None:
+                self._unregister_active(task.task_id)
+                return gated
         task.runtime_manifest["resume_versions"] = copy.deepcopy(task.version_manifest)
-        if self.asset_binder is not None and task.runtime_manifest.get("asset_bindings"):
-            # 旧 run 版本固定：恢复只验证绑定仍存在且摘要一致，不重新绑定
-            self.asset_binder.verify_pinned(task.runtime_manifest["asset_bindings"])
+        # Verification failures also release the active-task registration.
         try:
+            if self.asset_binder is not None and task.runtime_manifest.get("asset_bindings"):
+                self.asset_binder.verify_pinned(task.runtime_manifest["asset_bindings"])
             run_id, started = self.runs.begin(task, task.version_manifest, recovery=recovery)
         except BaseException:
             self._unregister_active(task.task_id)
@@ -994,6 +1004,67 @@ class RuntimeController:
             finally:
                 self._unregister_active(task.task_id)
                 self._slots.release()
+        return task
+
+    def _reconciliation_gate(self, task: Task) -> Optional[Task]:
+        """接管恢复的对账门禁（07-C 验收：真实恢复先对账后决定）。
+
+        步骤：补绑崩溃遗留的未决意图 → 计划声明 × 账本 × 绑定三方对账 →
+        干净（divergence_free）才放行续跑；存在未声明/未执行/未决/歧义
+        效果时保守转 WAITING_USER，禁止自动重放（R-12）。无持久计划的
+        任务无从对账，放行并如实标注（legacy 路径，不虚构门禁结论）。
+        """
+        bindings = getattr(self.react, "bindings", None)
+        try:
+            plan = self._plan_from_task(task)
+        except PlanRevisionError as exc:
+            task = self._move(task, TaskStatus.FAILED)
+            task.failure_reason = f"恢复对账失败：计划不可读: {exc}"
+            self.db.save_task(task)
+            self._emit(task, "reconciliation_gate", {"decision": "failed",
+                       "reason": task.failure_reason}, severity="warn")
+            return task
+        if plan is None or bindings is None:
+            task.runtime_manifest["reconciliation_skipped"] = (
+                "no_plan" if plan is None else "no_bindings")
+            return None
+        rows = self.side_fx.history(task.task_id)
+        try:
+            healed = bindings.heal_pending(task.task_id, rows)
+            from ..planning.reconcile import reconcile_plan
+            report = reconcile_plan(
+                plan, rows, step_bindings=bindings.for_task(task.task_id),
+                task_id=task.task_id)
+        except Exception as exc:  # noqa: BLE001
+            task = self._move(task, TaskStatus.FAILED)
+            task.failure_reason = f"恢复对账异常: {type(exc).__name__}: {exc}"
+            self.db.save_task(task)
+            self._emit(task, "reconciliation_gate", {"decision": "error",
+                       "reason": task.failure_reason}, severity="warn")
+            return task
+        detail = {"decision": "resume" if report.ok else "await_user",
+                  "healed": healed["healed"], "stale_intents": healed["stale"],
+                  "ambiguous_intents": healed["ambiguous"],
+                  "undeclared": [u.record.effect_id for u in report.undeclared],
+                  "uncertain": [r.effect_id for r in report.uncertain],
+                  "ambiguous_effects": [r.effect_id for r in report.ambiguous],
+                  "unexecuted": [d.step_id for d in report.unexecuted]}
+        if report.ok:
+            self._emit(task, "reconciliation_gate", detail)
+            return None
+        # 副作用不明：不自动重放、不盲目续跑——转等待用户裁决（R-12）
+        task.failure_reason = None
+        task = self._move(task, TaskStatus.WAITING_USER)
+        task.waiting_request = {
+            "request_id": f"recon_{task.task_id}",
+            "phase": "reconciliation",
+            "question": ("接管恢复对账发现副作用分歧（未声明/未决/歧义），"
+                         "禁止自动重放；请确认账本后以 resume 继续或取消。"),
+            "answered": False,
+            "summary": detail,
+        }
+        self.db.save_task(task)
+        self._emit(task, "reconciliation_gate", detail, severity="warn")
         return task
 
     def _build_retry(self, task: Task) -> Task:
@@ -1222,7 +1293,9 @@ class RuntimeController:
             if workflow is not None:
                 pinned = existing.get(f"workflow:{workflow.workflow_id}"
                                       f"@{workflow.version}")
-                if pinned is not None and content_digest(
+                if pinned is None:
+                    raise ConsumptionError("当前执行实体未包含在冻结资产绑定中")
+                if content_digest(
                         workflow_to_asset(workflow).content) != pinned["content_digest"]:
                     raise ConsumptionError(
                         f"工作流库内容与绑定资产摘要不一致（续跑）: "
@@ -1230,7 +1303,9 @@ class RuntimeController:
             if expert is not None:
                 pinned = existing.get(f"expert:{expert.expert_id}"
                                       f"@{expert.version}")
-                if pinned is not None and content_digest(
+                if pinned is None:
+                    raise ConsumptionError("当前执行实体未包含在冻结资产绑定中")
+                if content_digest(
                         expert_to_asset(expert).content) != pinned["content_digest"]:
                     raise ConsumptionError(
                         f"专家注册表内容与绑定资产摘要不一致（续跑）: "
@@ -1243,7 +1318,8 @@ class RuntimeController:
         from ..assets.consumption import ConsumptionError
         if workflow is not None:
             bindings.update(self.asset_binder.bind(
-                "workflow", workflow.workflow_id))
+                "workflow", workflow.workflow_id,
+                prefer_ref=f"workflow:{workflow.workflow_id}@{workflow.version}"))
             bound = bindings.get(f"workflow:{workflow.workflow_id}"
                                  f"@{workflow.version}")
             if bound is None:
@@ -1255,9 +1331,13 @@ class RuntimeController:
                     f"工作流库内容与绑定资产摘要不一致: "
                     f"{workflow.workflow_id}@{workflow.version}")
         if expert is not None:
-            bindings.update(self.asset_binder.bind("expert", expert.expert_id))
+            bindings.update(self.asset_binder.bind(
+                "expert", expert.expert_id,
+                prefer_ref=f"expert:{expert.expert_id}@{expert.version}"))
             bound = bindings.get(f"expert:{expert.expert_id}"
                                  f"@{expert.version}")
+            if bound is None:
+                raise ConsumptionError("专家绑定版本与执行版本不一致")
             if bound is not None:
                 drift = content_digest(expert_to_asset(expert).content)
                 if drift != bound["content_digest"]:

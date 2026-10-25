@@ -71,14 +71,21 @@ def cmd_demo() -> str:
 def cmd_task(goal: str, intent: str, risk: str, wait: bool,
              target_object: str = "", expected_output: str = "",
              complexity: str = "", requires_network=None,
-             open_questions=None) -> str:
+             open_questions=None, constraints=None, acceptance=None,
+             required_tools=None, required_permissions=None,
+             workflow_suitable=None, app_ctx=None) -> str:
     from .core.task import RiskLevel
-    app = _app()
+    app = app_ctx or _app()
     t = app.controller.submit_task(
         goal, intent=intent, risk_level=RiskLevel(risk), wait=wait,
         target_object=target_object, expected_output=expected_output,
         complexity=complexity, requires_network=requires_network,
-        open_questions=open_questions)
+        open_questions=open_questions,
+        constraints=constraints or [],
+        acceptance=[{"criterion": a} for a in (acceptance or [])],
+        required_tools=required_tools or [],
+        required_permissions=required_permissions or [],
+        workflow_suitable=workflow_suitable)
     if not wait:
         print(f"已后台提交: {t.task_id}；用 status 查询进度")
         return t.task_id
@@ -675,6 +682,16 @@ def main() -> None:
                    action=argparse.BooleanOptionalAction)
     t.add_argument("--open-question", action="append", default=[],
                    help="尚未确定的关键信息（可重复）")
+    t.add_argument("--constraint", action="append", default=[],
+                   help="明确约束（可重复；ALN-23-A 统一契约）")
+    t.add_argument("--acceptance", action="append", default=[],
+                   help="验收条件文本（可重复；包装为 criterion 条目）")
+    t.add_argument("--required-tool", action="append", default=[],
+                   help="所需工具（可重复）")
+    t.add_argument("--required-permission", action="append", default=[],
+                   help="所需权限（可重复）")
+    t.add_argument("--workflow-suitable", default=None,
+                   action=argparse.BooleanOptionalAction)
     sub.add_parser("workflow")
     s = sub.add_parser("status")
     s.add_argument("task_id", nargs="?")
@@ -801,7 +818,12 @@ def main() -> None:
                  expected_output=args.expected_output,
                  complexity=args.complexity,
                  requires_network=args.requires_network,
-                 open_questions=args.open_question or [])
+                 open_questions=args.open_question or [],
+                constraints=args.constraint or [],
+                acceptance=args.acceptance or [],
+                required_tools=args.required_tool or [],
+                required_permissions=args.required_permission or [],
+                workflow_suitable=args.workflow_suitable)
     elif args.cmd == "workflow":
         cmd_workflow()
     elif args.cmd == "status":

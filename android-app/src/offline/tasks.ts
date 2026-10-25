@@ -1,6 +1,9 @@
 /** 本地任务库：离线创建、幂等提交、状态刷新与崩溃恢复。 */
 
-import type { LocalTask, LocalTaskStatus, OfflineState, UserInputRequest } from "./types.ts";
+import type {
+  LocalTask, LocalTaskStatus, OfflineState, TaskContractInput,
+  UserInputRequest,
+} from "./types.ts";
 import type { OfflineRepository } from "./storage.ts";
 import { createClientRequestId, createLocalTaskId } from "./ids.ts";
 import { enqueueInto } from "./queue.ts";
@@ -12,6 +15,7 @@ export interface TaskTransport {
     intent: string,
     riskLevel: string,
     clientRequestId: string,
+    contract?: TaskContractInput | null,
   ): Promise<{ task_id: string }>;
   getTask(taskId: string): Promise<{
     current_run_id?: string | null;
@@ -65,8 +69,8 @@ export class LocalTaskService {
   }
 
   /** 离线可执行意图直接本地完成；其余进入 LOCAL_ONLY 等待上线。 */
-  submit(goal: string, intent: string, riskLevel: string = "low"):
-    Promise<LocalTask> {
+  submit(goal: string, intent: string, riskLevel: string = "low",
+         contract?: TaskContractInput | null): Promise<LocalTask> {
     const now = this.now();
     const offline = runOffline(goal, intent, new Date(now));
     return this.repo.update((state: OfflineState) => {
@@ -77,6 +81,7 @@ export class LocalTaskService {
         goal,
         intent,
         risk_level: riskLevel,
+        contract: contract ?? null,
         status: offline ? "DONE" : "LOCAL_ONLY",
         result: offline?.result ?? null,
         failure_reason: null,
@@ -142,6 +147,7 @@ export class LocalTaskService {
           task.intent,
           task.risk_level,
           task.client_request_id,
+          task.contract ?? null,
         );
         await this.repo.update((current) => {
           const target = current.tasks.find(

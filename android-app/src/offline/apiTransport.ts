@@ -5,7 +5,7 @@ import type {
   SyncResponse,
 } from "./sync.ts";
 import type { TaskTransport } from "./tasks.ts";
-import type { OfflineEvent, UserInputRequest } from "./types.ts";
+import type { OfflineEvent, UserInputRequest, TaskContractInput } from "./types.ts";
 import { createId } from "./ids.ts";
 
 interface SyncMeta {
@@ -28,6 +28,7 @@ interface HttpLike {
     riskLevel: string,
     clientRequestId: string,
     meta?: TaskMeta,
+    contract?: TaskContractInput | null,
   ): Promise<{ task_id: string }>;
   getTask(taskId: string): Promise<{
     current_run_id?: string | null;
@@ -107,6 +108,7 @@ export class ClientTransport implements EventSyncTransport, TaskTransport {
     intent: string,
     riskLevel: string,
     clientRequestId: string,
+    contract?: TaskContractInput | null,
   ) {
     return this.client.submitTask(
       goal,
@@ -118,6 +120,7 @@ export class ClientTransport implements EventSyncTransport, TaskTransport {
         installation_id: this.installationId ?? undefined,
         app_version: this.appVersion ?? undefined,
       },
+      contract ?? null,
     );
   }
 

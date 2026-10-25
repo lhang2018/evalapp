@@ -133,6 +133,20 @@ export interface UserInputRequest {
   created_at: number;
 }
 
+/** 统一任务契约输入（ALN-23-A）：三入口（REST/CLI/客户端）字段同源。 */
+export interface TaskContractInput {
+  constraints?: string[];
+  acceptance_criteria?: string[];
+  target_object?: string;
+  expected_output?: string;
+  required_tools?: string[];
+  required_permissions?: string[];
+  open_questions?: string[];
+  complexity?: string;
+  requires_network?: boolean;
+  workflow_suitable?: boolean;
+}
+
 export interface LocalTask {
   server_status?: string;
   current_run_id?: string | null;
@@ -151,6 +165,8 @@ export interface LocalTask {
   created_at: number;
   updated_at: number;
   last_sync_error?: string | null;
+  /** 统一任务契约（ALN-23-A）：随任务持久化并在提交时透传服务端 */
+  contract?: TaskContractInput | null;
 }
 
 export interface OfflineState {

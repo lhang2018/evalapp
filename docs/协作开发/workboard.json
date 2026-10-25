@@ -584,7 +584,7 @@
       "title": "发布可共享基线",
       "stream": "integration",
       "owner": "codex-runtime",
-      "reviewer": null,
+      "reviewer": "claude-main",
       "branch": "main",
       "base_commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
       "status": "review",
@@ -3399,11 +3399,19 @@
       "workpackage": "ALN-23",
       "title": "统一任务契约对外模型",
       "stream": "runtime",
-      "owner": "codex-runtime",
+      "owner": "zcode-main",
       "reviewer": null,
       "branch": "feature/user-direction",
-      "base_commit": "5e2b7e36ffbc225a33c7c09c8214bf70133ba2da",
-      "status": "claimed",
+      "base_commit": "5e3972e",
+      "status": "in_progress",
+      "ownership_history": [
+        {
+          "date": "2026-10-25",
+          "from": "codex-runtime",
+          "to": "zcode-main",
+          "reason": "用户指令接手：23-A 为 P0 关键路径且 codex-runtime 认领后未开工（claimed无evidence）；zcode-main 四卡接线设计稿已定义对接面，实现条件最成熟"
+        }
+      ],
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/23-A-统一任务契约对外模型.md",
@@ -4582,11 +4590,11 @@
       "workpackage": "ALN-09",
       "title": "真实候选宿主、持久队列与进程隔离",
       "stream": "assets",
-      "owner": null,
+      "owner": "dsh-lead",
       "reviewer": null,
-      "branch": null,
-      "base_commit": null,
-      "status": "unclaimed",
+      "branch": "feature/user-direction",
+      "base_commit": "f7ccfcb936f4ed06dea26b84b44c01805d19dff0",
+      "status": "claimed",
       "blocker": null,
       "evidence": [],
       "card": "docs/协作开发/任务卡/09-H-真实候选宿主、持久队列与进程隔离.md",
@@ -4611,9 +4619,17 @@
         "G2",
         "G3"
       ],
-      "next_step": "按卡实施并提交证据；未经复核不记accepted",
-      "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-      "prerequisites": "受控宿主与真实候选制品"
+      "next_step": "先读 evolution 现有接口与 ALN-09-F 交付记录，按卡落隔离宿主/持久队列/多进程故障恢复用例；证据绑定精确commit、命令与日志，未经复核不记accepted",
+      "working_basis": "以f7ccfcb936f4ed06dea26b84b44c01805d19dff0（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
+      "prerequisites": "受控宿主与真实候选制品",
+      "ownership_history": [
+        {
+          "date": "2026-10-25",
+          "from": "待认领",
+          "to": "dsh-lead",
+          "reason": "用户指示认领一张；选依赖全绿的 ALN-09-H（09-F 已 accepted），写入面 evoagent/evolution/ 与在途卡 23-A/23-B/23-D/24-B/29-C/15-P/07-C/03-P 均无重叠"
+        }
+      ]
     },
     {
       "id": "ALN-10-E",

@@ -26,6 +26,7 @@ import type {
 import { headerFileName } from "./offline/packageImport.ts";
 import type { UserInputRequest } from "./offline/types.ts";
 import type { CapabilitiesStatusPayload } from "./features/capabilities/status.ts";
+import type { TaskContractInput } from "./offline/types.ts";
 
 export interface TaskInfo {
   current_run_id?: string | null;
@@ -343,12 +344,25 @@ export class EvoAgentClient {
       installation_id?: string;
       app_version?: string;
     } = {},
+    contract?: TaskContractInput | null,
   ) {
     const body: Record<string, unknown> = {
       goal,
       intent,
       risk_level: riskLevel,
     };
+    if (contract) {
+      // ALN-23-A：契约字段与 REST/CLI 同源透传
+      for (const key of ["constraints", "acceptance_criteria",
+        "required_tools", "required_permissions", "open_questions",
+        "target_object", "expected_output", "complexity",
+        "requires_network", "workflow_suitable"] as const) {
+        const value = contract[key];
+        if (value !== undefined && value !== null && value !== "") {
+          body[key] = value;
+        }
+      }
+    }
     if (clientRequestId) body.client_request_id = clientRequestId;
     if (meta.device_id) body.device_id = meta.device_id;
     if (meta.installation_id) body.installation_id = meta.installation_id;
