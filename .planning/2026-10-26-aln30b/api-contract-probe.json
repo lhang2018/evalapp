@@ -1,0 +1,61 @@
+{
+ "task": "ALN-30-B 客户端接线后端契约探针",
+ "date": "2026-10-26",
+ "task_id": "d5de53079937",
+ "artifact_id": "d5de53079937:node-write:7edbe30a73ecb995393c5009b4cc13d71d141548050bd66715f8bf96ed76d15d",
+ "checks": {
+  "artifacts_list_ok": true,
+  "artifact_preview_ok": true,
+  "preview_truncated_false": true,
+  "memory_items_ok": true,
+  "provenance_visible": true,
+  "policy_ok": true,
+  "admin_update_ok": true,
+  "operator_forbidden": true
+ },
+ "all_checks_pass": true,
+ "artifacts_response": {
+  "artifacts": [
+   {
+    "artifact_id": "d5de53079937:node-write:7edbe30a73ecb995393c5009b4cc13d71d141548050bd66715f8bf96ed76d15d",
+    "node_id": "node-write",
+    "kind": "markdown",
+    "sha256": "7edbe30a73ecb995393c5009b4cc13d71d141548050bd66715f8bf96ed76d15d",
+    "bytes": 27,
+    "description": "验收报告",
+    "created_at": 1793000800.9147775
+   }
+  ]
+ },
+ "preview": {
+  "kind": "markdown",
+  "bytes": 27,
+  "truncated": false,
+  "text": "# 成果\n真实报告内容"
+ },
+ "memory_items_count": 1,
+ "scope_policy": {
+  "allow": [
+   "expert",
+   "model",
+   "project",
+   "session",
+   "shared",
+   "task",
+   "user"
+  ],
+  "deny": [],
+  "all_layers": true,
+  "updated_at": null,
+  "scope_values": [
+   "expert",
+   "model",
+   "project",
+   "session",
+   "shared",
+   "task",
+   "user"
+  ]
+ },
+ "note": "契约探针直接调用服务端 HTTP，验证客户端将消费的字段；不是真机 UI 证据"
+}

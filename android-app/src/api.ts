@@ -162,6 +162,59 @@ export interface MemoryEntry {
   use_count: number;
 }
 
+// ---- ALN-30-B 工作区成果与记忆控制 ----
+export interface TaskArtifactMeta {
+  artifact_id: string;
+  node_id: string;
+  kind: string;
+  sha256: string;
+  bytes: number;
+  description?: string;
+  created_at?: number;
+}
+
+export interface TaskArtifactPreview {
+  artifact_id: string;
+  kind: string;
+  bytes: number;
+  truncated: boolean;
+  text: string | null;
+  base64: string | null;
+}
+
+export interface MemoryControlItem extends MemoryEntry {
+  provenance?: {
+    source?: string;
+    scope?: string;
+    scope_key?: string;
+    fact_key?: string;
+    task_id?: string;
+  };
+  privacy?: { storage?: string; exportable?: boolean; note?: string };
+}
+
+export interface MemoryDeleteResult {
+  ok: boolean;
+  memory_id: string;
+  deleted_ids?: string[];
+  retained?: Array<{ layer: string; note: string }>;
+  failures?: Array<{ stage: string; error: string }>;
+  fully_erased?: boolean;
+  scope_claim?: string;
+  recall_check?: Record<string, unknown>;
+  error?: string;
+}
+
+export interface MemoryScopePolicy {
+  allow: string[];
+  deny: string[];
+  all_layers?: boolean;
+  updated_at?: number | null;
+  scope_values?: string[];
+  actor?: string;
+  reason?: string;
+}
+
 // ---- PRD 89.6 / 89.8 设置与更新 ----
 export interface ModelInfo {
   model_id: string;
@@ -574,6 +627,103 @@ export class EvoAgentClient {
     return this.req<{ ok: boolean; memory_id: string }>(
       `/memory/${encodeURIComponent(memoryId)}`,
       { method: "DELETE" },
+    );
+  }
+
+  // ---- ALN-30-B：任务成果（真实文件列表/预览）----
+  private bearer(adminToken?: string): Record<string, string> {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (adminToken) headers.Authorization = `Bearer ${adminToken}`;
+    return headers;
+  }
+
+  taskArtifacts(
+    taskId: string,
+    adminToken?: string,
+  ): Promise<TaskArtifactMeta[]> {
+    return this.req<{ artifacts: TaskArtifactMeta[] }>(
+      `/tasks/${encodeURIComponent(taskId)}/artifacts`,
+      { headers: this.bearer(adminToken) },
+    ).then((out) => out.artifacts);
+  }
+
+  artifactPreview(
+    taskId: string,
+    artifactId: string,
+    adminToken?: string,
+  ): Promise<TaskArtifactPreview> {
+    return this.req<TaskArtifactPreview>(
+      `/tasks/${encodeURIComponent(taskId)}/artifacts/` +
+        `${encodeURIComponent(artifactId)}/preview`,
+      { headers: this.bearer(adminToken) },
+    );
+  }
+
+  // ---- ALN-30-B：记忆控制（24-D 端点：来源/纠错/删除/范围策略）----
+  async memoryControlItems(
+    filter: { scope?: string; kind?: string; limit?: number } = {},
+    adminToken?: string,
+  ): Promise<MemoryControlItem[]> {
+    const params: string[] = [];
+    if (filter.scope) params.push(`scope=${encodeURIComponent(filter.scope)}`);
+    if (filter.kind) params.push(`kind=${encodeURIComponent(filter.kind)}`);
+    params.push(`limit=${filter.limit ?? 100}`);
+    const out = await this.req<{ items: MemoryControlItem[] }>(
+      `/memory/items?${params.join("&")}`,
+      { headers: this.bearer(adminToken) },
+    );
+    return out.items;
+  }
+
+  correctMemoryItem(
+    memoryId: string,
+    content: string,
+    reason: string,
+    adminToken?: string,
+  ) {
+    return this.req<{
+      ok: boolean;
+      item: MemoryControlItem;
+      verified_in_retrieval: boolean;
+    }>(`/memory/items/${encodeURIComponent(memoryId)}/correct`, {
+      method: "POST",
+      headers: this.bearer(adminToken),
+      body: JSON.stringify({ content, reason }),
+    });
+  }
+
+  deleteMemoryItem(memoryId: string, reason: string, adminToken?: string) {
+    return this.req<MemoryDeleteResult>(
+      `/memory/items/${encodeURIComponent(memoryId)}/delete`,
+      {
+        method: "POST",
+        headers: this.bearer(adminToken),
+        body: JSON.stringify({ reason }),
+      },
+    );
+  }
+
+  memoryScopePolicy(adminToken?: string): Promise<MemoryScopePolicy> {
+    return this.req<MemoryScopePolicy>("/memory/scope-policy", {
+      headers: this.bearer(adminToken),
+    });
+  }
+
+  updateMemoryScopePolicy(
+    allow: string[],
+    deny: string[],
+    reason: string,
+    adminToken?: string,
+  ) {
+    return this.req<{ ok: boolean; policy: MemoryScopePolicy; note: string }>(
+      "/memory/scope-policy",
+      {
+        method: "PUT",
+        headers: this.bearer(adminToken),
+        body: JSON.stringify({ allow, deny, reason }),
+      },
     );
   }
 

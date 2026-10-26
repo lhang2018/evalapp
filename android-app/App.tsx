@@ -30,15 +30,32 @@ import { api } from "./src/api.ts";
 import { ApprovalPanel } from "./src/features/approvals/ApprovalPanel.tsx";
 import type {
   CandidateSummary,
+  MemoryControlItem,
+  MemoryDeleteResult,
   MemoryEntry,
+  MemoryScopePolicy,
   MetricsSnapshot,
   ModelsInfo,
   ReleaseVerify,
   ReleasesInfo,
+  TaskArtifactMeta,
+  TaskArtifactPreview,
   VersionInfo,
   WorkflowCenterDetail,
   WorkflowSummary,
 } from "./src/api.ts";
+import {
+  buildArtifactRows,
+  emptyTaskIdHint,
+  panelHint,
+} from "./src/features/artifacts/panel.ts";
+import {
+  buildMemoryRows,
+  deletionReport,
+  deniedScopesAfter,
+  memoryControlError,
+  scopePolicyView,
+} from "./src/features/memory/control.ts";
 import { asyncStorageStore } from "./src/storage/asyncStorage.ts";
 import { OfflineRepository } from "./src/offline/storage.ts";
 import { EventQueue } from "./src/offline/queue.ts";
@@ -212,8 +229,23 @@ export default function App(): React.JSX.Element {
   const [workflows, setWorkflows] = useState<WorkflowSummary[]>([]);
   const [workflowDetail, setWorkflowDetail] =
     useState<WorkflowCenterDetail | null>(null);
-  const [memories, setMemories] = useState<MemoryEntry[]>([]);
+  const [memories, setMemories] = useState<MemoryControlItem[]>([]);
   const [memoryDrafts, setMemoryDrafts] = useState<Record<string, string>>({});
+  const [memoryDeleteResult, setMemoryDeleteResult] =
+    useState<MemoryDeleteResult | null>(null);
+  const [scopePolicy, setScopePolicy] = useState<MemoryScopePolicy | null>(null);
+  const [artifactsByTask, setArtifactsByTask] = useState<
+    Record<string, TaskArtifactMeta[]>
+  >({});
+  const [artifactPreviews, setArtifactPreviews] = useState<
+    Record<string, Record<string, TaskArtifactPreview>>
+  >({});
+  const [artifactLoading, setArtifactLoading] = useState<Record<string, boolean>>(
+    {},
+  );
+  const [artifactErrors, setArtifactErrors] = useState<Record<string, string>>(
+    {},
+  );
   const [models, setModels] = useState<ModelsInfo | null>(null);
   const [releases, setReleases] = useState<ReleasesInfo | null>(null);
   const [releaseVerify, setReleaseVerify] = useState<
@@ -488,7 +520,13 @@ export default function App(): React.JSX.Element {
           setWorkflows(await services.client.workflows());
           setWorkflowDetail(null);
         } else if (name === "memory") {
-          setMemories(await services.client.memory());
+          const token = adminToken.trim() || undefined;
+          const [items, policy] = await Promise.all([
+            services.client.memoryControlItems({}, token),
+            services.client.memoryScopePolicy(token).catch(() => null),
+          ]);
+          setMemories(items);
+          setScopePolicy(policy);
         } else if (name === "settings") {
           const [modelsInfo, releasesInfo] = await Promise.all([
             services.client.modelsInfo(),
@@ -524,7 +562,7 @@ export default function App(): React.JSX.Element {
         setCenterBusy(false);
       }
     },
-    [online, services]
+    [online, services, adminToken]
   );
 
   useEffect(() => {
@@ -561,18 +599,25 @@ export default function App(): React.JSX.Element {
   );
 
   const reloadMemory = useCallback(async () => {
-    setMemories(await services.client.memory());
-  }, [services]);
+    const token = adminToken.trim() || undefined;
+    const [items, policy] = await Promise.all([
+      services.client.memoryControlItems({}, token),
+      services.client.memoryScopePolicy(token).catch(() => null),
+    ]);
+    setMemories(items);
+    setScopePolicy(policy);
+  }, [services, adminToken]);
 
   const correctMemory = useCallback(
     async (item: MemoryEntry) => {
       const content = (memoryDrafts[item.memory_id] ?? item.content).trim();
       if (!content) return;
       try {
-        await services.client.correctMemory(
+        await services.client.correctMemoryItem(
           item.memory_id,
           content,
-          "客户端纠正"
+          "客户端纠正",
+          adminToken.trim() || undefined,
         );
         setMemoryDrafts((prev) => {
           const next = { ...prev };
@@ -585,7 +630,7 @@ export default function App(): React.JSX.Element {
         setCenterError(e instanceof Error ? e.message : String(e));
       }
     },
-    [memoryDrafts, reloadMemory, services]
+    [memoryDrafts, reloadMemory, services, adminToken]
   );
 
   const removeMemory = useCallback(
@@ -597,7 +642,24 @@ export default function App(): React.JSX.Element {
           style: "destructive",
           onPress: async () => {
             try {
-              await services.client.deleteMemory(item.memory_id);
+              const result = await services.client.deleteMemoryItem(
+                item.memory_id,
+                "客户端删除",
+                adminToken.trim() || undefined,
+              );
+              setMemoryDeleteResult(result);
+              const report = deletionReport(result);
+              Alert.alert(
+                report.title,
+                [
+                  report.text,
+                  ...report.retainedLines,
+                  ...report.failureLines,
+                  report.scopeClaim
+                    ? "范围：" + report.scopeClaim
+                    : "",
+                ].filter(Boolean).join("\n"),
+              );
               await reloadMemory();
               setCenterError(null);
             } catch (e: unknown) {
@@ -607,7 +669,94 @@ export default function App(): React.JSX.Element {
         },
       ]);
     },
-    [reloadMemory, services]
+    [reloadMemory, services, adminToken]
+  );
+
+  const toggleMemoryScope = useCallback(
+    async (scope: string, disable: boolean) => {
+      const change = deniedScopesAfter(scopePolicy, scope, disable);
+      if (!change.ok) {
+        setCenterError(change.error);
+        return;
+      }
+      try {
+        const result = await services.client.updateMemoryScopePolicy(
+          (scopePolicy?.allow ?? []).filter((s) => !change.deny.includes(s)),
+          change.deny,
+          (disable ? "客户端禁用范围 " : "客户端恢复范围 ") + scope,
+          adminToken.trim() || undefined,
+        );
+        setScopePolicy(result.policy);
+        setCenterError(null);
+      } catch (e: unknown) {
+        setCenterError(memoryControlError(
+          e as { status?: number; message?: string }, online));
+      }
+    },
+    [scopePolicy, services, adminToken, online]
+  );
+
+  const loadArtifacts = useCallback(
+    async (task: LocalTask) => {
+      if (!task.server_task_id || !online) return;
+      setArtifactLoading((prev) => ({ ...prev, [task.local_task_id]: true }));
+      try {
+        const items = await services.client.taskArtifacts(
+          task.server_task_id,
+          adminToken.trim() || undefined,
+        );
+        setArtifactsByTask((prev) => ({ ...prev, [task.local_task_id]: items }));
+        setArtifactErrors((prev) => {
+          const next = { ...prev };
+          delete next[task.local_task_id];
+          return next;
+        });
+      } catch (e: unknown) {
+        setArtifactErrors((prev) => ({
+          ...prev,
+          [task.local_task_id]: e instanceof Error ? e.message : String(e),
+        }));
+      } finally {
+        setArtifactLoading((prev) => ({ ...prev, [task.local_task_id]: false }));
+      }
+    },
+    [online, services, adminToken]
+  );
+
+  const openArtifactPreview = useCallback(
+    async (task: LocalTask, artifactId: string) => {
+      if (!task.server_task_id) return;
+      try {
+        const preview = await services.client.artifactPreview(
+          task.server_task_id,
+          artifactId,
+          adminToken.trim() || undefined,
+        );
+        setArtifactPreviews((prev) => ({
+          ...prev,
+          [task.local_task_id]: {
+            ...(prev[task.local_task_id] ?? {}),
+            [artifactId]: preview,
+          },
+        }));
+      } catch (e: unknown) {
+        setArtifactErrors((prev) => ({
+          ...prev,
+          [task.local_task_id]: e instanceof Error ? e.message : String(e),
+        }));
+      }
+    },
+    [services, adminToken]
+  );
+
+  const memoryRows = useMemo(
+    () => new Map(buildMemoryRows(memories).map((row) => [row.memory_id, row])),
+    [memories],
+  );
+  const memoryScope = useMemo(() => scopePolicyView(scopePolicy), [scopePolicy]);
+  const memoryReport = useMemo(
+    () => (memoryDeleteResult ? deletionReport(memoryDeleteResult) : null),
+    [memoryDeleteResult],
   );
 
   const flush = useCallback(
@@ -1700,6 +1849,58 @@ export default function App(): React.JSX.Element {
                 <Text style={s.hint}>{task.last_sync_error}</Text>
               ) : null}
               <Text style={s.mono}>幂等键 {task.client_request_id}</Text>
+              {task.server_task_id && (
+                <View style={s.card}>
+                  <Text style={s.section}>工作区成果</Text>
+                  {emptyTaskIdHint(task.server_task_id) ? (
+                    <Text style={s.hint}>
+                      {emptyTaskIdHint(task.server_task_id)}
+                    </Text>
+                  ) : null}
+                  <Button
+                    title={artifactsByTask[task.local_task_id] ? "刷新成果" : "查看成果"}
+                    onPress={() => void loadArtifacts(task)}
+                  />
+                  {panelHint({
+                    offline: !online,
+                    loading: Boolean(artifactLoading[task.local_task_id]),
+                    error: artifactErrors[task.local_task_id] ?? null,
+                    count: artifactsByTask[task.local_task_id]?.length ?? 0,
+                  }) ? (
+                    <Text style={s.hint}>
+                      {panelHint({
+                        offline: !online,
+                        loading: Boolean(artifactLoading[task.local_task_id]),
+                        error: artifactErrors[task.local_task_id] ?? null,
+                        count: artifactsByTask[task.local_task_id]?.length ?? 0,
+                      })}
+                    </Text>
+                  ) : null}
+                  {(buildArtifactRows(
+                    artifactsByTask[task.local_task_id] ?? [],
+                    artifactPreviews[task.local_task_id] ?? {},
+                  )).map((row) => (
+                    <View key={row.artifact_id} style={s.card}>
+                      <Text style={s.goal}>{row.kindLabel} · {row.sizeLabel}</Text>
+                      <Text style={s.hint}>{row.description || row.trace}</Text>
+                      <Text style={s.mono}>{row.digestLabel}</Text>
+                      <Text style={s.hint}>{row.previewNote}</Text>
+                      {row.openable ? (
+                        <Button
+                          title="打开预览"
+                          onPress={() =>
+                            void openArtifactPreview(task, row.artifact_id)
+                          }
+                        />
+                      ) : (
+                        <Text style={s.hint}>
+                          无真实文件（不提供打开/下载入口）
+                        </Text>
+                      )}
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
           ))}
 
@@ -1997,47 +2198,92 @@ export default function App(): React.JSX.Element {
               )}
               {centerError && <Text style={s.error}>{centerError}</Text>}
               {centerBusy && <ActivityIndicator />}
+              <View style={s.card}>
+                <Text style={s.goal}>
+                  分析范围（禁用后模型不再收到该范围内容）
+                </Text>
+                <Text style={s.hint}>{memoryScope.text}</Text>
+                <View style={s.row}>
+                  {(scopePolicy?.scope_values ??
+                    ["user", "project", "task", "session"]).map((scope) => {
+                    const disabled = memoryScope.disabled.includes(scope);
+                    return (
+                      <View key={scope} style={s.action}>
+                        <Button
+                          title={`${disabled ? "恢复" : "禁用"}:${scope}`}
+                          onPress={() =>
+                            void toggleMemoryScope(scope, !disabled)
+                          }
+                        />
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+              {memoryReport && (
+                <View style={s.card}>
+                  <Text style={s.goal}>{memoryReport.title}</Text>
+                  <Text style={s.hint}>{memoryReport.text}</Text>
+                  {memoryReport.retainedLines.map((line) => (
+                    <Text key={line} style={s.hint}>{line}</Text>
+                  ))}
+                  {memoryReport.failureLines.map((line) => (
+                    <Text key={line} style={s.fail}>{line}</Text>
+                  ))}
+                  {memoryReport.scopeClaim ? (
+                    <Text style={s.mono}>范围：{memoryReport.scopeClaim}</Text>
+                  ) : null}
+                </View>
+              )}
               {online && !centerBusy && memories.length === 0 && (
                 <Text style={s.hint}>暂无符合权限范围的记忆</Text>
               )}
-              {memories.map((item) => (
-                <View key={item.memory_id} style={s.card}>
-                  <Text style={s.goal}>{item.content}</Text>
-                  <Text style={s.hint}>
-                    {item.kind} · {item.scope} · {item.status} · 来源{" "}
-                    {item.source}
-                  </Text>
-                  <Text style={s.mono}>
-                    ID {item.memory_id} · 使用 {item.use_count} 次
-                  </Text>
-                  <TextInput
-                    style={[s.input, s.multiline]}
-                    value={memoryDrafts[item.memory_id] ?? item.content}
-                    onChangeText={(text) =>
-                      setMemoryDrafts((prev) => ({
-                        ...prev,
-                        [item.memory_id]: text,
-                      }))
-                    }
-                    multiline
-                  />
-                  <View style={s.row}>
-                    <View style={s.action}>
-                      <Button
-                        title="纠正"
-                        onPress={() => void correctMemory(item)}
-                      />
-                    </View>
-                    <View style={s.action}>
-                      <Button
-                        title="删除"
-                        color="#cf222e"
-                        onPress={() => removeMemory(item)}
-                      />
+              {memories.map((item) => {
+                const row = memoryRows.get(item.memory_id);
+                return (
+                  <View key={item.memory_id} style={s.card}>
+                    <Text style={s.goal}>{item.content}</Text>
+                    <Text style={s.hint}>
+                      {row
+                        ? `${row.sourceLabel} · ${row.scopeLabel} · ${row.statusLabel}`
+                        : item.status}
+                    </Text>
+                    {row ? (
+                      <Text style={s.hint}>{row.provenanceNote}</Text>
+                    ) : null}
+                    <Text style={s.mono}>
+                      ID {item.memory_id} · 使用 {item.use_count} 次
+                    </Text>
+                    <TextInput
+                      style={[s.input, s.multiline]}
+                      value={memoryDrafts[item.memory_id] ?? item.content}
+                      onChangeText={(text) =>
+                        setMemoryDrafts((prev) => ({
+                          ...prev,
+                          [item.memory_id]: text,
+                        }))
+                      }
+                      multiline
+                    />
+                    <View style={s.row}>
+                      <View style={s.action}>
+                        <Button
+                          title="纠正"
+                          disabled={!row?.canCorrect}
+                          onPress={() => void correctMemory(item)}
+                        />
+                      </View>
+                      <View style={s.action}>
+                        <Button
+                          title="删除"
+                          color="#cf222e"
+                          onPress={() => removeMemory(item)}
+                        />
+                      </View>
                     </View>
                   </View>
-                </View>
-              ))}
+                );
+              })}
             </>
           )}
 
