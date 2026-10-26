@@ -1,0 +1,33 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+.F.......                                                                [100%]
+================================== FAILURES ===================================
+_ test_stable_channel_requires_complete_declarations[target_platforms-value1-target_platforms] _
+
+field = 'target_platforms', value = ['windows'], token = 'target_platforms'
+
+    @pytest.mark.parametrize("field,value,token", [
+        ("target_platforms", [], "target_platforms"),
+        # ALN-21-A：windows 自该卡起进入受支持平台词汇表（Windows 终端
+        # 扩展验证），此处改用仍不受支持的平台保持「不支持的平台被拒」语义
+        ("target_platforms", ["windows"], "target_platforms"),
+        ("min_app_version", "", "min_app_version"),
+        ("permission_requirements", None, "permission_requirements"),
+        ("required_tool_contracts", None, "required_tool_contracts"),
+        ("model_capabilities", None, "model_capabilities"),
+        ("data_schema", None, "data_schema"),
+        ("offline_support", None, "offline_support"),
+        ("rollback_supported", None, "rollback_supported"),
+    ])
+    def test_stable_channel_requires_complete_declarations(field, value, token):
+        manager = ReleaseManager()
+        manifest = manager.build_manifest(**{field: value})
+        result = manager.deploy(manifest.release_id, gate_passed=True)
+>       assert not result["ok"] and manager.current_release_id is None
+E       assert (not True)
+
+tests\test_release_signing.py:209: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_release_signing.py::test_stable_channel_requires_complete_declarations[target_platforms-value1-target_platforms]
+1 failed, 8 passed in 0.31s

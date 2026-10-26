@@ -1,0 +1,197 @@
+{
+  "source_commit": "5bc1725a52ec71ebef3ba9b8d98d03b56c76bc63",
+  "source_tree": "9dc3a665839634bd5123b039ac1f21d350702cbe",
+  "related_python_passed": 295,
+  "full_backend_rerun": false,
+  "client_rerun": false,
+  "device_verified": false,
+  "new_whole_host_stress_test": false,
+  "windows_second_review": "accepted_for_pinned_windows_python_host_slice",
+  "resource_fixes": "pending_independent_recheck",
+  "temporary_scopes_removed": 4,
+  "records": {
+    "fixed-validation.json": {
+      "pytest_arguments": [
+        "tests/test_windows_terminal_validation.py",
+        "tests/test_release_signing.py",
+        "tests/test_release_install_retire.py",
+        "tests/test_release_assets.py",
+        "tests/test_deployment_recovery.py",
+        "tests/test_backup_recovery.py",
+        "tests/test_release_gates.py",
+        "tests/test_process_recovery.py",
+        "tests/test_proactivity.py",
+        "tests/test_resource_admission.py",
+        "tests/test_proactive_review_20261026.py",
+        "tests/test_resource_second_review_20261026.py",
+        "tests/test_restore_entry_review_20261026.py",
+        "tests/test_budget.py",
+        "tests/test_goal_opportunities.py",
+        "tests/test_ledger_drift.py",
+        "tools/tests",
+        "-q"
+      ],
+      "snapshot_commit": "5bc1725a52ec71ebef3ba9b8d98d03b56c76bc63",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-yete41b2",
+      "source_tree": "9dc3a665839634bd5123b039ac1f21d350702cbe",
+      "archive_sha256": "182d59e99cbed8eb980b579d8b780ba141d63bcb93a807b06491b11c202633f5",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-yete41b2\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-yete41b2\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-yete41b2\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "resource-focused-validation.json": {
+      "pytest_arguments": [
+        "tests/test_resource_second_review_20261026.py",
+        "tests/test_proactivity.py",
+        "tests/test_resource_admission.py",
+        "tests/test_proactive_review_20261026.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-yp5vcpb1",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "resource-negative-validation.json": {
+      "pytest_arguments": [
+        "tests/test_resource_second_review_20261026.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-ag5jaw_3",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    }
+  },
+  "platform_matrix": {
+    "source_commit": "efe5ac0eccf1538eef086f94ce3c93452349e720",
+    "source_tree": "d40d0e68f8ae1a1f5b78bea70c5f0438857b5282",
+    "variants": {
+      "legacy_assertion_current_platform": {
+        "command": [
+          "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+          "-X",
+          "utf8",
+          "-m",
+          "pytest",
+          "tests/test_release_signing.py::test_stable_channel_requires_complete_declarations",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--basetemp=E:\\evalapp\\outputs\\windows-second-rsz67n4n\\legacy_assertion_current_platform\\pytest"
+        ],
+        "legacy_assertion": true,
+        "reverted_platform": false,
+        "exit_code": 1,
+        "expected_exit_code": 1,
+        "expected_summary": "1 failed, 8 passed",
+        "matched": true,
+        "manager_sha256": "bfb43409c7f1fd475fce657983253dbea3888f91646da248583b15f0cf13a15d",
+        "test_sha256": "c6a580eb5f32bb51441d3bcad4460e045a85248dac3e2376e068e386cf7db236"
+      },
+      "legacy_assertion_reverted_platform": {
+        "command": [
+          "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+          "-X",
+          "utf8",
+          "-m",
+          "pytest",
+          "tests/test_release_signing.py::test_stable_channel_requires_complete_declarations",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--basetemp=E:\\evalapp\\outputs\\windows-second-rsz67n4n\\legacy_assertion_reverted_platform\\pytest"
+        ],
+        "legacy_assertion": true,
+        "reverted_platform": true,
+        "exit_code": 0,
+        "expected_exit_code": 0,
+        "expected_summary": "9 passed",
+        "matched": true,
+        "manager_sha256": "9de8805fb5f0c9805a8609941aae8000af97992ceb4553600315d1dbb4171ff3",
+        "test_sha256": "c6a580eb5f32bb51441d3bcad4460e045a85248dac3e2376e068e386cf7db236"
+      },
+      "current_assertion_current_platform": {
+        "command": [
+          "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+          "-X",
+          "utf8",
+          "-m",
+          "pytest",
+          "tests/test_release_signing.py::test_stable_channel_requires_complete_declarations",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--basetemp=E:\\evalapp\\outputs\\windows-second-rsz67n4n\\current_assertion_current_platform\\pytest"
+        ],
+        "legacy_assertion": false,
+        "reverted_platform": false,
+        "exit_code": 0,
+        "expected_exit_code": 0,
+        "expected_summary": "9 passed",
+        "matched": true,
+        "manager_sha256": "bfb43409c7f1fd475fce657983253dbea3888f91646da248583b15f0cf13a15d",
+        "test_sha256": "3aed04809382ef8566f2f4392032144028a75c79fa6c116c5e26426a2d7f4728"
+      },
+      "current_assertion_reverted_platform": {
+        "command": [
+          "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+          "-X",
+          "utf8",
+          "-m",
+          "pytest",
+          "tests/test_release_signing.py::test_stable_channel_requires_complete_declarations",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--basetemp=E:\\evalapp\\outputs\\windows-second-rsz67n4n\\current_assertion_reverted_platform\\pytest"
+        ],
+        "legacy_assertion": false,
+        "reverted_platform": true,
+        "exit_code": 0,
+        "expected_exit_code": 0,
+        "expected_summary": "9 passed",
+        "matched": true,
+        "manager_sha256": "9de8805fb5f0c9805a8609941aae8000af97992ceb4553600315d1dbb4171ff3",
+        "test_sha256": "3aed04809382ef8566f2f4392032144028a75c79fa6c116c5e26426a2d7f4728"
+      }
+    },
+    "owned_temp_directory": "E:\\evalapp\\outputs\\windows-second-rsz67n4n",
+    "archive_sha256": "2e9ad50fc6530857eaf6a4cfe8a96ab10a0813546d791ee97366893d2fcd58df",
+    "base_blobs": {
+      "manager": "24a0c3e1baf4b4392a5886a03f10a43f8f91d220c36b57748b4235dbdd6a99cd",
+      "test": "7926396dec8140716ad8097d7c42fd9dc3aa8c8e089cec147393e7dd5abc81a8"
+    },
+    "isolated_files_restored": true,
+    "temporary_data_removed": true,
+    "all_variants_matched": true
+  },
+  "environment": {
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.10.11 (tags/v3.10.11:7d4cc5a, Apr  5 2023, 00:38:17) [MSC v.1929 64 bit (AMD64)]",
+    "platform_system": "Windows",
+    "node": "DESKTOP-4O44IBU"
+  },
+  "platform_source_blobs_unchanged_between_matrix_and_fixed_validation": true,
+  "log_sha256_lf": {
+    "platform-current_assertion_current_platform.txt": "3c75fd72f153f8fea39784b45be4aeeb73f7269a07f4a72b6e40a7e9b2e60c51",
+    "platform-current_assertion_reverted_platform.txt": "3c75fd72f153f8fea39784b45be4aeeb73f7269a07f4a72b6e40a7e9b2e60c51",
+    "platform-legacy_assertion_current_platform.txt": "8e232a2f5e9ef59bb6bb163efbbed4d15850b9ed2d9a7d285a3d90f0ac872ff3",
+    "platform-legacy_assertion_reverted_platform.txt": "486958e17201976ba1ce887f83a04d394e220c528d16364524327dfbad249818",
+    "platform-run.txt": "f6ffa61794a2915dc30f9771864d470c520963634b1e57c459c298a0e137cc03",
+    "resource-negative.txt": "005c8df349058e32e1fbfe2eceac3487c09a16405221cf1df6b39a4dee7e1170",
+    "resource-focused.txt": "fa1519086f5ec00941c4459aada7f302b504bba6c5a7a41d61a857669b6297a7",
+    "fixed.txt": "87f5e5bdea2ad08d376e0422c2a60cd6719c5dee117ec9ea07d46aa6e9b81a86"
+  }
+}

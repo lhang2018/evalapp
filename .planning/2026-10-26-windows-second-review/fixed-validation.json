@@ -1,0 +1,32 @@
+{
+  "pytest_arguments": [
+    "tests/test_windows_terminal_validation.py",
+    "tests/test_release_signing.py",
+    "tests/test_release_install_retire.py",
+    "tests/test_release_assets.py",
+    "tests/test_deployment_recovery.py",
+    "tests/test_backup_recovery.py",
+    "tests/test_release_gates.py",
+    "tests/test_process_recovery.py",
+    "tests/test_proactivity.py",
+    "tests/test_resource_admission.py",
+    "tests/test_proactive_review_20261026.py",
+    "tests/test_resource_second_review_20261026.py",
+    "tests/test_restore_entry_review_20261026.py",
+    "tests/test_budget.py",
+    "tests/test_goal_opportunities.py",
+    "tests/test_ledger_drift.py",
+    "tools/tests",
+    "-q"
+  ],
+  "snapshot_commit": "5bc1725a52ec71ebef3ba9b8d98d03b56c76bc63",
+  "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+  "owned_temp_directory": "E:\\evalapp\\outputs\\review5-yete41b2",
+  "source_tree": "9dc3a665839634bd5123b039ac1f21d350702cbe",
+  "archive_sha256": "182d59e99cbed8eb980b579d8b780ba141d63bcb93a807b06491b11c202633f5",
+  "source_path_when_tested": "E:\\evalapp\\outputs\\review5-yete41b2\\source",
+  "module_source_probe": "E:\\evalapp\\outputs\\review5-yete41b2\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-yete41b2\\source\\evoagent\\tools\\refactor.py\n",
+  "exit_code": 0,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+}

@@ -1,0 +1,167 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FF.FFFF.                                                                 [100%]
+================================== FAILURES ===================================
+______ test_proactive_start_requires_explicit_sample_validity[snapshot0] ______
+
+snapshot = {}
+
+    @pytest.mark.parametrize("snapshot", [{}, {"cpu": 0.1}, None])
+    def test_proactive_start_requires_explicit_sample_validity(snapshot):
+        class Adapter:
+            def admit(self, origin):
+                return SimpleNamespace(decision="admit", snapshot=snapshot, reason="probe")
+    
+>       assert not ProactivityGovernor(resource_governor=Adapter()).may_start().allowed
+E       AssertionError: assert not True
+E        +  where True = ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None).allowed
+E        +    where ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None) = may_start()
+E        +      where may_start = <evoagent.goals.proactivity.ProactivityGovernor object at 0x00000247D8E40430>.may_start
+E        +        where <evoagent.goals.proactivity.ProactivityGovernor object at 0x00000247D8E40430> = ProactivityGovernor(resource_governor=<test_resource_second_review_20261026.test_proactive_start_requires_explicit_sample_validity.<locals>.Adapter object at 0x00000247D8E40520>)
+E        +          where <test_resource_second_review_20261026.test_proactive_start_requires_explicit_sample_validity.<locals>.Adapter object at 0x00000247D8E40520> = <class 'test_resource_second_review_20261026.test_proactive_start_requires_explicit_sample_validity.<locals>.Adapter'>()
+
+tests\test_resource_second_review_20261026.py:16: AssertionError
+______ test_proactive_start_requires_explicit_sample_validity[snapshot1] ______
+
+snapshot = {'cpu': 0.1}
+
+    @pytest.mark.parametrize("snapshot", [{}, {"cpu": 0.1}, None])
+    def test_proactive_start_requires_explicit_sample_validity(snapshot):
+        class Adapter:
+            def admit(self, origin):
+                return SimpleNamespace(decision="admit", snapshot=snapshot, reason="probe")
+    
+>       assert not ProactivityGovernor(resource_governor=Adapter()).may_start().allowed
+E       AssertionError: assert not True
+E        +  where True = ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None).allowed
+E        +    where ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None) = may_start()
+E        +      where may_start = <evoagent.goals.proactivity.ProactivityGovernor object at 0x00000247D8DEFDC0>.may_start
+E        +        where <evoagent.goals.proactivity.ProactivityGovernor object at 0x00000247D8DEFDC0> = ProactivityGovernor(resource_governor=<test_resource_second_review_20261026.test_proactive_start_requires_explicit_sample_validity.<locals>.Adapter object at 0x00000247D8DEFFD0>)
+E        +          where <test_resource_second_review_20261026.test_proactive_start_requires_explicit_sample_validity.<locals>.Adapter object at 0x00000247D8DEFFD0> = <class 'test_resource_second_review_20261026.test_proactive_start_requires_explicit_sample_validity.<locals>.Adapter'>()
+
+tests\test_resource_second_review_20261026.py:16: AssertionError
+_____ test_invalid_sample_does_not_resume_or_forget_paused_task[invalid0] _____
+
+invalid = {}
+
+    @pytest.mark.parametrize("invalid", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_sample_does_not_resume_or_forget_paused_task(invalid):
+        sample = {"value": {"cpu": 0.95}}
+    
+        def read():
+            if sample["value"] == "raises":
+                raise RuntimeError("synthetic unavailable sampler")
+            return sample["value"]
+    
+        governor = ResourceGovernor(read)
+        assert governor.should_pause("synthetic-task", "opportunity").decision == "pause"
+        sample["value"] = invalid
+>       assert governor.resume_candidates() == {}
+E       AssertionError: assert {'synthetic-t...lid': False})} == {}
+E         
+E         Left contains 1 more item:
+E         {'synthetic-task': AdmissionDecision(decision='resume',
+E                                              origin='background',
+E                                              pressure=0.0,
+E                                              reason='资源已回落，后台任务可恢复',
+E                                              snapshot={'cpu': 0.0,...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests\test_resource_second_review_20261026.py:31: AssertionError
+_____ test_invalid_sample_does_not_resume_or_forget_paused_task[invalid1] _____
+
+invalid = {'cpu': nan}
+
+    @pytest.mark.parametrize("invalid", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_sample_does_not_resume_or_forget_paused_task(invalid):
+        sample = {"value": {"cpu": 0.95}}
+    
+        def read():
+            if sample["value"] == "raises":
+                raise RuntimeError("synthetic unavailable sampler")
+            return sample["value"]
+    
+        governor = ResourceGovernor(read)
+        assert governor.should_pause("synthetic-task", "opportunity").decision == "pause"
+        sample["value"] = invalid
+>       assert governor.resume_candidates() == {}
+E       AssertionError: assert {'synthetic-t...lid': False})} == {}
+E         
+E         Left contains 1 more item:
+E         {'synthetic-task': AdmissionDecision(decision='resume',
+E                                              origin='background',
+E                                              pressure=0.0,
+E                                              reason='资源已回落，后台任务可恢复',
+E                                              snapshot={'cpu': nan,...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests\test_resource_second_review_20261026.py:31: AssertionError
+_____ test_invalid_sample_does_not_resume_or_forget_paused_task[invalid2] _____
+
+invalid = {'cpu': False}
+
+    @pytest.mark.parametrize("invalid", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_sample_does_not_resume_or_forget_paused_task(invalid):
+        sample = {"value": {"cpu": 0.95}}
+    
+        def read():
+            if sample["value"] == "raises":
+                raise RuntimeError("synthetic unavailable sampler")
+            return sample["value"]
+    
+        governor = ResourceGovernor(read)
+        assert governor.should_pause("synthetic-task", "opportunity").decision == "pause"
+        sample["value"] = invalid
+>       assert governor.resume_candidates() == {}
+E       AssertionError: assert {'synthetic-t...lid': False})} == {}
+E         
+E         Left contains 1 more item:
+E         {'synthetic-task': AdmissionDecision(decision='resume',
+E                                              origin='background',
+E                                              pressure=0.0,
+E                                              reason='资源已回落，后台任务可恢复',
+E                                              snapshot={'cpu': 0.0,...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests\test_resource_second_review_20261026.py:31: AssertionError
+______ test_invalid_sample_does_not_resume_or_forget_paused_task[raises] ______
+
+invalid = 'raises'
+
+    @pytest.mark.parametrize("invalid", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_sample_does_not_resume_or_forget_paused_task(invalid):
+        sample = {"value": {"cpu": 0.95}}
+    
+        def read():
+            if sample["value"] == "raises":
+                raise RuntimeError("synthetic unavailable sampler")
+            return sample["value"]
+    
+        governor = ResourceGovernor(read)
+        assert governor.should_pause("synthetic-task", "opportunity").decision == "pause"
+        sample["value"] = invalid
+>       assert governor.resume_candidates() == {}
+E       AssertionError: assert {'synthetic-t...lid': False})} == {}
+E         
+E         Left contains 1 more item:
+E         {'synthetic-task': AdmissionDecision(decision='resume',
+E                                              origin='background',
+E                                              pressure=0.0,
+E                                              reason='资源已回落，后台任务可恢复',
+E                                              snapshot={'cpu': 0.0,...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests\test_resource_second_review_20261026.py:31: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_resource_second_review_20261026.py::test_proactive_start_requires_explicit_sample_validity[snapshot0]
+FAILED tests/test_resource_second_review_20261026.py::test_proactive_start_requires_explicit_sample_validity[snapshot1]
+FAILED tests/test_resource_second_review_20261026.py::test_invalid_sample_does_not_resume_or_forget_paused_task[invalid0]
+FAILED tests/test_resource_second_review_20261026.py::test_invalid_sample_does_not_resume_or_forget_paused_task[invalid1]
+FAILED tests/test_resource_second_review_20261026.py::test_invalid_sample_does_not_resume_or_forget_paused_task[invalid2]
+FAILED tests/test_resource_second_review_20261026.py::test_invalid_sample_does_not_resume_or_forget_paused_task[raises]
+6 failed, 2 passed in 0.25s

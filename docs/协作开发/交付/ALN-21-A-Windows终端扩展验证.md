@@ -1,5 +1,7 @@
 # ALN-21-A Windows 终端扩展验证
 
+> 2026-10-26 Windows二审与资源复核：Windows Python宿主切片二审通过；4变体签名归因与真实击杀/组合恢复复验成立。当前已有host-deploy/host-restore CLI入口，原‘无CLI’为历史状态；不扩大原生客户端/设备/生产接受。 [复核报告](../验收/2026-10-26-Windows二审与资源恢复复核.md)。
+
 任务：ALN-21-A / Windows或平板扩展验证
 负责人：claude-main（本会话认领）
 审阅人：待定（未分配独立审阅人，不自批为独立验收）

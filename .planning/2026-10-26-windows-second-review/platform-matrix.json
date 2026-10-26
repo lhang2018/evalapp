@@ -1,0 +1,103 @@
+{
+  "source_commit": "efe5ac0eccf1538eef086f94ce3c93452349e720",
+  "source_tree": "d40d0e68f8ae1a1f5b78bea70c5f0438857b5282",
+  "variants": {
+    "legacy_assertion_current_platform": {
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "-m",
+        "pytest",
+        "tests/test_release_signing.py::test_stable_channel_requires_complete_declarations",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp=E:\\evalapp\\outputs\\windows-second-rsz67n4n\\legacy_assertion_current_platform\\pytest"
+      ],
+      "legacy_assertion": true,
+      "reverted_platform": false,
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "expected_summary": "1 failed, 8 passed",
+      "matched": true,
+      "manager_sha256": "bfb43409c7f1fd475fce657983253dbea3888f91646da248583b15f0cf13a15d",
+      "test_sha256": "c6a580eb5f32bb51441d3bcad4460e045a85248dac3e2376e068e386cf7db236"
+    },
+    "legacy_assertion_reverted_platform": {
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "-m",
+        "pytest",
+        "tests/test_release_signing.py::test_stable_channel_requires_complete_declarations",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp=E:\\evalapp\\outputs\\windows-second-rsz67n4n\\legacy_assertion_reverted_platform\\pytest"
+      ],
+      "legacy_assertion": true,
+      "reverted_platform": true,
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "expected_summary": "9 passed",
+      "matched": true,
+      "manager_sha256": "9de8805fb5f0c9805a8609941aae8000af97992ceb4553600315d1dbb4171ff3",
+      "test_sha256": "c6a580eb5f32bb51441d3bcad4460e045a85248dac3e2376e068e386cf7db236"
+    },
+    "current_assertion_current_platform": {
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "-m",
+        "pytest",
+        "tests/test_release_signing.py::test_stable_channel_requires_complete_declarations",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp=E:\\evalapp\\outputs\\windows-second-rsz67n4n\\current_assertion_current_platform\\pytest"
+      ],
+      "legacy_assertion": false,
+      "reverted_platform": false,
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "expected_summary": "9 passed",
+      "matched": true,
+      "manager_sha256": "bfb43409c7f1fd475fce657983253dbea3888f91646da248583b15f0cf13a15d",
+      "test_sha256": "3aed04809382ef8566f2f4392032144028a75c79fa6c116c5e26426a2d7f4728"
+    },
+    "current_assertion_reverted_platform": {
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "-m",
+        "pytest",
+        "tests/test_release_signing.py::test_stable_channel_requires_complete_declarations",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp=E:\\evalapp\\outputs\\windows-second-rsz67n4n\\current_assertion_reverted_platform\\pytest"
+      ],
+      "legacy_assertion": false,
+      "reverted_platform": true,
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "expected_summary": "9 passed",
+      "matched": true,
+      "manager_sha256": "9de8805fb5f0c9805a8609941aae8000af97992ceb4553600315d1dbb4171ff3",
+      "test_sha256": "3aed04809382ef8566f2f4392032144028a75c79fa6c116c5e26426a2d7f4728"
+    }
+  },
+  "owned_temp_directory": "E:\\evalapp\\outputs\\windows-second-rsz67n4n",
+  "archive_sha256": "2e9ad50fc6530857eaf6a4cfe8a96ab10a0813546d791ee97366893d2fcd58df",
+  "base_blobs": {
+    "manager": "24a0c3e1baf4b4392a5886a03f10a43f8f91d220c36b57748b4235dbdd6a99cd",
+    "test": "7926396dec8140716ad8097d7c42fd9dc3aa8c8e089cec147393e7dd5abc81a8"
+  },
+  "isolated_files_restored": true,
+  "temporary_data_removed": true,
+  "all_variants_matched": true
+}

@@ -4427,7 +4427,7 @@
    "reviewer": "dsh-lead",
    "branch": "feature/user-direction",
    "base_commit": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
-   "status": "accepted",
+   "status": "review",
    "blocker": null,
    "evidence": [
     "代码: 704ec42b（goals/proactivity.py 策略层 + 12 项专项）",
@@ -4459,6 +4459,14 @@
      "reviewer": "dsh-lead",
      "result": "一审通过：真实资源压力下主动侧让位、回落恢复成立（15-D 真实咨询）。保留：仅 CPU 饱和；真实设备 UI 关闭即停未验（边界外）；按用户要求后续必须由另一审阅人再复核一遍。",
      "log": ".planning/2026-10-26-dsh-review/25b-real-resource-pressure.json"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "5bc1725a52ec71ebef3ba9b8d98d03b56c76bc63",
+     "source_tree": "9dc3a665839634bd5123b039ac1f21d350702cbe",
+     "result": "5bc1725修采样未知放行/无效采样自动恢复并清空暂停集合，固定相关295过，需他人复核。原0.768恢复指新准入不是0.70低水位resume；25-C新执行接线另审，不沿用本轮作为执行验收。",
+     "log": ".planning/2026-10-26-windows-second-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/25-B-主动强度、停止与资源非干扰.md",
@@ -4484,17 +4492,28 @@
     "F04",
     "G5"
    ],
-   "next_step": "dsh-lead 一审通过（真实宿主 CPU 压力：0.77 允许 / 1.00 拒绝 / 0.768 恢复；67 passed）。按用户要求必须由另一审阅人再复核一遍：重点核对真实压力判决与 15-D 语义、恢复迟滞、执行层 submit 接线缺口；二审前不作最终发布依据。",
+   "next_step": "5bc1725修采样未知放行/无效采样自动恢复并清空暂停集合，固定相关295过，需他人复核。原0.768恢复指新准入不是0.70低水位resume；25-C新执行接线另审，不沿用本轮作为执行验收。",
    "working_basis": "2026-10-25 zcode-next 认领。复用 15-D ResourceGovernor（已accepted）、25-A ProactiveAssistService（已accepted）、BudgetLedger 既有池语义；写入边界 goals/ + budget.py + android-app（客户端开关投影）；资源压力实测用可控压力源（真机测量另验）。",
    "prerequisites": "设备或宿主资源测量环境；单纯Mock预算计数不算非干扰验收",
    "latest_code_review": {
-    "id": "REVIEW-2026-10-25-DEVELOPED-4",
-    "date": "2026-10-25",
+    "id": "REVIEW-2026-10-26-RESOURCE-RECOVERY",
+    "date": "2026-10-26",
     "reviewer": "codex-runtime",
-    "fix_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
-    "scope": "off与调档/回调/严格并发收益类型/资源未知拒绝",
-    "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
-    "status": "fixes_delivered_pending_independent_recheck"
+    "cards": [
+     "ALN-15-D",
+     "ALN-25-B"
+    ],
+    "fixed_cards": [
+     "ALN-15-D",
+     "ALN-25-B"
+    ],
+    "fix_commit": "5bc1725a52ec71ebef3ba9b8d98d03b56c76bc63",
+    "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md",
+    "evidence": ".planning/2026-10-26-windows-second-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "缺有效采样标记拒主动启动、无效采样不自动恢复/遗忘暂停集合；固定相关295，不代新25-C执行链验收"
    },
    "delivered_commit": "704ec42b56f2054ac3d1ee1f3ef73ba42861e46f",
    "ownership_history": [
@@ -4509,6 +4528,15 @@
      "from": "review",
      "to": "accepted",
      "reason": "补齐真实宿主资源压力证据后 dsh-lead 一审通过；用户要求另一审阅人再复核"
+    }
+   ],
+   "review_history": [
+    {
+     "date": "2026-10-26",
+     "previous_status": "accepted",
+     "previous_reviewer": "dsh-lead",
+     "reason": "二审发现采样有效性/恢复集合新缺陷，已修但新代码待另一审阅人复核",
+     "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md"
     }
    ]
   },
@@ -6415,7 +6443,7 @@
    "reviewer": "zcode-main",
    "branch": "feature/user-direction",
    "base_commit": "3edc7903cfb2533772ad6df3e7462d8f0efa1b01",
-   "status": "accepted",
+   "status": "review",
    "blocker": null,
    "evidence": [
     "代码: aac74aba（resource_admission.py 决策器 + controller 准入接线 + 9 项专项）",
@@ -6426,6 +6454,14 @@
      "date": "2026-10-25",
      "scope": "独立复核（zcode-main）：R1专项9过、R2后台高压defer、R3前台豁免admit、R4前台超ceiling暂缓、R5迟滞防抖不误触发、R6采样异常fail-open admit、R7零差异声明（可选参数前置断言）；四语义确认（明确阈值/前台豁免/defer零扰动/fail-open）；转accepted",
      "review_report": "docs/协作开发/验收/2026-10-25-ALN-15-D独立复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "5bc1725a52ec71ebef3ba9b8d98d03b56c76bc63",
+     "source_tree": "9dc3a665839634bd5123b039ac1f21d350702cbe",
+     "result": "5bc1725修采样未知放行/无效采样自动恢复并清空暂停集合，固定相关295过，需他人复核。原0.768恢复指新准入不是0.70低水位resume；25-C新执行接线另审，不沿用本轮作为执行验收。",
+     "log": ".planning/2026-10-26-windows-second-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/15-D-设备资源准入与核心任务优先.md",
@@ -6465,9 +6501,39 @@
     "G4",
     "G5"
    ],
-   "next_step": "待独立复核（defer CREATED 语义/ fail-open 方向/迟滞默认值）",
+   "next_step": "5bc1725修采样未知放行/无效采样自动恢复并清空暂停集合，固定相关295过，需他人复核。原0.768恢复指新准入不是0.70低水位resume；25-C新执行接线另审，不沿用本轮作为执行验收。",
    "working_basis": "2026-10-25 zcode-next 认领。复用 15-A/15-R 预算账本与 15-P 池原子预留；写入边界 core/ + goals/；真实设备测量另验（本地用可控压力源模拟）。",
-   "prerequisites": "真实设备或受控宿主资源测量"
+   "prerequisites": "真实设备或受控宿主资源测量",
+   "review_history": [
+    {
+     "date": "2026-10-26",
+     "previous_status": "accepted",
+     "previous_reviewer": "zcode-main",
+     "reason": "二审发现采样有效性/恢复集合新缺陷，已修但新代码待另一审阅人复核",
+     "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md"
+    }
+   ],
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-RESOURCE-RECOVERY",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-15-D",
+     "ALN-25-B"
+    ],
+    "fixed_cards": [
+     "ALN-15-D",
+     "ALN-25-B"
+    ],
+    "fix_commit": "5bc1725a52ec71ebef3ba9b8d98d03b56c76bc63",
+    "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md",
+    "evidence": ".planning/2026-10-26-windows-second-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "缺有效采样标记拒主动启动、无效采样不自动恢复/遗忘暂停集合；固定相关295，不代新25-C执行链验收"
+   },
+   "delivery": "docs/协作开发/交付/ALN-15-D-设备资源准入与核心任务优先.md"
   },
   {
    "id": "ALN-16-P",
@@ -6877,7 +6943,7 @@
    "title": "Windows或平板扩展验证",
    "stream": "android",
    "owner": "claude-main",
-   "reviewer": "dsh-lead",
+   "reviewer": "codex-runtime",
    "branch": "feature/user-direction",
    "base_commit": "2e1438f4ee7583232f11297b51a6cca838b0becb",
    "status": "accepted",
@@ -6898,6 +6964,14 @@
      "reviewer": "dsh-lead",
      "result": "一审通过：Windows 终端扩展验证成立。保留意见：交付方'回退平台行→signing恢复9/9'归因声明本轮未独立复现；平板/Android-on-Windows/CLI-API部署编排仍是边界外缺口。按用户要求后续必须由另一审阅人再复核一遍。",
      "log": ".planning/2026-10-26-dsh-review/21a-review.json"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "5bc1725a52ec71ebef3ba9b8d98d03b56c76bc63",
+     "source_tree": "9dc3a665839634bd5123b039ac1f21d350702cbe",
+     "result": "Windows Python宿主切片二审通过：平台归因4变体与固定相关295过。CLI host-deploy/restore现已有入口；原生客户端/平板/Android联验/API管理面仍待，发布基线不变。依赖库新修复及25-C/15-E不因本卡二审自批。",
+     "log": ".planning/2026-10-26-windows-second-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/21-A-Windows或平板扩展验证.md",
@@ -6974,7 +7048,7 @@
     "G0",
     "G3"
    ],
-   "next_step": "dsh-lead 一审通过（Windows 平台词汇表/真实验证/5场景证据）；按用户要求必须由另一审阅人再复核一遍：重点复验隔离 worktree 下的 signing 归因、restart/composite recovery 场景与终端隐式行为变化；二审前不作最终发布依据。",
+   "next_step": "Windows Python宿主切片二审通过：平台归因4变体与固定相关295过。CLI host-deploy/restore现已有入口；原生客户端/平板/Android联验/API管理面仍待，发布基线不变。依赖库新修复及25-C/15-E不因本卡二审自批。",
    "working_basis": "claude-main 认领实施：Windows 终端实测验证（本机即目标终端）。以探针脚本+交付报告为主，evoagent/ 下代码改动最小化；共享文件按需外科手术式修改并声明精确修改点。平板终端与 Android 客户端边界记保留缺口。",
    "ownership_history": [
     {
@@ -6990,7 +7064,45 @@
      "reason": "dsh-lead 非作者独立一审通过；用户要求另一审阅人再复核"
     }
    ],
-   "prerequisites": "目标终端"
+   "prerequisites": "目标终端",
+   "review_history": [
+    {
+     "date": "2026-10-26",
+     "previous_status": "accepted",
+     "previous_reviewer": "dsh-lead",
+     "reason": "另一审阅人完成固定Windows宿主切片二审；矩阵归因与真实击杀/恢复复验通过",
+     "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md"
+    }
+   ],
+   "delivered_commit": "dbd32a1feceb89377471d4a8079440a8d48efd3f",
+   "second_review": {
+    "id": "REVIEW-2026-10-26-WINDOWS-SECOND",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-21-A"
+    ],
+    "reviewed_commit": "5bc1725a52ec71ebef3ba9b8d98d03b56c76bc63",
+    "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md",
+    "evidence": ".planning/2026-10-26-windows-second-review/committed-evidence.json",
+    "status": "independent_second_review_accepted_windows_host_slice",
+    "published_by_review": false,
+    "scope": "Windows Python宿主固定版本/回执组件/真实击杀恢复/组合恢复与signing因果矩阵；不扩大原生客户端/设备/生产接受"
+   },
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-WINDOWS-SECOND",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-21-A"
+    ],
+    "reviewed_commit": "5bc1725a52ec71ebef3ba9b8d98d03b56c76bc63",
+    "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md",
+    "evidence": ".planning/2026-10-26-windows-second-review/committed-evidence.json",
+    "status": "independent_second_review_accepted_windows_host_slice",
+    "published_by_review": false,
+    "scope": "Windows Python宿主固定版本/回执组件/真实击杀恢复/组合恢复与signing因果矩阵；不扩大原生客户端/设备/生产接受"
+   }
   },
   {
    "id": "ALN-22-A",
@@ -10427,6 +10539,56 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-知识持久化与上下文注入复核.md",
    "scope": "27-A/27-C修复，固定相关341；身份/项目隔离和真实LLM正式接受未完成"
+  },
+  {
+   "id": "discovered-5bc1725a52ec",
+   "title": "fix(resources): 缺失有效采样时拒绝主动启动和自动恢复",
+   "workpackage": "ALN-15",
+   "source_commit": "5bc1725a52ec71ebef3ba9b8d98d03b56c76bc63",
+   "files": [
+    "evoagent/core/resource_admission.py",
+    "evoagent/goals/proactivity.py",
+    "tests/test_resource_second_review_20261026.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md",
+   "scope": "资源采样/恢复修复，295相关，待独立复核"
+  },
+  {
+   "id": "discovered-cefdc7c61148",
+   "title": "feat(ALN-15-E): 原生资源采样与后台周期准入（本地组件切片）",
+   "workpackage": "ALN-15",
+   "source_commit": "cefdc7c61148a736572992d8779d7b3a15f95067",
+   "files": [
+    "android-app/android/app/src/main/java/com/evoagent/DevicePackage.kt",
+    "android-app/android/app/src/main/java/com/evoagent/ResourceSamplerModule.kt",
+    "android-app/src/device/resourceSampler.ts",
+    "android-app/src/offline/backgroundRunner.ts",
+    "android-app/test/device/resourceSampler.test.ts"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md",
+   "scope": "并行15-E原生采样代码登记；本轮不复用作者447/Kotlin作为验收"
+  },
+  {
+   "id": "discovered-4c2a942ee972",
+   "title": "feat(ALN-25-C): 主动任务准入执行与真实资源非干扰",
+   "workpackage": "ALN-25",
+   "source_commit": "4c2a942ee9720bb16a02c10a082b8ab7c100a2f1",
+   "files": [
+    "evoagent/app.py",
+    "evoagent/goals/proactive_execution.py",
+    "tests/test_proactive_execution.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md",
+   "scope": "并行25-C实际提交接线登记；不在本轮5bc1725固定回归范围"
   }
  ],
  "requirement_batches": [
@@ -10788,6 +10950,40 @@
    "product_acceptance_added": false,
    "published_by_review": false,
    "scope": "知识鲜度/事务/迁移、注入控制和固定任务质量；固定相关341过，非全量/真实LLM/身份隔离接受"
+  },
+  {
+   "id": "REVIEW-2026-10-26-WINDOWS-SECOND",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-21-A"
+   ],
+   "reviewed_commit": "5bc1725a52ec71ebef3ba9b8d98d03b56c76bc63",
+   "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md",
+   "evidence": ".planning/2026-10-26-windows-second-review/committed-evidence.json",
+   "status": "independent_second_review_accepted_windows_host_slice",
+   "published_by_review": false,
+   "scope": "Windows Python宿主固定版本/回执组件/真实击杀恢复/组合恢复与signing因果矩阵；不扩大原生客户端/设备/生产接受"
+  },
+  {
+   "id": "REVIEW-2026-10-26-RESOURCE-RECOVERY",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-15-D",
+    "ALN-25-B"
+   ],
+   "fixed_cards": [
+    "ALN-15-D",
+    "ALN-25-B"
+   ],
+   "fix_commit": "5bc1725a52ec71ebef3ba9b8d98d03b56c76bc63",
+   "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md",
+   "evidence": ".planning/2026-10-26-windows-second-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false,
+   "scope": "缺有效采样标记拒主动启动、无效采样不自动恢复/遗忘暂停集合；固定相关295，不代新25-C执行链验收"
   }
  ]
 }
