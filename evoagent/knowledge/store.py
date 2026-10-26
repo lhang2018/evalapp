@@ -75,7 +75,8 @@ class KnowledgeEntry:
             "confidence": float(self.confidence),
             "applicable_domains": list(self.applicable_domains),
             "version": int(self.version), "created_at": float(self.created_at),
-            "revoked_at": self.revoked_at, "revoke_reason": self.revoke_reason,
+            "revoked_at": float(self.revoked_at) if self.revoked_at is not None else None,
+            "revoke_reason": self.revoke_reason,
         }
 
     @classmethod

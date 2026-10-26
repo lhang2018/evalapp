@@ -86,6 +86,14 @@ def test_partial_migration_rolls_back_all_target_rows(stores):
     assert source.digest() == before
 
 
+def test_integer_revocation_timestamp_has_same_digest_after_migration_and_reload(stores):
+    target, other = stores
+    source = KnowledgeStore()
+    source.add(entry(revoked_at=200, revoke_reason="synthetic revocation"))
+    migrated = migrate_knowledge(source, target, actor="review", reason="probe")
+    assert migrated["digest"] == source.digest() == target.digest() == other.digest()
+
+
 def test_knowledge_write_does_not_commit_caller_transaction(stores):
     left, _ = stores
     conn = left._conn
