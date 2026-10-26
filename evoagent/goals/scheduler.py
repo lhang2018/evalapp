@@ -22,6 +22,7 @@
 """
 
 import json
+import math
 import threading
 import time
 import uuid
@@ -93,6 +94,7 @@ class GoalScheduler:
         self.owner_id = owner_id or ("sched_" + uuid.uuid4().hex)
         self._stop = threading.Event()
         self._thread: Optional[threading.Thread] = None
+        self._lifecycle_lock = threading.RLock()
         # ALN-13-S：宿主可观测量（周期/延迟/失败/恢复）
         self._started_at: Optional[float] = None
         self._ticks = 0
@@ -356,11 +358,16 @@ class GoalScheduler:
 
     def status(self, *, now: Optional[float] = None) -> Dict[str, Any]:
         """宿主观测：周期/延迟/失败/恢复状态（供 CLI/API 读取）。"""
-        thread = self._thread
+        with self._lifecycle_lock:
+            thread = self._thread
+            running = bool(thread is not None and thread.is_alive())
+            stopping = running and self._stop.is_set()
+            started_at = self._started_at if running else None
         return {
             "owner_id": self.owner_id,
-            "running": bool(thread is not None and thread.is_alive()),
-            "started_at": self._started_at,
+            "running": running,
+            "stopping": stopping,
+            "started_at": started_at,
             "ticks": self._ticks,
             "last_tick_at": self._last_tick_at,
             "stats": self.stats(now=now),
@@ -371,11 +378,10 @@ class GoalScheduler:
         }
 
     def start(self, *, poll_seconds: Optional[float] = None) -> threading.Thread:
-        if self._thread is not None and self._thread.is_alive():
-            return self._thread
-        self._stop.clear()
-        interval = float(poll_seconds or self.policy.interval_seconds)
-        self._started_at = self.clock()
+        interval = float(self.policy.interval_seconds
+                         if poll_seconds is None else poll_seconds)
+        if not math.isfinite(interval) or not 0 < interval <= threading.TIMEOUT_MAX:
+            raise ValueError("poll_seconds must be finite and positive within the thread timeout limit")
 
         def loop() -> None:
             while not self._stop.is_set():
@@ -387,15 +393,28 @@ class GoalScheduler:
                 if self._stop.wait(max(1.0, interval)):
                     break
 
-        self._thread = threading.Thread(target=loop, daemon=True,
-                                        name="goal-scheduler")
-        self._thread.start()
-        return self._thread
+        with self._lifecycle_lock:
+            if self._thread is not None and self._thread.is_alive():
+                # A timed-out stop is still draining. Never clear its signal or
+                # create a second worker while the old tick owns the runtime.
+                return self._thread
+            self._stop.clear()
+            self._started_at = self.clock()
+            self._thread = threading.Thread(target=loop, daemon=True,
+                                            name="goal-scheduler")
+            self._thread.start()
+            return self._thread
 
     def stop(self, timeout: float = 5.0) -> None:
-        self._stop.set()
-        thread = self._thread
-        if thread is not None:
+        timeout = float(timeout)
+        if not math.isfinite(timeout) or not 0 <= timeout <= threading.TIMEOUT_MAX:
+            raise ValueError("timeout must be finite and nonnegative within the thread timeout limit")
+        with self._lifecycle_lock:
+            self._stop.set()
+            thread = self._thread
+        if thread is not None and thread is not threading.current_thread():
             thread.join(timeout=timeout)
-            self._thread = None
-        self._started_at = None
+        with self._lifecycle_lock:
+            if self._thread is thread and (thread is None or not thread.is_alive()):
+                self._thread = None
+                self._started_at = None

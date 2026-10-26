@@ -76,10 +76,10 @@ class CandidateEvaluationService:
         # 资产/基准错误原样上抛，由 API 映射为 409（请求合法但候选不可执行）。
         baseline = self.host.resolve(baseline_ref)
         candidate = self.host.resolve(candidate_ref)
-        report = self.benchmark.compare(baseline_ref, candidate_ref,
-                                        bench_cases)
         release_before = getattr(self.releases, "current_release_id", None) \
             if self.releases is not None else None
+        report = self.benchmark.compare(baseline_ref, candidate_ref,
+                                        bench_cases)
         release_after = getattr(self.releases, "current_release_id", None) \
             if self.releases is not None else None
         return {

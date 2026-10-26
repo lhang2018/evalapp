@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Optional
 
 from ..tools.coding import CODING_PACK, install_coding_pack
 from ..tools.registry import ToolRegistry
+from ..core.permissions import PermissionController
 
 
 class CodingConsumerError(ValueError):
@@ -51,9 +52,14 @@ def _hash_tree(root: str) -> Dict[str, str]:
 
 
 class CodingExpertConsumer:
-    def __init__(self, *, clock=None, registry_factory=None):
+    def __init__(self, *, clock=None, registry_factory=None, permissions=None,
+                 store=None):
         self.clock = clock or time.time
-        self._registry_factory = registry_factory or (lambda: ToolRegistry())
+        # Per-project tool sets must share the host's current permission gate.
+        # Actor/reason describe an action; they are not an authorization grant.
+        self.permissions = permissions if permissions is not None else PermissionController()
+        self._registry_factory = registry_factory or (
+            lambda: ToolRegistry(self.permissions, store=store))
         self._roots: Dict[str, Dict[str, Any]] = {}
 
     def _root(self, project_root: str) -> str:
@@ -94,6 +100,7 @@ class CodingExpertConsumer:
 
         previous = existing
         registry = self._registry_factory()
+        registry.permissions = self.permissions
         before = _hash_tree(root)
         try:
             manifest = install_coding_pack(registry, root)

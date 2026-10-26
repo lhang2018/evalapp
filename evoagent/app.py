@@ -245,7 +245,8 @@ class App:
             releases=self.releases, source="host/candidate-execution")
         # ALN-18-H：编程专家按项目根独立装配编码包（真实工具消费入口）
         from .experts.coding_consumer import CodingExpertConsumer
-        self.coding_consumer = CodingExpertConsumer()
+        self.coding_consumer = CodingExpertConsumer(
+            permissions=self.permissions, store=self.db)
 
         # 评测器依赖运行时执行入口；在控制器之后注入以打破循环依赖
         self.evaluator = Evaluator(
