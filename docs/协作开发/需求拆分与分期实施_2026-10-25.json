@@ -8,7 +8,10 @@
     "chat/extracted/157_qa.md",
     "chat/extracted/154_qa.md",
     "docs/README新增设计梳理与实施映射_2026-10-25.md",
-    "docs/全量对齐与下一步实施计划_2026-10-22.md"
+    "docs/全量对齐与下一步实施计划_2026-10-22.md",
+    "docs/协作开发/新增状态复核与需求拆分_2026-10-26.md",
+    "docs/协作开发/待接需求_2026-10-26.md",
+    "docs/zcode遗留与现状对账_2026-10-26.md"
   ],
   "new_workpackages": [
     {
@@ -1310,12 +1313,568 @@
       "goal": "把已交付但零入口的deployment/recovery/observability/knowledge接入运行主链，并让能力可达性可机器校验",
       "acceptance": "四域各有可达CLI入口且走通真实路径；app.py装配闭合ProactiveAssistService与IdentityRegistry注入；可达性审计零悬空且缺入口即报错",
       "prerequisites": "仅需仓库与本地测试环境"
+    },
+    {
+      "id": "ALN-30-B",
+      "workpackage": "ALN-30",
+      "title": "客户端工作区成果与记忆控制接线",
+      "priority": "P0",
+      "phase": 1,
+      "depends_on": [
+        "ALN-23-C",
+        "ALN-24-A",
+        "ALN-24-C",
+        "ALN-24-D"
+      ],
+      "requirement_refs": [
+        "UX-07",
+        "UX-08",
+        "UX-11",
+        "UX-12",
+        "UX-13",
+        "UX-14",
+        "UX-17",
+        "UX-24"
+      ],
+      "write_paths": [
+        "android-app/src/features/workspace/",
+        "android-app/src/features/artifacts/",
+        "android-app/src/features/projects/",
+        "android-app/src/features/memory/",
+        "android-app/App.tsx",
+        "android-app/src/api.ts"
+      ],
+      "goal": "把既有工作区、成果版本/验收、项目延续和记忆管理组件接到真实App入口；手机执行仍沿12-E，不复制任务权威。",
+      "acceptance": "真实任务的计划/成果/验收状态可从页面追溯，下载或打开真实文件，空或失败结果不显示已交付；项目切换不串任务；记忆纠正、禁用、删除调真实API并展示保留边界，禁用后后续模型不再收到该范围内容；覆盖离线/超时/取消/权限拒绝；固定APK/JS实测与组件证据分别记录，未连设备不称真机通过",
+      "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；设备验收需明确空闲窗口",
+      "backlog_refs": [
+        "ZG-03",
+        "ZG-05",
+        "ZG-10"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "android"
+    },
+    {
+      "id": "ALN-16-Q",
+      "workpackage": "ALN-16",
+      "title": "聚合观测与受控导出删除API接线",
+      "priority": "P0",
+      "phase": 2,
+      "depends_on": [
+        "ALN-16-P",
+        "ALN-16-X"
+      ],
+      "requirement_refs": [
+        "UX-17",
+        "UX-24",
+        "G2"
+      ],
+      "write_paths": [
+        "evoagent/api/evidence_api.py",
+        "evoagent/api/routes.py",
+        "evoagent/observability/repository.py",
+        "evoagent/observability/export.py"
+      ],
+      "goal": "为既有聚合证据查询、授权导出下载及删除执行器提供受鉴权的API消费者；复用审计、保留项和受信身份，不重做仓储。",
+      "acceptance": "真实HTTP查询任务/运行证据，跨主体及越权导出删除拒绝，不能从body伪造principal；下载字节与审计/摘要匹配；删除逐层返回实际计数、残留和失败，不宣称跨备份或全域擦除；聚合观测与既有feedback入口分开审计，证明端点已注册并执行服务，异常不返回假成功",
+      "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
+      "backlog_refs": [
+        "ZG-10"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "integration"
+    },
+    {
+      "id": "ALN-29-F",
+      "workpackage": "ALN-29",
+      "title": "真实成果纵切片与同版本场景采证",
+      "priority": "P0",
+      "phase": 1,
+      "depends_on": [
+        "ALN-29-A",
+        "ALN-29-B",
+        "ALN-23-A",
+        "ALN-23-C",
+        "ALN-24-A",
+        "ALN-23-E",
+        "ALN-30-B"
+      ],
+      "requirement_refs": [
+        "UX-01",
+        "UX-07",
+        "UX-10",
+        "UX-11",
+        "UX-12",
+        "F01",
+        "F02",
+        "F03",
+        "G0",
+        "G1",
+        "G3",
+        "G7"
+      ],
+      "write_paths": [
+        "tests/product_scenarios/",
+        "tools/product_acceptance.py",
+        "docs/协作开发/验收/首发验收矩阵.json",
+        "docs/协作开发/验收/首发门禁证据_2026-10-25.json"
+      ],
+      "goal": "在同一固定版本打通资料输入到真实报告文件、独立验收、用户可打开成果，并分批采集首发场景证据。",
+      "acceptance": "首条报告任务使用实际配置模型和真实资料/工具产生文件，记录task/run/model/tool/版本、产物与独立验收结果；实际执行工具失败、验收失败、取消、预算耗尽和恢复分支；保留失败项及未运行项，不从组件日志拼observations；场景分别绑定源码/APK/JS与实际环境；只更新本次真实执行的用例/门禁，F04及其他未执行项仍not_run/untested",
+      "prerequisites": "真实模型服务、明确费用上限与测试资料；App真实交付与打开验证须设备环境，未具备时先完善可复跑驱动",
+      "backlog_refs": [
+        "ZG-05"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "integration"
+    },
+    {
+      "id": "ALN-15-E",
+      "workpackage": "ALN-15",
+      "title": "原生资源采样与后台周期准入",
+      "priority": "P1",
+      "phase": 3,
+      "depends_on": [
+        "ALN-15-D",
+        "ALN-25-B"
+      ],
+      "requirement_refs": [
+        "UX-21",
+        "G4",
+        "G5"
+      ],
+      "write_paths": [
+        "android-app/android/app/src/main/java/",
+        "android-app/src/device/",
+        "android-app/src/offline/backgroundRunner.ts",
+        "android-app/src/offline/backgroundNative.ts"
+      ],
+      "goal": "提供有时间和有效性标记的原生CPU/内存/电量/磁盘采样，把后台周期工作接到既有准入与暂停策略；不复制预算/阈值权威。",
+      "acceptance": "实际原生采样带来源、单位、采样时间与不可用状态，缺失/过期不伪造低压；高压或should_pause实际阻止新增后台动作，已有副作用先对账；采样失败不改前台权威任务；固定包测周期触发、后台/重启及资源压力；夹具仅验证分支，真实非干扰指标单独留证",
+      "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终需Android硬件与压力测量",
+      "backlog_refs": [
+        "ZG-04",
+        "ZG-08"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "android"
+    },
+    {
+      "id": "ALN-07-X",
+      "workpackage": "ALN-07",
+      "title": "恢复策略运行时执行与审批衔接",
+      "priority": "P1",
+      "phase": 2,
+      "depends_on": [
+        "ALN-07-R",
+        "ALN-07-C",
+        "ALN-04-R"
+      ],
+      "requirement_refs": [
+        "UX-09",
+        "UX-10",
+        "F03"
+      ],
+      "write_paths": [
+        "evoagent/workflows/recovery_executor.py",
+        "evoagent/core/controller.py",
+        "evoagent/planning/planner.py",
+        "evoagent/workflows/engine.py"
+      ],
+      "goal": "将已有恢复策略声明接到实际执行器，支持require_approval和partial_retry；fallback_tool/checkpoint仅对有实际产出和证据的意图开放。",
+      "acceptance": "失败后按策略产生实际审批/恢复动作，拒绝或过期不执行；计划修订、步骤和effect保持绑定；已确认成功副作用不重放，unknown/submitted先对账；部分重试只作用受影响步骤，崩溃后幂等恢复；无可执行策略或旧格式诚实停止/提示，不能把风险文案当恢复成功",
+      "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
+      "backlog_refs": [
+        "ZG-06"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "runtime"
+    },
+    {
+      "id": "ALN-13-S",
+      "workpackage": "ALN-13",
+      "title": "长期目标调度启动与持久周期消费",
+      "priority": "P1",
+      "phase": 3,
+      "depends_on": [
+        "ALN-13-P",
+        "ALN-15-P"
+      ],
+      "requirement_refs": [
+        "F04",
+        "B-90",
+        "B-91"
+      ],
+      "write_paths": [
+        "evoagent/goals/scheduler.py",
+        "evoagent/app.py",
+        "evoagent/cli.py",
+        "evoagent/api/goals_api.py"
+      ],
+      "goal": "把GoalScheduler的实际tick、持久周期和启停挂到宿主；已有GoalGovernor.advance和问题/机会接口保留，不重做。",
+      "acceptance": "真实启停后按持久到期时间推进一次任务，多实例或重启不重复派发；撤销授权、预算不足、主动关闭和资源让出时不启动；inflight失败/unknown按账本处理；CLI/API可观测周期、延迟、失败和恢复，宿主退出可停止且不遗留失控循环",
+      "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
+      "backlog_refs": [
+        "ZG-01",
+        "ZG-08"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "runtime"
+    },
+    {
+      "id": "ALN-02-I",
+      "workpackage": "ALN-02",
+      "title": "供应商动作工具与主链副作用接线",
+      "priority": "P1",
+      "phase": 2,
+      "depends_on": [
+        "ALN-02-P",
+        "ALN-01-A",
+        "ALN-07-C"
+      ],
+      "requirement_refs": [
+        "UX-10",
+        "F03",
+        "G2"
+      ],
+      "write_paths": [
+        "evoagent/tools/vendor_http.py",
+        "evoagent/tools/registry.py",
+        "evoagent/app.py",
+        "evoagent/config.py"
+      ],
+      "goal": "把既有vendor.submit适配器通过显式配置和工具注册接入真实任务，复用动作授权、幂等键及供应商回执对账。",
+      "acceptance": "未配置/未授权时明确不可用；已配置任务实际调用受控接收端并绑定effect/step，不接受自述成功；提交后超时/进程崩溃先查回执，拒绝盲目重发；恢复对账与补偿按原契约验证；受控本地服务与真实供应商分开取证，凭据不写事件/日志，真实费用与环境未验时保留未验",
+      "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；实际供应商联测需服务配置和预算",
+      "backlog_refs": [
+        "ZG-01",
+        "ZG-11"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "runtime"
+    },
+    {
+      "id": "ALN-09-I",
+      "workpackage": "ALN-09",
+      "title": "真实候选宿主消费与队列管理入口",
+      "priority": "P1",
+      "phase": 4,
+      "depends_on": [
+        "ALN-09-H",
+        "ALN-10-E"
+      ],
+      "requirement_refs": [
+        "B-78",
+        "G2",
+        "G3"
+      ],
+      "write_paths": [
+        "evoagent/integration/candidate_execution.py",
+        "evoagent/evolution/controller.py",
+        "evoagent/api/candidate_host_api.py",
+        "evoagent/api/routes.py",
+        "evoagent/app.py"
+      ],
+      "goal": "将IsolatedCandidateHost/HostBenchmark接到受控候选评测入口，补现有ProblemQueue的查询/管理面；持久队列已经被进化控制器消费，不重建。",
+      "acceptance": "只消费通过摘要/版本验证的真实候选制品，结果绑定基线、候选、数据集及实际宿主；队列查看/重试遵守权限和租约，进程失败不重复提案或绕过独立门禁；超时/异常进程终止、隔离和证据落盘可验证；评测成功不自动发布，不将返回字符串当候选收益",
+      "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
+      "backlog_refs": [
+        "ZG-01",
+        "ZG-11"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "assets"
+    },
+    {
+      "id": "ALN-18-H",
+      "workpackage": "ALN-18",
+      "title": "编程专家按项目安装与真实工具消费",
+      "priority": "P1",
+      "phase": 2,
+      "depends_on": [
+        "ALN-18-G",
+        "ALN-06-R",
+        "ALN-23-A"
+      ],
+      "requirement_refs": [
+        "F02",
+        "A-60"
+      ],
+      "write_paths": [
+        "evoagent/experts/coding_consumer.py",
+        "evoagent/app.py",
+        "evoagent/core/controller.py",
+        "evoagent/tools/registry.py"
+      ],
+      "goal": "按受信target_object/project root为编程专家装配既有精确版本编码包，避免全局注册表跨项目覆盖。",
+      "acceptance": "从实际任务选中专家到受限根安装再执行真实编辑/语法与项目测试，记录执行命令/returncode和磁盘变化；跨根、链接替换、包版本不符和未知工具拒绝；同根幂等，不同根独立注册表；失败后实际回滚并重新执行检查；不自动安装外部依赖、提交代码或扩大授权",
+      "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；选定临时真实项目与固定测试依赖",
+      "backlog_refs": [
+        "ZG-07"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "runtime"
+    },
+    {
+      "id": "ALN-25-C",
+      "workpackage": "ALN-25",
+      "title": "主动任务准入执行与真实资源非干扰",
+      "priority": "P1",
+      "phase": 3,
+      "depends_on": [
+        "ALN-25-A",
+        "ALN-25-B",
+        "ALN-15-D",
+        "ALN-30-A"
+      ],
+      "requirement_refs": [
+        "UX-21",
+        "F04",
+        "G5"
+      ],
+      "write_paths": [
+        "evoagent/goals/proactive_execution.py",
+        "evoagent/goals/proactivity.py",
+        "evoagent/core/controller.py",
+        "evoagent/app.py"
+      ],
+      "goal": "将may_start/defer/stop与实际主动任务启动、原子预算预留和停止挂接，复用30-A只读分析入口。",
+      "acceptance": "defer/关闭/无高价值机会时实际零新增非必要任务与外部动作，未启动预留可释放；高压或无进展停止可观测，核心任务状态和已完成结果不被改写，unknown成本不按零处理；在真实宿主负载记录核心任务质量/延迟/资源阈值和主动让出，模拟预算计数不替代实测",
+      "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终需固定宿主真实压力数据",
+      "backlog_refs": [
+        "ZG-08"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "runtime"
+    },
+    {
+      "id": "ALN-26-C",
+      "workpackage": "ALN-26",
+      "title": "能力缺口遥测预算与用户可见计划",
+      "priority": "P1",
+      "phase": 3,
+      "depends_on": [
+        "ALN-26-A",
+        "ALN-15-P",
+        "ALN-30-B"
+      ],
+      "requirement_refs": [
+        "A-59",
+        "UX-22",
+        "UX-25"
+      ],
+      "write_paths": [
+        "evoagent/goals/gap_planner.py",
+        "evoagent/api/gap_planner_api.py",
+        "evoagent/api/routes.py",
+        "android-app/src/features/gaps/",
+        "android-app/App.tsx"
+      ],
+      "goal": "把已实现缺口规划器接实际运行/反馈证据和真实预算台账，通过API与App展示来源、估算、限制及候选去向。",
+      "acceptance": "接收的运行/反馈可追溯且过期/伪造/跨领域证据不晋升，同一事件不重复计阈值；计划与原子预算/unknown挂账对齐，候选在权威仓储可查且保留requires_evaluation；用户看到的证据、费用未知与收益未证实均如实，API拒绝越权，不自动发布",
+      "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
+      "backlog_refs": [
+        "ZG-08"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "runtime"
+    },
+    {
+      "id": "ALN-26-D",
+      "workpackage": "ALN-26",
+      "title": "动态团队与组合工作流真实执行",
+      "priority": "P1",
+      "phase": 4,
+      "depends_on": [
+        "ALN-26-B",
+        "ALN-27-B",
+        "ALN-07-C",
+        "ALN-15-P"
+      ],
+      "requirement_refs": [
+        "A-53",
+        "A-60",
+        "A-70"
+      ],
+      "write_paths": [
+        "evoagent/experts/team_execution.py",
+        "evoagent/assets/composition.py",
+        "evoagent/workflows/engine.py",
+        "evoagent/core/controller.py"
+      ],
+      "goal": "将冻结团队契约和精确版本组合资产消费为实际工作流，执行角色交接、输入输出和权限/预算边界。",
+      "acceptance": "真实任务调用各角色工具，交接产物由实际输出产生并通过schema/版本/依赖校验；角色冲突、预算不足、未知副作用和取消时停止/对账，不能仅修改契约状态冒充执行；动态展开保持版本固定、可恢复和审计；已完成节点不重放，原团队/组合仓储继续作为权威",
+      "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
+      "backlog_refs": [
+        "ZG-08",
+        "ZG-09"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "runtime"
+    },
+    {
+      "id": "ALN-27-C",
+      "workpackage": "ALN-27",
+      "title": "知识持久化真实注入与迁移质量验证",
+      "priority": "P1",
+      "phase": 4,
+      "depends_on": [
+        "ALN-27-A",
+        "ALN-30-A",
+        "ALN-05-I"
+      ],
+      "requirement_refs": [
+        "A-69",
+        "B-81",
+        "B-88"
+      ],
+      "write_paths": [
+        "evoagent/knowledge/store.py",
+        "evoagent/knowledge/applicability.py",
+        "evoagent/knowledge/transfer.py",
+        "evoagent/memory/context.py",
+        "evoagent/app.py"
+      ],
+      "goal": "将30-A进程内知识库扩为可重启的受控仓储，plan_injection接实际上下文，迁移验证消费真实前后任务数据。",
+      "acceptance": "实际任务能使用适用知识并在manifest留来源/版本，撤销/低可信/不适用条目不进入模型；重启保留版本和撤销，跨用户/项目可见性沿既有身份；旧纯内存使用方式兼容；相同固定任务集前后质量、退化与限制留证，命中率或手填分数不能替代迁移收益",
+      "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；需固定前后任务集与运行版本",
+      "backlog_refs": [
+        "ZG-09"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "assets"
+    },
+    {
+      "id": "ALN-16-E",
+      "workpackage": "ALN-16",
+      "title": "端侧证据上传与业务缓存治理接线",
+      "priority": "P1",
+      "phase": 3,
+      "depends_on": [
+        "ALN-16-P",
+        "ALN-16-Q",
+        "ALN-12-A",
+        "ALN-30-B"
+      ],
+      "requirement_refs": [
+        "UX-17",
+        "UX-24",
+        "G2"
+      ],
+      "write_paths": [
+        "android-app/src/offline/",
+        "android-app/src/observability/",
+        "evoagent/observability/repository.py",
+        "evoagent/api/events_sync.py"
+      ],
+      "goal": "把已有EvidenceEvent投影接真实端侧事件队列和聚合查询，登记实际业务缓存的证据/删除适配，不复制正文或凭据。",
+      "acceptance": "实际设备事件经队列去重上传并关联task/run/origin，未验证来源不能自标trusted；restricted正文不进入上传负载，断网重启保留待传状态；缓存删除/保留逐层可核对；撤销/删除后的端侧缓存失效有真实回执，未覆盖的外部层明确保留；不承诺全域擦除",
+      "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终端侧证据需设备",
+      "backlog_refs": [
+        "ZG-10"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "android"
+    },
+    {
+      "id": "ALN-18-S",
+      "workpackage": "ALN-18",
+      "title": "真实语言服务接入与语义改写",
+      "priority": "P2",
+      "phase": 4,
+      "depends_on": [
+        "ALN-18-L",
+        "ALN-18-H"
+      ],
+      "requirement_refs": [
+        "A-60",
+        "A-70",
+        "F02"
+      ],
+      "write_paths": [
+        "evoagent/tools/language_service.py",
+        "evoagent/tools/refactor.py",
+        "evoagent/experts/coding_consumer.py"
+      ],
+      "goal": "在现有AST诚实降级基础上接入固定版本真实语言服务，按能力声明支持具体语言与跨文件语义改写。",
+      "acceptance": "记录服务版本/语言/能力并实际请求定义、引用和重命名，不把AST结果标成LSP；多文件改写后运行真实编译/项目测试；歧义、过期版本、越根与服务不可用时不产危险计划；保留dry-run、原子补丁和回滚边界；未支持语言明确不可用，不扩大写盘授权",
+      "prerequisites": "需本地固定语言服务及项目依赖，可先实现契约/拒绝路径",
+      "backlog_refs": [
+        "ZG-07"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "runtime"
+    },
+    {
+      "id": "ALN-20-R",
+      "workpackage": "ALN-20",
+      "title": "固定外部Runtime的任务主链采用",
+      "priority": "P2",
+      "phase": 4,
+      "depends_on": [
+        "ALN-20-P",
+        "ALN-18-H",
+        "ALN-15-P"
+      ],
+      "requirement_refs": [
+        "B-75",
+        "G2",
+        "G3"
+      ],
+      "write_paths": [
+        "evoagent/runtime/adapter.py",
+        "evoagent/runtime/external_poc.py",
+        "evoagent/core/controller.py",
+        "evoagent/app.py",
+        "evoagent/config.py"
+      ],
+      "goal": "在已有真实Ollama PoC之上增加显式任务级采用入口，验证工具循环、取消、恢复、预算及授权的等价边界。",
+      "acceptance": "按固定Runtime/模型摘要执行真实任务并记录实际采用，拒绝版本漂移或能力声明不足；外部事件不能冒充本系统run/effect权威，取消/异常/重启后不重放未知副作用；记录并发和长时稳定性、实际资源/费用未知项；PoC成功不自动激活生产默认",
+      "prerequisites": "需已固定外部Runtime、本地模型和受控资源预算",
+      "backlog_refs": [
+        "ZG-11"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "runtime"
+    },
+    {
+      "id": "ALN-24-F",
+      "workpackage": "ALN-24",
+      "title": "多主体记忆范围策略与迁移隔离",
+      "priority": "P2",
+      "phase": 4,
+      "depends_on": [
+        "ALN-24-D",
+        "ALN-05-I"
+      ],
+      "requirement_refs": [
+        "UX-17",
+        "UX-24",
+        "GLOBAL"
+      ],
+      "write_paths": [
+        "evoagent/memory/scope_policy.py",
+        "evoagent/memory/user_control.py",
+        "evoagent/memory/store.py",
+        "evoagent/api/memory_context_api.py"
+      ],
+      "goal": "作为多主体开放前置，将现有本地实例单行策略扩为受信主体分区，定义旧策略迁移与租户隔离；不重复c6c9872检索过滤。",
+      "acceptance": "主体由服务端鉴权确定，不能通过body选择他人策略；不同用户同scope互不影响；旧单用户策略迁移/回退可核对，缺失或损坏策略仍按明确规则拒绝/默认而不跨主体放宽；实际API到模型消息和manifest验证分区/Grant/撤销/重启；App管理消费与30-B沿同一接口",
+      "prerequisites": "只在明确启用多主体场景前实施；当前单用户过滤修复单独复核",
+      "backlog_refs": [
+        "ZG-02",
+        "ZG-10"
+      ],
+      "split_round": "STATUS-SPLIT-2026-10-26",
+      "stream": "integration"
     }
   ],
   "ux_coverage": {
     "UX-01": [
       "ALN-23-A",
-      "ALN-30-A"
+      "ALN-30-A",
+      "ALN-29-F"
     ],
     "UX-02": [
       "ALN-23-F"
@@ -1335,33 +1894,46 @@
       "ALN-08-W"
     ],
     "UX-07": [
-      "ALN-23-C"
+      "ALN-23-C",
+      "ALN-30-B",
+      "ALN-29-F"
     ],
     "UX-08": [
       "ALN-23-D",
-      "ALN-23-C"
+      "ALN-23-C",
+      "ALN-30-B"
     ],
     "UX-09": [
       "ALN-23-E",
-      "ALN-07-C"
+      "ALN-07-C",
+      "ALN-07-X"
     ],
     "UX-10": [
       "ALN-23-E",
       "ALN-02-P",
       "ALN-07-C",
-      "ALN-30-A"
+      "ALN-30-A",
+      "ALN-29-F",
+      "ALN-07-X",
+      "ALN-02-I"
     ],
     "UX-11": [
-      "ALN-24-A"
+      "ALN-24-A",
+      "ALN-30-B",
+      "ALN-29-F"
     ],
     "UX-12": [
-      "ALN-24-A"
+      "ALN-24-A",
+      "ALN-30-B",
+      "ALN-29-F"
     ],
     "UX-13": [
-      "ALN-24-A"
+      "ALN-24-A",
+      "ALN-30-B"
     ],
     "UX-14": [
-      "ALN-24-C"
+      "ALN-24-C",
+      "ALN-30-B"
     ],
     "UX-15": [
       "ALN-24-C"
@@ -1371,7 +1943,11 @@
     ],
     "UX-17": [
       "ALN-24-D",
-      "ALN-16-P"
+      "ALN-16-P",
+      "ALN-30-B",
+      "ALN-16-Q",
+      "ALN-16-E",
+      "ALN-24-F"
     ],
     "UX-18": [
       "ALN-25-A"
@@ -1383,21 +1959,29 @@
       "ALN-25-A"
     ],
     "UX-21": [
-      "ALN-25-B"
+      "ALN-25-B",
+      "ALN-15-E",
+      "ALN-25-C"
     ],
     "UX-22": [
-      "ALN-24-B"
+      "ALN-24-B",
+      "ALN-26-C"
     ],
     "UX-23": [
       "ALN-24-B"
     ],
     "UX-24": [
       "ALN-24-D",
-      "ALN-16-P"
+      "ALN-16-P",
+      "ALN-30-B",
+      "ALN-16-Q",
+      "ALN-16-E",
+      "ALN-24-F"
     ],
     "UX-25": [
       "ALN-24-E",
-      "ALN-08-P"
+      "ALN-08-P",
+      "ALN-26-C"
     ],
     "UX-26": [
       "ALN-29-B",
@@ -1414,22 +1998,32 @@
   },
   "acceptance_coverage": {
     "UX-F01-01": [
-      "ALN-23-B"
+      "ALN-23-B",
+      "ALN-29-F"
     ],
     "UX-F01-02": [
-      "ALN-23-B"
+      "ALN-23-B",
+      "ALN-29-F"
     ],
     "UX-F02-01": [
       "ALN-23-C",
       "ALN-24-A",
-      "ALN-12-E"
+      "ALN-12-E",
+      "ALN-30-B",
+      "ALN-29-F",
+      "ALN-18-H"
     ],
     "UX-F02-02": [
       "ALN-02-P",
-      "ALN-23-E"
+      "ALN-23-E",
+      "ALN-29-F",
+      "ALN-07-X",
+      "ALN-18-H"
     ],
     "UX-F02-03": [
-      "ALN-24-A"
+      "ALN-24-A",
+      "ALN-30-B",
+      "ALN-29-F"
     ],
     "UX-F03-01": [
       "ALN-23-E",
@@ -1444,42 +2038,55 @@
     "UX-F03-03": [
       "ALN-23-E",
       "ALN-07-C",
-      "ALN-12-V"
+      "ALN-12-V",
+      "ALN-29-F"
     ],
     "UX-F03-04": [
       "ALN-23-E",
       "ALN-07-C",
       "ALN-12-V",
-      "ALN-30-A"
+      "ALN-30-A",
+      "ALN-29-F",
+      "ALN-07-X"
     ],
     "UX-F03-05": [
       "ALN-23-E",
       "ALN-07-C",
-      "ALN-12-V"
+      "ALN-12-V",
+      "ALN-07-X",
+      "ALN-02-I"
     ],
     "UX-F04-01": [
-      "ALN-25-A"
+      "ALN-25-A",
+      "ALN-13-S"
     ],
     "UX-F04-02": [
-      "ALN-25-A"
+      "ALN-25-A",
+      "ALN-25-C"
     ],
     "UX-F04-03": [
       "ALN-25-B",
-      "ALN-15-D"
+      "ALN-15-D",
+      "ALN-15-E",
+      "ALN-25-C"
     ],
     "UX-F04-04": [
-      "ALN-25-B"
+      "ALN-25-B",
+      "ALN-13-S",
+      "ALN-25-C"
     ],
     "UX-GLOBAL-01": [
       "ALN-06-R",
       "ALN-29-E"
     ],
     "UX-GLOBAL-02": [
-      "ALN-24-D"
+      "ALN-24-D",
+      "ALN-30-B"
     ],
     "UX-GLOBAL-03": [
       "ALN-24-E",
-      "ALN-15-P"
+      "ALN-15-P",
+      "ALN-29-F"
     ]
   },
   "technical_coverage": ".planning/2026-10-25-readme-design-review/design-mapping.json",
@@ -1491,5 +2098,34 @@
     "3": "项目信任、有限主动帮助与资源实测",
     "4": "迁移/团队/外部Runtime与生产恢复",
     "5": "P2场景与全量收口"
-  }
+  },
+  "change_history": [
+    {
+      "id": "STATUS-SPLIT-2026-10-26",
+      "date": "2026-10-26",
+      "source_commit": "0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd",
+      "authorized_by": "user_request",
+      "request": "梳理新增状态，检查是否正确，然后拆需求",
+      "tasks": [
+        "ALN-30-B",
+        "ALN-16-Q",
+        "ALN-29-F",
+        "ALN-15-E",
+        "ALN-07-X",
+        "ALN-13-S",
+        "ALN-02-I",
+        "ALN-09-I",
+        "ALN-18-H",
+        "ALN-25-C",
+        "ALN-26-C",
+        "ALN-26-D",
+        "ALN-27-C",
+        "ALN-16-E",
+        "ALN-18-S",
+        "ALN-20-R",
+        "ALN-24-F"
+      ],
+      "note": "17张未认领卡；不改原包标题/依赖/关闭标准，不重复已有修复或设备验收卡"
+    }
+  ]
 }

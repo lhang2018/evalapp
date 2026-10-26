@@ -1,0 +1,21 @@
+{
+  "pytest_arguments": [
+    "tests/test_integration_wiring.py",
+    "tests/test_memory_policy_runtime.py",
+    "tests/test_update_artifact_delivery.py",
+    "tests/test_user_memory_control.py",
+    "tests/test_runtime_memory_identity.py",
+    "tools/tests",
+    "-q"
+  ],
+  "snapshot_commit": "0e1b4fd",
+  "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+  "owned_temp_directory": "E:\\evalapp\\outputs\\review5-43q27ekk",
+  "source_tree": "5c4a1defb8ae3960b7a7d572696ac5643f53984d",
+  "archive_sha256": "72133d04834c8bca081fd51b131dd21dec3dfec21c49285c52e2f5eea683baa6",
+  "source_path_when_tested": "E:\\evalapp\\outputs\\review5-43q27ekk\\source",
+  "module_source_probe": "E:\\evalapp\\outputs\\review5-43q27ekk\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-43q27ekk\\source\\evoagent\\tools\\refactor.py\n",
+  "exit_code": 0,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+}

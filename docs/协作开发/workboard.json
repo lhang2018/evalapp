@@ -6743,6 +6743,14 @@
      "result": "新增测试27项全过；相关既有139 passed无回归；隔离全量2299 passed/1 skipped/0 failed（455s）；变异10/10捕获0存活（M4/M7/M9首轮存活暴露审计语义盲区，补装配事实/声明集/verify真实性测试后全捕获）；真实链路：host-deploy落盘清单、host-restore identity_preserved+counts_matched+自动安全备份、无清单拒绝恢复fail-closed、私钥片段检出。修复既有切片1处：test_update_artifact_delivery补齐测试前提（登记激活release-key-1）5/5",
      "log": ".planning/2026-10-26-aln30a/iso-full-server.log; mutation-results.log",
      "delivery": "docs/协作开发/交付/ALN-30-A-服务端装配收口与主链可达性.md"
+    },
+    {
+     "date": "2026-10-26",
+     "status_split_round": "STATUS-SPLIT-2026-10-26",
+     "source_commit": "0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd",
+     "result": "固定相关176过；当前tests仅采集2328，非全量运行。区分六项声明可达与全域消费，交付保持review",
+     "log": ".planning/2026-10-26-status-split/runtime-validation.json",
+     "delivery": "docs/协作开发/新增状态复核与需求拆分_2026-10-26.md"
     }
    ],
    "card": "docs/协作开发/任务卡/30-A-服务端装配收口与主链可达性.md",
@@ -6758,7 +6766,7 @@
     "G0",
     "G3"
    ],
-   "next_step": "已交付转review（提交67bed46）；审阅人未定保留null，不自批；保留缺口：App.tsx客户端装配（12-E在途）、knowledge进程内存储持久化、25-B策略层启动装配、门禁证据回填（ALN-29/22范围）",
+   "next_step": "交付67bed46维持review，完整delivered_commit已补；本轮固定0e1b4fd相关176过，非完整独立接受。旧2299/1日志未绑定精确树，当前tests采集2328项，仍需当前版本完整取证；聚合观测API/知识注入/主动执行等由新卡承接。",
    "working_basis": "claude-main 认领实施：新增 evoagent/integration/wiring.py 独占模块；app.py/cli.py 按精确点外科手术式修改（当前两者均无他人在途）；客户端 App.tsx 装配不在本卡",
    "prerequisites": "仅需仓库与本地测试环境",
    "ownership_history": [
@@ -6768,6 +6776,676 @@
      "to": "claude-main",
      "reason": "用户批准开装配收口卡；勘察发现四域零入口+两处点名缺口，27份交付报告提及app.py/App.tsx"
     }
+   ],
+   "delivered_commit": "67bed4644a84fd564a0e752ac4bc06b4f7ba3382",
+   "status_check": {
+    "date": "2026-10-26",
+    "source_commit": "0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd",
+    "report": "docs/协作开发/新增状态复核与需求拆分_2026-10-26.md",
+    "scope": "Git/实际入口/固定176项接续核对；状态不升accepted，原作者和审阅归属保留"
+   }
+  },
+  {
+   "id": "ALN-30-B",
+   "workpackage": "ALN-30",
+   "title": "客户端工作区成果与记忆控制接线",
+   "stream": "android",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/30-B-客户端工作区成果与记忆控制接线.md",
+   "shared_files": [
+    "android-app/App.tsx",
+    "android-app/src/api.ts"
+   ],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 1,
+   "depends_on": [
+    "ALN-23-C",
+    "ALN-24-A",
+    "ALN-24-C",
+    "ALN-24-D"
+   ],
+   "requirement_refs": [
+    "UX-07",
+    "UX-08",
+    "UX-11",
+    "UX-12",
+    "UX-13",
+    "UX-14",
+    "UX-17",
+    "UX-24"
+   ],
+   "priority": "P0",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；设备验收需明确空闲窗口",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-03",
+    "ZG-05",
+    "ZG-10"
+   ]
+  },
+  {
+   "id": "ALN-16-Q",
+   "workpackage": "ALN-16",
+   "title": "聚合观测与受控导出删除API接线",
+   "stream": "integration",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/16-Q-聚合观测与受控导出删除API接线.md",
+   "shared_files": [
+    "evoagent/api/routes.py",
+    "evoagent/observability/export.py"
+   ],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 2,
+   "depends_on": [
+    "ALN-16-P",
+    "ALN-16-X"
+   ],
+   "requirement_refs": [
+    "UX-17",
+    "UX-24",
+    "G2"
+   ],
+   "priority": "P0",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-10"
+   ]
+  },
+  {
+   "id": "ALN-29-F",
+   "workpackage": "ALN-29",
+   "title": "真实成果纵切片与同版本场景采证",
+   "stream": "integration",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/29-F-真实成果纵切片与同版本场景采证.md",
+   "shared_files": [],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 1,
+   "depends_on": [
+    "ALN-29-A",
+    "ALN-29-B",
+    "ALN-23-A",
+    "ALN-23-C",
+    "ALN-24-A",
+    "ALN-23-E",
+    "ALN-30-B"
+   ],
+   "requirement_refs": [
+    "UX-01",
+    "UX-07",
+    "UX-10",
+    "UX-11",
+    "UX-12",
+    "F01",
+    "F02",
+    "F03",
+    "G0",
+    "G1",
+    "G3",
+    "G7"
+   ],
+   "priority": "P0",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "真实模型服务、明确费用上限与测试资料；App真实交付与打开验证须设备环境，未具备时先完善可复跑驱动",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-05"
+   ]
+  },
+  {
+   "id": "ALN-15-E",
+   "workpackage": "ALN-15",
+   "title": "原生资源采样与后台周期准入",
+   "stream": "android",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/15-E-原生资源采样与后台周期准入.md",
+   "shared_files": [],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 3,
+   "depends_on": [
+    "ALN-15-D",
+    "ALN-25-B"
+   ],
+   "requirement_refs": [
+    "UX-21",
+    "G4",
+    "G5"
+   ],
+   "priority": "P1",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终需Android硬件与压力测量",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-04",
+    "ZG-08"
+   ]
+  },
+  {
+   "id": "ALN-07-X",
+   "workpackage": "ALN-07",
+   "title": "恢复策略运行时执行与审批衔接",
+   "stream": "runtime",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/07-X-恢复策略运行时执行与审批衔接.md",
+   "shared_files": [
+    "evoagent/core/controller.py",
+    "evoagent/planning/planner.py",
+    "evoagent/workflows/engine.py"
+   ],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 2,
+   "depends_on": [
+    "ALN-07-R",
+    "ALN-07-C",
+    "ALN-04-R"
+   ],
+   "requirement_refs": [
+    "UX-09",
+    "UX-10",
+    "F03"
+   ],
+   "priority": "P1",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-06"
+   ]
+  },
+  {
+   "id": "ALN-13-S",
+   "workpackage": "ALN-13",
+   "title": "长期目标调度启动与持久周期消费",
+   "stream": "runtime",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/13-S-长期目标调度启动与持久周期消费.md",
+   "shared_files": [
+    "evoagent/app.py",
+    "evoagent/cli.py",
+    "evoagent/api/goals_api.py"
+   ],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 3,
+   "depends_on": [
+    "ALN-13-P",
+    "ALN-15-P"
+   ],
+   "requirement_refs": [
+    "F04",
+    "B-90",
+    "B-91"
+   ],
+   "priority": "P1",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-01",
+    "ZG-08"
+   ]
+  },
+  {
+   "id": "ALN-02-I",
+   "workpackage": "ALN-02",
+   "title": "供应商动作工具与主链副作用接线",
+   "stream": "runtime",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/02-I-供应商动作工具与主链副作用接线.md",
+   "shared_files": [
+    "evoagent/tools/registry.py",
+    "evoagent/app.py",
+    "evoagent/config.py"
+   ],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 2,
+   "depends_on": [
+    "ALN-02-P",
+    "ALN-01-A",
+    "ALN-07-C"
+   ],
+   "requirement_refs": [
+    "UX-10",
+    "F03",
+    "G2"
+   ],
+   "priority": "P1",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；实际供应商联测需服务配置和预算",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-01",
+    "ZG-11"
+   ]
+  },
+  {
+   "id": "ALN-09-I",
+   "workpackage": "ALN-09",
+   "title": "真实候选宿主消费与队列管理入口",
+   "stream": "assets",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/09-I-真实候选宿主消费与队列管理入口.md",
+   "shared_files": [
+    "evoagent/evolution/controller.py",
+    "evoagent/api/routes.py",
+    "evoagent/app.py"
+   ],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 4,
+   "depends_on": [
+    "ALN-09-H",
+    "ALN-10-E"
+   ],
+   "requirement_refs": [
+    "B-78",
+    "G2",
+    "G3"
+   ],
+   "priority": "P1",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-01",
+    "ZG-11"
+   ]
+  },
+  {
+   "id": "ALN-18-H",
+   "workpackage": "ALN-18",
+   "title": "编程专家按项目安装与真实工具消费",
+   "stream": "runtime",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/18-H-编程专家按项目安装与真实工具消费.md",
+   "shared_files": [
+    "evoagent/app.py",
+    "evoagent/core/controller.py",
+    "evoagent/tools/registry.py"
+   ],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 2,
+   "depends_on": [
+    "ALN-18-G",
+    "ALN-06-R",
+    "ALN-23-A"
+   ],
+   "requirement_refs": [
+    "F02",
+    "A-60"
+   ],
+   "priority": "P1",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；选定临时真实项目与固定测试依赖",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-07"
+   ]
+  },
+  {
+   "id": "ALN-25-C",
+   "workpackage": "ALN-25",
+   "title": "主动任务准入执行与真实资源非干扰",
+   "stream": "runtime",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/25-C-主动任务准入执行与真实资源非干扰.md",
+   "shared_files": [
+    "evoagent/core/controller.py",
+    "evoagent/app.py"
+   ],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 3,
+   "depends_on": [
+    "ALN-25-A",
+    "ALN-25-B",
+    "ALN-15-D",
+    "ALN-30-A"
+   ],
+   "requirement_refs": [
+    "UX-21",
+    "F04",
+    "G5"
+   ],
+   "priority": "P1",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终需固定宿主真实压力数据",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-08"
+   ]
+  },
+  {
+   "id": "ALN-26-C",
+   "workpackage": "ALN-26",
+   "title": "能力缺口遥测预算与用户可见计划",
+   "stream": "runtime",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/26-C-能力缺口遥测预算与用户可见计划.md",
+   "shared_files": [
+    "evoagent/api/routes.py",
+    "android-app/App.tsx"
+   ],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 3,
+   "depends_on": [
+    "ALN-26-A",
+    "ALN-15-P",
+    "ALN-30-B"
+   ],
+   "requirement_refs": [
+    "A-59",
+    "UX-22",
+    "UX-25"
+   ],
+   "priority": "P1",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-08"
+   ]
+  },
+  {
+   "id": "ALN-26-D",
+   "workpackage": "ALN-26",
+   "title": "动态团队与组合工作流真实执行",
+   "stream": "runtime",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/26-D-动态团队与组合工作流真实执行.md",
+   "shared_files": [
+    "evoagent/workflows/engine.py",
+    "evoagent/core/controller.py"
+   ],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 4,
+   "depends_on": [
+    "ALN-26-B",
+    "ALN-27-B",
+    "ALN-07-C",
+    "ALN-15-P"
+   ],
+   "requirement_refs": [
+    "A-53",
+    "A-60",
+    "A-70"
+   ],
+   "priority": "P1",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-08",
+    "ZG-09"
+   ]
+  },
+  {
+   "id": "ALN-27-C",
+   "workpackage": "ALN-27",
+   "title": "知识持久化真实注入与迁移质量验证",
+   "stream": "assets",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/27-C-知识持久化真实注入与迁移质量验证.md",
+   "shared_files": [
+    "evoagent/memory/context.py",
+    "evoagent/app.py"
+   ],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 4,
+   "depends_on": [
+    "ALN-27-A",
+    "ALN-30-A",
+    "ALN-05-I"
+   ],
+   "requirement_refs": [
+    "A-69",
+    "B-81",
+    "B-88"
+   ],
+   "priority": "P1",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；需固定前后任务集与运行版本",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-09"
+   ]
+  },
+  {
+   "id": "ALN-16-E",
+   "workpackage": "ALN-16",
+   "title": "端侧证据上传与业务缓存治理接线",
+   "stream": "android",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/16-E-端侧证据上传与业务缓存治理接线.md",
+   "shared_files": [],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 3,
+   "depends_on": [
+    "ALN-16-P",
+    "ALN-16-Q",
+    "ALN-12-A",
+    "ALN-30-B"
+   ],
+   "requirement_refs": [
+    "UX-17",
+    "UX-24",
+    "G2"
+   ],
+   "priority": "P1",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终端侧证据需设备",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-10"
+   ]
+  },
+  {
+   "id": "ALN-18-S",
+   "workpackage": "ALN-18",
+   "title": "真实语言服务接入与语义改写",
+   "stream": "runtime",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/18-S-真实语言服务接入与语义改写.md",
+   "shared_files": [],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 4,
+   "depends_on": [
+    "ALN-18-L",
+    "ALN-18-H"
+   ],
+   "requirement_refs": [
+    "A-60",
+    "A-70",
+    "F02"
+   ],
+   "priority": "P2",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "需本地固定语言服务及项目依赖，可先实现契约/拒绝路径",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-07"
+   ]
+  },
+  {
+   "id": "ALN-20-R",
+   "workpackage": "ALN-20",
+   "title": "固定外部Runtime的任务主链采用",
+   "stream": "runtime",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/20-R-固定外部Runtime的任务主链采用.md",
+   "shared_files": [
+    "evoagent/core/controller.py",
+    "evoagent/app.py",
+    "evoagent/config.py"
+   ],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 4,
+   "depends_on": [
+    "ALN-20-P",
+    "ALN-18-H",
+    "ALN-15-P"
+   ],
+   "requirement_refs": [
+    "B-75",
+    "G2",
+    "G3"
+   ],
+   "priority": "P2",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "需已固定外部Runtime、本地模型和受控资源预算",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-11"
+   ]
+  },
+  {
+   "id": "ALN-24-F",
+   "workpackage": "ALN-24",
+   "title": "多主体记忆范围策略与迁移隔离",
+   "stream": "integration",
+   "owner": null,
+   "reviewer": null,
+   "branch": null,
+   "base_commit": null,
+   "status": "unclaimed",
+   "blocker": null,
+   "evidence": [],
+   "card": "docs/协作开发/任务卡/24-F-多主体记忆范围策略与迁移隔离.md",
+   "shared_files": [
+    "evoagent/memory/store.py",
+    "evoagent/api/memory_context_api.py"
+   ],
+   "requirement_batch": "PRODUCT-2026-10-25",
+   "phase": 4,
+   "depends_on": [
+    "ALN-24-D",
+    "ALN-05-I"
+   ],
+   "requirement_refs": [
+    "UX-17",
+    "UX-24",
+    "GLOBAL"
+   ],
+   "priority": "P2",
+   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
+   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "prerequisites": "只在明确启用多主体场景前实施；当前单用户过滤修复单独复核",
+   "split_round": "STATUS-SPLIT-2026-10-26",
+   "backlog_refs": [
+    "ZG-02",
+    "ZG-10"
    ]
   }
  ],
@@ -7363,7 +8041,7 @@
    "stream": "integration",
    "owner": "claude-main",
    "delivery_state": "planned",
-   "next_step": "ALN-30-A 认领实施：服务端装配收口（零入口域接线+能力可达性审计），装配缺口闭合不等于发布批准",
+   "next_step": "30-A已交付review（67bed46），待补精确全量/接受证据；30-B客户端接线已拆未认领；原包关闭标准与发布边界不变",
    "requirement_batch": "PRODUCT-2026-10-25",
    "closure_criteria": "零入口域获得运行主链入口且有可复跑证据；点名的app.py装配缺口逐项闭合；能力可达性可机器校验且审计零悬空；装配收口不等于发布批准",
    "source_refs": [
@@ -7374,7 +8052,7 @@
    ]
   }
  ],
- "execution_note": "新增分期计划已登记；29-A已交付review，23-A由zcode-main独占卡推进（实现提交0fda873），24-B在途；原串行队列已归档，当前无单开发者队列。每张卡实际owner与独占路径以本表为准。其他线按真实认领推进；待审接口可用于独立实现，不代表接受或发布。baseline仍candidate，published_commit为空。",
+ "execution_note": "2026-10-26核对新增交付：30-A已交付review；本轮补拆17张未认领卡，合计31包105卡。原卡owner/reviewer/status保留，当前无单会话开发队列。按实际认领单人WIP=1，共享文件串行；待审接口可用于独立准备，不等于接受或发布。共同基线21899e6已发布，后续增量及首发产品门禁另验。",
  "execution_queue": null,
  "peer_review_batch": {
   "date": "2026-10-23",
@@ -8607,6 +9285,26 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-记忆范围策略主链复核.md",
    "scope": "定向209过，真实本机HTTP/控制器路径，非全量/产品接受/基线发布；新增修复待复核"
+  },
+  {
+   "id": "discovered-67bed4644a84",
+   "title": "feat(ALN-30-A): 服务端装配收口与能力可达性审计",
+   "workpackage": "ALN-30",
+   "source_commit": "67bed4644a84fd564a0e752ac4bc06b4f7ba3382",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/app.py",
+    "evoagent/cli.py",
+    "evoagent/integration/__init__.py",
+    "evoagent/integration/services.py",
+    "evoagent/integration/wiring.py",
+    "tests/test_integration_wiring.py",
+    "tests/test_update_artifact_delivery.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/新增状态复核与需求拆分_2026-10-26.md",
+   "scope": "补漏登记七个源码文件；固定0e1b4fd相关176通过，原历史2299/1不绑定当前树，保持review未发布"
   }
  ],
  "requirement_batches": [

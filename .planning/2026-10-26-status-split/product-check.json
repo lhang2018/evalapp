@@ -1,0 +1,133 @@
+{
+  "scope": "recorded observations and artifact integrity only; not independent acceptance or publication",
+  "source_commit": "0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd",
+  "matrix_valid": true,
+  "errors": [],
+  "counts": {
+    "passed": 0,
+    "failed": 0,
+    "not_run": 17
+  },
+  "cases": [
+    {
+      "id": "UX-F01-01",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-F01-02",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-F02-01",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-F02-02",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-F02-03",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-F03-01",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-F03-02",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-F03-03",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-F03-04",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-F03-05",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-F04-01",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-F04-02",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-F04-03",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-F04-04",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-GLOBAL-01",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-GLOBAL-02",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    },
+    {
+      "id": "UX-GLOBAL-03",
+      "status": "not_run",
+      "errors": [
+        "no execution evidence"
+      ]
+    }
+  ],
+  "all_passed": false
+}

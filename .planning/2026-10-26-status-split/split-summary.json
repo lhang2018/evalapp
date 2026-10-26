@@ -1,0 +1,289 @@
+{
+  "source_commit": "0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd",
+  "added": 17,
+  "priorities": {
+    "P0": 3,
+    "P1": 11,
+    "P2": 3
+  },
+  "before_cards": 88,
+  "after_cards": 105,
+  "states": {
+    "accepted": 75,
+    "review": 11,
+    "unclaimed": 19
+  },
+  "workpackages": 31,
+  "original_assignments_preserved": true,
+  "source_sha256_lf": {
+    "docs/协作开发/workboard.json": "9868b06b489cfc9a67b1e956d0286edad50e9587b7406e9c37ac98b751be2d30",
+    "docs/协作开发/需求拆分与分期实施_2026-10-25.json": "e44d7beb4b2cde0e0fd8ff52222a71b78c5bd239cc42d59d1a012f5e8865d05a"
+  },
+  "tasks": [
+    {
+      "id": "ALN-30-B",
+      "title": "客户端工作区成果与记忆控制接线",
+      "priority": "P0",
+      "phase": 1,
+      "depends_on": [
+        "ALN-23-C",
+        "ALN-24-A",
+        "ALN-24-C",
+        "ALN-24-D"
+      ],
+      "card": "docs/协作开发/任务卡/30-B-客户端工作区成果与记忆控制接线.md",
+      "backlog_refs": [
+        "ZG-03",
+        "ZG-05",
+        "ZG-10"
+      ]
+    },
+    {
+      "id": "ALN-16-Q",
+      "title": "聚合观测与受控导出删除API接线",
+      "priority": "P0",
+      "phase": 2,
+      "depends_on": [
+        "ALN-16-P",
+        "ALN-16-X"
+      ],
+      "card": "docs/协作开发/任务卡/16-Q-聚合观测与受控导出删除API接线.md",
+      "backlog_refs": [
+        "ZG-10"
+      ]
+    },
+    {
+      "id": "ALN-29-F",
+      "title": "真实成果纵切片与同版本场景采证",
+      "priority": "P0",
+      "phase": 1,
+      "depends_on": [
+        "ALN-29-A",
+        "ALN-29-B",
+        "ALN-23-A",
+        "ALN-23-C",
+        "ALN-24-A",
+        "ALN-23-E",
+        "ALN-30-B"
+      ],
+      "card": "docs/协作开发/任务卡/29-F-真实成果纵切片与同版本场景采证.md",
+      "backlog_refs": [
+        "ZG-05"
+      ]
+    },
+    {
+      "id": "ALN-15-E",
+      "title": "原生资源采样与后台周期准入",
+      "priority": "P1",
+      "phase": 3,
+      "depends_on": [
+        "ALN-15-D",
+        "ALN-25-B"
+      ],
+      "card": "docs/协作开发/任务卡/15-E-原生资源采样与后台周期准入.md",
+      "backlog_refs": [
+        "ZG-04",
+        "ZG-08"
+      ]
+    },
+    {
+      "id": "ALN-07-X",
+      "title": "恢复策略运行时执行与审批衔接",
+      "priority": "P1",
+      "phase": 2,
+      "depends_on": [
+        "ALN-07-R",
+        "ALN-07-C",
+        "ALN-04-R"
+      ],
+      "card": "docs/协作开发/任务卡/07-X-恢复策略运行时执行与审批衔接.md",
+      "backlog_refs": [
+        "ZG-06"
+      ]
+    },
+    {
+      "id": "ALN-13-S",
+      "title": "长期目标调度启动与持久周期消费",
+      "priority": "P1",
+      "phase": 3,
+      "depends_on": [
+        "ALN-13-P",
+        "ALN-15-P"
+      ],
+      "card": "docs/协作开发/任务卡/13-S-长期目标调度启动与持久周期消费.md",
+      "backlog_refs": [
+        "ZG-01",
+        "ZG-08"
+      ]
+    },
+    {
+      "id": "ALN-02-I",
+      "title": "供应商动作工具与主链副作用接线",
+      "priority": "P1",
+      "phase": 2,
+      "depends_on": [
+        "ALN-02-P",
+        "ALN-01-A",
+        "ALN-07-C"
+      ],
+      "card": "docs/协作开发/任务卡/02-I-供应商动作工具与主链副作用接线.md",
+      "backlog_refs": [
+        "ZG-01",
+        "ZG-11"
+      ]
+    },
+    {
+      "id": "ALN-09-I",
+      "title": "真实候选宿主消费与队列管理入口",
+      "priority": "P1",
+      "phase": 4,
+      "depends_on": [
+        "ALN-09-H",
+        "ALN-10-E"
+      ],
+      "card": "docs/协作开发/任务卡/09-I-真实候选宿主消费与队列管理入口.md",
+      "backlog_refs": [
+        "ZG-01",
+        "ZG-11"
+      ]
+    },
+    {
+      "id": "ALN-18-H",
+      "title": "编程专家按项目安装与真实工具消费",
+      "priority": "P1",
+      "phase": 2,
+      "depends_on": [
+        "ALN-18-G",
+        "ALN-06-R",
+        "ALN-23-A"
+      ],
+      "card": "docs/协作开发/任务卡/18-H-编程专家按项目安装与真实工具消费.md",
+      "backlog_refs": [
+        "ZG-07"
+      ]
+    },
+    {
+      "id": "ALN-25-C",
+      "title": "主动任务准入执行与真实资源非干扰",
+      "priority": "P1",
+      "phase": 3,
+      "depends_on": [
+        "ALN-25-A",
+        "ALN-25-B",
+        "ALN-15-D",
+        "ALN-30-A"
+      ],
+      "card": "docs/协作开发/任务卡/25-C-主动任务准入执行与真实资源非干扰.md",
+      "backlog_refs": [
+        "ZG-08"
+      ]
+    },
+    {
+      "id": "ALN-26-C",
+      "title": "能力缺口遥测预算与用户可见计划",
+      "priority": "P1",
+      "phase": 3,
+      "depends_on": [
+        "ALN-26-A",
+        "ALN-15-P",
+        "ALN-30-B"
+      ],
+      "card": "docs/协作开发/任务卡/26-C-能力缺口遥测预算与用户可见计划.md",
+      "backlog_refs": [
+        "ZG-08"
+      ]
+    },
+    {
+      "id": "ALN-26-D",
+      "title": "动态团队与组合工作流真实执行",
+      "priority": "P1",
+      "phase": 4,
+      "depends_on": [
+        "ALN-26-B",
+        "ALN-27-B",
+        "ALN-07-C",
+        "ALN-15-P"
+      ],
+      "card": "docs/协作开发/任务卡/26-D-动态团队与组合工作流真实执行.md",
+      "backlog_refs": [
+        "ZG-08",
+        "ZG-09"
+      ]
+    },
+    {
+      "id": "ALN-27-C",
+      "title": "知识持久化真实注入与迁移质量验证",
+      "priority": "P1",
+      "phase": 4,
+      "depends_on": [
+        "ALN-27-A",
+        "ALN-30-A",
+        "ALN-05-I"
+      ],
+      "card": "docs/协作开发/任务卡/27-C-知识持久化真实注入与迁移质量验证.md",
+      "backlog_refs": [
+        "ZG-09"
+      ]
+    },
+    {
+      "id": "ALN-16-E",
+      "title": "端侧证据上传与业务缓存治理接线",
+      "priority": "P1",
+      "phase": 3,
+      "depends_on": [
+        "ALN-16-P",
+        "ALN-16-Q",
+        "ALN-12-A",
+        "ALN-30-B"
+      ],
+      "card": "docs/协作开发/任务卡/16-E-端侧证据上传与业务缓存治理接线.md",
+      "backlog_refs": [
+        "ZG-10"
+      ]
+    },
+    {
+      "id": "ALN-18-S",
+      "title": "真实语言服务接入与语义改写",
+      "priority": "P2",
+      "phase": 4,
+      "depends_on": [
+        "ALN-18-L",
+        "ALN-18-H"
+      ],
+      "card": "docs/协作开发/任务卡/18-S-真实语言服务接入与语义改写.md",
+      "backlog_refs": [
+        "ZG-07"
+      ]
+    },
+    {
+      "id": "ALN-20-R",
+      "title": "固定外部Runtime的任务主链采用",
+      "priority": "P2",
+      "phase": 4,
+      "depends_on": [
+        "ALN-20-P",
+        "ALN-18-H",
+        "ALN-15-P"
+      ],
+      "card": "docs/协作开发/任务卡/20-R-固定外部Runtime的任务主链采用.md",
+      "backlog_refs": [
+        "ZG-11"
+      ]
+    },
+    {
+      "id": "ALN-24-F",
+      "title": "多主体记忆范围策略与迁移隔离",
+      "priority": "P2",
+      "phase": 4,
+      "depends_on": [
+        "ALN-24-D",
+        "ALN-05-I"
+      ],
+      "card": "docs/协作开发/任务卡/24-F-多主体记忆范围策略与迁移隔离.md",
+      "backlog_refs": [
+        "ZG-02",
+        "ZG-10"
+      ]
+    }
+  ]
+}

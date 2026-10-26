@@ -1,0 +1,16 @@
+{
+  "scope": "collaboration metadata only",
+  "workpackages": 31,
+  "dispatches": 105,
+  "baseline": "published",
+  "errors": [
+    "unregistered source change: evoagent/app.py",
+    "unregistered source change: evoagent/cli.py",
+    "unregistered source change: evoagent/integration/__init__.py",
+    "unregistered source change: evoagent/integration/services.py",
+    "unregistered source change: evoagent/integration/wiring.py",
+    "unregistered source change: tests/test_integration_wiring.py",
+    "unregistered source change: tests/test_update_artifact_delivery.py"
+  ],
+  "ok": false
+}

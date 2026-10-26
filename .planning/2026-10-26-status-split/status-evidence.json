@@ -1,0 +1,72 @@
+{
+  "source_commit": "0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd",
+  "original_cards_preserved": 88,
+  "original_packages_preserved": 31,
+  "new_unclaimed_cards": 17,
+  "runtime_passed": 176,
+  "collected_only": 2328,
+  "updated_metadata_tools_passed": 70,
+  "source_tree": "5c4a1defb8ae3960b7a7d572696ac5643f53984d",
+  "full_backend_rerun": false,
+  "product_acceptance_added": false,
+  "records": {
+    "runtime-validation.json": {
+      "pytest_arguments": [
+        "tests/test_integration_wiring.py",
+        "tests/test_memory_policy_runtime.py",
+        "tests/test_update_artifact_delivery.py",
+        "tests/test_user_memory_control.py",
+        "tests/test_runtime_memory_identity.py",
+        "tools/tests",
+        "-q"
+      ],
+      "snapshot_commit": "0e1b4fd",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-43q27ekk",
+      "source_tree": "5c4a1defb8ae3960b7a7d572696ac5643f53984d",
+      "archive_sha256": "72133d04834c8bca081fd51b131dd21dec3dfec21c49285c52e2f5eea683baa6",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-43q27ekk\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-43q27ekk\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-43q27ekk\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "collection-validation.json": {
+      "pytest_arguments": [
+        "tests",
+        "--collect-only",
+        "-q"
+      ],
+      "snapshot_commit": "0e1b4fd",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-e_e6rrph",
+      "source_tree": "5c4a1defb8ae3960b7a7d572696ac5643f53984d",
+      "archive_sha256": "72133d04834c8bca081fd51b131dd21dec3dfec21c49285c52e2f5eea683baa6",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-e_e6rrph\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-e_e6rrph\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-e_e6rrph\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "tools-validation.json": {
+      "pytest_arguments": [
+        "tools/tests",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-lst7htr2",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    }
+  },
+  "all_new_temporary_data_removed": true,
+  "log_sha256_lf": {
+    "runtime.txt": "58efeb7bbff3fe85a68315680c9623723dc23339319190acce5e55f53325df72",
+    "collection.txt": "54fa0cbcd138b40034f8f32bbb302fd046c8e5e8d9a24d7eda21d07db37b70c8",
+    "tools.txt": "be06a286295db85840e9eda86406057d6acb3824466e4448e905b88daac8158a"
+  }
+}
