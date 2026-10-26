@@ -7400,13 +7400,24 @@
    "workpackage": "ALN-15",
    "title": "原生资源采样与后台周期准入",
    "stream": "android",
-   "owner": null,
+   "owner": "dsh-lead",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "efe5ac0eccf1538eef086f94ce3c93452349e720",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-26",
+     "scope": "原生资源采样与后台准入本地组件切片：Android ResourceSamplerModule(真实 /proc/stat CPU 两次差分、ActivityManager 内存、BatteryManager、StatFs；valid/units/source/sampledAtMs/errors，首次 CPU 不伪造低压)；TS 适配校验分数/时效(缺失/非法/过期不伪造)与 highWater 由调用方传入不内置阈值；backgroundRunner 可选注入，高压/不可用/陈旧返回 deferred 不执行后台；新增测试7项；客户端447 passed、tsc0、Kotlin编译exit0",
+     "source_commit": "cefdc7c61148a736572992d8779d7b3a15f95067",
+     "functional_commit": "cefdc7c61148a736572992d8779d7b3a15f95067",
+     "source_tree": "ecc6fa2e6b5d9448f247fd2ef346bc8770ed8320",
+     "result": "组件/编译层交付；真机安装-采样-后台准入-压力实测未做（需设备窗口），Kotlin单测、策略下发/UI与设备OEM差异未覆盖；不冒称真机通过",
+     "log": ".planning/2026-10-26-aln15e/client-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-15-E-原生资源采样与后台周期准入.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/15-E-原生资源采样与后台周期准入.md",
    "shared_files": [],
    "requirement_batch": "PRODUCT-2026-10-25",
@@ -7421,14 +7432,30 @@
     "G5"
    ],
    "priority": "P1",
-   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
-   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "next_step": "待独立复核（本地组件切片，非真机验收）：原生采样来源/单位/时间/valid、缺失与过期不伪造低压、highWater 无内置权威、后台高压/不可用 deferred、客户端447/tsc0/Kotlin编译exit0 证据见交付文档与 .planning/2026-10-26-aln15e/；真机安装与压力测量、Kotlin单测、策略下发/UI 属后续；审阅人未定不自批",
+   "working_basis": "以efe5ac0eccf1538eef086f94ce3c93452349e720（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终需Android硬件与压力测量",
    "split_round": "STATUS-SPLIT-2026-10-26",
    "backlog_refs": [
     "ZG-04",
     "ZG-08"
-   ]
+   ],
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户指示继续；25-B 一审接受后 15-E 解锁为 P1 READY"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "claimed",
+     "to": "review",
+     "reason": "客户端组件切片完成；真机压力实测与策略下发留缺口"
+    }
+   ],
+   "delivered_commit": "cefdc7c61148a736572992d8779d7b3a15f95067",
+   "delivery": "docs/协作开发/交付/ALN-15-E-原生资源采样与后台周期准入.md"
   },
   {
    "id": "ALN-07-X",

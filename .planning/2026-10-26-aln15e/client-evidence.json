@@ -15,11 +15,12 @@
   "native_reports_valid_flag": true,
   "native_no_fake_low_pressure": true,
   "module_registered_in_package": true,
-  "adapter_validates_fractions": false,
+  "adapter_validates_fractions": true,
   "adapter_staleness_check": true,
   "adapter_no_default_threshold": true,
   "runner_consumes_gate": true
  },
- "all_checks_pass": false,
- "gap": "真机端到端（安装新 APK → 原生采样 → 后台周期准入 → 压力测量）未做，需设备空闲窗口与压测；本证据仅为组件/编译层面，不冒称真机通过"
+ "all_checks_pass": true,
+ "gap": "真机端到端（安装新 APK → 原生采样 → 后台周期准入 → 压力测量）未做，需设备空闲窗口与压测；本证据仅为组件/编译层面，不冒称真机通过",
+ "correction": "首版静态探针误查 'fraction(value)' 字面量导致 false；已改为检查 'function fraction(' 与 'Number.isFinite(value)' 后重算"
 }
