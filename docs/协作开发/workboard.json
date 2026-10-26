@@ -6858,13 +6858,24 @@
    "workpackage": "ALN-30",
    "title": "客户端工作区成果与记忆控制接线",
    "stream": "android",
-   "owner": null,
+   "owner": "dsh-lead",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "2f112276754ae10567e10d62bcfe21b11863037d",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-26",
+     "scope": "客户端本地组件切片：api.ts 接入24-A成果列表/预览与24-D记忆控制端点(adminToken)；新增 artifacts/panel.ts 与 memory/control.ts 纯视图模块(真实文件可打开、截断/二进制/空结果/失败诚实提示、来源与删除保留边界、范围禁用校验、离线/401/403提示)；App.tsx 任务卡成果面板+记忆页改造(范围禁用/恢复、保留边界展示)；契约探针8项全过；客户端测试437/tsc0",
+     "source_commit": "1b590a38b5900a3670e45387870e1441dc5c7a0e",
+     "functional_commit": "1b590a38b5900a3670e45387870e1441dc5c7a0e",
+     "source_tree": "3f6ff1964aee2bdda769db1bd0eb30cb2332e984",
+     "result": "新模块测试13 passed；客户端全量437 passed；tsc 0错；后端契约探针 .planning/2026-10-26-aln30b/api-contract-probe.json 8/8。缺口：项目/工作区视图未接线、服务端仅4KB预览无全量下载、真机设备证据未采（需空闲窗口）、禁用范围对模型上下文的客户端二次验证未做",
+     "log": ".planning/2026-10-26-aln30b/api-contract-probe.json",
+     "delivery": "docs/协作开发/交付/ALN-30-B-客户端工作区成果与记忆控制接线.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/30-B-客户端工作区成果与记忆控制接线.md",
    "shared_files": [
     "android-app/App.tsx",
@@ -6889,15 +6900,31 @@
     "UX-24"
    ],
    "priority": "P0",
-   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
-   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "next_step": "待独立复核（本地组件切片）：成果列表/预览/追溯、记忆控制端点与范围禁用、删除保留边界、离线/权限提示证据见交付文档与 .planning/2026-10-26-aln30b/；审阅需判断是否拆分或要求补：项目/工作区视图接线、全量下载端点、设备真机证据（需空闲窗口）",
+   "working_basis": "以2f112276754ae10567e10d62bcfe21b11863037d（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；设备验收需明确空闲窗口",
    "split_round": "STATUS-SPLIT-2026-10-26",
    "backlog_refs": [
     "ZG-03",
     "ZG-05",
     "ZG-10"
-   ]
+   ],
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户指定按优先级顺序认领；ALN-30-B 为 P0 READY 且可先做本地组件/拒绝路径（设备验收待空闲窗口）"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "claimed",
+     "to": "review",
+     "reason": "本地组件切片完成（成果面板+记忆控制+契约探针），设备验收与项目/工作区接线留作缺口"
+    }
+   ],
+   "delivered_commit": "1b590a38b5900a3670e45387870e1441dc5c7a0e",
+   "delivery": "docs/协作开发/交付/ALN-30-B-客户端工作区成果与记忆控制接线.md"
   },
   {
    "id": "ALN-16-Q",
