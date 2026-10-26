@@ -1,0 +1,48 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+F                                                                        [100%]
+================================== FAILURES ===================================
+_ test_integer_revocation_timestamp_has_same_digest_after_migration_and_reload _
+
+stores = (<evoagent.knowledge.store.KnowledgeStore object at 0x000001BB2AD9D090>, <evoagent.knowledge.store.KnowledgeStore object at 0x000001BB2AD9FD60>)
+
+    def test_integer_revocation_timestamp_has_same_digest_after_migration_and_reload(stores):
+        target, other = stores
+        source = KnowledgeStore()
+        source.add(entry(revoked_at=200, revoke_reason="synthetic revocation"))
+>       migrated = migrate_knowledge(source, target, actor="review", reason="probe")
+
+tests\test_knowledge_review_20261026.py:93: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+source = <evoagent.knowledge.store.KnowledgeStore object at 0x000001BB2AD9D300>
+target = <evoagent.knowledge.store.KnowledgeStore object at 0x000001BB2AD9D090>
+
+    def migrate_knowledge(source: KnowledgeStore, target: KnowledgeStore, *,
+                          actor: str, reason: str) -> Dict[str, Any]:
+        """把内存知识库受控迁移到持久库（摘要核验、撤销保真、幂等/冲突拒绝）。"""
+        if not isinstance(actor, str) or not actor.strip():
+            raise KnowledgeError("迁移必须记录 actor")
+        if not isinstance(reason, str) or not reason.strip():
+            raise KnowledgeError("迁移必须记录 reason")
+        if source is target:
+            raise KnowledgeError("源与目标是同一个知识库，无需迁移")
+        entries = sorted(source.all(), key=lambda e: (e.key, e.version, e.entry_id))
+        source_digest = _digest(entries)
+        with target._transaction():
+            if source_digest == target.digest():
+                return {"ok": True, "status": "already_migrated", "count": len(entries),
+                        "digest": source_digest, "actor": actor, "reason": reason}
+            if target.all():
+                raise KnowledgeError("目标知识库非空且内容不同，拒绝覆盖（需人工合并）")
+            for entry in entries:
+                target.add(entry)  # Includes revocation metadata; no intermediate activation.
+            if target.digest() != source_digest:
+>               raise KnowledgeError("迁移后摘要不一致，拒绝视为完成")
+E               evoagent.knowledge.store.KnowledgeError: 迁移后摘要不一致，拒绝视为完成
+
+evoagent\knowledge\store.py:263: KnowledgeError
+=========================== short test summary info ===========================
+FAILED tests/test_knowledge_review_20261026.py::test_integer_revocation_timestamp_has_same_digest_after_migration_and_reload
+1 failed, 25 deselected in 0.26s

@@ -1,0 +1,41 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+......................F............................                      [100%]
+================================== FAILURES ===================================
+_ test_controller_observes_live_revocation_and_evaluation_excludes_knowledge __
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-p17fwv77/scratch/pytest/test_controller_observes_live_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000022F6D497A90>
+
+    def test_controller_observes_live_revocation_and_evaluation_excludes_knowledge(tmp_path, monkeypatch):
+        from evoagent.app import App
+        from evoagent.core.task import TaskStatus
+        from evoagent.evolution.evaluator import EvalCase
+        from evoagent.evolution.runner import ControllerTaskRunner
+    
+        app = App(data_dir=str(tmp_path / "app"))
+        other_conn = sqlite3.connect(str(tmp_path / "app" / "evoagent.db"))
+        try:
+            assert app.knowledge._lock is app.db._lock
+            app.knowledge.add(entry())
+            seen = []
+            run = app.react.run
+    
+            def capture(messages, *args, **kwargs):
+                seen.append("\n".join(m.content for m in messages))
+                return run(messages, *args, **kwargs)
+    
+            monkeypatch.setattr(app.react, "run", capture)
+            first = app.submit("general question", intent="general", domain="general")
+            assert first.task_status == TaskStatus.SUCCEEDED
+            assert seen and any("synthetic safe experience" in text for text in seen)
+            seen.clear()
+            ok, _, _ = ControllerTaskRunner(app.controller).run_case(
+>               EvalCase(case_id="knowledge-eval", input="general question", domain="general", intent="general"))
+E               TypeError: EvalCase.__init__() got an unexpected keyword argument 'input'
+
+tests\test_knowledge_review_20261026.py:254: TypeError
+=========================== short test summary info ===========================
+FAILED tests/test_knowledge_review_20261026.py::test_controller_observes_live_revocation_and_evaluation_excludes_knowledge
+1 failed, 50 passed in 1.54s
