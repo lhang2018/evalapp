@@ -42,15 +42,11 @@ def entry(
 
 
 def outcomes(prefix, expert, passed, failed):
-    rows = [
-        TaskOutcome(task_id=f"{prefix}-{expert}-p{i}", expert=expert, passed=True)
-        for i in range(passed)
-    ]
-    rows += [
-        TaskOutcome(task_id=f"{prefix}-{expert}-f{i}", expert=expert, passed=False)
-        for i in range(failed)
-    ]
-    return rows
+    # The before/after run label is not a logical task identity. Keep the same
+    # fixed task manifest while varying outcomes, rather than comparing sets
+    # whose IDs depend on whether they passed or which run produced them.
+    return [TaskOutcome(task_id=f"{expert}-case-{i}", expert=expert, passed=i < passed)
+            for i in range(passed + failed)]
 
 
 class KnowledgeEntryValidationTest(unittest.TestCase):

@@ -12,17 +12,19 @@ from typing import Iterable, Optional
 
 @dataclass(frozen=True)
 class TaskOutcome:
-    """一次真实任务结果。``passed`` 由任务本身的验收决定，不是检索命中。"""
+    """真实结果；task_id须对应前后同一逻辑任务，passed取验收布尔结果。"""
 
     task_id: str
     expert: str
     passed: bool
 
     def validate(self) -> None:
-        if not str(self.task_id).strip():
+        if not isinstance(self.task_id, str) or not self.task_id.strip():
             raise ValueError("task_id 必填")
-        if not str(self.expert).strip():
+        if not isinstance(self.expert, str) or not self.expert.strip():
             raise ValueError("expert 必填")
+        if not isinstance(self.passed, bool):
+            raise ValueError("passed必须是布尔值")
 
 
 def _rate(passed: int, total: int) -> float:
@@ -64,8 +66,13 @@ class TransferReport:
 
 def _by_expert(outcomes: Iterable[TaskOutcome]) -> dict[str, list[TaskOutcome]]:
     grouped: dict[str, list[TaskOutcome]] = {}
+    seen = set()
     for outcome in outcomes:
         outcome.validate()
+        key = (outcome.expert, outcome.task_id)
+        if key in seen:
+            raise ValueError("同一专家任务结果不可重复计数")
+        seen.add(key)
         grouped.setdefault(outcome.expert, []).append(outcome)
     return grouped
 
@@ -104,6 +111,9 @@ def evaluate_transfer(
         return _unproven(
             "前后专家集合不一致，无法把变化归因到知识迁移", hit_rate=hit_rate
         )
+    if any({o.task_id for o in grouped_before[expert]} !=
+           {o.task_id for o in grouped_after[expert]} for expert in grouped_before):
+        return _unproven("前后固定任务清单不一致，无法归因知识迁移收益", hit_rate=hit_rate)
 
     deltas: list[ExpertDelta] = []
     for expert in sorted(grouped_before):
@@ -155,9 +165,11 @@ def outcomes_from_tasks(tasks, *, expert: str):
     for task in tasks:
         status = getattr(task, "task_status", "")
         status = getattr(status, "value", status)
-        passed = str(status).strip().lower() in {
-            "succeeded", "success", "done", "completed", "accepted", "verified"}
-        outcomes.append(TaskOutcome(
-            task_id=str(getattr(task, "task_id", "")),
-            expert=expert.strip(), passed=bool(passed)))
+        status = str(status).strip().lower()
+        if status not in {"succeeded", "failed", "cancelled"}:
+            raise ValueError("需要统一任务的真实终态结果，不能将未执行/未知状态算成质量失败")
+        outcome = TaskOutcome(task_id=getattr(task, "task_id", ""),
+                              expert=expert.strip(), passed=status == "succeeded")
+        outcome.validate()
+        outcomes.append(outcome)
     return outcomes

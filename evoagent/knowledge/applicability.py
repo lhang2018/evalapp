@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from typing import Optional
 
 from .store import KnowledgeEntry, KnowledgeStore
@@ -24,10 +25,18 @@ class InjectionPlan:
     skipped: tuple[SkippedEntry, ...]
 
 
+def _validate_threshold(value):
+    if (isinstance(value, bool) or not isinstance(value, (int, float))
+            or not 0 <= value <= 1 or not math.isfinite(value)):
+        raise ValueError("min_confidence必须是[0,1]中的有限数字")
+
+
 def inapplicability_reason(
     entry: KnowledgeEntry, *, domain: str, min_confidence: float = 0.0
 ) -> Optional[str]:
     """返回不可注入的原因；``None`` 表示可注入。"""
+    _validate_threshold(min_confidence)
+    entry.validate()
     if entry.revoked:
         return "已撤销"
     if domain not in entry.applicable_domains:
@@ -44,6 +53,7 @@ def plan_injection(
     min_confidence: float = 0.0,
 ) -> InjectionPlan:
     """为 ``domain`` 生成注入计划：可注入条目按可信度/版本降序，其余记录原因。"""
+    _validate_threshold(min_confidence)
     injected: list[KnowledgeEntry] = []
     skipped: list[SkippedEntry] = []
     ordered = sorted(

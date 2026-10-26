@@ -130,7 +130,7 @@ class App:
                                          memory=self.memory,
                                          releases=self.releases)
         self.credentials = CredentialRegistry()
-        self.knowledge = KnowledgeStore(self.db._conn)
+        self.knowledge = KnowledgeStore(self.db._conn, lock=self.db._lock)
         self.memory_control = MemoryControlService(self.memory, db=self.db,
                                                    audit=self.audit)
         self.assist = ProactiveAssistService(self.db,

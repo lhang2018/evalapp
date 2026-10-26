@@ -193,16 +193,20 @@ class ContextAssembler:
                 self.memory.record_use(m.memory_id)
 
         knowledge_pairs: List[Any] = []
-        knowledge_skipped = 0
-        if self.knowledge is not None:
+        knowledge_rejected: List[Any] = []
+        if self.knowledge is not None and include_memory:
             from ..knowledge.applicability import plan_injection
             plan = plan_injection(
                 self.knowledge, domain=domain,
                 min_confidence=self.knowledge_min_confidence)
-            knowledge_skipped = len(plan.skipped)
             for entry in plan.injected:
                 text = (f"[knowledge v{entry.version} source={entry.source} "
                         f"confidence={entry.confidence}] {entry.content}")
+                if _looks_untrusted(text):
+                    untrusted += 1
+                    untrusted_excluded += 1
+                    knowledge_rejected.append(entry)
+                    continue
                 ctx.memories.append(text)
                 knowledge_pairs.append((text, entry))
 
@@ -251,6 +255,7 @@ class ContextAssembler:
             scope_key=scope_key, limit=limit, identity=identity,
             grant=grant, memory_pairs=memory_pairs, rejected=rejected,
             knowledge_pairs=knowledge_pairs,
+            knowledge_rejected=knowledge_rejected,
             pre_memories=pre_memories, pre_results=pre_results,
             pre_tool_docs=pre_tool_docs, pre_evidence=pre_evidence,
             notes=notes)
@@ -262,6 +267,7 @@ class ContextAssembler:
                         grant: Optional[AccessGrant], memory_pairs: List[Any],
                         rejected: List[Dict[str, Any]],
                         knowledge_pairs: List[Any] = (),
+                        knowledge_rejected: List[Any] = (),
                         pre_memories: List[str], pre_results: List[str],
                         pre_tool_docs: List[str], pre_evidence: List[str],
                         notes: List[str]) -> ContextManifest:
@@ -313,6 +319,11 @@ class ContextAssembler:
                 reason="knowledge_injection" if included
                 else "dropped_by_compression",
                 included=included, created_at=entry.created_at))
+        for i, entry in enumerate(knowledge_rejected):
+            entries.append(make_entry(
+                "knowledge", entry.content, index=1000 + i,
+                source=entry.source, source_id=entry.entry_id, source_version=entry.version,
+                reason="untrusted_content", included=False, created_at=entry.created_at))
 
         _append_queue(entries, "result", pre_results, ctx.recent_results,
                       "最近执行结果")
@@ -345,7 +356,7 @@ class ContextAssembler:
                      if grant is not None else None,
             "memory_candidates": ctx.memory_candidates,
             "memory_used": ctx.memory_used,
-            "knowledge_injected": len(knowledge_pairs),
+            "knowledge_injected": sum(e.kind == "knowledge" and e.included for e in entries),
         }
         return ContextManifest.build(
             assembly=assembly, budget_tokens=max(1, (limit + 3) // 4),

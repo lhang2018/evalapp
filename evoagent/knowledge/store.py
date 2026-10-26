@@ -13,7 +13,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import threading
+import uuid
+from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from typing import Any, Dict, Iterable, Optional
 
@@ -42,26 +45,28 @@ class KnowledgeEntry:
         return self.revoked_at is not None
 
     def validate(self) -> None:
-        if not str(self.entry_id).strip():
-            raise KnowledgeError("entry_id 必填")
-        if not str(self.key).strip():
-            raise KnowledgeError("key 必填")
-        if not str(self.content).strip():
-            raise KnowledgeError("content 必填")
-        if not str(self.source).strip():
-            raise KnowledgeError("来源必填：知识必须可追溯到出处")
-        try:
-            confidence = float(self.confidence)
-        except (TypeError, ValueError) as exc:  # pragma: no cover - 防御
-            raise KnowledgeError("confidence 必须是数值") from exc
-        if not 0.0 <= confidence <= 1.0:
+        for name in ("entry_id", "key", "content", "source"):
+            value = getattr(self, name)
+            if not isinstance(value, str) or not value.strip():
+                raise KnowledgeError(name + "必须是非空字符串")
+        if (isinstance(self.confidence, bool) or not isinstance(self.confidence, (int, float))
+                or not 0.0 <= self.confidence <= 1.0):
             raise KnowledgeError("confidence 必须在 [0, 1]")
-        if not self.applicable_domains:
+        if not isinstance(self.applicable_domains, (tuple, list)) or not self.applicable_domains:
             raise KnowledgeError("适用域不能为空")
-        if any(not str(domain).strip() for domain in self.applicable_domains):
+        if any(not isinstance(domain, str) or not domain.strip() for domain in self.applicable_domains):
             raise KnowledgeError("适用域不能包含空值")
-        if int(self.version) < 1:
-            raise KnowledgeError("version 必须 >= 1")
+        if type(self.version) is not int or self.version < 1:
+            raise KnowledgeError("version 必须是 >= 1 的整数")
+        for value in (self.created_at, self.revoked_at):
+            if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float))
+                                      or value < 0 or not math.isfinite(value)):
+                raise KnowledgeError("知识时间戳必须是有限非负数字")
+        if self.created_at is None:
+            raise KnowledgeError("created_at必填")
+        if self.revoke_reason is not None and (not isinstance(self.revoke_reason, str)
+                                               or not self.revoke_reason.strip()):
+            raise KnowledgeError("revoke_reason必须是非空字符串或None")
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -75,14 +80,17 @@ class KnowledgeEntry:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "KnowledgeEntry":
-        return cls(entry_id=str(data["entry_id"]), key=str(data["key"]),
-                   content=str(data["content"]), source=str(data["source"]),
-                   confidence=float(data["confidence"]),
-                   applicable_domains=tuple(data.get("applicable_domains") or ()),
-                   version=int(data["version"]),
-                   created_at=float(data["created_at"]),
+        domains = data.get("applicable_domains")
+        if not isinstance(domains, (tuple, list)):
+            raise KnowledgeError("适用域必须是数组")
+        entry = cls(entry_id=data["entry_id"], key=data["key"],
+                   content=data["content"], source=data["source"],
+                   confidence=data["confidence"], applicable_domains=tuple(domains),
+                   version=data["version"], created_at=data["created_at"],
                    revoked_at=data.get("revoked_at"),
                    revoke_reason=data.get("revoke_reason"))
+        entry.validate()
+        return entry
 
 
 _TABLE = """CREATE TABLE IF NOT EXISTS knowledge_entries(
@@ -102,101 +110,134 @@ def _rows(conn) -> Iterable[Dict[str, Any]]:
 class KnowledgeStore:
     """知识库：可选 SQLite 持久化；同 ``key`` 版本必须严格递增。"""
 
-    def __init__(self, conn: Any = None) -> None:
+    def __init__(self, conn: Any = None, *, lock=None) -> None:
         self._conn = conn
-        self._lock = threading.RLock()
+        self._lock = lock if lock is not None else threading.RLock()
         self._entries: dict[str, KnowledgeEntry] = {}
         if conn is not None:
-            with self._lock:
+            with self._transaction():
                 conn.execute(_TABLE)
-                conn.commit()
-            self._load()
+                self._snapshot()  # Corrupt persisted rows must fail closed.
 
     # ---- 持久化 ----
-    def _load(self) -> None:
+    @contextmanager
+    def _transaction(self):
         with self._lock:
-            for row in _rows(self._conn):
-                domains = json.loads(row["applicable_domains"] or "[]")
-                entry = KnowledgeEntry(
-                    entry_id=row["entry_id"], key=row["key"],
-                    content=row["content"], source=row["source"],
-                    confidence=float(row["confidence"]),
-                    applicable_domains=tuple(domains),
-                    version=int(row["version"]),
-                    created_at=float(row["created_at"]),
-                    revoked_at=row["revoked_at"],
-                    revoke_reason=row["revoke_reason"])
-                self._entries[entry.entry_id] = entry
+            if self._conn is None:
+                before = dict(self._entries)
+                try:
+                    yield
+                except BaseException:
+                    self._entries = before
+                    raise
+                return
+            conn = self._conn
+            own = not conn.in_transaction
+            savepoint = "knowledge_" + uuid.uuid4().hex
+            conn.execute("BEGIN IMMEDIATE" if own else "SAVEPOINT " + savepoint)
+            try:
+                yield
+                if own:
+                    conn.commit()
+                else:
+                    conn.execute("RELEASE " + savepoint)
+            except BaseException:
+                if conn.in_transaction:
+                    if own:
+                        conn.rollback()
+                    else:
+                        conn.execute("ROLLBACK TO " + savepoint)
+                        conn.execute("RELEASE " + savepoint)
+                raise
 
-    def _save(self, entry: KnowledgeEntry) -> None:
+    def _snapshot(self) -> Dict[str, KnowledgeEntry]:
         if self._conn is None:
-            return
-        with self._lock:
-            self._conn.execute(
-                "INSERT OR REPLACE INTO knowledge_entries VALUES"
-                " (?,?,?,?,?,?,?,?,?,?)",
-                (entry.entry_id, entry.key, entry.content, entry.source,
-                 float(entry.confidence),
-                 json.dumps(list(entry.applicable_domains), ensure_ascii=False),
-                 int(entry.version), float(entry.created_at),
-                 entry.revoked_at, entry.revoke_reason))
-            self._conn.commit()
+            return dict(self._entries)
+        entries = {}
+        versions = set()
+        for row in _rows(self._conn):
+            try:
+                row["applicable_domains"] = json.loads(row["applicable_domains"])
+                entry = KnowledgeEntry.from_dict(row)
+            except (TypeError, ValueError, KeyError) as exc:
+                raise KnowledgeError("持久知识条目损坏，拒绝使用") from exc
+            version = (entry.key, entry.version)
+            if version in versions:
+                raise KnowledgeError("持久知识存在重复key/version，拒绝使用")
+            versions.add(version)
+            entries[entry.entry_id] = entry
+        return entries
 
     # ---- 读 ----
     def get(self, entry_id: str) -> Optional[KnowledgeEntry]:
-        return self._entries.get(entry_id)
+        with self._lock:
+            return self._snapshot().get(entry_id)
 
     def all(self) -> tuple[KnowledgeEntry, ...]:
-        return tuple(self._entries.values())
+        with self._lock:
+            return tuple(self._snapshot().values())
 
     def active(self) -> tuple[KnowledgeEntry, ...]:
-        return tuple(e for e in self._entries.values() if not e.revoked)
+        return tuple(e for e in self.all() if not e.revoked)
 
     def versions_of(self, key: str) -> tuple[KnowledgeEntry, ...]:
         return tuple(sorted(
-            (e for e in self._entries.values() if e.key == key),
+            (e for e in self.all() if e.key == key),
             key=lambda e: e.version))
 
     def latest(self, key: str) -> Optional[KnowledgeEntry]:
-        candidates = [e for e in self._entries.values()
+        candidates = [e for e in self.all()
                       if e.key == key and not e.revoked]
         if not candidates:
             return None
         return max(candidates, key=lambda e: e.version)
 
     def digest(self) -> str:
-        payload = sorted((e.to_dict() for e in self._entries.values()),
-                         key=lambda item: item["entry_id"])
-        return hashlib.sha256(json.dumps(payload, ensure_ascii=False,
-                                         sort_keys=True).encode("utf-8")).hexdigest()
+        return _digest(self.all())
 
     # ---- 写（只增版本、不原地改历史）----
     def add(self, entry: KnowledgeEntry) -> KnowledgeEntry:
         entry.validate()
-        with self._lock:
-            if entry.entry_id in self._entries:
+        entry = KnowledgeEntry.from_dict(entry.to_dict())
+        with self._transaction():
+            current = self._snapshot()
+            if entry.entry_id in current:
                 raise KnowledgeError(f"entry_id 已存在：{entry.entry_id}")
-            versions = [e.version for e in self._entries.values()
-                        if e.key == entry.key]
+            versions = [e.version for e in current.values() if e.key == entry.key]
             if versions and entry.version <= max(versions):
-                raise KnowledgeError(
-                    f"版本必须递增：{entry.key} 已有版本 {max(versions)}")
-            self._entries[entry.entry_id] = entry
-            self._save(entry)
+                raise KnowledgeError(f"版本必须递增：{entry.key} 已有版本 {max(versions)}")
+            if self._conn is None:
+                self._entries[entry.entry_id] = entry
+            else:
+                self._conn.execute("INSERT INTO knowledge_entries VALUES (?,?,?,?,?,?,?,?,?,?)",
+                    (entry.entry_id, entry.key, entry.content, entry.source, entry.confidence,
+                     json.dumps(list(entry.applicable_domains), ensure_ascii=False), entry.version,
+                     entry.created_at, entry.revoked_at, entry.revoke_reason))
         return entry
 
     def revoke(self, entry_id: str, *, reason: str, at: float) -> KnowledgeEntry:
-        with self._lock:
-            entry = self._entries.get(entry_id)
+        if not isinstance(reason, str) or not reason.strip():
+            raise KnowledgeError("撤销必须记录reason")
+        with self._transaction():
+            entry = self._snapshot().get(entry_id)
             if entry is None:
                 raise KnowledgeError(f"条目不存在：{entry_id}")
             if entry.revoked:
                 return entry
-            revoked = replace(entry, revoked_at=float(at),
-                              revoke_reason=reason or "撤销")
-            self._entries[entry_id] = revoked
-            self._save(revoked)
+            revoked = replace(entry, revoked_at=at, revoke_reason=reason)
+            revoked.validate()
+            if self._conn is None:
+                self._entries[entry_id] = revoked
+            else:
+                self._conn.execute("UPDATE knowledge_entries SET revoked_at=?, revoke_reason=? WHERE entry_id=?",
+                                   (at, reason, entry_id))
             return revoked
+
+
+def _digest(entries) -> str:
+    payload = sorted((e.to_dict() for e in entries), key=lambda item: item["entry_id"])
+    return hashlib.sha256(json.dumps(payload, ensure_ascii=False,
+                                    sort_keys=True).encode("utf-8")).hexdigest()
 
 
 def migrate_knowledge(source: KnowledgeStore, target: KnowledgeStore, *,
@@ -208,21 +249,18 @@ def migrate_knowledge(source: KnowledgeStore, target: KnowledgeStore, *,
         raise KnowledgeError("迁移必须记录 reason")
     if source is target:
         raise KnowledgeError("源与目标是同一个知识库，无需迁移")
-    source_digest = source.digest()
-    target_digest = target.digest()
-    if source_digest == target_digest:
-        return {"ok": True, "status": "already_migrated", "count": len(source.all()),
-                "digest": source_digest, "actor": actor, "reason": reason}
-    if target.all():
-        raise KnowledgeError("目标知识库非空且内容不同，拒绝覆盖（需人工合并）")
     entries = sorted(source.all(), key=lambda e: (e.key, e.version, e.entry_id))
-    for entry in entries:
-        target.add(KnowledgeEntry.from_dict(entry.to_dict()))
-        if entry.revoked:
-            target.revoke(entry.entry_id, reason=entry.revoke_reason or "迁移保留撤销",
-                          at=float(entry.revoked_at))
-    if target.digest() != source_digest:
-        raise KnowledgeError("迁移后摘要不一致，拒绝视为完成")
+    source_digest = _digest(entries)
+    with target._transaction():
+        if source_digest == target.digest():
+            return {"ok": True, "status": "already_migrated", "count": len(entries),
+                    "digest": source_digest, "actor": actor, "reason": reason}
+        if target.all():
+            raise KnowledgeError("目标知识库非空且内容不同，拒绝覆盖（需人工合并）")
+        for entry in entries:
+            target.add(entry)  # Includes revocation metadata; no intermediate activation.
+        if target.digest() != source_digest:
+            raise KnowledgeError("迁移后摘要不一致，拒绝视为完成")
     return {"ok": True, "status": "migrated", "count": len(entries),
             "revoked": sum(1 for e in entries if e.revoked),
             "digest": source_digest, "actor": actor, "reason": reason,
