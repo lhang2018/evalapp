@@ -9,18 +9,19 @@
   检查点保留），恢复经 resume 通道；停止不损坏核心状态由既有
   状态机+检查点保证，这里不绕行。
 - 采样器由宿主注入（真实 CPU/内存/模型池用量）；未注入或采样失败
-  一律视为无压力（fail-open 只影响后台让位，不影响前台放行）。
+  保持既有fail-open准入，但显式标记sample_valid=False；主动侧可据此拒绝启动。
 
 阈值语义（验收：主任务满足明确阈值）：
 - 压力值 = 各资源利用率（0-1）的最大值；
-- high_water ≥ 压力：后台（scheduled/derived/opportunity）暂停/准入
+- 压力 ≥ high_water：后台（scheduled/derived/opportunity）暂停/准入
   拒绝；前台（user）不受影响；
-- low_water ≤ 压力：恢复放行；low_water < high_water 迟滞防抖。
+- 压力 ≤ low_water：恢复放行；low_water < high_water 迟滞防抖。
 """
 
 from __future__ import annotations
 
 import time
+import math
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Optional
 
@@ -38,15 +39,17 @@ class PressureSnapshot:
     memory: float = 0.0
     model_pool: float = 0.0
     sampled_at: float = 0.0
+    sample_valid: bool = True
 
     @property
     def pressure(self) -> float:
         return min(1.0, max(0.0, self.cpu, self.memory, self.model_pool))
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> Dict[str, Any]:
         return {"cpu": self.cpu, "memory": self.memory,
                 "model_pool": self.model_pool,
-                "pressure": self.pressure, "sampled_at": self.sampled_at}
+                "pressure": self.pressure, "sampled_at": self.sampled_at,
+                "sample_valid": self.sample_valid}
 
 
 @dataclass(frozen=True)
@@ -75,7 +78,7 @@ class AdmissionDecision:
     origin: str
     pressure: float
     reason: str = ""
-    snapshot: Dict[str, float] = field(default_factory=dict)
+    snapshot: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return {"decision": self.decision, "origin": self.origin,
@@ -101,13 +104,18 @@ class ResourceGovernor:
     def sample(self) -> PressureSnapshot:
         try:
             raw = self._sampler() or {}
+            keys = ("cpu", "memory", "model_pool")
+            supplied = [raw[key] for key in keys if key in raw]
+            valid = bool(supplied) and all(
+                type(value) in (int, float) and math.isfinite(value) and 0 <= value <= 1
+                for value in supplied)
             snapshot = PressureSnapshot(
                 cpu=float(raw.get("cpu", 0.0)),
                 memory=float(raw.get("memory", 0.0)),
                 model_pool=float(raw.get("model_pool", 0.0)),
-                sampled_at=self._now())
+                sampled_at=self._now(), sample_valid=valid)
         except Exception:
-            return PressureSnapshot(sampled_at=self._now())  # fail-open
+            return PressureSnapshot(sampled_at=self._now(), sample_valid=False)  # legacy fail-open
         return snapshot
 
     def admit(self, origin: str) -> AdmissionDecision:

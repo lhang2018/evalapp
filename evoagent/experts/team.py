@@ -56,8 +56,11 @@ class TeamRole:
     outputs: Sequence[str] = field(default_factory=list)
     state_artifacts: Sequence[str] = field(default_factory=list)
     external_actions: Sequence[str] = field(default_factory=list)
+    expert_version: str = ""  # Empty only for legacy/manual declarations.
 
     def __post_init__(self):
+        if not isinstance(self.expert_version, str):
+            raise TeamContractError("专家版本必须是字符串")
         for name in (
             "capabilities",
             "responsibilities",
@@ -396,6 +399,8 @@ class TeamPlanner:
         task_ref: str = "",
         contract_id: str = "",
     ) -> TeamContract:
+        if any(not isinstance(value, str) for value in (intent, domain, task_ref, contract_id)):
+            raise TeamFormationError("团队意图、领域与引用必须是字符串")
         if not isinstance(required_capabilities, list) or not required_capabilities:
             raise TeamFormationError("required_capabilities 必须是非空数组")
         if any(
@@ -431,6 +436,7 @@ class TeamPlanner:
                         f"{role_id}:artifact:" + cap for cap in sorted(capabilities)
                     ],
                     external_actions=[],
+                    expert_version=expert.version,
                 )
             )
         if len(roles) > len(self._expert_pool()):
@@ -440,14 +446,13 @@ class TeamPlanner:
             or (
                 "team_"
                 + hashlib.sha256(
-                    (
-                        intent
-                        + "|"
-                        + domain
-                        + "|"
-                        + ",".join(sorted(required_capabilities))
-                    ).encode()
-                ).hexdigest()[:12]
+                    json.dumps({
+                        "intent": intent, "domain": domain, "task_ref": task_ref,
+                        "required_capabilities": required_capabilities,
+                        "roles": [role.to_dict() for role in roles],
+                    }, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+                        allow_nan=False).encode("utf-8")
+                ).hexdigest()[:24]
             ),
             task_intent=intent,
             domain=domain,

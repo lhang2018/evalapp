@@ -23,6 +23,7 @@ import threading
 import time
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote
 
 from ..core.task import TaskStatus
 
@@ -95,6 +96,8 @@ class CapabilityGapPlanner:
     def _capability_key(self, task: Any, matched: bool) -> str:
         intent = getattr(task, "intent", "") or "general"
         domain = getattr(task, "domain", "") or "general"
+        # Keep normal identifiers unchanged, but delimiters must not merge domains.
+        domain, intent = quote(str(domain), safe=""), quote(str(intent), safe="")
         if matched:
             return f"capability:{domain}:{intent}"
         return f"missing_capability:{domain}:{intent}"

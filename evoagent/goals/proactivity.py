@@ -134,7 +134,11 @@ class ProactivityGovernor:
         if self.resource_governor is not None:
             try:
                 decision = self.resource_governor.admit("opportunity")
-                if decision.decision != "admit":
+                snapshot = getattr(decision, "snapshot", {})
+                invalid_sample = not isinstance(snapshot, dict) or snapshot.get("sample_valid", True) is not True
+                if invalid_sample:
+                    reasons.append("资源采样不可用或不合法，主动侧暂缓")
+                elif decision.decision != "admit":
                     reasons.append(f"资源压力让位核心任务或状态未知: {decision.reason}")
             except Exception as exc:
                 reasons.append(f"主动资源准入不可用: {type(exc).__name__}")
