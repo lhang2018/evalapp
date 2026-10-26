@@ -1,0 +1,475 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFFFFFF.                                                       [100%]
+================================== FAILURES ===================================
+________ test_aggregate_retains_new_evidence_and_deduplicates_in_order ________
+
+database = <evoagent.core.persistence.Database object at 0x000002111CF3E0B0>
+
+    def test_aggregate_retains_new_evidence_and_deduplicates_in_order(database):
+        feedback = store(database)
+        first = feedback.submit(category="bug", text="same", evidence_refs=["evt_a", "evt_a"], now=100)
+        second = feedback.submit(category="bug", text="same", evidence_refs=["evt_b", "evt_a"], now=101)
+        row = feedback.get(first["feedback_id"])
+        assert first["feedback_id"] == second["feedback_id"]
+        assert second["count"] == 2 and row["cause_status"] == "unverified"
+>       assert row["evidence_refs"] == ["evt_a", "evt_b"]
+E       AssertionError: assert ['evt_a', 'evt_a'] == ['evt_a', 'evt_b']
+E         
+E         At index 1 diff: 'evt_a' != 'evt_b'
+E         Use -v to get more diff
+
+tests\test_feedback_evidence_review_20261026.py:33: AssertionError
+____ test_evidence_bound_rejection_is_atomic_and_does_not_claim_acceptance ____
+
+database = <evoagent.core.persistence.Database object at 0x000002111D07B8B0>
+
+    def test_evidence_bound_rejection_is_atomic_and_does_not_claim_acceptance(database):
+        feedback = store(database)
+        first = feedback.submit(category="bug", text="same", evidence_refs=[f"evt_{i}" for i in range(32)])
+        before = feedback.get(first["feedback_id"])
+>       with pytest.raises(FeedbackError, match="32"):
+E       Failed: DID NOT RAISE <class 'evoagent.observability.feedback.FeedbackError'>
+
+tests\test_feedback_evidence_review_20261026.py:40: Failed
+__________ test_two_connections_merge_evidence_without_lost_updates ___________
+
+database = <evoagent.core.persistence.Database object at 0x000002111CF9B130>
+
+    def test_two_connections_merge_evidence_without_lost_updates(database):
+        peer = Database(database.path)
+        gate = threading.Barrier(2)
+        def submit(db, prefix):
+            gate.wait(timeout=5)
+            return [store(db).submit(category="bug", text="concurrent",
+                evidence_refs=[f"evt_{prefix}_{i}"]) for i in range(8)]
+        try:
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                a = pool.submit(submit, database, "a")
+                b = pool.submit(submit, peer, "b")
+                results = a.result(timeout=15) + b.result(timeout=15)
+            assert len({r["feedback_id"] for r in results}) == 1
+            row = store(database).get(results[0]["feedback_id"])
+            assert row["count"] == 16
+>           assert set(row["evidence_refs"]) == {f"evt_{p}_{i}" for p in "ab" for i in range(8)}
+E           AssertionError: assert {'evt_a_0'} == {'evt_a_0', '...evt_a_5', ...}
+E             
+E             Extra items in the right set:
+E             'evt_b_0'
+E             'evt_b_4'
+E             'evt_b_2'
+E             'evt_a_4'
+E             'evt_b_6'...
+E             
+E             ...Full output truncated (11 lines hidden), use '-vv' to show
+
+tests\test_feedback_evidence_review_20261026.py:60: AssertionError
+_____________ test_invalid_clock_is_rejected_before_writing[nan] ______________
+
+database = <evoagent.core.persistence.Database object at 0x000002111CF98F10>
+now = nan
+
+    @pytest.mark.parametrize("now", [float("nan"), float("inf"), -float("inf"), -1, True, "yesterday"])
+    def test_invalid_clock_is_rejected_before_writing(database, now):
+        with pytest.raises(FeedbackError):
+>           store(database).submit(category="bug", text="bad time", now=now)
+
+tests\test_feedback_evidence_review_20261026.py:68: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.observability.feedback.FeedbackStore object at 0x000002111CF98FA0>
+
+    def submit(self, *, category: str, text: str,
+               task_id: Optional[str] = None,
+               run_id: Optional[str] = None,
+               manifest_id: Optional[str] = None,
+               evidence_refs: Optional[List[str]] = None,
+               now: Optional[float] = None) -> Dict[str, Any]:
+        if not isinstance(category, str) or not isinstance(text, str):
+            raise FeedbackError("反馈类型和内容必须是字符串")
+        category = category.strip().lower()
+        if category not in _CATEGORY:
+            raise FeedbackError(f"未知反馈类型: {category or '(空)'}")
+        text = (text or "").strip()
+        if not text:
+            raise FeedbackError("反馈内容不能为空")
+        if len(text) > 4000:
+            raise FeedbackError("反馈内容过长（≤4000 字）")
+        scrubbed = scrub_text(text)
+        if contains_secret(scrubbed) or contains_secret(text):
+            raise FeedbackError(
+                "反馈疑似包含凭据/秘密，已拒绝；请移除后重新提交")
+        refs = [] if evidence_refs is None else evidence_refs
+        if not isinstance(refs, list) or len(refs) > 32:
+            raise FeedbackError("证据引用必须是列表且不超过32项")
+        if any(not isinstance(r, str) or not re.fullmatch(
+                r"[A-Za-z0-9][A-Za-z0-9_.:@/-]{0,255}", r)
+                or contains_secret(r) for r in refs):
+            raise FeedbackError("证据引用必须是有效标识且不得包含凭据")
+        for identity in (task_id, run_id, manifest_id):
+            if identity is not None and (not isinstance(identity, str)
+                                         or contains_secret(identity)):
+                raise FeedbackError("关联标识无效或包含凭据")
+        now_ts = now if now is not None else time.time()
+        key = _agg_key(category, scrubbed, task_id, run_id, manifest_id)
+        fid = "fb_" + uuid.uuid4().hex[:16]
+        with self._lock:
+            if self._conn.in_transaction:
+                raise FeedbackError("数据库已有在途事务，请稍后重新提交反馈")
+            with self._conn:
+>               self._conn.execute(
+                    "INSERT INTO user_feedback(feedback_id, agg_key, category, text,"
+                    " task_id, run_id, manifest_id, evidence_refs, cause_status,"
+                    " count, first_seen_at, last_seen_at) VALUES (?,?,?,?,?,?,?,?,?,1,?,?)"
+                    " ON CONFLICT(agg_key) DO UPDATE SET"
+                    " count=user_feedback.count+1,last_seen_at=excluded.last_seen_at",
+                    (fid, key, category, scrubbed, task_id, run_id, manifest_id,
+                     json.dumps(refs), "unverified", now_ts, now_ts))
+E               sqlite3.IntegrityError: NOT NULL constraint failed: user_feedback.first_seen_at
+
+evoagent\observability\feedback.py:84: IntegrityError
+_____________ test_invalid_clock_is_rejected_before_writing[inf] ______________
+
+database = <evoagent.core.persistence.Database object at 0x000002111D07DB70>
+now = inf
+
+    @pytest.mark.parametrize("now", [float("nan"), float("inf"), -float("inf"), -1, True, "yesterday"])
+    def test_invalid_clock_is_rejected_before_writing(database, now):
+>       with pytest.raises(FeedbackError):
+E       Failed: DID NOT RAISE <class 'evoagent.observability.feedback.FeedbackError'>
+
+tests\test_feedback_evidence_review_20261026.py:67: Failed
+_____________ test_invalid_clock_is_rejected_before_writing[-inf] _____________
+
+database = <evoagent.core.persistence.Database object at 0x000002111D0FC550>
+now = -inf
+
+    @pytest.mark.parametrize("now", [float("nan"), float("inf"), -float("inf"), -1, True, "yesterday"])
+    def test_invalid_clock_is_rejected_before_writing(database, now):
+>       with pytest.raises(FeedbackError):
+E       Failed: DID NOT RAISE <class 'evoagent.observability.feedback.FeedbackError'>
+
+tests\test_feedback_evidence_review_20261026.py:67: Failed
+______________ test_invalid_clock_is_rejected_before_writing[-1] ______________
+
+database = <evoagent.core.persistence.Database object at 0x000002111CF3DF90>
+now = -1
+
+    @pytest.mark.parametrize("now", [float("nan"), float("inf"), -float("inf"), -1, True, "yesterday"])
+    def test_invalid_clock_is_rejected_before_writing(database, now):
+>       with pytest.raises(FeedbackError):
+E       Failed: DID NOT RAISE <class 'evoagent.observability.feedback.FeedbackError'>
+
+tests\test_feedback_evidence_review_20261026.py:67: Failed
+_____________ test_invalid_clock_is_rejected_before_writing[True] _____________
+
+database = <evoagent.core.persistence.Database object at 0x000002111D0DBCD0>
+now = True
+
+    @pytest.mark.parametrize("now", [float("nan"), float("inf"), -float("inf"), -1, True, "yesterday"])
+    def test_invalid_clock_is_rejected_before_writing(database, now):
+>       with pytest.raises(FeedbackError):
+E       Failed: DID NOT RAISE <class 'evoagent.observability.feedback.FeedbackError'>
+
+tests\test_feedback_evidence_review_20261026.py:67: Failed
+__________ test_invalid_clock_is_rejected_before_writing[yesterday] ___________
+
+database = <evoagent.core.persistence.Database object at 0x000002111D07D870>
+now = 'yesterday'
+
+    @pytest.mark.parametrize("now", [float("nan"), float("inf"), -float("inf"), -1, True, "yesterday"])
+    def test_invalid_clock_is_rejected_before_writing(database, now):
+>       with pytest.raises(FeedbackError):
+E       Failed: DID NOT RAISE <class 'evoagent.observability.feedback.FeedbackError'>
+
+tests\test_feedback_evidence_review_20261026.py:67: Failed
+_________ test_clock_regression_does_not_move_aggregate_back_in_time __________
+
+database = <evoagent.core.persistence.Database object at 0x000002111D0DB430>
+
+    def test_clock_regression_does_not_move_aggregate_back_in_time(database):
+        feedback = store(database)
+        first = feedback.submit(category="bug", text="same", now=100)
+        feedback.submit(category="bug", text="same", now=90)
+        row = feedback.get(first["feedback_id"])
+>       assert row["first_seen_at"] == row["last_seen_at"] == 100
+E       assert 100.0 == 90.0
+
+tests\test_feedback_evidence_review_20261026.py:77: AssertionError
+____ test_corrupt_existing_evidence_is_not_silently_overwritten[not json] _____
+
+database = <evoagent.core.persistence.Database object at 0x000002111CF98EB0>
+bad = 'not json'
+
+    @pytest.mark.parametrize("bad", ["not json", "{}", '"evt_a"'])
+    def test_corrupt_existing_evidence_is_not_silently_overwritten(database, bad):
+        feedback = store(database)
+        first = feedback.submit(category="bug", text="same", evidence_refs=["evt_a"])
+        with database._conn:
+            database._conn.execute("UPDATE user_feedback SET evidence_refs=? WHERE feedback_id=?",
+                                   (bad, first["feedback_id"]))
+>       with pytest.raises(FeedbackError):
+E       Failed: DID NOT RAISE <class 'evoagent.observability.feedback.FeedbackError'>
+
+tests\test_feedback_evidence_review_20261026.py:87: Failed
+_______ test_corrupt_existing_evidence_is_not_silently_overwritten[{}] ________
+
+database = <evoagent.core.persistence.Database object at 0x000002111CF94160>
+bad = '{}'
+
+    @pytest.mark.parametrize("bad", ["not json", "{}", '"evt_a"'])
+    def test_corrupt_existing_evidence_is_not_silently_overwritten(database, bad):
+        feedback = store(database)
+        first = feedback.submit(category="bug", text="same", evidence_refs=["evt_a"])
+        with database._conn:
+            database._conn.execute("UPDATE user_feedback SET evidence_refs=? WHERE feedback_id=?",
+                                   (bad, first["feedback_id"]))
+>       with pytest.raises(FeedbackError):
+E       Failed: DID NOT RAISE <class 'evoagent.observability.feedback.FeedbackError'>
+
+tests\test_feedback_evidence_review_20261026.py:87: Failed
+_____ test_corrupt_existing_evidence_is_not_silently_overwritten["evt_a"] _____
+
+database = <evoagent.core.persistence.Database object at 0x000002111D07D3C0>
+bad = '"evt_a"'
+
+    @pytest.mark.parametrize("bad", ["not json", "{}", '"evt_a"'])
+    def test_corrupt_existing_evidence_is_not_silently_overwritten(database, bad):
+        feedback = store(database)
+        first = feedback.submit(category="bug", text="same", evidence_refs=["evt_a"])
+        with database._conn:
+            database._conn.execute("UPDATE user_feedback SET evidence_refs=? WHERE feedback_id=?",
+                                   (bad, first["feedback_id"]))
+>       with pytest.raises(FeedbackError):
+E       Failed: DID NOT RAISE <class 'evoagent.observability.feedback.FeedbackError'>
+
+tests\test_feedback_evidence_review_20261026.py:87: Failed
+_ test_invalid_run_manifest_returns_conflict_without_guessing_or_writing[broken-json] _
+
+database = <evoagent.core.persistence.Database object at 0x000002111CF97400>
+manifest = 'broken-json'
+
+    @pytest.mark.parametrize("manifest", ["broken-json", "[]", '"string"', "null"])
+    def test_invalid_run_manifest_returns_conflict_without_guessing_or_writing(database, manifest):
+        task = Task(task_id="feedback_task", user_goal="review")
+        database.save_task(task)
+        database.save_run("feedback_run", task.task_id, 1, 2, "SUCCEEDED", {})
+        with database._conn:
+            database._conn.execute("UPDATE task_runs SET version_manifest=? WHERE run_id=?",
+                                   (manifest, "feedback_run"))
+        ctx = SimpleNamespace(app=SimpleNamespace(db=database),
+            body={"category": "bug", "text": "run issue", "run_id": "feedback_run"},
+            json=lambda status, payload: (status, payload))
+>       status, payload = submit_feedback(ctx)
+
+tests\test_feedback_evidence_review_20261026.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\api\feedback_api.py:40: in submit_feedback
+    manifest_id = json.loads(row["version_manifest"] or "{}").get(
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\json\__init__.py:346: in loads
+    return _default_decoder.decode(s)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\json\decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <json.decoder.JSONDecoder object at 0x0000021117052CE0>
+s = 'broken-json', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\json\decoder.py:355: JSONDecodeError
+_ test_invalid_run_manifest_returns_conflict_without_guessing_or_writing[[]] __
+
+database = <evoagent.core.persistence.Database object at 0x000002111D078280>
+manifest = '[]'
+
+    @pytest.mark.parametrize("manifest", ["broken-json", "[]", '"string"', "null"])
+    def test_invalid_run_manifest_returns_conflict_without_guessing_or_writing(database, manifest):
+        task = Task(task_id="feedback_task", user_goal="review")
+        database.save_task(task)
+        database.save_run("feedback_run", task.task_id, 1, 2, "SUCCEEDED", {})
+        with database._conn:
+            database._conn.execute("UPDATE task_runs SET version_manifest=? WHERE run_id=?",
+                                   (manifest, "feedback_run"))
+        ctx = SimpleNamespace(app=SimpleNamespace(db=database),
+            body={"category": "bug", "text": "run issue", "run_id": "feedback_run"},
+            json=lambda status, payload: (status, payload))
+>       status, payload = submit_feedback(ctx)
+
+tests\test_feedback_evidence_review_20261026.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+ctx = namespace(app=namespace(db=<evoagent.core.persistence.Database object at 0x000002111D078280>), body={'category': 'bug'...nction test_invalid_run_manifest_returns_conflict_without_guessing_or_writing.<locals>.<lambda> at 0x000002111D109240>)
+
+    @post("/feedback")
+    def submit_feedback(ctx):
+        body = ctx.body
+        if not isinstance(body, dict):
+            return ctx.json(400, {"error": "请求体必须是对象"})
+        app = ctx.app
+        for field in ("task_id", "run_id"):
+            if body.get(field) is not None and not isinstance(body[field], str):
+                return ctx.json(400, {"error": f"{field} 必须是字符串"})
+        task_id = (body.get("task_id") or "").strip() or None
+        run_id = (body.get("run_id") or "").strip() or None
+        if task_id and app.db.get_task(task_id) is None:
+            return ctx.json(404, {"error": "任务不存在，无法关联反馈"})
+        if run_id:
+            with app.db._lock:
+                row = app.db._conn.execute(
+                    "SELECT task_id, version_manifest FROM task_runs WHERE run_id=?",
+                    (run_id,)).fetchone()
+            if row is None:
+                return ctx.json(404, {"error": "运行不存在，无法关联反馈"})
+            if task_id is not None and row["task_id"] != task_id:
+                return ctx.json(400, {"error": "运行不属于指定任务"})
+            task_id = row["task_id"]
+            if app.db.get_task(task_id) is None:
+                return ctx.json(404, {"error": "运行关联的任务不存在"})
+        manifest_id = None
+        if run_id:
+>           manifest_id = json.loads(row["version_manifest"] or "{}").get(
+E           AttributeError: 'list' object has no attribute 'get'
+
+evoagent\api\feedback_api.py:40: AttributeError
+_ test_invalid_run_manifest_returns_conflict_without_guessing_or_writing["string"] _
+
+database = <evoagent.core.persistence.Database object at 0x000002111CA716F0>
+manifest = '"string"'
+
+    @pytest.mark.parametrize("manifest", ["broken-json", "[]", '"string"', "null"])
+    def test_invalid_run_manifest_returns_conflict_without_guessing_or_writing(database, manifest):
+        task = Task(task_id="feedback_task", user_goal="review")
+        database.save_task(task)
+        database.save_run("feedback_run", task.task_id, 1, 2, "SUCCEEDED", {})
+        with database._conn:
+            database._conn.execute("UPDATE task_runs SET version_manifest=? WHERE run_id=?",
+                                   (manifest, "feedback_run"))
+        ctx = SimpleNamespace(app=SimpleNamespace(db=database),
+            body={"category": "bug", "text": "run issue", "run_id": "feedback_run"},
+            json=lambda status, payload: (status, payload))
+>       status, payload = submit_feedback(ctx)
+
+tests\test_feedback_evidence_review_20261026.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+ctx = namespace(app=namespace(db=<evoagent.core.persistence.Database object at 0x000002111CA716F0>), body={'category': 'bug'...nction test_invalid_run_manifest_returns_conflict_without_guessing_or_writing.<locals>.<lambda> at 0x000002111D109090>)
+
+    @post("/feedback")
+    def submit_feedback(ctx):
+        body = ctx.body
+        if not isinstance(body, dict):
+            return ctx.json(400, {"error": "请求体必须是对象"})
+        app = ctx.app
+        for field in ("task_id", "run_id"):
+            if body.get(field) is not None and not isinstance(body[field], str):
+                return ctx.json(400, {"error": f"{field} 必须是字符串"})
+        task_id = (body.get("task_id") or "").strip() or None
+        run_id = (body.get("run_id") or "").strip() or None
+        if task_id and app.db.get_task(task_id) is None:
+            return ctx.json(404, {"error": "任务不存在，无法关联反馈"})
+        if run_id:
+            with app.db._lock:
+                row = app.db._conn.execute(
+                    "SELECT task_id, version_manifest FROM task_runs WHERE run_id=?",
+                    (run_id,)).fetchone()
+            if row is None:
+                return ctx.json(404, {"error": "运行不存在，无法关联反馈"})
+            if task_id is not None and row["task_id"] != task_id:
+                return ctx.json(400, {"error": "运行不属于指定任务"})
+            task_id = row["task_id"]
+            if app.db.get_task(task_id) is None:
+                return ctx.json(404, {"error": "运行关联的任务不存在"})
+        manifest_id = None
+        if run_id:
+>           manifest_id = json.loads(row["version_manifest"] or "{}").get(
+E           AttributeError: 'str' object has no attribute 'get'
+
+evoagent\api\feedback_api.py:40: AttributeError
+_ test_invalid_run_manifest_returns_conflict_without_guessing_or_writing[null] _
+
+database = <evoagent.core.persistence.Database object at 0x000002111D141630>
+manifest = 'null'
+
+    @pytest.mark.parametrize("manifest", ["broken-json", "[]", '"string"', "null"])
+    def test_invalid_run_manifest_returns_conflict_without_guessing_or_writing(database, manifest):
+        task = Task(task_id="feedback_task", user_goal="review")
+        database.save_task(task)
+        database.save_run("feedback_run", task.task_id, 1, 2, "SUCCEEDED", {})
+        with database._conn:
+            database._conn.execute("UPDATE task_runs SET version_manifest=? WHERE run_id=?",
+                                   (manifest, "feedback_run"))
+        ctx = SimpleNamespace(app=SimpleNamespace(db=database),
+            body={"category": "bug", "text": "run issue", "run_id": "feedback_run"},
+            json=lambda status, payload: (status, payload))
+>       status, payload = submit_feedback(ctx)
+
+tests\test_feedback_evidence_review_20261026.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+ctx = namespace(app=namespace(db=<evoagent.core.persistence.Database object at 0x000002111D141630>), body={'category': 'bug'...nction test_invalid_run_manifest_returns_conflict_without_guessing_or_writing.<locals>.<lambda> at 0x000002111D108160>)
+
+    @post("/feedback")
+    def submit_feedback(ctx):
+        body = ctx.body
+        if not isinstance(body, dict):
+            return ctx.json(400, {"error": "请求体必须是对象"})
+        app = ctx.app
+        for field in ("task_id", "run_id"):
+            if body.get(field) is not None and not isinstance(body[field], str):
+                return ctx.json(400, {"error": f"{field} 必须是字符串"})
+        task_id = (body.get("task_id") or "").strip() or None
+        run_id = (body.get("run_id") or "").strip() or None
+        if task_id and app.db.get_task(task_id) is None:
+            return ctx.json(404, {"error": "任务不存在，无法关联反馈"})
+        if run_id:
+            with app.db._lock:
+                row = app.db._conn.execute(
+                    "SELECT task_id, version_manifest FROM task_runs WHERE run_id=?",
+                    (run_id,)).fetchone()
+            if row is None:
+                return ctx.json(404, {"error": "运行不存在，无法关联反馈"})
+            if task_id is not None and row["task_id"] != task_id:
+                return ctx.json(400, {"error": "运行不属于指定任务"})
+            task_id = row["task_id"]
+            if app.db.get_task(task_id) is None:
+                return ctx.json(404, {"error": "运行关联的任务不存在"})
+        manifest_id = None
+        if run_id:
+>           manifest_id = json.loads(row["version_manifest"] or "{}").get(
+E           AttributeError: 'NoneType' object has no attribute 'get'
+
+evoagent\api\feedback_api.py:40: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_feedback_evidence_review_20261026.py::test_aggregate_retains_new_evidence_and_deduplicates_in_order
+FAILED tests/test_feedback_evidence_review_20261026.py::test_evidence_bound_rejection_is_atomic_and_does_not_claim_acceptance
+FAILED tests/test_feedback_evidence_review_20261026.py::test_two_connections_merge_evidence_without_lost_updates
+FAILED tests/test_feedback_evidence_review_20261026.py::test_invalid_clock_is_rejected_before_writing[nan]
+FAILED tests/test_feedback_evidence_review_20261026.py::test_invalid_clock_is_rejected_before_writing[inf]
+FAILED tests/test_feedback_evidence_review_20261026.py::test_invalid_clock_is_rejected_before_writing[-inf]
+FAILED tests/test_feedback_evidence_review_20261026.py::test_invalid_clock_is_rejected_before_writing[-1]
+FAILED tests/test_feedback_evidence_review_20261026.py::test_invalid_clock_is_rejected_before_writing[True]
+FAILED tests/test_feedback_evidence_review_20261026.py::test_invalid_clock_is_rejected_before_writing[yesterday]
+FAILED tests/test_feedback_evidence_review_20261026.py::test_clock_regression_does_not_move_aggregate_back_in_time
+FAILED tests/test_feedback_evidence_review_20261026.py::test_corrupt_existing_evidence_is_not_silently_overwritten[not json]
+FAILED tests/test_feedback_evidence_review_20261026.py::test_corrupt_existing_evidence_is_not_silently_overwritten[{}]
+FAILED tests/test_feedback_evidence_review_20261026.py::test_corrupt_existing_evidence_is_not_silently_overwritten["evt_a"]
+FAILED tests/test_feedback_evidence_review_20261026.py::test_invalid_run_manifest_returns_conflict_without_guessing_or_writing[broken-json]
+FAILED tests/test_feedback_evidence_review_20261026.py::test_invalid_run_manifest_returns_conflict_without_guessing_or_writing[[]]
+FAILED tests/test_feedback_evidence_review_20261026.py::test_invalid_run_manifest_returns_conflict_without_guessing_or_writing["string"]
+FAILED tests/test_feedback_evidence_review_20261026.py::test_invalid_run_manifest_returns_conflict_without_guessing_or_writing[null]
+17 failed, 1 passed in 4.83s

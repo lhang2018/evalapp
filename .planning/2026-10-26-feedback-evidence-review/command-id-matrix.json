@@ -1,0 +1,51 @@
+{
+  "commit": "6e8285632092e2fc1482417d432023134f7ba535",
+  "variants": {
+    "prefix_plus_digest": {
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "-m",
+        "pytest",
+        "tests/test_proactive_execution.py",
+        "-k",
+        "test_app_wires_attempt_to_authorized_goal_opportunity_task",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp=E:\\evalapp\\outputs\\command-id-matrix-hns_uws6\\prefix_plus_digest\\pytest"
+      ],
+      "app_sha256_lf": "e111e90521f0f4569075c09628922b563259f3051dadbf4e7db9f5dfe206efc9",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "only_override": "prepend \"proactive_\" to the 64-character command digest"
+    },
+    "fixed_digest_only": {
+      "command": [
+        "C:\\Users\\lhang\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+        "-X",
+        "utf8",
+        "-m",
+        "pytest",
+        "tests/test_proactive_execution.py",
+        "-k",
+        "test_app_wires_attempt_to_authorized_goal_opportunity_task",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp=E:\\evalapp\\outputs\\command-id-matrix-hns_uws6\\fixed_digest_only\\pytest"
+      ],
+      "app_sha256_lf": "0b2fd80e2800d811b1919be339ee5410d40607a4a723f22f2b39142011f1e2d7",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "only_override": "no override: exact fixed app source"
+    }
+  },
+  "historical_failure_classification": "Unfixed working-tree source is not a fixed-commit flakiness experiment",
+  "source_tree": "f68a50fcd3375496ff3a681c261f3a2f1403098f",
+  "owned_temp_directory": "E:\\evalapp\\outputs\\command-id-matrix-hns_uws6",
+  "archive_sha256": "21db5653a6f141291e67d01089cdf65bff0bbf4b32417c7699c606e82f4d046e",
+  "temporary_data_removed": true,
+  "all_expected": true
+}

@@ -5008,7 +5008,7 @@
     "finding": "owner 与本一审身份同名，须他人一审",
     "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
    },
-   "blocker": null,
+   "blocker": "1c2e205新修复（聚合证据/时间/坏清单）待另一审阅人复核；原作者不自批，整包不关闭",
    "evidence": [
     "代码: 1c390ed",
     "测试: 代码: 1c390ed 全链（schema域表+store+API）+ 21899e6 schema幂等修复 + d1272c9 App入口",
@@ -5039,6 +5039,16 @@
      "result": "代码2343通过、唯一文档失败修复后85项复检通过；去重覆盖2344/1/1，产品/测试/工具树相同，未第三次全套；两轮原失败保留；客户端沿用424，未独立接受/未发布",
      "log": ".planning/2026-10-26-feedback-refactor/committed-evidence.json",
      "delivery": "docs/协作开发/验收/2026-10-26-反馈私钥与模块身份复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "reviewer": "codex-runtime",
+     "source_commit": "1c2e2052b4f2d33103ceb257e02e5be3bbafc57f",
+     "source_tree": "e2e7515a9299f31eb317b543a3c0da938e3e387f",
+     "report": "docs/协作开发/验收/2026-10-26-反馈聚合与审核证据复核.md",
+     "log": ".planning/2026-10-26-feedback-evidence-review/committed-evidence.json",
+     "scope": "聚合引用原子并集/32上限、时间有限值和时钟回退、坏引用/运行清单拒绝；真实HTTP权限/事务回滚；21新增探针",
+     "result": "固定相关338 passed/1 deselected；非全量/客户端/设备/生产接受；review保持，新补丁待另一审阅人复核"
     }
    ],
    "card": "docs/协作开发/任务卡/29-C-问题反馈与运行证据关联.md",
@@ -5065,7 +5075,7 @@
    "requirement_refs": [
     "UX-26"
    ],
-   "next_step": "b5b376d补私钥片段检测/零入库；026ab2b修诊断拒绝连接，67fcc54修台账锚点。代码全量2343通过，唯一文档失败修复后85项复检通过，去重覆盖2344/1/1；未第三次全套。客户端同树沿用424，新修复待复核，产品缺口保留。",
+   "next_step": "固定1c2e205相关338通过/1整机压力未跑；复核证据合并32上限/并发/回滚、真实HTTP权限与旧记录损坏拒绝；事件来源验真/授权证据和产品闭环沿用原设计；docs/协作开发/验收/2026-10-26-反馈聚合与审核证据复核.md",
    "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
    "prerequisites": "仅需仓库与本地测试环境",
    "claim_metadata_calibration": {
@@ -8118,8 +8128,10 @@
     "scope": "component/local; standalone declared tests reproduced",
     "result": "first_pass_component_scope",
     "second_review_required": true,
-    "finding": "F1：专项并跑偶发 1 失败（单跑与复跑通过），需修测试隔离",
-    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+    "finding": "F1归因已更正：固定两变体证明74字符命令键确定性失败/64通过；旧各组源码未固定，不再要求无依据改测试隔离",
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md",
+    "historical_finding": "F1：专项并跑偶发 1 失败（单跑与复跑通过），需修测试隔离",
+    "correction_report": "docs/协作开发/验收/2026-10-26-反馈聚合与审核证据复核.md"
    },
    "blocker": "接受阻塞：真实宿主资源/主动预算账户及策略未装配；实际费用/任务结果对账、权威并发与运行中停止/让位、真实核心质量证据未接；6e82856新补丁待另一审阅人复核",
    "evidence": [
@@ -8142,6 +8154,15 @@
      "log": ".planning/2026-10-26-proactive-native-review/committed-evidence.json",
      "scope": "真实预算派发/未知回执与必需准入/Goal幂等、CPU与时间样本校验；两卡接续复核",
      "result": "固定相关后端310 passed/1 deselected，客户端459 passed/tsc0；Kotlin/真机/供应商未重跑；保留review与接受阻塞，新修复不自批"
+    },
+    {
+     "date": "2026-10-26",
+     "reviewer": "codex-runtime",
+     "source_commit": "1c2e2052b4f2d33103ceb257e02e5be3bbafc57f",
+     "report": "docs/协作开发/验收/2026-10-26-反馈聚合与审核证据复核.md",
+     "log": ".planning/2026-10-26-feedback-evidence-review/committed-evidence.json",
+     "scope": "更正旧F1偶发归因：6e82856固定归档仅修改键前缀的两变体；旧日志每组源码未固定，原失败保留",
+     "result": "74字符必失败/64字符通过，当前键修复有效；固定1c2e205相关338亦含App用例，既有接受阻塞不变"
     }
    ],
    "card": "docs/协作开发/任务卡/25-C-主动任务准入执行与真实资源非干扰.md",
@@ -10823,6 +10844,23 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-主动执行与原生资源采样复核.md",
    "scope": "25-C/15-E六类问题修复，固定相关310/客户端459/tsc0；待另一审阅人复核，非设备/生产接受"
+  },
+  {
+   "id": "review-fix-1c2e2052b4f2",
+   "title": "fix(feedback): 原子合并聚合证据并校验时间与运行清单",
+   "workpackage": "ALN-29",
+   "source_commit": "1c2e2052b4f2d33103ceb257e02e5be3bbafc57f",
+   "files": [
+    "evoagent/api/feedback_api.py",
+    "evoagent/observability/feedback.py",
+    "tests/test_feedback.py",
+    "tests/test_feedback_evidence_review_20261026.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-反馈聚合与审核证据复核.md",
+   "scope": "29-C反馈证据/时间/清单边界，固定相关338/1项整机饱和未跑；新修复待独立复核"
   }
  ],
  "requirement_batches": [
@@ -11238,6 +11276,26 @@
    "product_acceptance_added": false,
    "published_by_review": false,
    "scope": "真实预留/未知回执、必需准入配置/Goal幂等、CPU/时间采样；固定310/1项整机饱和未跑，客户端459/tsc0，后台真实接线与对账等仍阻塞"
+  },
+  {
+   "id": "REVIEW-2026-10-26-FEEDBACK-EVIDENCE",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-29-C",
+    "ALN-25-C",
+    "ALN-26-B"
+   ],
+   "fixed_cards": [
+    "ALN-29-C"
+   ],
+   "fix_commit": "1c2e2052b4f2d33103ceb257e02e5be3bbafc57f",
+   "report": "docs/协作开发/验收/2026-10-26-反馈聚合与审核证据复核.md",
+   "evidence": ".planning/2026-10-26-feedback-evidence-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "published_by_review": false,
+   "product_acceptance_added": false,
+   "scope": "反馈四类缺陷修复，338固定相关；F1确定性长度/源码边界更正，26-B组件抽查不授予接受"
   }
  ]
 }
