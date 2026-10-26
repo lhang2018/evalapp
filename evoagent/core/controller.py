@@ -1129,10 +1129,9 @@ class RuntimeController:
         try:
             plan = self._plan_from_task(task)
         except PlanRevisionError as exc:
+            task.failure_reason = f"恢复对账失败：计划不可读: {exc}"
             task = self._move(task, TaskStatus.RECOVERING, save=False)
             task = self._move(task, TaskStatus.FAILED)
-            task.failure_reason = f"恢复对账失败：计划不可读: {exc}"
-            self.db.save_task(task)
             self._emit(task, "reconciliation_gate", {"decision": "failed",
                        "reason": task.failure_reason}, severity="warn")
             return task
@@ -1156,10 +1155,9 @@ class RuntimeController:
                 effect_plan, rows, step_bindings=bindings.for_task(task.task_id),
                 task_id=task.task_id)
         except Exception as exc:  # noqa: BLE001
+            task.failure_reason = f"恢复对账异常: {type(exc).__name__}: {exc}"
             task = self._move(task, TaskStatus.RECOVERING, save=False)
             task = self._move(task, TaskStatus.FAILED)
-            task.failure_reason = f"恢复对账异常: {type(exc).__name__}: {exc}"
-            self.db.save_task(task)
             self._emit(task, "reconciliation_gate", {"decision": "error",
                        "reason": task.failure_reason}, severity="warn")
             return task
@@ -1176,7 +1174,7 @@ class RuntimeController:
             return None
         # 副作用不明：不自动重放、不盲目续跑——转等待用户裁决（R-12）
         task.failure_reason = None
-        task = self._move(task, TaskStatus.WAITING_USER)
+        # Commit the question with its state before transition events can fail.
         task.waiting_request = {
             "request_id": f"recon_{task.task_id}",
             "phase": "reconciliation",
@@ -1185,7 +1183,7 @@ class RuntimeController:
             "answered": False,
             "summary": detail,
         }
-        self.db.save_task(task)
+        task = self._move(task, TaskStatus.WAITING_USER)
         self._emit(task, "reconciliation_gate", detail, severity="warn")
         return task
 

@@ -33,6 +33,7 @@ class TestStateMachine(unittest.TestCase):
         self.assertTrue(can_transition(TaskStatus.RECOVERING, TaskStatus.SUSPENDED))
         self.assertTrue(can_transition(TaskStatus.SUSPENDED, TaskStatus.RUNNING))
         self.assertTrue(can_transition(TaskStatus.SUSPENDED, TaskStatus.RECOVERING))
+        self.assertTrue(can_transition(TaskStatus.SUSPENDED, TaskStatus.WAITING_USER))
         self.assertTrue(can_transition(TaskStatus.RUNNING, TaskStatus.WAITING_DEPENDENCY))
         self.assertTrue(can_transition(TaskStatus.WAITING_DEPENDENCY, TaskStatus.RUNNING))
 
