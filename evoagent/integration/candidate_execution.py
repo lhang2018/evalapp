@@ -18,7 +18,7 @@ import time
 from dataclasses import asdict, is_dataclass
 from typing import Any, Dict, List, Optional
 
-from ..evaluation.host_bench import BenchCase, BenchError, HostBenchmark
+from ..evaluation.host_bench import BenchCase, BenchError, HostBenchmark, validate_cases
 from ..evolution.host import CandidateAssetError, IsolatedCandidateHost
 
 
@@ -47,8 +47,12 @@ def _cases(value: Any) -> List[BenchCase]:
         if not isinstance(payload, dict):
             raise CandidateExecutionError(f"cases[{index}].input 必须是对象")
         out.append(BenchCase(case_id=case_id, input=payload,
-                             domain=str(item.get("domain") or "general"),
-                             required=bool(item.get("required", True))))
+                             domain=item.get("domain", "general"),
+                             required=item.get("required", True)))
+    try:
+        validate_cases(out)
+    except BenchError as exc:
+        raise CandidateExecutionError(str(exc)) from exc
     return out
 
 

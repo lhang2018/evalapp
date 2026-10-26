@@ -25,14 +25,16 @@
 
 import hashlib
 import json
+import math
 import statistics
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 from ..assets.content import content_digest
 from ..evolution.host import IsolatedCandidateHost
+from ..evolution.sandbox import MAX_TIMEOUT_S
 
-BENCH_VERSION = "host-bench/1"
+BENCH_VERSION = "host-bench/2"
 INPUT_FILE = "input.json"
 
 
@@ -46,6 +48,29 @@ class BenchCase:
     input: Dict[str, Any] = field(default_factory=dict)
     domain: str = "general"
     required: bool = True
+
+
+def validate_cases(cases: List[BenchCase]) -> None:
+    """A unique case manifest is required before execution or coverage math."""
+    if not isinstance(cases, list) or not cases:
+        raise BenchError("基准至少需要一个用例列表")
+    seen = set()
+    for case in cases:
+        if (not isinstance(case, BenchCase) or not isinstance(case.case_id, str)
+                or not case.case_id.strip() or not isinstance(case.input, dict)
+                or not isinstance(case.domain, str) or not case.domain.strip()
+                or not isinstance(case.required, bool)):
+            raise BenchError("用例必须有非空case_id/domain、对象input与布尔required")
+        if case.case_id in seen:
+            raise BenchError("用例case_id重复: " + case.case_id)
+        seen.add(case.case_id)
+
+
+def _timeout(value: Any) -> float:
+    if (isinstance(value, bool) or not isinstance(value, (int, float))
+            or not 0.1 <= value <= MAX_TIMEOUT_S):
+        raise BenchError(f"timeout必须是0.1..{MAX_TIMEOUT_S}秒的有限数字")
+    return float(value)
 
 
 @dataclass(frozen=True)
@@ -129,7 +154,7 @@ class HostBenchmark:
         self.sandbox = getattr(host, "sandbox", None)
         if self.sandbox is None:
             raise BenchError("宿主缺少 sandbox，无法执行候选资产")
-        self.timeout = float(timeout)
+        self.timeout = _timeout(timeout)
         self.repeat = repeat
         self.min_coverage = float(min_coverage)
         self.latency_tolerance = float(latency_tolerance)
@@ -139,13 +164,15 @@ class HostBenchmark:
     # ---- 单资产执行 ----
     def observe(self, ref: Any, case: BenchCase) -> List[BenchObservation]:
         """执行一个精确资产版本在单个用例上的 ``repeat`` 次结果。"""
+        validate_cases([case])
+        timeout = _timeout(self.timeout)
         artifact = self.host.resolve(ref)  # 校验摘要，拒绝非代码/被篡改资产
         files = dict(artifact.files)
         files[INPUT_FILE] = _canonical(dict(case.input))
         observations = []
         for _ in range(self.repeat):
             result = self.sandbox.run_project(files, entry=artifact.entry,
-                                              timeout=self.timeout)
+                                              timeout=timeout)
             observations.append(self._classify(case, result))
         return observations
 
@@ -174,6 +201,10 @@ class HostBenchmark:
             return BenchObservation(case.case_id, "invalid_output", False,
                                     duration_s=result.duration_s,
                                     error="回显 case_id 与用例不一致")
+        if not isinstance(payload.get("ok"), bool):
+            return BenchObservation(case.case_id, "invalid_output", False,
+                                    duration_s=result.duration_s,
+                                    error="输出ok必须是布尔值")
         return BenchObservation(case.case_id,
                                 "ok" if payload.get("ok") else "failed",
                                 bool(payload.get("ok")),
@@ -193,8 +224,7 @@ class HostBenchmark:
     # ---- 对照与结论 ----
     def compare(self, baseline_ref: Any, candidate_ref: Any,
                 cases: List[BenchCase]) -> Dict[str, Any]:
-        if not cases:
-            raise BenchError("基准至少需要一个用例")
+        validate_cases(cases)
         baseline_identity = self.host.resolve(baseline_ref).identity()
         candidate_identity = self.host.resolve(candidate_ref).identity()
         rows: List[Dict[str, Any]] = []
@@ -227,7 +257,7 @@ class HostBenchmark:
                                 "reason": "non_deterministic"})
             for rows_side, name in ((base_rows, "baseline"),
                                     (cand_rows, "candidate")):
-                if rows_side[0].status in ("timeout", "violation", "invalid_output"):
+                if rows_side[0].status in ("timeout", "violation", "invalid_output", "crashed"):
                     if case.required:
                         omitted.append({"case_id": case.case_id,
                                         "reason": f"{name}:{rows_side[0].status}"})
@@ -361,14 +391,29 @@ def benefit_chain(report: Dict[str, Any],
     chain: Dict[str, Any] = {"pre_release": pre, "post_release": None,
                              "status": "pending",
                              "rollback_required": False}
-    if not post_release:
+    if not isinstance(post_release, dict) or not post_release:
         chain["note"] = "缺少发布后监测证据，收益链未闭合（不得宣称线上收益）"
         return chain
     observed_rate = post_release.get("success_rate")
-    degraded = bool(post_release.get("regression")) or (
-        observed_rate is not None
-        and report.get("metrics", {}).get("baseline_success_rate") is not None
-        and observed_rate < report["metrics"]["baseline_success_rate"])
+    regression = post_release.get("regression")
+    chain["post_release"] = post_release
+    # An explicit regression still demands rollback even if other monitoring
+    # fields are incomplete. Missing/invalid metrics never prove a closed chain.
+    if regression is True:
+        chain.update(rollback_required=True, rollback_reason="发布后监测退化")
+    def rate(value):
+        return (not isinstance(value, bool) and isinstance(value, (int, float))
+                and 0 <= value <= 1 and math.isfinite(value))
+    if (("regression" in post_release and not isinstance(regression, bool))
+            or ("success_rate" in post_release and not rate(observed_rate))):
+        chain["note"] = "发布后监测字段非法，收益链未闭合"
+        return chain
+    baseline_rate = (report.get("metrics") or {}).get("baseline_success_rate")
+    if regression is not True and (not rate(observed_rate) or not rate(baseline_rate)):
+        chain["note"] = "缺少可核对的发布前后成功率，收益链未闭合"
+        return chain
+    degraded = regression is True or (rate(observed_rate) and rate(baseline_rate)
+                                      and observed_rate < baseline_rate)
     chain.update(post_release=post_release, status="complete",
                  rollback_required=degraded)
     if degraded:

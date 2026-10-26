@@ -46,7 +46,7 @@ for p in [sys.prefix, sys.base_prefix, os.path.dirname(os.__file__)] + list(sys.
         except OSError:
             pass
 WRITE_EVENTS = {"os.remove", "os.mkdir", "os.rmdir", "os.chmod", "os.chown",
-                "os.truncate", "os.utime", "os.symlink", "os.link"}
+                "os.truncate", "os.utime", "os.symlink", "os.link", "os.rename"}
 BLOCKED_PREFIX = ("os.exec", "os.spawn", "os.posix_spawn")
 BLOCKED = {"socket.connect", "socket.getaddrinfo", "socket.bind",
            "socket.gethostbyname", "socket.gethostbyaddr",
@@ -106,11 +106,18 @@ def _hook(event, args):
             elif not _inside(path, READ_ROOTS):
                 raise SandboxViolation("read outside sandbox: " + str(path))
         elif event in WRITE_EVENTS:
+            # Relative paths plus dir_fd refer to a different directory than
+            # realpath(cwd/path). Do not authorize descriptor-based mutations
+            # without a path that this portable hook can actually verify.
+            if event != "os.truncate":
+                descriptors = args[-2:] if event in ("os.rename", "os.link") else args[-1:]
+                if any(fd not in (None, -1) for fd in descriptors):
+                    raise SandboxViolation(event + " directory descriptor is not allowed")
             targets = args[:2] if event in ("os.rename", "os.symlink",
                                             "os.link") else args[:1]
             for target in targets:
-                if isinstance(target, (str, bytes, os.PathLike)) \
-                        and not _inside(target, [SANDBOX]):
+                if not isinstance(target, (str, bytes, os.PathLike)) \
+                        or not _inside(target, [SANDBOX]):
                     raise SandboxViolation(
                         event + " outside sandbox: " + str(target))
         elif event in ("os.listdir", "os.scandir", "os.chdir"):
