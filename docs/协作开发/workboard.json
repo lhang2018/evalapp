@@ -262,13 +262,13 @@
    "production_release": false
   },
   "latest_incremental_verification": {
-   "source_commit": "c2e6871d1bc3c0011a43788d3dc2f0089dc76fbc",
-   "source_tree": "4b9e729c5802a30c6d2db7c6a6635abe07d44afa",
-   "client_passed": 405,
+   "source_commit": "998db6fd6427586a4ba23bd99bf91a7edf03625e",
+   "source_tree": "8ef3aed41a3fcc77d5bff720e3ca90450d94d713",
+   "client_passed": 424,
    "typecheck": "passed",
    "device_verified": false,
-   "evidence": ".planning/2026-10-26-device-app/committed-evidence.json",
-   "scope": "固定Git归档客户端405/405与TypeScript5.9.3、后端事件同步相关13通过；App本机纵切片已接线，未跑RN UI自动化/未构建APK/未使用真机，非后端全量；不替换发布基线"
+   "evidence": ".planning/2026-10-26-device-review/committed-evidence.json",
+   "scope": "固定Git归档客户端424/424与TypeScript5.9.3、后端事件同步相关13通过；本机任务确认与回执复核，非后端全量/真机/独立接受；不替换发布基线"
   },
   "incremental_verification_history": [
    {
@@ -314,6 +314,15 @@
     "device_verified": false,
     "evidence": ".planning/2026-10-26-mainchain-review/committed-evidence.json",
     "scope": "固定Git归档客户端384/384、TypeScript5.9.3与后端绑定/对账/授权相关112通过；非后端全量，未构建APK、未使用真机，不改变已发布基线"
+   },
+   {
+    "source_commit": "c2e6871d1bc3c0011a43788d3dc2f0089dc76fbc",
+    "source_tree": "4b9e729c5802a30c6d2db7c6a6635abe07d44afa",
+    "client_passed": 405,
+    "typecheck": "passed",
+    "device_verified": false,
+    "evidence": ".planning/2026-10-26-device-app/committed-evidence.json",
+    "scope": "固定Git归档客户端405/405与TypeScript5.9.3、后端事件同步相关13通过；App本机纵切片已接线，未跑RN UI自动化/未构建APK/未使用真机，非后端全量；不替换发布基线"
    }
   ]
  },
@@ -5754,6 +5763,16 @@
      "result": "固定客户端405/405、tsc0、后端事件同步13通过；App经类型检查与编排集成测试，未跑RN UI自动化/未构建APK/未使用真机；原作者与review状态保留，未发布",
      "log": ".planning/2026-10-26-device-app/committed-evidence.json",
      "delivery": "docs/协作开发/验收/2026-10-26-12E本机任务App挂载.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "998db6fd6427586a4ba23bd99bf91a7edf03625e",
+     "functional_commit": "998db6fd6427586a4ba23bd99bf91a7edf03625e",
+     "source_tree": "8ef3aed41a3fcc77d5bff720e3ca90450d94d713",
+     "scope": "12-E接续复核：原16项负向全失败；修复保存动作偏离确认范围、回执降级/验收窗口、台账输入与恢复身份校验；新增接受版本留痕",
+     "result": "相关68通过；固定客户端424/424、tsc0、事件同步13通过；同JS/KV实例写保护，不是跨进程事务；未构建APK/未使用真机/未独立接受/未发布",
+     "log": ".planning/2026-10-26-device-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-12E确认范围与回执复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/12-E-自然语言手机App真实任务主链.md",
@@ -5784,7 +5803,7 @@
     "G0",
     "G1"
    ],
-   "next_step": "c2e6871已挂载本机打开设置纵切片：明确确认→持久执行→回执→用户验收；排除服务端重提，固定客户端405/405+tsc0、事件同步13通过。新增实现待复核与真机APK/JS绑定验收；任意多步骤/服务端设备规划与人工裁决仍未完成。",
+   "next_step": "本机打开设置App纵切片c2e6871已接线；998db6f进一步修确认范围、回执降级/验收竞态、非法恢复回执。固定客户端424/424+tsc0、事件同步13通过。新增修复待复核与真机APK/JS绑定验收；多步骤/服务端设备规划与人工裁决等仍未完成。",
    "working_basis": "2026-10-25 zcode-main 认领开工。依赖全部满足（23-C review/07-C review/06-R accepted）。复用已交付的 23-A 契约、23-B 模式、23-C 工作区、23-D 状态映射、24-B 能力六档、29-C 反馈、11-W 真机链路、12-A 协议协议；本卡连成完整链路。",
    "prerequisites": "可连接且授权的Android设备",
    "ownership_history": [
@@ -5793,6 +5812,12 @@
      "from": "review(原作者zcode-main，提议与回执模块)",
      "to": "review",
      "reason": "用户指示codex-runtime接续App挂载；c2e6871交付本机打开设置纵切片，保留原owner/reviewer，新增实现待复核与真机验收"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "codex-runtime接续自检并修复998db6f；保留原owner/reviewer，新修复待独立复查与真机验收，不改原作者历史"
     }
    ],
    "review_history": [
@@ -8324,6 +8349,23 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-12E本机任务App挂载.md",
    "scope": "固定客户端405/405、tsc0与事件同步13；未进行真机/产品验收，未纳入已发布基线"
+  },
+  {
+   "id": "discovered-998db6fd6427",
+   "title": "fix(ALN-12-E): 限定确认动作并按当前回执保存验收",
+   "workpackage": "ALN-12",
+   "source_commit": "998db6fd6427586a4ba23bd99bf91a7edf03625e",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "android-app/src/device/taskProtocol.ts",
+    "android-app/src/features/pipeline/deviceTasks.ts",
+    "android-app/src/offline/types.ts",
+    "android-app/test/offline/deviceTaskReview.test.ts"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-12E确认范围与回执复核.md",
+   "scope": "固定客户端424/424、tsc0与事件同步13；修复待独立复核、未做真机验收或纳入发布基线"
   }
  ],
  "requirement_batches": [
@@ -8483,6 +8525,23 @@
    "report": "docs/协作开发/验收/2026-10-26-12E本机任务App挂载.md",
    "evidence": ".planning/2026-10-26-device-app/committed-evidence.json",
    "status": "implementation_delivered_pending_review",
+   "product_acceptance_added": false,
+   "published_by_review": false
+  },
+  {
+   "id": "REVIEW-2026-10-26-DEVICE-SCOPE",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-12-E"
+   ],
+   "fixed_cards": [
+    "ALN-12-E"
+   ],
+   "fix_commit": "998db6fd6427586a4ba23bd99bf91a7edf03625e",
+   "report": "docs/协作开发/验收/2026-10-26-12E确认范围与回执复核.md",
+   "evidence": ".planning/2026-10-26-device-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
    "product_acceptance_added": false,
    "published_by_review": false
   }

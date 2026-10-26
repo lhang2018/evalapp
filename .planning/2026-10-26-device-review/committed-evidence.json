@@ -1,0 +1,21 @@
+{
+  "source_commit": "998db6fd6427586a4ba23bd99bf91a7edf03625e",
+  "source_tree": "8ef3aed41a3fcc77d5bff720e3ca90450d94d713",
+  "client_passed": 424,
+  "typecheck": "passed",
+  "backend_related_passed": 13,
+  "backend_full_rerun": false,
+  "device_verified": false,
+  "scope": "本机任务确认范围、回执降级/并发验收及台账输入校验；非真机或独立接受",
+  "new_temporary_data_removed": true,
+  "evidence_sha256_lf": {
+    "validation.json": "36e36ba2fb1bded452c0f2522b8be14eb450df8e770bf5334363f6853cdee3aa",
+    "backend-validation.json": "ed1267c7d8b3c7bbe76b4c95b5f6d08afb4c76771e7bf3d9e3f9e8c2d860a342",
+    "negative-probes.txt": "6aa0cf54a8fe0ab97d5a7a79ced983e0d84f32044868458916261c40a55acb62",
+    "focused-tests.txt": "58b11816831d0eca17187a09075fa545a64d538b8bae05f29579524b8fbfc20f",
+    "focused-tests-final.txt": "c3646ac01da6930c949a35dd42de97624641db31cd1b2e90b8e3c3b0f332c370",
+    "client-tests.txt": "8af5184338491e4b28572da5455c56e7da3bc62b250a03e6de2d681703cbebbb",
+    "typecheck.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend-tests.txt": "bb114475884525b7dcf0be31dfc453d0e91f4c6d42c84b9539d687d09227a89c"
+  }
+}

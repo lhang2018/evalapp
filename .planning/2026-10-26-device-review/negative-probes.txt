@@ -1,0 +1,278 @@
+(node:36588) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ persisted target outside the displayed settings scope is refused before consent (5.2869ms)
+✖ persisted kind outside the displayed settings scope is refused before consent (1.0312ms)
+✖ persisted args outside the displayed settings scope is refused before consent (0.7532ms)
+✖ persisted expectation outside the displayed settings scope is refused before consent (0.7756ms)
+✖ persisted risk outside the displayed settings scope is refused before consent (0.7676ms)
+✖ persisted goal outside the displayed settings scope is refused before consent (1.0343ms)
+✖ receipt downgrade removes the stale awaiting-acceptance task state (1.195ms)
+✖ acceptance cannot use a receipt revoked while publishing its projection (0.8578ms)
+✖ invalid receipt kind is rejected before changing durable history (0.3374ms)
+✖ invalid receipt risk is rejected before changing durable history (0.2337ms)
+✖ invalid receipt terminal is rejected before changing durable history (0.1677ms)
+✖ invalid receipt unknown state is rejected before changing durable history (0.1624ms)
+✖ invalid receipt replay flag is rejected before changing durable history (0.1191ms)
+✖ invalid receipt timestamp is rejected before changing durable history (0.111ms)
+✖ orphan recovery receipt cannot poison the entire action ledger (0.1886ms)
+✖ recovery cannot borrow a cached receipt from another task (0.3532ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 0
+ℹ fail 16
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 135.6515
+
+✖ failing tests:
+
+test at test\offline\deviceTaskReview.test.ts:39:3
+✖ persisted target outside the displayed settings scope is refused before consent (5.2869ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:43:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:39:3
+✖ persisted kind outside the displayed settings scope is refused before consent (1.0312ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:43:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:39:3
+✖ persisted args outside the displayed settings scope is refused before consent (0.7532ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:43:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:39:3
+✖ persisted expectation outside the displayed settings scope is refused before consent (0.7756ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:43:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:39:3
+✖ persisted risk outside the displayed settings scope is refused before consent (0.7676ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:43:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:39:3
+✖ persisted goal outside the displayed settings scope is refused before consent (1.0343ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:43:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:49:1
+✖ receipt downgrade removes the stale awaiting-acceptance task state (1.195ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'awaiting_acceptance'
+  - 'needs_review'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:54:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'awaiting_acceptance',
+    expected: 'needs_review',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:58:1
+✖ acceptance cannot use a receipt revoked while publishing its projection (0.8578ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:69:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:78:3
+✖ invalid receipt kind is rejected before changing durable history (0.3374ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:82:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:78:3
+✖ invalid receipt risk is rejected before changing durable history (0.2337ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:82:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:78:3
+✖ invalid receipt terminal is rejected before changing durable history (0.1677ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:82:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:78:3
+✖ invalid receipt unknown state is rejected before changing durable history (0.1624ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:82:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:78:3
+✖ invalid receipt replay flag is rejected before changing durable history (0.1191ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:82:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:78:3
+✖ invalid receipt timestamp is rejected before changing durable history (0.111ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:82:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:88:1
+✖ orphan recovery receipt cannot poison the entire action ledger (0.1886ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:90:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskReview.test.ts:94:1
+✖ recovery cannot borrow a cached receipt from another task (0.3532ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts:98:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }

@@ -1,0 +1,113 @@
+(node:27088) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/peerTaskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ two ledger instances sharing durable storage claim an action only once (3.9601ms)
+✔ cached action id cannot be reused with a different task_id (1.865ms)
+✔ cached action id cannot be reused with a different run_id (2.5728ms)
+✔ cached action id cannot be reused with a different effect_id (0.8396ms)
+✔ cached action id cannot be reused with a different target (0.6793ms)
+✔ proposal owns nested input snapshots (0.2684ms)
+✔ retention does not make an already dispatched action executable again after restart (1.5932ms)
+✔ pending proposal is not evicted to permit replay (0.6224ms)
+✔ invalid persisted ledger is rejected rather than becoming an empty execution history (0.3853ms)
+✔ missing broker journal after dispatch remains unknown (0.5687ms)
+✔ journal receipt cannot refer to another action (0.3001ms)
+✔ upload never contains expected screen text or recipient targets (0.3295ms)
+✔ explicit low risk cannot downgrade a known high risk device operation (0.1948ms)
+✔ raw broker concurrent duplicates cannot both dispatch (0.2535ms)
+✔ raw broker never returns another task's cached action receipt (0.2051ms)
+(node:38920) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/taskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 缺口证明：任务链路引用随动作进入 broker 日志（task→action→effect 可追溯） (3.5147ms)
+✔ createProposal：引用完整且稳定，run_id 缺省派生自任务，风险按 broker 同表推导 (0.5552ms)
+✔ proposalToAction：预期观察映射 expect_text，引用随动作下发 (0.2897ms)
+✔ 执行成功：回执终态 verified、证据与时间戳齐备，任务链可查 (1.3719ms)
+✔ 同一 action_id 重放：返回原回执，不重复下发，原始证据保留 (2.8061ms)
+✔ 未知副作用（unverified）不是终态：不自动重放，需人工对账 (1.2386ms)
+✔ 高风险无确认：终态 denied；重放不重复询问、不下发 (5.9396ms)
+✔ 无障碍未授权：终态 unavailable，重试需新提议（新 action_id） (0.5706ms)
+✔ 失败动作不自动重放：同一 action_id 返回原失败回执 (0.3845ms)
+✔ 中断恢复：先落提议后下发——崩溃窗口（已记账无回执）不自动重发 (0.5541ms)
+✔ 台账持久化：重启（新实例）后提议、回执与任务链完整 (0.4343ms)
+✔ 台账容量上界：超出 limit 淘汰最旧条目 (1.2731ms)
+✔ 上传投影：回执只含引用与状态，提议脱敏文本目标，本地保留字段列明 (0.3005ms)
+(node:66568) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/deviceTaskApp.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ unknown and compound goals stay on the existing planner path (1.389ms)
+✔ prepare persists exact identity without dispatch or server submission (2.0129ms)
+✔ end-to-end local orchestration separates action verification from user acceptance (3.8827ms)
+✔ refusing authorization leaves the prepared task unclaimed (0.3478ms)
+✔ restart and repeated refresh never dispatch again or enqueue duplicate receipts (2.3583ms)
+✔ concurrent UI execution claims the prepared task once (0.7699ms)
+✔ cancellation while confirmation is pending prevents subsequent dispatch (0.6075ms)
+✔ an interrupted claimed task is never dispatched on restart (0.6482ms)
+✔ task storage failure before claim prevents any device dispatch (0.3139ms)
+✔ receipt survives projection write failure and can be published after restart (1.6517ms)
+✔ unverified action cannot be promoted to task success or retried (0.6623ms)
+✔ device marker prevents even stale submission statuses from reaching server (0.4468ms)
+✔ leaving foreground during confirmation does not claim or execute the task (0.234ms)
+✔ real sync engine retries metadata only and never submits the device task (1.7069ms)
+✔ unknown receipt cannot be forged by corrupting the action ledger (0.2528ms)
+✔ foreground loss after durable claim remains pending without dispatch (0.2365ms)
+✖ a proposal changed during confirmation cannot use the old consent (0.6373ms)
+✔ a truthy consent value is not explicit approval (0.155ms)
+✔ a full critical event queue preserves the device receipt until space is available (10.7244ms)
+✔ a reconciled receipt replaces the older unknown projection without another action (0.5781ms)
+✔ two repository instances cannot overwrite each other's task updates (4.0872ms)
+(node:69556) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ persisted target outside the displayed settings scope is refused before consent (3.5718ms)
+✔ persisted kind outside the displayed settings scope is refused before consent (0.8472ms)
+✔ persisted args outside the displayed settings scope is refused before consent (0.3033ms)
+✔ persisted expectation outside the displayed settings scope is refused before consent (0.3025ms)
+✔ persisted risk outside the displayed settings scope is refused before consent (0.3826ms)
+✔ persisted goal outside the displayed settings scope is refused before consent (0.3457ms)
+✔ receipt downgrade removes the stale awaiting-acceptance task state (2.538ms)
+✔ acceptance cannot use a receipt revoked while publishing its projection (1.2483ms)
+✔ invalid receipt kind is rejected before changing durable history (0.3596ms)
+✔ invalid receipt risk is rejected before changing durable history (0.2963ms)
+✔ invalid receipt terminal is rejected before changing durable history (0.1987ms)
+✔ invalid receipt unknown state is rejected before changing durable history (0.1096ms)
+✔ invalid receipt replay flag is rejected before changing durable history (0.1107ms)
+✔ invalid receipt timestamp is rejected before changing durable history (0.6296ms)
+✔ orphan recovery receipt cannot poison the entire action ledger (0.1665ms)
+✔ recovery cannot borrow a cached receipt from another task (0.1791ms)
+ℹ tests 65
+ℹ suites 0
+ℹ pass 64
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 202.0066
+
+✖ failing tests:
+
+test at test\offline\deviceTaskApp.test.ts:260:1
+✖ a proposal changed during confirmation cannot use the old consent (0.6373ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /变化/. Input:
+  
+  'Error: 保存的设备动作与任务确认范围不一致，禁止执行'
+  
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskApp.test.ts:263:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: Error: 保存的设备动作与任务确认范围不一致，禁止执行
+        at DeviceTaskService.task (file:///E:/evalapp/android-app/src/features/pipeline/deviceTasks.ts:69:13)
+        at file:///E:/evalapp/android-app/src/features/pipeline/deviceTasks.ts:94:25
+        at run (file:///E:/evalapp/android-app/src/offline/storage.ts:384:28)
+        at process.processTicksAndRejections (node:internal/process/task_queues:104:5),
+    expected: /变化/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
