@@ -56,7 +56,7 @@ def change_plan(board,fn):
 
 def test_registered_plan_preserves_originals_and_renders_dynamic_count(board):
     assert not check(board)
-    assert "30 个工作包总账" in cp.render(board)
+    assert f"{len(board['workpackages'])} 个工作包总账" in cp.render(board)
 
 def test_original_package_cannot_be_removed(board):
     board["workpackages"]=[p for p in board["workpackages"] if p["id"]!="ALN-01"]
