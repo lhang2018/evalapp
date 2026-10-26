@@ -1,0 +1,588 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFFFFF.                                                        [100%]
+================================== FAILURES ===================================
+____ test_required_crash_blocks_even_at_eighty_percent_coverage[candidate] ____
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDA29CC0>
+crashing_side = 'candidate'
+
+    @pytest.mark.parametrize("crashing_side", ["candidate", "baseline"])
+    def test_required_crash_blocks_even_at_eighty_percent_coverage(repo, crashing_side):
+        base = register(repo, "review.base", CRASH if crashing_side == "baseline" else BASE)
+        cand = register(repo, "review.cand", CRASH if crashing_side == "candidate" else 'print(\'{"ok": true}\')')
+        cases = [BenchCase(f"case-{i}", {"index": i}) for i in range(5)]
+        report = runner(repo).compare(base, cand, cases)
+        assert report["coverage"]["coverage_ratio"] == 0.8
+>       assert report["coverage"]["required_coverage_ok"] is False
+E       assert True is False
+
+tests\test_benchmark_review_20261026.py:48: AssertionError
+____ test_required_crash_blocks_even_at_eighty_percent_coverage[baseline] _____
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDB7BDF0>
+crashing_side = 'baseline'
+
+    @pytest.mark.parametrize("crashing_side", ["candidate", "baseline"])
+    def test_required_crash_blocks_even_at_eighty_percent_coverage(repo, crashing_side):
+        base = register(repo, "review.base", CRASH if crashing_side == "baseline" else BASE)
+        cand = register(repo, "review.cand", CRASH if crashing_side == "candidate" else 'print(\'{"ok": true}\')')
+        cases = [BenchCase(f"case-{i}", {"index": i}) for i in range(5)]
+        report = runner(repo).compare(base, cand, cases)
+        assert report["coverage"]["coverage_ratio"] == 0.8
+>       assert report["coverage"]["required_coverage_ok"] is False
+E       assert True is False
+
+tests\test_benchmark_review_20261026.py:48: AssertionError
+____ test_non_boolean_ok_is_invalid_output_not_a_valid_measurement[false] _____
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDA29DB0>
+value = 'false'
+
+    @pytest.mark.parametrize("value", ["false", 1, [], None])
+    def test_non_boolean_ok_is_invalid_output_not_a_valid_measurement(repo, value):
+        base = register(repo, "review.base", BASE)
+        code = "print(" + repr(json.dumps({"ok": value})) + ")"
+        cand = register(repo, "review.cand", code)
+        report = runner(repo).compare(base, cand, [BenchCase("one")])
+>       assert report["cases"][0]["candidate"]["status"] == "invalid_output"
+E       AssertionError: assert 'ok' == 'invalid_output'
+E         
+E         - invalid_output
+E         + ok
+
+tests\test_benchmark_review_20261026.py:59: AssertionError
+______ test_non_boolean_ok_is_invalid_output_not_a_valid_measurement[1] _______
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDBB6C80>
+value = 1
+
+    @pytest.mark.parametrize("value", ["false", 1, [], None])
+    def test_non_boolean_ok_is_invalid_output_not_a_valid_measurement(repo, value):
+        base = register(repo, "review.base", BASE)
+        code = "print(" + repr(json.dumps({"ok": value})) + ")"
+        cand = register(repo, "review.cand", code)
+        report = runner(repo).compare(base, cand, [BenchCase("one")])
+>       assert report["cases"][0]["candidate"]["status"] == "invalid_output"
+E       AssertionError: assert 'ok' == 'invalid_output'
+E         
+E         - invalid_output
+E         + ok
+
+tests\test_benchmark_review_20261026.py:59: AssertionError
+____ test_non_boolean_ok_is_invalid_output_not_a_valid_measurement[value2] ____
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDBBF520>
+value = []
+
+    @pytest.mark.parametrize("value", ["false", 1, [], None])
+    def test_non_boolean_ok_is_invalid_output_not_a_valid_measurement(repo, value):
+        base = register(repo, "review.base", BASE)
+        code = "print(" + repr(json.dumps({"ok": value})) + ")"
+        cand = register(repo, "review.cand", code)
+        report = runner(repo).compare(base, cand, [BenchCase("one")])
+>       assert report["cases"][0]["candidate"]["status"] == "invalid_output"
+E       AssertionError: assert 'failed' == 'invalid_output'
+E         
+E         - invalid_output
+E         + failed
+
+tests\test_benchmark_review_20261026.py:59: AssertionError
+_____ test_non_boolean_ok_is_invalid_output_not_a_valid_measurement[None] _____
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDBB5BD0>
+value = None
+
+    @pytest.mark.parametrize("value", ["false", 1, [], None])
+    def test_non_boolean_ok_is_invalid_output_not_a_valid_measurement(repo, value):
+        base = register(repo, "review.base", BASE)
+        code = "print(" + repr(json.dumps({"ok": value})) + ")"
+        cand = register(repo, "review.cand", code)
+        report = runner(repo).compare(base, cand, [BenchCase("one")])
+>       assert report["cases"][0]["candidate"]["status"] == "invalid_output"
+E       AssertionError: assert 'failed' == 'invalid_output'
+E         
+E         - invalid_output
+E         + failed
+
+tests\test_benchmark_review_20261026.py:59: AssertionError
+_ test_direct_benchmark_refuses_ambiguous_case_manifest_before_resolving[cases0] _
+
+self = <evoagent.evolution.host.IsolatedCandidateHost object at 0x000002A7FDBBE350>
+ref = 'missing.base@1.0.0'
+
+    def resolve(self, ref: Any) -> CandidateArtifact:
+        """按精确引用（``AssetRef`` 或 ``asset_id@version`` 字符串）读取资产。"""
+        target = ref if isinstance(ref, str) else str(ref)
+        try:
+>           asset = self.repository.get_exact(target)
+
+evoagent\evolution\host.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDBBE920>
+ref = 'missing.base@1.0.0'
+
+    def get_exact(self, ref: str) -> Asset:
+        parsed = AssetRef.parse(ref)
+        asset = self.get(parsed.asset_id, parsed.version)
+        if asset is None:
+>           raise AssetNotFound(f"资产不存在: {parsed}")
+E           evoagent.assets.entity.AssetNotFound: 资产不存在: missing.base@1.0.0
+
+evoagent\assets\repository.py:160: AssetNotFound
+
+The above exception was the direct cause of the following exception:
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDBBE920>
+cases = [BenchCase(case_id='duplicate', input={}, domain='general', required=True), BenchCase(case_id='duplicate', input={}, domain='general', required=True)]
+
+    @pytest.mark.parametrize("cases", [
+        [BenchCase("duplicate"), BenchCase("duplicate")],
+        [BenchCase("bad-required", required=0)],
+        [BenchCase("bad-input", input=[])],
+    ])
+    def test_direct_benchmark_refuses_ambiguous_case_manifest_before_resolving(repo, cases):
+        # Missing assets show that validation precedes any candidate execution.
+        with pytest.raises(BenchError):
+>           runner(repo).compare("missing.base@1.0.0", "missing.cand@1.0.0", cases)
+
+tests\test_benchmark_review_20261026.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\evaluation\host_bench.py:198: in compare
+    baseline_identity = self.host.resolve(baseline_ref).identity()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.evolution.host.IsolatedCandidateHost object at 0x000002A7FDBBE350>
+ref = 'missing.base@1.0.0'
+
+    def resolve(self, ref: Any) -> CandidateArtifact:
+        """按精确引用（``AssetRef`` 或 ``asset_id@version`` 字符串）读取资产。"""
+        target = ref if isinstance(ref, str) else str(ref)
+        try:
+            asset = self.repository.get_exact(target)
+        except AssetError as exc:  # AssetNotFound / AssetValidationError（摘要不符）
+>           raise CandidateAssetError(f"候选资产不可用: {exc}") from exc
+E           evoagent.evolution.host.CandidateAssetError: 候选资产不可用: 资产不存在: missing.base@1.0.0
+
+evoagent\evolution\host.py:75: CandidateAssetError
+_ test_direct_benchmark_refuses_ambiguous_case_manifest_before_resolving[cases1] _
+
+self = <evoagent.evolution.host.IsolatedCandidateHost object at 0x000002A7FDC239D0>
+ref = 'missing.base@1.0.0'
+
+    def resolve(self, ref: Any) -> CandidateArtifact:
+        """按精确引用（``AssetRef`` 或 ``asset_id@version`` 字符串）读取资产。"""
+        target = ref if isinstance(ref, str) else str(ref)
+        try:
+>           asset = self.repository.get_exact(target)
+
+evoagent\evolution\host.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDC23A00>
+ref = 'missing.base@1.0.0'
+
+    def get_exact(self, ref: str) -> Asset:
+        parsed = AssetRef.parse(ref)
+        asset = self.get(parsed.asset_id, parsed.version)
+        if asset is None:
+>           raise AssetNotFound(f"资产不存在: {parsed}")
+E           evoagent.assets.entity.AssetNotFound: 资产不存在: missing.base@1.0.0
+
+evoagent\assets\repository.py:160: AssetNotFound
+
+The above exception was the direct cause of the following exception:
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDC23A00>
+cases = [BenchCase(case_id='bad-required', input={}, domain='general', required=0)]
+
+    @pytest.mark.parametrize("cases", [
+        [BenchCase("duplicate"), BenchCase("duplicate")],
+        [BenchCase("bad-required", required=0)],
+        [BenchCase("bad-input", input=[])],
+    ])
+    def test_direct_benchmark_refuses_ambiguous_case_manifest_before_resolving(repo, cases):
+        # Missing assets show that validation precedes any candidate execution.
+        with pytest.raises(BenchError):
+>           runner(repo).compare("missing.base@1.0.0", "missing.cand@1.0.0", cases)
+
+tests\test_benchmark_review_20261026.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\evaluation\host_bench.py:198: in compare
+    baseline_identity = self.host.resolve(baseline_ref).identity()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.evolution.host.IsolatedCandidateHost object at 0x000002A7FDC239D0>
+ref = 'missing.base@1.0.0'
+
+    def resolve(self, ref: Any) -> CandidateArtifact:
+        """按精确引用（``AssetRef`` 或 ``asset_id@version`` 字符串）读取资产。"""
+        target = ref if isinstance(ref, str) else str(ref)
+        try:
+            asset = self.repository.get_exact(target)
+        except AssetError as exc:  # AssetNotFound / AssetValidationError（摘要不符）
+>           raise CandidateAssetError(f"候选资产不可用: {exc}") from exc
+E           evoagent.evolution.host.CandidateAssetError: 候选资产不可用: 资产不存在: missing.base@1.0.0
+
+evoagent\evolution\host.py:75: CandidateAssetError
+_ test_direct_benchmark_refuses_ambiguous_case_manifest_before_resolving[cases2] _
+
+self = <evoagent.evolution.host.IsolatedCandidateHost object at 0x000002A7FDBB6A10>
+ref = 'missing.base@1.0.0'
+
+    def resolve(self, ref: Any) -> CandidateArtifact:
+        """按精确引用（``AssetRef`` 或 ``asset_id@version`` 字符串）读取资产。"""
+        target = ref if isinstance(ref, str) else str(ref)
+        try:
+>           asset = self.repository.get_exact(target)
+
+evoagent\evolution\host.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDBB7040>
+ref = 'missing.base@1.0.0'
+
+    def get_exact(self, ref: str) -> Asset:
+        parsed = AssetRef.parse(ref)
+        asset = self.get(parsed.asset_id, parsed.version)
+        if asset is None:
+>           raise AssetNotFound(f"资产不存在: {parsed}")
+E           evoagent.assets.entity.AssetNotFound: 资产不存在: missing.base@1.0.0
+
+evoagent\assets\repository.py:160: AssetNotFound
+
+The above exception was the direct cause of the following exception:
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDBB7040>
+cases = [BenchCase(case_id='bad-input', input=[], domain='general', required=True)]
+
+    @pytest.mark.parametrize("cases", [
+        [BenchCase("duplicate"), BenchCase("duplicate")],
+        [BenchCase("bad-required", required=0)],
+        [BenchCase("bad-input", input=[])],
+    ])
+    def test_direct_benchmark_refuses_ambiguous_case_manifest_before_resolving(repo, cases):
+        # Missing assets show that validation precedes any candidate execution.
+        with pytest.raises(BenchError):
+>           runner(repo).compare("missing.base@1.0.0", "missing.cand@1.0.0", cases)
+
+tests\test_benchmark_review_20261026.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\evaluation\host_bench.py:198: in compare
+    baseline_identity = self.host.resolve(baseline_ref).identity()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.evolution.host.IsolatedCandidateHost object at 0x000002A7FDBB6A10>
+ref = 'missing.base@1.0.0'
+
+    def resolve(self, ref: Any) -> CandidateArtifact:
+        """按精确引用（``AssetRef`` 或 ``asset_id@version`` 字符串）读取资产。"""
+        target = ref if isinstance(ref, str) else str(ref)
+        try:
+            asset = self.repository.get_exact(target)
+        except AssetError as exc:  # AssetNotFound / AssetValidationError（摘要不符）
+>           raise CandidateAssetError(f"候选资产不可用: {exc}") from exc
+E           evoagent.evolution.host.CandidateAssetError: 候选资产不可用: 资产不存在: missing.base@1.0.0
+
+evoagent\evolution\host.py:75: CandidateAssetError
+________ test_api_service_does_not_coerce_invalid_case_fields[cases0] _________
+
+self = <evoagent.evolution.host.IsolatedCandidateHost object at 0x000002A7FDA28D60>
+ref = 'missing@1.0.0'
+
+    def resolve(self, ref: Any) -> CandidateArtifact:
+        """按精确引用（``AssetRef`` 或 ``asset_id@version`` 字符串）读取资产。"""
+        target = ref if isinstance(ref, str) else str(ref)
+        try:
+>           asset = self.repository.get_exact(target)
+
+evoagent\evolution\host.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDA2B400>
+ref = 'missing@1.0.0'
+
+    def get_exact(self, ref: str) -> Asset:
+        parsed = AssetRef.parse(ref)
+        asset = self.get(parsed.asset_id, parsed.version)
+        if asset is None:
+>           raise AssetNotFound(f"资产不存在: {parsed}")
+E           evoagent.assets.entity.AssetNotFound: 资产不存在: missing@1.0.0
+
+evoagent\assets\repository.py:160: AssetNotFound
+
+The above exception was the direct cause of the following exception:
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDA2B400>
+cases = [{'case_id': 'duplicate'}, {'case_id': 'duplicate'}]
+
+    @pytest.mark.parametrize("cases", [
+        [{"case_id": "duplicate"}, {"case_id": "duplicate"}],
+        [{"case_id": "bad-required", "required": 0}],
+        [{"case_id": "bad-domain", "domain": ["general"]}],
+    ])
+    def test_api_service_does_not_coerce_invalid_case_fields(repo, cases):
+        service = CandidateEvaluationService(repo)
+        with pytest.raises(ValueError):
+>           service.evaluate(candidate_id="review", baseline_ref="missing@1.0.0",
+                candidate_ref="missing@2.0.0", cases=cases, actor="review", reason="probe")
+
+tests\test_benchmark_review_20261026.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\integration\candidate_execution.py:77: in evaluate
+    baseline = self.host.resolve(baseline_ref)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.evolution.host.IsolatedCandidateHost object at 0x000002A7FDA28D60>
+ref = 'missing@1.0.0'
+
+    def resolve(self, ref: Any) -> CandidateArtifact:
+        """按精确引用（``AssetRef`` 或 ``asset_id@version`` 字符串）读取资产。"""
+        target = ref if isinstance(ref, str) else str(ref)
+        try:
+            asset = self.repository.get_exact(target)
+        except AssetError as exc:  # AssetNotFound / AssetValidationError（摘要不符）
+>           raise CandidateAssetError(f"候选资产不可用: {exc}") from exc
+E           evoagent.evolution.host.CandidateAssetError: 候选资产不可用: 资产不存在: missing@1.0.0
+
+evoagent\evolution\host.py:75: CandidateAssetError
+________ test_api_service_does_not_coerce_invalid_case_fields[cases1] _________
+
+self = <evoagent.evolution.host.IsolatedCandidateHost object at 0x000002A7FDB7E3B0>
+ref = 'missing@1.0.0'
+
+    def resolve(self, ref: Any) -> CandidateArtifact:
+        """按精确引用（``AssetRef`` 或 ``asset_id@version`` 字符串）读取资产。"""
+        target = ref if isinstance(ref, str) else str(ref)
+        try:
+>           asset = self.repository.get_exact(target)
+
+evoagent\evolution\host.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDB7D4E0>
+ref = 'missing@1.0.0'
+
+    def get_exact(self, ref: str) -> Asset:
+        parsed = AssetRef.parse(ref)
+        asset = self.get(parsed.asset_id, parsed.version)
+        if asset is None:
+>           raise AssetNotFound(f"资产不存在: {parsed}")
+E           evoagent.assets.entity.AssetNotFound: 资产不存在: missing@1.0.0
+
+evoagent\assets\repository.py:160: AssetNotFound
+
+The above exception was the direct cause of the following exception:
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDB7D4E0>
+cases = [{'case_id': 'bad-required', 'required': 0}]
+
+    @pytest.mark.parametrize("cases", [
+        [{"case_id": "duplicate"}, {"case_id": "duplicate"}],
+        [{"case_id": "bad-required", "required": 0}],
+        [{"case_id": "bad-domain", "domain": ["general"]}],
+    ])
+    def test_api_service_does_not_coerce_invalid_case_fields(repo, cases):
+        service = CandidateEvaluationService(repo)
+        with pytest.raises(ValueError):
+>           service.evaluate(candidate_id="review", baseline_ref="missing@1.0.0",
+                candidate_ref="missing@2.0.0", cases=cases, actor="review", reason="probe")
+
+tests\test_benchmark_review_20261026.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\integration\candidate_execution.py:77: in evaluate
+    baseline = self.host.resolve(baseline_ref)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.evolution.host.IsolatedCandidateHost object at 0x000002A7FDB7E3B0>
+ref = 'missing@1.0.0'
+
+    def resolve(self, ref: Any) -> CandidateArtifact:
+        """按精确引用（``AssetRef`` 或 ``asset_id@version`` 字符串）读取资产。"""
+        target = ref if isinstance(ref, str) else str(ref)
+        try:
+            asset = self.repository.get_exact(target)
+        except AssetError as exc:  # AssetNotFound / AssetValidationError（摘要不符）
+>           raise CandidateAssetError(f"候选资产不可用: {exc}") from exc
+E           evoagent.evolution.host.CandidateAssetError: 候选资产不可用: 资产不存在: missing@1.0.0
+
+evoagent\evolution\host.py:75: CandidateAssetError
+________ test_api_service_does_not_coerce_invalid_case_fields[cases2] _________
+
+self = <evoagent.evolution.host.IsolatedCandidateHost object at 0x000002A7FDCA3AF0>
+ref = 'missing@1.0.0'
+
+    def resolve(self, ref: Any) -> CandidateArtifact:
+        """按精确引用（``AssetRef`` 或 ``asset_id@version`` 字符串）读取资产。"""
+        target = ref if isinstance(ref, str) else str(ref)
+        try:
+>           asset = self.repository.get_exact(target)
+
+evoagent\evolution\host.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDCA3790>
+ref = 'missing@1.0.0'
+
+    def get_exact(self, ref: str) -> Asset:
+        parsed = AssetRef.parse(ref)
+        asset = self.get(parsed.asset_id, parsed.version)
+        if asset is None:
+>           raise AssetNotFound(f"资产不存在: {parsed}")
+E           evoagent.assets.entity.AssetNotFound: 资产不存在: missing@1.0.0
+
+evoagent\assets\repository.py:160: AssetNotFound
+
+The above exception was the direct cause of the following exception:
+
+repo = <evoagent.assets.repository.AssetRepository object at 0x000002A7FDCA3790>
+cases = [{'case_id': 'bad-domain', 'domain': ['general']}]
+
+    @pytest.mark.parametrize("cases", [
+        [{"case_id": "duplicate"}, {"case_id": "duplicate"}],
+        [{"case_id": "bad-required", "required": 0}],
+        [{"case_id": "bad-domain", "domain": ["general"]}],
+    ])
+    def test_api_service_does_not_coerce_invalid_case_fields(repo, cases):
+        service = CandidateEvaluationService(repo)
+        with pytest.raises(ValueError):
+>           service.evaluate(candidate_id="review", baseline_ref="missing@1.0.0",
+                candidate_ref="missing@2.0.0", cases=cases, actor="review", reason="probe")
+
+tests\test_benchmark_review_20261026.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\integration\candidate_execution.py:77: in evaluate
+    baseline = self.host.resolve(baseline_ref)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.evolution.host.IsolatedCandidateHost object at 0x000002A7FDCA3AF0>
+ref = 'missing@1.0.0'
+
+    def resolve(self, ref: Any) -> CandidateArtifact:
+        """按精确引用（``AssetRef`` 或 ``asset_id@version`` 字符串）读取资产。"""
+        target = ref if isinstance(ref, str) else str(ref)
+        try:
+            asset = self.repository.get_exact(target)
+        except AssetError as exc:  # AssetNotFound / AssetValidationError（摘要不符）
+>           raise CandidateAssetError(f"候选资产不可用: {exc}") from exc
+E           evoagent.evolution.host.CandidateAssetError: 候选资产不可用: 资产不存在: missing@1.0.0
+
+evoagent\evolution\host.py:75: CandidateAssetError
+__ test_sandbox_rejects_file_moves_across_host_boundary[into_sandbox-rename] __
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-i5mezdpj/scratch/pytest/test_sandbox_rejects_file_move0')
+operation = 'rename', direction = 'into_sandbox'
+
+    @pytest.mark.parametrize("operation", ["rename", "replace"])
+    @pytest.mark.parametrize("direction", ["into_sandbox", "out_of_sandbox"])
+    def test_sandbox_rejects_file_moves_across_host_boundary(tmp_path, operation, direction):
+        host_file = tmp_path / "synthetic-host.txt"
+        host_file.write_text("synthetic host data", encoding="utf-8")
+        outside = str(host_file)
+        if direction == "into_sandbox":
+            code = f"import os\nos.{operation}({outside!r}, 'moved.txt')\n"
+        else:
+            code = f"import os\nopen('inside.txt', 'w').write('inside')\nos.{operation}('inside.txt', {outside!r})\n"
+        result = SandboxRunner().run_code(code)
+>       assert result.status == "violation", result.to_dict()
+E       AssertionError: {'duration_s': 0.036, 'exit_code': 0, 'status': 'passed', 'stderr': '', ...}
+E       assert 'passed' == 'violation'
+E         
+E         - violation
+E         + passed
+
+tests\test_benchmark_review_20261026.py:97: AssertionError
+_ test_sandbox_rejects_file_moves_across_host_boundary[into_sandbox-replace] __
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-i5mezdpj/scratch/pytest/test_sandbox_rejects_file_move1')
+operation = 'replace', direction = 'into_sandbox'
+
+    @pytest.mark.parametrize("operation", ["rename", "replace"])
+    @pytest.mark.parametrize("direction", ["into_sandbox", "out_of_sandbox"])
+    def test_sandbox_rejects_file_moves_across_host_boundary(tmp_path, operation, direction):
+        host_file = tmp_path / "synthetic-host.txt"
+        host_file.write_text("synthetic host data", encoding="utf-8")
+        outside = str(host_file)
+        if direction == "into_sandbox":
+            code = f"import os\nos.{operation}({outside!r}, 'moved.txt')\n"
+        else:
+            code = f"import os\nopen('inside.txt', 'w').write('inside')\nos.{operation}('inside.txt', {outside!r})\n"
+        result = SandboxRunner().run_code(code)
+>       assert result.status == "violation", result.to_dict()
+E       AssertionError: {'duration_s': 0.037, 'exit_code': 0, 'status': 'passed', 'stderr': '', ...}
+E       assert 'passed' == 'violation'
+E         
+E         - violation
+E         + passed
+
+tests\test_benchmark_review_20261026.py:97: AssertionError
+_ test_sandbox_rejects_file_moves_across_host_boundary[out_of_sandbox-rename] _
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-i5mezdpj/scratch/pytest/test_sandbox_rejects_file_move2')
+operation = 'rename', direction = 'out_of_sandbox'
+
+    @pytest.mark.parametrize("operation", ["rename", "replace"])
+    @pytest.mark.parametrize("direction", ["into_sandbox", "out_of_sandbox"])
+    def test_sandbox_rejects_file_moves_across_host_boundary(tmp_path, operation, direction):
+        host_file = tmp_path / "synthetic-host.txt"
+        host_file.write_text("synthetic host data", encoding="utf-8")
+        outside = str(host_file)
+        if direction == "into_sandbox":
+            code = f"import os\nos.{operation}({outside!r}, 'moved.txt')\n"
+        else:
+            code = f"import os\nopen('inside.txt', 'w').write('inside')\nos.{operation}('inside.txt', {outside!r})\n"
+        result = SandboxRunner().run_code(code)
+>       assert result.status == "violation", result.to_dict()
+E       AssertionError: {'duration_s': 0.038, 'exit_code': 1, 'status': 'failed', 'stderr': 'Traceback (most recent call last):\r
+E           File "E:\...\outputs\\\\review5-i5mezdpj\\\\scratch\\\\pytest\\\\test_sandbox_rejects_file_move2\\\\synthetic-host.txt\'\r
+E         ', ...}
+E       assert 'failed' == 'violation'
+E         
+E         - violation
+E         + failed
+
+tests\test_benchmark_review_20261026.py:97: AssertionError
+_ test_sandbox_rejects_file_moves_across_host_boundary[out_of_sandbox-replace] _
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-i5mezdpj/scratch/pytest/test_sandbox_rejects_file_move3')
+operation = 'replace', direction = 'out_of_sandbox'
+
+    @pytest.mark.parametrize("operation", ["rename", "replace"])
+    @pytest.mark.parametrize("direction", ["into_sandbox", "out_of_sandbox"])
+    def test_sandbox_rejects_file_moves_across_host_boundary(tmp_path, operation, direction):
+        host_file = tmp_path / "synthetic-host.txt"
+        host_file.write_text("synthetic host data", encoding="utf-8")
+        outside = str(host_file)
+        if direction == "into_sandbox":
+            code = f"import os\nos.{operation}({outside!r}, 'moved.txt')\n"
+        else:
+            code = f"import os\nopen('inside.txt', 'w').write('inside')\nos.{operation}('inside.txt', {outside!r})\n"
+        result = SandboxRunner().run_code(code)
+>       assert result.status == "violation", result.to_dict()
+E       AssertionError: {'duration_s': 0.035, 'exit_code': 0, 'status': 'passed', 'stderr': '', ...}
+E       assert 'passed' == 'violation'
+E         
+E         - violation
+E         + passed
+
+tests\test_benchmark_review_20261026.py:97: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_benchmark_review_20261026.py::test_required_crash_blocks_even_at_eighty_percent_coverage[candidate]
+FAILED tests/test_benchmark_review_20261026.py::test_required_crash_blocks_even_at_eighty_percent_coverage[baseline]
+FAILED tests/test_benchmark_review_20261026.py::test_non_boolean_ok_is_invalid_output_not_a_valid_measurement[false]
+FAILED tests/test_benchmark_review_20261026.py::test_non_boolean_ok_is_invalid_output_not_a_valid_measurement[1]
+FAILED tests/test_benchmark_review_20261026.py::test_non_boolean_ok_is_invalid_output_not_a_valid_measurement[value2]
+FAILED tests/test_benchmark_review_20261026.py::test_non_boolean_ok_is_invalid_output_not_a_valid_measurement[None]
+FAILED tests/test_benchmark_review_20261026.py::test_direct_benchmark_refuses_ambiguous_case_manifest_before_resolving[cases0]
+FAILED tests/test_benchmark_review_20261026.py::test_direct_benchmark_refuses_ambiguous_case_manifest_before_resolving[cases1]
+FAILED tests/test_benchmark_review_20261026.py::test_direct_benchmark_refuses_ambiguous_case_manifest_before_resolving[cases2]
+FAILED tests/test_benchmark_review_20261026.py::test_api_service_does_not_coerce_invalid_case_fields[cases0]
+FAILED tests/test_benchmark_review_20261026.py::test_api_service_does_not_coerce_invalid_case_fields[cases1]
+FAILED tests/test_benchmark_review_20261026.py::test_api_service_does_not_coerce_invalid_case_fields[cases2]
+FAILED tests/test_benchmark_review_20261026.py::test_sandbox_rejects_file_moves_across_host_boundary[into_sandbox-rename]
+FAILED tests/test_benchmark_review_20261026.py::test_sandbox_rejects_file_moves_across_host_boundary[into_sandbox-replace]
+FAILED tests/test_benchmark_review_20261026.py::test_sandbox_rejects_file_moves_across_host_boundary[out_of_sandbox-rename]
+FAILED tests/test_benchmark_review_20261026.py::test_sandbox_rejects_file_moves_across_host_boundary[out_of_sandbox-replace]
+16 failed, 1 passed in 1.67s

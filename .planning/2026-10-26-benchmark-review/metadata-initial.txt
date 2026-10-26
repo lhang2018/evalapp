@@ -1,0 +1,10 @@
+{
+  "scope": "collaboration metadata only",
+  "workpackages": 31,
+  "dispatches": 105,
+  "baseline": "published",
+  "errors": [
+    "unregistered source change: tests/test_integration_wiring.py"
+  ],
+  "ok": false
+}

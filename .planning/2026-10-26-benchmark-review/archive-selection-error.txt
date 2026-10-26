@@ -1,0 +1,7 @@
+fatal: not a valid object name: 85de8e6a
+Traceback (most recent call last):
+  File "E:\evalapp\.planning\2026-10-25-developed-review-5\run_scoped_pytest.py", line 31, in <module>
+    subprocess.run(
+  File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', 'archive', '--format=zip', '--output=E:\\evalapp\\outputs\\review5-6kx1gipa\\source.zip', '85de8e6a']' returned non-zero exit status 128.

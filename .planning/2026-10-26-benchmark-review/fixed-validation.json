@@ -1,0 +1,29 @@
+{
+  "pytest_arguments": [
+    "tests/test_benchmark_review_20261026.py",
+    "tests/test_host_benchmark.py",
+    "tests/test_candidate_host_api.py",
+    "tests/test_sandbox.py",
+    "tests/test_evolution_queue_host.py",
+    "tests/test_evolution_benefit.py",
+    "tests/test_benefit_statement.py",
+    "tests/test_evolution.py",
+    "tests/test_new_host_review_20261026.py",
+    "tests/test_execution_boundaries.py",
+    "tests/test_release_evidence.py",
+    "tests/test_integration_wiring.py",
+    "tests/test_ledger_drift.py",
+    "tools/tests",
+    "-q"
+  ],
+  "snapshot_commit": "fde8f899d8af9db6b1e4285b5ff75e83b51d7271",
+  "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+  "owned_temp_directory": "E:\\evalapp\\outputs\\review5-y2wz9ma8",
+  "source_tree": "c6c9e27e20fb48a3523328afad7e43a497ee7a84",
+  "archive_sha256": "9952fb6c77eef159d7b174d32321dd0ba112edee3b598a3546a887ce9dcc6b79",
+  "source_path_when_tested": "E:\\evalapp\\outputs\\review5-y2wz9ma8\\source",
+  "module_source_probe": "E:\\evalapp\\outputs\\review5-y2wz9ma8\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-y2wz9ma8\\source\\evoagent\\tools\\refactor.py\n",
+  "exit_code": 1,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+}

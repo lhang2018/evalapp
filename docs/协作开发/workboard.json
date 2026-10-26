@@ -10223,6 +10223,20 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md",
    "scope": "并行知识持久化源码登记，不代表本轮验收该卡"
+  },
+  {
+   "id": "discovered-85de8e6cb997",
+   "title": "docs(ALN-27-C): 交付登记 review + 全量2433全绿（排除他人在途WIP）与30-A旧断言新语义",
+   "workpackage": "ALN-27",
+   "source_commit": "85de8e6cb997784e9aaaf27c71f444637956ac38",
+   "files": [
+    "tests/test_integration_wiring.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md",
+   "scope": "知识持久化取代内存语义后的旧装配断言修正，固定318回归，不代表27-C功能接受"
   }
  ],
  "requirement_batches": [

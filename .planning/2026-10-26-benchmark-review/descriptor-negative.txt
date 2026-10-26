@@ -1,0 +1,45 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FF                                                                       [100%]
+================================== FAILURES ===================================
+__ test_audit_hook_refuses_directory_descriptor_redirection[os.rename-args0] __
+
+event = 'os.rename', args = ('one', 'two', 123, -1)
+
+    @pytest.mark.parametrize("event,args", [("os.rename", ("one", "two", 123, -1)),
+                                           ("os.remove", ("one", 123))])
+    def test_audit_hook_refuses_directory_descriptor_redirection(event, args):
+        # Synthetic audit events test the actual child hook on Windows as well;
+        # this does not claim a POSIX dir_fd filesystem integration run.
+        result = SandboxRunner().run_code(f"import sys\nsys.audit({event!r}, *{args!r})\n")
+>       assert result.status == "violation", result.to_dict()
+E       AssertionError: {'duration_s': 0.041, 'exit_code': 0, 'status': 'passed', 'stderr': '', ...}
+E       assert 'passed' == 'violation'
+E         
+E         - violation
+E         + passed
+
+tests\test_benchmark_review_20261026.py:137: AssertionError
+__ test_audit_hook_refuses_directory_descriptor_redirection[os.remove-args1] __
+
+event = 'os.remove', args = ('one', 123)
+
+    @pytest.mark.parametrize("event,args", [("os.rename", ("one", "two", 123, -1)),
+                                           ("os.remove", ("one", 123))])
+    def test_audit_hook_refuses_directory_descriptor_redirection(event, args):
+        # Synthetic audit events test the actual child hook on Windows as well;
+        # this does not claim a POSIX dir_fd filesystem integration run.
+        result = SandboxRunner().run_code(f"import sys\nsys.audit({event!r}, *{args!r})\n")
+>       assert result.status == "violation", result.to_dict()
+E       AssertionError: {'duration_s': 0.04, 'exit_code': 0, 'status': 'passed', 'stderr': '', ...}
+E       assert 'passed' == 'violation'
+E         
+E         - violation
+E         + passed
+
+tests\test_benchmark_review_20261026.py:137: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_benchmark_review_20261026.py::test_audit_hook_refuses_directory_descriptor_redirection[os.rename-args0]
+FAILED tests/test_benchmark_review_20261026.py::test_audit_hook_refuses_directory_descriptor_redirection[os.remove-args1]
+2 failed, 26 deselected in 0.36s

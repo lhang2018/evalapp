@@ -1,0 +1,33 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [ 23%]
+........................................................................ [ 46%]
+........................................................................ [ 69%]
+......F................................................................. [ 92%]
+.......................                                                  [100%]
+================================== FAILURES ===================================
+_ TestKnowledgeEntryPoint.test_knowledge_store_is_not_shared_across_instances _
+
+self = <test_integration_wiring.TestKnowledgeEntryPoint object at 0x0000016C1FA38100>
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-y2wz9ma8/scratch/pytest/test_knowledge_store_is_not_sh0')
+
+    def test_knowledge_store_is_not_shared_across_instances(self, tmp_path):
+        """跨实例不共享——进程内存储的既定语义，写入交付报告的保留缺口。"""
+        from evoagent.knowledge.store import KnowledgeEntry
+        first = App(data_dir=str(tmp_path / "inst"))
+        first.knowledge.add(KnowledgeEntry(
+            entry_id="kn-1", key="k", content="c", source="s", confidence=0.5,
+            applicable_domains=("runtime",), version=1, created_at=1.0))
+        second = App(data_dir=str(tmp_path / "inst"))
+>       assert len(second.knowledge.all()) == 0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = len((KnowledgeEntry(entry_id='kn-1', key='k', content='c', source='s', confidence=0.5, applicable_domains=('runtime',), version=1, created_at=1.0, revoked_at=None, revoke_reason=None),))
+E        +    where (KnowledgeEntry(entry_id='kn-1', key='k', content='c', source='s', confidence=0.5, applicable_domains=('runtime',), version=1, created_at=1.0, revoked_at=None, revoke_reason=None),) = all()
+E        +      where all = <evoagent.knowledge.store.KnowledgeStore object at 0x0000016C1F966EC0>.all
+E        +        where <evoagent.knowledge.store.KnowledgeStore object at 0x0000016C1F966EC0> = <evoagent.app.App object at 0x0000016C1F91A2F0>.knowledge
+
+tests\test_integration_wiring.py:279: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_integration_wiring.py::TestKnowledgeEntryPoint::test_knowledge_store_is_not_shared_across_instances
+1 failed, 310 passed in 54.03s
