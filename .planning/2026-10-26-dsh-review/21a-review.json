@@ -1,0 +1,18 @@
+{
+ "reviewer": "dsh-lead（一审；用户要求后续另一审阅人再复核）",
+ "card": "ALN-21-A",
+ "delivered_commit": "dbd32a1feceb89377471d4a8079440a8d48efd3f",
+ "targeted_tests": "38 passed（windows 16 + signing 22）",
+ "checks": {
+  "manager_accepts_windows": true,
+  "delivery_accepts_windows": true,
+  "android_ios_unchanged": true,
+  "evidence_env_bound": true,
+  "evidence_five_scenarios": true,
+  "restart_recovery_recorded": true,
+  "composite_recovery_recorded": true
+ },
+ "all_checks_pass": true,
+ "attribution_claim": "未能用进程内 monkeypatch 复现（测试可能在导入时固化常量）；该归因属交付方声明，未独立复现",
+ "boundary": "验证卡；未做平板终端/Android 客户端在 Windows 宿主；CLI/API 部署恢复编排仍是 17-P 保留缺口"
+}

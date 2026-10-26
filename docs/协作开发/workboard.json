@@ -4674,7 +4674,7 @@
    "reviewer": "zcode-next",
    "branch": "feature/user-direction",
    "base_commit": "af5e66e3abba81f43e91031781b315b42f5dea9a",
-   "status": "accepted",
+   "status": "review",
    "blocker": null,
    "evidence": [
     {
@@ -4691,6 +4691,14 @@
      "scope": "独立复核：5探针(版本单调撤销幂等回退/注入门禁/撤销不注入/前后对照差值与退化/仅命中率unproven)+21项复跑；发现C-27-01 docstring措辞矛盾（非阻塞）",
      "result": "accepted",
      "evidence": "docs/协作开发/验收/2026-10-25-ALN-27-A独立复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "36d078aad0470a3c54f3abe88e6977bd02d39369",
+     "source_tree": "528f016cd2a20cf13c235db1a16abf4b37017b19",
+     "result": "公共知识验证、NaN门禁和固定任务比较缺陷已修，原接受重新review；重复/非布尔样本拒绝、不同任务清单unproven。真实运行版本/数据集绑定和LLM质量仍待。 固定相关341过，本轮新修复待另一审阅人复核；不关闭父包。",
+     "log": ".planning/2026-10-26-knowledge-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-知识持久化与上下文注入复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/27-A-故障经验沉淀与跨专家迁移验证.md",
@@ -4719,7 +4727,7 @@
     "B-81",
     "B-88"
    ],
-   "next_step": "复核通过；解锁27-B；C-27-01一行注释修正建议owner顺手改；真实注入接线后续卡",
+   "next_step": "公共知识验证、NaN门禁和固定任务比较缺陷已修，原接受重新review；重复/非布尔样本拒绝、不同任务清单unproven。真实运行版本/数据集绑定和LLM质量仍待。 固定相关341过，本轮新修复待另一审阅人复核；不关闭父包。",
    "delivery": "docs/协作开发/交付/ALN-27-A-故障经验沉淀与跨专家迁移验证.md",
    "working_basis": "2026-10-25 zcode-main 认领开工。base_commit af5e66e 为实际接手锚点（基线仍 candidate，prepared_candidate 21899e6 未发布）。新增独占模块 evoagent/knowledge/（来源/可信度/适用域/版本与撤销 + 注入前适用性门禁 + 跨专家前后对照迁移验证），仅新增文件与测试，不改 controller/api/shared 既有文件。",
    "prerequisites": "仅需仓库与本地测试环境",
@@ -4730,7 +4738,40 @@
      "to": "zcode-main",
      "reason": "用户指示继续认领；27-A 依赖 ALN-06-R(accepted)/ALN-10-E(review) 均已就绪，纯本地新模块与在途卡无文件重叠"
     }
-   ]
+   ],
+   "review_history": [
+    {
+     "date": "2026-10-26",
+     "previous_status": "accepted",
+     "previous_reviewer": "zcode-next",
+     "reason": "负向探针确认质量比较未约束同一任务清单等公共语义缺陷；本轮修复待他人复核",
+     "report": "docs/协作开发/验收/2026-10-26-知识持久化与上下文注入复核.md"
+    }
+   ],
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-KNOWLEDGE-CONSUMPTION",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-27-A",
+     "ALN-27-C"
+    ],
+    "fixed_cards": [
+     "ALN-27-A",
+     "ALN-27-C"
+    ],
+    "fix_commit": "36d078aad0470a3c54f3abe88e6977bd02d39369",
+    "fix_commits": [
+     "a0de59535b5f8faa7b87ce265fc9dd17e9cd80b6",
+     "36d078aad0470a3c54f3abe88e6977bd02d39369"
+    ],
+    "report": "docs/协作开发/验收/2026-10-26-知识持久化与上下文注入复核.md",
+    "evidence": ".planning/2026-10-26-knowledge-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "知识鲜度/事务/迁移、注入控制和固定任务质量；固定相关341过，非全量/真实LLM/身份隔离接受"
+   }
   },
   {
    "id": "ALN-27-B",
@@ -6822,10 +6863,10 @@
    "title": "Windows或平板扩展验证",
    "stream": "android",
    "owner": "claude-main",
-   "reviewer": null,
+   "reviewer": "dsh-lead",
    "branch": "feature/user-direction",
    "base_commit": "2e1438f4ee7583232f11297b51a6cca838b0becb",
-   "status": "review",
+   "status": "accepted",
    "blocker": null,
    "evidence": [
     {
@@ -6835,6 +6876,14 @@
      "command": "python -m pytest tests/test_windows_terminal_validation.py -q; python -m pytest tests/test_release_signing.py tests/test_release_install_retire.py tests/test_release_assets.py tests/test_deployment_recovery.py tests/test_backup_recovery.py tests/test_release_gates.py -q; python .planning/2026-10-25-aln21a/probe.py; python .planning/2026-10-25-aln21a/mutation_test.py",
      "log": ".planning/2026-10-25-aln21a/iso-full-server.log; .planning/2026-10-25-aln21a/windows-terminal-evidence.json; .planning/2026-10-25-aln21a/mutation-results.log",
      "delivery": "docs/协作开发/交付/ALN-21-A-Windows终端扩展验证.md"
+    },
+    {
+     "date": "2026-10-26",
+     "scope": "dsh-lead 独立一审 ALN-21-A：平台词汇表含 windows（manager/delivery）、专项38 passed（windows16+signing22）、证据工件5场景（pinned/identity/restart/composite/single）与7项探针通过；未改被审代码",
+     "source_commit": "7be7210",
+     "reviewer": "dsh-lead",
+     "result": "一审通过：Windows 终端扩展验证成立。保留意见：交付方'回退平台行→signing恢复9/9'归因声明本轮未独立复现；平板/Android-on-Windows/CLI-API部署编排仍是边界外缺口。按用户要求后续必须由另一审阅人再复核一遍。",
+     "log": ".planning/2026-10-26-dsh-review/21a-review.json"
     }
    ],
    "card": "docs/协作开发/任务卡/21-A-Windows或平板扩展验证.md",
@@ -6911,7 +6960,7 @@
     "G0",
     "G3"
    ],
-   "next_step": "已交付转 review（提交 dbd32a1）；审阅人未定保留 null，不自批；保留缺口：平板终端、Android 客户端在 Windows 宿主、CLI/API 接入部署恢复编排、登记簿备份边界产品决策",
+   "next_step": "dsh-lead 一审通过（Windows 平台词汇表/真实验证/5场景证据）；按用户要求必须由另一审阅人再复核一遍：重点复验隔离 worktree 下的 signing 归因、restart/composite recovery 场景与终端隐式行为变化；二审前不作最终发布依据。",
    "working_basis": "claude-main 认领实施：Windows 终端实测验证（本机即目标终端）。以探针脚本+交付报告为主，evoagent/ 下代码改动最小化；共享文件按需外科手术式修改并声明精确修改点。平板终端与 Android 客户端边界记保留缺口。",
    "ownership_history": [
     {
@@ -6919,6 +6968,12 @@
      "from": "待认领",
      "to": "claude-main",
      "reason": "用户指示认领；25-B 被并行会话认领后 21-A 为唯一可行 READY 卡；依赖 17-P/20-P/12-E 均 accepted；Windows 即本机目标终端，与并行在途无重叠"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "accepted",
+     "reason": "dsh-lead 非作者独立一审通过；用户要求另一审阅人再复核"
     }
    ],
    "prerequisites": "目标终端"
@@ -7864,7 +7919,7 @@
    "branch": "feature/user-direction",
    "base_commit": "39843d62143cb909367007b27876f6d3b83e314b",
    "status": "review",
-   "blocker": null,
+   "blocker": "正式验收项2：知识可见性尚未绑定既有用户/项目身份；真实固定任务/run版本与LLM前后质量仍未验收。",
    "evidence": [
     {
      "date": "2026-10-26",
@@ -7875,6 +7930,14 @@
      "result": "已交付持久化/注入/迁移验证；30-A 旧断言按27-C新语义更新。缺口：未接真实LLM端到端、迁移仅内存→持久、批量/跨实例迁移未做、多进程并发未压测；不冒称知识整包关闭；最终HEAD全量(含他人已提交fde8f89基准修复)2462/0/1",
      "log": ".planning/2026-10-26-aln27c/knowledge-persistence-evidence.json",
      "delivery": "docs/协作开发/交付/ALN-27-C-知识持久化真实注入与迁移质量验证.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "36d078aad0470a3c54f3abe88e6977bd02d39369",
+     "source_tree": "528f016cd2a20cf13c235db1a16abf4b37017b19",
+     "result": "跨连接知识鲜度/撤销、写失败和宿主事务、整批迁移回滚、不可信/评测注入控制、压缩后计数已修。正式验收项2用户/项目身份绑定仍未实现；不能以适用域过滤代替身份隔离。 固定相关341过，本轮新修复待另一审阅人复核；不关闭父包。",
+     "log": ".planning/2026-10-26-knowledge-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-知识持久化与上下文注入复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/27-C-知识持久化真实注入与迁移质量验证.md",
@@ -7895,7 +7958,7 @@
     "B-88"
    ],
    "priority": "P1",
-   "next_step": "待独立复核：持久化重启保留版本/撤销、内存兼容、迁移digest核验/幂等/冲突/撤销保真、上下文注入与manifest source/version、撤销与低可信/跨域不进入消息、真实任务记录前后质量、App重启持久证据见交付文档与 .planning/2026-10-26-aln27c/；审阅人未定不自批；真实LLM端到端、批量迁移、多进程并发属后续，知识整包不关闭",
+   "next_step": "跨连接知识鲜度/撤销、写失败和宿主事务、整批迁移回滚、不可信/评测注入控制、压缩后计数已修。正式验收项2用户/项目身份绑定仍未实现；不能以适用域过滤代替身份隔离。 固定相关341过，本轮新修复待另一审阅人复核；不关闭父包。",
    "working_basis": "以39843d62143cb909367007b27876f6d3b83e314b（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；需固定前后任务集与运行版本",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7917,7 +7980,31 @@
     }
    ],
    "delivered_commit": "79cc06b9838e30ab0c693428d7a3bcc5aaa9c0aa",
-   "delivery": "docs/协作开发/交付/ALN-27-C-知识持久化真实注入与迁移质量验证.md"
+   "delivery": "docs/协作开发/交付/ALN-27-C-知识持久化真实注入与迁移质量验证.md",
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-KNOWLEDGE-CONSUMPTION",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-27-A",
+     "ALN-27-C"
+    ],
+    "fixed_cards": [
+     "ALN-27-A",
+     "ALN-27-C"
+    ],
+    "fix_commit": "36d078aad0470a3c54f3abe88e6977bd02d39369",
+    "fix_commits": [
+     "a0de59535b5f8faa7b87ce265fc9dd17e9cd80b6",
+     "36d078aad0470a3c54f3abe88e6977bd02d39369"
+    ],
+    "report": "docs/协作开发/验收/2026-10-26-知识持久化与上下文注入复核.md",
+    "evidence": ".planning/2026-10-26-knowledge-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "知识鲜度/事务/迁移、注入控制和固定任务质量；固定相关341过，非全量/真实LLM/身份隔离接受"
+   }
   },
   {
    "id": "ALN-16-E",
@@ -10237,6 +10324,41 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md",
    "scope": "知识持久化取代内存语义后的旧装配断言修正，固定318回归，不代表27-C功能接受"
+  },
+  {
+   "id": "discovered-a0de59535b5f",
+   "workpackage": "ALN-27",
+   "title": "fix(knowledge): 保证持久状态与迁移原子性并收紧注入和收益证据",
+   "source_commit": "a0de59535b5f8faa7b87ce265fc9dd17e9cd80b6",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/app.py",
+    "evoagent/knowledge/applicability.py",
+    "evoagent/knowledge/store.py",
+    "evoagent/knowledge/transfer.py",
+    "evoagent/memory/context.py",
+    "tests/test_knowledge.py",
+    "tests/test_knowledge_review_20261026.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-知识持久化与上下文注入复核.md",
+   "scope": "27-A/27-C修复，固定相关340；身份/项目隔离和真实LLM正式接受未完成"
+  },
+  {
+   "id": "discovered-36d078aad047",
+   "workpackage": "ALN-27",
+   "title": "fix(knowledge): 规范化撤销时间戳保证迁移摘要稳定",
+   "source_commit": "36d078aad0470a3c54f3abe88e6977bd02d39369",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/knowledge/store.py",
+    "tests/test_knowledge_review_20261026.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-知识持久化与上下文注入复核.md",
+   "scope": "27-A/27-C修复，固定相关341；身份/项目隔离和真实LLM正式接受未完成"
   }
  ],
  "requirement_batches": [
@@ -10574,6 +10696,30 @@
    "product_acceptance_added": false,
    "published_by_review": false,
    "scope": "六类基准/隔离缺陷修复，固定相关318过；首轮310过/1旧知识断言失败保留；非全量、设备或生产接受"
+  },
+  {
+   "id": "REVIEW-2026-10-26-KNOWLEDGE-CONSUMPTION",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-27-A",
+    "ALN-27-C"
+   ],
+   "fixed_cards": [
+    "ALN-27-A",
+    "ALN-27-C"
+   ],
+   "fix_commit": "36d078aad0470a3c54f3abe88e6977bd02d39369",
+   "fix_commits": [
+    "a0de59535b5f8faa7b87ce265fc9dd17e9cd80b6",
+    "36d078aad0470a3c54f3abe88e6977bd02d39369"
+   ],
+   "report": "docs/协作开发/验收/2026-10-26-知识持久化与上下文注入复核.md",
+   "evidence": ".planning/2026-10-26-knowledge-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false,
+   "scope": "知识鲜度/事务/迁移、注入控制和固定任务质量；固定相关341过，非全量/真实LLM/身份隔离接受"
   }
  ]
 }
