@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 
 from . import schema
 from .schema.migrations import apply_migrations
-from .task import Task, TaskStatus
+from .task import Task, TaskStatus, TERMINAL_STATES
 from .leases import guard_write, assert_connection_lease
 
 
@@ -73,6 +73,24 @@ class Database:
         rows = self._conn.execute(
             "SELECT data FROM tasks ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
         return [Task.from_dict(json.loads(r["data"])) for r in rows]
+
+    def unfinished_task_ids(self, limit: int = 20) -> List[str]:
+        """Find restore blockers in the whole ledger, then bound the report size.
+
+        A display window of recent tasks cannot prove the host is quiescent.
+        Unknown/null stored states are blockers as well as known pending states.
+        This is a point-in-time check; the caller must quiesce other workers.
+        """
+        if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1:
+            raise ValueError("limit 必须是正整数")
+        terminal = sorted(status.value for status in TERMINAL_STATES)
+        placeholders = ",".join("?" for _ in terminal)
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT task_id FROM tasks WHERE status IS NULL OR status NOT IN "
+                f"({placeholders}) ORDER BY created_at DESC LIMIT ?",
+                (*terminal, limit)).fetchall()
+        return [row["task_id"] for row in rows]
 
     def list_tasks_by_goal(self, goal_id: str, limit: int = 200) -> List[Task]:
         """按长期目标拉任务（G-01 目标注册表前置；索引列 goal_id）。"""

@@ -639,8 +639,7 @@ def cmd_backup(action: str, ref: str, name: str) -> str:
         elif action == "verify":
             out = app.backups.verify(ref)
         elif action == "restore":
-            active = [t.task_id for t in app.db.list_tasks(limit=1000)
-                      if not t.is_terminal()]
+            active = app.db.unfinished_task_ids()
             if active:
                 print(json.dumps({"error": "存在未结束任务，拒绝恢复",
                                   "active_tasks": active[:20]},
@@ -685,6 +684,11 @@ def cmd_host_deploy(target: str, app_version: str,
 def cmd_host_restore(backup_ref: str) -> str:
     """组合恢复：兼容判定 → 安全备份 → 恢复 → RTO/RPO 对账。"""
     app = _app()
+    active = app.db.unfinished_task_ids()
+    if active:
+        print(json.dumps({"error": "存在未结束任务，拒绝恢复",
+                          "active_tasks": active}, ensure_ascii=False))
+        return ""
     ref = backup_ref
     if not ref:
         items = app.backups.list()
@@ -692,7 +696,7 @@ def cmd_host_restore(backup_ref: str) -> str:
             return _fail("没有可用备份")
         ref = items[0]["name"]
     try:
-        report = app.recovery.restore(ref)
+        report = app.recovery.restore_with_rollback(ref)
     except (RuntimeError, ValueError, OSError) as e:
         return _fail(str(e))
     print(json.dumps(report, ensure_ascii=False, indent=1, default=str))

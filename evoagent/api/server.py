@@ -748,8 +748,7 @@ def make_handler(app: App):
                 ref = (body.get("name") or "").strip()
                 if not ref:
                     return self._json(400, {"error": "缺少备份文件 name"})
-                active = [t.task_id for t in app.db.list_tasks(limit=1000)
-                          if not t.is_terminal()]
+                active = app.db.unfinished_task_ids()
                 if active:
                     return self._json(
                         409, {"error": "存在未结束任务，拒绝在线恢复",
