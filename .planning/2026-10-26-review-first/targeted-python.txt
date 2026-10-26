@@ -1,0 +1,14 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+...................................................F.................... [ 73%]
+..........................                                               [100%]
+================================== FAILURES ===================================
+_________ test_app_wires_attempt_to_authorized_goal_opportunity_task __________
+tests\test_proactive_execution.py:324: in test_app_wires_attempt_to_authorized_goal_opportunity_task
+    assert result["started"] is True, result
+E   AssertionError: {'core_state_touched': False, 'detail': '·Ç·¨command_id', 'reason': 'submit_failed:ValueError', 'reconciliation_error': None, ...}
+E   assert False is True
+=========================== short test summary info ===========================
+FAILED tests/test_proactive_execution.py::test_app_wires_attempt_to_authorized_goal_opportunity_task
+1 failed, 97 passed in 21.24s

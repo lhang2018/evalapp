@@ -1,0 +1,40 @@
+(node:19324) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/resourceSampler.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 合法采样保留来源/单位/时间与各项分数 (1.04ms)
+✔ 原生不可用/缺失内存/缺少采样时间均判不可用，不伪造低压力 (0.2708ms)
+✔ 过期采样判 stale，不按旧值放行 (0.1758ms)
+✔ 非法分数/非法 maxAge 判不可用 (0.1075ms)
+✔ 缺失 CPU 的部分采样不作为后台低压力依据 (0.1736ms)
+✔ 调用方必须提供 highWater；缺失/非法即拒绝（不内置阈值权威） (0.1081ms)
+✔ 高压拒绝后台、低压放行，判定不影响前台 (0.1073ms)
+(node:48524) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/artifactPanel.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 有真实文件的产物可打开并带追溯信息 (0.6682ms)
+✔ 无文件/无摘要的产物不显示打开入口 (0.1243ms)
+✔ 文本预览截断如实标注 (0.154ms)
+✔ 二进制预览不当作文本展示 (0.0829ms)
+✔ 空结果提示为无成果而不是已交付 (0.1264ms)
+✔ 未关联服务端任务时明确提示无成果可查 (0.8467ms)
+(node:11744) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/memoryControl.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 记忆行展示来源/范围/状态与任务来源 (0.994ms)
+✔ 已撤销记忆不允许纠正但仍可删除 (0.1783ms)
+✔ 删除报告展示保留边界与失败项 (0.2575ms)
+✔ 删除失败与部分失败明确可见 (0.1709ms)
+✔ 离线与权限错误有明确提示 (0.1692ms)
+✔ 范围策略展示已禁用范围 (0.2565ms)
+✔ 禁用/恢复范围校验 (0.6413ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 127.6761

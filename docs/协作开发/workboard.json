@@ -4643,6 +4643,14 @@
    "branch": "feature/user-direction",
    "base_commit": "6a8501233f0ec0f7b4fce74d97fd13facd6e6b0d",
    "status": "review",
+   "first_review": {
+    "date": "2026-10-26",
+    "reviewer": "zcode-main",
+    "scope": "component/local; standalone declared tests reproduced",
+    "result": "first_pass_component_scope",
+    "second_review_required": true,
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+   },
    "blocker": null,
    "evidence": [
     {
@@ -4983,6 +4991,15 @@
    "branch": "feature/user-direction",
    "base_commit": "5de4d003032458e2c4ddd90c045dd5f809f34091",
    "status": "review",
+   "first_review": {
+    "date": "2026-10-26",
+    "reviewer": "zcode-main",
+    "scope": "component/local; standalone declared tests reproduced",
+    "result": "not_reviewable_same_owner",
+    "second_review_required": true,
+    "finding": "owner 与本一审身份同名，须他人一审",
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+   },
    "blocker": null,
    "evidence": [
     "代码: 1c390ed",
@@ -6208,6 +6225,15 @@
    "branch": "feature/user-direction",
    "base_commit": "61451f3ff2251dd042d19d74e10bad87eb05a46d",
    "status": "review",
+   "first_review": {
+    "date": "2026-10-26",
+    "reviewer": "zcode-main",
+    "scope": "component/local; standalone declared tests reproduced",
+    "result": "first_pass_doc_only",
+    "second_review_required": true,
+    "finding": "证据卡；通知投递未观测到已如实登记，关闭需真机复验",
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+   },
    "blocker": "真机 5748d823 当前处于用户私人使用状态（2026-10-25 17:2x UI dump 显示非 EvoAgent 界面），自动化操作会误触用户数据，立即停止。dumpsys/dump 输出未写入任何证据文件。需设备空闲窗口或用户明确授权时段后重启矩阵（通知三态+离线/杀进程/物理重启方案已备）。",
    "evidence": [
     {
@@ -6802,6 +6828,14 @@
    "branch": "feature/user-direction",
    "base_commit": "bf3a2eab1a1f3906106e60451d39b165c35b672a",
    "status": "review",
+   "first_review": {
+    "date": "2026-10-26",
+    "reviewer": "zcode-main",
+    "scope": "component/local; standalone declared tests reproduced",
+    "result": "first_pass_component_scope",
+    "second_review_required": true,
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+   },
    "blocker": null,
    "evidence": [
     {
@@ -7272,6 +7306,14 @@
    "branch": "feature/user-direction",
    "base_commit": "2f112276754ae10567e10d62bcfe21b11863037d",
    "status": "review",
+   "first_review": {
+    "date": "2026-10-26",
+    "reviewer": "zcode-main",
+    "scope": "component/local; standalone declared tests reproduced",
+    "result": "first_pass_component_scope",
+    "second_review_required": true,
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+   },
    "blocker": null,
    "evidence": [
     {
@@ -7375,6 +7417,14 @@
    "branch": "feature/user-direction",
    "base_commit": "35dfa152a6e378e17e83ce0251f003fa9b205a2f",
    "status": "review",
+   "first_review": {
+    "date": "2026-10-26",
+    "reviewer": "zcode-main",
+    "scope": "component/local; standalone declared tests reproduced",
+    "result": "first_pass_component_scope",
+    "second_review_required": true,
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+   },
    "blocker": null,
    "evidence": [
     {
@@ -7517,6 +7567,14 @@
    "branch": "feature/user-direction",
    "base_commit": "efe5ac0eccf1538eef086f94ce3c93452349e720",
    "status": "review",
+   "first_review": {
+    "date": "2026-10-26",
+    "reviewer": "zcode-main",
+    "scope": "component/local; standalone declared tests reproduced",
+    "result": "first_pass_component_scope",
+    "second_review_required": true,
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+   },
    "blocker": "接受阻塞：真实HeadlessTask未注入sampler/highWater（默认仍旧同步）；策略下发、CPU首次基线/不可读、固定Kotlin编译及新APK真机压力/关闭/恢复证据待补；6e82856补丁待另一审阅人复核",
    "evidence": [
     {
@@ -7628,6 +7686,14 @@
    "branch": "feature/user-direction",
    "base_commit": "89a88d6aca9245fbcd5f16054ae9991da443844d",
    "status": "review",
+   "first_review": {
+    "date": "2026-10-26",
+    "reviewer": "zcode-main",
+    "scope": "component/local; standalone declared tests reproduced",
+    "result": "first_pass_component_scope",
+    "second_review_required": true,
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+   },
    "blocker": null,
    "evidence": [
     {
@@ -7764,6 +7830,14 @@
    "branch": "feature/user-direction",
    "base_commit": "1616e3e5e5f972023df88e1d9b60bc6cd5c9291c",
    "status": "review",
+   "first_review": {
+    "date": "2026-10-26",
+    "reviewer": "zcode-main",
+    "scope": "component/local; standalone declared tests reproduced",
+    "result": "first_pass_component_scope",
+    "second_review_required": true,
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+   },
    "blocker": null,
    "evidence": [
     {
@@ -7870,6 +7944,14 @@
    "branch": "feature/user-direction",
    "base_commit": "eed09f46ea11ceb38fc38b9fcb674b311254734f",
    "status": "review",
+   "first_review": {
+    "date": "2026-10-26",
+    "reviewer": "zcode-main",
+    "scope": "component/local; standalone declared tests reproduced",
+    "result": "first_pass_component_scope",
+    "second_review_required": true,
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+   },
    "blocker": null,
    "evidence": [
     {
@@ -7965,6 +8047,15 @@
    "branch": "feature/user-direction",
    "base_commit": "a3e05d30748e15d29cd40bb85e8d7a7a2d3afe63",
    "status": "review",
+   "first_review": {
+    "date": "2026-10-26",
+    "reviewer": "zcode-main",
+    "scope": "component/local; standalone declared tests reproduced",
+    "result": "first_pass_component_scope",
+    "second_review_required": true,
+    "finding": "F1：专项并跑偶发 1 失败（单跑与复跑通过），需修测试隔离",
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+   },
    "blocker": "接受阻塞：真实宿主资源/主动预算账户及策略未装配；实际费用/任务结果对账、权威并发与运行中停止/让位、真实核心质量证据未接；6e82856新补丁待另一审阅人复核",
    "evidence": [
     {
@@ -8119,6 +8210,14 @@
    "branch": "feature/user-direction",
    "base_commit": "39843d62143cb909367007b27876f6d3b83e314b",
    "status": "review",
+   "first_review": {
+    "date": "2026-10-26",
+    "reviewer": "zcode-main",
+    "scope": "component/local; standalone declared tests reproduced",
+    "result": "first_pass_component_scope",
+    "second_review_required": true,
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+   },
    "blocker": "正式验收项2：知识可见性尚未绑定既有用户/项目身份；真实固定任务/run版本与LLM前后质量仍未验收。",
    "evidence": [
     {
@@ -8325,6 +8424,14 @@
    "branch": "feature/user-direction",
    "base_commit": "69b0524a6450fc14124a324f82c1a211b23cdb4b",
    "status": "review",
+   "first_review": {
+    "date": "2026-10-26",
+    "reviewer": "zcode-main",
+    "scope": "component/local; standalone declared tests reproduced",
+    "result": "first_pass_component_scope",
+    "second_review_required": true,
+    "report": "docs/协作开发/验收/2026-10-26-空缺审阅卡一审.md"
+   },
    "blocker": null,
    "evidence": [
     {
