@@ -6555,6 +6555,17 @@
      "result": "5bc1725修采样未知放行/无效采样自动恢复并清空暂停集合，固定相关295过，需他人复核。原0.768恢复指新准入不是0.70低水位resume；25-C新执行接线另审，不沿用本轮作为执行验收。",
      "log": ".planning/2026-10-26-windows-second-review/committed-evidence.json",
      "delivery": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "scope": "dsh-lead 一审复核 ALN-15-D（非作者）：资源准入/暂停/恢复专项29 passed；无效采样均 sample_valid=false 且 resume 不自动恢复(5bc1725)；迟滞 0.95 pause/0.80 不恢复/0.50 resume 并清空 paused；前台高载 admit、0.99 全 defer、后台高载 defer。观察：ResourceGovernor.admit 对无效采样仍 legacy fail-open 返回 admit(已标记 sample_valid=false)，ProactivityGovernor 调用侧拒绝；未改代码",
+     "source_commit": "ebb38dd",
+     "reviewer": "dsh-lead",
+     "first_reviewer": "dsh-lead",
+     "verdict": "first_review_pass_with_observation_pending_other_reviewer",
+     "result": "一审复核通过、附观察；保持 review。原分配 zcode-main 未复核；按用户要求最终接受前需另一名非作者审阅人复核。缺口：本卡未重跑整机压力、模型池/GPU/真实设备未验，运行中 pause/stop 属消费侧。",
+     "log": ".planning/2026-10-26-dsh-review/15d-review.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-dsh复核-15D.md"
     }
    ],
    "card": "docs/协作开发/任务卡/15-D-设备资源准入与核心任务优先.md",
@@ -6594,7 +6605,7 @@
     "G4",
     "G5"
    ],
-   "next_step": "5bc1725修采样未知放行/无效采样自动恢复并清空暂停集合，固定相关295过，需他人复核。原0.768恢复指新准入不是0.70低水位resume；25-C新执行接线另审，不沿用本轮作为执行验收。",
+   "next_step": "dsh-lead 已一审复核（29 passed；无效采样不恢复/迟滞/前后台/绝对上限通过；观察：admit 对无效采样仍 legacy fail-open，调用侧 ProactivityGovernor 已拒绝）。保持 review：原分配 zcode-main 未复核，按用户要求最终接受前需另一名非作者审阅人复核；缺口：本卡整机压力未重跑、模型池/GPU/真实设备未验、运行中 pause/stop 属消费侧。",
    "working_basis": "2026-10-25 zcode-next 认领。复用 15-A/15-R 预算账本与 15-P 池原子预留；写入边界 core/ + goals/；真实设备测量另验（本地用可控压力源模拟）。",
    "prerequisites": "真实设备或受控宿主资源测量",
    "review_history": [
@@ -6626,7 +6637,17 @@
     "published_by_review": false,
     "scope": "缺有效采样标记拒主动启动、无效采样不自动恢复/遗忘暂停集合；固定相关295，不代新25-C执行链验收"
    },
-   "delivery": "docs/协作开发/交付/ALN-15-D-设备资源准入与核心任务优先.md"
+   "delivery": "docs/协作开发/交付/ALN-15-D-设备资源准入与核心任务优先.md",
+   "first_reviewer": "dsh-lead",
+   "review_verdict": "first_review_pass_with_observation_pending_other_reviewer",
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "dsh-lead 一审复核通过（附观察）；待 zcode-main/另一非作者复核"
+    }
+   ]
   },
   {
    "id": "ALN-16-P",

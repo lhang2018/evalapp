@@ -1,0 +1,28 @@
+{
+ "card": "ALN-15-D",
+ "reviewer": "dsh-lead（非作者；一审复核；用户要求后续仍需另一人复核）",
+ "date": "2026-10-26",
+ "commands": {
+  "tests": "python -m pytest tests/test_resource_admission.py tests/test_resource_second_review_20261026.py tests/test_proactivity.py -q -> 29 passed",
+  "probe": "真实 ResourcePolicy 阈值下的 sample/admit/should_pause/resume 探针 9 项"
+ },
+ "checks": {
+  "tests_29_passed": true,
+  "invalid_sample_marked": true,
+  "high_pressure_pauses_bg": true,
+  "mid_pressure_no_resume": true,
+  "low_pressure_resumes": true,
+  "invalid_sample_no_resume": true,
+  "foreground_high_admitted": true,
+  "ceiling_defers_all": true,
+  "background_high_deferred": true
+ },
+ "all_checks_pass": true,
+ "observation": "ResourceGovernor.admit 对无效采样仍按既有 legacy fail-open 返回 admit（sample_valid=False 已标记）；ProactivityGovernor 已在调用侧拒绝。若其他直接调用 admit 的消费者存在，需确认其也检查 sample_valid；本轮未改代码，交由二审判断是否需要在 admit 层 fail-closed。",
+ "gaps": [
+  "真实设备/受控宿主压力测量未在本卡重跑（25-B/25-C 已有宿主 CPU 饱和证据）",
+  "运行中 pause/stop 与核心状态保护属 25-B/25-C 消费侧",
+  "模型池压力与 GPU 未测"
+ ],
+ "verdict": "first_review_pass_with_observation_pending_other_reviewer"
+}
