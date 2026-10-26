@@ -140,7 +140,7 @@ def make_handler(app: App):
 
         def _drain_rejected_body(self):
             # Closing a Windows socket with unread POST bytes can reset the
-            # connection before the client receives its 401/403 response.
+            # connection before the client receives its rejection response.
             # Discard a bounded body without parsing or executing it.
             self.close_connection = True
             try:
@@ -881,11 +881,13 @@ def make_handler(app: App):
         # ---------- 离线诊断包受控导入 ----------
         def _diagnostics_import(self, actor: str):
             if actor != "admin":
+                self._drain_rejected_body()
                 return self._json(403, {"error": "该操作需要 admin 权限"})
             content_type = (self.headers.get("Content-Type") or "")
             content_type = content_type.split(";")[0].strip().lower()
             if content_type not in ("application/zip",
                                     "application/octet-stream"):
+                self._drain_rejected_body()
                 return self._json(
                     415, {"error": "Content-Type 必须为 application/zip"})
             try:
