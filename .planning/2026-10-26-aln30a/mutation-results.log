@@ -1,0 +1,13 @@
+[baseline] tests/test_integration_wiring.py exit=0 (0=全绿)
+[M1] 已捕获: 审计 fail-open：把可达判定改成恒真（悬空能力被放过）
+[M2] 已捕获: 断言不抛错：assert_wiring_complete 不再阻断悬空
+[M3] 已捕获: CLI 入口解析失效：add_parser 永不匹配（命令集合为空）
+[M4] 已捕获: 装配缺失：app 不再挂载主动帮助服务
+[M5] 已捕获: 身份绑定断裂：ReleaseDelivery 不再注入 IdentityRegistry
+[M6] 已捕获: 恢复 fail-closed 失效：CLI 吞掉恢复拒绝并返回成功
+[M7] 已捕获: 声明缺失：把凭据治理能力从注册表里抹掉
+[M8] 已捕获: CLI 入口未注册：identity-list 子命令被删
+[M9] 已捕获: 部署校验失效：verify 恒返回通过
+[M10] 已捕获: 私钥检测失效：CLI 恒报未检出
+
+变异体 10 个，存活 0 个 

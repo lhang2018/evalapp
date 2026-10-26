@@ -19,6 +19,7 @@ from .core.log_layers import (EvidenceStore, ExecutionTracer, LayerManager)
 from .core.metrics import MetricsAggregator
 from .core.persistence import Database
 from .goals import GoalStore
+from .goals.assist import ProactiveAssistService
 from .core.permissions import (PermissionController, PermissionDecision,
                                 ToolPolicy)
 from .core.replay import ReplayService
@@ -32,10 +33,14 @@ from .evolution.evaluator import Evaluator, ReleaseGate
 from .evolution.probes import PROBES, ProbeRunner
 from .evolution.runner import ControllerTaskRunner
 from .experts.builtin import builtin_experts
+from .integration.services import DeploymentService
+from .knowledge.store import KnowledgeStore
 from .memory.context import ContextAssembler
 from .memory.embeddings import build_embedder
 from .memory.evaluation import MemoryEvaluator
 from .memory.store import MemoryStore
+from .memory.user_control import MemoryControlService
+from .observability.credentials import CredentialRegistry
 from .models.base import ModelRegistry
 from .models.metering import MeteredModel
 from .models.migration import ModelMigrationManager
@@ -46,7 +51,9 @@ from .planning.intent import IntentClassifier
 from .planning.planner import PlanningEngine
 from .planning.binding import ActionBindings
 from .react.engine import ReactEngine
+from .recovery.combined import CompositeRecovery
 from .release.delivery import ReleaseDelivery
+from .release.identity import IdentityRegistry
 from .release.manager import ReleaseManager
 from .tools.builtin import BUILTIN_FACTORIES
 from .tools.registry import ToolRegistry
@@ -105,9 +112,29 @@ class App:
         self.tools = ToolRegistry(self.permissions, store=self.db)
         self._register_tools()
 
+        # 生产身份登记簿（ALN-03-P/11-P）：公钥身份独立持久化，是制品字节
+        # 验签的服务端权威绑定来源（ALN-30-A 闭合 11-P 的装配缺口）。
+        self.identity_registry = IdentityRegistry(d / "identity.json")
+
         # 版本对账与客户端应用回执（双端协同 §5）：只读发布状态，不改变发布权
         self.delivery = ReleaseDelivery(
-            self.releases, self.db, tool_ids=set(self.tools.health()))
+            self.releases, self.db, tool_ids=set(self.tools.health()),
+            identity_registry=self.identity_registry)
+
+        # 装配收口（ALN-30-A）：以下能力此前在 app.py / cli.py / api/ 三处
+        # 均为零引用——已交付并通过独立复核，但用户在运行主链上触达不到。
+        # deployment / recovery / observability / knowledge 四域来自 17-P、
+        # 29-C、27-A；assist 来自 25-A（其交付时明确把装配留在保留缺口）。
+        self.deployment = DeploymentService(str(d))
+        self.recovery = CompositeRecovery(str(d), db=self.db, bus=self.bus,
+                                         memory=self.memory,
+                                         releases=self.releases)
+        self.credentials = CredentialRegistry()
+        self.knowledge = KnowledgeStore()
+        self.memory_control = MemoryControlService(self.memory, db=self.db,
+                                                   audit=self.audit)
+        self.assist = ProactiveAssistService(self.db,
+                                             memory_control=self.memory_control)
 
         # 记忆与上下文
         self.assembler = ContextAssembler(self.memory)

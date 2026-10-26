@@ -12,6 +12,7 @@ from pathlib import Path
 
 from evoagent.api.server import ApiServer
 from evoagent.app import App
+from evoagent.release.identity import TrustedIdentity
 
 
 class TestUpdateArtifactDelivery(unittest.TestCase):
@@ -19,6 +20,13 @@ class TestUpdateArtifactDelivery(unittest.TestCase):
     def setUpClass(cls):
         cls.tmp = tempfile.mkdtemp(prefix="evoagent_update_artifact_")
         cls.app = App(data_dir=cls.tmp)
+        # ALN-30-A 装配后 App 默认带 IdentityRegistry，reconcile 会做
+        # signing_identity_trusted 检查。本套件的发布身份是 release-key-1，
+        # 把它登记并激活——测试前提即"可信身份发布的制品可被对账接受"。
+        cls.app.identity_registry.register(
+            TrustedIdentity(key_id="release-key-1",
+                            modulus="ff" * 128, exponent="10001"),
+            activate=True, actor="test", reason="固定发布身份")
         cls.srv = ApiServer(cls.app, host="127.0.0.1", port=0)
         cls.thread = threading.Thread(target=cls.srv.serve_forever,
                                       daemon=True)

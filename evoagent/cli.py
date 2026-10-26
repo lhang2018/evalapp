@@ -665,6 +665,99 @@ def cmd_serve(host: str, port: int) -> str:
     return "server stopped"
 
 
+# ---- 装配收口（ALN-30-A）：把已交付但零入口的能力接入运行主链 ----
+
+def cmd_host_deploy(target: str, app_version: str,
+                    source_commit: str) -> str:
+    """空机部署：初始化可运行实例并校验结构与版本固定。"""
+    app = _app()
+    try:
+        manifest = app.deployment.bootstrap(
+            target, app_version=app_version, source_commit=source_commit)
+        check = app.deployment.verify(target)
+    except (RuntimeError, ValueError, OSError) as e:
+        return _fail(str(e))
+    print(json.dumps({"manifest": manifest, "verify": check},
+                     ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
+def cmd_host_restore(backup_ref: str) -> str:
+    """组合恢复：兼容判定 → 安全备份 → 恢复 → RTO/RPO 对账。"""
+    app = _app()
+    ref = backup_ref
+    if not ref:
+        items = app.backups.list()
+        if not items:
+            return _fail("没有可用备份")
+        ref = items[0]["name"]
+    try:
+        report = app.recovery.restore(ref)
+    except (RuntimeError, ValueError, OSError) as e:
+        return _fail(str(e))
+    print(json.dumps(report, ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
+def cmd_credential_audit(text: str) -> str:
+    """凭据登记概览与私钥片段检测。"""
+    from .observability.credentials import contains_secret
+    app = _app()
+    out = {"registered": app.credentials.export_public_keys()}
+    if text:
+        out["text_audit"] = {"contains_secret": bool(contains_secret(text))}
+    print(json.dumps(out, ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
+def cmd_knowledge_list() -> str:
+    """知识条目清单（故障经验与迁移来源）。"""
+    app = _app()
+    entries = [{"entry_id": e.entry_id, "key": e.key, "version": e.version,
+                "source": e.source, "confidence": e.confidence,
+                "domains": list(e.applicable_domains), "revoked": e.revoked}
+               for e in app.knowledge.all()]
+    print(json.dumps({"entries": entries, "count": len(entries)},
+                     ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
+def cmd_assist_organize(goal: str, scope: str) -> str:
+    """近期工作整理（授权范围内只读，不执行外部动作）。"""
+    app = _app()
+    spec = {}
+    if goal:
+        spec["goal_ids"] = [goal]
+    if scope:
+        spec["memory_scopes"] = [scope]
+    try:
+        result = app.assist.organize(spec, actor="cli", reason="手动整理")
+    except (RuntimeError, ValueError) as e:
+        return _fail(str(e))
+    print(json.dumps(result, ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
+def cmd_identity_list() -> str:
+    """生产身份登记簿清单（只含公钥记录）。"""
+    from .integration.services import list_identities
+    app = _app()
+    identities = list_identities(app.identity_registry)
+    print(json.dumps({"active_key_id": app.identity_registry.active_key_id,
+                      "identities": identities, "count": len(identities)},
+                     ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
+def cmd_wiring_audit() -> str:
+    """能力可达性审计：已交付能力在运行主链上是否还有入口。"""
+    from .integration import audit_wiring
+    app = _app()
+    report = audit_wiring(app)
+    print(json.dumps(report, ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
 def main() -> None:
     p = argparse.ArgumentParser("evoagent")
     sub = p.add_subparsers(dest="cmd")
@@ -809,6 +902,22 @@ def main() -> None:
                     choices=["create", "verify", "restore", "list"])
     bk.add_argument("ref", nargs="?", default="")
     bk.add_argument("--name", default="")
+    # 装配收口（ALN-30-A）：已交付但零入口的能力获得 CLI 入口
+    hd = sub.add_parser("host-deploy")
+    hd.add_argument("--target", default="", help="部署目标目录（空=实例目录）")
+    hd.add_argument("--app-version", default="", help="固定的应用版本")
+    hd.add_argument("--source-commit", default="", help="源码提交标识")
+    hr = sub.add_parser("host-restore")
+    hr.add_argument("backup_ref", nargs="?", default="",
+                    help="备份名（空=最近一次）")
+    ca = sub.add_parser("credential-audit")
+    ca.add_argument("--text", default="", help="待检测文本（可选）")
+    sub.add_parser("knowledge-list")
+    ao = sub.add_parser("assist-organize")
+    ao.add_argument("--goal", default="", help="目标 ID（空=全部授权范围）")
+    ao.add_argument("--scope", default="", help="记忆作用域（可空）")
+    sub.add_parser("identity-list")
+    sub.add_parser("wiring-audit")
     args = p.parse_args()
     if args.cmd == "demo":
         cmd_demo()
@@ -905,6 +1014,20 @@ def main() -> None:
         cmd_replay(args.task_id, args.limit)
     elif args.cmd == "backup":
         cmd_backup(args.action, args.ref, args.name)
+    elif args.cmd == "host-deploy":
+        cmd_host_deploy(args.target, args.app_version, args.source_commit)
+    elif args.cmd == "host-restore":
+        cmd_host_restore(args.backup_ref)
+    elif args.cmd == "credential-audit":
+        cmd_credential_audit(args.text)
+    elif args.cmd == "knowledge-list":
+        cmd_knowledge_list()
+    elif args.cmd == "assist-organize":
+        cmd_assist_organize(args.goal, args.scope)
+    elif args.cmd == "identity-list":
+        cmd_identity_list()
+    elif args.cmd == "wiring-audit":
+        cmd_wiring_audit()
     elif args.cmd == "serve":
         cmd_serve(args.host, args.port)
     else:
