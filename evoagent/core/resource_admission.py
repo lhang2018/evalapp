@@ -8,8 +8,8 @@
   状态——暂停经 controller 既有 pause 通道（决策边界 SUSPENDED，
   检查点保留），恢复经 resume 通道；停止不损坏核心状态由既有
   状态机+检查点保证，这里不绕行。
-- 采样器由宿主注入（真实 CPU/内存/模型池用量）；未注入或采样失败
-  保持既有fail-open准入，但显式标记sample_valid=False；主动侧可据此拒绝启动。
+- 采样器由宿主注入（真实 CPU/内存/模型池用量）；采样失败或无效时
+  后台暂缓，前台保留兼容准入规则；显式标记sample_valid=False。
 
 阈值语义（验收：主任务满足明确阈值）：
 - 压力值 = 各资源利用率（0-1）的最大值；
@@ -46,9 +46,16 @@ class PressureSnapshot:
         return min(1.0, max(0.0, self.cpu, self.memory, self.model_pool))
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"cpu": self.cpu, "memory": self.memory,
-                "model_pool": self.model_pool,
-                "pressure": self.pressure, "sampled_at": self.sampled_at,
+        # Invalid measurements remain explicitly unknown in events/HTTP JSON;
+        # NaN/Infinity are not portable JSON numbers and must not escape.
+        def number(value):
+            try:
+                return value if type(value) in (int, float) and math.isfinite(value) else None
+            except OverflowError:
+                return None
+        return {"cpu": number(self.cpu), "memory": number(self.memory),
+                "model_pool": number(self.model_pool),
+                "pressure": self.pressure, "sampled_at": number(self.sampled_at),
                 "sample_valid": self.sample_valid}
 
 
@@ -122,6 +129,10 @@ class ResourceGovernor:
         """任务启动准入：高压拒后台、极端压力拒所有、前台豁免。"""
         snapshot = self.sample()
         pressure = snapshot.pressure
+        if origin in BACKGROUND_ORIGINS and not snapshot.sample_valid:
+            return AdmissionDecision(
+                "defer", origin, pressure,
+                "资源采样不可用或无效，后台任务暂缓", snapshot.to_dict())
         if pressure >= self.policy.foreground_ceiling:
             return AdmissionDecision(
                 "defer", origin, pressure,

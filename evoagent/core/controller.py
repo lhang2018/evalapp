@@ -43,6 +43,7 @@ from .persistence import Database
 from .state_machine import IllegalTransition, transition
 from .runs import RunManager
 from .leases import LeaseLost, RecoveryBlocked
+from .resource_admission import AdmissionDecision, BACKGROUND_ORIGINS
 from .task import GoalOrigin, ORIGIN_VALUES, RiskLevel, Task, TaskStatus
 
 # 依赖网络的工具：未在契约里声明网络权限时用它推断 PRD 7.3 的 requires_network
@@ -244,12 +245,25 @@ class RuntimeController:
             version_manifest["workflow_ref"] = {
                 "id": task.workflow_ref,
                 "version": getattr(wf, "version", None) if wf else None}
-        # ALN-15-D：资源准入——后台来源任务在资源高压时 defer 为
-        # SUSPENDED（检查点/状态完好，压力回落由 resume 恢复）；
+        # ALN-15-D：高压/无有效采样时后台 defer，保持 CREATED，
+        # 再次成功准入后可重新 execute；
         # 前台（user）任务不受后台让位影响，仅绝对上限时暂缓。
         if self.resource_governor is not None:
-            decision = self.resource_governor.admit(task.origin)
-            if decision.decision != "defer":
+            try:
+                decision = self.resource_governor.admit(task.origin)
+                if decision.decision not in ("admit", "defer"):
+                    raise ValueError("资源准入返回了无效的启动决策")
+                snapshot = getattr(decision, "snapshot", None)
+                if (decision.decision == "admit" and task.origin in BACKGROUND_ORIGINS
+                        and (not isinstance(snapshot, dict) or snapshot.get("sample_valid") is not True)):
+                    decision = AdmissionDecision("defer", task.origin, 0.0,
+                        "后台启动缺少有效资源采样证据", {"sample_valid": False})
+            except Exception as exc:
+                # Admit adapters are outside the run's try/finally. Convert
+                # failures to the normal defer path, including active cleanup.
+                decision = AdmissionDecision("defer", task.origin, 0.0,
+                    "资源准入不可用: " + type(exc).__name__, {"sample_valid": False})
+            if decision.decision == "admit":
                 # 过期的 defer 标记随成功准入清除（清单反映当前事实）
                 task.runtime_manifest.pop("resource_deferred", None)
             if decision.decision == "defer":

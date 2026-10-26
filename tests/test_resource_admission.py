@@ -8,7 +8,7 @@
   下 defer（不扰动核心状态，稍后重新 execute 即恢复）；
 - 停止不损坏核心状态：defer 不转状态；暂停走既有 pause 通道（决策
   边界 SUSPENDED + 检查点），恢复后继续；
-- 采样失败 fail-open（只影响后台让位，不影响前台放行）。
+- 采样失败后台defer，前台保留兼容准入。
 """
 
 import shutil
@@ -69,11 +69,12 @@ class GovernorDecisionTest(unittest.TestCase):
         self.assertEqual(decisions["t_bg"].decision, "resume")
         self.assertEqual(gov.paused_tasks, {})
 
-    def test_sampler_failure_fails_open(self):
+    def test_sampler_failure_defers_background_but_preserves_foreground(self):
         def broken():
             raise RuntimeError("sensor down")
         gov = ResourceGovernor(broken)
-        self.assertEqual(gov.admit("opportunity").decision, "admit")
+        self.assertEqual(gov.admit("opportunity").decision, "defer")
+        self.assertEqual(gov.admit("user").decision, "admit")
         self.assertIsNone(gov.should_pause("t", "opportunity"))
 
     def test_policy_threshold_validation(self):
