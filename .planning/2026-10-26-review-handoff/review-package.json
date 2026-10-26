@@ -1,0 +1,151 @@
+{
+ "created_at": "2026-10-26",
+ "created_by": "dsh-lead",
+ "process": "codex-runtime 技术复核（第一道独立审核） → 通过后 claude-main 最终审核（终审接受）；作者不自批；基线 published 21899e6 不变",
+ "cards": [
+  {
+   "id": "ALN-30-B",
+   "commit": "1b590a38b5900a3670e45387870e1441dc5c7a0e",
+   "scope": "客户端工作区成果+记忆控制（api.ts/App.tsx/features）",
+   "tests": "cd android-app; npm run test:offline; npx tsc --noEmit",
+   "evidence": ".planning/2026-10-26-aln30b/api-contract-probe.json；docs/协作开发/交付/ALN-30-B-*.md",
+   "gaps": "项目/节点视图未接线、无全量下载、真机未采",
+   "review_stage": "first_independent_review",
+   "reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
+  },
+  {
+   "id": "ALN-24-F",
+   "commit": "2e0c857473972ba2ab50bf3dd2c11ef465048fa2",
+   "scope": "多主体记忆范围策略/迁移隔离（memory/scope_policy.py+api）",
+   "tests": "python -m pytest tests/test_multi_principal_scope.py -q",
+   "evidence": ".planning/2026-10-26-aln24f/scope-policy-evidence.json",
+   "gaps": "真实多用户鉴权联调、批量迁移、App 入口、检索端到端",
+   "review_stage": "first_independent_review",
+   "reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
+  },
+  {
+   "id": "ALN-16-Q",
+   "commit": "aa19558347c622d5461f20f86156754f334efdac",
+   "scope": "聚合观测/受控导出删除 API（api/evidence_api.py）",
+   "tests": "python -m pytest tests/test_evidence_api.py -q",
+   "evidence": ".planning/2026-10-26-aln16q/api-evidence.json",
+   "gaps": "大导出/清理期、跨库删除原子性、设备",
+   "review_stage": "first_independent_review",
+   "reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
+  },
+  {
+   "id": "ALN-13-S",
+   "commit": "0bf8e05809c744825f7b05ddcb5b6db10848b3af",
+   "scope": "长期目标调度宿主（scheduler/app/cli/api）",
+   "tests": "python -m pytest tests/test_goal_scheduler_host.py -q",
+   "evidence": ".planning/2026-10-26-aln13s/scheduler-host-evidence.json",
+   "gaps": "生产长跑/自动拉起、多进程压测、资源治理联调",
+   "review_stage": "first_independent_review",
+   "reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
+  },
+  {
+   "id": "ALN-09-I",
+   "commit": "1d758e9adb762aa839b4c9c4ffb4379cb1bb1680",
+   "scope": "候选宿主评测+问题队列管理（integration/candidate_execution.py+api）",
+   "tests": "python -m pytest tests/test_candidate_host_api.py -q",
+   "evidence": ".planning/2026-10-26-aln09i/host-evaluation-evidence.json；.planning/2026-10-26-benchmark-review/",
+   "gaps": "candidate_id/dataset 权威绑定、生产并发、CLI/App",
+   "review_stage": "first_independent_review",
+   "reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
+  },
+  {
+   "id": "ALN-18-H",
+   "commit": "f43c8efd5135d09d521b39b4d4d1bb315023cd33",
+   "scope": "编程专家按项目安装（experts/coding_consumer.py+app）",
+   "tests": "python -m pytest tests/test_coding_expert_consumer.py -q",
+   "evidence": ".planning/2026-10-26-aln18h/coding-consumer-evidence.json",
+   "gaps": "真实项目/固定依赖、任务→专家自动选择、升级回滚",
+   "review_stage": "first_independent_review",
+   "reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
+  },
+  {
+   "id": "ALN-19-A",
+   "commit": "f772860963abca9445d53ef74f42935583a7e521",
+   "scope": "音视频供应商契约切片（tools/media_vendor.py）",
+   "tests": "python -m pytest tests/test_media_vendor.py tests/test_release_evidence.py -q",
+   "evidence": ".planning/2026-10-26-aln19a/media-vendor-evidence.json",
+   "gaps": "真实供应商凭据/预算、费用持久账本、真实协议",
+   "review_stage": "first_independent_review",
+   "reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
+  },
+  {
+   "id": "ALN-27-C",
+   "commit": "79cc06b9838e30ab0c693428d7a3bcc5aaa9c0aa",
+   "scope": "知识持久化/注入/迁移（knowledge+memory/context+app）",
+   "tests": "python -m pytest tests/test_knowledge_persistence.py tests/test_knowledge_review_20261026.py -q",
+   "evidence": ".planning/2026-10-26-aln27c/knowledge-persistence-evidence.json；.planning/2026-10-26-knowledge-review/",
+   "gaps": "用户/项目身份可见性绑定、真实前后质量、多进程/逆向迁移",
+   "review_stage": "first_independent_review",
+   "reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
+  },
+  {
+   "id": "ALN-15-E",
+   "commit": "cefdc7c61148a736572992d8779d7b3a15f95067",
+   "scope": "原生资源采样+后台准入（Kotlin/TS/backgroundRunner）",
+   "tests": "cd android-app; node --test test/device/resourceSampler.test.ts; npm run test:offline; npx tsc --noEmit; cd android; gradlew :app:compileDebugKotlin",
+   "evidence": ".planning/2026-10-26-aln15e/client-evidence.json；.planning/2026-10-26-proactive-native-review/",
+   "gaps": "默认后台路径未注入 sampler/highWater、真机周期与压力、OEM 差异",
+   "review_stage": "first_independent_review",
+   "reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
+  },
+  {
+   "id": "ALN-25-C",
+   "commit": "4c2a942ee9720bb16a02c10a082b8ab7c100a2f1",
+   "scope": "主动任务准入执行/预留释放（goals/proactive_execution.py+app）",
+   "tests": "python -m pytest tests/test_proactive_execution.py -q",
+   "evidence": ".planning/2026-10-26-aln25c/proactive-execution-evidence.json；.planning/2026-10-26-proactive-native-review/",
+   "gaps": "App 真实 15-D 决策器/预算账户、并发与运行中 pause/stop、真实 LLM 质量",
+   "review_stage": "first_independent_review",
+   "reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
+  },
+  {
+   "id": "ALN-30-A",
+   "commit": "67bed4644a84fd564a0e752ac4bc06b4f7ba3382",
+   "second_review": true,
+   "scope": "服务端装配收口（integration/wiring+cli+app）",
+   "tests": "python -m pytest tests/test_integration_wiring.py tests/test_restore_entry_review_20261026.py -q",
+   "evidence": ".planning/2026-10-26-dsh-review/review-probes.json；docs/协作开发/验收/2026-10-26-dsh独立复核-25B-30A.md",
+   "gaps": "host-restore 成功链路需真实部署实例补证；621a191 回退路径复核",
+   "review_stage": "second_review",
+   "reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
+  },
+  {
+   "id": "ALN-25-B",
+   "commit": "704ec42b56f2054ac3d1ee1f3ef73ba42861e46f",
+   "second_review": true,
+   "scope": "主动强度/停止/资源非干扰（goals/proactivity.py）",
+   "tests": "python -m pytest tests/test_proactivity.py tests/test_resource_admission.py -q",
+   "evidence": ".planning/2026-10-26-dsh-review/25b-real-resource-pressure.json；.planning/2026-10-26-windows-second-review/",
+   "gaps": "真实设备 UI、执行层 submit 接线；5bc1725 采样未知/恢复修复需复核",
+   "review_stage": "second_review",
+   "reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
+  }
+ ],
+ "global_commands": [
+  "python -m pytest tests/ -q",
+  "cd android-app && npm run test:offline",
+  "cd android-app && npx tsc --noEmit"
+ ],
+ "notes": [
+  "每卡证据路径均在 .planning/ 与 docs/协作开发/交付/",
+  "修复记录见各卡 evidence 末条与配套验收文档",
+  "已知缺口不因组件通过而关闭整包"
+ ]
+}

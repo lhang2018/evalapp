@@ -4492,7 +4492,7 @@
     "F04",
     "G5"
    ],
-   "next_step": "5bc1725修采样未知放行/无效采样自动恢复并清空暂停集合，固定相关295过，需他人复核。原0.768恢复指新准入不是0.70低水位resume；25-C新执行接线另审，不沿用本轮作为执行验收。",
+   "next_step": "已交接二审：codex-runtime 技术复核→claude-main 终审（docs/协作开发/验收/2026-10-26-评审交接-codex-claude.md / .planning/2026-10-26-review-handoff/review-package.json）。5bc1725修采样未知放行/无效采样自动恢复并清空暂停集合，固定相关295过，需他人复核。原0.768恢复指新准入不是0.70低水位resume；25-C新执行接线另审，不沿用本轮作为执行验收。",
    "working_basis": "2026-10-25 zcode-next 认领。复用 15-D ResourceGovernor（已accepted）、25-A ProactiveAssistService（已accepted）、BudgetLedger 既有池语义；写入边界 goals/ + budget.py + android-app（客户端开关投影）；资源压力实测用可控压力源（真机测量另验）。",
    "prerequisites": "设备或宿主资源测量环境；单纯Mock预算计数不算非干扰验收",
    "latest_code_review": {
@@ -4528,6 +4528,12 @@
      "from": "review",
      "to": "accepted",
      "reason": "补齐真实宿主资源压力证据后 dsh-lead 一审通过；用户要求另一审阅人再复核"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "按用户指示交接 codex-runtime 二审，claude-main 最终审核"
     }
    ],
    "review_history": [
@@ -4538,7 +4544,9 @@
      "reason": "二审发现采样有效性/恢复集合新缺陷，已修但新代码待另一审阅人复核",
      "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md"
     }
-   ]
+   ],
+   "second_reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
   },
   {
    "id": "ALN-26-A",
@@ -6824,7 +6832,7 @@
    "title": "真实音视频供应商漫剧纵切片",
    "stream": "assets",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "codex-runtime",
    "branch": "feature/user-direction",
    "base_commit": "bf3a2eab1a1f3906106e60451d39b165c35b672a",
    "status": "review",
@@ -6873,7 +6881,7 @@
    "requirement_refs": [
     "F02"
    ],
-   "next_step": "拒绝非有限配置/非法实结费用/无产物标识；失败费用unknown保留预留，明确账单对账后恢复，不冒称退款。费用仅单实例内存，全局预算/持久账本、真实供应商仍待。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
+   "next_step": "已交接复核包：codex-runtime 技术复核→claude-main 终审（docs/协作开发/验收/2026-10-26-评审交接-codex-claude.md / .planning/2026-10-26-review-handoff/review-package.json）。拒绝非有限配置/非法实结费用/无产物标识；失败费用unknown保留预留，明确账单对账后恢复，不冒称退款。费用仅单实例内存，全局预算/持久账本、真实供应商仍待。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
    "working_basis": "以bf3a2eab1a1f3906106e60451d39b165c35b672a（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "真实服务配置与预算",
    "ownership_history": [
@@ -6888,6 +6896,12 @@
      "from": "claimed",
      "to": "review",
      "reason": "供应商契约/预算/追溯/恢复切片完成；真实凭据与预算未提供，正式验收未做（不冒称通过）"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "按用户指示交接 codex-runtime 技术复核，claude-main 最终审核"
     }
    ],
    "delivered_commit": "f772860963abca9445d53ef74f42935583a7e521",
@@ -6913,7 +6927,8 @@
     "product_acceptance_added": false,
     "published_by_review": false,
     "scope": "四卡七类问题修复；固定相关358过；非全量/真机/生产接受"
-   }
+   },
+   "final_reviewer": "claude-main"
   },
   {
    "id": "ALN-20-P",
@@ -7245,7 +7260,7 @@
     "G0",
     "G3"
    ],
-   "next_step": "已被 dsh-lead 一审接受（装配收口与可达性）；按用户要求后续必须由另一审阅人再复核一遍，重点：host-restore 成功链路需在真实部署实例补证、621a191 回退路径；本轮未改代码；发布基线不变",
+   "next_step": "已交接二审：codex-runtime 技术复核→claude-main 终审（docs/协作开发/验收/2026-10-26-评审交接-codex-claude.md / .planning/2026-10-26-review-handoff/review-package.json）。已被 dsh-lead 一审接受（装配收口与可达性）；按用户要求后续必须由另一审阅人再复核一遍，重点：host-restore 成功链路需在真实部署实例补证、621a191 回退路径；本轮未改代码；发布基线不变",
    "working_basis": "claude-main 认领实施：新增 evoagent/integration/wiring.py 独占模块；app.py/cli.py 按精确点外科手术式修改（当前两者均无他人在途）；客户端 App.tsx 装配不在本卡",
    "prerequisites": "仅需仓库与本地测试环境",
    "ownership_history": [
@@ -7260,6 +7275,12 @@
      "from": "review",
      "to": "accepted",
      "reason": "dsh-lead 独立一审通过（非作者）；按用户要求另一审阅人再复核后视为最终验收"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "accepted",
+     "to": "accepted",
+     "reason": "按用户指示交接 codex-runtime 二审，claude-main 最终审核"
     }
    ],
    "delivered_commit": "67bed4644a84fd564a0e752ac4bc06b4f7ba3382",
@@ -7294,7 +7315,9 @@
     "product_acceptance_added": false,
     "published_by_review": false,
     "scope": "105卡元数据普查；30-A恢复入口/17-A恢复门禁修复，17-P/11-P仅相关范围，不是整包重新验收"
-   }
+   },
+   "second_reviewer": "codex-runtime",
+   "final_reviewer": "claude-main"
   },
   {
    "id": "ALN-30-B",
@@ -7302,7 +7325,7 @@
    "title": "客户端工作区成果与记忆控制接线",
    "stream": "android",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "codex-runtime",
    "branch": "feature/user-direction",
    "base_commit": "2f112276754ae10567e10d62bcfe21b11863037d",
    "status": "review",
@@ -7359,7 +7382,7 @@
     "UX-24"
    ],
    "priority": "P0",
-   "next_step": "恢复范围同步写回allow/deny；限制性allow与策略未加载状态如实显示。仅全局范围控件修复，项目/节点视图、全量下载、真机/模型上下文端到端仍待。 固定相关341过、客户端新归档440过+类型检查；本轮修复待其他审阅人复核，原review状态保留。",
+   "next_step": "已交接复核包：codex-runtime 技术复核→claude-main 终审（docs/协作开发/验收/2026-10-26-评审交接-codex-claude.md / .planning/2026-10-26-review-handoff/review-package.json）。恢复范围同步写回allow/deny；限制性allow与策略未加载状态如实显示。仅全局范围控件修复，项目/节点视图、全量下载、真机/模型上下文端到端仍待。 固定相关341过、客户端新归档440过+类型检查；本轮修复待其他审阅人复核，原review状态保留。",
    "working_basis": "以2f112276754ae10567e10d62bcfe21b11863037d（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；设备验收需明确空闲窗口",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7380,6 +7403,12 @@
      "from": "claimed",
      "to": "review",
      "reason": "本地组件切片完成（成果面板+记忆控制+契约探针），设备验收与项目/工作区接线留作缺口"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "按用户指示交接 codex-runtime 技术复核，claude-main 最终审核"
     }
    ],
    "delivered_commit": "1b590a38b5900a3670e45387870e1441dc5c7a0e",
@@ -7405,7 +7434,8 @@
     "product_acceptance_added": false,
     "published_by_review": false,
     "scope": "九类证据/策略/客户端问题修复；固定相关341+客户端440/类型检查，不替代全量、设备或多主体消费验收"
-   }
+   },
+   "final_reviewer": "claude-main"
   },
   {
    "id": "ALN-16-Q",
@@ -7413,7 +7443,7 @@
    "title": "聚合观测与受控导出删除API接线",
    "stream": "integration",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "codex-runtime",
    "branch": "feature/user-direction",
    "base_commit": "35dfa152a6e378e17e83ce0251f003fa9b205a2f",
    "status": "review",
@@ -7463,7 +7493,7 @@
     "G2"
    ],
    "priority": "P0",
-   "next_step": "删除执行必需预览摘要/布尔参数，隐私开关显式校验，导出审计无1000窗口误拒，仓储读失败不冒称零残留。大导出/清理期、跨库删除原子性与设备仍待。 固定相关341过、客户端新归档440过+类型检查；本轮修复待其他审阅人复核，原review状态保留。",
+   "next_step": "已交接复核包：codex-runtime 技术复核→claude-main 终审（docs/协作开发/验收/2026-10-26-评审交接-codex-claude.md / .planning/2026-10-26-review-handoff/review-package.json）。删除执行必需预览摘要/布尔参数，隐私开关显式校验，导出审计无1000窗口误拒，仓储读失败不冒称零残留。大导出/清理期、跨库删除原子性与设备仍待。 固定相关341过、客户端新归档440过+类型检查；本轮修复待其他审阅人复核，原review状态保留。",
    "working_basis": "以35dfa152a6e378e17e83ce0251f003fa9b205a2f（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7482,6 +7512,12 @@
      "from": "claimed",
      "to": "review",
      "reason": "API 接线完成并通过全量回归；流式/保留期/UI/生产证据留缺口"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "按用户指示交接 codex-runtime 技术复核，claude-main 最终审核"
     }
    ],
    "delivered_commit": "aa19558347c622d5461f20f86156754f334efdac",
@@ -7507,7 +7543,8 @@
     "product_acceptance_added": false,
     "published_by_review": false,
     "scope": "九类证据/策略/客户端问题修复；固定相关341+客户端440/类型检查，不替代全量、设备或多主体消费验收"
-   }
+   },
+   "final_reviewer": "claude-main"
   },
   {
    "id": "ALN-29-F",
@@ -7563,7 +7600,7 @@
    "title": "原生资源采样与后台周期准入",
    "stream": "android",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "codex-runtime",
    "branch": "feature/user-direction",
    "base_commit": "efe5ac0eccf1538eef086f94ce3c93452349e720",
    "status": "review",
@@ -7612,7 +7649,7 @@
     "G5"
    ],
    "priority": "P1",
-   "next_step": "接受阻塞：真实HeadlessTask未注入sampler/highWater（默认仍旧同步）；策略下发、CPU首次基线/不可读、固定Kotlin编译及新APK真机压力/关闭/恢复证据待补；6e82856补丁待另一审阅人复核；详见docs/协作开发/验收/2026-10-26-主动执行与原生资源采样复核.md",
+   "next_step": "已交接复核包：codex-runtime 技术复核→claude-main 终审（docs/协作开发/验收/2026-10-26-评审交接-codex-claude.md / .planning/2026-10-26-review-handoff/review-package.json）。接受阻塞：真实HeadlessTask未注入sampler/highWater（默认仍旧同步）；策略下发、CPU首次基线/不可读、固定Kotlin编译及新APK真机压力/关闭/恢复证据待补；6e82856补丁待另一审阅人复核；详见docs/协作开发/验收/2026-10-26-主动执行与原生资源采样复核.md",
    "working_basis": "以efe5ac0eccf1538eef086f94ce3c93452349e720（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终需Android硬件与压力测量",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7632,10 +7669,17 @@
      "from": "claimed",
      "to": "review",
      "reason": "客户端组件切片完成；真机压力实测与策略下发留缺口"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "按用户指示交接 codex-runtime 技术复核，claude-main 最终审核"
     }
    ],
    "delivered_commit": "cefdc7c61148a736572992d8779d7b3a15f95067",
-   "delivery": "docs/协作开发/交付/ALN-15-E-原生资源采样与后台周期准入.md"
+   "delivery": "docs/协作开发/交付/ALN-15-E-原生资源采样与后台周期准入.md",
+   "final_reviewer": "claude-main"
   },
   {
    "id": "ALN-07-X",
@@ -7682,7 +7726,7 @@
    "title": "长期目标调度启动与持久周期消费",
    "stream": "runtime",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "codex-runtime",
    "branch": "feature/user-direction",
    "base_commit": "89a88d6aca9245fbcd5f16054ae9991da443844d",
    "status": "review",
@@ -7733,7 +7777,7 @@
     "B-91"
    ],
    "priority": "P1",
-   "next_step": "修正stop超时线程丢失/重复启动，running与stopping如实显示；周期与超时有限值校验。生产长跑、多进程和资源治理联调仍待。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
+   "next_step": "已交接复核包：codex-runtime 技术复核→claude-main 终审（docs/协作开发/验收/2026-10-26-评审交接-codex-claude.md / .planning/2026-10-26-review-handoff/review-package.json）。修正stop超时线程丢失/重复启动，running与stopping如实显示；周期与超时有限值校验。生产长跑、多进程和资源治理联调仍待。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
    "working_basis": "以89a88d6aca9245fbcd5f16054ae9991da443844d（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7753,6 +7797,12 @@
      "from": "claimed",
      "to": "review",
      "reason": "宿主接线完成并通过全量回归；生产长跑/压测/资源联调留缺口"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "按用户指示交接 codex-runtime 技术复核，claude-main 最终审核"
     }
    ],
    "delivered_commit": "0bf8e05809c744825f7b05ddcb5b6db10848b3af",
@@ -7778,7 +7828,8 @@
     "product_acceptance_added": false,
     "published_by_review": false,
     "scope": "四卡七类问题修复；固定相关358过；非全量/真机/生产接受"
-   }
+   },
+   "final_reviewer": "claude-main"
   },
   {
    "id": "ALN-02-I",
@@ -7826,7 +7877,7 @@
    "title": "真实候选宿主消费与队列管理入口",
    "stream": "assets",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "codex-runtime",
    "branch": "feature/user-direction",
    "base_commit": "1616e3e5e5f972023df88e1d9b60bc6cd5c9291c",
    "status": "review",
@@ -7886,7 +7937,7 @@
     "G3"
    ],
    "priority": "P1",
-   "next_step": "实际基准消费已拒绝重复ID/非法required/domain，复用host-bench/2。candidate_id/dataset权威绑定、生产并发和CLI/App仍待；不自动发布。 固定相关318过，新修复待其他审阅人复核。",
+   "next_step": "已交接复核包：codex-runtime 技术复核→claude-main 终审（docs/协作开发/验收/2026-10-26-评审交接-codex-claude.md / .planning/2026-10-26-review-handoff/review-package.json）。实际基准消费已拒绝重复ID/非法required/domain，复用host-bench/2。candidate_id/dataset权威绑定、生产并发和CLI/App仍待；不自动发布。 固定相关318过，新修复待其他审阅人复核。",
    "working_basis": "以1616e3e5e5f972023df88e1d9b60bc6cd5c9291c（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7906,6 +7957,12 @@
      "from": "claimed",
      "to": "review",
      "reason": "受控评测入口与队列管理完成并通过全量复跑；dataset校验/CLI/生产证据留缺口"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "按用户指示交接 codex-runtime 技术复核，claude-main 最终审核"
     }
    ],
    "delivered_commit": "1d758e9adb762aa839b4c9c4ffb4379cb1bb1680",
@@ -7932,7 +7989,8 @@
     "product_acceptance_added": false,
     "published_by_review": false,
     "scope": "六类基准/隔离缺陷修复，固定相关318过；首轮310过/1旧知识断言失败保留；非全量、设备或生产接受"
-   }
+   },
+   "final_reviewer": "claude-main"
   },
   {
    "id": "ALN-18-H",
@@ -7940,7 +7998,7 @@
    "title": "编程专家按项目安装与真实工具消费",
    "stream": "runtime",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "codex-runtime",
    "branch": "feature/user-direction",
    "base_commit": "eed09f46ea11ceb38fc38b9fcb674b311254734f",
    "status": "review",
@@ -7991,7 +8049,7 @@
     "A-60"
    ],
    "priority": "P1",
-   "next_step": "项目工具表共享宿主当前权限控制器/存储，deny/未确认拒绝改写、明确确认可执行。任务授权/专家自动选择、真实项目与升级恢复仍待。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
+   "next_step": "已交接复核包：codex-runtime 技术复核→claude-main 终审（docs/协作开发/验收/2026-10-26-评审交接-codex-claude.md / .planning/2026-10-26-review-handoff/review-package.json）。项目工具表共享宿主当前权限控制器/存储，deny/未确认拒绝改写、明确确认可执行。任务授权/专家自动选择、真实项目与升级恢复仍待。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
    "working_basis": "以eed09f46ea11ceb38fc38b9fcb674b311254734f（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；选定临时真实项目与固定测试依赖",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -8010,6 +8068,12 @@
      "from": "claimed",
      "to": "review",
      "reason": "本地组件与拒绝/回滚路径完成；真实项目未提供，正式验收未做（不冒称通过）"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "按用户指示交接 codex-runtime 技术复核，claude-main 最终审核"
     }
    ],
    "delivered_commit": "f43c8efd5135d09d521b39b4d4d1bb315023cd33",
@@ -8035,7 +8099,8 @@
     "product_acceptance_added": false,
     "published_by_review": false,
     "scope": "四卡七类问题修复；固定相关358过；非全量/真机/生产接受"
-   }
+   },
+   "final_reviewer": "claude-main"
   },
   {
    "id": "ALN-25-C",
@@ -8043,7 +8108,7 @@
    "title": "主动任务准入执行与真实资源非干扰",
    "stream": "runtime",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "codex-runtime",
    "branch": "feature/user-direction",
    "base_commit": "a3e05d30748e15d29cd40bb85e8d7a7a2d3afe63",
    "status": "review",
@@ -8098,7 +8163,7 @@
     "G5"
    ],
    "priority": "P1",
-   "next_step": "接受阻塞：真实宿主资源/主动预算账户及策略未装配；实际费用/任务结果对账、权威并发与运行中停止/让位、真实核心质量证据未接；6e82856新补丁待另一审阅人复核；详见docs/协作开发/验收/2026-10-26-主动执行与原生资源采样复核.md",
+   "next_step": "已交接复核包：codex-runtime 技术复核→claude-main 终审（docs/协作开发/验收/2026-10-26-评审交接-codex-claude.md / .planning/2026-10-26-review-handoff/review-package.json）。接受阻塞：真实宿主资源/主动预算账户及策略未装配；实际费用/任务结果对账、权威并发与运行中停止/让位、真实核心质量证据未接；6e82856新补丁待另一审阅人复核；详见docs/协作开发/验收/2026-10-26-主动执行与原生资源采样复核.md",
    "working_basis": "以a3e05d30748e15d29cd40bb85e8d7a7a2d3afe63（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终需固定宿主真实压力数据",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -8117,10 +8182,17 @@
      "from": "claimed",
      "to": "review",
      "reason": "准入执行/预留释放/App 入口完成；真实决策器与预算账户装配留缺口"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "按用户指示交接 codex-runtime 技术复核，claude-main 最终审核"
     }
    ],
    "delivered_commit": "4c2a942ee9720bb16a02c10a082b8ab7c100a2f1",
-   "delivery": "docs/协作开发/交付/ALN-25-C-主动任务准入执行与真实资源非干扰.md"
+   "delivery": "docs/协作开发/交付/ALN-25-C-主动任务准入执行与真实资源非干扰.md",
+   "final_reviewer": "claude-main"
   },
   {
    "id": "ALN-26-C",
@@ -8206,7 +8278,7 @@
    "title": "知识持久化真实注入与迁移质量验证",
    "stream": "assets",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "codex-runtime",
    "branch": "feature/user-direction",
    "base_commit": "39843d62143cb909367007b27876f6d3b83e314b",
    "status": "review",
@@ -8257,7 +8329,7 @@
     "B-88"
    ],
    "priority": "P1",
-   "next_step": "跨连接知识鲜度/撤销、写失败和宿主事务、整批迁移回滚、不可信/评测注入控制、压缩后计数已修。正式验收项2用户/项目身份绑定仍未实现；不能以适用域过滤代替身份隔离。 固定相关341过，本轮新修复待另一审阅人复核；不关闭父包。",
+   "next_step": "已交接复核包：codex-runtime 技术复核→claude-main 终审（docs/协作开发/验收/2026-10-26-评审交接-codex-claude.md / .planning/2026-10-26-review-handoff/review-package.json）。跨连接知识鲜度/撤销、写失败和宿主事务、整批迁移回滚、不可信/评测注入控制、压缩后计数已修。正式验收项2用户/项目身份绑定仍未实现；不能以适用域过滤代替身份隔离。 固定相关341过，本轮新修复待另一审阅人复核；不关闭父包。",
    "working_basis": "以39843d62143cb909367007b27876f6d3b83e314b（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；需固定前后任务集与运行版本",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -8276,6 +8348,12 @@
      "from": "claimed",
      "to": "review",
      "reason": "持久化/注入/迁移验证完成；30-A 旧断言按新语义更新；全量排除他人在途WIP后2433全绿"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "按用户指示交接 codex-runtime 技术复核，claude-main 最终审核"
     }
    ],
    "delivered_commit": "79cc06b9838e30ab0c693428d7a3bcc5aaa9c0aa",
@@ -8303,7 +8381,8 @@
     "product_acceptance_added": false,
     "published_by_review": false,
     "scope": "知识鲜度/事务/迁移、注入控制和固定任务质量；固定相关341过，非全量/真实LLM/身份隔离接受"
-   }
+   },
+   "final_reviewer": "claude-main"
   },
   {
    "id": "ALN-16-E",
@@ -8420,7 +8499,7 @@
    "title": "多主体记忆范围策略与迁移隔离",
    "stream": "integration",
    "owner": "dsh-lead",
-   "reviewer": null,
+   "reviewer": "codex-runtime",
    "branch": "feature/user-direction",
    "base_commit": "69b0524a6450fc14124a324f82c1a211b23cdb4b",
    "status": "review",
@@ -8470,7 +8549,7 @@
     "GLOBAL"
    ],
    "priority": "P2",
-   "next_step": "回退核对原legacy摘要和分区版本；迁移事务失败回滚、逐次追加回执、关闭分区不冒称迁移、actor取鉴权主体。真实多主体检索/上下文与UI消费仍未接。 固定相关341过、客户端新归档440过+类型检查；本轮修复待其他审阅人复核，原review状态保留。",
+   "next_step": "已交接复核包：codex-runtime 技术复核→claude-main 终审（docs/协作开发/验收/2026-10-26-评审交接-codex-claude.md / .planning/2026-10-26-review-handoff/review-package.json）。回退核对原legacy摘要和分区版本；迁移事务失败回滚、逐次追加回执、关闭分区不冒称迁移、actor取鉴权主体。真实多主体检索/上下文与UI消费仍未接。 固定相关341过、客户端新归档440过+类型检查；本轮修复待其他审阅人复核，原review状态保留。",
    "working_basis": "以69b0524a6450fc14124a324f82c1a211b23cdb4b（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "只在明确启用多主体场景前实施；当前单用户过滤修复单独复核",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -8490,6 +8569,12 @@
      "from": "claimed",
      "to": "review",
      "reason": "策略/迁移层完成并通过全量回归；鉴权联调/检索端到端/UI留缺口"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "按用户指示交接 codex-runtime 技术复核，claude-main 最终审核"
     }
    ],
    "delivered_commit": "2e0c857473972ba2ab50bf3dd2c11ef465048fa2",
@@ -8515,7 +8600,8 @@
     "product_acceptance_added": false,
     "published_by_review": false,
     "scope": "九类证据/策略/客户端问题修复；固定相关341+客户端440/类型检查，不替代全量、设备或多主体消费验收"
-   }
+   },
+   "final_reviewer": "claude-main"
   }
  ],
  "workpackages": [
