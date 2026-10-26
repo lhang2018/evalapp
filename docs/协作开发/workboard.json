@@ -7767,13 +7767,24 @@
    "workpackage": "ALN-27",
    "title": "知识持久化真实注入与迁移质量验证",
    "stream": "assets",
-   "owner": null,
+   "owner": "dsh-lead",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "39843d62143cb909367007b27876f6d3b83e314b",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-26",
+     "scope": "知识持久化与真实注入：KnowledgeStore(conn) SQLite持久化(重启保留版本链/撤销/来源,digest)，migrate_knowledge受控迁移(digest核验/撤销保真/幂等/冲突拒绝)，ContextAssembler按适用域+可信度注入并在manifest留source/version，撤销/低可信/跨域不进入模型消息；outcomes_from_tasks消费真实任务记录评估迁移质量；app装配持久知识库；专项28 passed、记忆/上下文/知识域103 passed、全量(排除他人未跟踪WIP复核文件)2433/0/1、实测12项全过",
+     "source_commit": "79cc06b9838e30ab0c693428d7a3bcc5aaa9c0aa",
+     "functional_commit": "79cc06b9838e30ab0c693428d7a3bcc5aaa9c0aa",
+     "source_tree": "36ba800519f027090386d58188af08ca5bba816c",
+     "result": "已交付持久化/注入/迁移验证；30-A 旧断言按27-C新语义更新。缺口：未接真实LLM端到端、迁移仅内存→持久、批量/跨实例迁移未做、多进程并发未压测；不冒称知识整包关闭",
+     "log": ".planning/2026-10-26-aln27c/knowledge-persistence-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-27-C-知识持久化真实注入与迁移质量验证.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/27-C-知识持久化真实注入与迁移质量验证.md",
    "shared_files": [
     "evoagent/memory/context.py",
@@ -7792,13 +7803,29 @@
     "B-88"
    ],
    "priority": "P1",
-   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
-   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "next_step": "待独立复核：持久化重启保留版本/撤销、内存兼容、迁移digest核验/幂等/冲突/撤销保真、上下文注入与manifest source/version、撤销与低可信/跨域不进入消息、真实任务记录前后质量、App重启持久证据见交付文档与 .planning/2026-10-26-aln27c/；审阅人未定不自批；真实LLM端到端、批量迁移、多进程并发属后续，知识整包不关闭",
+   "working_basis": "以39843d62143cb909367007b27876f6d3b83e314b（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；需固定前后任务集与运行版本",
    "split_round": "STATUS-SPLIT-2026-10-26",
    "backlog_refs": [
     "ZG-09"
-   ]
+   ],
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户同意继续；30-A 一审接受后 27-C 解锁为唯一 READY 卡"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "claimed",
+     "to": "review",
+     "reason": "持久化/注入/迁移验证完成；30-A 旧断言按新语义更新；全量排除他人在途WIP后2433全绿"
+    }
+   ],
+   "delivered_commit": "79cc06b9838e30ab0c693428d7a3bcc5aaa9c0aa",
+   "delivery": "docs/协作开发/交付/ALN-27-C-知识持久化真实注入与迁移质量验证.md"
   },
   {
    "id": "ALN-16-E",

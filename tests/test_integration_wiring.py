@@ -268,15 +268,18 @@ class TestKnowledgeEntryPoint:
         assert len(app.knowledge.all()) == 1
         assert app.knowledge.all()[0].key == "provider-timeout"
 
-    def test_knowledge_store_is_not_shared_across_instances(self, tmp_path):
-        """跨实例不共享——进程内存储的既定语义，写入交付报告的保留缺口。"""
+    def test_knowledge_store_persists_across_instances(self, tmp_path):
+        """ALN-27-C 取代 27-A 的进程内缺口：实例对象仍独立，但内容持久化。"""
         from evoagent.knowledge.store import KnowledgeEntry
         first = App(data_dir=str(tmp_path / "inst"))
         first.knowledge.add(KnowledgeEntry(
             entry_id="kn-1", key="k", content="c", source="s", confidence=0.5,
             applicable_domains=("runtime",), version=1, created_at=1.0))
         second = App(data_dir=str(tmp_path / "inst"))
-        assert len(second.knowledge.all()) == 0
+        assert second.knowledge is not first.knowledge
+        restored = second.knowledge.get("kn-1")
+        assert restored is not None and restored.version == 1
+        assert restored.source == "s"
 
 
 class TestAssistEntryPoint:
