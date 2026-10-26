@@ -1,0 +1,316 @@
+{
+  "scope": "documentation inventory and static import audit; not functional acceptance",
+  "captured_at_utc": "2026-10-26T04:37:42.166362+00:00",
+  "source_commit": "90b5c7a9ad1bc05c367af30dffd57775ad1ab49e",
+  "committed_board": {
+    "workpackages": 31,
+    "dispatches": 88,
+    "counts": {
+      "accepted": 75,
+      "review": 10,
+      "unclaimed": 2,
+      "in_progress": 1
+    },
+    "baseline_status": "published",
+    "published_commit": "21899e6ac5019599881727bcbe24662e57325368"
+  },
+  "zcode_owned_committed": {
+    "count": 26,
+    "counts": {
+      "accepted": 20,
+      "review": 6
+    },
+    "cards": [
+      {
+        "id": "ALN-12-A",
+        "title": "自然语言任务—设备执行/回执协议与离线故障矩阵",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": "docs/协作开发/交付/ALN-12-A-自然语言任务设备协议与故障矩阵.md",
+        "next_step": "协议与矩阵切片已验收；另拆自然语言Task→设备动作App主链、物理重启/系统杀进程全矩阵与敏感数据真机验收，不关闭父包"
+      },
+      {
+        "id": "ALN-17-A",
+        "title": "备份/恢复闭环加固与迁移回退契约",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": "docs/协作开发/交付/ALN-17-A-备份恢复闭环与迁移回退.md",
+        "next_step": "claude-main 独立复核通过（自写6探针：起点c7726e8 0/6、交付5c90bee 6/6，四个待复核点全部确认；作者专项19 passed；干净复本全量1626/1与声明一致；RTO/RPO报告口径诚实并显式记录rpo_exposure_rows）；生产规模RTO/RPO实测、空机器部署与版本组合恢复仍按整包另验，整包ALN-17不关闭"
+      },
+      {
+        "id": "ALN-20-A",
+        "title": "Runtime 适配协议与固定版本 PoC 设计",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": "docs/协作开发/交付/ALN-20-A-Runtime适配协议与固定版本PoC设计.md",
+        "next_step": "协议与矩阵切片已验收；固定外部Runtime commit的真实PoC、ADR正式采用与实际主链接入另行推进"
+      },
+      {
+        "id": "ALN-11-W",
+        "title": "活动workflow执行消费与自动健康探针",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": "docs/协作开发/交付/ALN-11-W-活动workflow执行消费与健康探针.md",
+        "next_step": "本卡执行消费/探针/实际回滚与旧包执行切片已验收；生产签名、多设备灰度与更多真机超时故障另验"
+      },
+      {
+        "id": "ALN-23-A",
+        "title": "统一任务契约对外模型",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "复核通过转accepted；解锁23-B/23-D/23-C/23-F/24-B/08-W依赖"
+      },
+      {
+        "id": "ALN-23-B",
+        "title": "聊天与工作模式及上下文转换",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "复核通过；解锁23-F；聊天轮次面板属后续UI卡"
+      },
+      {
+        "id": "ALN-23-D",
+        "title": "用户可见状态与权威任务状态映射",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "复核通过转accepted"
+      },
+      {
+        "id": "ALN-23-C",
+        "title": "任务工作区与真实计划进度",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "修复后复核通过；node_states 通道建议 owner/第三方过目；解锁 24-A/23-E/24-C/24-E/29-C/12-E"
+      },
+      {
+        "id": "ALN-24-A",
+        "title": "真实成果交付、验收与局部修改",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "修复批复查通过恢复accepted；解锁19-A；C-24-01交付文档已由修复批补齐"
+      },
+      {
+        "id": "ALN-23-E",
+        "title": "用户控制、目标变更与安全恢复",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "修复后复核通过转accepted；真实恢复链按原缺口另验"
+      },
+      {
+        "id": "ALN-23-F",
+        "title": "语音输入与文字任务共用入口",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": "docs/协作开发/交付/ALN-23-F-语音输入与文字任务共用入口.md",
+        "next_step": "复核通过转accepted；真机语音行为按12-V另采"
+      },
+      {
+        "id": "ALN-24-B",
+        "title": "能力状态、权限与渐进授权",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "待独立复核（审阅人待定）；App 接线已上屏（d1272c9），真机操作证据按整包验收另采"
+      },
+      {
+        "id": "ALN-24-C",
+        "title": "任务历史、项目空间与跨会话延续",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "复核通过；解锁24-D/25-A；项目空间UI挂载后续卡"
+      },
+      {
+        "id": "ALN-24-E",
+        "title": "成本与资源的用户可见控制",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "修复后复核通过转accepted"
+      },
+      {
+        "id": "ALN-25-B",
+        "title": "主动强度、停止与资源非干扰",
+        "owner": "zcode-next",
+        "status": "review",
+        "delivery": null,
+        "next_step": "5f09fb8修复实际资源采样无效被主动层当低压放行；内置资源层原前台策略保留。相关109、固定完整后端2315/1/1通过；新增修复待复核，主链装配/真实资源非干扰仍未完成。"
+      },
+      {
+        "id": "ALN-27-A",
+        "title": "故障经验沉淀与跨专家迁移验证",
+        "owner": "zcode-main",
+        "status": "accepted",
+        "delivery": "docs/协作开发/交付/ALN-27-A-故障经验沉淀与跨专家迁移验证.md",
+        "next_step": "复核通过；解锁27-B；C-27-01一行注释修正建议owner顺手改；真实注入接线后续卡"
+      },
+      {
+        "id": "ALN-27-B",
+        "title": "可组合能力与动态工作流资产",
+        "owner": "zcode-main",
+        "status": "review",
+        "delivery": "docs/协作开发/交付/ALN-27-B-可组合能力与动态工作流资产.md",
+        "next_step": "固定5f09fb8只读再检：组合/闭包/仓储与版本绑定回归未见新阻断；不自批6ae4b30。本轮未改组合代码，生产执行、动态展开与独立验收仍保留。"
+      },
+      {
+        "id": "ALN-29-C",
+        "title": "问题反馈与运行证据关联",
+        "owner": "zcode-main",
+        "status": "review",
+        "delivery": null,
+        "next_step": "b5b376d补私钥片段检测/零入库；026ab2b修诊断拒绝连接，67fcc54修台账锚点。代码全量2343通过，唯一文档失败修复后85项复检通过，去重覆盖2344/1/1；未第三次全套。客户端同树沿用424，新修复待复核，产品缺口保留。"
+      },
+      {
+        "id": "ALN-04-V",
+        "title": "组合状态与生产身份恢复矩阵",
+        "owner": "zcode-next",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "本批修复已提交，独立复查：失败重跑保留契约/身份/授权上限、祖先授权撤销或替换逐动作拒绝；既有真实环境与产品验收缺口仍按原交付登记，不据模块回归关闭整包。"
+      },
+      {
+        "id": "ALN-06-R",
+        "title": "精确能力版本的运行时消费",
+        "owner": "zcode-next",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "待独立复核（漂移判定规范化/pinned 豁免状态的安全论证/版本选择规则）；App 装配注入与内置专家资产化流程按整包范围另行推进"
+      },
+      {
+        "id": "ALN-07-C",
+        "title": "原子绑定、精确步骤授权与对账消费",
+        "owner": "zcode-next",
+        "status": "review",
+        "delivery": null,
+        "next_step": "固定077d293只读再检：绑定/对账/授权相关112项通过，未见新阻断；保留原审阅人与review，含本会话历史修复不自批；人工裁决与整包缺口另验。"
+      },
+      {
+        "id": "ALN-12-E",
+        "title": "自然语言手机App真实任务主链",
+        "owner": "zcode-main",
+        "status": "review",
+        "delivery": "docs/协作开发/交付/ALN-12-E-自然语言任务主链.md",
+        "next_step": "本机打开设置App纵切片c2e6871已接线；998db6f进一步修确认范围、回执降级/验收竞态、非法恢复回执。固定客户端424/424+tsc0、事件同步13通过。新增修复待复核与真机APK/JS绑定验收；多步骤/服务端设备规划与人工裁决等仍未完成。"
+      },
+      {
+        "id": "ALN-15-D",
+        "title": "设备资源准入与核心任务优先",
+        "owner": "zcode-next",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "待独立复核（defer CREATED 语义/ fail-open 方向/迟滞默认值）"
+      },
+      {
+        "id": "ALN-16-P",
+        "title": "业务仓储与端侧隐私凭证治理",
+        "owner": "zcode-next",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "待独立复核（restricted 集合完备性/双库对账边界/密钥检测召回）；端点与上报接线后续卡"
+      },
+      {
+        "id": "ALN-18-G",
+        "title": "App与编程专家真实消费能力包",
+        "owner": "zcode-next",
+        "status": "accepted",
+        "delivery": null,
+        "next_step": "固定提交a1b3a31独立复验通过转accepted；App自动装配/端侧消费/coding_test重场景E2E/LSP不做按ALN-18整包另验，不关闭整包。"
+      },
+      {
+        "id": "ALN-18-L",
+        "title": "跨文件语义与LSP能力扩展",
+        "owner": "zcode-main",
+        "status": "review",
+        "delivery": "docs/协作开发/交付/ALN-18-L-跨文件语义与LSP能力扩展.md",
+        "next_step": "b5b376d拒绝别名重绑/包导出遮蔽/命名空间歧义；合法项目应用结果保持。最终代码/台账分层验证覆盖2344/1/1（2343过+文档修复后85复检，无第三次全套）；仍非LSP，新修复待复核，真实项目/装配另验。"
+      }
+    ]
+  },
+  "workspace_board": {
+    "sha256": "20784e23e3eed0ec335140b52246575734febaeff675e061338ee66d6e8a6403",
+    "workpackages": 31,
+    "dispatches": 88,
+    "counts": {
+      "accepted": 75,
+      "review": 10,
+      "unclaimed": 2,
+      "in_progress": 1
+    },
+    "additional_cards": [],
+    "differs_from_committed_board": false,
+    "note": "Workspace and committed board counted separately; this audit does not mutate or commit other people's board changes"
+  },
+  "entry_domain_imports": {
+    "deployment": [],
+    "recovery": [],
+    "knowledge": [],
+    "observability": [
+      {
+        "path": "evoagent/api/feedback_api.py",
+        "line": 46,
+        "module": "observability.feedback"
+      },
+      {
+        "path": "evoagent/api/feedback_api.py",
+        "line": 63,
+        "module": "observability.feedback"
+      },
+      {
+        "path": "evoagent/api/feedback_api.py",
+        "line": 73,
+        "module": "observability.feedback"
+      }
+    ]
+  },
+  "import_limit": "Direct import edges only; neither proof of successful consumption nor proof all dynamic entry paths are absent",
+  "checks": {
+    "product_matrix": {
+      "arguments": [
+        "tools/check_product_acceptance.py",
+        "--source-commit",
+        "90b5c7a9ad1bc05c367af30dffd57775ad1ab49e"
+      ],
+      "exit_code": 0,
+      "output": ".planning/2026-10-26-feedback-refactor/zcode-product_matrix.json",
+      "stderr": ""
+    },
+    "product_required": {
+      "arguments": [
+        "tools/check_product_acceptance.py",
+        "--source-commit",
+        "90b5c7a9ad1bc05c367af30dffd57775ad1ab49e",
+        "--require-pass"
+      ],
+      "exit_code": 1,
+      "output": ".planning/2026-10-26-feedback-refactor/zcode-product_required.json",
+      "stderr": ""
+    },
+    "release_structure": {
+      "arguments": [
+        "tools/check_release_gates.py",
+        "--json"
+      ],
+      "exit_code": 0,
+      "output": ".planning/2026-10-26-feedback-refactor/zcode-release_structure.json",
+      "stderr": ""
+    },
+    "release_required": {
+      "arguments": [
+        "tools/check_release_gates.py",
+        "--json",
+        "--require-release"
+      ],
+      "exit_code": 2,
+      "output": ".planning/2026-10-26-feedback-refactor/zcode-release_required.json",
+      "stderr": ""
+    }
+  },
+  "product_evidence_added": false,
+  "business_tests_rerun": false,
+  "device_accessed": false
+}
