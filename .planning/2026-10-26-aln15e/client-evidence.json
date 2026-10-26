@@ -1,0 +1,25 @@
+{
+ "task": "ALN-15-E 原生资源采样与后台周期准入（本地组件切片）",
+ "date": "2026-10-26",
+ "commands": {
+  "adapter_tests": "node --test test/device/resourceSampler.test.ts -> 7 passed",
+  "typecheck": "npx tsc --noEmit -> 0 errors",
+  "client_offline_suite": "npm run test:offline -> 447 passed / 0 failed",
+  "kotlin_compile": "gradlew :app:compileDebugKotlin --offline -> exit 0（仅三方依赖 deprecation 警告）",
+  "device": "adb devices: 5748d823 device；本轮未重建/安装 APK，未做真机压力采样"
+ },
+ "checks": {
+  "native_module_present": true,
+  "native_cpu_from_proc_stat": true,
+  "native_memory_battery_disk": true,
+  "native_reports_valid_flag": true,
+  "native_no_fake_low_pressure": true,
+  "module_registered_in_package": true,
+  "adapter_validates_fractions": false,
+  "adapter_staleness_check": true,
+  "adapter_no_default_threshold": true,
+  "runner_consumes_gate": true
+ },
+ "all_checks_pass": false,
+ "gap": "真机端到端（安装新 APK → 原生采样 → 后台周期准入 → 压力测量）未做，需设备空闲窗口与压测；本证据仅为组件/编译层面，不冒称真机通过"
+}

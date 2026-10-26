@@ -12,6 +12,7 @@ class DevicePackage : ReactPackage {
         DeviceModule(reactContext),
         VoiceModule(reactContext),
         NotificationModule(reactContext),
+        ResourceSamplerModule(reactContext),
     )
 
     override fun createViewManagers(

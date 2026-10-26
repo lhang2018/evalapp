@@ -12,6 +12,10 @@ import { runBackgroundSync } from "./background.ts";
 import type { BackgroundSyncResult } from "./background.ts";
 import type { LocalTask } from "./types.ts";
 import { BACKGROUND_SYNC_TASK } from "./background.ts";
+import {
+  backgroundResourceDecision,
+  parseResourceSample,
+} from "../device/resourceSampler.ts";
 import { EventQueue } from "./queue.ts";
 import { OfflineRepository } from "./storage.ts";
 import { SyncEngine } from "./sync.ts";
@@ -21,8 +25,48 @@ const BASE_URL_KEY = "evoagent_base_url";
 const DEFAULT_BASE_URL = "http://10.0.2.2:8300";
 const APP_VERSION = "0.1.0";
 
-export async function runStoredBackgroundSync(): Promise<BackgroundSyncResult> {
+export interface BackgroundResourceOptions {
+  /** 由原生 ResourceSampler 注入；缺省时保持既有行为（不做本地准入）。 */
+  resourceSampler?: () => Promise<unknown>;
+  /** 既有资源策略给出的高压阈值（不在此内置默认值）。 */
+  highWater?: number;
+  maxAgeMs?: number;
+}
+
+function deferredResult(startedAt: number, reason: string): BackgroundSyncResult {
+  return {
+    task: BACKGROUND_SYNC_TASK,
+    ran: false,
+    online: false,
+    refreshed: false,
+    started_at: startedAt,
+    finished_at: Date.now(),
+    error: "background_deferred:" + reason,
+  };
+}
+
+export async function runStoredBackgroundSync(
+  options: BackgroundResourceOptions = {},
+): Promise<BackgroundSyncResult> {
   const startedAt = Date.now();
+  if (options.resourceSampler) {
+    try {
+      const sample = parseResourceSample(await options.resourceSampler(), {
+        nowMs: Date.now(),
+        maxAgeMs: options.maxAgeMs,
+      });
+      const decision = backgroundResourceDecision(sample, {
+        highWater: options.highWater ?? Number.NaN,
+      });
+      if (!decision.allow) {
+        console.log(`[background-sync] deferred: ${decision.reason}`);
+        return deferredResult(startedAt, decision.reason);
+      }
+    } catch (error) {
+      console.log(`[background-sync] deferred: sampler_failed ${error}`);
+      return deferredResult(startedAt, "sampler_failed");
+    }
+  }
   try {
     const saved = await asyncStorageStore.getItem(BASE_URL_KEY);
     const baseUrl = (saved ?? "").trim() || DEFAULT_BASE_URL;
