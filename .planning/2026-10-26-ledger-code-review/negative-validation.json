@@ -1,0 +1,14 @@
+{
+  "pytest_arguments": [
+    "tests/test_restore_entry_review_20261026.py",
+    "-q"
+  ],
+  "snapshot_commit": null,
+  "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+  "owned_temp_directory": "E:\\evalapp\\outputs\\review5-jttypze5",
+  "source_path_when_tested": "E:\\evalapp",
+  "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+  "exit_code": 1,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+}

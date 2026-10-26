@@ -2682,14 +2682,22 @@
     "代码: 本卡提交（backup.py manifest schema_version/兼容判定/暂存迁移升级/行数核对；migrations.py SAVEPOINT 原子回退+MigrationError）",
     "测试: 全量 python -m pytest tests -q → 1626 passed / 1 skipped；定向 backup_recovery+migration_rollback+backup → 19 passed",
     "RTO/RPO: tools/measure_backup_recovery.py 实测，报告 .planning/2026-10-24-aln17a/measure-report.json（5任务/105事件/8记忆，空目录恢复 RTO≈0.028s，恢复后与快照逐行一致 RPO=0）",
-    "交付: docs/协作开发/交付/ALN-17-A-备份恢复闭环与迁移回退.md；RTO为开发机小数据集数值，生产规模与空机器部署/版本组合恢复按整包验收另测"
+    "交付: docs/协作开发/交付/ALN-17-A-备份恢复闭环与迁移回退.md；RTO为开发机小数据集数值，生产规模与空机器部署/版本组合恢复按整包验收另测",
+    {
+     "date": "2026-10-26",
+     "source_commit": "621a1914ada49647c99e65952f73b7fe29014c67",
+     "source_tree": "3b34f1f9cd7fb46ade9183beb16f72fdbb96f744",
+     "result": "恢复入口三问题修复：全账本门禁/窗口外任务/真实失败回退；固定相关291过，新增修复待复核，不扩大旧接受",
+     "log": ".planning/2026-10-26-ledger-code-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-他人验收台账与恢复入口代码复核.md"
+    }
    ],
    "card": "docs/协作开发/任务卡/17-宿主部署与灾难恢复.md",
    "shared_files": [
     "evoagent/core/schema/migrations.py"
    ],
    "working_basis": "2026-10-24 zcode-main 认领并完成交付。base_commit c7726e8 为接手锚点（基线仍candidate；接手期间并行提交照常落地未冲突）。旧格式（缺schema_version）按明确规则拒绝；低于当前版本走暂存区迁移升级，高于即拒绝；行数快照替换前+恢复后双重核对；迁移失败SAVEPOINT自动回退，已提交坏变更用迁移前备份restore回退（演练覆盖）。版本资产组合恢复与空机器部署不在本卡。",
-   "next_step": "claude-main 独立复核通过（自写6探针：起点c7726e8 0/6、交付5c90bee 6/6，四个待复核点全部确认；作者专项19 passed；干净复本全量1626/1与声明一致；RTO/RPO报告口径诚实并显式记录rpo_exposure_rows）；生产规模RTO/RPO实测、空机器部署与版本组合恢复仍按整包另验，整包ALN-17不关闭",
+   "next_step": "原17-A切片接受保留；621a191补CLI/API恢复门禁全账本查询，新修复固定相关291过待复核。维护窗口/跨进程互斥及生产恢复按17包保留，不宣称整包关闭。",
    "ownership_history": [
     {
      "date": "2026-10-23",
@@ -2725,6 +2733,32 @@
      "restore失败重试会累积 pre_restore_* 安全备份文件，建议后续加保留策略",
      "未独立复验zip截断/暂存区磁盘写满两类环境级故障"
     ]
+   },
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-LEDGER-RESTORE",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-30-A",
+     "ALN-17-A",
+     "ALN-17-P",
+     "ALN-11-P"
+    ],
+    "fixed_cards": [
+     "ALN-30-A",
+     "ALN-17-A"
+    ],
+    "read_only_recheck_cards": [
+     "ALN-17-P",
+     "ALN-11-P"
+    ],
+    "fix_commit": "621a1914ada49647c99e65952f73b7fe29014c67",
+    "report": "docs/协作开发/验收/2026-10-26-他人验收台账与恢复入口代码复核.md",
+    "evidence": ".planning/2026-10-26-ledger-code-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "105卡元数据普查；30-A恢复入口/17-A恢复门禁修复，17-P/11-P仅相关范围，不是整包重新验收"
    }
   },
   {
@@ -6751,6 +6785,14 @@
      "result": "固定相关176过；当前tests仅采集2328，非全量运行。区分六项声明可达与全域消费，交付保持review",
      "log": ".planning/2026-10-26-status-split/runtime-validation.json",
      "delivery": "docs/协作开发/新增状态复核与需求拆分_2026-10-26.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "621a1914ada49647c99e65952f73b7fe29014c67",
+     "source_tree": "3b34f1f9cd7fb46ade9183beb16f72fdbb96f744",
+     "result": "恢复入口三问题修复：全账本门禁/窗口外任务/真实失败回退；固定相关291过，新增修复待复核，不扩大旧接受",
+     "log": ".planning/2026-10-26-ledger-code-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-他人验收台账与恢复入口代码复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/30-A-服务端装配收口与主链可达性.md",
@@ -6766,7 +6808,7 @@
     "G0",
     "G3"
    ],
-   "next_step": "交付67bed46维持review，完整delivered_commit已补；本轮固定0e1b4fd相关176过，非完整独立接受。旧2299/1日志未绑定精确树，当前tests采集2328项，仍需当前版本完整取证；聚合观测API/知识注入/主动执行等由新卡承接。",
+   "next_step": "30-A仍review；621a191修复host-restore未结束任务漏拦截、旧门禁1000窗口和失败未回退，固定相关291过，新修复待独立复核。旧2299/1日志仍缺精确树绑定，非当前全量；原拆分消费者与生产条件继续。",
    "working_basis": "claude-main 认领实施：新增 evoagent/integration/wiring.py 独占模块；app.py/cli.py 按精确点外科手术式修改（当前两者均无他人在途）；客户端 App.tsx 装配不在本卡",
    "prerequisites": "仅需仓库与本地测试环境",
    "ownership_history": [
@@ -6783,6 +6825,32 @@
     "source_commit": "0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd",
     "report": "docs/协作开发/新增状态复核与需求拆分_2026-10-26.md",
     "scope": "Git/实际入口/固定176项接续核对；状态不升accepted，原作者和审阅归属保留"
+   },
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-LEDGER-RESTORE",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-30-A",
+     "ALN-17-A",
+     "ALN-17-P",
+     "ALN-11-P"
+    ],
+    "fixed_cards": [
+     "ALN-30-A",
+     "ALN-17-A"
+    ],
+    "read_only_recheck_cards": [
+     "ALN-17-P",
+     "ALN-11-P"
+    ],
+    "fix_commit": "621a1914ada49647c99e65952f73b7fe29014c67",
+    "report": "docs/协作开发/验收/2026-10-26-他人验收台账与恢复入口代码复核.md",
+    "evidence": ".planning/2026-10-26-ledger-code-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "105卡元数据普查；30-A恢复入口/17-A恢复门禁修复，17-P/11-P仅相关范围，不是整包重新验收"
    }
   },
   {
@@ -9305,6 +9373,23 @@
    "independent_review": false,
    "report": "docs/协作开发/新增状态复核与需求拆分_2026-10-26.md",
    "scope": "补漏登记七个源码文件；固定0e1b4fd相关176通过，原历史2299/1不绑定当前树，保持review未发布"
+  },
+  {
+   "id": "discovered-621a1914ada4",
+   "title": "fix(recovery): 恢复前查全账本并启用失败回退",
+   "workpackage": "ALN-17",
+   "source_commit": "621a1914ada49647c99e65952f73b7fe29014c67",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/api/server.py",
+    "evoagent/cli.py",
+    "evoagent/core/persistence.py",
+    "tests/test_restore_entry_review_20261026.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-他人验收台账与恢复入口代码复核.md",
+   "scope": "30-A/17-A恢复入口与门禁修复，291定向过；新增修复待复核，非全量/生产接受"
   }
  ],
  "requirement_batches": [
@@ -9529,6 +9614,32 @@
    "status": "fixes_delivered_pending_independent_recheck",
    "product_acceptance_added": false,
    "published_by_review": false
+  },
+  {
+   "id": "REVIEW-2026-10-26-LEDGER-RESTORE",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-30-A",
+    "ALN-17-A",
+    "ALN-17-P",
+    "ALN-11-P"
+   ],
+   "fixed_cards": [
+    "ALN-30-A",
+    "ALN-17-A"
+   ],
+   "read_only_recheck_cards": [
+    "ALN-17-P",
+    "ALN-11-P"
+   ],
+   "fix_commit": "621a1914ada49647c99e65952f73b7fe29014c67",
+   "report": "docs/协作开发/验收/2026-10-26-他人验收台账与恢复入口代码复核.md",
+   "evidence": ".planning/2026-10-26-ledger-code-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false,
+   "scope": "105卡元数据普查；30-A恢复入口/17-A恢复门禁修复，17-P/11-P仅相关范围，不是整包重新验收"
   }
  ]
 }

@@ -1,0 +1,177 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFF.                                                                 [100%]
+================================== FAILURES ===================================
+_ test_new_host_restore_refuses_unfinished_task_before_data_or_backup_changes[RUNNING] _
+
+app = <evoagent.app.App object at 0x00000258749C6C50>
+capsys = <_pytest.capture.CaptureFixture object at 0x0000025874A31570>
+status = <TaskStatus.RUNNING: 'RUNNING'>
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED,
+                                        TaskStatus.WAITING_USER, TaskStatus.CREATED])
+    def test_new_host_restore_refuses_unfinished_task_before_data_or_backup_changes(app, capsys, status):
+        backup = app.backups.create("seed.zip")
+        active = saved(app, "synthetic unfinished", status=status)
+        before = app.backups._counts()
+        before_backups = {entry["name"] for entry in app.backups.list()}
+        cli.cmd_host_restore(backup["name"])
+        response = json.loads(capsys.readouterr().out)
+>       assert "error" in response
+E       AssertionError: assert 'error' in {'backup_name': 'seed.zip', 'counts_after': {'events': 0, 'memories': 0, 'release_manifests': 1, 'tasks': 0}, 'counts_...e_manifests': 1, 'tasks': 1}, 'counts_expected': {'events': 0, 'memories': 0, 'release_manifests': 1, 'tasks': 0}, ...}
+
+tests\test_restore_entry_review_20261026.py:42: AssertionError
+_ test_new_host_restore_refuses_unfinished_task_before_data_or_backup_changes[SUSPENDED] _
+
+app = <evoagent.app.App object at 0x00000258745B5ED0>
+capsys = <_pytest.capture.CaptureFixture object at 0x00000258744F5D80>
+status = <TaskStatus.SUSPENDED: 'SUSPENDED'>
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED,
+                                        TaskStatus.WAITING_USER, TaskStatus.CREATED])
+    def test_new_host_restore_refuses_unfinished_task_before_data_or_backup_changes(app, capsys, status):
+        backup = app.backups.create("seed.zip")
+        active = saved(app, "synthetic unfinished", status=status)
+        before = app.backups._counts()
+        before_backups = {entry["name"] for entry in app.backups.list()}
+        cli.cmd_host_restore(backup["name"])
+        response = json.loads(capsys.readouterr().out)
+>       assert "error" in response
+E       AssertionError: assert 'error' in {'backup_name': 'seed.zip', 'counts_after': {'events': 0, 'memories': 0, 'release_manifests': 1, 'tasks': 0}, 'counts_...e_manifests': 1, 'tasks': 1}, 'counts_expected': {'events': 0, 'memories': 0, 'release_manifests': 1, 'tasks': 0}, ...}
+
+tests\test_restore_entry_review_20261026.py:42: AssertionError
+_ test_new_host_restore_refuses_unfinished_task_before_data_or_backup_changes[WAITING_USER] _
+
+app = <evoagent.app.App object at 0x00000258749C7220>
+capsys = <_pytest.capture.CaptureFixture object at 0x0000025874B15960>
+status = <TaskStatus.WAITING_USER: 'WAITING_USER'>
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED,
+                                        TaskStatus.WAITING_USER, TaskStatus.CREATED])
+    def test_new_host_restore_refuses_unfinished_task_before_data_or_backup_changes(app, capsys, status):
+        backup = app.backups.create("seed.zip")
+        active = saved(app, "synthetic unfinished", status=status)
+        before = app.backups._counts()
+        before_backups = {entry["name"] for entry in app.backups.list()}
+        cli.cmd_host_restore(backup["name"])
+        response = json.loads(capsys.readouterr().out)
+>       assert "error" in response
+E       AssertionError: assert 'error' in {'backup_name': 'seed.zip', 'counts_after': {'events': 0, 'memories': 0, 'release_manifests': 1, 'tasks': 0}, 'counts_...e_manifests': 1, 'tasks': 1}, 'counts_expected': {'events': 0, 'memories': 0, 'release_manifests': 1, 'tasks': 0}, ...}
+
+tests\test_restore_entry_review_20261026.py:42: AssertionError
+_ test_new_host_restore_refuses_unfinished_task_before_data_or_backup_changes[CREATED] _
+
+app = <evoagent.app.App object at 0x00000258745E9B70>
+capsys = <_pytest.capture.CaptureFixture object at 0x0000025874519BA0>
+status = <TaskStatus.CREATED: 'CREATED'>
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED,
+                                        TaskStatus.WAITING_USER, TaskStatus.CREATED])
+    def test_new_host_restore_refuses_unfinished_task_before_data_or_backup_changes(app, capsys, status):
+        backup = app.backups.create("seed.zip")
+        active = saved(app, "synthetic unfinished", status=status)
+        before = app.backups._counts()
+        before_backups = {entry["name"] for entry in app.backups.list()}
+        cli.cmd_host_restore(backup["name"])
+        response = json.loads(capsys.readouterr().out)
+>       assert "error" in response
+E       AssertionError: assert 'error' in {'backup_name': 'seed.zip', 'counts_after': {'events': 0, 'memories': 0, 'release_manifests': 1, 'tasks': 0}, 'counts_...e_manifests': 1, 'tasks': 1}, 'counts_expected': {'events': 0, 'memories': 0, 'release_manifests': 1, 'tasks': 0}, ...}
+
+tests\test_restore_entry_review_20261026.py:42: AssertionError
+___ test_restore_guard_is_not_limited_to_recent_thousand_tasks[legacy_cli] ____
+
+app = <evoagent.app.App object at 0x0000025874B14040>
+capsys = <_pytest.capture.CaptureFixture object at 0x0000025874A5ECE0>
+entry = 'legacy_cli'
+
+    @pytest.mark.parametrize("entry", ["legacy_cli", "http"])
+    def test_restore_guard_is_not_limited_to_recent_thousand_tasks(app, capsys, entry):
+        backup = app.backups.create("seed.zip")
+        active = fill_recent_terminal_rows(app)
+        before = app.backups._counts()
+        if entry == "legacy_cli":
+            cli.cmd_backup("restore", backup["name"], "")
+            response = json.loads(capsys.readouterr().out)
+>           assert "error" in response
+E           AssertionError: assert 'error' in {'counts': {'events': 0, 'memories': 0, 'release_manifests': 1, 'tasks': 0}, 'counts_verified': True, 'duration_ms': 45, 'migrations_applied': [], ...}
+
+tests\test_restore_entry_review_20261026.py:73: AssertionError
+______ test_restore_guard_is_not_limited_to_recent_thousand_tasks[http] _______
+
+app = <evoagent.app.App object at 0x00000258745E9AB0>
+capsys = <_pytest.capture.CaptureFixture object at 0x0000025874B666E0>
+entry = 'http'
+
+    @pytest.mark.parametrize("entry", ["legacy_cli", "http"])
+    def test_restore_guard_is_not_limited_to_recent_thousand_tasks(app, capsys, entry):
+        backup = app.backups.create("seed.zip")
+        active = fill_recent_terminal_rows(app)
+        before = app.backups._counts()
+        if entry == "legacy_cli":
+            cli.cmd_backup("restore", backup["name"], "")
+            response = json.loads(capsys.readouterr().out)
+            assert "error" in response
+        else:
+            app.config.api_admin_token = "synthetic-review-admin"
+            server = ApiServer(app, host="127.0.0.1", port=0)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                request = urllib.request.Request(
+                    f"http://127.0.0.1:{server.port}/admin/restore",
+                    headers={"Authorization": "Bearer synthetic-review-admin", "Content-Type": "application/json"},
+                    data=json.dumps({"name":backup["name"]}).encode())
+                try:
+                    with urllib.request.urlopen(request, timeout=5) as result:
+                        status, response = result.status, json.load(result)
+                except urllib.error.HTTPError as result:
+                    status, response = result.code, json.load(result)
+>               assert status == 409
+E               assert 200 == 409
+
+tests\test_restore_entry_review_20261026.py:89: AssertionError
+---------------------------- Captured stdout call -----------------------------
+EvoAgent API: http://127.0.0.1:5107  (GET /health)
+_ test_host_restore_rolls_back_real_data_when_restore_fails_after_replacement _
+
+app = <evoagent.app.App object at 0x000002587482E680>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002587482C520>
+capsys = <_pytest.capture.CaptureFixture object at 0x0000025874B75D50>
+
+    def test_host_restore_rolls_back_real_data_when_restore_fails_after_replacement(app, monkeypatch, capsys):
+        saved(app, "backup baseline")
+        backup = app.backups.create("seed.zip")
+        latest = saved(app, "post backup result", at=2.0)
+        before = app.backups._counts()
+        original = app.recovery.manager.restore
+        calls = []
+    
+        def fail_once(ref, **kwargs):
+            result = original(ref, **kwargs)
+            calls.append(ref)
+            if len(calls) == 1:
+                # The data has actually been replaced. The safety copy must be used
+                # after this fault; a failure before touching data would miss it.
+                assert app.db.get_task(latest.task_id) is None
+                raise RuntimeError("synthetic failure after real replacement")
+            return result
+    
+        monkeypatch.setattr(app.recovery.manager, "restore", fail_once)
+        cli.cmd_host_restore(backup["name"])
+        response = json.loads(capsys.readouterr().out)
+>       assert response.get("ok") is False
+E       AssertionError: assert None is False
+E        +  where None = <built-in method get of dict object at 0x000002587496DB40>('ok')
+E        +    where <built-in method get of dict object at 0x000002587496DB40> = {'error': 'synthetic failure after real replacement'}.get
+
+tests\test_restore_entry_review_20261026.py:119: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_restore_entry_review_20261026.py::test_new_host_restore_refuses_unfinished_task_before_data_or_backup_changes[RUNNING]
+FAILED tests/test_restore_entry_review_20261026.py::test_new_host_restore_refuses_unfinished_task_before_data_or_backup_changes[SUSPENDED]
+FAILED tests/test_restore_entry_review_20261026.py::test_new_host_restore_refuses_unfinished_task_before_data_or_backup_changes[WAITING_USER]
+FAILED tests/test_restore_entry_review_20261026.py::test_new_host_restore_refuses_unfinished_task_before_data_or_backup_changes[CREATED]
+FAILED tests/test_restore_entry_review_20261026.py::test_restore_guard_is_not_limited_to_recent_thousand_tasks[legacy_cli]
+FAILED tests/test_restore_entry_review_20261026.py::test_restore_guard_is_not_limited_to_recent_thousand_tasks[http]
+FAILED tests/test_restore_entry_review_20261026.py::test_host_restore_rolls_back_real_data_when_restore_fails_after_replacement
+7 failed, 1 passed in 3.85s

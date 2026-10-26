@@ -1,0 +1,31 @@
+{
+  "pytest_arguments": [
+    "tests/test_restore_entry_review_20261026.py",
+    "tests/test_integration_wiring.py",
+    "tests/test_backup.py",
+    "tests/test_backup_recovery.py",
+    "tests/test_deployment_recovery.py",
+    "tests/test_control.py",
+    "tests/test_control_plane.py",
+    "tests/test_recovery_matrix.py",
+    "tests/test_process_recovery.py",
+    "tests/test_run_ownership.py",
+    "tests/test_runtime_memory_identity.py",
+    "tests/test_release_install_retire.py",
+    "tests/test_release_identity.py",
+    "tests/test_error_object.py",
+    "tests/test_ledger_drift.py",
+    "tools/tests",
+    "-q"
+  ],
+  "snapshot_commit": "621a1914ada49647c99e65952f73b7fe29014c67",
+  "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+  "owned_temp_directory": "E:\\evalapp\\outputs\\review5-yi9bsakz",
+  "source_tree": "3b34f1f9cd7fb46ade9183beb16f72fdbb96f744",
+  "archive_sha256": "d7b6f0bc27810776144b0dc3edd2daef9732a9a1f6743934605bec56115663b5",
+  "source_path_when_tested": "E:\\evalapp\\outputs\\review5-yi9bsakz\\source",
+  "module_source_probe": "E:\\evalapp\\outputs\\review5-yi9bsakz\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-yi9bsakz\\source\\evoagent\\tools\\refactor.py\n",
+  "exit_code": 0,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+}

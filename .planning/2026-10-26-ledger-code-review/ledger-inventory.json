@@ -1,0 +1,2000 @@
+{
+  "source_commit": "00b84cde693ebdd948d82ef4631aed2afeabc722",
+  "scope": "105-card metadata/provenance inventory; not 75-card functional acceptance",
+  "counts": {
+    "accepted": 75,
+    "review": 11,
+    "unclaimed": 19
+  },
+  "cards": 105,
+  "accepted_count": 75,
+  "missing_document_refs": [],
+  "unresolved_commit_refs": [],
+  "conventional_field_warnings": [
+    {
+      "card": "ALN-00-B",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-06-A",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-08-M",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-00-V",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-07-W",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-12-A",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-17-A",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-20-A",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-11-W",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-29-B",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-23-A",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-23-B",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-23-D",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-23-C",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-24-A",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-23-E",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-23-F",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-24-B",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-24-C",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-24-E",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-25-A",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-27-A",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-03-P",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-04-V",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-06-R",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-11-P",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-15-D",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-16-P",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    },
+    {
+      "card": "ALN-18-G",
+      "kind": "missing_standard_delivered_commit",
+      "note": "Historical evidence may contain source anchors; requires manual reading, not an acceptance failure"
+    }
+  ],
+  "commit_resolution": {
+    "029a9987eeffff1fc502987f3d6a6bdfa8722ec4": "029a9987eeffff1fc502987f3d6a6bdfa8722ec4",
+    "03600e1982455b1d6c27992cb03023b6d40bccf2": "03600e1982455b1d6c27992cb03023b6d40bccf2",
+    "04de43f1c028024ce4a2bd3e82cc23edf34c36b9": "04de43f1c028024ce4a2bd3e82cc23edf34c36b9",
+    "05a7cf43f599a25c6add290063e19f16ae942c49": "05a7cf43f599a25c6add290063e19f16ae942c49",
+    "07466fb0beea638ef03952641c02d65a6df828cb": "07466fb0beea638ef03952641c02d65a6df828cb",
+    "077d2939236dff71821ab69157ea50bf4d1dbbeb": "077d2939236dff71821ab69157ea50bf4d1dbbeb",
+    "078b9cc4dabbc1437361daa97a07c6a3897b0eeb": "078b9cc4dabbc1437361daa97a07c6a3897b0eeb",
+    "07f11e5": "07f11e5a96f6a93c9b566eef24d163790891e6db",
+    "0ba45fc": "0ba45fc128968008a9ebc594db1c762493f0a9fd",
+    "0cf66722d00ab59f1405c6bca7f322c1bf893a9c": "0cf66722d00ab59f1405c6bca7f322c1bf893a9c",
+    "0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd": "0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd",
+    "10ec664c2804b4485b8c60ac8f053c1b6b10e8ae": "10ec664c2804b4485b8c60ac8f053c1b6b10e8ae",
+    "147a4898cb2231a9585897a3bff74ce41f6c5053": "147a4898cb2231a9585897a3bff74ce41f6c5053",
+    "17854f2dc93cec32a3fb845a650838d9dff2821b": "17854f2dc93cec32a3fb845a650838d9dff2821b",
+    "1ad71bc9d3b2d920cd8028d59765194941fd50c7": "1ad71bc9d3b2d920cd8028d59765194941fd50c7",
+    "1f2c0b0162e2681c338eeae033a47ab50212d44a": "1f2c0b0162e2681c338eeae033a47ab50212d44a",
+    "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c": "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+    "206bcd7900b727ac8f69c463b7e5f315177cd791": "206bcd7900b727ac8f69c463b7e5f315177cd791",
+    "21899e6ac5019599881727bcbe24662e57325368": "21899e6ac5019599881727bcbe24662e57325368",
+    "21e6d2fb0e3c780f22d040a648c64d4348498022": "21e6d2fb0e3c780f22d040a648c64d4348498022",
+    "22c50cabd3c432ca5f891efb633652a669fcb4a6": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+    "23d395076e54aa0721f9fdb2fec940ca21b5ebe1": "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
+    "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+    "26749474e41827b4e775b491ffe00bbe57928e15": "26749474e41827b4e775b491ffe00bbe57928e15",
+    "26aad1b56512364d0cdb3b616eeec6a781703532": "26aad1b56512364d0cdb3b616eeec6a781703532",
+    "26aaec72280885815eebb1c4db1ea7098abdcf93": "26aaec72280885815eebb1c4db1ea7098abdcf93",
+    "2782cd25ef690d5286f76345f4eb838d8c6b19ad": "2782cd25ef690d5286f76345f4eb838d8c6b19ad",
+    "2e1438f4ee7583232f11297b51a6cca838b0becb": "2e1438f4ee7583232f11297b51a6cca838b0becb",
+    "2ebd9c0": "2ebd9c0fc12cb043311d593ae808221303d88da7",
+    "3283819921fc245b6376b09c92c27c8d15a4f721": "3283819921fc245b6376b09c92c27c8d15a4f721",
+    "3331898fcddb78b4b271db152fbd408b7c981889": "3331898fcddb78b4b271db152fbd408b7c981889",
+    "33529bef6b4bb54dc6c3a2d8385b8e0e36f38ea0": "33529bef6b4bb54dc6c3a2d8385b8e0e36f38ea0",
+    "34b5fac37d477e727e4119a3390b00bd2e0bd4ed": "34b5fac37d477e727e4119a3390b00bd2e0bd4ed",
+    "352e8ef": "352e8ef6f0e10aa0dcc8595e503e8afb7480af28",
+    "3713a9ef2ebde582b9016ae26168dcee805ba68a": "3713a9ef2ebde582b9016ae26168dcee805ba68a",
+    "37465abf86b6fdc844d107cd3a3c65bdf9d2156a": "37465abf86b6fdc844d107cd3a3c65bdf9d2156a",
+    "3b7ef62": "3b7ef62eb77070e8ce607392967e9529fd7a7be7",
+    "3ea3772": "3ea3772ebbb74ec3e7f2609d2465f224fc44da9b",
+    "3edc7903cfb2533772ad6df3e7462d8f0efa1b01": "3edc7903cfb2533772ad6df3e7462d8f0efa1b01",
+    "4091484ecd6d02c3422658e6ffdf0819b2fda2b1": "4091484ecd6d02c3422658e6ffdf0819b2fda2b1",
+    "41fc372cf7e7d38bc27679f5e91ccc0844c7d091": "41fc372cf7e7d38bc27679f5e91ccc0844c7d091",
+    "427ef7e50f871b808aadacd0c377b6093a7e5be3": "427ef7e50f871b808aadacd0c377b6093a7e5be3",
+    "435d12f7bbaeef021299c87bfa6f529feaeaff5f": "435d12f7bbaeef021299c87bfa6f529feaeaff5f",
+    "48b4aba": "48b4aba8e988132119a02a150aed2e0e3a5999b8",
+    "4a73547111e25bfb15e629b3a695346d7eca25f5": "4a73547111e25bfb15e629b3a695346d7eca25f5",
+    "5066a511221730358fa711c90bc1264b92dd771b": "5066a511221730358fa711c90bc1264b92dd771b",
+    "50dd94c1eae841c26018762a6efedeb29eb1fe71": "50dd94c1eae841c26018762a6efedeb29eb1fe71",
+    "532a3646aeb35d0510ba7dab6c9c74e403cfd675": "532a3646aeb35d0510ba7dab6c9c74e403cfd675",
+    "53fc7bb940168b59364888634a296ecf39f4c051": "53fc7bb940168b59364888634a296ecf39f4c051",
+    "54f80588bfee03dfffefbfe21c2f0d15666a0ce6": "54f80588bfee03dfffefbfe21c2f0d15666a0ce6",
+    "550da09d0c6796d5d42b80ac26c0bc23d73f1e85": "550da09d0c6796d5d42b80ac26c0bc23d73f1e85",
+    "5847f3f0766279eacdda23162be82cb19f30da9f": "5847f3f0766279eacdda23162be82cb19f30da9f",
+    "5b0cc085560aa222d86d4fd4c2527e6988bbb145": "5b0cc085560aa222d86d4fd4c2527e6988bbb145",
+    "5de4d00": "5de4d003032458e2c4ddd90c045dd5f809f34091",
+    "5de4d003032458e2c4ddd90c045dd5f809f34091": "5de4d003032458e2c4ddd90c045dd5f809f34091",
+    "5e2b7e36ffbc225a33c7c09c8214bf70133ba2da": "5e2b7e36ffbc225a33c7c09c8214bf70133ba2da",
+    "5e3972e56e593981250b264180043be5b9a7043d": "5e3972e56e593981250b264180043be5b9a7043d",
+    "5f09fb845c1bae952cd81863b4b149bf7389bdc5": "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
+    "60e58e3dac99d310dec0fb113017ec77ee709a86": "60e58e3dac99d310dec0fb113017ec77ee709a86",
+    "61451f3ff2251dd042d19d74e10bad87eb05a46d": "61451f3ff2251dd042d19d74e10bad87eb05a46d",
+    "61d3b94625a3e866258978bb4a634de3a18ae673": "61d3b94625a3e866258978bb4a634de3a18ae673",
+    "662c25898b7f3e82ea898cfd69439a43cb8702bb": "662c25898b7f3e82ea898cfd69439a43cb8702bb",
+    "67bed4644a84": "67bed4644a84fd564a0e752ac4bc06b4f7ba3382",
+    "67bed4644a84fd564a0e752ac4bc06b4f7ba3382": "67bed4644a84fd564a0e752ac4bc06b4f7ba3382",
+    "67fcc54275b09b06232a67bd0cf1530da7e60d84": "67fcc54275b09b06232a67bd0cf1530da7e60d84",
+    "6806f57a9513bb206d14bb67613b4d5bbcc737ab": "6806f57a9513bb206d14bb67613b4d5bbcc737ab",
+    "6837129d4f5ef2ccf442dd9b9d89b9426096155c": "6837129d4f5ef2ccf442dd9b9d89b9426096155c",
+    "6976662b035af5d7d114f8e6e2bc160b91dc826a": "6976662b035af5d7d114f8e6e2bc160b91dc826a",
+    "6a8501233f0ec0f7b4fce74d97fd13facd6e6b0d": "6a8501233f0ec0f7b4fce74d97fd13facd6e6b0d",
+    "6ae4b30525e30e6f7278953a0c5e8772e4727dcb": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+    "6b6a1234b125937f61b007cf4e2189e891d5f656": "6b6a1234b125937f61b007cf4e2189e891d5f656",
+    "6d55756ff14a3460f9fe75802bc9ac12fd91ead5": "6d55756ff14a3460f9fe75802bc9ac12fd91ead5",
+    "7132180a49f03fdafd4ca1b8e43b8d88f54594dd": "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+    "72d20f026ad0623ab1828341f88f290ed06f6006": "72d20f026ad0623ab1828341f88f290ed06f6006",
+    "78a70f15ce5b18dd7c6e0accd4151023ae60833c": "78a70f15ce5b18dd7c6e0accd4151023ae60833c",
+    "799ac22778750c28b9ac39420cb80beb05b049a3": "799ac22778750c28b9ac39420cb80beb05b049a3",
+    "8218ed056555d313c6809fff68bc1351ed63e560": "8218ed056555d313c6809fff68bc1351ed63e560",
+    "8267d6438a9a6adb517af24a37178bbb8e17c8a0": "8267d6438a9a6adb517af24a37178bbb8e17c8a0",
+    "827d46d": "827d46db91b847c1b0b5981327f89b78730196bd",
+    "8692637064389736695f433337c8d09e0bdcdafb": "8692637064389736695f433337c8d09e0bdcdafb",
+    "8828fdc": "8828fdc55a4bd59942087ff67a38042d8b83a72c",
+    "89accb658a8ce5aa49c7e74d0e45904c2eda6b97": "89accb658a8ce5aa49c7e74d0e45904c2eda6b97",
+    "8c479b6c9f01f342920e2f52a19d96a0e1700364": "8c479b6c9f01f342920e2f52a19d96a0e1700364",
+    "8f7625ed31f04ae21ff2bb01aee263baebe1da68": "8f7625ed31f04ae21ff2bb01aee263baebe1da68",
+    "9239382d8287de313f21cf608c1a21af1370dd30": "9239382d8287de313f21cf608c1a21af1370dd30",
+    "948b433": "948b4333fbcadda6462ffc0797b734a285a2cab8",
+    "957369be958691748430db8b6a1c4c5b9c7f5d9e": "957369be958691748430db8b6a1c4c5b9c7f5d9e",
+    "95f3e38aaeae06434edbe6b8d8d832e02640cc61": "95f3e38aaeae06434edbe6b8d8d832e02640cc61",
+    "9901f170f939e8f302ee8f528700fc2bc3a42503": "9901f170f939e8f302ee8f528700fc2bc3a42503",
+    "998db6fd6427586a4ba23bd99bf91a7edf03625e": "998db6fd6427586a4ba23bd99bf91a7edf03625e",
+    "a038f2195ab8bc5d571900fdf27a14e1400adf5b": "a038f2195ab8bc5d571900fdf27a14e1400adf5b",
+    "a1b3a3183b057b4e72a50677a703555a05ba4acf": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
+    "a2e08a3": "a2e08a3bb49b5754f980233c05f62fdf6f9f97a7",
+    "a3a39a1f24c91d6e79131f20eaf9a6ad6628aefb": "a3a39a1f24c91d6e79131f20eaf9a6ad6628aefb",
+    "aae0f9b1a129189734899807d2557a82b157288a": "aae0f9b1a129189734899807d2557a82b157288a",
+    "aafca22df33098f5e5a8d51026f4ba5b5e4385b7": "aafca22df33098f5e5a8d51026f4ba5b5e4385b7",
+    "acbd22a": "acbd22aacf647a3938fdafdd390f0b2e11d42977",
+    "acbd22aacf647a3938fdafdd390f0b2e11d42977": "acbd22aacf647a3938fdafdd390f0b2e11d42977",
+    "af5e66e3abba81f43e91031781b315b42f5dea9a": "af5e66e3abba81f43e91031781b315b42f5dea9a",
+    "af6ef4896c93bef8b06c4201292219325f22f869": "af6ef4896c93bef8b06c4201292219325f22f869",
+    "b265fd12aec5df9d1eb5a5cdaadf05a505920de7": "b265fd12aec5df9d1eb5a5cdaadf05a505920de7",
+    "b34cd788bf90d007457f0b21671dcec4f9c98e89": "b34cd788bf90d007457f0b21671dcec4f9c98e89",
+    "b38c5aceb03220bf96ce18d960f9c2b4ebc0a977": "b38c5aceb03220bf96ce18d960f9c2b4ebc0a977",
+    "b5b376d386d3aee58529007df30fc55d1386c687": "b5b376d386d3aee58529007df30fc55d1386c687",
+    "b63f85e213cffb2529eaf07355cebcee7681c952": "b63f85e213cffb2529eaf07355cebcee7681c952",
+    "bae3914bc8b8b26e836cbc3190cb5df930859dc6": "bae3914bc8b8b26e836cbc3190cb5df930859dc6",
+    "bc7eb65050ca5a704918e739cb9596ca4caf8b30": "bc7eb65050ca5a704918e739cb9596ca4caf8b30",
+    "bd33f5664d16ddaf42040893eec6d9a0614ab464": "bd33f5664d16ddaf42040893eec6d9a0614ab464",
+    "bf706e8a2764a332f5e4fd6aaecb8e7ee1c799d3": "bf706e8a2764a332f5e4fd6aaecb8e7ee1c799d3",
+    "c2e6871d1bc3c0011a43788d3dc2f0089dc76fbc": "c2e6871d1bc3c0011a43788d3dc2f0089dc76fbc",
+    "c61b53ec5f7f8937ab772b6ac5b377093792b1aa": "c61b53ec5f7f8937ab772b6ac5b377093792b1aa",
+    "c6c98728ea3804b981c721a4db205170b2945e28": "c6c98728ea3804b981c721a4db205170b2945e28",
+    "c7726e83f8407b4709cb90f248bfd2f590021a02": "c7726e83f8407b4709cb90f248bfd2f590021a02",
+    "c885cbdc6464e8d253e9dba840a43aa48d746521": "c885cbdc6464e8d253e9dba840a43aa48d746521",
+    "c91621e": "c91621ea79dd190dc3f62955bd8f94c29fd19b3c",
+    "c91621ea79dd190dc3f62955bd8f94c29fd19b3c": "c91621ea79dd190dc3f62955bd8f94c29fd19b3c",
+    "c98439a414861f9f99b1f2c2116346e1556d95fa": "c98439a414861f9f99b1f2c2116346e1556d95fa",
+    "cabf7752c0243341b2e72ddf2c05495df1f04911": "cabf7752c0243341b2e72ddf2c05495df1f04911",
+    "cc0aa3a3b93c6f7285823f290f33e70510ef8951": "cc0aa3a3b93c6f7285823f290f33e70510ef8951",
+    "cc57ef63ba15cb3fe44e25f5ed5351d0e659e8ec": "cc57ef63ba15cb3fe44e25f5ed5351d0e659e8ec",
+    "d5579f51f72b77e070db38bf539a2b93338b9122": "d5579f51f72b77e070db38bf539a2b93338b9122",
+    "d77b2412bbec021828f737eb8cd2a31e7ea5470e": "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+    "d8ee3551aab5bb7a80936880a13cd7d828edbff3": "d8ee3551aab5bb7a80936880a13cd7d828edbff3",
+    "da066db5c25de88632a1407abe6b06a6283915d2": "da066db5c25de88632a1407abe6b06a6283915d2",
+    "dbef120": "dbef12056d558a75cffcf2caf3d2094c2274bbe2",
+    "dfcfcee": "dfcfceede913b8c85d5333a6b1c6948f75653488",
+    "dfcfceede913b8c85d5333a6b1c6948f75653488": "dfcfceede913b8c85d5333a6b1c6948f75653488",
+    "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7": "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7",
+    "e7338e29e46ee80a2d8d337da14091b5fbc01c86": "e7338e29e46ee80a2d8d337da14091b5fbc01c86",
+    "ea5fc1563d05409199e90c84a4b1113613f2eae4": "ea5fc1563d05409199e90c84a4b1113613f2eae4",
+    "f25092ca8f849e1e853e9915f7fd3d43550f52e3": "f25092ca8f849e1e853e9915f7fd3d43550f52e3",
+    "f46488124c9a8fcf7da1ec099bb902138d53fb5f": "f46488124c9a8fcf7da1ec099bb902138d53fb5f",
+    "f550d9063f7773f5b18893decde668fbc001f7ae": "f550d9063f7773f5b18893decde668fbc001f7ae",
+    "f633130b8968079654405461fc6df379267e3917": "f633130b8968079654405461fc6df379267e3917",
+    "f7ccfcb936f4ed06dea26b84b44c01805d19dff0": "f7ccfcb936f4ed06dea26b84b44c01805d19dff0",
+    "fbb6612414bf8dcb8d201d8ce8a4bf001ff95833": "fbb6612414bf8dcb8d201d8ce8a4bf001ff95833"
+  },
+  "inventory": [
+    {
+      "id": "ALN-00-B",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": null,
+      "commit_refs": [
+        "07f11e5",
+        "21899e6ac5019599881727bcbe24662e57325368",
+        "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+        "532a3646aeb35d0510ba7dab6c9c74e403cfd675",
+        "d77b2412bbec021828f737eb8cd2a31e7ea5470e",
+        "f550d9063f7773f5b18893decde668fbc001f7ae"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-00-B-新候选与真机回归.md",
+        "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md",
+        "docs/协作开发/交付/ALN-08-R-运行时路由拒绝.md",
+        "docs/协作开发/任务卡/00-基线发布.md",
+        "docs/协作开发/验收/2026-10-25-ALN-00-B发布候选独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-04-R",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": "72d20f026ad0623ab1828341f88f290ed06f6006",
+      "commit_refs": [
+        "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
+        "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+        "72d20f026ad0623ab1828341f88f290ed06f6006"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-04-R-运行租约与中断接管.md",
+        "docs/协作开发/任务卡/04-运行恢复.md",
+        "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
+      ]
+    },
+    {
+      "id": "ALN-06-A",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": null,
+      "commit_refs": [
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "3b7ef62",
+        "4a73547111e25bfb15e629b3a695346d7eca25f5",
+        "8692637064389736695f433337c8d09e0bdcdafb",
+        "d77b2412bbec021828f737eb8cd2a31e7ea5470e"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md",
+        "docs/协作开发/交付/ALN-06-A-不可变资产基础.md",
+        "docs/协作开发/任务卡/06-资产基础.md",
+        "docs/协作开发/验收/2026-10-22-Claude认领验收.md",
+        "docs/协作开发/验收/2026-10-22-验收问题与复现.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md"
+      ]
+    },
+    {
+      "id": "ALN-08-M",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": null,
+      "commit_refs": [
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "3b7ef62",
+        "4a73547111e25bfb15e629b3a695346d7eca25f5",
+        "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+        "8692637064389736695f433337c8d09e0bdcdafb",
+        "d77b2412bbec021828f737eb8cd2a31e7ea5470e"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md",
+        "docs/协作开发/交付/ALN-08-M-路由与计量.md",
+        "docs/协作开发/任务卡/08-模型与计量.md",
+        "docs/协作开发/验收/2026-10-22-Claude认领验收.md",
+        "docs/协作开发/验收/2026-10-22-验收问题与复现.md",
+        "docs/协作开发/验收/2026-10-23-九卡修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md"
+      ]
+    },
+    {
+      "id": "ALN-04-UI",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "72d20f026ad0623ab1828341f88f290ed06f6006",
+      "commit_refs": [
+        "07466fb0beea638ef03952641c02d65a6df828cb",
+        "23d395076e54aa0721f9fdb2fec940ca21b5ebe1",
+        "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+        "72d20f026ad0623ab1828341f88f290ed06f6006"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-04-UI-管理员审批页面.md",
+        "docs/协作开发/任务卡/04-Android审批.md",
+        "docs/协作开发/验收/2026-10-22-Codex交付验收.md",
+        "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md"
+      ]
+    },
+    {
+      "id": "ALN-10-Q",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": "3713a9ef2ebde582b9016ae26168dcee805ba68a",
+      "commit_refs": [
+        "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+        "3713a9ef2ebde582b9016ae26168dcee805ba68a",
+        "54f80588bfee03dfffefbfe21c2f0d15666a0ce6"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-10-Q-回归资产与独立门禁补全.md",
+        "docs/协作开发/任务卡/10-回归门禁补全.md",
+        "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
+      ]
+    },
+    {
+      "id": "ALN-10-R",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": "bd33f5664d16ddaf42040893eec6d9a0614ab464",
+      "commit_refs": [
+        "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+        "3713a9ef2ebde582b9016ae26168dcee805ba68a",
+        "bd33f5664d16ddaf42040893eec6d9a0614ab464"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-10-R-发布证据衔接.md",
+        "docs/协作开发/任务卡/10-发布证据衔接.md",
+        "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
+      ]
+    },
+    {
+      "id": "ALN-00-V",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": null,
+      "commit_refs": [
+        "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+        "bd33f5664d16ddaf42040893eec6d9a0614ab464",
+        "d77b2412bbec021828f737eb8cd2a31e7ea5470e"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-06-08-X-交叉审阅与基线准备.md",
+        "docs/协作开发/任务卡/00-交叉审阅与基线核验.md",
+        "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
+      ]
+    },
+    {
+      "id": "ALN-08-R",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+      "commit_refs": [
+        "24cd5247ea7e41513f5bfc33c95c3c46ab2fc303",
+        "61d3b94625a3e866258978bb4a634de3a18ae673"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-08-R-运行时路由拒绝.md",
+        "docs/协作开发/任务卡/08-运行时路由拒绝.md",
+        "docs/协作开发/验收/2026-10-22-Codex交付验收.md"
+      ]
+    },
+    {
+      "id": "ALN-10-H",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "opencode-evo",
+      "delivered_commit": "8218ed056555d313c6809fff68bc1351ed63e560",
+      "commit_refs": [
+        "8218ed056555d313c6809fff68bc1351ed63e560",
+        "b34cd788bf90d007457f0b21671dcec4f9c98e89"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-10-H-验收证据加固.md",
+        "docs/协作开发/任务卡/10-验收证据加固.md",
+        "docs/协作开发/验收/2026-10-23-ALN-10-H独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-09-F",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "opencode-evo",
+      "delivered_commit": "5b0cc085560aa222d86d4fd4c2527e6988bbb145",
+      "commit_refs": [
+        "21e6d2fb0e3c780f22d040a648c64d4348498022",
+        "5b0cc085560aa222d86d4fd4c2527e6988bbb145"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-09-F-编排恢复修复.md",
+        "docs/协作开发/任务卡/09-编排恢复修复.md",
+        "docs/协作开发/验收/2026-10-23-ALN-09-F独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-03-S",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+      "commit_refs": [
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "4a73547111e25bfb15e629b3a695346d7eca25f5",
+        "53fc7bb940168b59364888634a296ecf39f4c051",
+        "7132180a49f03fdafd4ca1b8e43b8d88f54594dd"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-03-S-发布正文签名与兼容声明.md",
+        "docs/协作开发/任务卡/03-发布签名.md",
+        "docs/协作开发/验收/2026-10-23-九卡修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md"
+      ]
+    },
+    {
+      "id": "ALN-05-M",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "53fc7bb940168b59364888634a296ecf39f4c051",
+      "commit_refs": [
+        "05a7cf43f599a25c6add290063e19f16ae942c49",
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "4a73547111e25bfb15e629b3a695346d7eca25f5",
+        "53fc7bb940168b59364888634a296ecf39f4c051",
+        "5847f3f0766279eacdda23162be82cb19f30da9f"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-05-I-记忆身份与清单运行时接线.md",
+        "docs/协作开发/交付/ALN-05-M-多维记忆与上下文清单.md",
+        "docs/协作开发/任务卡/05-记忆与上下文.md",
+        "docs/协作开发/验收/2026-10-23-九卡修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md"
+      ]
+    },
+    {
+      "id": "ALN-01-A",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+      "commit_refs": [
+        "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+        "a3a39a1f24c91d6e79131f20eaf9a6ad6628aefb"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-01-A-统一任务范围授权.md",
+        "docs/协作开发/任务卡/01-任务范围授权.md",
+        "docs/协作开发/验收/2026-10-24-ALN-01-A与02-A独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-02-A",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+      "commit_refs": [
+        "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+        "a3a39a1f24c91d6e79131f20eaf9a6ad6628aefb"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-02-A-回执对账与验证补偿.md",
+        "docs/协作开发/任务卡/02-回执对账与验证补偿.md",
+        "docs/协作开发/验收/2026-10-24-ALN-01-A与02-A独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-11-A",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "26aad1b56512364d0cdb3b616eeec6a781703532",
+      "commit_refs": [
+        "03600e1982455b1d6c27992cb03023b6d40bccf2",
+        "10ec664c2804b4485b8c60ac8f053c1b6b10e8ae",
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+        "26aad1b56512364d0cdb3b616eeec6a781703532",
+        "4a73547111e25bfb15e629b3a695346d7eca25f5",
+        "aae0f9b1a129189734899807d2557a82b157288a"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-11-A-端侧制品下载验签装载.md",
+        "docs/协作开发/任务卡/11-真实制品装载.md",
+        "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md"
+      ]
+    },
+    {
+      "id": "ALN-16-A",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "bc7eb65050ca5a704918e739cb9596ca4caf8b30",
+      "commit_refs": [
+        "03600e1982455b1d6c27992cb03023b6d40bccf2",
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "22c50cabd3c432ca5f891efb633652a669fcb4a6",
+        "4a73547111e25bfb15e629b3a695346d7eca25f5",
+        "aae0f9b1a129189734899807d2557a82b157288a",
+        "bc7eb65050ca5a704918e739cb9596ca4caf8b30"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-16-A-观测证据隐私与凭证.md",
+        "docs/协作开发/任务卡/16-观测隐私凭证.md",
+        "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md"
+      ]
+    },
+    {
+      "id": "ALN-11-R",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+      "commit_refs": [
+        "03600e1982455b1d6c27992cb03023b6d40bccf2",
+        "aae0f9b1a129189734899807d2557a82b157288a"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/11-R-制品更新验收修复.md",
+        "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+        "docs/协作开发/验收/2026-10-23-ALN-11-R-ALN-16-R独立验收.md"
+      ]
+    },
+    {
+      "id": "ALN-16-R",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": "aae0f9b1a129189734899807d2557a82b157288a",
+      "commit_refs": [
+        "03600e1982455b1d6c27992cb03023b6d40bccf2",
+        "aae0f9b1a129189734899807d2557a82b157288a"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/16-R-观测凭证验收修复.md",
+        "docs/协作开发/验收/2026-10-22-ALN11-16独立验收.md",
+        "docs/协作开发/验收/2026-10-23-ALN-11-R-ALN-16-R独立验收.md"
+      ]
+    },
+    {
+      "id": "ALN-07-P",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "6d55756ff14a3460f9fe75802bc9ac12fd91ead5",
+      "commit_refs": [
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "4a73547111e25bfb15e629b3a695346d7eca25f5",
+        "50dd94c1eae841c26018762a6efedeb29eb1fe71",
+        "6d55756ff14a3460f9fe75802bc9ac12fd91ead5",
+        "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+        "aafca22df33098f5e5a8d51026f4ba5b5e4385b7",
+        "af6ef4896c93bef8b06c4201292219325f22f869"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-07-P-计划修订与证据保持.md",
+        "docs/协作开发/任务卡/07-计划修订与证据保持.md",
+        "docs/协作开发/验收/2026-10-23-ALN-07修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+        "docs/协作开发/验收/2026-10-24-ALN-07-P运行时修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-24-ALN-07-P运行时补审.md"
+      ]
+    },
+    {
+      "id": "ALN-07-W",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": null,
+      "commit_refs": [
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "34b5fac37d477e727e4119a3390b00bd2e0bd4ed",
+        "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+        "a2e08a3"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-07-W-工作流匹配与执行模式选择.md",
+        "docs/协作开发/任务卡/07-W工作流匹配与执行模式选择.md",
+        "docs/协作开发/验收/2026-10-23-ALN-07修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+        "docs/协作开发/验收/2026-10-23-审核修复后续加固.md"
+      ]
+    },
+    {
+      "id": "ALN-07-T",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "dfcfcee",
+      "commit_refs": [
+        "dfcfcee",
+        "dfcfceede913b8c85d5333a6b1c6948f75653488",
+        "f633130b8968079654405461fc6df379267e3917"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-07-T-轨迹编译.md",
+        "docs/协作开发/任务卡/07-T轨迹编译.md",
+        "docs/协作开发/验收/2026-10-24-三卡修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md"
+      ]
+    },
+    {
+      "id": "ALN-07-R",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "dfcfcee",
+      "commit_refs": [
+        "dfcfcee",
+        "dfcfceede913b8c85d5333a6b1c6948f75653488",
+        "f633130b8968079654405461fc6df379267e3917"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-07-R-可执行恢复策略.md",
+        "docs/协作开发/任务卡/07-R可执行恢复策略.md",
+        "docs/协作开发/验收/2026-10-24-三卡修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md"
+      ]
+    },
+    {
+      "id": "ALN-16-X",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "dfcfcee",
+      "commit_refs": [
+        "dfcfcee",
+        "dfcfceede913b8c85d5333a6b1c6948f75653488",
+        "f633130b8968079654405461fc6df379267e3917"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-16-X-导出下载与删除执行.md",
+        "docs/协作开发/任务卡/16-X导出下载与删除执行.md",
+        "docs/协作开发/验收/2026-10-24-三卡修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-24-新增三卡独立审核.md"
+      ]
+    },
+    {
+      "id": "ALN-07-E",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "c91621e",
+      "commit_refs": [
+        "26aaec72280885815eebb1c4db1ea7098abdcf93",
+        "c91621e",
+        "c91621ea79dd190dc3f62955bd8f94c29fd19b3c"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-07-E-副作用账本对账.md",
+        "docs/协作开发/任务卡/07-E副作用账本对账.md",
+        "docs/协作开发/验收/2026-10-24-ALN-07-E修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-24-ALN-07-E独立审核.md"
+      ]
+    },
+    {
+      "id": "ALN-07-B",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "827d46d",
+      "commit_refs": [
+        "07466fb0beea638ef03952641c02d65a6df828cb",
+        "827d46d",
+        "cc0aa3a3b93c6f7285823f290f33e70510ef8951",
+        "ea5fc1563d05409199e90c84a4b1113613f2eae4"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-07-B-运行时动作绑定.md",
+        "docs/协作开发/任务卡/07-B运行时动作绑定.md",
+        "docs/协作开发/验收/2026-10-24-ALN-07-B独立审核.md",
+        "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md"
+      ]
+    },
+    {
+      "id": "ALN-13-A",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": "c885cbdc6464e8d253e9dba840a43aa48d746521",
+      "commit_refs": [
+        "1ad71bc9d3b2d920cd8028d59765194941fd50c7",
+        "c885cbdc6464e8d253e9dba840a43aa48d746521"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-13-A-Goal十态与自主授权.md",
+        "docs/协作开发/任务卡/13-Goal与自主授权.md",
+        "docs/协作开发/验收/2026-10-24-ALN-13-A独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-12-A",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": null,
+      "commit_refs": [
+        "07466fb0beea638ef03952641c02d65a6df828cb",
+        "c61b53ec5f7f8937ab772b6ac5b377093792b1aa"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-12-A-自然语言任务设备协议与故障矩阵.md",
+        "docs/协作开发/任务卡/12-自然语言手机任务与离线可靠性.md",
+        "docs/协作开发/验收/2026-10-24-ALN-12-A独立复核.md",
+        "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md"
+      ]
+    },
+    {
+      "id": "ALN-14-A",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": "6837129d4f5ef2ccf442dd9b9d89b9426096155c",
+      "commit_refs": [
+        "6837129d4f5ef2ccf442dd9b9d89b9426096155c",
+        "948b433",
+        "cabf7752c0243341b2e72ddf2c05495df1f04911"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-14-A-机会与持续目标治理.md",
+        "docs/协作开发/任务卡/14-机会排序与无进展停止.md",
+        "docs/协作开发/验收/2026-10-24-ALN-14-A独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-15-A",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": "8c479b6c9f01f342920e2f52a19d96a0e1700364",
+      "commit_refs": [
+        "6976662b035af5d7d114f8e6e2bc160b91dc826a",
+        "8c479b6c9f01f342920e2f52a19d96a0e1700364",
+        "cabf7752c0243341b2e72ddf2c05495df1f04911"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-15-A-持久预算预留与对账.md",
+        "docs/协作开发/任务卡/15-APRO资源调度与预算对账.md",
+        "docs/协作开发/验收/2026-10-23-ALN-15-A独立验收.md"
+      ]
+    },
+    {
+      "id": "ALN-17-A",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "claude-main",
+      "delivered_commit": null,
+      "commit_refs": [
+        "c7726e83f8407b4709cb90f248bfd2f590021a02"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-17-A-备份恢复闭环与迁移回退.md",
+        "docs/协作开发/任务卡/17-宿主部署与灾难恢复.md",
+        "docs/协作开发/验收/2026-10-24-ALN-17-A独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-20-A",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": null,
+      "commit_refs": [
+        "07466fb0beea638ef03952641c02d65a6df828cb",
+        "427ef7e50f871b808aadacd0c377b6093a7e5be3"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-20-A-Runtime适配协议与固定版本PoC设计.md",
+        "docs/协作开发/任务卡/20-Runtime适配与Harness PoC.md",
+        "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md"
+      ]
+    },
+    {
+      "id": "ALN-18-A",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "acbd22aacf647a3938fdafdd390f0b2e11d42977",
+      "commit_refs": [
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "4a73547111e25bfb15e629b3a695346d7eca25f5",
+        "7132180a49f03fdafd4ca1b8e43b8d88f54594dd",
+        "acbd22a",
+        "acbd22aacf647a3938fdafdd390f0b2e11d42977"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-18-A-编程工具包.md",
+        "docs/协作开发/任务卡/18-真实编程能力包.md",
+        "docs/协作开发/验收/2026-10-23-九卡修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md"
+      ]
+    },
+    {
+      "id": "ALN-05-I",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": "05a7cf43f599a25c6add290063e19f16ae942c49",
+      "commit_refs": [
+        "04de43f1c028024ce4a2bd3e82cc23edf34c36b9",
+        "05a7cf43f599a25c6add290063e19f16ae942c49"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-05-I-记忆身份与清单运行时接线.md",
+        "docs/协作开发/任务卡/05-记忆身份运行时接线.md",
+        "docs/协作开发/验收/2026-10-24-ALN-05-I独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-11-W",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": null,
+      "commit_refs": [
+        "07466fb0beea638ef03952641c02d65a6df828cb",
+        "352e8ef",
+        "f46488124c9a8fcf7da1ec099bb902138d53fb5f"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-11-W-活动workflow执行消费与健康探针.md",
+        "docs/协作开发/任务卡/11-活动工作流执行与健康探针.md",
+        "docs/协作开发/验收/2026-10-24-ALN-11-W独立复核.md",
+        "docs/协作开发/验收/2026-10-24-全部待审核统一验收.md"
+      ]
+    },
+    {
+      "id": "ALN-18-B",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "48b4aba",
+      "commit_refs": [
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "48b4aba",
+        "4a73547111e25bfb15e629b3a695346d7eca25f5",
+        "7132180a49f03fdafd4ca1b8e43b8d88f54594dd"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-18-B-引用与并发改写.md",
+        "docs/协作开发/任务卡/18-真实编程能力包-B.md",
+        "docs/协作开发/验收/2026-10-23-九卡修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md"
+      ]
+    },
+    {
+      "id": "ALN-15-R",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "claude-main",
+      "delivered_commit": "550da09d0c6796d5d42b80ac26c0bc23d73f1e85",
+      "commit_refs": [
+        "550da09d0c6796d5d42b80ac26c0bc23d73f1e85",
+        "6976662b035af5d7d114f8e6e2bc160b91dc826a",
+        "cc57ef63ba15cb3fe44e25f5ed5351d0e659e8ec"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-15-R-运行时预算接线.md",
+        "docs/协作开发/任务卡/15-预算预留运行时接线.md",
+        "docs/协作开发/验收/2026-10-24-ALN-15-R独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-18-C",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "2ebd9c0",
+      "commit_refs": [
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "2ebd9c0",
+        "34b5fac37d477e727e4119a3390b00bd2e0bd4ed",
+        "4a73547111e25bfb15e629b3a695346d7eca25f5"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-18-C-原子多文件补丁.md",
+        "docs/协作开发/任务卡/18-真实编程能力包-C.md",
+        "docs/协作开发/验收/2026-10-23-九卡修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+        "docs/协作开发/验收/2026-10-23-审核修复后续加固.md"
+      ]
+    },
+    {
+      "id": "ALN-18-D",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "3ea3772",
+      "commit_refs": [
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "34b5fac37d477e727e4119a3390b00bd2e0bd4ed",
+        "3ea3772",
+        "4a73547111e25bfb15e629b3a695346d7eca25f5"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-18-D-事务日志与中断恢复.md",
+        "docs/协作开发/任务卡/18-真实编程能力包-D.md",
+        "docs/协作开发/验收/2026-10-23-九卡修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+        "docs/协作开发/验收/2026-10-23-审核修复后续加固.md"
+      ]
+    },
+    {
+      "id": "ALN-18-E",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "0ba45fc",
+      "commit_refs": [
+        "0ba45fc",
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "4a73547111e25bfb15e629b3a695346d7eca25f5",
+        "7132180a49f03fdafd4ca1b8e43b8d88f54594dd"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-18-E-统一diff输入.md",
+        "docs/协作开发/任务卡/18-真实编程能力包-E.md",
+        "docs/协作开发/验收/2026-10-23-九卡修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md"
+      ]
+    },
+    {
+      "id": "ALN-18-F",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": "dbef120",
+      "commit_refs": [
+        "1ff11c1a0ff6fcee81f2312ec3fcf95ffcd5f11c",
+        "34b5fac37d477e727e4119a3390b00bd2e0bd4ed",
+        "4a73547111e25bfb15e629b3a695346d7eca25f5",
+        "dbef120"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-18-F-新增删除文件与hunk容错.md",
+        "docs/协作开发/任务卡/18-真实编程能力包-F.md",
+        "docs/协作开发/验收/2026-10-23-九卡修复第三方复核.md",
+        "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
+        "docs/协作开发/验收/2026-10-23-审核修复后续加固.md"
+      ]
+    },
+    {
+      "id": "ALN-29-A",
+      "status": "accepted",
+      "owner": "codex-runtime",
+      "reviewer": "zcode-main",
+      "delivered_commit": "5066a511221730358fa711c90bc1264b92dd771b",
+      "commit_refs": [
+        "5066a511221730358fa711c90bc1264b92dd771b",
+        "5e2b7e36ffbc225a33c7c09c8214bf70133ba2da",
+        "6b6a1234b125937f61b007cf4e2189e891d5f656",
+        "9239382d8287de313f21cf608c1a21af1370dd30"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-29-A-首发验收骨架与断言.md",
+        "docs/协作开发/任务卡/29-A-首发17用例的验收骨架与可执行断言.md",
+        "docs/协作开发/验收/2026-10-25-ALN-29-A独立复核.md",
+        "docs/协作开发/验收/2026-10-25-已开发切片交叉审查与修复.md"
+      ]
+    },
+    {
+      "id": "ALN-29-B",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "zcode-main",
+      "delivered_commit": null,
+      "commit_refs": [
+        "029a9987eeffff1fc502987f3d6a6bdfa8722ec4",
+        "6b6a1234b125937f61b007cf4e2189e891d5f656",
+        "9239382d8287de313f21cf608c1a21af1370dd30"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/29-B-首发冻结范围与八道发布门禁.md",
+        "docs/协作开发/验收/2026-10-25-ALN-29-B独立复核.md",
+        "docs/协作开发/验收/2026-10-25-已开发切片交叉审查与修复.md"
+      ]
+    },
+    {
+      "id": "ALN-23-A",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "5e3972e56e593981250b264180043be5b9a7043d",
+        "6b6a1234b125937f61b007cf4e2189e891d5f656",
+        "9239382d8287de313f21cf608c1a21af1370dd30"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/23-A-统一任务契约对外模型.md",
+        "docs/协作开发/验收/2026-10-25-已开发切片交叉审查与修复.md"
+      ]
+    },
+    {
+      "id": "ALN-23-B",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "5de4d00",
+        "5de4d003032458e2c4ddd90c045dd5f809f34091",
+        "6b6a1234b125937f61b007cf4e2189e891d5f656",
+        "9239382d8287de313f21cf608c1a21af1370dd30"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/23-B-聊天与工作模式及上下文转换.md",
+        "docs/协作开发/验收/2026-10-25-已开发切片交叉审查与修复.md"
+      ]
+    },
+    {
+      "id": "ALN-23-D",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "5de4d00",
+        "5de4d003032458e2c4ddd90c045dd5f809f34091",
+        "6b6a1234b125937f61b007cf4e2189e891d5f656",
+        "9239382d8287de313f21cf608c1a21af1370dd30"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/23-D-用户可见状态与权威任务状态映射.md",
+        "docs/协作开发/验收/2026-10-25-已开发切片交叉审查与修复.md"
+      ]
+    },
+    {
+      "id": "ALN-23-C",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "5de4d003032458e2c4ddd90c045dd5f809f34091"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/23-C-任务工作区与真实计划进度.md"
+      ]
+    },
+    {
+      "id": "ALN-24-A",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "957369be958691748430db8b6a1c4c5b9c7f5d9e"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/24-A-真实成果交付、验收与局部修改.md",
+        "docs/协作开发/验收/2026-10-25-第二批交叉审查与恢复边界修复.md"
+      ]
+    },
+    {
+      "id": "ALN-23-E",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "9901f170f939e8f302ee8f528700fc2bc3a42503"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/23-E-用户控制、目标变更与安全恢复.md",
+        "docs/协作开发/验收/2026-10-25-第二批交叉审查与恢复边界修复.md"
+      ]
+    },
+    {
+      "id": "ALN-23-F",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "957369be958691748430db8b6a1c4c5b9c7f5d9e"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-23-F-语音输入与文字任务共用入口.md",
+        "docs/协作开发/任务卡/23-F-语音输入与文字任务共用入口.md"
+      ]
+    },
+    {
+      "id": "ALN-24-B",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": null,
+      "commit_refs": [
+        "5de4d003032458e2c4ddd90c045dd5f809f34091",
+        "6b6a1234b125937f61b007cf4e2189e891d5f656",
+        "9239382d8287de313f21cf608c1a21af1370dd30"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/24-B-能力状态、权限与渐进授权.md",
+        "docs/协作开发/验收/2026-10-25-已开发切片交叉审查与修复.md"
+      ]
+    },
+    {
+      "id": "ALN-24-C",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "33529bef6b4bb54dc6c3a2d8385b8e0e36f38ea0"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/24-C-任务历史、项目空间与跨会话延续.md"
+      ]
+    },
+    {
+      "id": "ALN-24-D",
+      "status": "accepted",
+      "owner": "dsh-lead",
+      "reviewer": "zcode-main",
+      "delivered_commit": "799ac22778750c28b9ac39420cb80beb05b049a3",
+      "commit_refs": [
+        "799ac22778750c28b9ac39420cb80beb05b049a3",
+        "8267d6438a9a6adb517af24a37178bbb8e17c8a0",
+        "c6c98728ea3804b981c721a4db205170b2945e28",
+        "c98439a414861f9f99b1f2c2116346e1556d95fa"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-24-D-用户记忆、隐私与纠正删除路径.md",
+        "docs/协作开发/任务卡/24-D-用户记忆、隐私与纠正删除路径.md",
+        "docs/协作开发/验收/2026-10-25-ALN-24-D独立复核.md",
+        "docs/协作开发/验收/2026-10-26-记忆范围策略主链复核.md"
+      ]
+    },
+    {
+      "id": "ALN-24-E",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "9239382d8287de313f21cf608c1a21af1370dd30"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/24-E-成本与资源的用户可见控制.md",
+        "docs/协作开发/验收/2026-10-25-第二批交叉审查与恢复边界修复.md"
+      ]
+    },
+    {
+      "id": "ALN-25-A",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "0cf66722d00ab59f1405c6bca7f322c1bf893a9c"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-25-A-有来源的主动帮助与机会建议.md",
+        "docs/协作开发/任务卡/25-A-有来源的主动帮助与机会建议.md"
+      ]
+    },
+    {
+      "id": "ALN-25-B",
+      "status": "review",
+      "owner": "zcode-next",
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [
+        "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
+        "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+        "a1b3a3183b057b4e72a50677a703555a05ba4acf"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/25-B-主动强度、停止与资源非干扰.md",
+        "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
+        "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md"
+      ]
+    },
+    {
+      "id": "ALN-26-A",
+      "status": "review",
+      "owner": "dsh-lead",
+      "reviewer": "zcode-next",
+      "delivered_commit": "662c25898b7f3e82ea898cfd69439a43cb8702bb",
+      "commit_refs": [
+        "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
+        "662c25898b7f3e82ea898cfd69439a43cb8702bb",
+        "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+        "95f3e38aaeae06434edbe6b8d8d832e02640cc61"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-26-A-能力缺口证据与主动规划候选.md",
+        "docs/协作开发/任务卡/26-A-能力缺口证据与主动规划候选.md",
+        "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
+        "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md"
+      ]
+    },
+    {
+      "id": "ALN-26-B",
+      "status": "review",
+      "owner": "dsh-lead",
+      "reviewer": null,
+      "delivered_commit": "37465abf86b6fdc844d107cd3a3c65bdf9d2156a",
+      "commit_refs": [
+        "37465abf86b6fdc844d107cd3a3c65bdf9d2156a",
+        "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
+        "6a8501233f0ec0f7b4fce74d97fd13facd6e6b0d",
+        "6ae4b30525e30e6f7278953a0c5e8772e4727dcb"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-26-B-动态团队与跨专家协作契约.md",
+        "docs/协作开发/任务卡/26-B-动态团队与跨专家协作契约.md",
+        "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
+        "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md"
+      ]
+    },
+    {
+      "id": "ALN-27-A",
+      "status": "accepted",
+      "owner": "zcode-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "af5e66e3abba81f43e91031781b315b42f5dea9a"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-27-A-故障经验沉淀与跨专家迁移验证.md",
+        "docs/协作开发/任务卡/27-A-故障经验沉淀与跨专家迁移验证.md"
+      ]
+    },
+    {
+      "id": "ALN-27-B",
+      "status": "review",
+      "owner": "zcode-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "2782cd25ef690d5286f76345f4eb838d8c6b19ad",
+        "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
+        "6ae4b30525e30e6f7278953a0c5e8772e4727dcb"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-27-B-可组合能力与动态工作流资产.md",
+        "docs/协作开发/任务卡/27-B-可组合能力与动态工作流资产.md",
+        "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
+        "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md"
+      ]
+    },
+    {
+      "id": "ALN-28-A",
+      "status": "accepted",
+      "owner": "dsh-lead",
+      "reviewer": "zcode-main",
+      "delivered_commit": "fbb6612414bf8dcb8d201d8ce8a4bf001ff95833",
+      "commit_refs": [
+        "1f2c0b0162e2681c338eeae033a47ab50212d44a",
+        "a1b3a3183b057b4e72a50677a703555a05ba4acf",
+        "fbb6612414bf8dcb8d201d8ce8a4bf001ff95833"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-28-A-外部事实核验与可信交付.md",
+        "docs/协作开发/任务卡/28-A-外部事实核验与可信交付.md",
+        "docs/协作开发/验收/2026-10-25-ALN-28-A固定提交复验.md",
+        "docs/协作开发/验收/2026-10-25-ALN-28-A独立复核.md",
+        "docs/协作开发/验收/2026-10-25-第三批交叉审查与真实性修复.md"
+      ]
+    },
+    {
+      "id": "ALN-29-C",
+      "status": "review",
+      "owner": "zcode-main",
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [
+        "147a4898cb2231a9585897a3bff74ce41f6c5053",
+        "3331898fcddb78b4b271db152fbd408b7c981889",
+        "5de4d00",
+        "5de4d003032458e2c4ddd90c045dd5f809f34091",
+        "67fcc54275b09b06232a67bd0cf1530da7e60d84",
+        "b5b376d386d3aee58529007df30fc55d1386c687"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/29-C-问题反馈与运行证据关联.md",
+        "docs/协作开发/验收/2026-10-25-复核问题修复记录-29C-12V.md",
+        "docs/协作开发/验收/2026-10-25-第五批补绑凭据与重构复核.md",
+        "docs/协作开发/验收/2026-10-26-反馈私钥与模块身份复核.md"
+      ]
+    },
+    {
+      "id": "ALN-29-D",
+      "status": "accepted",
+      "owner": "dsh-lead",
+      "reviewer": "zcode-main",
+      "delivered_commit": "b265fd12aec5df9d1eb5a5cdaadf05a505920de7",
+      "commit_refs": [
+        "b265fd12aec5df9d1eb5a5cdaadf05a505920de7",
+        "f25092ca8f849e1e853e9915f7fd3d43550f52e3"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-29-D-改进效果与用户收益说明.md",
+        "docs/协作开发/任务卡/29-D-改进效果与用户收益说明.md",
+        "docs/协作开发/验收/2026-10-25-ALN-29-D独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-29-E",
+      "status": "accepted",
+      "owner": "dsh-lead",
+      "reviewer": "zcode-main",
+      "delivered_commit": "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7",
+      "commit_refs": [
+        "8828fdc",
+        "bae3914bc8b8b26e836cbc3190cb5df930859dc6",
+        "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-29-E-稳定版本、更新控制与回滚体验.md",
+        "docs/协作开发/任务卡/29-E-稳定版本、更新控制与回滚体验.md",
+        "docs/协作开发/验收/2026-10-25-ALN-29-E独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-02-P",
+      "status": "accepted",
+      "owner": "dsh-lead",
+      "reviewer": "zcode-main",
+      "delivered_commit": "b63f85e213cffb2529eaf07355cebcee7681c952",
+      "commit_refs": [
+        "a038f2195ab8bc5d571900fdf27a14e1400adf5b",
+        "b63f85e213cffb2529eaf07355cebcee7681c952"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-02-P-真实供应商副作用与进程故障恢复.md",
+        "docs/协作开发/任务卡/02-P-真实供应商副作用与进程故障恢复.md",
+        "docs/协作开发/验收/2026-10-25-ALN-02-P独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-03-P",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "zcode-main",
+      "delivered_commit": null,
+      "commit_refs": [
+        "a038f2195ab8bc5d571900fdf27a14e1400adf5b"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/03-P-生产信任根与元数据制品联验.md",
+        "docs/协作开发/验收/2026-10-25-ALN-03-P独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-04-V",
+      "status": "accepted",
+      "owner": "zcode-next",
+      "reviewer": "dsh-lead",
+      "delivered_commit": null,
+      "commit_refs": [
+        "a038f2195ab8bc5d571900fdf27a14e1400adf5b"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/04-V-组合状态与生产身份恢复矩阵.md",
+        "docs/协作开发/验收/2026-10-25-ALN-04-V独立复核.md",
+        "docs/协作开发/验收/2026-10-25-ALN-04-V独立复验.md",
+        "docs/协作开发/验收/2026-10-25-第二批交叉审查与恢复边界修复.md"
+      ]
+    },
+    {
+      "id": "ALN-06-R",
+      "status": "accepted",
+      "owner": "zcode-next",
+      "reviewer": "zcode-main",
+      "delivered_commit": null,
+      "commit_refs": [
+        "6b6a1234b125937f61b007cf4e2189e891d5f656",
+        "9239382d8287de313f21cf608c1a21af1370dd30",
+        "bf706e8a2764a332f5e4fd6aaecb8e7ee1c799d3"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/06-R-精确能力版本的运行时消费.md",
+        "docs/协作开发/验收/2026-10-25-ALN-06-R独立复核.md",
+        "docs/协作开发/验收/2026-10-25-已开发切片交叉审查与修复.md"
+      ]
+    },
+    {
+      "id": "ALN-07-C",
+      "status": "review",
+      "owner": "zcode-next",
+      "reviewer": "zcode-main",
+      "delivered_commit": null,
+      "commit_refs": [
+        "077d2939236dff71821ab69157ea50bf4d1dbbeb",
+        "3331898fcddb78b4b271db152fbd408b7c981889",
+        "d8ee3551aab5bb7a80936880a13cd7d828edbff3"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/07-C-原子绑定、精确步骤授权与对账消费.md",
+        "docs/协作开发/验收/2026-10-25-ALN-07-C独立复核.md",
+        "docs/协作开发/验收/2026-10-25-第二批交叉审查与恢复边界修复.md",
+        "docs/协作开发/验收/2026-10-25-第五批补绑凭据与重构复核.md",
+        "docs/协作开发/验收/2026-10-26-07C与12E主链接续复核.md"
+      ]
+    },
+    {
+      "id": "ALN-08-W",
+      "status": "accepted",
+      "owner": "dsh-lead",
+      "reviewer": "zcode-main",
+      "delivered_commit": "9901f170f939e8f302ee8f528700fc2bc3a42503",
+      "commit_refs": [
+        "9239382d8287de313f21cf608c1a21af1370dd30",
+        "9901f170f939e8f302ee8f528700fc2bc3a42503"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-08-W-工作流与执行模式的主链路由.md",
+        "docs/协作开发/任务卡/08-W-工作流与执行模式的主链路由.md",
+        "docs/协作开发/验收/2026-10-25-ALN-08-W独立复核.md",
+        "docs/协作开发/验收/2026-10-25-第二批交叉审查与恢复边界修复.md"
+      ]
+    },
+    {
+      "id": "ALN-08-P",
+      "status": "accepted",
+      "owner": "dsh-lead",
+      "reviewer": "zcode-main",
+      "delivered_commit": "957369be958691748430db8b6a1c4c5b9c7f5d9e",
+      "commit_refs": [
+        "17854f2dc93cec32a3fb845a650838d9dff2821b",
+        "957369be958691748430db8b6a1c4c5b9c7f5d9e"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-08-P-生产评测集、价格档案与费用对账.md",
+        "docs/协作开发/任务卡/08-P-生产评测集、价格档案与费用对账.md",
+        "docs/协作开发/验收/2026-10-25-ALN-08-P独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-09-H",
+      "status": "accepted",
+      "owner": "dsh-lead",
+      "reviewer": "zcode-main",
+      "delivered_commit": "435d12f7bbaeef021299c87bfa6f529feaeaff5f",
+      "commit_refs": [
+        "435d12f7bbaeef021299c87bfa6f529feaeaff5f",
+        "f7ccfcb936f4ed06dea26b84b44c01805d19dff0"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-09-H-真实候选宿主、持久问题队列与进程隔离.md",
+        "docs/协作开发/任务卡/09-H-真实候选宿主、持久队列与进程隔离.md",
+        "docs/协作开发/验收/2026-10-25-ALN-09-H独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-10-E",
+      "status": "accepted",
+      "owner": "dsh-lead",
+      "reviewer": "zcode-next",
+      "delivered_commit": "8f7625ed31f04ae21ff2bb01aee263baebe1da68",
+      "commit_refs": [
+        "89accb658a8ce5aa49c7e74d0e45904c2eda6b97",
+        "8f7625ed31f04ae21ff2bb01aee263baebe1da68"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-10-E-真实候选收益与依赖回归证据.md",
+        "docs/协作开发/任务卡/10-E-真实候选收益与依赖回归证据.md"
+      ]
+    },
+    {
+      "id": "ALN-11-P",
+      "status": "accepted",
+      "owner": "claude-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "078b9cc4dabbc1437361daa97a07c6a3897b0eeb"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-11-P-生产签名与端侧安装退役回执.md",
+        "docs/协作开发/任务卡/11-P-生产签名与端侧安装退役回执.md"
+      ]
+    },
+    {
+      "id": "ALN-12-E",
+      "status": "review",
+      "owner": "zcode-main",
+      "reviewer": "zcode-next",
+      "delivered_commit": null,
+      "commit_refs": [
+        "077d2939236dff71821ab69157ea50bf4d1dbbeb",
+        "998db6fd6427586a4ba23bd99bf91a7edf03625e",
+        "a1b3a3183b057b4e72a50677a703555a05ba4acf",
+        "c2e6871d1bc3c0011a43788d3dc2f0089dc76fbc",
+        "e7338e29e46ee80a2d8d337da14091b5fbc01c86"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-12-E-自然语言任务主链.md",
+        "docs/协作开发/任务卡/12-E-自然语言手机App真实任务主链.md",
+        "docs/协作开发/验收/2026-10-25-第三批交叉审查与真实性修复.md",
+        "docs/协作开发/验收/2026-10-26-07C与12E主链接续复核.md",
+        "docs/协作开发/验收/2026-10-26-12E本机任务App挂载.md",
+        "docs/协作开发/验收/2026-10-26-12E确认范围与回执复核.md"
+      ]
+    },
+    {
+      "id": "ALN-12-V",
+      "status": "review",
+      "owner": "dsh-lead",
+      "reviewer": null,
+      "delivered_commit": "6806f57a9513bb206d14bb67613b4d5bbcc737ab",
+      "commit_refs": [
+        "147a4898cb2231a9585897a3bff74ce41f6c5053",
+        "3283819921fc245b6376b09c92c27c8d15a4f721",
+        "60e58e3dac99d310dec0fb113017ec77ee709a86",
+        "61451f3ff2251dd042d19d74e10bad87eb05a46d",
+        "6806f57a9513bb206d14bb67613b4d5bbcc737ab",
+        "c2e6871d1bc3c0011a43788d3dc2f0089dc76fbc"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-12-V-通知、离线与系统重启真机矩阵.md",
+        "docs/协作开发/任务卡/12-V-通知、离线与系统重启真机矩阵.md",
+        "docs/协作开发/验收/2026-10-25-复核问题修复记录-29C-12V.md",
+        "docs/协作开发/验收/2026-10-26-12E本机任务App挂载.md",
+        "docs/协作开发/验收/2026-10-26-第六批通知恢复接续复核.md"
+      ]
+    },
+    {
+      "id": "ALN-13-P",
+      "status": "accepted",
+      "owner": "dsh-lead",
+      "reviewer": "zcode-main",
+      "delivered_commit": "78a70f15ce5b18dd7c6e0accd4151023ae60833c",
+      "commit_refs": [
+        "41fc372cf7e7d38bc27679f5e91ccc0844c7d091",
+        "78a70f15ce5b18dd7c6e0accd4151023ae60833c"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-13-P-生产长期目标推进与周期守护.md",
+        "docs/协作开发/任务卡/13-P-生产长期目标推进与周期守护.md",
+        "docs/协作开发/验收/2026-10-25-ALN-13-P独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-15-P",
+      "status": "accepted",
+      "owner": "opencode-evo",
+      "reviewer": "zcode-main",
+      "delivered_commit": "4091484ecd6d02c3422658e6ffdf0819b2fda2b1",
+      "commit_refs": [
+        "4091484ecd6d02c3422658e6ffdf0819b2fda2b1",
+        "5de4d003032458e2c4ddd90c045dd5f809f34091"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-15-P-Provider-Expert预算原子化与旧Goal迁移.md",
+        "docs/协作开发/任务卡/15-P-Provider-Expert预算原子化与旧Goal迁移.md",
+        "docs/协作开发/验收/2026-10-25-ALN-15-P独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-15-D",
+      "status": "accepted",
+      "owner": "zcode-next",
+      "reviewer": "zcode-main",
+      "delivered_commit": null,
+      "commit_refs": [
+        "3edc7903cfb2533772ad6df3e7462d8f0efa1b01"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/15-D-设备资源准入与核心任务优先.md",
+        "docs/协作开发/验收/2026-10-25-ALN-15-D独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-16-P",
+      "status": "accepted",
+      "owner": "zcode-next",
+      "reviewer": "zcode-main",
+      "delivered_commit": null,
+      "commit_refs": [
+        "89accb658a8ce5aa49c7e74d0e45904c2eda6b97"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/16-P-业务仓储与端侧隐私凭证治理.md",
+        "docs/协作开发/验收/2026-10-25-ALN-16-P独立复核.md"
+      ]
+    },
+    {
+      "id": "ALN-17-P",
+      "status": "accepted",
+      "owner": "dsh-lead",
+      "reviewer": "zcode-next",
+      "delivered_commit": "b38c5aceb03220bf96ce18d960f9c2b4ebc0a977",
+      "commit_refs": [
+        "26749474e41827b4e775b491ffe00bbe57928e15",
+        "b38c5aceb03220bf96ce18d960f9c2b4ebc0a977"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-17-P-空机部署、组合恢复与RTO-RPO.md",
+        "docs/协作开发/任务卡/17-P-空机部署、组合恢复与RTO-RPO.md"
+      ]
+    },
+    {
+      "id": "ALN-18-G",
+      "status": "accepted",
+      "owner": "zcode-next",
+      "reviewer": "zcode-main",
+      "delivered_commit": null,
+      "commit_refs": [
+        "a1b3a3183b057b4e72a50677a703555a05ba4acf",
+        "d5579f51f72b77e070db38bf539a2b93338b9122"
+      ],
+      "document_refs": [
+        "docs/协作开发/任务卡/18-G-App与编程专家真实消费能力包.md",
+        "docs/协作开发/验收/2026-10-25-ALN-18-G固定提交复验.md",
+        "docs/协作开发/验收/2026-10-25-ALN-18-G独立复核.md",
+        "docs/协作开发/验收/2026-10-25-第三批交叉审查与真实性修复.md"
+      ]
+    },
+    {
+      "id": "ALN-18-L",
+      "status": "review",
+      "owner": "zcode-main",
+      "reviewer": "codex-runtime",
+      "delivered_commit": null,
+      "commit_refs": [
+        "3331898fcddb78b4b271db152fbd408b7c981889",
+        "67fcc54275b09b06232a67bd0cf1530da7e60d84",
+        "b5b376d386d3aee58529007df30fc55d1386c687",
+        "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-18-L-跨文件语义与LSP能力扩展.md",
+        "docs/协作开发/任务卡/18-L-跨文件语义与LSP能力扩展.md",
+        "docs/协作开发/验收/2026-10-25-第五批补绑凭据与重构复核.md",
+        "docs/协作开发/验收/2026-10-26-反馈私钥与模块身份复核.md"
+      ]
+    },
+    {
+      "id": "ALN-19-A",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/19-A-真实音视频供应商漫剧纵切片.md"
+      ]
+    },
+    {
+      "id": "ALN-20-P",
+      "status": "accepted",
+      "owner": "dsh-lead",
+      "reviewer": "zcode-next",
+      "delivered_commit": "da066db5c25de88632a1407abe6b06a6283915d2",
+      "commit_refs": [
+        "33529bef6b4bb54dc6c3a2d8385b8e0e36f38ea0",
+        "da066db5c25de88632a1407abe6b06a6283915d2"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-20-P-固定外部Runtime真实PoC.md",
+        "docs/协作开发/任务卡/20-P-固定外部Runtime真实PoC.md"
+      ]
+    },
+    {
+      "id": "ALN-21-A",
+      "status": "review",
+      "owner": "claude-main",
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [
+        "2e1438f4ee7583232f11297b51a6cca838b0becb"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-21-A-Windows终端扩展验证.md",
+        "docs/协作开发/任务卡/21-A-Windows或平板扩展验证.md"
+      ]
+    },
+    {
+      "id": "ALN-22-A",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/22-A-原全量范围与新增产品证据汇总.md"
+      ]
+    },
+    {
+      "id": "ALN-30-A",
+      "status": "review",
+      "owner": "claude-main",
+      "reviewer": null,
+      "delivered_commit": "67bed4644a84fd564a0e752ac4bc06b4f7ba3382",
+      "commit_refs": [
+        "0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd",
+        "206bcd7900b727ac8f69c463b7e5f315177cd791",
+        "67bed4644a84",
+        "67bed4644a84fd564a0e752ac4bc06b4f7ba3382"
+      ],
+      "document_refs": [
+        "docs/协作开发/交付/ALN-30-A-服务端装配收口与主链可达性.md",
+        "docs/协作开发/任务卡/30-A-服务端装配收口与主链可达性.md",
+        "docs/协作开发/新增状态复核与需求拆分_2026-10-26.md"
+      ]
+    },
+    {
+      "id": "ALN-30-B",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/30-B-客户端工作区成果与记忆控制接线.md"
+      ]
+    },
+    {
+      "id": "ALN-16-Q",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/16-Q-聚合观测与受控导出删除API接线.md"
+      ]
+    },
+    {
+      "id": "ALN-29-F",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/29-F-真实成果纵切片与同版本场景采证.md"
+      ]
+    },
+    {
+      "id": "ALN-15-E",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/15-E-原生资源采样与后台周期准入.md"
+      ]
+    },
+    {
+      "id": "ALN-07-X",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/07-X-恢复策略运行时执行与审批衔接.md"
+      ]
+    },
+    {
+      "id": "ALN-13-S",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/13-S-长期目标调度启动与持久周期消费.md"
+      ]
+    },
+    {
+      "id": "ALN-02-I",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/02-I-供应商动作工具与主链副作用接线.md"
+      ]
+    },
+    {
+      "id": "ALN-09-I",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/09-I-真实候选宿主消费与队列管理入口.md"
+      ]
+    },
+    {
+      "id": "ALN-18-H",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/18-H-编程专家按项目安装与真实工具消费.md"
+      ]
+    },
+    {
+      "id": "ALN-25-C",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/25-C-主动任务准入执行与真实资源非干扰.md"
+      ]
+    },
+    {
+      "id": "ALN-26-C",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/26-C-能力缺口遥测预算与用户可见计划.md"
+      ]
+    },
+    {
+      "id": "ALN-26-D",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/26-D-动态团队与组合工作流真实执行.md"
+      ]
+    },
+    {
+      "id": "ALN-27-C",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/27-C-知识持久化真实注入与迁移质量验证.md"
+      ]
+    },
+    {
+      "id": "ALN-16-E",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/16-E-端侧证据上传与业务缓存治理接线.md"
+      ]
+    },
+    {
+      "id": "ALN-18-S",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/18-S-真实语言服务接入与语义改写.md"
+      ]
+    },
+    {
+      "id": "ALN-20-R",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/20-R-固定外部Runtime的任务主链采用.md"
+      ]
+    },
+    {
+      "id": "ALN-24-F",
+      "status": "unclaimed",
+      "owner": null,
+      "reviewer": null,
+      "delivered_commit": null,
+      "commit_refs": [],
+      "document_refs": [
+        "docs/协作开发/任务卡/24-F-多主体记忆范围策略与迁移隔离.md"
+      ]
+    }
+  ]
+}
