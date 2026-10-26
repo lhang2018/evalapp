@@ -6,7 +6,7 @@ import pytest
 
 from evoagent.app import App
 from evoagent.core.task import Task, TaskStatus
-from evoagent.goals.scheduler import GoalScheduler, SchedulerPolicy
+from evoagent.goals.scheduler import SchedulerPolicy
 
 
 @pytest.fixture
@@ -99,4 +99,37 @@ def test_invalid_schedule_time_is_rejected_before_persisting(app, method, now):
     app.goals.create("synthetic pending", actor="review", success_criteria=["synthetic verification"])
     with pytest.raises(ValueError):
         getattr(app.goal_scheduler, method)(now=now)
+    assert app.db._conn.execute("SELECT COUNT(*) FROM goal_schedules").fetchone()[0] == 0
+
+
+@pytest.mark.parametrize("mode", ["off", "high_pressure", "invalid_sample"])
+def test_real_app_scheduler_consumes_off_and_resource_admission_before_creating_tasks(app, mode):
+    from evoagent.core.resource_admission import ResourceGovernor
+    goal = ready(app)
+    if mode == "off":
+        app.proactivity.set_level("off")
+    else:
+        sample = {"cpu": 0.99, "memory": 0.1, "model_pool": 0.1} if mode == "high_pressure" else {}
+        app.proactivity.resource_governor = ResourceGovernor(lambda: sample)
+    report = app.goal_scheduler.tick(now=time.time())
+    assert report["reason"] == "proactivity_guard"
+    assert report["admission"]["allowed"] is False
+    assert app.db.list_tasks_by_goal(goal["goal_id"]) == []
+    if mode == "off":
+        assert report["admission"]["safety_notice"]
+        app.proactivity.set_level("normal")
+        resumed = app.goal_scheduler.tick(now=time.time())
+        assert len(resumed["advances"]) == 1
+
+
+@pytest.mark.parametrize("now", [True, float("inf"), "not-a-time"])
+def test_api_does_not_coerce_invalid_time_before_scheduler_validation(app, now):
+    from types import SimpleNamespace
+    from evoagent.api.goals_api import goal_scheduler_tick
+    ready(app)
+    responses = []
+    ctx = SimpleNamespace(app=app, body={"now": now},
+        auth=SimpleNamespace(role="admin"), json=lambda status, payload: responses.append((status, payload)))
+    goal_scheduler_tick(ctx)
+    assert responses[0][0] == 400
     assert app.db._conn.execute("SELECT COUNT(*) FROM goal_schedules").fetchone()[0] == 0

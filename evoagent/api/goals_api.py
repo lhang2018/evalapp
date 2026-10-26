@@ -172,7 +172,7 @@ def goal_scheduler_tick(ctx):
     body = ctx.body if isinstance(ctx.body, dict) else {}
     now = body.get("now")
     _call(ctx, lambda: {"report": ctx.app.goal_scheduler.tick(
-        now=float(now) if now is not None else None)})
+        now=now)})
 
 
 @post("/goals/scheduler/start")

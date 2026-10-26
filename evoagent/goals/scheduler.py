@@ -84,8 +84,10 @@ class GoalScheduler:
     """按周期推进活跃目标，并在主任务繁忙时让出。"""
 
     def __init__(self, governor: Any, *, db: Any = None, bus: Any = None,
-                 clock=None, policy: Any = None, owner_id: Optional[str] = None):
+                 clock=None, policy: Any = None, owner_id: Optional[str] = None,
+                 proactivity: Any = None):
         self.governor = governor
+        self.proactivity = proactivity
         self.db = db if db is not None else getattr(governor, "db", None)
         if self.db is None:
             raise ValueError("GoalScheduler 需要 Database")
@@ -293,6 +295,14 @@ class GoalScheduler:
             self._emit("goal_schedule_yielded",
                        {"reason": "primary_load_guard", **load, "at": moment})
             return self._record_report(report, moment)
+        if self.proactivity is not None:
+            admission = self.proactivity.may_start(
+                concurrent_proactive=load["derived_in_flight"])
+            if not admission.allowed:
+                report["reason"] = "proactivity_guard"
+                report["admission"] = admission.to_dict()
+                self._emit("goal_schedule_yielded", {"at": moment, **report["admission"]})
+                return self._record_report(report, moment)
         self.sync(now=moment)
         processed = 0
         for row in self.due(now=moment,

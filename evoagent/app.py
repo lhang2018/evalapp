@@ -243,7 +243,7 @@ class App:
         # ALN-13-S：长期目标周期调度接入宿主（CLI/API 可启停与观测）
         self.goal_scheduler = GoalScheduler(
             self.goal_governor, db=self.db, bus=self.bus,
-            owner_id="host_goal_scheduler")
+            owner_id="host_goal_scheduler", proactivity=self.proactivity)
         # ALN-09-I：受控候选评测入口（复用资产库/隔离宿主/基准/问题队列）
         from .assets.repository import AssetRepository
         from .integration.candidate_execution import CandidateEvaluationService
