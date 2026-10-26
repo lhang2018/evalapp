@@ -1,0 +1,82 @@
+{
+ "card": "ALN-25-B",
+ "reviewer": "dsh-lead（一审补齐真实宿主资源压力证据；用户要求后续另一审阅人再复核）",
+ "date": "2026-10-26",
+ "host": {
+  "machine": "DESKTOP-4O44IBU",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "python": "3.10.11",
+  "cpu_count": 16,
+  "psutil": "7.0.0",
+  "note": "真实宿主 CPU 压力（非 Mock 预算计数、非夹具决策器）"
+ },
+ "idle": {
+  "allowed": true,
+  "reasons": [],
+  "pressure": 0.77,
+  "cpu": 0.047,
+  "memory": 0.77,
+  "sample_valid": true
+ },
+ "stress_workers": 16,
+ "stress": {
+  "allowed": false,
+  "reasons": [
+   "资源压力让位核心任务或状态未知: 资源压力达到绝对上限，全部任务暂缓"
+  ],
+  "pressure": 1.0,
+  "cpu": 1.0,
+  "memory": 0.772,
+  "sample_valid": true
+ },
+ "stress_samples": [
+  {
+   "allowed": false,
+   "reasons": [
+    "资源压力让位核心任务或状态未知: 资源压力达到绝对上限，全部任务暂缓"
+   ],
+   "pressure": 1.0,
+   "cpu": 1.0,
+   "memory": 0.772,
+   "sample_valid": true
+  },
+  {
+   "allowed": false,
+   "reasons": [
+    "资源压力让位核心任务或状态未知: 资源压力达到绝对上限，全部任务暂缓"
+   ],
+   "pressure": 1.0,
+   "cpu": 1.0,
+   "memory": 0.772,
+   "sample_valid": true
+  },
+  {
+   "allowed": false,
+   "reasons": [
+    "资源压力让位核心任务或状态未知: 资源压力达到绝对上限，全部任务暂缓"
+   ],
+   "pressure": 1.0,
+   "cpu": 1.0,
+   "memory": 0.773,
+   "sample_valid": true
+  }
+ ],
+ "recovered": {
+  "allowed": true,
+  "reasons": [],
+  "pressure": 0.768,
+  "cpu": 0.109,
+  "memory": 0.768,
+  "sample_valid": true
+ },
+ "checks": {
+  "real_host_sampler_valid": true,
+  "idle_admits": true,
+  "stress_reaches_high_water": true,
+  "stress_denies_proactive": true,
+  "stress_reason_mentions_pressure": true,
+  "recovery_after_cooldown": true
+ },
+ "all_checks_pass": true,
+ "boundary": "真实宿主资源压力实测；未使用真实设备/生产环境；仍需另一审阅人复核"
+}

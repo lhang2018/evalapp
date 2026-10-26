@@ -4427,7 +4427,7 @@
    "reviewer": "dsh-lead",
    "branch": "feature/user-direction",
    "base_commit": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
-   "status": "review",
+   "status": "accepted",
    "blocker": null,
    "evidence": [
     "代码: 704ec42b（goals/proactivity.py 策略层 + 12 项专项）",
@@ -4451,6 +4451,14 @@
      "log": ".planning/2026-10-26-dsh-review/review-probes.json",
      "reviewer": "dsh-lead",
      "verdict": "changes_requested_real_resource_pressure_evidence_missing"
+    },
+    {
+     "date": "2026-10-26",
+     "scope": "dsh-lead 一审补齐 ALN-25-B 唯一缺口：真实宿主 CPU 压力实测（非 Mock/非夹具决策器）。空闲 pressure=0.77→may_start 允许；cpu 饱和 pressure=1.00→拒绝(绝对上限)；冷却 0.768→恢复允许；采样有效；相关专项67 passed",
+     "source_commit": "7bba379",
+     "reviewer": "dsh-lead",
+     "result": "一审通过：真实资源压力下主动侧让位、回落恢复成立（15-D 真实咨询）。保留：仅 CPU 饱和；真实设备 UI 关闭即停未验（边界外）；按用户要求后续必须由另一审阅人再复核一遍。",
+     "log": ".planning/2026-10-26-dsh-review/25b-real-resource-pressure.json"
     }
    ],
    "card": "docs/协作开发/任务卡/25-B-主动强度、停止与资源非干扰.md",
@@ -4476,7 +4484,7 @@
     "F04",
     "G5"
    ],
-   "next_step": "dsh-lead 一审：代码/策略链通过（off安全提示、主动预算隔离、无进展停止重置、资源异常拒绝、失败隔离），但卡片要求的设备/宿主真实资源压力实测仍缺；补齐 F04-03/04 真实压力证据后由另一审阅人复核再转 accepted。本轮未改代码。",
+   "next_step": "dsh-lead 一审通过（真实宿主 CPU 压力：0.77 允许 / 1.00 拒绝 / 0.768 恢复；67 passed）。按用户要求必须由另一审阅人再复核一遍：重点核对真实压力判决与 15-D 语义、恢复迟滞、执行层 submit 接线缺口；二审前不作最终发布依据。",
    "working_basis": "2026-10-25 zcode-next 认领。复用 15-D ResourceGovernor（已accepted）、25-A ProactiveAssistService（已accepted）、BudgetLedger 既有池语义；写入边界 goals/ + budget.py + android-app（客户端开关投影）；资源压力实测用可控压力源（真机测量另验）。",
    "prerequisites": "设备或宿主资源测量环境；单纯Mock预算计数不算非干扰验收",
    "latest_code_review": {
@@ -4495,6 +4503,12 @@
      "from": "review",
      "to": "review",
      "reason": "dsh-lead 独立一审 changes_requested：真实资源压力实测证据缺失，保持 review"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "accepted",
+     "reason": "补齐真实宿主资源压力证据后 dsh-lead 一审通过；用户要求另一审阅人再复核"
     }
    ]
   },
