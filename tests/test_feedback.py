@@ -107,6 +107,34 @@ class TestFeedback(unittest.TestCase):
         self.assertEqual(st, 200)
         self.assertIn("feedback", listed)
 
+    def test_duplicate_http_feedback_retains_new_evidence(self):
+        body = {"category": "problem", "text": "重复反馈证据合并HTTP",
+                "task_id": self.task.task_id, "evidence_refs": ["evt_http_a"]}
+        status, first = self._post("/feedback", body)
+        self.assertEqual(status, 201, first)
+        body["evidence_refs"] = ["evt_http_b", "evt_http_a"]
+        status, second = self._post("/feedback", body)
+        self.assertEqual(status, 201, second)
+        self.assertEqual(first["feedback_id"], second["feedback_id"])
+        status, row = self._get("/feedback/" + first["feedback_id"])
+        self.assertEqual(status, 200, row)
+        self.assertEqual(row["count"], 2)
+        self.assertEqual(row["evidence_refs"], ["evt_http_a", "evt_http_b"])
+        self.assertEqual(row["cause_status"], "unverified")
+
+    def test_aggregate_http_evidence_limit_rejects_without_increment(self):
+        body = {"category": "problem", "text": "重复反馈证据上限HTTP",
+                "evidence_refs": [f"evt_http_{i}" for i in range(32)]}
+        status, first = self._post("/feedback", body)
+        self.assertEqual(status, 201, first)
+        body["evidence_refs"] = ["evt_http_extra"]
+        status, error = self._post("/feedback", body)
+        self.assertEqual(status, 400, error)
+        self.assertIn("32", error["error"])
+        _, row = self._get("/feedback/" + first["feedback_id"])
+        self.assertEqual(row["count"], 1)
+        self.assertEqual(len(row["evidence_refs"]), 32)
+
     def test_empty_and_unknown_category_rejected(self):
         st, _ = self._post("/feedback", {"category": "bug", "text": "  "})
         self.assertEqual(st, 400)

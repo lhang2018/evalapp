@@ -4,14 +4,15 @@
   检出秘密（contains_secret）则拒绝入库（CredentialLeakError 上抛）。
 - 证据最小化：只保存 evidence_refs（事件/清单引用），不复制正文；
   读取正文沿用既有证据读权限，不在反馈里放大。
-- 聚合：agg_key = category + 归一化文本 + task_id；重复反馈 count+1 并
-  刷新 last_seen_at，不产生新行。
+- 聚合：按类型/规范化文本/task/run/manifest合并计数与证据引用；在一个
+  写事务中保留引用并集，上限32项，超限明确拒绝而非静默丢失。
 - 根因纪律：cause_status 恒为 "unverified"；只有诊断链路给出已验证结论
   才能改写（本模块不提供改写入口）。
 """
 
 import hashlib
 import json
+import math
 import re
 import sqlite3
 import time
@@ -34,6 +35,28 @@ def _agg_key(category: str, text: str, task_id: Optional[str],
 
 class FeedbackError(ValueError):
     pass
+
+
+def _references(value):
+    if not isinstance(value, list) or len(value) > 32:
+        raise FeedbackError("证据引用必须是列表且不超过32项")
+    if any(not isinstance(r, str) or not re.fullmatch(
+            r"[A-Za-z0-9][A-Za-z0-9_.:@/-]{0,255}", r)
+            or contains_secret(r) for r in value):
+        raise FeedbackError("证据引用必须是有效标识且不得包含凭据")
+    return list(dict.fromkeys(value))
+
+
+def _timestamp(value):
+    if type(value) not in (int, float):
+        raise FeedbackError("反馈时间必须是有限非负数")
+    try:
+        valid = math.isfinite(value) and value >= 0
+    except OverflowError:
+        valid = False
+    if not valid:
+        raise FeedbackError("反馈时间必须是有限非负数")
+    return value
 
 
 class FeedbackStore:
@@ -63,32 +86,44 @@ class FeedbackStore:
         if contains_secret(scrubbed) or contains_secret(text):
             raise FeedbackError(
                 "反馈疑似包含凭据/秘密，已拒绝；请移除后重新提交")
-        refs = [] if evidence_refs is None else evidence_refs
-        if not isinstance(refs, list) or len(refs) > 32:
-            raise FeedbackError("证据引用必须是列表且不超过32项")
-        if any(not isinstance(r, str) or not re.fullmatch(
-                r"[A-Za-z0-9][A-Za-z0-9_.:@/-]{0,255}", r)
-                or contains_secret(r) for r in refs):
-            raise FeedbackError("证据引用必须是有效标识且不得包含凭据")
+        refs = _references([] if evidence_refs is None else evidence_refs)
         for identity in (task_id, run_id, manifest_id):
             if identity is not None and (not isinstance(identity, str)
                                          or contains_secret(identity)):
                 raise FeedbackError("关联标识无效或包含凭据")
-        now_ts = now if now is not None else time.time()
+        now_ts = _timestamp(now if now is not None else time.time())
         key = _agg_key(category, scrubbed, task_id, run_id, manifest_id)
         fid = "fb_" + uuid.uuid4().hex[:16]
         with self._lock:
             if self._conn.in_transaction:
                 raise FeedbackError("数据库已有在途事务，请稍后重新提交反馈")
             with self._conn:
+                # Serialize read/union/write across connections too. An in-process
+                # lock alone would let concurrent aggregations lose references.
+                self._conn.execute("BEGIN IMMEDIATE")
+                previous = self._conn.execute(
+                    "SELECT evidence_refs,first_seen_at,last_seen_at FROM user_feedback WHERE agg_key=?",
+                    (key,)).fetchone()
+                last_seen = now_ts
+                if previous is not None:
+                    try:
+                        old_refs = _references(json.loads(previous["evidence_refs"]))
+                    except (TypeError, ValueError) as exc:
+                        raise FeedbackError("既有反馈证据不可读，请先核对记录") from exc
+                    refs = list(dict.fromkeys(old_refs + refs))
+                    if len(refs) > 32:
+                        raise FeedbackError("聚合后的证据引用超过32项，请减少新增引用或拆分反馈")
+                    last_seen = max(now_ts, _timestamp(previous["first_seen_at"]),
+                                    _timestamp(previous["last_seen_at"]))
                 self._conn.execute(
                     "INSERT INTO user_feedback(feedback_id, agg_key, category, text,"
                     " task_id, run_id, manifest_id, evidence_refs, cause_status,"
                     " count, first_seen_at, last_seen_at) VALUES (?,?,?,?,?,?,?,?,?,1,?,?)"
                     " ON CONFLICT(agg_key) DO UPDATE SET"
-                    " count=user_feedback.count+1,last_seen_at=excluded.last_seen_at",
+                    " count=user_feedback.count+1,last_seen_at=excluded.last_seen_at,"
+                    " evidence_refs=excluded.evidence_refs",
                     (fid, key, category, scrubbed, task_id, run_id, manifest_id,
-                     json.dumps(refs), "unverified", now_ts, now_ts))
+                     json.dumps(refs), "unverified", now_ts, last_seen))
                 row = self._conn.execute(
                     "SELECT feedback_id,count FROM user_feedback WHERE agg_key=?",
                     (key,)).fetchone()

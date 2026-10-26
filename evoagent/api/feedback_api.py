@@ -37,8 +37,13 @@ def submit_feedback(ctx):
             return ctx.json(404, {"error": "运行关联的任务不存在"})
     manifest_id = None
     if run_id:
-        manifest_id = json.loads(row["version_manifest"] or "{}").get(
-            "runtime_manifest_id")
+        try:
+            manifest = json.loads(row["version_manifest"] or "{}")
+        except (TypeError, ValueError):
+            return ctx.json(409, {"error": "运行清单不可读，无法关联反馈，请先核对该运行"})
+        if not isinstance(manifest, dict):
+            return ctx.json(409, {"error": "运行清单不可读，无法关联反馈，请先核对该运行"})
+        manifest_id = manifest.get("runtime_manifest_id")
     elif task_id:
         task = app.db.get_task(task_id)
         manifest_id = (task.runtime_manifest or {}).get(
