@@ -1,0 +1,117 @@
+(node:57432) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/broker.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ high-risk actions require independent confirmation (2.3557ms)
+✔ confirmed high-risk action executes and records evidence (1.8874ms)
+✔ transport errors become failed rather than throwing (1.1102ms)
+✔ verified results without evidence are downgraded to unverified (0.4547ms)
+✔ repeating an action_id never replays the device action (0.8688ms)
+✔ dispatched-but-unverified actions are not replayed (0.6784ms)
+✔ missing native module reports unavailable without crashing (0.5302ms)
+✔ click results are verified only when the UI actually changed (3.4579ms)
+✔ permission dialogs downgrade otherwise successful clicks (0.6971ms)
+✔ consecutive unverified actions trigger a safety stop until resumed (1.4997ms)
+✔ verified actions reset the consecutive failure counter (0.6772ms)
+✔ native transport passes through evidence and failure messages (0.54ms)
+(node:24472) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ confirmation callback cannot rewrite the action identity or nested parameters (8.0538ms)
+✔ non-boolean confirmation "false" cannot authorize execution (0.6468ms)
+✔ non-boolean confirmation "true" cannot authorize execution (0.3634ms)
+✔ non-boolean confirmation 1 cannot authorize execution (0.3729ms)
+✔ non-boolean confirmation {} cannot authorize execution (0.7012ms)
+✔ safety stop prevents dispatch after waiting on availability (2.5111ms)
+✔ safety stop prevents dispatch after waiting on confirmation (0.9501ms)
+✔ native truthy ok "false" is not verified success (0.4933ms)
+✔ native truthy ok "true" is not verified success (0.2438ms)
+✔ native truthy ok 1 is not verified success (0.2925ms)
+✔ native truthy ok {} is not verified success (0.1733ms)
+✔ native service availability must be literal true before dispatch (2.2984ms)
+(node:6836) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/taskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 缺口证明：任务链路引用随动作进入 broker 日志（task→action→effect 可追溯） (6.3704ms)
+✔ createProposal：引用完整且稳定，run_id 缺省派生自任务，风险按 broker 同表推导 (0.9787ms)
+✔ proposalToAction：预期观察映射 expect_text，引用随动作下发 (1.4401ms)
+✔ 执行成功：回执终态 verified、证据与时间戳齐备，任务链可查 (2.72ms)
+✔ 同一 action_id 重放：返回原回执，不重复下发，原始证据保留 (4.421ms)
+✔ 未知副作用（unverified）不是终态：不自动重放，需人工对账 (4.9489ms)
+✔ 高风险无确认：终态 denied；重放不重复询问、不下发 (1.54ms)
+✔ 无障碍未授权：终态 unavailable，重试需新提议（新 action_id） (1.6625ms)
+✔ 失败动作不自动重放：同一 action_id 返回原失败回执 (1.1481ms)
+✔ 中断恢复：先落提议后下发——崩溃窗口（已记账无回执）不自动重发 (2.0983ms)
+✔ 台账持久化：重启（新实例）后提议、回执与任务链完整 (1.0013ms)
+✔ 台账容量上界：超出 limit 淘汰最旧条目 (1.6616ms)
+✔ 上传投影：回执只含引用与状态，提议脱敏文本目标，本地保留字段列明 (1.9311ms)
+(node:15308) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/deviceDispatchBoundary.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ leaving foreground while availability waits prevents the actual settings dispatch (10.4379ms)
+✔ guard is rechecked after high risk confirmation rather than before the await (0.6713ms)
+✔ dispatch gate needs literal true and contains errors: () => "true" (0.4874ms)
+✔ dispatch gate needs literal true and contains errors: () => 1 (0.3067ms)
+✔ dispatch gate needs literal true and contains errors: () => { throw new Error("guard unavailable"); } (0.4452ms)
+✔ pre-dispatch unavailable is not reported as dispatched by the proposal executor (0.9864ms)
+✔ pre-dispatch denied is not reported as dispatched by the proposal executor (0.7406ms)
+✔ a legacy broker cannot silently ignore a requested dispatch guard (0.8446ms)
+(node:3804) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/deviceTaskApp.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ unknown and compound goals stay on the existing planner path (1.5768ms)
+✔ prepare persists exact identity without dispatch or server submission (2.2281ms)
+✔ end-to-end local orchestration separates action verification from user acceptance (4.3282ms)
+✔ refusing authorization leaves the prepared task unclaimed (1.4618ms)
+✔ restart and repeated refresh never dispatch again or enqueue duplicate receipts (2.1997ms)
+✔ concurrent UI execution claims the prepared task once (0.8242ms)
+✔ cancellation while confirmation is pending prevents subsequent dispatch (0.6093ms)
+✔ an interrupted claimed task is never dispatched on restart (0.7112ms)
+✔ task storage failure before claim prevents any device dispatch (0.3146ms)
+✔ receipt survives projection write failure and can be published after restart (1.8326ms)
+✔ unverified action cannot be promoted to task success or retried (0.7296ms)
+✔ device marker prevents even stale submission statuses from reaching server (0.5029ms)
+✔ leaving foreground during confirmation does not claim or execute the task (0.2598ms)
+✔ real sync engine retries metadata only and never submits the device task (1.797ms)
+✔ unknown receipt cannot be forged by corrupting the action ledger (0.3014ms)
+✔ foreground loss after durable claim remains pending without dispatch (0.2969ms)
+✔ a proposal changed during confirmation cannot use the old consent (0.2334ms)
+✔ a truthy consent value is not explicit approval (0.132ms)
+✔ a full critical event queue preserves the device receipt until space is available (13.089ms)
+✔ a reconciled receipt replaces the older unknown projection without another action (0.6258ms)
+✔ two repository instances cannot overwrite each other's task updates (3.9115ms)
+(node:65628) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/deviceTaskReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ persisted target outside the displayed settings scope is refused before consent (5.5059ms)
+✔ persisted kind outside the displayed settings scope is refused before consent (0.6025ms)
+✔ persisted args outside the displayed settings scope is refused before consent (0.3876ms)
+✔ persisted expectation outside the displayed settings scope is refused before consent (0.3722ms)
+✔ persisted risk outside the displayed settings scope is refused before consent (0.5317ms)
+✔ persisted goal outside the displayed settings scope is refused before consent (0.4153ms)
+✔ receipt downgrade removes the stale awaiting-acceptance task state (2.7929ms)
+✔ acceptance cannot use a receipt revoked while publishing its projection (1.2822ms)
+✔ invalid receipt kind is rejected before changing durable history (0.3984ms)
+✔ invalid receipt risk is rejected before changing durable history (0.2599ms)
+✔ invalid receipt terminal is rejected before changing durable history (0.1574ms)
+✔ invalid receipt unknown state is rejected before changing durable history (0.6504ms)
+✔ invalid receipt replay flag is rejected before changing durable history (0.1313ms)
+✔ invalid receipt timestamp is rejected before changing durable history (0.0954ms)
+✔ orphan recovery receipt cannot poison the entire action ledger (0.1543ms)
+✔ recovery cannot borrow a cached receipt from another task (0.1707ms)
+✔ dependent task write holds off a second ledger instance until it completes (4.4595ms)
+✔ a failed dependent write releases the receipt gate (0.3108ms)
+✔ user acceptance retains the exact receipt seen even if later evidence changes (1.5518ms)
+ℹ tests 85
+ℹ suites 0
+ℹ pass 85
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 331.938

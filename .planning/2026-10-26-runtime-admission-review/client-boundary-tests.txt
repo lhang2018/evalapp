@@ -1,0 +1,22 @@
+(node:84208) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/deviceDispatchBoundary.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ leaving foreground while availability waits prevents the actual settings dispatch (5.5325ms)
+✔ guard is rechecked after high risk confirmation rather than before the await (0.2887ms)
+✔ dispatch gate needs literal true and contains errors: () => "true" (0.1788ms)
+✔ dispatch gate needs literal true and contains errors: () => 1 (0.1384ms)
+✔ dispatch gate needs literal true and contains errors: () => { throw new Error("guard unavailable"); } (0.1926ms)
+✔ pre-dispatch unavailable is not reported as dispatched by the proposal executor (0.4492ms)
+✔ pre-dispatch denied is not reported as dispatched by the proposal executor (0.3717ms)
+✔ a legacy broker cannot silently ignore a requested dispatch guard (0.498ms)
+✔ a transport attempt remains dispatched even if the transport returns denied (0.4394ms)
+✔ legacy adapters without a dispatch fact report unknown rather than false (0.3099ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 141.8284

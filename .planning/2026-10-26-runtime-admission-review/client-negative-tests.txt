@@ -1,0 +1,171 @@
+(node:45680) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/deviceDispatchBoundary.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ leaving foreground while availability waits prevents the actual settings dispatch (5.2854ms)
+✖ guard is rechecked after high risk confirmation rather than before the await (0.4854ms)
+✖ dispatch gate needs literal true and contains errors: () => "true" (0.3035ms)
+✖ dispatch gate needs literal true and contains errors: () => 1 (0.1807ms)
+✖ dispatch gate needs literal true and contains errors: () => { throw new Error("guard unavailable"); } (0.1935ms)
+✖ pre-dispatch unavailable is not reported as dispatched by the proposal executor (0.4762ms)
+✖ pre-dispatch denied is not reported as dispatched by the proposal executor (0.4079ms)
+✖ a legacy broker cannot silently ignore a requested dispatch guard (0.4318ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 0
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 129.8829
+
+✖ failing tests:
+
+test at test\offline\deviceDispatchBoundary.test.ts:14:1
+✖ leaving foreground while availability waits prevents the actual settings dispatch (5.2854ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceDispatchBoundary.test.ts:27:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceDispatchBoundary.test.ts:34:1
+✖ guard is rechecked after high risk confirmation rather than before the await (0.4854ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'unverified'
+  - 'denied'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceDispatchBoundary.test.ts:45:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unverified',
+    expected: 'denied',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceDispatchBoundary.test.ts:50:3
+✖ dispatch gate needs literal true and contains errors: () => "true" (0.3035ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'unverified'
+  - 'denied'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceDispatchBoundary.test.ts:56:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unverified',
+    expected: 'denied',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceDispatchBoundary.test.ts:50:3
+✖ dispatch gate needs literal true and contains errors: () => 1 (0.1807ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'unverified'
+  - 'denied'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceDispatchBoundary.test.ts:56:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unverified',
+    expected: 'denied',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceDispatchBoundary.test.ts:50:3
+✖ dispatch gate needs literal true and contains errors: () => { throw new Error("guard unavailable"); } (0.1935ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'unverified'
+  - 'denied'
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceDispatchBoundary.test.ts:56:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unverified',
+    expected: 'denied',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceDispatchBoundary.test.ts:62:3
+✖ pre-dispatch unavailable is not reported as dispatched by the proposal executor (0.4762ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceDispatchBoundary.test.ts:68:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceDispatchBoundary.test.ts:62:3
+✖ pre-dispatch denied is not reported as dispatched by the proposal executor (0.4079ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceDispatchBoundary.test.ts:68:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceDispatchBoundary.test.ts:73:1
+✖ a legacy broker cannot silently ignore a requested dispatch guard (0.4318ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceDispatchBoundary.test.ts:77:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /guard|条件/,
+    operator: 'rejects',
+    diff: 'simple'
+  }

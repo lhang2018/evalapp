@@ -1,0 +1,232 @@
+{
+  "date": "2026-10-27",
+  "started_date": "2026-10-26",
+  "reviewer": "codex-runtime",
+  "fix_commits": [
+    "7b16edca06bc633aa2b7806a417c7a11568bf82b",
+    "369981e0382a7c895a268dc6b4c4b6a194a574c1"
+  ],
+  "backend_source_commit": "7b16edca06bc633aa2b7806a417c7a11568bf82b",
+  "client_source_commit": "369981e0382a7c895a268dc6b4c4b6a194a574c1",
+  "backend_source_tree": "40408d4441344c63ebd8cfcf17d7a74f93ec29c1",
+  "client_source_tree": "30fc0d86215581d22fc40774a5b111812fdce0e5",
+  "backend_subtree_identity_to_final_client_commit": {
+    "evoagent": "d686d99102af916b41f4b7f04150adfa87bf3d15",
+    "tests": "bdabb64ac2e210822a65a2e4007df62154c62e06"
+  },
+  "intermediate_diff_only_android_app": [
+    "android-app/src/device/broker.ts",
+    "android-app/src/device/taskProtocol.ts",
+    "android-app/src/device/types.ts",
+    "android-app/src/features/pipeline/deviceTasks.ts",
+    "android-app/test/offline/deviceDispatchBoundary.test.ts",
+    "android-app/test/offline/deviceTaskApp.test.ts"
+  ],
+  "report": "docs/协作开发/验收/2026-10-27-资源准入与手机下发边界复核.md",
+  "validation_records": {
+    "negative-validation": {
+      "pytest_arguments": [
+        "tests/test_runtime_admission_review_20261026.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-ee6e5zik",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "json-negative-validation": {
+      "pytest_arguments": [
+        "tests/test_runtime_admission_review_20261026.py",
+        "-k",
+        "json_safe",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-jiirju1c",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "focused-validation": {
+      "pytest_arguments": [
+        "tests/test_runtime_admission_review_20261026.py",
+        "tests/test_resource_admission.py",
+        "tests/test_resource_second_review_20261026.py",
+        "tests/test_proactive_review_20261026.py",
+        "tests/test_proactivity.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-w68u7jr8",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "committed-validation": {
+      "pytest_arguments": [
+        "tests/test_runtime_admission_review_20261026.py",
+        "tests/test_resource_admission.py",
+        "tests/test_resource_second_review_20261026.py",
+        "tests/test_proactive_review_20261026.py",
+        "tests/test_proactivity.py",
+        "tests/test_proactive_execution.py",
+        "tests/test_proactive_execution_review_20261026.py",
+        "tests/test_goal_scheduler.py",
+        "tests/test_goal_scheduler_host.py",
+        "tests/test_assigned_scheduler_review_20261026.py",
+        "tests/test_runtime.py",
+        "tests/test_run_continuation.py",
+        "tests/test_run_ownership.py",
+        "tests/test_runtime_protocol.py",
+        "tests/test_runtime_router_rejection.py",
+        "tests/test_runtime_reservations.py",
+        "tests/test_budget.py",
+        "tests/test_budget_pool_atomization.py",
+        "tests/test_metering_budget.py",
+        "tests/test_state_machine.py",
+        "tests/test_workflow.py",
+        "tests/test_tool_workflow.py",
+        "tests/test_event_sync.py",
+        "tests/test_e12_e13.py",
+        "tests/test_runtime_memory_identity.py",
+        "-k",
+        "not test_real_host_pressure_yields_and_core_state_untouched",
+        "-q"
+      ],
+      "snapshot_commit": "7b16edca06bc633aa2b7806a417c7a11568bf82b",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-ug5t5fa1",
+      "source_tree": "40408d4441344c63ebd8cfcf17d7a74f93ec29c1",
+      "archive_sha256": "41395b7e97c8304cfb1d9825b83ced3218fa4e541ed3b3ca30d88ce8dc755197",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-ug5t5fa1\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-ug5t5fa1\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-ug5t5fa1\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "initial-validation": {
+      "commit": "7b16edca06bc633aa2b7806a417c7a11568bf82b",
+      "source_tree": "40408d4441344c63ebd8cfcf17d7a74f93ec29c1",
+      "runner_sha256_lf": "1816f02d884c3569be8df48f5e66b25dee4df6106dd13475e50fe7ed4aefb1e2",
+      "node": "v24.16.0",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\device-review-xzhxhu5d",
+      "archive_sha256": "07dd3cca8ef39c403f56f1dc863105e6f74f38e00a9d91d427f86383986a11a8",
+      "tested_source": "E:\\evalapp\\outputs\\device-review-xzhxhu5d\\source\\android-app",
+      "typescript": "5.9.3",
+      "commands": {
+        "client-tests": [
+          "node",
+          "--test",
+          "--test-reporter=tap",
+          "test/offline/*.test.ts",
+          "test/device/*.test.ts",
+          "test/update/*.test.ts"
+        ],
+        "typecheck": [
+          "node",
+          "E:\\evalapp\\android-app\\node_modules\\typescript\\bin\\tsc",
+          "--noEmit"
+        ]
+      },
+      "results": {
+        "client-tests": 0,
+        "typecheck": 0
+      },
+      "dependency_junction_removed": true,
+      "installed_dependencies_preserved": true,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only this run's new TemporaryDirectory and junction; no old caches touched"
+    },
+    "validation": {
+      "commit": "369981e0382a7c895a268dc6b4c4b6a194a574c1",
+      "source_tree": "30fc0d86215581d22fc40774a5b111812fdce0e5",
+      "runner_sha256_lf": "1816f02d884c3569be8df48f5e66b25dee4df6106dd13475e50fe7ed4aefb1e2",
+      "node": "v24.16.0",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\device-review-5hg42vtz",
+      "archive_sha256": "0baa687c875b8e5dd3301c9ebb199485fbb75650406a09642441bedb0eae32e1",
+      "tested_source": "E:\\evalapp\\outputs\\device-review-5hg42vtz\\source\\android-app",
+      "typescript": "5.9.3",
+      "commands": {
+        "client-tests": [
+          "node",
+          "--test",
+          "--test-reporter=tap",
+          "test/offline/*.test.ts",
+          "test/device/*.test.ts",
+          "test/update/*.test.ts"
+        ],
+        "typecheck": [
+          "node",
+          "E:\\evalapp\\android-app\\node_modules\\typescript\\bin\\tsc",
+          "--noEmit"
+        ]
+      },
+      "results": {
+        "client-tests": 0,
+        "typecheck": 0
+      },
+      "dependency_junction_removed": true,
+      "installed_dependencies_preserved": true,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only this run's new TemporaryDirectory and junction; no old caches touched"
+    }
+  },
+  "owned_validation_scopes_removed": 6,
+  "results": {
+    "backend_negative": "20 failed, 1 passed; extra JSON probes 3 failed",
+    "backend_focused": "74 passed",
+    "backend_fixed_related": "343 passed, 1 deselected",
+    "client_negative": "8 failed",
+    "client_focused": "85 passed; final new boundary probes 10 passed",
+    "initial_client": "459 passed",
+    "final_client": "469 passed, TypeScript exit 0"
+  },
+  "initial_fixture_typecheck_error": "TS2352 on intentionally invalid guard cast; changed via unknown; not a production defect",
+  "not_run": [
+    "whole-host CPU saturation",
+    "full backend",
+    "Kotlin compiler",
+    "fixed APK/device/native UI thread",
+    "real provider/production"
+  ],
+  "status": "fixes_delivered_pending_independent_recheck",
+  "independent_acceptance_added": false,
+  "old_caches_dependencies_foreign_work_preserved": true,
+  "log_sha256_lf": {
+    "board-check.txt": "c2bb0ffa45a473624ecc28b4b28ea0e43b94b733ab87d855812749529a0399ba",
+    "client-boundary-tests.txt": "6b68a4451045bafdd42c7c6a61437818647f27ca6e94053758067a2ced0a6d1b",
+    "client-focused-tests.txt": "8cfef51d77316337f870c59df54affd5e08a538ba5da93b034c23e68d0e5cca2",
+    "client-negative-tests.txt": "4ca4b857790acd62bb51a4bdcfcd6d2eeb47491ba69bca0433eeff190106e2a0",
+    "client-run.txt": "52d89a3235cb58f81f033e7e927da181e7d07fd093c1f83fadd5000bff4c7b77",
+    "client-tests.txt": "ee3582a5df39aaa245fd92c3ec867b47e5748cb00d4185826663dc4ee8a62563",
+    "committed-tests.txt": "8f57e371b5bd1245b6c9da7dbd20ef366d8f9c4d960117e6587a74bd107068ce",
+    "focused-tests.txt": "831947dfd0441c894507a3c5415bbbc4d2f94f9cf9ec8b6b37f3f62b96730bff",
+    "focused-typecheck-2.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "focused-typecheck.txt": "918bbc27b4dfaf90bfb11ae06c71d33fd6c51143b156868b0ab954cff9cfa765",
+    "initial-client-run.txt": "1408909f15ef5601bb282bf066fd127551c50238965a17b678090426ddb3587d",
+    "initial-client-tests.txt": "9a6835346648c68a859f62b9e276604c0bb0d6d6f7e8730956a2a6ae4645a470",
+    "initial-typecheck.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "json-negative-tests.txt": "60adc5ef222783cb1f63dc6133b4f4e20c60b5bf3cc575e450022f24031b454d",
+    "ledger-check.txt": "6522773374554287a9f02ee776ced4dfc31f8c2c32af2ba88258241cd778b6e2",
+    "negative-tests.txt": "5bd9bc8fa19a50be5f529850ed29ebdf46d9e9a3f12cf09bcdbc7e8fa43e54f9",
+    "typecheck.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "metadata_validation": {
+    "scope": "collaboration metadata only",
+    "workpackages": 31,
+    "dispatches": 105,
+    "baseline": "published",
+    "errors": [],
+    "ok": true
+  }
+}

@@ -1,0 +1,9 @@
+# 初步发现
+
+f1a37bc新增一审观察admit无效采样仍fail-open，并只核对ProactivityGovernor消费；controller.execute直接调用admit，不查sample_valid，只检查decision=defer，确有后台绕过路径。
+拟在ResourceGovernor.admit按来源处理：无效采样后台defer，前台保留原兼容，不全局关闭用户执行；用真实App/controller证明零新run/模型/工具/状态推进。
+12-E一审主要复跑原31项边界与459客户端；继续看实际DeviceTaskService/executeProposal的异常、取消和回执消费，不把模块注册/旧测试代替真机证据。
+
+确认并修复7b16edc：后台无效采样defer、控制器只认admit/defer并检查后台有效性、入口异常清理活动登记、快照非有限数投影null；前台兼容与既有越界高压拒绝保留。资源24新增探针均过，专项74过。
+确认并修复369981e：前台确认后await台账/可用性期间仍可退后台下发，动态条件传到transport.dispatch前；旧适配器无闸门声明拒绝。Broker提供本次dispatch_attempted事实，协议dispatched true/false/null，未知不按未发生；新增设备10探针全过。
+原生UI线程/实际AppState竞态未真机验证；只到JS→transport调用边界，不称原生原子保证。

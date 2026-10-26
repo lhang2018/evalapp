@@ -6176,7 +6176,7 @@
    "branch": "feature/user-direction",
    "base_commit": "e7338e29e46ee80a2d8d337da14091b5fbc01c86",
    "status": "review",
-   "blocker": null,
+   "blocker": "本轮新补丁待另一审阅人确认；原生桥/UI线程、固定APK/JS、多步骤/服务端规划、文件成果/人工裁决和服务端成果核验仍待",
    "evidence": [
     "代码: 07edc6b features/pipeline/chain.ts（classifyPipeline/resultView/uploadPayload）+ 9项测试",
     "测试: pipeline.test 9项（chat/work判定/显式覆盖/成功/未验证/拒绝/隐私守卫/完整链路/任务视图衔接）；客户端337全绿/tsc 0错",
@@ -6228,6 +6228,15 @@
      "result": "一审复核通过、无阻断；保持 review。原分配审阅人 zcode-next 未复核；按用户要求最终接受前需再有一名非作者审阅人复核。缺口：真机APK/JS绑定、多步骤/服务端设备规划、文件成果、人工裁决、服务端核验成果语义。",
      "log": ".planning/2026-10-26-dsh-review/12e-review.json",
      "delivery": "docs/协作开发/验收/2026-10-26-dsh复核-12E.md"
+    },
+    {
+     "date": "2026-10-27",
+     "reviewer": "codex-runtime",
+     "source_commit": "369981e0382a7c895a268dc6b4c4b6a194a574c1",
+     "report": "docs/协作开发/验收/2026-10-27-资源准入与手机下发边界复核.md",
+     "log": ".planning/2026-10-26-runtime-admission-review/committed-evidence.json",
+     "scope": "前台等待窗口下发闸门与派发true/false/unknown诚实性；原生UI线程/固定APK仍待",
+     "result": "最终固定客户端469/TS通过；10新设备边界，非真机；新修复待独立确认"
     }
    ],
    "card": "docs/协作开发/任务卡/12-E-自然语言手机App真实任务主链.md",
@@ -6258,7 +6267,7 @@
     "G0",
     "G1"
    ],
-   "next_step": "dsh-lead 已一审复核通过（客户端459/tsc0/主链回执31 passed），本卡保持 review；原分配审阅人 zcode-next 仍未复核，按用户要求最终接受前必须再有一名非作者审阅人复核（zcode-next 或独立终审）。缺口：真机APK/JS绑定、多步骤/服务端设备规划、文件成果、人工裁决、服务端核验成果语义。",
+   "next_step": "最终固定客户端469/TS通过；10新设备边界，非真机；新修复待独立确认；保留原owner/reviewer/一审人；原生桥/UI线程、固定APK/JS、多步骤/服务端规划、文件成果/人工裁决和服务端成果核验仍待；docs/协作开发/验收/2026-10-27-资源准入与手机下发边界复核.md",
    "working_basis": "2026-10-25 zcode-main 认领开工。依赖全部满足（23-C review/07-C review/06-R accepted）。复用已交付的 23-A 契约、23-B 模式、23-C 工作区、23-D 状态映射、24-B 能力六档、29-C 反馈、11-W 真机链路、12-A 协议协议；本卡连成完整链路。",
    "prerequisites": "可连接且授权的Android设备",
    "ownership_history": [
@@ -6288,6 +6297,12 @@
      "previous_reviewer": "zcode-next",
      "reason": "负向探针确认缺陷；原复核引用旧提交但描述本批当时未提交字段，完整修复需固定版本复查",
      "report": "docs/协作开发/验收/2026-10-25-第三批交叉审查与真实性修复.md"
+    },
+    {
+     "date": "2026-10-27",
+     "previous_review_verdict": "first_review_pass_pending_other_reviewer",
+     "reason": "接续发现新边界缺陷并修复，旧一审数字保留，新补丁待独立确认",
+     "report": "docs/协作开发/验收/2026-10-27-资源准入与手机下发边界复核.md"
     }
    ],
    "latest_code_review": {
@@ -6301,7 +6316,17 @@
    },
    "delivery": "docs/协作开发/交付/ALN-12-E-自然语言任务主链.md",
    "first_reviewer": "dsh-lead",
-   "review_verdict": "first_review_pass_pending_other_reviewer"
+   "review_verdict": "changes_fixed_pending_independent_recheck",
+   "technical_review": {
+    "date": "2026-10-27",
+    "reviewer": "codex-runtime",
+    "source_commit": "369981e0382a7c895a268dc6b4c4b6a194a574c1",
+    "status": "changes_fixed_pending_independent_recheck",
+    "report": "docs/协作开发/验收/2026-10-27-资源准入与手机下发边界复核.md",
+    "evidence": ".planning/2026-10-26-runtime-admission-review/committed-evidence.json",
+    "independent_acceptance_added": false,
+    "scope": "前台等待窗口下发闸门与派发true/false/unknown诚实性；原生UI线程/固定APK仍待"
+   }
   },
   {
    "id": "ALN-12-V",
@@ -6558,7 +6583,7 @@
    "branch": "feature/user-direction",
    "base_commit": "3edc7903cfb2533772ad6df3e7462d8f0efa1b01",
    "status": "review",
-   "blocker": null,
+   "blocker": "本轮新补丁待另一审阅人确认；默认真实sampler/阈值/模型池/GPU与设备标定、运行中pause-stop消费仍待",
    "evidence": [
     "代码: aac74aba（resource_admission.py 决策器 + controller 准入接线 + 9 项专项）",
     "测试: 专项 9/9；预算回归 151/151；全量 1913/1/0",
@@ -6587,6 +6612,15 @@
      "result": "一审复核通过、附观察；保持 review。原分配 zcode-main 未复核；按用户要求最终接受前需另一名非作者审阅人复核。缺口：本卡未重跑整机压力、模型池/GPU/真实设备未验，运行中 pause/stop 属消费侧。",
      "log": ".planning/2026-10-26-dsh-review/15d-review.json",
      "delivery": "docs/协作开发/验收/2026-10-26-dsh复核-15D.md"
+    },
+    {
+     "date": "2026-10-27",
+     "reviewer": "codex-runtime",
+     "source_commit": "7b16edca06bc633aa2b7806a417c7a11568bf82b",
+     "report": "docs/协作开发/验收/2026-10-27-资源准入与手机下发边界复核.md",
+     "log": ".planning/2026-10-26-runtime-admission-review/committed-evidence.json",
+     "scope": "控制器直接admit旁路、无效后台采样、未知启动决策/活动登记与严格JSON；前台兼容保留",
+     "result": "固定相关后端343/1整机饱和未跑；24新探针；旧观察已确认为真实旁路并修复，非生产压力接受"
     }
    ],
    "card": "docs/协作开发/任务卡/15-D-设备资源准入与核心任务优先.md",
@@ -6626,7 +6660,7 @@
     "G4",
     "G5"
    ],
-   "next_step": "dsh-lead 已一审复核（29 passed；无效采样不恢复/迟滞/前后台/绝对上限通过；观察：admit 对无效采样仍 legacy fail-open，调用侧 ProactivityGovernor 已拒绝）。保持 review：原分配 zcode-main 未复核，按用户要求最终接受前需另一名非作者审阅人复核；缺口：本卡整机压力未重跑、模型池/GPU/真实设备未验、运行中 pause/stop 属消费侧。",
+   "next_step": "固定相关后端343/1整机饱和未跑；24新探针；旧观察已确认为真实旁路并修复，非生产压力接受；保留原owner/reviewer/一审人；默认真实sampler/阈值/模型池/GPU与设备标定、运行中pause-stop消费仍待；docs/协作开发/验收/2026-10-27-资源准入与手机下发边界复核.md",
    "working_basis": "2026-10-25 zcode-next 认领。复用 15-A/15-R 预算账本与 15-P 池原子预留；写入边界 core/ + goals/；真实设备测量另验（本地用可控压力源模拟）。",
    "prerequisites": "真实设备或受控宿主资源测量",
    "review_history": [
@@ -6636,6 +6670,12 @@
      "previous_reviewer": "zcode-main",
      "reason": "二审发现采样有效性/恢复集合新缺陷，已修但新代码待另一审阅人复核",
      "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md"
+    },
+    {
+     "date": "2026-10-27",
+     "previous_review_verdict": "first_review_pass_with_observation_pending_other_reviewer",
+     "reason": "接续发现新边界缺陷并修复，旧一审数字保留，新补丁待独立确认",
+     "report": "docs/协作开发/验收/2026-10-27-资源准入与手机下发边界复核.md"
     }
    ],
    "latest_code_review": {
@@ -6660,7 +6700,7 @@
    },
    "delivery": "docs/协作开发/交付/ALN-15-D-设备资源准入与核心任务优先.md",
    "first_reviewer": "dsh-lead",
-   "review_verdict": "first_review_pass_with_observation_pending_other_reviewer",
+   "review_verdict": "changes_fixed_pending_independent_recheck",
    "ownership_history": [
     {
      "date": "2026-10-26",
@@ -6668,7 +6708,17 @@
      "to": "review",
      "reason": "dsh-lead 一审复核通过（附观察）；待 zcode-main/另一非作者复核"
     }
-   ]
+   ],
+   "technical_review": {
+    "date": "2026-10-27",
+    "reviewer": "codex-runtime",
+    "source_commit": "7b16edca06bc633aa2b7806a417c7a11568bf82b",
+    "status": "changes_fixed_pending_independent_recheck",
+    "report": "docs/协作开发/验收/2026-10-27-资源准入与手机下发边界复核.md",
+    "evidence": ".planning/2026-10-26-runtime-admission-review/committed-evidence.json",
+    "independent_acceptance_added": false,
+    "scope": "控制器直接admit旁路、无效后台采样、未知启动决策/活动登记与严格JSON；前台兼容保留"
+   }
   },
   {
    "id": "ALN-16-P",
@@ -11356,6 +11406,42 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
    "scope": "13-S调度边界修复；固定相关522过，待独立补丁复核"
+  },
+  {
+   "id": "review-fix-7b16edca06bc",
+   "title": "fix(runtime): 无效资源采样暂缓后台并防御准入旁路",
+   "workpackage": "ALN-15",
+   "source_commit": "7b16edca06bc633aa2b7806a417c7a11568bf82b",
+   "files": [
+    "evoagent/core/controller.py",
+    "evoagent/core/resource_admission.py",
+    "tests/test_resource_admission.py",
+    "tests/test_runtime_admission_review_20261026.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-27-资源准入与手机下发边界复核.md",
+   "scope": "资源/手机消费边界接续修复；343相关/469客户端/TS，待独立接受"
+  },
+  {
+   "id": "review-fix-369981e0382a",
+   "title": "fix(device): 下发前重验前台条件并如实记录派发事实",
+   "workpackage": "ALN-12",
+   "source_commit": "369981e0382a7c895a268dc6b4c4b6a194a574c1",
+   "files": [
+    "android-app/src/device/broker.ts",
+    "android-app/src/device/taskProtocol.ts",
+    "android-app/src/device/types.ts",
+    "android-app/src/features/pipeline/deviceTasks.ts",
+    "android-app/test/offline/deviceDispatchBoundary.test.ts",
+    "android-app/test/offline/deviceTaskApp.test.ts"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-27-资源准入与手机下发边界复核.md",
+   "scope": "资源/手机消费边界接续修复；343相关/469客户端/TS，待独立接受"
   }
  ],
  "requirement_batches": [
@@ -11825,6 +11911,30 @@
    "product_acceptance_added": false,
    "published_by_review": false,
    "scope": "13项逐卡技术结论；后端522/1整机饱和未跑，客户端459同一子树/tsc0；30-A作者终审冲突纠正，恢复review"
+  },
+  {
+   "id": "REVIEW-2026-10-27-ADMISSION-DEVICE",
+   "date": "2026-10-27",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-15-D",
+    "ALN-12-E"
+   ],
+   "fixed_cards": [
+    "ALN-15-D",
+    "ALN-12-E"
+   ],
+   "fix_commit": "369981e0382a7c895a268dc6b4c4b6a194a574c1",
+   "fix_commits": [
+    "7b16edca06bc633aa2b7806a417c7a11568bf82b",
+    "369981e0382a7c895a268dc6b4c4b6a194a574c1"
+   ],
+   "report": "docs/协作开发/验收/2026-10-27-资源准入与手机下发边界复核.md",
+   "evidence": ".planning/2026-10-26-runtime-admission-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false,
+   "scope": "直接资源准入消费者与异步前台下发；原一审观察升级确认缺陷，保留原历史/审核分工；非设备/生产接受"
   }
  ]
 }

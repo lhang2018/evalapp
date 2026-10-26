@@ -1,0 +1,457 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFFFFFFFFF.                                                    [100%]
+================================== FAILURES ===================================
+_ test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value0-scheduled] _
+
+origin = 'scheduled', value = {}
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    @pytest.mark.parametrize("value", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_background_sample_never_admits_even_without_proactive_wrapper(origin, value):
+        decision = ResourceGovernor(sampler(value)).admit(origin)
+        assert decision.snapshot["sample_valid"] is False
+>       assert decision.decision == "defer"
+E       AssertionError: assert 'admit' == 'defer'
+E         
+E         - defer
+E         + admit
+
+tests\test_runtime_admission_review_20261026.py:26: AssertionError
+_ test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value0-derived] _
+
+origin = 'derived', value = {}
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    @pytest.mark.parametrize("value", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_background_sample_never_admits_even_without_proactive_wrapper(origin, value):
+        decision = ResourceGovernor(sampler(value)).admit(origin)
+        assert decision.snapshot["sample_valid"] is False
+>       assert decision.decision == "defer"
+E       AssertionError: assert 'admit' == 'defer'
+E         
+E         - defer
+E         + admit
+
+tests\test_runtime_admission_review_20261026.py:26: AssertionError
+_ test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value0-opportunity] _
+
+origin = 'opportunity', value = {}
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    @pytest.mark.parametrize("value", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_background_sample_never_admits_even_without_proactive_wrapper(origin, value):
+        decision = ResourceGovernor(sampler(value)).admit(origin)
+        assert decision.snapshot["sample_valid"] is False
+>       assert decision.decision == "defer"
+E       AssertionError: assert 'admit' == 'defer'
+E         
+E         - defer
+E         + admit
+
+tests\test_runtime_admission_review_20261026.py:26: AssertionError
+_ test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value1-scheduled] _
+
+origin = 'scheduled', value = {'cpu': nan}
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    @pytest.mark.parametrize("value", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_background_sample_never_admits_even_without_proactive_wrapper(origin, value):
+        decision = ResourceGovernor(sampler(value)).admit(origin)
+        assert decision.snapshot["sample_valid"] is False
+>       assert decision.decision == "defer"
+E       AssertionError: assert 'admit' == 'defer'
+E         
+E         - defer
+E         + admit
+
+tests\test_runtime_admission_review_20261026.py:26: AssertionError
+_ test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value1-derived] _
+
+origin = 'derived', value = {'cpu': nan}
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    @pytest.mark.parametrize("value", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_background_sample_never_admits_even_without_proactive_wrapper(origin, value):
+        decision = ResourceGovernor(sampler(value)).admit(origin)
+        assert decision.snapshot["sample_valid"] is False
+>       assert decision.decision == "defer"
+E       AssertionError: assert 'admit' == 'defer'
+E         
+E         - defer
+E         + admit
+
+tests\test_runtime_admission_review_20261026.py:26: AssertionError
+_ test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value1-opportunity] _
+
+origin = 'opportunity', value = {'cpu': nan}
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    @pytest.mark.parametrize("value", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_background_sample_never_admits_even_without_proactive_wrapper(origin, value):
+        decision = ResourceGovernor(sampler(value)).admit(origin)
+        assert decision.snapshot["sample_valid"] is False
+>       assert decision.decision == "defer"
+E       AssertionError: assert 'admit' == 'defer'
+E         
+E         - defer
+E         + admit
+
+tests\test_runtime_admission_review_20261026.py:26: AssertionError
+_ test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value2-scheduled] _
+
+origin = 'scheduled', value = {'cpu': False}
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    @pytest.mark.parametrize("value", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_background_sample_never_admits_even_without_proactive_wrapper(origin, value):
+        decision = ResourceGovernor(sampler(value)).admit(origin)
+        assert decision.snapshot["sample_valid"] is False
+>       assert decision.decision == "defer"
+E       AssertionError: assert 'admit' == 'defer'
+E         
+E         - defer
+E         + admit
+
+tests\test_runtime_admission_review_20261026.py:26: AssertionError
+_ test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value2-derived] _
+
+origin = 'derived', value = {'cpu': False}
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    @pytest.mark.parametrize("value", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_background_sample_never_admits_even_without_proactive_wrapper(origin, value):
+        decision = ResourceGovernor(sampler(value)).admit(origin)
+        assert decision.snapshot["sample_valid"] is False
+>       assert decision.decision == "defer"
+E       AssertionError: assert 'admit' == 'defer'
+E         
+E         - defer
+E         + admit
+
+tests\test_runtime_admission_review_20261026.py:26: AssertionError
+_ test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value2-opportunity] _
+
+origin = 'opportunity', value = {'cpu': False}
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    @pytest.mark.parametrize("value", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_background_sample_never_admits_even_without_proactive_wrapper(origin, value):
+        decision = ResourceGovernor(sampler(value)).admit(origin)
+        assert decision.snapshot["sample_valid"] is False
+>       assert decision.decision == "defer"
+E       AssertionError: assert 'admit' == 'defer'
+E         
+E         - defer
+E         + admit
+
+tests\test_runtime_admission_review_20261026.py:26: AssertionError
+_ test_invalid_background_sample_never_admits_even_without_proactive_wrapper[raises-scheduled] _
+
+origin = 'scheduled', value = 'raises'
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    @pytest.mark.parametrize("value", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_background_sample_never_admits_even_without_proactive_wrapper(origin, value):
+        decision = ResourceGovernor(sampler(value)).admit(origin)
+        assert decision.snapshot["sample_valid"] is False
+>       assert decision.decision == "defer"
+E       AssertionError: assert 'admit' == 'defer'
+E         
+E         - defer
+E         + admit
+
+tests\test_runtime_admission_review_20261026.py:26: AssertionError
+_ test_invalid_background_sample_never_admits_even_without_proactive_wrapper[raises-derived] _
+
+origin = 'derived', value = 'raises'
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    @pytest.mark.parametrize("value", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_background_sample_never_admits_even_without_proactive_wrapper(origin, value):
+        decision = ResourceGovernor(sampler(value)).admit(origin)
+        assert decision.snapshot["sample_valid"] is False
+>       assert decision.decision == "defer"
+E       AssertionError: assert 'admit' == 'defer'
+E         
+E         - defer
+E         + admit
+
+tests\test_runtime_admission_review_20261026.py:26: AssertionError
+_ test_invalid_background_sample_never_admits_even_without_proactive_wrapper[raises-opportunity] _
+
+origin = 'opportunity', value = 'raises'
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    @pytest.mark.parametrize("value", [{}, {"cpu": float("nan")}, {"cpu": False}, "raises"])
+    def test_invalid_background_sample_never_admits_even_without_proactive_wrapper(origin, value):
+        decision = ResourceGovernor(sampler(value)).admit(origin)
+        assert decision.snapshot["sample_valid"] is False
+>       assert decision.decision == "defer"
+E       AssertionError: assert 'admit' == 'defer'
+E         
+E         - defer
+E         + admit
+
+tests\test_runtime_admission_review_20261026.py:26: AssertionError
+_ test_real_controller_defers_invalid_sampling_before_run_and_recovers[scheduled] _
+
+app = <evoagent.app.App object at 0x000002A691DD9E70>, origin = 'scheduled'
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    def test_real_controller_defers_invalid_sampling_before_run_and_recovers(app, origin):
+        goal = ready_goal(app)
+        state = {"sample": {}}
+        app.controller.resource_governor = ResourceGovernor(lambda: state["sample"])
+        core = Task(user_goal="core task", task_status=TaskStatus.RUNNING)
+        app.db.save_task(core)
+        with patch.object(app.controller.runs, "begin", wraps=app.controller.runs.begin) as begin:
+            task = app.controller.submit_task("answer a general question", origin=origin,
+                                              goal_id=goal["goal_id"], wait=True)
+>           assert task.task_status == TaskStatus.CREATED
+E           AssertionError: assert <TaskStatus.S...: 'SUCCEEDED'> == <TaskStatus.C...ED: 'CREATED'>
+E             
+E             - CREATED
+E             + SUCCEEDED
+
+tests\test_runtime_admission_review_20261026.py:62: AssertionError
+_ test_real_controller_defers_invalid_sampling_before_run_and_recovers[derived] _
+
+app = <evoagent.app.App object at 0x000002A691DF5060>, origin = 'derived'
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    def test_real_controller_defers_invalid_sampling_before_run_and_recovers(app, origin):
+        goal = ready_goal(app)
+        state = {"sample": {}}
+        app.controller.resource_governor = ResourceGovernor(lambda: state["sample"])
+        core = Task(user_goal="core task", task_status=TaskStatus.RUNNING)
+        app.db.save_task(core)
+        with patch.object(app.controller.runs, "begin", wraps=app.controller.runs.begin) as begin:
+            task = app.controller.submit_task("answer a general question", origin=origin,
+                                              goal_id=goal["goal_id"], wait=True)
+>           assert task.task_status == TaskStatus.CREATED
+E           AssertionError: assert <TaskStatus.S...: 'SUCCEEDED'> == <TaskStatus.C...ED: 'CREATED'>
+E             
+E             - CREATED
+E             + SUCCEEDED
+
+tests\test_runtime_admission_review_20261026.py:62: AssertionError
+_ test_real_controller_defers_invalid_sampling_before_run_and_recovers[opportunity] _
+
+app = <evoagent.app.App object at 0x000002A691E0CEE0>, origin = 'opportunity'
+
+    @pytest.mark.parametrize("origin", ["scheduled", "derived", "opportunity"])
+    def test_real_controller_defers_invalid_sampling_before_run_and_recovers(app, origin):
+        goal = ready_goal(app)
+        state = {"sample": {}}
+        app.controller.resource_governor = ResourceGovernor(lambda: state["sample"])
+        core = Task(user_goal="core task", task_status=TaskStatus.RUNNING)
+        app.db.save_task(core)
+        with patch.object(app.controller.runs, "begin", wraps=app.controller.runs.begin) as begin:
+            task = app.controller.submit_task("answer a general question", origin=origin,
+                                              goal_id=goal["goal_id"], wait=True)
+>           assert task.task_status == TaskStatus.CREATED
+E           AssertionError: assert <TaskStatus.S...: 'SUCCEEDED'> == <TaskStatus.C...ED: 'CREATED'>
+E             
+E             - CREATED
+E             + SUCCEEDED
+
+tests\test_runtime_admission_review_20261026.py:62: AssertionError
+_ test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry[raises] _
+
+app = <evoagent.app.App object at 0x000002A691F1B310>, mode = 'raises'
+
+    @pytest.mark.parametrize("mode", ["raises", "missing", "pause", "resume", "invalid_snapshot"])
+    def test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry(app, mode):
+        def admit(origin):
+            if mode == "raises":
+                raise RuntimeError("synthetic adapter failed")
+            if mode == "missing":
+                return None
+            if mode == "invalid_snapshot":
+                return AdmissionDecision("admit", origin, 0.0, snapshot={})
+            return AdmissionDecision(mode, origin, 0.0, snapshot={"sample_valid": True})
+        goal = ready_goal(app)
+        app.controller.resource_governor = SimpleNamespace(admit=admit)
+        with patch.object(app.controller.runs, "begin", wraps=app.controller.runs.begin) as begin:
+>           task = app.controller.submit_task("answer a general question", origin="opportunity",
+                                              goal_id=goal["goal_id"], wait=True)
+
+tests\test_runtime_admission_review_20261026.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\core\controller.py:215: in submit_task
+    task = self.execute(task, intent_hint=intent, domain_hint=domain)
+evoagent\core\controller.py:251: in execute
+    decision = self.resource_governor.admit(task.origin)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+origin = 'opportunity'
+
+    def admit(origin):
+        if mode == "raises":
+>           raise RuntimeError("synthetic adapter failed")
+E           RuntimeError: synthetic adapter failed
+
+tests\test_runtime_admission_review_20261026.py:79: RuntimeError
+_ test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry[missing] _
+
+app = <evoagent.app.App object at 0x000002A691EF9870>, mode = 'missing'
+
+    @pytest.mark.parametrize("mode", ["raises", "missing", "pause", "resume", "invalid_snapshot"])
+    def test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry(app, mode):
+        def admit(origin):
+            if mode == "raises":
+                raise RuntimeError("synthetic adapter failed")
+            if mode == "missing":
+                return None
+            if mode == "invalid_snapshot":
+                return AdmissionDecision("admit", origin, 0.0, snapshot={})
+            return AdmissionDecision(mode, origin, 0.0, snapshot={"sample_valid": True})
+        goal = ready_goal(app)
+        app.controller.resource_governor = SimpleNamespace(admit=admit)
+        with patch.object(app.controller.runs, "begin", wraps=app.controller.runs.begin) as begin:
+>           task = app.controller.submit_task("answer a general question", origin="opportunity",
+                                              goal_id=goal["goal_id"], wait=True)
+
+tests\test_runtime_admission_review_20261026.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\core\controller.py:215: in submit_task
+    task = self.execute(task, intent_hint=intent, domain_hint=domain)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.core.controller.RuntimeController object at 0x000002A68EDBC2E0>
+task = Task(task_id='363798931e23', parent_task_id=None, current_run_id=None, parent_run_id=None, waiting_request=None, waiti...failure_reason=None, confidence=0.9, version_manifest={}, created_at=1793028182.0303102, updated_at=1793028182.0303102)
+
+    def execute(self, task: Task, *, intent_hint: Optional[str] = None,
+                domain_hint: Optional[str] = None) -> Task:
+        if task.task_status != TaskStatus.CREATED:
+            raise ValueError("仅新任务可执行；已有任务请使用恢复入口")
+        self.memory_bindings.resolve(task)
+        self._register_active(task)
+        version_manifest = self._version_manifest()
+        device = task.runtime_manifest.get("device") or {}
+        version_manifest.update({
+            "task_id": task.task_id,
+            "memory_binding_ref": task.memory_binding_ref,
+            "memory_identity": dict(task.memory_identity),
+            "device_id": device.get("device_id"),
+            "installation_id": device.get("installation_id"),
+            "app_version": device.get("app_version"),
+        })
+        # GAP ⑤c：workflow_ref 契约形态 = {id, version} 对象或 null
+        # （任务级 task.workflow_ref 保持字符串 id，不动其既有比较逻辑）
+        if task.workflow_ref:
+            wf = self.wf_lookup(task.workflow_ref)
+            version_manifest["workflow_ref"] = {
+                "id": task.workflow_ref,
+                "version": getattr(wf, "version", None) if wf else None}
+        # ALN-15-D：资源准入——后台来源任务在资源高压时 defer 为
+        # SUSPENDED（检查点/状态完好，压力回落由 resume 恢复）；
+        # 前台（user）任务不受后台让位影响，仅绝对上限时暂缓。
+        if self.resource_governor is not None:
+            decision = self.resource_governor.admit(task.origin)
+>           if decision.decision != "defer":
+E           AttributeError: 'NoneType' object has no attribute 'decision'
+
+evoagent\core\controller.py:252: AttributeError
+_ test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry[pause] __
+
+app = <evoagent.app.App object at 0x000002A6920EBE20>, mode = 'pause'
+
+    @pytest.mark.parametrize("mode", ["raises", "missing", "pause", "resume", "invalid_snapshot"])
+    def test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry(app, mode):
+        def admit(origin):
+            if mode == "raises":
+                raise RuntimeError("synthetic adapter failed")
+            if mode == "missing":
+                return None
+            if mode == "invalid_snapshot":
+                return AdmissionDecision("admit", origin, 0.0, snapshot={})
+            return AdmissionDecision(mode, origin, 0.0, snapshot={"sample_valid": True})
+        goal = ready_goal(app)
+        app.controller.resource_governor = SimpleNamespace(admit=admit)
+        with patch.object(app.controller.runs, "begin", wraps=app.controller.runs.begin) as begin:
+            task = app.controller.submit_task("answer a general question", origin="opportunity",
+                                              goal_id=goal["goal_id"], wait=True)
+>           assert task.task_status == TaskStatus.CREATED
+E           AssertionError: assert <TaskStatus.S...: 'SUCCEEDED'> == <TaskStatus.C...ED: 'CREATED'>
+E             
+E             - CREATED
+E             + SUCCEEDED
+
+tests\test_runtime_admission_review_20261026.py:90: AssertionError
+_ test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry[resume] _
+
+app = <evoagent.app.App object at 0x000002A692011FF0>, mode = 'resume'
+
+    @pytest.mark.parametrize("mode", ["raises", "missing", "pause", "resume", "invalid_snapshot"])
+    def test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry(app, mode):
+        def admit(origin):
+            if mode == "raises":
+                raise RuntimeError("synthetic adapter failed")
+            if mode == "missing":
+                return None
+            if mode == "invalid_snapshot":
+                return AdmissionDecision("admit", origin, 0.0, snapshot={})
+            return AdmissionDecision(mode, origin, 0.0, snapshot={"sample_valid": True})
+        goal = ready_goal(app)
+        app.controller.resource_governor = SimpleNamespace(admit=admit)
+        with patch.object(app.controller.runs, "begin", wraps=app.controller.runs.begin) as begin:
+            task = app.controller.submit_task("answer a general question", origin="opportunity",
+                                              goal_id=goal["goal_id"], wait=True)
+>           assert task.task_status == TaskStatus.CREATED
+E           AssertionError: assert <TaskStatus.S...: 'SUCCEEDED'> == <TaskStatus.C...ED: 'CREATED'>
+E             
+E             - CREATED
+E             + SUCCEEDED
+
+tests\test_runtime_admission_review_20261026.py:90: AssertionError
+_ test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry[invalid_snapshot] _
+
+app = <evoagent.app.App object at 0x000002A691F47880>, mode = 'invalid_snapshot'
+
+    @pytest.mark.parametrize("mode", ["raises", "missing", "pause", "resume", "invalid_snapshot"])
+    def test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry(app, mode):
+        def admit(origin):
+            if mode == "raises":
+                raise RuntimeError("synthetic adapter failed")
+            if mode == "missing":
+                return None
+            if mode == "invalid_snapshot":
+                return AdmissionDecision("admit", origin, 0.0, snapshot={})
+            return AdmissionDecision(mode, origin, 0.0, snapshot={"sample_valid": True})
+        goal = ready_goal(app)
+        app.controller.resource_governor = SimpleNamespace(admit=admit)
+        with patch.object(app.controller.runs, "begin", wraps=app.controller.runs.begin) as begin:
+            task = app.controller.submit_task("answer a general question", origin="opportunity",
+                                              goal_id=goal["goal_id"], wait=True)
+>           assert task.task_status == TaskStatus.CREATED
+E           AssertionError: assert <TaskStatus.S...: 'SUCCEEDED'> == <TaskStatus.C...ED: 'CREATED'>
+E             
+E             - CREATED
+E             + SUCCEEDED
+
+tests\test_runtime_admission_review_20261026.py:90: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_runtime_admission_review_20261026.py::test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value0-scheduled]
+FAILED tests/test_runtime_admission_review_20261026.py::test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value0-derived]
+FAILED tests/test_runtime_admission_review_20261026.py::test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value0-opportunity]
+FAILED tests/test_runtime_admission_review_20261026.py::test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value1-scheduled]
+FAILED tests/test_runtime_admission_review_20261026.py::test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value1-derived]
+FAILED tests/test_runtime_admission_review_20261026.py::test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value1-opportunity]
+FAILED tests/test_runtime_admission_review_20261026.py::test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value2-scheduled]
+FAILED tests/test_runtime_admission_review_20261026.py::test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value2-derived]
+FAILED tests/test_runtime_admission_review_20261026.py::test_invalid_background_sample_never_admits_even_without_proactive_wrapper[value2-opportunity]
+FAILED tests/test_runtime_admission_review_20261026.py::test_invalid_background_sample_never_admits_even_without_proactive_wrapper[raises-scheduled]
+FAILED tests/test_runtime_admission_review_20261026.py::test_invalid_background_sample_never_admits_even_without_proactive_wrapper[raises-derived]
+FAILED tests/test_runtime_admission_review_20261026.py::test_invalid_background_sample_never_admits_even_without_proactive_wrapper[raises-opportunity]
+FAILED tests/test_runtime_admission_review_20261026.py::test_real_controller_defers_invalid_sampling_before_run_and_recovers[scheduled]
+FAILED tests/test_runtime_admission_review_20261026.py::test_real_controller_defers_invalid_sampling_before_run_and_recovers[derived]
+FAILED tests/test_runtime_admission_review_20261026.py::test_real_controller_defers_invalid_sampling_before_run_and_recovers[opportunity]
+FAILED tests/test_runtime_admission_review_20261026.py::test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry[raises]
+FAILED tests/test_runtime_admission_review_20261026.py::test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry[missing]
+FAILED tests/test_runtime_admission_review_20261026.py::test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry[pause]
+FAILED tests/test_runtime_admission_review_20261026.py::test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry[resume]
+FAILED tests/test_runtime_admission_review_20261026.py::test_bad_admission_adapter_cannot_start_or_leave_stale_active_entry[invalid_snapshot]
+20 failed, 1 passed in 5.62s
