@@ -7,6 +7,8 @@ ALN-24-D 追加「用户记忆控制」端点（来源/纠错/删除/分析范�
 from .routes import get, post, put
 from ..memory.user_control import (MemoryControlError, MemoryControlService,
                                    MemoryNotFound)
+from ..memory.scope_policy import (PrincipalMismatch, ScopePolicyError,
+                                   ScopePolicyStore)
 
 
 def _service(app):
@@ -107,3 +109,100 @@ def put_memory_scope_policy(ctx):
     except (MemoryControlError, ValueError) as exc:
         return _error(ctx, exc)
     return ctx.json(200, result)
+
+
+# ---- 多主体记忆范围策略与迁移隔离（ALN-24-F）----
+def _scope_store(app):
+    store = getattr(app, "principal_scope_policy", None)
+    if store is None:
+        store = ScopePolicyStore(app.memory._conn, lock=app.memory._lock)
+        app.principal_scope_policy = store
+    return store
+
+
+def _auth_principal(ctx):
+    auth = getattr(ctx, "auth", None)
+    return getattr(auth, "principal_id", "") or "local:host"
+
+
+def _require_admin(ctx):
+    return getattr(getattr(ctx, "auth", None), "role", "") == "admin"
+
+
+@get("/memory/principal-policy")
+def get_principal_policy(ctx):
+    requested = ctx.query.get("principal")
+    try:
+        store = _scope_store(ctx.app)
+        principal = store.resolve_principal(_auth_principal(ctx), requested)
+        return ctx.json(200, store.effective_policy(principal, strict=False))
+    except PrincipalMismatch as exc:
+        return ctx.json(403, {"error": str(exc)})
+    except ScopePolicyError as exc:
+        return ctx.json(400, {"error": str(exc)})
+
+
+@put("/memory/principal-policy")
+def put_principal_policy(ctx):
+    if not _require_admin(ctx):
+        return ctx.json(403, {"error": "多主体策略需要 admin 角色"})
+    body = ctx.body
+    try:
+        store = _scope_store(ctx.app)
+        result = store.set_principal_policy(
+            authenticated=_auth_principal(ctx),
+            requested=body.get("principal"),
+            multi_principal=body.get("multi_principal"),
+            allow=body.get("allow"), deny=body.get("deny"),
+            actor=str(body.get("actor") or "api:admin"),
+            reason=str(body.get("reason") or ""))
+    except PrincipalMismatch as exc:
+        return ctx.json(403, {"error": str(exc)})
+    except ScopePolicyError as exc:
+        return ctx.json(400, {"error": str(exc)})
+    return ctx.json(200, result)
+
+
+@post("/memory/principal-policy/migrate")
+def migrate_principal_policy(ctx):
+    if not _require_admin(ctx):
+        return ctx.json(403, {"error": "迁移需要 admin 角色"})
+    body = ctx.body
+    try:
+        result = _scope_store(ctx.app).migrate_legacy(
+            authenticated=_auth_principal(ctx),
+            requested=body.get("principal"),
+            dry_run=bool(body.get("dry_run", True)),
+            actor=str(body.get("actor") or "api:admin"),
+            reason=str(body.get("reason") or ""))
+    except PrincipalMismatch as exc:
+        return ctx.json(403, {"error": str(exc)})
+    except ScopePolicyError as exc:
+        return ctx.json(409, {"error": str(exc)})
+    return ctx.json(200, result)
+
+
+@post("/memory/principal-policy/rollback")
+def rollback_principal_policy(ctx):
+    if not _require_admin(ctx):
+        return ctx.json(403, {"error": "回退需要 admin 角色"})
+    body = ctx.body
+    try:
+        result = _scope_store(ctx.app).rollback_migration(
+            authenticated=_auth_principal(ctx),
+            requested=body.get("principal"),
+            actor=str(body.get("actor") or "api:admin"),
+            reason=str(body.get("reason") or ""))
+    except PrincipalMismatch as exc:
+        return ctx.json(403, {"error": str(exc)})
+    except ScopePolicyError as exc:
+        return ctx.json(409, {"error": str(exc)})
+    return ctx.json(200, result)
+
+
+@get("/memory/principal-policy/migrations")
+def principal_policy_migrations(ctx):
+    if not _require_admin(ctx):
+        return ctx.json(403, {"error": "迁移台账需要 admin 角色"})
+    principal = _auth_principal(ctx)
+    return ctx.json(200, _scope_store(ctx.app).migration_history(principal))

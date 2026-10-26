@@ -1,0 +1,207 @@
+{
+ "task": "ALN-24-F 多主体记忆范围策略与迁移隔离",
+ "date": "2026-10-26",
+ "isolation": {
+  "admin": {
+   "partitioned": false,
+   "source": "legacy",
+   "allow": [
+    "project",
+    "task",
+    "user"
+   ],
+   "deny": [
+    "shared"
+   ]
+  },
+  "user-b": {
+   "partitioned": true,
+   "source": "principal",
+   "allow": [
+    "task"
+   ],
+   "deny": [
+    "user"
+   ]
+  }
+ },
+ "principal_mismatch": "PrincipalMismatch",
+ "http": {
+  "get_before": [
+   200,
+   {
+    "principal_id": "api:admin",
+    "partitioned": false,
+    "source": "legacy",
+    "allow": [
+     "project",
+     "task",
+     "user"
+    ],
+    "deny": [
+     "shared"
+    ],
+    "legacy_digest": "5cad4ccbfcb2a474140ad5d88115e2912df2b502ed6ef5f838cefa1879e90959"
+   }
+  ],
+  "mismatch_403": [
+   403,
+   {
+    "error_code": "forbidden",
+    "message": "请求主体与鉴权主体不一致，拒绝按请求体选择策略",
+    "retryable": false,
+    "correlation_id": "4fbebfcb8644484e98a69e27f05a0d5d",
+    "related_event_id": null,
+    "required_action": "none",
+    "safe_to_repeat": "yes",
+    "error": "请求主体与鉴权主体不一致，拒绝按请求体选择策略"
+   }
+  ],
+  "dry_run": [
+   200,
+   {
+    "ok": true,
+    "status": "dry_run",
+    "migration_id": "mig_25ae695ac86a",
+    "principal_id": "api:admin",
+    "legacy_digest": "5cad4ccbfcb2a474140ad5d88115e2912df2b502ed6ef5f838cefa1879e90959",
+    "new_digest": "5cad4ccbfcb2a474140ad5d88115e2912df2b502ed6ef5f838cefa1879e90959",
+    "allow": [
+     "project",
+     "task",
+     "user"
+    ],
+    "deny": [
+     "shared"
+    ]
+   }
+  ],
+  "apply": [
+   200,
+   {
+    "ok": true,
+    "status": "applied",
+    "migration_id": "mig_ae46f04622f3",
+    "principal_id": "api:admin",
+    "legacy_digest": "5cad4ccbfcb2a474140ad5d88115e2912df2b502ed6ef5f838cefa1879e90959",
+    "new_digest": "5cad4ccbfcb2a474140ad5d88115e2912df2b502ed6ef5f838cefa1879e90959",
+    "allow": [
+     "project",
+     "task",
+     "user"
+    ],
+    "deny": [
+     "shared"
+    ]
+   }
+  ],
+  "get_after": [
+   200,
+   {
+    "principal_id": "api:admin",
+    "partitioned": true,
+    "source": "principal",
+    "allow": [
+     "project",
+     "task",
+     "user"
+    ],
+    "deny": [
+     "shared"
+    ],
+    "version": 1
+   }
+  ],
+  "history": [
+   200,
+   {
+    "principal_id": "api:admin",
+    "migrations": [
+     {
+      "migration_id": "mig_25ae695ac86a",
+      "legacy_digest": "5cad4ccbfcb2a474140ad5d88115e2912df2b502ed6ef5f838cefa1879e90959",
+      "new_digest": "5cad4ccbfcb2a474140ad5d88115e2912df2b502ed6ef5f838cefa1879e90959",
+      "dry_run": 1,
+      "action": "dry_run",
+      "actor": "api:admin",
+      "reason": "预演",
+      "created_at": 1793001153.7038145
+     },
+     {
+      "migration_id": "mig_ae46f04622f3",
+      "legacy_digest": "5cad4ccbfcb2a474140ad5d88115e2912df2b502ed6ef5f838cefa1879e90959",
+      "new_digest": "5cad4ccbfcb2a474140ad5d88115e2912df2b502ed6ef5f838cefa1879e90959",
+      "dry_run": 0,
+      "action": "apply",
+      "actor": "api:admin",
+      "reason": "迁移",
+      "created_at": 1793001153.7068162
+     }
+    ]
+   }
+  ],
+  "operator_forbidden": [
+   403,
+   {
+    "error_code": "forbidden",
+    "message": "全局记忆管理需要admin权限",
+    "retryable": false,
+    "correlation_id": "46d12398aad148ecac62261b66309541",
+    "related_event_id": null,
+    "required_action": "none",
+    "safe_to_repeat": "yes",
+    "error": "全局记忆管理需要admin权限"
+   }
+  ],
+  "rollback": [
+   200,
+   {
+    "ok": true,
+    "principal_id": "api:admin",
+    "rolled_back_to": "legacy",
+    "legacy_valid": true,
+    "verification": {
+     "partitioned": false,
+     "source": "legacy"
+    }
+   }
+  ],
+  "get_rolled_back": [
+   200,
+   {
+    "principal_id": "api:admin",
+    "partitioned": false,
+    "source": "legacy",
+    "allow": [
+     "project",
+     "task",
+     "user"
+    ],
+    "deny": [
+     "shared"
+    ],
+    "legacy_digest": "5cad4ccbfcb2a474140ad5d88115e2912df2b502ed6ef5f838cefa1879e90959"
+   }
+  ]
+ },
+ "restart": {
+  "legacy_valid": true,
+  "migration_history": 3,
+  "effective_source": "legacy"
+ },
+ "checks": {
+  "double_subject_isolated": true,
+  "principal_mismatch_raised": true,
+  "http_get_legacy": true,
+  "http_mismatch_403": true,
+  "dry_run_ok": true,
+  "apply_ok": true,
+  "http_after_partitioned": true,
+  "history_two": true,
+  "operator_forbidden": true,
+  "rollback_ok": true,
+  "rollback_falls_back": true,
+  "restart_persists": true
+ },
+ "all_checks_pass": true
+}
