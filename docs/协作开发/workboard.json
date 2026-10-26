@@ -7510,13 +7510,24 @@
    "workpackage": "ALN-24",
    "title": "多主体记忆范围策略与迁移隔离",
    "stream": "integration",
-   "owner": null,
+   "owner": "dsh-lead",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "69b0524a6450fc14124a324f82c1a211b23cdb4b",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-26",
+     "scope": "多主体记忆范围策略与迁移隔离：主体由服务端鉴权决定(拒绝body选主体)、默认单用户不变、缺失/损坏旧策略拒绝默认放宽、双主体同scope隔离、迁移dry-run/幂等/冲突拒绝/台账、回退按摘要核对(篡改拒绝)、/memory/principal-policy 5个admin端点；专项12 passed、记忆/接口域91 passed、全量2358/0/1、实测证据12/12",
+     "source_commit": "2e0c857473972ba2ab50bf3dd2c11ef465048fa2",
+     "functional_commit": "2e0c857473972ba2ab50bf3dd2c11ef465048fa2",
+     "source_tree": "ea54e67991c8e274754d9d144203ee65f92ac60e",
+     "result": "已交付策略与迁移层，复用c6c9872检索过滤不重复；缺口：真实多用户鉴权联调、批量/多主体迁移、App管理入口、检索端到端、生产证据",
+     "log": ".planning/2026-10-26-aln24f/scope-policy-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-24-F-多主体记忆范围策略与迁移隔离.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/24-F-多主体记忆范围策略与迁移隔离.md",
    "shared_files": [
     "evoagent/memory/store.py",
@@ -7534,14 +7545,30 @@
     "GLOBAL"
    ],
    "priority": "P2",
-   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
-   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "next_step": "待独立复核：主体鉴权决定/越权拒绝、缺失损坏策略拒绝放宽、双主体隔离、迁移dry-run/幂等/冲突/回退篡改拒绝、重启持久与HTTP角色证据见交付文档与 .planning/2026-10-26-aln24f/；审阅人未定不自批；真实多用户鉴权联调、检索端到端与App管理入口属后续，多主体开放整包不关闭",
+   "working_basis": "以69b0524a6450fc14124a324f82c1a211b23cdb4b（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "只在明确启用多主体场景前实施；当前单用户过滤修复单独复核",
    "split_round": "STATUS-SPLIT-2026-10-26",
    "backlog_refs": [
     "ZG-02",
     "ZG-10"
-   ]
+   ],
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户指示继续、按优先级顺序认领；24-F 为 P0 READY；前提按'默认单用户不变、多主体显式开关'实现"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "claimed",
+     "to": "review",
+     "reason": "策略/迁移层完成并通过全量回归；鉴权联调/检索端到端/UI留缺口"
+    }
+   ],
+   "delivered_commit": "2e0c857473972ba2ab50bf3dd2c11ef465048fa2",
+   "delivery": "docs/协作开发/交付/ALN-24-F-多主体记忆范围策略与迁移隔离.md"
   }
  ],
  "workpackages": [
