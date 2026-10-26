@@ -1,0 +1,366 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+.FFFFFFFFFFFFF                                                           [100%]
+================================== FAILURES ===================================
+_ test_divergence_from_either_recoverable_state_produces_a_question[SUSPENDED] _
+
+app = <evoagent.app.App object at 0x00000266381294B0>
+status = <TaskStatus.SUSPENDED: 'SUSPENDED'>
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    def test_divergence_from_either_recoverable_state_produces_a_question(app, status):
+        task = prepare(app, status, "divergence")
+>       result = app.controller.recover_task(task.task_id)
+
+tests\test_recovery_outcome_review_20261027.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\core\controller.py:1054: in recover_task
+    return self._resume_suspended(task, budget, False, recovery=True)
+evoagent\core\controller.py:1068: in _resume_suspended
+    gated = self._reconciliation_gate(task)
+evoagent\core\controller.py:1179: in _reconciliation_gate
+    task = self._move(task, TaskStatus.WAITING_USER)
+evoagent\core\controller.py:1565: in _move
+    task.task_status = transition(task.task_status, target)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+current = <TaskStatus.SUSPENDED: 'SUSPENDED'>
+target = <TaskStatus.WAITING_USER: 'WAITING_USER'>
+
+    def transition(current: TaskStatus, target: TaskStatus) -> TaskStatus:
+        """校验并返回目标状态；非法转换抛错。"""
+        if not can_transition(current, target):
+>           raise IllegalTransition(f"非法状态转换: {current.value} -> {target.value}")
+E           evoagent.core.state_machine.IllegalTransition: 非法状态转换: SUSPENDED -> WAITING_USER
+
+evoagent\core\state_machine.py:46: IllegalTransition
+_ test_waiting_state_is_committed_with_the_question_before_state_sinks[event-RUNNING] _
+
+app = <evoagent.app.App object at 0x0000026637D5E110>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000266382236D0>
+status = <TaskStatus.RUNNING: 'RUNNING'>, sink = 'event'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("sink", ["event", "audit"])
+    def test_waiting_state_is_committed_with_the_question_before_state_sinks(app, monkeypatch, status, sink):
+        task = prepare(app, status, "divergence")
+        fail_state_sink(app, monkeypatch, sink, "WAITING_USER")
+        with pytest.raises(OSError, match="state sink unavailable"):
+            app.controller.recover_task(task.task_id)
+        stored = persisted(app, task)
+        assert stored.task_status == TaskStatus.WAITING_USER
+>       assert stored.waiting_request is not None
+E       AssertionError: assert None is not None
+E        +  where None = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_de1f0eb968c54ea884ffae741b7b8eb4', parent_run...st_id': 'manifest_run_de1f0eb968c54ea884ffae741b7b8eb4'}, created_at=1793058727.6159184, updated_at=1793058727.6409762).waiting_request
+
+tests\test_recovery_outcome_review_20261027.py:75: AssertionError
+_ test_waiting_state_is_committed_with_the_question_before_state_sinks[event-SUSPENDED] _
+
+app = <evoagent.app.App object at 0x0000026637B3F640>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000026637B82F80>
+status = <TaskStatus.SUSPENDED: 'SUSPENDED'>, sink = 'event'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("sink", ["event", "audit"])
+    def test_waiting_state_is_committed_with_the_question_before_state_sinks(app, monkeypatch, status, sink):
+        task = prepare(app, status, "divergence")
+        fail_state_sink(app, monkeypatch, sink, "WAITING_USER")
+        with pytest.raises(OSError, match="state sink unavailable"):
+>           app.controller.recover_task(task.task_id)
+
+tests\test_recovery_outcome_review_20261027.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\core\controller.py:1054: in recover_task
+    return self._resume_suspended(task, budget, False, recovery=True)
+evoagent\core\controller.py:1068: in _resume_suspended
+    gated = self._reconciliation_gate(task)
+evoagent\core\controller.py:1179: in _reconciliation_gate
+    task = self._move(task, TaskStatus.WAITING_USER)
+evoagent\core\controller.py:1565: in _move
+    task.task_status = transition(task.task_status, target)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+current = <TaskStatus.SUSPENDED: 'SUSPENDED'>
+target = <TaskStatus.WAITING_USER: 'WAITING_USER'>
+
+    def transition(current: TaskStatus, target: TaskStatus) -> TaskStatus:
+        """校验并返回目标状态；非法转换抛错。"""
+        if not can_transition(current, target):
+>           raise IllegalTransition(f"非法状态转换: {current.value} -> {target.value}")
+E           evoagent.core.state_machine.IllegalTransition: 非法状态转换: SUSPENDED -> WAITING_USER
+
+evoagent\core\state_machine.py:46: IllegalTransition
+_ test_waiting_state_is_committed_with_the_question_before_state_sinks[audit-RUNNING] _
+
+app = <evoagent.app.App object at 0x0000026637BE4E50>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000026637BADB40>
+status = <TaskStatus.RUNNING: 'RUNNING'>, sink = 'audit'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("sink", ["event", "audit"])
+    def test_waiting_state_is_committed_with_the_question_before_state_sinks(app, monkeypatch, status, sink):
+        task = prepare(app, status, "divergence")
+        fail_state_sink(app, monkeypatch, sink, "WAITING_USER")
+        with pytest.raises(OSError, match="state sink unavailable"):
+            app.controller.recover_task(task.task_id)
+        stored = persisted(app, task)
+        assert stored.task_status == TaskStatus.WAITING_USER
+>       assert stored.waiting_request is not None
+E       AssertionError: assert None is not None
+E        +  where None = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_0ce660d9cb0b42c58cd9e4e930d85c5d', parent_run...st_id': 'manifest_run_0ce660d9cb0b42c58cd9e4e930d85c5d'}, created_at=1793058728.2672963, updated_at=1793058728.2912927).waiting_request
+
+tests\test_recovery_outcome_review_20261027.py:75: AssertionError
+_ test_waiting_state_is_committed_with_the_question_before_state_sinks[audit-SUSPENDED] _
+
+app = <evoagent.app.App object at 0x00000266382BF9A0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000266381573D0>
+status = <TaskStatus.SUSPENDED: 'SUSPENDED'>, sink = 'audit'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("sink", ["event", "audit"])
+    def test_waiting_state_is_committed_with_the_question_before_state_sinks(app, monkeypatch, status, sink):
+        task = prepare(app, status, "divergence")
+        fail_state_sink(app, monkeypatch, sink, "WAITING_USER")
+        with pytest.raises(OSError, match="state sink unavailable"):
+>           app.controller.recover_task(task.task_id)
+
+tests\test_recovery_outcome_review_20261027.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\core\controller.py:1054: in recover_task
+    return self._resume_suspended(task, budget, False, recovery=True)
+evoagent\core\controller.py:1068: in _resume_suspended
+    gated = self._reconciliation_gate(task)
+evoagent\core\controller.py:1179: in _reconciliation_gate
+    task = self._move(task, TaskStatus.WAITING_USER)
+evoagent\core\controller.py:1565: in _move
+    task.task_status = transition(task.task_status, target)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+current = <TaskStatus.SUSPENDED: 'SUSPENDED'>
+target = <TaskStatus.WAITING_USER: 'WAITING_USER'>
+
+    def transition(current: TaskStatus, target: TaskStatus) -> TaskStatus:
+        """校验并返回目标状态；非法转换抛错。"""
+        if not can_transition(current, target):
+>           raise IllegalTransition(f"非法状态转换: {current.value} -> {target.value}")
+E           evoagent.core.state_machine.IllegalTransition: 非法状态转换: SUSPENDED -> WAITING_USER
+
+evoagent\core\state_machine.py:46: IllegalTransition
+_ test_failed_state_is_committed_with_the_reason_before_state_sinks[plan-event-RUNNING] _
+
+app = <evoagent.app.App object at 0x0000026637D5EC50>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000026638223040>
+status = <TaskStatus.RUNNING: 'RUNNING'>, sink = 'event', problem = 'plan'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("sink", ["event", "audit"])
+    @pytest.mark.parametrize("problem", ["plan", "bindings"])
+    def test_failed_state_is_committed_with_the_reason_before_state_sinks(app, monkeypatch, status, sink, problem):
+        task = prepare(app, status, problem)
+        if problem == "bindings":
+            def unavailable(*args):
+                raise ValueError("binding evidence unavailable")
+            monkeypatch.setattr(app.controller.react.bindings, "heal_pending", unavailable)
+        fail_state_sink(app, monkeypatch, sink, "FAILED")
+        with pytest.raises(OSError, match="state sink unavailable"):
+            app.controller.recover_task(task.task_id)
+        stored = persisted(app, task)
+        assert stored.task_status == TaskStatus.FAILED
+>       assert ("计划不可读" if problem == "plan" else "binding evidence unavailable") in (stored.failure_reason or "")
+E       AssertionError: assert '计划不可读' in ((None or ''))
+E        +  where None = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_ae876ebb4509484295563afdaef9fb76', parent_run...st_id': 'manifest_run_ae876ebb4509484295563afdaef9fb76'}, created_at=1793058729.2771723, updated_at=1793058729.3099723).failure_reason
+
+tests\test_recovery_outcome_review_20261027.py:97: AssertionError
+_ test_failed_state_is_committed_with_the_reason_before_state_sinks[plan-event-SUSPENDED] _
+
+app = <evoagent.app.App object at 0x00000266382270A0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000266381561D0>
+status = <TaskStatus.SUSPENDED: 'SUSPENDED'>, sink = 'event', problem = 'plan'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("sink", ["event", "audit"])
+    @pytest.mark.parametrize("problem", ["plan", "bindings"])
+    def test_failed_state_is_committed_with_the_reason_before_state_sinks(app, monkeypatch, status, sink, problem):
+        task = prepare(app, status, problem)
+        if problem == "bindings":
+            def unavailable(*args):
+                raise ValueError("binding evidence unavailable")
+            monkeypatch.setattr(app.controller.react.bindings, "heal_pending", unavailable)
+        fail_state_sink(app, monkeypatch, sink, "FAILED")
+        with pytest.raises(OSError, match="state sink unavailable"):
+            app.controller.recover_task(task.task_id)
+        stored = persisted(app, task)
+        assert stored.task_status == TaskStatus.FAILED
+>       assert ("计划不可读" if problem == "plan" else "binding evidence unavailable") in (stored.failure_reason or "")
+E       AssertionError: assert '计划不可读' in ((None or ''))
+E        +  where None = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_c1dd00f6988e4dcdb744a65e4b1a3c82', parent_run...est_id': 'manifest_run_c1dd00f6988e4dcdb744a65e4b1a3c82'}, created_at=1793058729.5950422, updated_at=1793058729.626143).failure_reason
+
+tests\test_recovery_outcome_review_20261027.py:97: AssertionError
+_ test_failed_state_is_committed_with_the_reason_before_state_sinks[plan-audit-RUNNING] _
+
+app = <evoagent.app.App object at 0x0000026638292B90>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000026638292FB0>
+status = <TaskStatus.RUNNING: 'RUNNING'>, sink = 'audit', problem = 'plan'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("sink", ["event", "audit"])
+    @pytest.mark.parametrize("problem", ["plan", "bindings"])
+    def test_failed_state_is_committed_with_the_reason_before_state_sinks(app, monkeypatch, status, sink, problem):
+        task = prepare(app, status, problem)
+        if problem == "bindings":
+            def unavailable(*args):
+                raise ValueError("binding evidence unavailable")
+            monkeypatch.setattr(app.controller.react.bindings, "heal_pending", unavailable)
+        fail_state_sink(app, monkeypatch, sink, "FAILED")
+        with pytest.raises(OSError, match="state sink unavailable"):
+            app.controller.recover_task(task.task_id)
+        stored = persisted(app, task)
+        assert stored.task_status == TaskStatus.FAILED
+>       assert ("计划不可读" if problem == "plan" else "binding evidence unavailable") in (stored.failure_reason or "")
+E       AssertionError: assert '计划不可读' in ((None or ''))
+E        +  where None = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_7dea7a3b5f854ef191844661ca7ed2d1', parent_run...est_id': 'manifest_run_7dea7a3b5f854ef191844661ca7ed2d1'}, created_at=1793058729.9170597, updated_at=1793058729.947492).failure_reason
+
+tests\test_recovery_outcome_review_20261027.py:97: AssertionError
+_ test_failed_state_is_committed_with_the_reason_before_state_sinks[plan-audit-SUSPENDED] _
+
+app = <evoagent.app.App object at 0x00000266382F9210>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000266382F86A0>
+status = <TaskStatus.SUSPENDED: 'SUSPENDED'>, sink = 'audit', problem = 'plan'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("sink", ["event", "audit"])
+    @pytest.mark.parametrize("problem", ["plan", "bindings"])
+    def test_failed_state_is_committed_with_the_reason_before_state_sinks(app, monkeypatch, status, sink, problem):
+        task = prepare(app, status, problem)
+        if problem == "bindings":
+            def unavailable(*args):
+                raise ValueError("binding evidence unavailable")
+            monkeypatch.setattr(app.controller.react.bindings, "heal_pending", unavailable)
+        fail_state_sink(app, monkeypatch, sink, "FAILED")
+        with pytest.raises(OSError, match="state sink unavailable"):
+            app.controller.recover_task(task.task_id)
+        stored = persisted(app, task)
+        assert stored.task_status == TaskStatus.FAILED
+>       assert ("计划不可读" if problem == "plan" else "binding evidence unavailable") in (stored.failure_reason or "")
+E       AssertionError: assert '计划不可读' in ((None or ''))
+E        +  where None = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_ef05573e55fc44a3910a351c239d18b7', parent_run...fest_id': 'manifest_run_ef05573e55fc44a3910a351c239d18b7'}, created_at=1793058730.218503, updated_at=1793058730.246647).failure_reason
+
+tests\test_recovery_outcome_review_20261027.py:97: AssertionError
+_ test_failed_state_is_committed_with_the_reason_before_state_sinks[bindings-event-RUNNING] _
+
+app = <evoagent.app.App object at 0x00000266382A0DC0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000266382A2D40>
+status = <TaskStatus.RUNNING: 'RUNNING'>, sink = 'event', problem = 'bindings'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("sink", ["event", "audit"])
+    @pytest.mark.parametrize("problem", ["plan", "bindings"])
+    def test_failed_state_is_committed_with_the_reason_before_state_sinks(app, monkeypatch, status, sink, problem):
+        task = prepare(app, status, problem)
+        if problem == "bindings":
+            def unavailable(*args):
+                raise ValueError("binding evidence unavailable")
+            monkeypatch.setattr(app.controller.react.bindings, "heal_pending", unavailable)
+        fail_state_sink(app, monkeypatch, sink, "FAILED")
+        with pytest.raises(OSError, match="state sink unavailable"):
+            app.controller.recover_task(task.task_id)
+        stored = persisted(app, task)
+        assert stored.task_status == TaskStatus.FAILED
+>       assert ("计划不可读" if problem == "plan" else "binding evidence unavailable") in (stored.failure_reason or "")
+E       AssertionError: assert 'binding evidence unavailable' in ((None or ''))
+E        +  where None = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_f02aff90db67403b9a0a795f44a59b52', parent_run...st_id': 'manifest_run_f02aff90db67403b9a0a795f44a59b52'}, created_at=1793058730.5171213, updated_at=1793058730.5478387).failure_reason
+
+tests\test_recovery_outcome_review_20261027.py:97: AssertionError
+_ test_failed_state_is_committed_with_the_reason_before_state_sinks[bindings-event-SUSPENDED] _
+
+app = <evoagent.app.App object at 0x00000266382FA3E0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000266382A40A0>
+status = <TaskStatus.SUSPENDED: 'SUSPENDED'>, sink = 'event'
+problem = 'bindings'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("sink", ["event", "audit"])
+    @pytest.mark.parametrize("problem", ["plan", "bindings"])
+    def test_failed_state_is_committed_with_the_reason_before_state_sinks(app, monkeypatch, status, sink, problem):
+        task = prepare(app, status, problem)
+        if problem == "bindings":
+            def unavailable(*args):
+                raise ValueError("binding evidence unavailable")
+            monkeypatch.setattr(app.controller.react.bindings, "heal_pending", unavailable)
+        fail_state_sink(app, monkeypatch, sink, "FAILED")
+        with pytest.raises(OSError, match="state sink unavailable"):
+            app.controller.recover_task(task.task_id)
+        stored = persisted(app, task)
+        assert stored.task_status == TaskStatus.FAILED
+>       assert ("计划不可读" if problem == "plan" else "binding evidence unavailable") in (stored.failure_reason or "")
+E       AssertionError: assert 'binding evidence unavailable' in ((None or ''))
+E        +  where None = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_4073dfef65ad49e7a6b43f720481dc92', parent_run...st_id': 'manifest_run_4073dfef65ad49e7a6b43f720481dc92'}, created_at=1793058730.8353622, updated_at=1793058730.8670132).failure_reason
+
+tests\test_recovery_outcome_review_20261027.py:97: AssertionError
+_ test_failed_state_is_committed_with_the_reason_before_state_sinks[bindings-audit-RUNNING] _
+
+app = <evoagent.app.App object at 0x0000026638223340>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002663822DAB0>
+status = <TaskStatus.RUNNING: 'RUNNING'>, sink = 'audit', problem = 'bindings'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("sink", ["event", "audit"])
+    @pytest.mark.parametrize("problem", ["plan", "bindings"])
+    def test_failed_state_is_committed_with_the_reason_before_state_sinks(app, monkeypatch, status, sink, problem):
+        task = prepare(app, status, problem)
+        if problem == "bindings":
+            def unavailable(*args):
+                raise ValueError("binding evidence unavailable")
+            monkeypatch.setattr(app.controller.react.bindings, "heal_pending", unavailable)
+        fail_state_sink(app, monkeypatch, sink, "FAILED")
+        with pytest.raises(OSError, match="state sink unavailable"):
+            app.controller.recover_task(task.task_id)
+        stored = persisted(app, task)
+        assert stored.task_status == TaskStatus.FAILED
+>       assert ("计划不可读" if problem == "plan" else "binding evidence unavailable") in (stored.failure_reason or "")
+E       AssertionError: assert 'binding evidence unavailable' in ((None or ''))
+E        +  where None = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_ce1db6e68f594a189c3a8872ec4d7179', parent_run...est_id': 'manifest_run_ce1db6e68f594a189c3a8872ec4d7179'}, created_at=1793058731.1525784, updated_at=1793058731.182947).failure_reason
+
+tests\test_recovery_outcome_review_20261027.py:97: AssertionError
+_ test_failed_state_is_committed_with_the_reason_before_state_sinks[bindings-audit-SUSPENDED] _
+
+app = <evoagent.app.App object at 0x00000266382A3F10>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000266382A7400>
+status = <TaskStatus.SUSPENDED: 'SUSPENDED'>, sink = 'audit'
+problem = 'bindings'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("sink", ["event", "audit"])
+    @pytest.mark.parametrize("problem", ["plan", "bindings"])
+    def test_failed_state_is_committed_with_the_reason_before_state_sinks(app, monkeypatch, status, sink, problem):
+        task = prepare(app, status, problem)
+        if problem == "bindings":
+            def unavailable(*args):
+                raise ValueError("binding evidence unavailable")
+            monkeypatch.setattr(app.controller.react.bindings, "heal_pending", unavailable)
+        fail_state_sink(app, monkeypatch, sink, "FAILED")
+        with pytest.raises(OSError, match="state sink unavailable"):
+            app.controller.recover_task(task.task_id)
+        stored = persisted(app, task)
+        assert stored.task_status == TaskStatus.FAILED
+>       assert ("计划不可读" if problem == "plan" else "binding evidence unavailable") in (stored.failure_reason or "")
+E       AssertionError: assert 'binding evidence unavailable' in ((None or ''))
+E        +  where None = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_745a2b4b9598439aad257f050867170c', parent_run...st_id': 'manifest_run_745a2b4b9598439aad257f050867170c'}, created_at=1793058731.4568164, updated_at=1793058731.4858131).failure_reason
+
+tests\test_recovery_outcome_review_20261027.py:97: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_recovery_outcome_review_20261027.py::test_divergence_from_either_recoverable_state_produces_a_question[SUSPENDED]
+FAILED tests/test_recovery_outcome_review_20261027.py::test_waiting_state_is_committed_with_the_question_before_state_sinks[event-RUNNING]
+FAILED tests/test_recovery_outcome_review_20261027.py::test_waiting_state_is_committed_with_the_question_before_state_sinks[event-SUSPENDED]
+FAILED tests/test_recovery_outcome_review_20261027.py::test_waiting_state_is_committed_with_the_question_before_state_sinks[audit-RUNNING]
+FAILED tests/test_recovery_outcome_review_20261027.py::test_waiting_state_is_committed_with_the_question_before_state_sinks[audit-SUSPENDED]
+FAILED tests/test_recovery_outcome_review_20261027.py::test_failed_state_is_committed_with_the_reason_before_state_sinks[plan-event-RUNNING]
+FAILED tests/test_recovery_outcome_review_20261027.py::test_failed_state_is_committed_with_the_reason_before_state_sinks[plan-event-SUSPENDED]
+FAILED tests/test_recovery_outcome_review_20261027.py::test_failed_state_is_committed_with_the_reason_before_state_sinks[plan-audit-RUNNING]
+FAILED tests/test_recovery_outcome_review_20261027.py::test_failed_state_is_committed_with_the_reason_before_state_sinks[plan-audit-SUSPENDED]
+FAILED tests/test_recovery_outcome_review_20261027.py::test_failed_state_is_committed_with_the_reason_before_state_sinks[bindings-event-RUNNING]
+FAILED tests/test_recovery_outcome_review_20261027.py::test_failed_state_is_committed_with_the_reason_before_state_sinks[bindings-event-SUSPENDED]
+FAILED tests/test_recovery_outcome_review_20261027.py::test_failed_state_is_committed_with_the_reason_before_state_sinks[bindings-audit-RUNNING]
+FAILED tests/test_recovery_outcome_review_20261027.py::test_failed_state_is_committed_with_the_reason_before_state_sinks[bindings-audit-SUSPENDED]
+13 failed, 1 passed in 5.24s

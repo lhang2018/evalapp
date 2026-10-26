@@ -1,0 +1,107 @@
+{
+  "date": "2026-10-27",
+  "reviewer": "codex-runtime",
+  "source_commit": "33c22a1e121539a056ef46f58fa5f545803d97b8",
+  "source_tree": "01f335eebf1cd7b64b27e7a6dc30fcb21132efe1",
+  "report": "docs/协作开发/验收/2026-10-27-恢复裁决持久化接续核验.md",
+  "validation_records": {
+    "negative-validation": {
+      "pytest_arguments": [
+        "tests/test_recovery_outcome_review_20261027.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-axsfdcvn",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "formal-negative-validation": {
+      "pytest_arguments": [
+        "tests/test_recovery_outcome_review_20261027.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-zdz26hhv",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "focused-validation": {
+      "pytest_arguments": [
+        "tests/test_recovery_outcome_review_20261027.py",
+        "tests/test_recovery_gate_review_20261027.py",
+        "tests/test_binding_atomicity.py",
+        "tests/test_state_machine.py",
+        "tests/test_run_ownership.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-a6feomg_",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "final-validation": {
+      "pytest_arguments": [
+        "tests/test_recovery_outcome_review_20261027.py",
+        "tests/test_recovery_gate_review_20261027.py",
+        "tests/test_binding_atomicity.py",
+        "tests/test_action_binding.py",
+        "tests/test_peer_action_binding_review.py",
+        "tests/test_plan_side_effect_reconcile.py",
+        "tests/test_peer_plan_reconcile_review.py",
+        "tests/test_run_ownership.py",
+        "tests/test_run_continuation.py",
+        "tests/test_async_approvals.py",
+        "tests/test_execution_boundaries.py",
+        "tests/test_state_machine.py",
+        "tests/test_approvals.py",
+        "-q"
+      ],
+      "snapshot_commit": "33c22a1e121539a056ef46f58fa5f545803d97b8",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-j48l1ago",
+      "source_tree": "01f335eebf1cd7b64b27e7a6dc30fcb21132efe1",
+      "archive_sha256": "6e8e4a5307c04fa4ef535568b05a0a750319e130d2d322d0159371d5daa37129",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-j48l1ago\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-j48l1ago\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-j48l1ago\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    }
+  },
+  "results": {
+    "formal_negative": "9 failed, 7 passed",
+    "focused": "54 passed",
+    "fixed_related": "214 passed"
+  },
+  "initial_probe_correction": "Initial 13 failed/1 passed included overriding _audit itself, bypassing its production Exception catch; not formal defect evidence. Formal probes inject audit.record and real state/gate event boundaries.",
+  "owned_validation_scopes_removed": 4,
+  "independent_acceptance_added": false,
+  "status": "fixes_delivered_pending_independent_recheck",
+  "not_run": [
+    "full backend",
+    "client/TypeScript",
+    "device/APK",
+    "real multi-process kill",
+    "production"
+  ],
+  "test_boundary": "Real App/SQLite/expired lease/recover_task and separate Database reader; sink failures injected; no real OS kill",
+  "foreign_work_preserved": true,
+  "log_sha256_lf": {
+    "final-tests.txt": "a3f074268396e1303960fc5fcc756e1438bad9b762643016f731024db50d6f23",
+    "focused-tests.txt": "681432e256882691afecaf3fd4add997c77fbf6728fe2c6a9954f143c89cd591",
+    "formal-negative-tests.txt": "a3bdd46d477acc7565a2fcaae2d739d5c39cb1d67145b0a8012d9466c530d990",
+    "negative-tests.txt": "02a5027afd71c77e46f2a1e825142cdbefc0dad78cb1876aef96fbf9ab0a89dc"
+  }
+}

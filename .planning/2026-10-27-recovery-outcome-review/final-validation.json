@@ -1,0 +1,28 @@
+{
+  "pytest_arguments": [
+    "tests/test_recovery_outcome_review_20261027.py",
+    "tests/test_recovery_gate_review_20261027.py",
+    "tests/test_binding_atomicity.py",
+    "tests/test_action_binding.py",
+    "tests/test_peer_action_binding_review.py",
+    "tests/test_plan_side_effect_reconcile.py",
+    "tests/test_peer_plan_reconcile_review.py",
+    "tests/test_run_ownership.py",
+    "tests/test_run_continuation.py",
+    "tests/test_async_approvals.py",
+    "tests/test_execution_boundaries.py",
+    "tests/test_state_machine.py",
+    "tests/test_approvals.py",
+    "-q"
+  ],
+  "snapshot_commit": "33c22a1e121539a056ef46f58fa5f545803d97b8",
+  "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+  "owned_temp_directory": "E:\\evalapp\\outputs\\review5-j48l1ago",
+  "source_tree": "01f335eebf1cd7b64b27e7a6dc30fcb21132efe1",
+  "archive_sha256": "6e8e4a5307c04fa4ef535568b05a0a750319e130d2d322d0159371d5daa37129",
+  "source_path_when_tested": "E:\\evalapp\\outputs\\review5-j48l1ago\\source",
+  "module_source_probe": "E:\\evalapp\\outputs\\review5-j48l1ago\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-j48l1ago\\source\\evoagent\\tools\\refactor.py\n",
+  "exit_code": 0,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+}
