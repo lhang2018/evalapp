@@ -6576,13 +6576,24 @@
    "workpackage": "ALN-19",
    "title": "真实音视频供应商漫剧纵切片",
    "stream": "assets",
-   "owner": null,
+   "owner": "dsh-lead",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "bf3a2eab1a1f3906106e60451d39b165c35b672a",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-26",
+     "scope": "真实音视频供应商契约切片：MediaVendorConfig(from_env) + MediaVendorClient(真实urllib HTTP)：未配置/预算不足拒绝且不发请求、按预估与回执对账、记录provider/model_version/actor/reason/cost/remaining/asset追溯+审计、失败refunded不扣费可恢复、edit仅trim/concat/subtitle；测试用本地HTTP夹具并明确标注；专项6 passed、实测11项全过、全量2386/0/2",
+     "source_commit": "f772860963abca9445d53ef74f42935583a7e521",
+     "functional_commit": "f772860963abca9445d53ef74f42935583a7e521",
+     "source_tree": "00b3f4d014be107f5436a20b7603b51fda9f8a52",
+     "result": "供应商契约/预算校验/费用-版本-授权追溯/失败退款恢复切片交付；未完成(如实)：无真实供应商凭据与预算→真实生成/真实计费/生产网络未测、协议字段需按真实文档适配、未接全局CostGovernor、无CLI/App入口与生产证据；不冒称19-A关闭",
+     "log": ".planning/2026-10-26-aln19a/media-vendor-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-19-A-真实音视频供应商切片.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/19-A-真实音视频供应商漫剧纵切片.md",
    "shared_files": [
     "evoagent/tools/registry.py",
@@ -6599,9 +6610,25 @@
    "requirement_refs": [
     "F02"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
-   "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-   "prerequisites": "真实服务配置与预算"
+   "next_step": "待独立复核（供应商契约切片，非真实供应商验收）：配置缺失/预算不足拒绝且不发请求、真实HTTP夹具渲染与sha/费用/版本/授权追溯、失败退款与恢复、edit白名单证据见交付文档与 .planning/2026-10-26-aln19a/；真实关闭需用户提供供应商凭据与预算后做真实生成/计费/协议适配/生产证据；审阅人未定不自批",
+   "working_basis": "以bf3a2eab1a1f3906106e60451d39b165c35b672a（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
+   "prerequisites": "真实服务配置与预算",
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户指示重扫并认领；重扫后唯一 READY 卡为 19-A（24-A/15-P 已 accepted）"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "claimed",
+     "to": "review",
+     "reason": "供应商契约/预算/追溯/恢复切片完成；真实凭据与预算未提供，正式验收未做（不冒称通过）"
+    }
+   ],
+   "delivered_commit": "f772860963abca9445d53ef74f42935583a7e521",
+   "delivery": "docs/协作开发/交付/ALN-19-A-真实音视频供应商切片.md"
   },
   {
    "id": "ALN-20-P",
