@@ -1,0 +1,190 @@
+{
+ "reviewer": "dsh-lead（独立复核；用户要求后续再由另一审阅人复核一遍）",
+ "date": "2026-10-26",
+ "cards": [
+  "ALN-25-B",
+  "ALN-30-A"
+ ],
+ "proactivity_25B": {
+  "levels": {
+   "off": {
+    "may_start": false,
+    "max_concurrent": 0,
+    "max_model_calls": 0,
+    "no_progress_limit": 0
+   },
+   "low": {
+    "may_start": true,
+    "max_concurrent": 1,
+    "max_model_calls": 5,
+    "no_progress_limit": 2
+   },
+   "normal": {
+    "may_start": true,
+    "max_concurrent": 2,
+    "max_model_calls": 25,
+    "no_progress_limit": 3
+   },
+   "high": {
+    "may_start": true,
+    "max_concurrent": 3,
+    "max_model_calls": 60,
+    "no_progress_limit": 5
+   }
+  },
+  "off_blocks_with_notice": true,
+  "normal_allows": true,
+  "invalid_level_rejected": true,
+  "proactive_budget_scope": [
+   {
+    "scope": "proactive",
+    "max_model_calls": 25
+   }
+  ],
+  "budget_exhausted_denies": true,
+  "budget_scope_is_proactive": true,
+  "no_progress_stop": {
+   "limit": 3,
+   "stopped_after": 3,
+   "blocked_before_reset": true,
+   "allowed_after_reset": true,
+   "streak_after_reset": 0
+  },
+  "resource_yield": {
+   "high_pressure_denied": true,
+   "high_reason": [
+    "资源压力让位核心任务或状态未知: cpu_high"
+   ],
+   "invalid_sample_denied": true,
+   "invalid_sample_reason": [
+    "资源采样不可用或不合法，主动侧暂缓"
+   ],
+   "governor_error_denied": true
+  },
+  "failure_isolation": {
+   "result": {
+    "isolated": true,
+    "reason": "夹具失败",
+    "core_state_touched": false,
+    "notice": "主动分析失败已隔离；你的任务与数据不受影响。"
+   },
+   "ledger_calls_unchanged": true,
+   "core_state_touched": false
+  },
+  "level_switch": {
+   "previous": "low",
+   "level": "high",
+   "notice": null
+  }
+ },
+ "wiring_30A": {
+  "app_attrs": {
+   "identity_registry": true,
+   "deployment": true,
+   "recovery": true,
+   "credentials": true,
+   "knowledge": true,
+   "memory_control": true,
+   "assist": true,
+   "delivery": true
+  },
+  "identity_injected": true,
+  "assist_uses_memory_control": true,
+  "audit": {
+   "ok": true,
+   "total": 6,
+   "wired": 6,
+   "dangling": []
+  },
+  "assert_complete": "ok",
+  "missing_entry_detected": {
+   "ok": false,
+   "dangling_count": 1,
+   "raises": true
+  },
+  "cli_host_deploy": {
+   "has_manifest": true,
+   "verify": {
+    "ok": true,
+    "errors": [],
+    "manifest": {
+     "format": 1,
+     "instance_id": "inst_4be267a2149c45d58093110dc7d623eb",
+     "deployed_at": 1793008576.4323711,
+     "app_version": "0.1.0",
+     "source_commit": "review-probe",
+     "schema_version_source": 3,
+     "layout": [
+      "backups",
+      "logs"
+     ],
+     "databases": {
+      "evoagent.db": {
+       "schema_version": 3,
+       "sha256_at_deploy": "0ad1382bcedc5e8424a55234c9913ab83a08748c1b5b6bb3519cbff3cba2fccf",
+       "bytes_at_deploy": 737280
+      },
+      "events.db": {
+       "schema_version": 0,
+       "sha256_at_deploy": "3c0bbdec6ddcb252eb667dfc3c902a0101019a252e710438d2c42c5c8a35f794",
+       "bytes_at_deploy": 12288
+      },
+      "memory.db": {
+       "schema_version": 0,
+       "sha256_at_deploy": "a0d2fec68975a0be581235b1d81040c8d0015a6673b4585dec89a8e7a268e4a1",
+       "bytes_at_deploy": 40960
+      }
+     },
+     "note": "schema_version 必须与当前源码一致；数据哈希仅作部署审计基线"
+    },
+    "instance_id": "inst_4be267a2149c45d58093110dc7d623eb",
+    "deployed_at": 1793008576.4323711,
+    "changed_since_deploy": [],
+    "checked_at": 1793008576.4348829
+   }
+  },
+  "cli_backup": {
+   "name": "reviewprobe.zip"
+  },
+  "cli_host_restore_without_deployed_instance": {
+   "error": "目标实例部署校验未通过，拒绝恢复: 缺少部署清单: C:\\Users\\lhang\\AppData\\Local\\Temp\\dsh_review_0z2ur9ah\\wiring_app\\deployment.json"
+  },
+  "cli_host_restore_fail_closed": true,
+  "cli_credential_audit": {
+   "contains_secret": true
+  },
+  "cli_wiring_audit": {
+   "ok": true,
+   "dangling": []
+  },
+  "restore_with_unfinished_task": {
+   "error": "存在未结束任务，拒绝恢复",
+   "active_tasks": [
+    "7ce9ab002c12"
+   ]
+  }
+ },
+ "checks": {
+  "off_blocks_with_safety_notice": true,
+  "normal_allows": true,
+  "invalid_level_rejected": true,
+  "proactive_budget_isolated": true,
+  "no_progress_stop_and_reset": true,
+  "resource_pressure_yields": true,
+  "invalid_resource_sample_denied": true,
+  "resource_governor_error_denied": true,
+  "failure_isolated": true,
+  "app_attrs_present": true,
+  "identity_injected": true,
+  "wiring_audit_zero_dangling": true,
+  "wiring_assert_ok": true,
+  "missing_entry_detected": true,
+  "cli_host_deploy_real": true,
+  "restore_fail_closed_without_deployment": true,
+  "cli_wiring_audit_zero_dangling": true,
+  "credential_fragment_detected": true,
+  "restore_refused_with_unfinished_task": true
+ },
+ "all_checks_pass": true,
+ "boundary": "仅临时目录与夹具；未做真实设备/生产资源压力实测；25-B 的资源压力让位为夹具决策器（非 15-D 真实采样）；30-A 未验证客户端/生产部署。"
+}

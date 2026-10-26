@@ -4424,7 +4424,7 @@
    "title": "主动强度、停止与资源非干扰",
    "stream": "runtime",
    "owner": "zcode-next",
-   "reviewer": null,
+   "reviewer": "dsh-lead",
    "branch": "feature/user-direction",
    "base_commit": "a1b3a3183b057b4e72a50677a703555a05ba4acf",
    "status": "review",
@@ -4442,6 +4442,15 @@
      "result": "相关109；固定Git两分区合计2315 passed/1 skipped/1 deselected；客户端同子树沿用424非重跑；未做生产/真机或独立接受，未发布",
      "log": ".planning/2026-10-26-proactive-review/committed-evidence.json",
      "delivery": "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "scope": "dsh-lead 独立复核 ALN-25-B：四档/off安全提示/主动预算隔离/无进展停止与重置/资源高压与非法采样拒绝/失败隔离；相关专项104 passed；独立探针19项全过",
+     "source_commit": "e80ee98c6c08387e28564223da81e3547699819f",
+     "result": "changes_requested（证据缺口）：代码与策略链复核通过，但卡片要求的设备/宿主真实资源压力实测未做（原文档自认缺口），5f09fb8 夹具修复有效；补齐真实压力证据后需另一审阅人复核。",
+     "log": ".planning/2026-10-26-dsh-review/review-probes.json",
+     "reviewer": "dsh-lead",
+     "verdict": "changes_requested_real_resource_pressure_evidence_missing"
     }
    ],
    "card": "docs/协作开发/任务卡/25-B-主动强度、停止与资源非干扰.md",
@@ -4467,7 +4476,7 @@
     "F04",
     "G5"
    ],
-   "next_step": "5f09fb8修复实际资源采样无效被主动层当低压放行；内置资源层原前台策略保留。相关109、固定完整后端2315/1/1通过；新增修复待复核，主链装配/真实资源非干扰仍未完成。",
+   "next_step": "dsh-lead 一审：代码/策略链通过（off安全提示、主动预算隔离、无进展停止重置、资源异常拒绝、失败隔离），但卡片要求的设备/宿主真实资源压力实测仍缺；补齐 F04-03/04 真实压力证据后由另一审阅人复核再转 accepted。本轮未改代码。",
    "working_basis": "2026-10-25 zcode-next 认领。复用 15-D ResourceGovernor（已accepted）、25-A ProactiveAssistService（已accepted）、BudgetLedger 既有池语义；写入边界 goals/ + budget.py + android-app（客户端开关投影）；资源压力实测用可控压力源（真机测量另验）。",
    "prerequisites": "设备或宿主资源测量环境；单纯Mock预算计数不算非干扰验收",
    "latest_code_review": {
@@ -4478,7 +4487,16 @@
     "scope": "off与调档/回调/严格并发收益类型/资源未知拒绝",
     "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
     "status": "fixes_delivered_pending_independent_recheck"
-   }
+   },
+   "delivered_commit": "704ec42b56f2054ac3d1ee1f3ef73ba42861e46f",
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "dsh-lead 独立一审 changes_requested：真实资源压力实测证据缺失，保持 review"
+    }
+   ]
   },
   {
    "id": "ALN-26-A",
@@ -6868,10 +6886,10 @@
    "title": "服务端装配收口：零入口域接线与主链可达性",
    "stream": "integration",
    "owner": "claude-main",
-   "reviewer": null,
+   "reviewer": "dsh-lead",
    "branch": "feature/user-direction",
    "base_commit": "206bcd7900b727ac8f69c463b7e5f315177cd791",
-   "status": "review",
+   "status": "accepted",
    "phase": 5,
    "depends_on": [
     "ALN-17-P",
@@ -6906,6 +6924,15 @@
      "result": "恢复入口三问题修复：全账本门禁/窗口外任务/真实失败回退；固定相关291过，新增修复待复核，不扩大旧接受",
      "log": ".planning/2026-10-26-ledger-code-review/committed-evidence.json",
      "delivery": "docs/协作开发/验收/2026-10-26-他人验收台账与恢复入口代码复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "scope": "dsh-lead 独立复核 ALN-30-A（一审）：装配属性/身份注入/wiring 6/6 可达且零悬空/悬空必抛错/CLI host-deploy 真实验证/credential 检出/wiring-audit 零悬空/未结束任务拒绝恢复/无部署清单 fail-closed；相关专项104 passed；独立探针19项全过",
+     "source_commit": "e80ee98c6c08387e28564223da81e3547699819f",
+     "result": "一审通过：装配收口与可达性成立。证据缺口：交付所称 host-restore 成功链路未独立复现（实例无部署清单时按设计 fail-closed），需另一审阅人在真实部署实例上补证；按用户要求本卡后续必须由另一审阅人再复核一遍。",
+     "log": ".planning/2026-10-26-dsh-review/review-probes.json",
+     "reviewer": "dsh-lead",
+     "verdict": "accepted_first_review_pending_second_reviewer"
     }
    ],
    "card": "docs/协作开发/任务卡/30-A-服务端装配收口与主链可达性.md",
@@ -6921,7 +6948,7 @@
     "G0",
     "G3"
    ],
-   "next_step": "30-A仍review；621a191修复host-restore未结束任务漏拦截、旧门禁1000窗口和失败未回退，固定相关291过，新修复待独立复核。旧2299/1日志仍缺精确树绑定，非当前全量；原拆分消费者与生产条件继续。",
+   "next_step": "已被 dsh-lead 一审接受（装配收口与可达性）；按用户要求后续必须由另一审阅人再复核一遍，重点：host-restore 成功链路需在真实部署实例补证、621a191 回退路径；本轮未改代码；发布基线不变",
    "working_basis": "claude-main 认领实施：新增 evoagent/integration/wiring.py 独占模块；app.py/cli.py 按精确点外科手术式修改（当前两者均无他人在途）；客户端 App.tsx 装配不在本卡",
    "prerequisites": "仅需仓库与本地测试环境",
    "ownership_history": [
@@ -6930,6 +6957,12 @@
      "from": null,
      "to": "claude-main",
      "reason": "用户批准开装配收口卡；勘察发现四域零入口+两处点名缺口，27份交付报告提及app.py/App.tsx"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "accepted",
+     "reason": "dsh-lead 独立一审通过（非作者）；按用户要求另一审阅人再复核后视为最终验收"
     }
    ],
    "delivered_commit": "67bed4644a84fd564a0e752ac4bc06b4f7ba3382",
