@@ -1,0 +1,22 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [ 34%]
+........................................................................ [ 68%]
+...................................................F.............        [100%]
+================================== FAILURES ===================================
+_____ test_registered_plan_preserves_originals_and_renders_dynamic_count ______
+
+board = {'baseline': {'acceptance_history': [{'accepted_cards': ['ALN-04-UI', 'ALN-07-B', 'ALN-11-W', 'ALN-12-A', 'ALN-20-A'],...途；原串行队列已归档，当前无单开发者队列。每张卡实际owner与独占路径以本表为准。其他线按真实认领推进；待审接口可用于独立实现，不代表接受或发布。baseline仍candidate，published_commit为空。', ...}
+
+    def test_registered_plan_preserves_originals_and_renders_dynamic_count(board):
+        assert not check(board)
+>       assert "30 个工作包总账" in cp.render(board)
+E       AssertionError: assert '30 个工作包总账' in '# 开发任务认领表\n\n本表由 workboard.json 生成；认领先改 JSON，再运行检查器的 --render。\n角色是建议职责，负责人以 workboard.json 认领为准，审阅人未分配时保留待定；认领状态不等于功...ommit；merged/accepted 必须有证据，accepted 必须有审阅人。\n- workpackages.owner：整包协调人；dispatches.owner：具体子任务开发者。同一包拆卡不代表同文件可并发覆盖。\n'
+E        +  where '# 开发任务认领表\n\n本表由 workboard.json 生成；认领先改 JSON，再运行检查器的 --render。\n角色是建议职责，负责人以 workboard.json 认领为准，审阅人未分配时保留待定；认领状态不等于功...ommit；merged/accepted 必须有证据，accepted 必须有审阅人。\n- workpackages.owner：整包协调人；dispatches.owner：具体子任务开发者。同一包拆卡不代表同文件可并发覆盖。\n' = <function render at 0x00000203FDE14280>({'baseline': {'acceptance_history': [{'accepted_cards': ['ALN-04-UI', 'ALN-07-B', 'ALN-11-W', 'ALN-12-A', 'ALN-20-A'],...途；原串行队列已归档，当前无单开发者队列。每张卡实际owner与独占路径以本表为准。其他线按真实认领推进；待审接口可用于独立实现，不代表接受或发布。baseline仍candidate，published_commit为空。', ...})
+E        +    where <function render at 0x00000203FDE14280> = cp.render
+
+tools\tests\test_product_backlog.py:59: AssertionError
+=========================== short test summary info ===========================
+FAILED tools/tests/test_product_backlog.py::test_registered_plan_preserves_originals_and_renders_dynamic_count
+1 failed, 208 passed in 39.91s

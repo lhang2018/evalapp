@@ -4191,6 +4191,14 @@
      "date": "2026-10-25",
      "scope": "独立复核（zcode-main）：独立构建MemoryStore探针——R2来源可见+无证据快照、R3纠错回检verified_in_retrieval=True（杭州召回/上海不再含旧）、R4删除deleted=1+retained=3层+fully_erased=False不假成功、R5 deny优先shared=False；GLOBAL-02红线+不假成功+禁止优先三语义确认；转accepted",
      "review_report": "docs/协作开发/验收/2026-10-25-ALN-24-D独立复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "8267d6438a9a6adb517af24a37178bbb8e17c8a0",
+     "functional_commit": "c6c98728ea3804b981c721a4db205170b2945e28",
+     "result": "持久范围策略接真实检索，HTTP保存→模型消息/持久manifest排除禁用项；209项定向通过，非全量；新增修复待复核，原切片接受不扩大",
+     "log": ".planning/2026-10-26-memory-policy/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-记忆范围策略主链复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/24-D-用户记忆、隐私与纠正删除路径.md",
@@ -4222,7 +4230,7 @@
     "UX-24",
     "GLOBAL"
    ],
-   "next_step": "待独立复核：记忆来源展示(不含证据快照)、纠错后检索回检、删除链保留项/失败项与recall_check、范围策略禁止优先、HTTP角色与拒绝路径的证据见交付文档与 .planning/2026-10-25-aln24d/；审阅人未定，不自批为独立验收；operator身份接线、App界面与备份/跨端擦除属后续，ALN-24整包不关闭",
+   "next_step": "原控制面切片已接受；c6c9872新增持久范围策略检索约束，8267d64固定记忆/运行身份/台账工具209过，新增修复待复核。App界面、逐用户策略、备份/跨端擦除仍未闭合；不宣称整包完成。",
    "working_basis": "以c98439a414861f9f99b1f2c2116346e1556d95fa（feature/user-direction HEAD）作为实际接手锚点；最终提交799ac22778750c28b9ac39420cb80beb05b049a3；基线仍为candidate、prepared_candidate 21899e6 未发布",
    "prerequisites": "仅需仓库与本地测试环境",
    "delivered_commit": "799ac22778750c28b9ac39420cb80beb05b049a3",
@@ -6708,23 +6716,23 @@
    "prerequisites": "原包依赖和真实外部环境逐项满足"
   },
   {
-  "id": "ALN-30-A",
-  "workpackage": "ALN-30",
-  "title": "服务端装配收口：零入口域接线与主链可达性",
-  "stream": "integration",
-  "owner": "claude-main",
-  "reviewer": null,
-  "branch": "feature/user-direction",
-  "base_commit": "206bcd7900b727ac8f69c463b7e5f315177cd791",
-  "status": "in_progress",
-  "phase": 5,
-  "depends_on": [
-   "ALN-17-P",
-   "ALN-25-A",
-   "ALN-27-A",
-   "ALN-29-C",
-   "ALN-11-P"
-  ],
+   "id": "ALN-30-A",
+   "workpackage": "ALN-30",
+   "title": "服务端装配收口：零入口域接线与主链可达性",
+   "stream": "integration",
+   "owner": "claude-main",
+   "reviewer": null,
+   "branch": "feature/user-direction",
+   "base_commit": "206bcd7900b727ac8f69c463b7e5f315177cd791",
+   "status": "in_progress",
+   "phase": 5,
+   "depends_on": [
+    "ALN-17-P",
+    "ALN-25-A",
+    "ALN-27-A",
+    "ALN-29-C",
+    "ALN-11-P"
+   ],
    "blocker": null,
    "evidence": [],
    "card": "docs/协作开发/任务卡/30-A-服务端装配收口与主链可达性.md",
@@ -8564,6 +8572,23 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-反馈私钥与模块身份复核.md",
    "scope": "反馈/重构及全量发现的诊断拒绝修复；最终2344/1/1，新修复待独立接受且未纳入发布基线"
+  },
+  {
+   "id": "discovered-c6c98728ea38",
+   "title": "fix(memory): 让持久范围策略约束真实检索与上下文",
+   "workpackage": "ALN-24",
+   "source_commit": "c6c98728ea3804b981c721a4db205170b2945e28",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/memory/scope_policy.py",
+    "evoagent/memory/store.py",
+    "evoagent/memory/user_control.py",
+    "tests/test_memory_policy_runtime.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-记忆范围策略主链复核.md",
+   "scope": "定向209过，真实本机HTTP/控制器路径，非全量/产品接受/基线发布；新增修复待复核"
   }
  ],
  "requirement_batches": [

@@ -1,0 +1,220 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFF...                                                           [100%]
+================================== FAILURES ===================================
+_______ test_saved_deny_filters_before_embedding_and_does_not_count_use _______
+
+store = <evoagent.memory.store.MemoryStore object at 0x0000017DF5C93B50>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000017DF5C90A60>
+
+    def test_saved_deny_filters_before_embedding_and_does_not_count_use(store, monkeypatch):
+        blocked = seed(store, "alpha knowledge blocked shared")
+        allowed = seed(store, "alpha knowledge allowed user", Scope.USER)
+        policy(store, ["user"], ["shared"])
+        candidates = []
+        vectors = store._vectors_for
+    
+        def spy(items, model):
+            candidates.extend(item.memory_id for item in items)
+            return vectors(items, model)
+    
+        monkeypatch.setattr(store, "_vectors_for", spy)
+        context = ContextAssembler(store).assemble("alpha knowledge", domain="general")
+        prompts = "\n".join(message.content for message in context.to_messages())
+        assert allowed.content in prompts
+>       assert blocked.content not in prompts
+E       AssertionError: assert 'alpha knowl...ocked shared' not in 'intent:gene...allowed user'
+E         
+E         'alpha knowledge blocked shared' is contained here:
+E           verified] alpha knowledge blocked shared || [verified] alpha knowledge allowed user
+E         ?           ++++++++++++++++++++++++++++++
+
+tests\test_memory_policy_runtime.py:45: AssertionError
+__ test_allowlist_filters_before_limit_instead_of_starving_allowed_memories ___
+
+store = <evoagent.memory.store.MemoryStore object at 0x0000017DF5D87C70>
+
+    def test_allowlist_filters_before_limit_instead_of_starving_allowed_memories(store):
+        for index in range(8):
+            seed(store, f"alpha knowledge shared {index}")
+        allowed = seed(store, "alpha knowledge user", Scope.USER)
+        policy(store, ["user"], [])
+>       assert [item.memory_id for item in store.search("alpha knowledge", limit=1)] == [allowed.memory_id]
+E       AssertionError: assert ['8eea7a0f3dcd'] == ['45f7e144343e']
+E         
+E         At index 0 diff: '8eea7a0f3dcd' != '45f7e144343e'
+E         Use -v to get more diff
+
+tests\test_memory_policy_runtime.py:60: AssertionError
+__________ test_empty_allow_does_not_implicitly_enable_other_scopes ___________
+
+store = <evoagent.memory.store.MemoryStore object at 0x0000017DF5EB7E20>
+
+    def test_empty_allow_does_not_implicitly_enable_other_scopes(store):
+        seed(store, "alpha knowledge shared")
+        seed(store, "alpha knowledge user", Scope.USER)
+        policy(store, [], ["shared"])
+>       assert store.search("alpha knowledge") == []
+E       AssertionError: assert [MemoryItem(c...nflict=False)] == []
+E         
+E         Left contains 2 more items, first extra item: MemoryItem(content='alpha knowledge shared', kind=<MemoryKind.RUNTIME_EXPERIENCE: 'runtime_experience'>, scope=<Scope...., fact_key='', user_id='', project_id='', session_id='', task_id='', expert_id='', conflict_ids=[], has_conflict=False)
+E         Use -v to get more diff
+
+tests\test_memory_policy_runtime.py:67: AssertionError
+______ test_existing_assembler_and_reopened_store_observe_policy_changes ______
+
+store = <evoagent.memory.store.MemoryStore object at 0x0000017DF5C93640>
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-9ah9t90h/scratch/pytest/test_existing_assembler_and_re0')
+
+    def test_existing_assembler_and_reopened_store_observe_policy_changes(store, tmp_path):
+        item = seed(store, "alpha knowledge durable")
+        assembler = ContextAssembler(store)
+        assert item.content in " ".join(assembler.assemble("alpha knowledge").memories)
+        policy(store, ["user"], ["shared"])
+>       assert assembler.assemble("alpha knowledge").memories == []
+E       AssertionError: assert ['[verified] ...edge durable'] == []
+E         
+E         Left contains one more item: '[verified] alpha knowledge durable'
+E         Use -v to get more diff
+
+tests\test_memory_policy_runtime.py:75: AssertionError
+_________________ test_grant_does_not_override_disabled_scope _________________
+
+store = <evoagent.memory.store.MemoryStore object at 0x0000017DF5EA9E70>
+
+    def test_grant_does_not_override_disabled_scope(store):
+        me = MemoryIdentity(user_id="alice", expert_id="general")
+        other = MemoryIdentity(user_id="bob", expert_id="general")
+        item = seed(store, "alpha knowledge foreign", Scope.EXPERT, identity=other)
+        grant = AccessGrant(("expert",), other, "test:owner", "explicit test grant")
+        assert item.memory_id in {m.memory_id for m in store.search("alpha knowledge", identity=me, grant=grant)}
+        policy(store, ["user"], ["expert"])
+>       assert store.search("alpha knowledge", identity=me, grant=grant) == []
+E       AssertionError: assert [MemoryItem(c...nflict=False)] == []
+E         
+E         Left contains one more item: MemoryItem(content='alpha knowledge foreign', kind=<MemoryKind.RUNTIME_EXPERIENCE: 'runtime_experience'>, scope=<Scope...='', user_id='bob', project_id='', session_id='', task_id='', expert_id='general', conflict_ids=[], has_conflict=False)
+E         Use -v to get more diff
+
+tests\test_memory_policy_runtime.py:92: AssertionError
+_ test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing[null] _
+
+store = <evoagent.memory.store.MemoryStore object at 0x0000017DF5D87B80>
+raw = 'null'
+
+    @pytest.mark.parametrize("raw", ["null", "{}", '"shared"', '["unknown"]', '[[]]'])
+    def test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing(store, raw):
+        seed(store, "alpha knowledge private")
+        policy(store, ["user"], ["shared"])
+        with store._lock:
+            store._conn.execute("UPDATE memory_scope_policy SET allow_json=? WHERE id=1", (raw,))
+            store._conn.commit()
+>       with pytest.raises(MemoryAccessError):
+E       Failed: DID NOT RAISE <class 'evoagent.memory.manifest.MemoryAccessError'>
+
+tests\test_memory_policy_runtime.py:102: Failed
+__ test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing[{}] __
+
+store = <evoagent.memory.store.MemoryStore object at 0x0000017DF5C7EA40>
+raw = '{}'
+
+    @pytest.mark.parametrize("raw", ["null", "{}", '"shared"', '["unknown"]', '[[]]'])
+    def test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing(store, raw):
+        seed(store, "alpha knowledge private")
+        policy(store, ["user"], ["shared"])
+        with store._lock:
+            store._conn.execute("UPDATE memory_scope_policy SET allow_json=? WHERE id=1", (raw,))
+            store._conn.commit()
+>       with pytest.raises(MemoryAccessError):
+E       Failed: DID NOT RAISE <class 'evoagent.memory.manifest.MemoryAccessError'>
+
+tests\test_memory_policy_runtime.py:102: Failed
+_ test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing["shared"] _
+
+store = <evoagent.memory.store.MemoryStore object at 0x0000017DF5C92EF0>
+raw = '"shared"'
+
+    @pytest.mark.parametrize("raw", ["null", "{}", '"shared"', '["unknown"]', '[[]]'])
+    def test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing(store, raw):
+        seed(store, "alpha knowledge private")
+        policy(store, ["user"], ["shared"])
+        with store._lock:
+            store._conn.execute("UPDATE memory_scope_policy SET allow_json=? WHERE id=1", (raw,))
+            store._conn.commit()
+>       with pytest.raises(MemoryAccessError):
+E       Failed: DID NOT RAISE <class 'evoagent.memory.manifest.MemoryAccessError'>
+
+tests\test_memory_policy_runtime.py:102: Failed
+_ test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing[["unknown"]] _
+
+store = <evoagent.memory.store.MemoryStore object at 0x0000017DF5EA84F0>
+raw = '["unknown"]'
+
+    @pytest.mark.parametrize("raw", ["null", "{}", '"shared"', '["unknown"]', '[[]]'])
+    def test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing(store, raw):
+        seed(store, "alpha knowledge private")
+        policy(store, ["user"], ["shared"])
+        with store._lock:
+            store._conn.execute("UPDATE memory_scope_policy SET allow_json=? WHERE id=1", (raw,))
+            store._conn.commit()
+>       with pytest.raises(MemoryAccessError):
+E       Failed: DID NOT RAISE <class 'evoagent.memory.manifest.MemoryAccessError'>
+
+tests\test_memory_policy_runtime.py:102: Failed
+_ test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing[[[]]] _
+
+store = <evoagent.memory.store.MemoryStore object at 0x0000017DF5D86440>
+raw = '[[]]'
+
+    @pytest.mark.parametrize("raw", ["null", "{}", '"shared"', '["unknown"]', '[[]]'])
+    def test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing(store, raw):
+        seed(store, "alpha knowledge private")
+        policy(store, ["user"], ["shared"])
+        with store._lock:
+            store._conn.execute("UPDATE memory_scope_policy SET allow_json=? WHERE id=1", (raw,))
+            store._conn.commit()
+>       with pytest.raises(MemoryAccessError):
+E       Failed: DID NOT RAISE <class 'evoagent.memory.manifest.MemoryAccessError'>
+
+tests\test_memory_policy_runtime.py:102: Failed
+_ test_bad_policy_members_are_control_errors_and_preserve_previous_policy[allow0-deny0] _
+
+store = <evoagent.memory.store.MemoryStore object at 0x0000017DF5C7E080>
+allow = [['user']], deny = []
+
+    @pytest.mark.parametrize("allow,deny", [([["user"]], []), ([1], []), (["user"], [None])])
+    def test_bad_policy_members_are_control_errors_and_preserve_previous_policy(store, allow, deny):
+        control = MemoryControlService(store)
+        before = control.get_scope_policy()
+        with pytest.raises(MemoryControlError):
+>           control.set_scope_policy(allow=allow, deny=deny, actor="test:owner", reason="invalid")
+
+tests\test_memory_policy_runtime.py:111: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.memory.user_control.MemoryControlService object at 0x0000017DF5C7E0E0>
+
+    def set_scope_policy(self, *, allow: Any, deny: Any, actor: str,
+                         reason: str) -> Dict[str, Any]:
+        actor = self._text(actor, "actor")
+        reason = self._text(reason, "reason")
+        if not isinstance(allow, list) or not isinstance(deny, list):
+            raise MemoryControlError("allow/deny 必须是作用域数组")
+        values = set(_scope_values())
+>       allow_set, deny_set = set(allow), set(deny)
+E       TypeError: unhashable type: 'list'
+
+evoagent\memory\user_control.py:195: TypeError
+=========================== short test summary info ===========================
+FAILED tests/test_memory_policy_runtime.py::test_saved_deny_filters_before_embedding_and_does_not_count_use
+FAILED tests/test_memory_policy_runtime.py::test_allowlist_filters_before_limit_instead_of_starving_allowed_memories
+FAILED tests/test_memory_policy_runtime.py::test_empty_allow_does_not_implicitly_enable_other_scopes
+FAILED tests/test_memory_policy_runtime.py::test_existing_assembler_and_reopened_store_observe_policy_changes
+FAILED tests/test_memory_policy_runtime.py::test_grant_does_not_override_disabled_scope
+FAILED tests/test_memory_policy_runtime.py::test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing[null]
+FAILED tests/test_memory_policy_runtime.py::test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing[{}]
+FAILED tests/test_memory_policy_runtime.py::test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing["shared"]
+FAILED tests/test_memory_policy_runtime.py::test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing[["unknown"]]
+FAILED tests/test_memory_policy_runtime.py::test_malformed_persisted_policy_refuses_retrieval_instead_of_allowing[[[]]]
+FAILED tests/test_memory_policy_runtime.py::test_bad_policy_members_are_control_errors_and_preserve_previous_policy[allow0-deny0]
+11 failed, 3 passed, 1 deselected in 0.67s
