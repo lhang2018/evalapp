@@ -122,7 +122,7 @@ def _scope_store(app):
 
 def _auth_principal(ctx):
     auth = getattr(ctx, "auth", None)
-    return getattr(auth, "principal_id", "") or "local:host"
+    return getattr(auth, "principal_id", "") or ""
 
 
 def _require_admin(ctx):
@@ -147,6 +147,8 @@ def put_principal_policy(ctx):
     if not _require_admin(ctx):
         return ctx.json(403, {"error": "多主体策略需要 admin 角色"})
     body = ctx.body
+    if not isinstance(body, dict):
+        return ctx.json(400, {"error": "请求体必须是对象"})
     try:
         store = _scope_store(ctx.app)
         result = store.set_principal_policy(
@@ -154,7 +156,7 @@ def put_principal_policy(ctx):
             requested=body.get("principal"),
             multi_principal=body.get("multi_principal"),
             allow=body.get("allow"), deny=body.get("deny"),
-            actor=str(body.get("actor") or "api:admin"),
+            actor=_auth_principal(ctx),
             reason=str(body.get("reason") or ""))
     except PrincipalMismatch as exc:
         return ctx.json(403, {"error": str(exc)})
@@ -168,12 +170,14 @@ def migrate_principal_policy(ctx):
     if not _require_admin(ctx):
         return ctx.json(403, {"error": "迁移需要 admin 角色"})
     body = ctx.body
+    if not isinstance(body, dict):
+        return ctx.json(400, {"error": "请求体必须是对象"})
     try:
         result = _scope_store(ctx.app).migrate_legacy(
             authenticated=_auth_principal(ctx),
             requested=body.get("principal"),
-            dry_run=bool(body.get("dry_run", True)),
-            actor=str(body.get("actor") or "api:admin"),
+            dry_run=body.get("dry_run", True),
+            actor=_auth_principal(ctx),
             reason=str(body.get("reason") or ""))
     except PrincipalMismatch as exc:
         return ctx.json(403, {"error": str(exc)})
@@ -187,11 +191,13 @@ def rollback_principal_policy(ctx):
     if not _require_admin(ctx):
         return ctx.json(403, {"error": "回退需要 admin 角色"})
     body = ctx.body
+    if not isinstance(body, dict):
+        return ctx.json(400, {"error": "请求体必须是对象"})
     try:
         result = _scope_store(ctx.app).rollback_migration(
             authenticated=_auth_principal(ctx),
             requested=body.get("principal"),
-            actor=str(body.get("actor") or "api:admin"),
+            actor=_auth_principal(ctx),
             reason=str(body.get("reason") or ""))
     except PrincipalMismatch as exc:
         return ctx.json(403, {"error": str(exc)})

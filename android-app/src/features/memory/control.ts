@@ -4,7 +4,7 @@
  *
  * 规则：
  * - 删除结果 `fully_erased` 恒为 false 时，必须展示保留层（墓碑/审计/备份）；
- * - 范围策略的"禁用"= 从分析范围 deny；空策略视为全部允许；
+ * - 范围只在 allow 且不在 deny 时启用；未加载的策略不推定为全部允许；
  * - 离线/权限拒绝必须有明确提示，不把失败当成成功。
  */
 
@@ -135,14 +135,20 @@ export interface ScopePolicyView {
 export function scopePolicyView(
   policy: MemoryScopePolicy | null,
 ): ScopePolicyView {
+  if (!policy) {
+    return { allow: [], deny: [], disabled: [], manageable: false,
+      text: "范围策略未加载，当前状态未知；请连接服务端刷新" };
+  }
   const allow = [...(policy?.allow ?? [])];
   const deny = [...(policy?.deny ?? [])];
+  const known = policy.scope_values ?? Object.keys(SCOPE_LABELS);
+  const disabled = known.filter((scope) => deny.includes(scope) || !allow.includes(scope));
   return {
     allow,
     deny,
-    disabled: deny,
-    text: deny.length
-      ? "已禁用范围：" + deny.map((s) => SCOPE_LABELS[s] ?? s).join("、")
+    disabled,
+    text: disabled.length
+      ? "已禁用范围：" + disabled.map((s) => SCOPE_LABELS[s] ?? s).join("、")
       : "当前所有范围均参与分析",
     manageable: true,
   };
@@ -152,18 +158,24 @@ export function deniedScopesAfter(
   policy: MemoryScopePolicy | null,
   scope: string,
   disable: boolean,
-): { ok: boolean; deny: string[]; error: string | null } {
+): { ok: boolean; allow: string[]; deny: string[]; error: string | null } {
+  if (!policy) {
+    return { ok: false, allow: [], deny: [], error: "范围策略未加载，请刷新后重试" };
+  }
   const known = new Set(policy?.scope_values ?? Object.keys(SCOPE_LABELS));
   if (!known.has(scope)) {
-    return { ok: false, deny: [...(policy?.deny ?? [])], error: "未知范围" };
+    return { ok: false, allow: [...policy.allow], deny: [...policy.deny], error: "未知范围" };
   }
   const current = new Set(policy?.deny ?? []);
   if (disable) current.add(scope);
   else current.delete(scope);
   const deny = [...current];
-  const allow = (policy?.allow ?? []).filter((item) => !deny.includes(item));
+  const enabled = new Set(policy.allow);
+  if (disable) enabled.delete(scope);
+  else enabled.add(scope);
+  const allow = [...enabled].filter((item) => !deny.includes(item));
   if (allow.length === 0 && deny.length === 0) {
-    return { ok: false, deny, error: "至少保留一个范围参与分析" };
+    return { ok: false, allow, deny, error: "至少指定一个允许或禁止的范围" };
   }
-  return { ok: true, deny, error: null };
+  return { ok: true, allow, deny, error: null };
 }

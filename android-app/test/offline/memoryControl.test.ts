@@ -100,9 +100,9 @@ test("离线与权限错误有明确提示", () => {
 });
 
 test("范围策略展示已禁用范围", () => {
-  assert.match(scopePolicyView(policy()).text, /所有范围均参与分析/);
+  assert.match(scopePolicyView(policy({ allow: ["user", "project", "task", "session"] })).text, /所有范围均参与分析/);
   const denied = scopePolicyView(policy({ deny: ["session"], allow: ["user"] }));
-  assert.equal(denied.disabled[0], "session");
+  assert.ok(denied.disabled.includes("session"));
   assert.match(denied.text, /已禁用范围/);
 });
 

@@ -681,7 +681,7 @@ export default function App(): React.JSX.Element {
       }
       try {
         const result = await services.client.updateMemoryScopePolicy(
-          (scopePolicy?.allow ?? []).filter((s) => !change.deny.includes(s)),
+          change.allow,
           change.deny,
           (disable ? "客户端禁用范围 " : "客户端恢复范围 ") + scope,
           adminToken.trim() || undefined,
@@ -2211,6 +2211,7 @@ export default function App(): React.JSX.Element {
                       <View key={scope} style={s.action}>
                         <Button
                           title={`${disabled ? "恢复" : "禁用"}:${scope}`}
+                          disabled={!memoryScope.manageable || !online || centerBusy}
                           onPress={() =>
                             void toggleMemoryScope(scope, !disabled)
                           }

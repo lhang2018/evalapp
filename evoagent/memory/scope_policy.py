@@ -16,6 +16,8 @@ import hashlib
 import json
 import threading
 import time
+import uuid
+from functools import wraps
 from typing import Any, Dict, List, Optional
 
 from .manifest import MemoryAccessError
@@ -88,6 +90,27 @@ def read_scope_policy(connection, scope_values):
             "actor": row["actor"], "reason": row["reason"],
             "updated_at": row["updated_at"], "all_layers": False,
             "scope_values": values}
+
+
+def _transactional(method):
+    """Keep policy preconditions and writes in one SQLite writer transaction."""
+    @wraps(method)
+    def run(self, *args, **kwargs):
+        with self._lock:
+            started = not self._conn.in_transaction
+            if started:
+                self._conn.execute("BEGIN IMMEDIATE")
+            try:
+                result = method(self, *args, **kwargs)
+            except BaseException:
+                if started and self._conn.in_transaction:
+                    self._conn.rollback()
+                raise
+            else:
+                if started and self._conn.in_transaction:
+                    self._conn.commit()
+                return result
+    return run
 
 
 class ScopePolicyStore:
@@ -169,6 +192,7 @@ class ScopePolicyStore:
                 "reason": row["reason"], "updated_at": row["updated_at"],
                 "digest": _digest(payload)}
 
+    @_transactional
     def set_principal_policy(self, *, authenticated: str, requested: Any = None,
                              multi_principal: bool, allow: Any, deny: Any,
                              actor: str, reason: str) -> Dict[str, Any]:
@@ -199,7 +223,6 @@ class ScopePolicyStore:
                 (principal, 1 if multi_principal else 0,
                  json.dumps(allow_list), json.dumps(deny_list), version,
                  actor, reason, now))
-            self._conn.commit()
         return {"ok": True, "policy": self.principal_policy(principal)}
 
     def effective_policy(self, principal_id: str, *,
@@ -234,10 +257,13 @@ class ScopePolicyStore:
         return scope not in policy["deny"] and scope in policy["allow"]
 
     # ---- 迁移与回退 ----
+    @_transactional
     def migrate_legacy(self, *, authenticated: str, requested: Any = None,
                        dry_run: bool = True, actor: str = "api:admin",
                        reason: str) -> Dict[str, Any]:
         principal = self.resolve_principal(authenticated, requested)
+        if not isinstance(dry_run, bool):
+            raise ScopePolicyError("dry_run 必须是布尔值")
         reason = (reason or "").strip()
         if not reason:
             raise ScopePolicyError("迁移必须给出 reason")
@@ -250,20 +276,17 @@ class ScopePolicyStore:
         new_digest = _digest(payload)
         existing = self.principal_policy(principal)
         if existing is not None:
-            if existing["digest"] == new_digest:
+            if existing["digest"] == new_digest and existing["multi_principal"]:
                 return {"ok": True, "status": "already_migrated",
                         "principal_id": principal, "digest": new_digest}
             raise ScopePolicyError(
                 "目标主体已有不同分区策略，拒绝覆盖（需人工合并）: "
                 + principal)
-        migration_id = "mig_" + hashlib.sha256(
-            (principal + "|" + (legacy.get("digest") or "") + "|" + new_digest
-             + "|" + ("dry_run" if dry_run else "apply"))
-            .encode()).hexdigest()[:12]
+        migration_id = "mig_" + uuid.uuid4().hex[:12]
         now = self._clock()
         with self._lock:
             self._conn.execute(
-                "INSERT OR REPLACE INTO memory_scope_policy_migrations VALUES"
+                "INSERT INTO memory_scope_policy_migrations VALUES"
                 " (?,?,?,?,?,?,?,?,?)",
                 (migration_id, principal, legacy.get("digest") or "",
                  new_digest, 1 if dry_run else 0,
@@ -274,7 +297,6 @@ class ScopePolicyStore:
                     " (?,?,?,?,?,?,?,?)",
                     (principal, 1, json.dumps(legacy["allow"]),
                      json.dumps(legacy["deny"]), 1, actor, reason, now))
-            self._conn.commit()
         return {"ok": True,
                 "status": "dry_run" if dry_run else "applied",
                 "migration_id": migration_id, "principal_id": principal,
@@ -282,6 +304,7 @@ class ScopePolicyStore:
                 "new_digest": new_digest,
                 "allow": legacy["allow"], "deny": legacy["deny"]}
 
+    @_transactional
     def rollback_migration(self, *, authenticated: str, requested: Any = None,
                            actor: str = "api:admin",
                            reason: str) -> Dict[str, Any]:
@@ -290,17 +313,21 @@ class ScopePolicyStore:
         if not reason:
             raise ScopePolicyError("回退必须给出 reason")
         row = self._conn.execute(
-            "SELECT migration_id, new_digest FROM memory_scope_policy_migrations"
-            " WHERE principal_id=? AND action='apply' ORDER BY created_at DESC"
+            "SELECT migration_id, new_digest, legacy_digest FROM memory_scope_policy_migrations"
+            " WHERE principal_id=? AND action='apply' ORDER BY created_at DESC, rowid DESC"
             " LIMIT 1", (principal,)).fetchone()
         if row is None:
             raise ScopePolicyError("该主体没有可回退的迁移记录")
         existing = self.principal_policy(principal)
         if existing is None:
             raise ScopePolicyError("分区策略已不存在，回退不可执行")
-        if existing["digest"] != row["new_digest"]:
+        if (existing["digest"] != row["new_digest"]
+                or existing["version"] != 1 or not existing["multi_principal"]):
             raise ScopePolicyError(
                 "分区策略在迁移后被修改，拒绝按旧迁移回退（需人工确认）")
+        legacy = self.legacy_policy()
+        if not legacy.get("valid") or legacy.get("digest") != row["legacy_digest"]:
+            raise ScopePolicyError("旧策略在迁移后已变化或损坏，拒绝回退到未经核对的范围")
         now = self._clock()
         with self._lock:
             self._conn.execute(
@@ -309,12 +336,9 @@ class ScopePolicyStore:
             self._conn.execute(
                 "INSERT INTO memory_scope_policy_migrations VALUES"
                 " (?,?,?,?,?,?,?,?,?)",
-                ("rb_" + hashlib.sha256((row["migration_id"] + "|" + str(now))
-                                        .encode()).hexdigest()[:12],
+                ("rb_" + uuid.uuid4().hex[:12],
                  principal, row["new_digest"], row["new_digest"], 0,
                  "rollback", actor, reason, now))
-            self._conn.commit()
-        legacy = self.legacy_policy()
         return {"ok": True, "principal_id": principal,
                 "rolled_back_to": "legacy",
                 "legacy_valid": bool(legacy.get("valid")),
@@ -327,7 +351,7 @@ class ScopePolicyStore:
         rows = self._conn.execute(
             "SELECT migration_id, legacy_digest, new_digest, dry_run, action,"
             " actor, reason, created_at FROM memory_scope_policy_migrations"
-            " WHERE principal_id=? ORDER BY created_at", (principal_id,)
+            " WHERE principal_id=? ORDER BY created_at, rowid", (principal_id,)
         ).fetchall()
         return {"principal_id": principal_id,
                 "migrations": [dict(row) for row in rows]}

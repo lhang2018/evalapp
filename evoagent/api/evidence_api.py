@@ -21,11 +21,30 @@ import json
 import os
 import re
 import uuid
+from functools import wraps
 
 from .routes import get, post
+from ..observability.repository import EvidenceRepositoryError
 
 EXPORT_ID_RE = re.compile(r"^exp_[0-9a-f]{12}$")
 EXPORT_RELATIVE_PREFIX = "exports"
+
+
+def _repository_response(handler):
+    @wraps(handler)
+    def run(ctx):
+        try:
+            return handler(ctx)
+        except EvidenceRepositoryError as exc:
+            return ctx.json(503, {"error": str(exc)})
+    return run
+
+
+def _boolean(body, key, default=False):
+    value = body.get(key, default)
+    if not isinstance(value, bool):
+        raise ValueError(key + " 必须是布尔值")
+    return value
 
 
 def _role(ctx):
@@ -74,10 +93,14 @@ def _export_root(app):
 
 def _audit_match(app, *, actor, sha256, events_digest):
     """下载字节必须能在审计里找到对应条目（sha256 + events_digest 双匹配）。"""
-    for row in app.audit.list(limit=1000):
-        if row.get("action") != "export_download":
-            continue
-        detail = row.get("detail")
+    # Durable authorizations do not expire because unrelated audit traffic
+    # pushed them out of a recent-items window.
+    with app.db._lock:
+        records = app.db._conn.execute(
+            "SELECT detail FROM audit_log WHERE action=? AND actor=? AND outcome='ok'",
+            ("export_download", actor)).fetchall()
+    for row in records:
+        detail = row["detail"]
         if isinstance(detail, str):
             try:
                 detail = json.loads(detail)
@@ -93,6 +116,7 @@ def _audit_match(app, *, actor, sha256, events_digest):
 
 
 @get("/evidence/tasks/{task_id}")
+@_repository_response
 def get_task_evidence(ctx):
     if _role(ctx) != "admin":
         return ctx.json(403, {"error": "聚合证据查询需要 admin 角色"})
@@ -113,6 +137,7 @@ def get_task_evidence(ctx):
 
 
 @post("/evidence/export")
+@_repository_response
 def post_evidence_export(ctx):
     role = _role(ctx)
     if role not in ("admin", "operator"):
@@ -134,11 +159,14 @@ def post_evidence_export(ctx):
         return ctx.json(404, {"error": "任务不存在"})
     from ..observability.export import (EvidenceExporter, ExportDenied,
                                         ExportPolicy, export_to_file)
-    policy = ExportPolicy(
-        role=role,
-        allow_sensitive=bool(body.get("allow_sensitive")) and role == "admin",
-        allow_restricted=bool(body.get("allow_restricted")) and role == "admin",
-        include_payload_refs=bool(body.get("include_payload_refs", True)))
+    try:
+        policy = ExportPolicy(
+            role=role,
+            allow_sensitive=_boolean(body, "allow_sensitive") and role == "admin",
+            allow_restricted=_boolean(body, "allow_restricted") and role == "admin",
+            include_payload_refs=_boolean(body, "include_payload_refs", True))
+    except ValueError as exc:
+        return ctx.json(400, {"error": str(exc)})
     exporter = EvidenceExporter(policy)
     export_id = "exp_" + uuid.uuid4().hex[:12]
     relative = f"{EXPORT_RELATIVE_PREFIX}/{export_id}.json"
@@ -206,6 +234,7 @@ def download_evidence_export(ctx):
 
 
 @post("/evidence/deletion")
+@_repository_response
 def post_evidence_deletion(ctx):
     if _role(ctx) != "admin":
         return ctx.json(403, {"error": "证据删除执行需要 admin 角色"})
@@ -222,6 +251,13 @@ def post_evidence_deletion(ctx):
         return ctx.json(400, {"error": "删除必须限定 task_id"})
     if ctx.app.db.get_task(task_id) is None:
         return ctx.json(404, {"error": "任务不存在"})
+    try:
+        dry_run = _boolean(body, "dry_run", True)
+    except ValueError as exc:
+        return ctx.json(400, {"error": str(exc)})
+    supplied = body.get("plan_digest")
+    if not dry_run and (not isinstance(supplied, str) or not supplied.strip()):
+        return ctx.json(400, {"error": "执行删除必须提供预览计划的 plan_digest"})
     from ..observability.export import (DeletionScopeError, execute_deletion,
                                         plan_deletion)
     try:
@@ -229,11 +265,11 @@ def post_evidence_deletion(ctx):
                              actor=principal, reason=reason)
     except ValueError as exc:
         return ctx.json(400, {"error": str(exc)})
-    supplied = body.get("plan_digest")
     if supplied is not None and supplied != plan.digest:
         return ctx.json(409, {"error": "删除计划摘要不一致，拒绝执行"})
-    dry_run = bool(body.get("dry_run", True))
     before = _reconciliation(ctx.app, task_id)
+    if before["unknown_layers"]:
+        return ctx.json(503, {"error": "部分仓储残留未知，拒绝执行删除", "reconciliation": before})
     if dry_run:
         return ctx.json(200, {"ok": True, "dry_run": True,
                               "plan": plan.to_dict(),
@@ -246,7 +282,7 @@ def post_evidence_deletion(ctx):
         return ctx.json(409, {"error": str(exc)})
     after = _reconciliation(ctx.app, task_id)
     retained = [name for name, count in (after.get("residuals") or {}).items()
-                if count not in (0, None)]
+                if count != 0]
     return ctx.json(200, {
         "ok": True, "dry_run": False, "plan": plan.to_dict(),
         "execution": execution,

@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from typing import Any, Dict, Iterable, List, Optional
 
 from .contract import (
@@ -32,6 +33,10 @@ from .credentials import assert_context_safe
 
 #: 投影时视为敏感（restricted + 只留引用）的事件类型/表来源。
 _RESTRICTED_EVENT_TYPES = {"device_action", "send_message", "payment"}
+
+
+class EvidenceRepositoryError(RuntimeError):
+    """A configured evidence store could not be read; never an empty result."""
 
 
 def _refs_from_row(row: Dict[str, Any], **extra: str) -> EventRefs:
@@ -192,9 +197,14 @@ def _rows(conn, sql: str, args: tuple) -> List[Dict[str, Any]]:
         # 原生 sqlite3 连接（EventBus）无 row_factory：按 cursor 列名映射
         columns = [d[0] for d in cursor.description]
         return [dict(zip(columns, r)) for r in rows]
-    except Exception:
-        # 表可能不存在（域模块按需建表）——空投影，不伪造
-        return []
+    except sqlite3.OperationalError as exc:
+        # Optional domains may not have created their tables yet. A closed,
+        # locked or incompatible configured store is not an empty repository.
+        if str(exc).startswith("no such table:"):
+            return []
+        raise EvidenceRepositoryError("证据仓储读取失败，不能返回完整证据结论") from exc
+    except Exception as exc:
+        raise EvidenceRepositoryError("证据仓储读取失败，不能返回完整证据结论") from exc
 
 
 def collect_for_task(db: Any, task_id: str,
@@ -253,12 +263,13 @@ def deletion_reconciliation(db: Any, task_id: str,
             rows = _rows(source, f"SELECT COUNT(*) AS n FROM {table}"
                                  f" WHERE {where}", (task_id,))
             n = int(rows[0]["n"]) if rows else 0
-        except Exception:
-            n = None  # 表不存在视为零残留（域模块未建）
+        except EvidenceRepositoryError:
+            n = None  # 已配置仓储不可读：残留未知，不可按零处理。
         residuals[table] = n
-    clean = all(n in (0, None) for n in residuals.values())
+    unknown = [name for name, count in residuals.items() if count is None]
+    clean = all(n == 0 for n in residuals.values())
     return {"task_id": task_id, "residuals": residuals,
-            "fully_deleted": clean}
+            "unknown_layers": unknown, "fully_deleted": clean}
 
 
 __all__ = [
@@ -266,4 +277,5 @@ __all__ = [
     "project_side_effect_row", "project_approval_row",
     "collect_for_task", "deletion_reconciliation",
     "EvidenceContractError", "as_evidence_event",
+    "EvidenceRepositoryError",
 ]
