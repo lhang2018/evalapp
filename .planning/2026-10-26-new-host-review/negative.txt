@@ -1,0 +1,205 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFF                                                                [100%]
+================================== FAILURES ===================================
+__________ test_stop_timeout_keeps_live_worker_and_prevents_restart ___________
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-ffwq67th/scratch/pytest/test_stop_timeout_keeps_live_w0')
+
+    def test_stop_timeout_keeps_live_worker_and_prevents_restart(tmp_path):
+        app = App(data_dir=str(tmp_path))
+        scheduler = app.goal_scheduler
+        entered, release = threading.Event(), threading.Event()
+        workers = []
+    
+        def blocked_tick():
+            entered.set()
+            assert release.wait(10)
+    
+        scheduler.tick = blocked_tick
+        try:
+            first = scheduler.start(poll_seconds=60)
+            workers.append(first)
+            assert entered.wait(5)
+            scheduler.stop(timeout=0)
+            status = scheduler.status()
+            # running must describe the actual worker even while stopping.
+>           assert status["running"] is True
+E           assert False is True
+
+tests\test_new_host_review_20261026.py:33: AssertionError
+___________ test_start_refuses_invalid_interval_before_starting[0] ____________
+
+interval = 0
+
+    @pytest.mark.parametrize("interval", [0, -1, float("nan"), float("inf")])
+    def test_start_refuses_invalid_interval_before_starting(interval):
+        scheduler = GoalScheduler(SimpleNamespace(db=object(), goals=object()))
+        try:
+>           with pytest.raises(ValueError):
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_new_host_review_20261026.py:56: Failed
+___________ test_start_refuses_invalid_interval_before_starting[-1] ___________
+
+interval = -1
+
+    @pytest.mark.parametrize("interval", [0, -1, float("nan"), float("inf")])
+    def test_start_refuses_invalid_interval_before_starting(interval):
+        scheduler = GoalScheduler(SimpleNamespace(db=object(), goals=object()))
+        try:
+>           with pytest.raises(ValueError):
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_new_host_review_20261026.py:56: Failed
+__________ test_start_refuses_invalid_interval_before_starting[nan] ___________
+
+interval = nan
+
+    @pytest.mark.parametrize("interval", [0, -1, float("nan"), float("inf")])
+    def test_start_refuses_invalid_interval_before_starting(interval):
+        scheduler = GoalScheduler(SimpleNamespace(db=object(), goals=object()))
+        try:
+>           with pytest.raises(ValueError):
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_new_host_review_20261026.py:56: Failed
+__________ test_start_refuses_invalid_interval_before_starting[inf] ___________
+
+interval = inf
+
+    @pytest.mark.parametrize("interval", [0, -1, float("nan"), float("inf")])
+    def test_start_refuses_invalid_interval_before_starting(interval):
+        scheduler = GoalScheduler(SimpleNamespace(db=object(), goals=object()))
+        try:
+>           with pytest.raises(ValueError):
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_new_host_review_20261026.py:56: Failed
+__________ test_project_consumer_obeys_host_permission_policy[deny] ___________
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-ffwq67th/scratch/pytest/test_project_consumer_obeys_ho0')
+mode = 'deny'
+
+    @pytest.mark.parametrize("mode", ["deny", "confirm"])
+    def test_project_consumer_obeys_host_permission_policy(tmp_path, mode):
+        app = App(data_dir=str(tmp_path / "data"))
+        root = tmp_path / "project"
+        root.mkdir()
+        target = root / "main.py"
+        original = "x = 1\n"
+        target.write_text(original, encoding="utf-8")
+        try:
+            app.permissions.high_risk_mode = mode
+            app.coding_consumer.install(str(root), expected_version=CODING_PACK.version,
+                                        actor="admin", reason="review")
+            result = app.coding_consumer.execute(
+                str(root), "coding_edit",
+                {"path": "main.py", "old_text": "x = 1", "new_text": "x = 2"},
+                actor="admin", reason="review")
+>           assert result["ok"] is False
+E           assert True is False
+
+tests\test_new_host_review_20261026.py:78: AssertionError
+_________ test_project_consumer_obeys_host_permission_policy[confirm] _________
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-ffwq67th/scratch/pytest/test_project_consumer_obeys_ho1')
+mode = 'confirm'
+
+    @pytest.mark.parametrize("mode", ["deny", "confirm"])
+    def test_project_consumer_obeys_host_permission_policy(tmp_path, mode):
+        app = App(data_dir=str(tmp_path / "data"))
+        root = tmp_path / "project"
+        root.mkdir()
+        target = root / "main.py"
+        original = "x = 1\n"
+        target.write_text(original, encoding="utf-8")
+        try:
+            app.permissions.high_risk_mode = mode
+            app.coding_consumer.install(str(root), expected_version=CODING_PACK.version,
+                                        actor="admin", reason="review")
+            result = app.coding_consumer.execute(
+                str(root), "coding_edit",
+                {"path": "main.py", "old_text": "x = 1", "new_text": "x = 2"},
+                actor="admin", reason="review")
+>           assert result["ok"] is False
+E           assert True is False
+
+tests\test_new_host_review_20261026.py:78: AssertionError
+________ test_standalone_consumer_does_not_implicitly_authorize_edits _________
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-ffwq67th/scratch/pytest/test_standalone_consumer_does_0')
+
+    def test_standalone_consumer_does_not_implicitly_authorize_edits(tmp_path):
+        (tmp_path / "main.py").write_text("x = 1\n", encoding="utf-8")
+        consumer = CodingExpertConsumer()
+        consumer.install(str(tmp_path), expected_version=CODING_PACK.version,
+                         actor="admin", reason="review")
+        result = consumer.execute(
+            str(tmp_path), "coding_edit",
+            {"path": "main.py", "old_text": "x = 1", "new_text": "x = 2"},
+            actor="admin", reason="review")
+>       assert result["ok"] is False
+E       assert True is False
+
+tests\test_new_host_review_20261026.py:101: AssertionError
+______________ test_evaluation_samples_release_before_execution _______________
+
+    def test_evaluation_samples_release_before_execution():
+        releases = SimpleNamespace(current_release_id="before")
+        service = CandidateEvaluationService(object(), releases=releases)
+        identity = SimpleNamespace(identity=lambda: {"asset_ref": "test@1.0.0"})
+        service.host.resolve = lambda ref: identity
+    
+        def compare(*args):
+            # Simulate an independent release while evaluation is in progress.
+            releases.current_release_id = "after"
+            return dict(benchmark_version="probe", timeout_s=5, repeat=2,
+                        source="probe", verdict="inconclusive", evidence_digest="probe",
+                        release_decision={"allow": False})
+    
+        service.benchmark.compare = compare
+        result = service.evaluate(candidate_id="test", baseline_ref="base@1.0.0",
+                                  candidate_ref="cand@1.0.0", cases=[{"case_id": "a"}],
+                                  actor="admin", reason="review")
+>       assert result["release_before"] == "before"
+E       AssertionError: assert 'after' == 'before'
+E         
+E         - before
+E         + after
+
+tests\test_new_host_review_20261026.py:122: AssertionError
+============================== warnings summary ===============================
+tests/test_new_host_review_20261026.py::test_start_refuses_invalid_interval_before_starting[inf]
+  C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\_pytest\threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread goal-scheduler
+  
+  Traceback (most recent call last):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+      self.run()
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+      self._target(*self._args, **self._kwargs)
+    File "E:\evalapp\evoagent\goals\scheduler.py", line 387, in loop
+      if self._stop.wait(max(1.0, interval)):
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 607, in wait
+      signaled = self._cond.wait(timeout)
+    File "C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\threading.py", line 324, in wait
+      gotit = waiter.acquire(True, timeout)
+  OverflowError: timestamp too large to convert to C _PyTime_t
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_new_host_review_20261026.py::test_stop_timeout_keeps_live_worker_and_prevents_restart
+FAILED tests/test_new_host_review_20261026.py::test_start_refuses_invalid_interval_before_starting[0]
+FAILED tests/test_new_host_review_20261026.py::test_start_refuses_invalid_interval_before_starting[-1]
+FAILED tests/test_new_host_review_20261026.py::test_start_refuses_invalid_interval_before_starting[nan]
+FAILED tests/test_new_host_review_20261026.py::test_start_refuses_invalid_interval_before_starting[inf]
+FAILED tests/test_new_host_review_20261026.py::test_project_consumer_obeys_host_permission_policy[deny]
+FAILED tests/test_new_host_review_20261026.py::test_project_consumer_obeys_host_permission_policy[confirm]
+FAILED tests/test_new_host_review_20261026.py::test_standalone_consumer_does_not_implicitly_authorize_edits
+FAILED tests/test_new_host_review_20261026.py::test_evaluation_samples_release_before_execution
+9 failed, 1 warning in 1.47s

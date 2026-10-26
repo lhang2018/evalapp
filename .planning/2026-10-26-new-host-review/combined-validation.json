@@ -1,0 +1,32 @@
+{
+  "pytest_arguments": [
+    "tests/test_new_host_review_20261026.py",
+    "tests/test_goal_scheduler_host.py",
+    "tests/test_goal_scheduler.py",
+    "tests/test_goal_governance.py",
+    "tests/test_goal_budget_migration.py",
+    "tests/test_goal_opportunities.py",
+    "tests/test_candidate_host_api.py",
+    "tests/test_host_benchmark.py",
+    "tests/test_coding_expert_consumer.py",
+    "tests/test_coding_tools.py",
+    "tests/test_coding_consumption.py",
+    "tests/test_aln01_authorization.py",
+    "tests/test_integration_wiring.py",
+    "tests/test_ledger_drift.py",
+    "tests/test_media_vendor.py",
+    "tests/test_media_vendor_review_20261026.py",
+    "tools/tests",
+    "-q"
+  ],
+  "snapshot_commit": "HEAD",
+  "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+  "owned_temp_directory": "E:\\evalapp\\outputs\\review5-pomxna9t",
+  "source_tree": "80e245624def8656aef3642c53cf5f9551636354",
+  "archive_sha256": "ec0e454048bfea95edfdbc1e9309c81b2cbf44e6c322d33d50efab8720800f12",
+  "source_path_when_tested": "E:\\evalapp\\outputs\\review5-pomxna9t\\source",
+  "module_source_probe": "E:\\evalapp\\outputs\\review5-pomxna9t\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-pomxna9t\\source\\evoagent\\tools\\refactor.py\n",
+  "exit_code": 0,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+}

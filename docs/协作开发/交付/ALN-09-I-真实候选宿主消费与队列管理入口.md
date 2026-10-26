@@ -1,5 +1,7 @@
 # ALN-09-I 真实候选宿主消费与队列管理入口
 
+> 2026-10-26 接续审查：修正release_before取值时序；评测期间独立发布如实显示差异。本轮未建立candidate_id/制品及数据集仓库权威绑定，不当发布授权。 本轮固定相关358项通过，修复提交0ba37e1/01766f5，新增修复待其他审阅人复核。下文修改前后及首轮验证是历史记录，最新行为以[复核报告](../验收/2026-10-26-新增宿主与音视频费用复核.md)为准；不提升整卡或生产接受。
+
 任务：ALN-09-I / 真实候选宿主消费与队列管理入口（阶段4，assets 线）
 负责人：dsh-lead（本会话认领；按"按优先级顺序认领"接 P1 READY 卡）
 审阅人：待定（未分配独立审阅人，不自批）
@@ -26,7 +28,7 @@
 - 未改：`evolution/host.py`、`evolution/queue.py`、`evaluation/host_bench.py`（100% 复用）；未新增第二套任务/身份/预算/副作用权威。
 - 新契约：评测服务结果结构、3 个 API 端点；无 schema 变更（`evolution_problem_queue` 沿用 09-H）。
 
-## 验证证据
+## 验证证据（首轮历史记录）
 
 - 专项：`python -m pytest tests/test_candidate_host_api.py -q` → **6 passed**：
   - 改进候选：verdict=improved、release_decision.allow=true，但**未自动发布**（release_before==release_after）；

@@ -1,5 +1,7 @@
 # ALN-13-S 长期目标调度启动与持久周期消费
 
+> 2026-10-26 接续审查：修正stop超时线程丢失/重复启动，running与stopping如实显示；周期与超时有限值校验。生产长跑、多进程和资源治理联调仍待。 本轮固定相关358项通过，修复提交0ba37e1/01766f5，新增修复待其他审阅人复核。下文修改前后及首轮验证是历史记录，最新行为以[复核报告](../验收/2026-10-26-新增宿主与音视频费用复核.md)为准；不提升整卡或生产接受。
+
 任务：ALN-13-S / 长期目标调度启动与持久周期消费（阶段3，runtime 线）
 负责人：dsh-lead（本会话认领；按"按优先级顺序认领"接 P1 READY 卡）
 审阅人：待定（未分配独立审阅人，不自批）
@@ -23,7 +25,7 @@
 - 共享文件补丁（精确修改点）：`evoagent/app.py`（+5 行装配）、`evoagent/cli.py`（3 个命令与解析/分发）、`evoagent/api/goals_api.py`（文件末尾追加 4 个端点）。未改 `GoalGovernor`/`GoalStore`/预算/身份实现。
 - 新增/修改契约：scheduler `status()` 观测结构、CLI 三个命令、API 四个端点；无 schema 变更（`goal_schedules` 沿用 13-P）。
 
-## 验证证据
+## 验证证据（首轮历史记录）
 
 - 专项：`python -m pytest tests/test_goal_scheduler_host.py -q` → **6 passed**：
   - App 装配 scheduler 且 `status()` 字段完整（running=false/ticks=0/stats/load/policy）；

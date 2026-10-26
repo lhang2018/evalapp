@@ -6592,6 +6592,14 @@
      "result": "供应商契约/预算校验/费用-版本-授权追溯/失败退款恢复切片交付；未完成(如实)：无真实供应商凭据与预算→真实生成/真实计费/生产网络未测、协议字段需按真实文档适配、未接全局CostGovernor、无CLI/App入口与生产证据；不冒称19-A关闭",
      "log": ".planning/2026-10-26-aln19a/media-vendor-evidence.json",
      "delivery": "docs/协作开发/交付/ALN-19-A-真实音视频供应商切片.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9",
+     "source_tree": "80e245624def8656aef3642c53cf5f9551636354",
+     "result": "拒绝非有限配置/非法实结费用/无产物标识；失败费用unknown保留预留，明确账单对账后恢复，不冒称退款。费用仅单实例内存，全局预算/持久账本、真实供应商仍待。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
+     "log": ".planning/2026-10-26-new-host-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/19-A-真实音视频供应商漫剧纵切片.md",
@@ -6610,7 +6618,7 @@
    "requirement_refs": [
     "F02"
    ],
-   "next_step": "待独立复核（供应商契约切片，非真实供应商验收）：配置缺失/预算不足拒绝且不发请求、真实HTTP夹具渲染与sha/费用/版本/授权追溯、失败退款与恢复、edit白名单证据见交付文档与 .planning/2026-10-26-aln19a/；真实关闭需用户提供供应商凭据与预算后做真实生成/计费/协议适配/生产证据；审阅人未定不自批",
+   "next_step": "拒绝非有限配置/非法实结费用/无产物标识；失败费用unknown保留预留，明确账单对账后恢复，不冒称退款。费用仅单实例内存，全局预算/持久账本、真实供应商仍待。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
    "working_basis": "以bf3a2eab1a1f3906106e60451d39b165c35b672a（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "真实服务配置与预算",
    "ownership_history": [
@@ -6628,7 +6636,29 @@
     }
    ],
    "delivered_commit": "f772860963abca9445d53ef74f42935583a7e521",
-   "delivery": "docs/协作开发/交付/ALN-19-A-真实音视频供应商切片.md"
+   "delivery": "docs/协作开发/交付/ALN-19-A-真实音视频供应商切片.md",
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-NEW-HOST-MEDIA",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-13-S",
+     "ALN-09-I",
+     "ALN-18-H",
+     "ALN-19-A"
+    ],
+    "fix_commit": "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9",
+    "fix_commits": [
+     "0ba37e1b8f4ea9a8b4aabdcc1f8ef98d5df44d2f",
+     "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9"
+    ],
+    "report": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md",
+    "evidence": ".planning/2026-10-26-new-host-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "四卡七类问题修复；固定相关358过；非全量/真机/生产接受"
+   }
   },
   {
    "id": "ALN-20-P",
@@ -7216,6 +7246,14 @@
      "result": "宿主启停/持久周期消费交付；缺口：生产长跑daemon与重启自动拉起、多进程真并发压测、15-D资源压力联调、客户端观测入口",
      "log": ".planning/2026-10-26-aln13s/scheduler-host-evidence.json",
      "delivery": "docs/协作开发/交付/ALN-13-S-长期目标调度启动与持久周期消费.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9",
+     "source_tree": "80e245624def8656aef3642c53cf5f9551636354",
+     "result": "修正stop超时线程丢失/重复启动，running与stopping如实显示；周期与超时有限值校验。生产长跑、多进程和资源治理联调仍待。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
+     "log": ".planning/2026-10-26-new-host-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/13-S-长期目标调度启动与持久周期消费.md",
@@ -7236,7 +7274,7 @@
     "B-91"
    ],
    "priority": "P1",
-   "next_step": "待独立复核：宿主装配/状态可观测/真实到期推进一次/重启同槽位与重放不重复派发/门控拒绝可见/API角色/CLI输出证据见交付文档与 .planning/2026-10-26-aln13s/；审阅人未定不自批；生产长跑与自动拉起、多进程压测、资源压力联调属后续，长期目标整包不关闭",
+   "next_step": "修正stop超时线程丢失/重复启动，running与stopping如实显示；周期与超时有限值校验。生产长跑、多进程和资源治理联调仍待。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
    "working_basis": "以89a88d6aca9245fbcd5f16054ae9991da443844d（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7259,7 +7297,29 @@
     }
    ],
    "delivered_commit": "0bf8e05809c744825f7b05ddcb5b6db10848b3af",
-   "delivery": "docs/协作开发/交付/ALN-13-S-长期目标调度启动与持久周期消费.md"
+   "delivery": "docs/协作开发/交付/ALN-13-S-长期目标调度启动与持久周期消费.md",
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-NEW-HOST-MEDIA",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-13-S",
+     "ALN-09-I",
+     "ALN-18-H",
+     "ALN-19-A"
+    ],
+    "fix_commit": "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9",
+    "fix_commits": [
+     "0ba37e1b8f4ea9a8b4aabdcc1f8ef98d5df44d2f",
+     "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9"
+    ],
+    "report": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md",
+    "evidence": ".planning/2026-10-26-new-host-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "四卡七类问题修复；固定相关358过；非全量/真机/生产接受"
+   }
   },
   {
    "id": "ALN-02-I",
@@ -7322,6 +7382,14 @@
      "result": "受控候选评测入口与队列管理面交付；缺口：dataset_ref未做仓库级校验、CLI/App入口未接、手动重试/放弃未开放、多进程/生产并发证据未采",
      "log": ".planning/2026-10-26-aln09i/host-evaluation-evidence.json",
      "delivery": "docs/协作开发/交付/ALN-09-I-真实候选宿主消费与队列管理入口.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9",
+     "source_tree": "80e245624def8656aef3642c53cf5f9551636354",
+     "result": "修正release_before取值时序；评测期间独立发布如实显示差异。本轮未建立candidate_id/制品及数据集仓库权威绑定，不当发布授权。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
+     "log": ".planning/2026-10-26-new-host-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/09-I-真实候选宿主消费与队列管理入口.md",
@@ -7342,7 +7410,7 @@
     "G3"
    ],
    "priority": "P1",
-   "next_step": "待独立复核：只消费校验后真实资产/结果绑定身份与宿主/成功不自动发布/超时回退归因/篡改拒绝/API角色/队列过期租约恢复证据见交付文档与 .planning/2026-10-26-aln09i/；审阅人未定不自批；dataset仓库校验、CLI/App入口、生产并发证据属后续，进化整包不关闭",
+   "next_step": "修正release_before取值时序；评测期间独立发布如实显示差异。本轮未建立candidate_id/制品及数据集仓库权威绑定，不当发布授权。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
    "working_basis": "以1616e3e5e5f972023df88e1d9b60bc6cd5c9291c（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7365,7 +7433,29 @@
     }
    ],
    "delivered_commit": "1d758e9adb762aa839b4c9c4ffb4379cb1bb1680",
-   "delivery": "docs/协作开发/交付/ALN-09-I-真实候选宿主消费与队列管理入口.md"
+   "delivery": "docs/协作开发/交付/ALN-09-I-真实候选宿主消费与队列管理入口.md",
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-NEW-HOST-MEDIA",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-13-S",
+     "ALN-09-I",
+     "ALN-18-H",
+     "ALN-19-A"
+    ],
+    "fix_commit": "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9",
+    "fix_commits": [
+     "0ba37e1b8f4ea9a8b4aabdcc1f8ef98d5df44d2f",
+     "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9"
+    ],
+    "report": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md",
+    "evidence": ".planning/2026-10-26-new-host-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "四卡七类问题修复；固定相关358过；非全量/真机/生产接受"
+   }
   },
   {
    "id": "ALN-18-H",
@@ -7388,6 +7478,14 @@
      "result": "本地组件与拒绝/回滚路径交付；未完成(如实)：用户未选定临时真实项目→项目级集成与固定测试依赖未做、任务→专家自动选中/controller未接、升级/半写入回滚场景未构造、无真机/生产证据；不冒称真实项目通过",
      "log": ".planning/2026-10-26-aln18h/coding-consumer-evidence.json",
      "delivery": "docs/协作开发/交付/ALN-18-H-编程专家按项目安装与真实工具消费.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9",
+     "source_tree": "80e245624def8656aef3642c53cf5f9551636354",
+     "result": "项目工具表共享宿主当前权限控制器/存储，deny/未确认拒绝改写、明确确认可执行。任务授权/专家自动选择、真实项目与升级恢复仍待。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
+     "log": ".planning/2026-10-26-new-host-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/18-H-编程专家按项目安装与真实工具消费.md",
@@ -7408,7 +7506,7 @@
     "A-60"
    ],
    "priority": "P1",
-   "next_step": "待独立复核（本地组件切片，非真实项目验收）：按根安装/幂等/双根独立/跨根与链接与版本与未知工具拒绝/安装失败回滚后恢复/returncode与磁盘变化证据见交付文档与 .planning/2026-10-26-aln18h/；需用户选定临时真实项目与固定测试依赖后再做项目级集成；任务→专家自动选中与升级回滚场景待补；审阅人未定不自批",
+   "next_step": "项目工具表共享宿主当前权限控制器/存储，deny/未确认拒绝改写、明确确认可执行。任务授权/专家自动选择、真实项目与升级恢复仍待。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
    "working_basis": "以eed09f46ea11ceb38fc38b9fcb674b311254734f（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；选定临时真实项目与固定测试依赖",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7430,7 +7528,29 @@
     }
    ],
    "delivered_commit": "f43c8efd5135d09d521b39b4d4d1bb315023cd33",
-   "delivery": "docs/协作开发/交付/ALN-18-H-编程专家按项目安装与真实工具消费.md"
+   "delivery": "docs/协作开发/交付/ALN-18-H-编程专家按项目安装与真实工具消费.md",
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-NEW-HOST-MEDIA",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-13-S",
+     "ALN-09-I",
+     "ALN-18-H",
+     "ALN-19-A"
+    ],
+    "fix_commit": "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9",
+    "fix_commits": [
+     "0ba37e1b8f4ea9a8b4aabdcc1f8ef98d5df44d2f",
+     "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9"
+    ],
+    "report": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md",
+    "evidence": ".planning/2026-10-26-new-host-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "四卡七类问题修复；固定相关358过；非全量/真机/生产接受"
+   }
   },
   {
    "id": "ALN-25-C",
@@ -9703,6 +9823,107 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-发布撤销与回滚目标信任复核.md",
    "scope": "并行交付源码补登记，不改原认领/审阅；具体功能按各卡验收，16-Q不在本轮e136固定回归范围"
+  },
+  {
+   "id": "discovered-0bf8e05809c7",
+   "title": "feat(ALN-13-S): 长期目标调度启动与持久周期消费宿主接线",
+   "workpackage": "ALN-13",
+   "source_commit": "0bf8e05809c744825f7b05ddcb5b6db10848b3af",
+   "files": [
+    "evoagent/api/goals_api.py",
+    "evoagent/app.py",
+    "evoagent/cli.py",
+    "evoagent/goals/scheduler.py",
+    "tests/test_goal_scheduler_host.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md",
+   "scope": "原卡/修复有固定相关回归；本轮不自批修复或整卡/父包接受"
+  },
+  {
+   "id": "discovered-1d758e9adb76",
+   "title": "feat(ALN-09-I): 真实候选宿主消费与问题队列管理入口",
+   "workpackage": "ALN-09",
+   "source_commit": "1d758e9adb762aa839b4c9c4ffb4379cb1bb1680",
+   "files": [
+    "evoagent/api/candidate_host_api.py",
+    "evoagent/api/server.py",
+    "evoagent/app.py",
+    "evoagent/integration/candidate_execution.py",
+    "tests/test_candidate_host_api.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md",
+   "scope": "原卡/修复有固定相关回归；本轮不自批修复或整卡/父包接受"
+  },
+  {
+   "id": "discovered-f43c8efd5135",
+   "title": "feat(ALN-18-H): 编程专家按项目安装与真实工具消费（本地组件切片）",
+   "workpackage": "ALN-18",
+   "source_commit": "f43c8efd5135d09d521b39b4d4d1bb315023cd33",
+   "files": [
+    "evoagent/app.py",
+    "evoagent/experts/coding_consumer.py",
+    "tests/test_coding_expert_consumer.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md",
+   "scope": "原卡/修复有固定相关回归；本轮不自批修复或整卡/父包接受"
+  },
+  {
+   "id": "discovered-f772860963ab",
+   "title": "feat(ALN-19-A): 真实音视频供应商切片（契约/预算/追溯/恢复，夹具明确标注）",
+   "workpackage": "ALN-19",
+   "source_commit": "f772860963abca9445d53ef74f42935583a7e521",
+   "files": [
+    "evoagent/tools/media_vendor.py",
+    "tests/test_media_vendor.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md",
+   "scope": "原卡/修复有固定相关回归；本轮不自批修复或整卡/父包接受"
+  },
+  {
+   "id": "discovered-0ba37e1b8f4e",
+   "title": "fix(host): 收紧项目工具权限并修正调度停止与评测观测",
+   "workpackage": "ALN-30",
+   "source_commit": "0ba37e1b8f4ea9a8b4aabdcc1f8ef98d5df44d2f",
+   "files": [
+    "evoagent/app.py",
+    "evoagent/experts/coding_consumer.py",
+    "evoagent/goals/scheduler.py",
+    "evoagent/integration/candidate_execution.py",
+    "tests/test_new_host_review_20261026.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md",
+   "scope": "原卡/修复有固定相关回归；本轮不自批修复或整卡/父包接受"
+  },
+  {
+   "id": "discovered-01766f58b1d4",
+   "title": "fix(media): 未知费用保留待对账并拒绝非法预算回执",
+   "workpackage": "ALN-19",
+   "source_commit": "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9",
+   "files": [
+    "evoagent/tools/media_vendor.py",
+    "tests/test_media_vendor.py",
+    "tests/test_media_vendor_review_20261026.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md",
+   "scope": "原卡/修复有固定相关回归；本轮不自批修复或整卡/父包接受"
   }
  ],
  "requirement_batches": [
@@ -9973,6 +10194,28 @@
    "product_acceptance_added": false,
    "published_by_review": false,
    "scope": "撤销公钥端侧投影、回滚实际目标信任与归因；恢复10项接续通过，不是全量或设备接受"
+  },
+  {
+   "id": "REVIEW-2026-10-26-NEW-HOST-MEDIA",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-13-S",
+    "ALN-09-I",
+    "ALN-18-H",
+    "ALN-19-A"
+   ],
+   "fix_commit": "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9",
+   "fix_commits": [
+    "0ba37e1b8f4ea9a8b4aabdcc1f8ef98d5df44d2f",
+    "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9"
+   ],
+   "report": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md",
+   "evidence": ".planning/2026-10-26-new-host-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false,
+   "scope": "四卡七类问题修复；固定相关358过；非全量/真机/生产接受"
   }
  ]
 }
