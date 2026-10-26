@@ -7173,13 +7173,24 @@
    "workpackage": "ALN-13",
    "title": "长期目标调度启动与持久周期消费",
    "stream": "runtime",
-   "owner": null,
+   "owner": "dsh-lead",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "89a88d6aca9245fbcd5f16054ae9991da443844d",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-26",
+     "scope": "长期目标调度宿主接线：app装配GoalScheduler、scheduler.status观测(周期/延迟/失败/恢复)、CLI三命令(status/tick/start)、API四端点(status/tick/start/stop，写操作admin)；重启同槽位与强制重放不重复派发；门控拒绝在报告/状态可见；专项6 passed、调度域69 passed、全量2368/0/2、实测9项全过",
+     "source_commit": "0bf8e05809c744825f7b05ddcb5b6db10848b3af",
+     "functional_commit": "0bf8e05809c744825f7b05ddcb5b6db10848b3af",
+     "source_tree": "0b0a080d181bc3cb6dbd60652b2573778fd2d20d",
+     "result": "宿主启停/持久周期消费交付；缺口：生产长跑daemon与重启自动拉起、多进程真并发压测、15-D资源压力联调、客户端观测入口",
+     "log": ".planning/2026-10-26-aln13s/scheduler-host-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-13-S-长期目标调度启动与持久周期消费.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/13-S-长期目标调度启动与持久周期消费.md",
    "shared_files": [
     "evoagent/app.py",
@@ -7198,14 +7209,30 @@
     "B-91"
    ],
    "priority": "P1",
-   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
-   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "next_step": "待独立复核：宿主装配/状态可观测/真实到期推进一次/重启同槽位与重放不重复派发/门控拒绝可见/API角色/CLI输出证据见交付文档与 .planning/2026-10-26-aln13s/；审阅人未定不自批；生产长跑与自动拉起、多进程压测、资源压力联调属后续，长期目标整包不关闭",
+   "working_basis": "以89a88d6aca9245fbcd5f16054ae9991da443844d（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
    "split_round": "STATUS-SPLIT-2026-10-26",
    "backlog_refs": [
     "ZG-01",
     "ZG-08"
-   ]
+   ],
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户指示继续、按优先级顺序认领；13-S 为 P1 READY"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "claimed",
+     "to": "review",
+     "reason": "宿主接线完成并通过全量回归；生产长跑/压测/资源联调留缺口"
+    }
+   ],
+   "delivered_commit": "0bf8e05809c744825f7b05ddcb5b6db10848b3af",
+   "delivery": "docs/协作开发/交付/ALN-13-S-长期目标调度启动与持久周期消费.md"
   },
   {
    "id": "ALN-02-I",
