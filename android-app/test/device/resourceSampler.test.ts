@@ -80,13 +80,13 @@ test("非法分数/非法 maxAge 判不可用", () => {
   );
 });
 
-test("压力取 CPU/内存较大值；缺失 CPU 不影响内存可用性", () => {
+test("缺失 CPU 的部分采样不作为后台低压力依据", () => {
   const onlyMemory = parseResourceSample(
     sample({ cpuFraction: undefined, memoryFraction: 0.66 }),
     { nowMs: NOW },
   );
-  assert.equal(onlyMemory.valid, true);
-  assert.equal(samplePressure(onlyMemory), 0.66);
+  assert.equal(onlyMemory.valid, false);
+  assert.equal(samplePressure(onlyMemory), null);
 });
 
 test("调用方必须提供 highWater；缺失/非法即拒绝（不内置阈值权威）", () => {

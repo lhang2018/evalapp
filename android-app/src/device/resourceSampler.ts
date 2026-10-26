@@ -81,7 +81,13 @@ export function parseResourceSample(raw: unknown, options: ParseOptions): Resour
   if (sampledAt === null) {
     return invalidSample("missing_sampled_at", source, errors);
   }
-  const ageMs = Math.max(0, Math.round(options.nowMs - sampledAt));
+  if (typeof options.nowMs !== "number" || !Number.isFinite(options.nowMs) || options.nowMs <= 0) {
+    return invalidSample("invalid_now", source, errors);
+  }
+  if (sampledAt > options.nowMs) {
+    return invalidSample("future_sample", source, errors);
+  }
+  const ageMs = options.nowMs - sampledAt;
   const maxAge = options.maxAgeMs ?? DEFAULT_MAX_AGE_MS;
   if (!Number.isFinite(maxAge) || maxAge <= 0) {
     return invalidSample("invalid_max_age_config", source, errors);
@@ -92,6 +98,10 @@ export function parseResourceSample(raw: unknown, options: ParseOptions): Resour
   const memory = fraction(value.memoryFraction);
   if (memory === null) {
     return invalidSample("missing_memory", source, errors);
+  }
+  const cpu = fraction(value.cpuFraction);
+  if (cpu === null) {
+    return invalidSample("missing_cpu", source, errors);
   }
   const units =
     value.units && typeof value.units === "object"
@@ -104,7 +114,7 @@ export function parseResourceSample(raw: unknown, options: ParseOptions): Resour
   return {
     valid: true,
     reason: "",
-    cpuFraction: fraction(value.cpuFraction),
+    cpuFraction: cpu,
     memoryFraction: memory,
     batteryFraction: fraction(value.batteryFraction),
     diskFraction: fraction(value.diskFraction),
@@ -117,12 +127,11 @@ export function parseResourceSample(raw: unknown, options: ParseOptions): Resour
 }
 
 export function samplePressure(sample: ResourceSample): number | null {
-  if (!sample.valid) return null;
-  const values = [sample.cpuFraction, sample.memoryFraction].filter(
-    (item): item is number => item !== null,
-  );
-  if (values.length === 0) return null;
-  return Math.max(...values);
+  if (sample.valid !== true) return null;
+  const cpu = fraction(sample.cpuFraction);
+  const memory = fraction(sample.memoryFraction);
+  if (cpu === null || memory === null) return null;
+  return Math.max(cpu, memory);
 }
 
 export function backgroundResourceDecision(

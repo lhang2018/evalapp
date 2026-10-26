@@ -96,9 +96,10 @@ class ResourceSamplerModule(
         val memory = try { memoryFraction() } catch (e: Exception) { errors.pushString("memory:${e.message}"); null }
         val battery = try { batteryFraction() } catch (e: Exception) { errors.pushString("battery:${e.message}"); null }
         val disk = try { diskFraction() } catch (e: Exception) { errors.pushString("disk:${e.message}"); null }
-        if (cpu == null && lastCpu != null) errors.pushString("cpu_baseline_missing")
+        if (cpu == null) errors.pushString("cpu_unavailable_or_baseline_missing")
+        if (memory == null) errors.pushString("memory_unavailable")
         val payload = Arguments.createMap().apply {
-            putBoolean("valid", memory != null)
+            putBoolean("valid", cpu != null && memory != null)
             putDouble("sampledAtMs", System.currentTimeMillis().toDouble())
             putString("source", "/proc/stat+ActivityManager+BatteryManager+StatFs")
             cpu?.let { putDouble("cpuFraction", it) }

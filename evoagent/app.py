@@ -1,5 +1,6 @@
 """系统装配：把所有子系统按 Architecture 组装成一个可运行实例。"""
 
+import hashlib
 import os
 import secrets
 import time
@@ -359,7 +360,9 @@ class App:
         task = self.controller.submit_task(
             goal, origin="opportunity", wait=True, source="opportunity",
             goal_id=goal_id, principal_id="local:host",
-            manifest_extras={"reason": reason,
+            goal_command_id=hashlib.sha256(
+                idempotency_key.encode("utf-8")).hexdigest(),
+            manifest_extras={"actor": actor, "reason": reason,
                              "opportunity_id": opportunity_id,
                              "idempotency_key": idempotency_key})
         return {"task_id": task.task_id}

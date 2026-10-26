@@ -1,7 +1,7 @@
 """ALN-25-C：主动任务准入执行与真实资源非干扰测试。
 
 覆盖：defer/关闭/无高价值机会 → 零新增任务与外部动作；未知成本不按 0 处理；
-预留成功→dispatch→submit；submit/dispatch 失败释放预留；真实宿主 CPU 压力下
+预留成功→dispatch→submit；submit 回执未知保留预留、未派发失败释放；真实宿主 CPU 压力下
 主动让出且核心任务状态不被改写。
 """
 
@@ -27,7 +27,8 @@ class FakeReservations:
         self.counter += 1
         if self.fail_reserve:
             raise self.fail_reserve
-        reservation = {"reservation_id": f"res_{self.counter}", "amounts": dict(amounts)}
+        reservation = {"reservation_id": f"res_{self.counter}", "amounts": dict(amounts),
+                       "state": "reserved", "dispatched": False}
         self.reservations[reservation["reservation_id"]] = reservation
         return reservation
 
@@ -35,13 +36,28 @@ class FakeReservations:
         if self.fail_dispatch:
             raise self.fail_dispatch
         self.dispatched.append(reservation_id)
+        self.reservations[reservation_id]["dispatched"] = True
+        return self.get(reservation_id)
+
+    def get(self, reservation_id):
+        return self.reservations[reservation_id]
+
+    def mark_unknown(self, reservation_id, **kwargs):
+        self.reservations[reservation_id]["state"] = "unknown"
+        return self.get(reservation_id)
 
     def refund(self, reservation_id, *, actor, reason):
+        if self.get(reservation_id)["dispatched"]:
+            raise ValueError("dispatched work requires reconciliation")
         self.refunds.append({"reservation_id": reservation_id, "reason": reason})
+        self.reservations[reservation_id]["state"] = "refunded"
+        return self.get(reservation_id)
 
 
 def governor(level="normal"):
-    return ProactivityGovernor(level=level)
+    from evoagent.core.resource_admission import ResourceGovernor
+    return ProactivityGovernor(level=level, resource_governor=ResourceGovernor(
+        lambda: {"cpu": 0.1, "memory": 0.1, "model_pool": 0.1}))
 
 
 def service(governor_=None, *, reservations=None, submit=None):
@@ -101,6 +117,7 @@ def test_success_reserves_dispatches_then_submits():
     svc = service(reservations=reservations,
                   submit=lambda **kwargs: calls.append(kwargs) or {"task_id": "task_1"})
     result = svc.attempt(actor="user", reason="主动帮助", opportunity_value=2.0,
+                         estimated_cost_known=True,
                          amounts={"model_calls": 1}, idempotency_key="k1",
                          opportunity_id="opp_1")
     assert result["started"] is True
@@ -110,7 +127,7 @@ def test_success_reserves_dispatches_then_submits():
     assert result["core_state_touched"] is False
 
 
-def test_submit_failure_releases_reservation():
+def test_submit_failure_keeps_unknown_reservation():
     reservations = FakeReservations()
 
     def submit(**kwargs):
@@ -118,11 +135,13 @@ def test_submit_failure_releases_reservation():
 
     svc = service(reservations=reservations, submit=submit)
     result = svc.attempt(actor="user", reason="主动帮助", opportunity_value=2.0,
-                         amounts={"model_calls": 1})
+                         amounts={"model_calls": 1}, estimated_cost_known=True,
+                         idempotency_key="failure-1")
     assert result["started"] is False
-    assert result["refunded"] is True
-    assert reservations.refunds and reservations.refunds[0]["reservation_id"] == "res_1"
-    assert result["zero_new_non_essential_tasks"] is True
+    assert result["refunded"] is False
+    assert reservations.get("res_1")["state"] == "unknown"
+    assert reservations.refunds == []
+    assert result["zero_new_non_essential_tasks"] is False
 
 
 def test_reservation_or_dispatch_failure_starts_nothing():
@@ -131,7 +150,8 @@ def test_reservation_or_dispatch_failure_starts_nothing():
     svc = service(reservations=reserved,
                   submit=lambda **kwargs: calls.append(kwargs))
     result = svc.attempt(actor="user", reason="主动帮助", opportunity_value=1.0,
-                         amounts={"model_calls": 1})
+                         amounts={"model_calls": 1}, estimated_cost_known=True,
+                         idempotency_key="reserve-1")
     assert result["started"] is False and calls == []
     assert "reservation_failed" in result["reason"]
 
@@ -139,18 +159,20 @@ def test_reservation_or_dispatch_failure_starts_nothing():
     svc2 = service(reservations=dispatch_failed,
                    submit=lambda **kwargs: calls.append(kwargs))
     result2 = svc2.attempt(actor="user", reason="主动帮助", opportunity_value=1.0,
-                           amounts={"model_calls": 1})
+                           amounts={"model_calls": 1}, estimated_cost_known=True,
+                           idempotency_key="dispatch-1")
     assert result2["started"] is False and calls == []
     assert result2["refunded"] is True and dispatch_failed.refunds
 
 
-def test_missing_submit_entry_refunds_reservation():
+def test_missing_submit_entry_does_not_acquire_reservation():
     reservations = FakeReservations()
     svc = service(reservations=reservations, submit=None)
     result = svc.attempt(actor="user", reason="主动帮助", opportunity_value=1.0,
-                         amounts={"model_calls": 1})
+                         amounts={"model_calls": 1}, estimated_cost_known=True)
     assert result["started"] is False
-    assert result["refunded"] is True
+    assert result["refunded"] is False
+    assert reservations.counter == 0
 
 
 def test_invalid_arguments_rejected():
@@ -199,57 +221,20 @@ def test_real_host_pressure_yields_and_core_state_untouched():
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
         time.sleep(1.5)
         result = svc.attempt(actor="user", reason="压力下主动帮助",
-                             opportunity_value=1.0)
+                             opportunity_value=1.0, estimated_cost_known=True)
     finally:
         for proc in procs:
             proc.kill()
         for proc in procs:
             proc.wait(timeout=5)
+    after_status = app.db.get_task(core.task_id).task_status
     app.db.close()
     assert platform.system()
     assert result["started"] is False
     assert calls == []
     assert before_status == TaskStatus.RUNNING
+    assert after_status == before_status
     assert result["core_state_touched"] is False
-
-def _deprecated_old_app_test(tmp_path):
-    from evoagent.app import App
-
-    app = App(data_dir=str(tmp_path))
-    try:
-        result = app.proactive_execution.attempt(
-            actor="user", reason="主动帮助", opportunity_value=1.0,
-            submit_payload={"goal": "检查项目风险"})
-        assert result["started"] is True, result
-        task = app.db.get_task(result["task_id"])
-        assert task is not None
-        assert getattr(task, "origin", "") == "opportunity"
-        before = len(app.db.list_tasks(limit=2000))
-        app.proactivity.set_level("off")
-        denied = app.proactive_execution.attempt(
-            actor="user", reason="主动帮助", opportunity_value=1.0,
-            submit_payload={"goal": "检查项目风险 2"})
-        assert denied["started"] is False
-        assert len(app.db.list_tasks(limit=2000)) == before
-        assert denied["safety_notice"]
-    finally:
-        app.db.close()
-
-def _deprecated_old_app_test_2(tmp_path):
-    from evoagent.app import App
-
-    app = App(data_dir=str(tmp_path))
-    try:
-        before = len(app.db.list_tasks(limit=2000))
-        result = app.proactive_execution.attempt(
-            actor="user", reason="主动帮助", opportunity_value=1.0,
-            submit_payload={})
-        assert result["started"] is False
-        assert "submit_failed" in result["reason"]
-        assert len(app.db.list_tasks(limit=2000)) == before
-    finally:
-        app.db.close()
-
 
 def _ready_goal(app):
     import time as _time
@@ -276,8 +261,10 @@ def test_app_opportunity_task_requires_authorized_goal(tmp_path):
 
     app = App(data_dir=str(tmp_path))
     try:
+        _configure_host(app)
         result = app.proactive_execution.attempt(
             actor="user", reason="主动帮助", opportunity_value=1.0,
+            estimated_cost_known=True, amounts={"model_calls": 1}, idempotency_key="unauthorized",
             submit_payload={"goal": "检查项目风险"})
         assert result["started"] is False
         assert "submit_failed" in result["reason"]
@@ -290,14 +277,21 @@ def test_app_wires_attempt_to_authorized_goal_opportunity_task(tmp_path):
 
     app = App(data_dir=str(tmp_path))
     try:
+        _configure_host(app)
         goal = _ready_goal(app)
         result = app.proactive_execution.attempt(
             actor="user", reason="主动帮助", opportunity_value=1.0,
+            estimated_cost_known=True, amounts={"model_calls": 1}, idempotency_key="authorized",
             submit_payload={"goal": "检查项目风险", "goal_id": goal["goal_id"]})
         assert result["started"] is True, result
         task = app.db.get_task(result["task_id"])
         assert task is not None
         assert getattr(task, "origin", "") == "opportunity"
+        # Durable Goal commands prevent duplicate submission after a restart.
+        replay = app._submit_proactive_task(actor="user", reason="retry",
+            idempotency_key="authorized", opportunity_id="",
+            payload={"goal": "检查项目风险", "goal_id": goal["goal_id"]})
+        assert replay["task_id"] == task.task_id
         before = len(app.db.list_tasks(limit=2000))
         app.proactivity.set_level("off")
         denied = app.proactive_execution.attempt(
@@ -306,5 +300,39 @@ def test_app_wires_attempt_to_authorized_goal_opportunity_task(tmp_path):
         assert denied["started"] is False
         assert len(app.db.list_tasks(limit=2000)) == before
         assert denied["safety_notice"]
+    finally:
+        app.db.close()
+
+
+def _configure_host(app):
+    from evoagent.core.resource_admission import ResourceGovernor
+    app.proactivity.resource_governor = ResourceGovernor(
+        lambda: {"cpu": 0.1, "memory": 0.1, "model_pool": 0.1})
+    store = app.ledger.reservation_store()
+    store.create_account("proactive", {"model_calls": 10}, kind="pool", reference="proactive",
+                         currency="USD", actor="host", reason="25-C component test")
+    app.proactive_execution.reservations = store
+    app.proactive_execution.account_id = "proactive"
+
+
+def test_app_sampled_pressure_denial_preserves_persisted_core_task(tmp_path):
+    from evoagent.app import App
+    from evoagent.core.resource_admission import ResourceGovernor
+    from evoagent.core.task import Task, TaskStatus
+    app = App(data_dir=str(tmp_path))
+    try:
+        _configure_host(app)
+        core = Task(user_goal="核心任务", task_status=TaskStatus.RUNNING)
+        app.db.save_task(core)
+        before = len(app.db.list_tasks(limit=2000))
+        app.proactivity.resource_governor = ResourceGovernor(
+            lambda: {"cpu": 0.99, "memory": 0.2, "model_pool": 0.1})
+        result = app.proactive_execution.attempt(actor="host", reason="test",
+            opportunity_value=1, estimated_cost_known=True,
+            amounts={"model_calls": 1}, idempotency_key="pressure")
+        assert result["started"] is False
+        assert len(app.db.list_tasks(limit=2000)) == before
+        assert app.db.get_task(core.task_id).task_status == TaskStatus.RUNNING
+        assert app.proactive_execution.reservations.balance("proactive")["held"] == {"model_calls": 0}
     finally:
         app.db.close()
