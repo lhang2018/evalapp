@@ -35,6 +35,12 @@ export interface DeviceResult {
   status: DeviceStatus;
   evidence?: Record<string, unknown>;
   message?: string;
+  /** Broker-owned fact for this invocation; transport responses cannot set it. */
+  dispatch_attempted?: boolean;
+}
+
+export interface DeviceDispatchOptions {
+  canDispatch?: () => boolean;
 }
 
 export interface ActionJournalEntry {

@@ -152,6 +152,7 @@ test("an interrupted claimed task is never dispatched on restart", async () => {
   const f = fixture();
   const task = (await f.service.prepare("打开设置"))!;
   const interrupted = new DeviceTaskService(f.repo, f.ledger, {
+    supportsDispatchGuard: true, // Controlled throw-only adapter; never dispatches.
     execute: async () => { throw new Error("process interrupted"); }, getJournal: () => null,
   });
   await assert.rejects(interrupted.execute(task.local_task_id, async () => true), /interrupted/);

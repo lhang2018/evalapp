@@ -101,7 +101,8 @@ export class DeviceTaskService {
     if (!claimed) return this.refresh(id);
     // A crash after this durable claim never turns back into an executable task.
     if (!foreground()) throw new Error("操作已暂存，未继续下发，请读取回执核对");
-    const result = await executeProposal(this.ledger, this.broker, proposal, { now: this.now });
+    const result = await executeProposal(this.ledger, this.broker, proposal,
+      { now: this.now, canDispatch: foreground });
     await this.refresh(id);
     return result.receipt;
   }

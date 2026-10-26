@@ -31,6 +31,7 @@ import type { KeyValueStore } from "../offline/storage.ts";
 import type {
   ActionJournalEntry,
   DeviceAction,
+  DeviceDispatchOptions,
   DeviceResult,
   DeviceRisk,
   JournalState,
@@ -502,8 +503,8 @@ export class TaskActionLedger {
 
 export interface ProposalExecution {
   receipt: ActionReceipt;
-  /** 本次是否真实下发（false = 幂等重放原回执） */
-  dispatched: boolean;
+  /** 本次是否调用传输下发；旧适配器不提供事实时为null，未知不按false算。 */
+  dispatched: boolean | null;
   /** broker 原始结果；仅本地使用，上传用 receiptForUpload 投影 */
   result?: DeviceResult;
 }
@@ -523,9 +524,13 @@ export async function executeProposal(
   ledger: TaskActionLedger,
   broker: DeviceBrokerLike,
   proposal: DeviceActionProposal,
-  options: { now?: () => number } = {},
+  options: { now?: () => number; canDispatch?: () => boolean } = {},
 ): Promise<ProposalExecution> {
   const now = options.now ?? (() => Date.now());
+  if (options.canDispatch !== undefined && (typeof options.canDispatch !== "function"
+      || broker.supportsDispatchGuard !== true)) {
+    throw new Error("设备执行器不支持下发条件guard，禁止执行");
+  }
   const claim = await ledger.claimProposal(proposal);
   proposal = claim.proposal;
   if (claim.receipt) {
@@ -549,7 +554,7 @@ export async function executeProposal(
     };
     return { receipt: await ledger.recordRecoveryReceipt(unknown), dispatched: false };
   }
-  const result = await broker.execute(proposalToAction(proposal));
+  const result = await broker.execute(proposalToAction(proposal), { canDispatch: options.canDispatch });
   const entry = broker.getJournal(proposal.action_id);
   const receipt: ActionReceipt = entry
     ? receiptFromJournal(proposal, entry, {
@@ -572,11 +577,12 @@ export async function executeProposal(
       recorded_at: now(),
     };
   await ledger.recordReceipt(receipt);
-  return { receipt, dispatched: true, result };
+  return { receipt, dispatched: typeof result.dispatch_attempted === "boolean" ? result.dispatch_attempted : null, result };
 }
 
 /** broker 最小接口（便于测试注入；真实用法传 DeviceBroker 实例）。 */
 export interface DeviceBrokerLike {
-  execute(action: DeviceAction): Promise<DeviceResult>;
+  readonly supportsDispatchGuard?: boolean;
+  execute(action: DeviceAction, options?: DeviceDispatchOptions): Promise<DeviceResult>;
   getJournal(actionId: string): ActionJournalEntry | null;
 }

@@ -9,6 +9,7 @@ import type { DeviceTransport } from "./transport.ts";
 import type {
   ActionJournalEntry,
   DeviceAction,
+  DeviceDispatchOptions,
   DeviceResult,
   DeviceRisk,
   JournalState,
@@ -63,6 +64,7 @@ export function journalStateForStatus(
 }
 
 export class DeviceBroker {
+  readonly supportsDispatchGuard = true;
   private readonly transport: DeviceTransport;
   private readonly confirm: ConfirmFn | null;
   private readonly now: () => number;
@@ -94,14 +96,14 @@ export class DeviceBroker {
     return order[Math.max(order.indexOf(defaultRiskOf(action.kind)), order.indexOf(action.risk ?? "low"))];
   }
 
-  async execute(action: DeviceAction): Promise<DeviceResult> {
+  async execute(action: DeviceAction, options: DeviceDispatchOptions = {}): Promise<DeviceResult> {
     action = JSON.parse(JSON.stringify(action)) as DeviceAction;
     const risk = this.riskOf(action);
     action.risk = risk;
     const identity = actionIdentity(action);
     const prior = this.entries.get(action.action_id);
-    if (prior) return this.identities.get(action.action_id) === identity ? this.replayResult(prior)
-      : { status: "denied", message: "action_id已绑定其他动作，拒绝改写身份或参数" };
+    if (prior) return { ...(this.identities.get(action.action_id) === identity ? this.replayResult(prior)
+      : { status: "denied" as const, message: "action_id已绑定其他动作，拒绝改写身份或参数" }), dispatch_attempted: false };
     this.identities.set(action.action_id, identity);
     this.record(action, risk, "prepared"); // Claim before the first async boundary.
 
@@ -117,7 +119,7 @@ export class DeviceBroker {
     if (!available) {
       const message = "无障碍服务不可用或未授权";
       this.record(action, risk, "unavailable", message);
-      return { status: "unavailable", message };
+      return { status: "unavailable", message, dispatch_attempted: false };
     }
     const stoppedAfterAvailability = this.rejectIfStopped(action, risk);
     if (stoppedAfterAvailability) return stoppedAfterAvailability;
@@ -137,13 +139,25 @@ export class DeviceBroker {
       if (!allowed) {
         const message = "高风险操作未获用户确认";
         this.record(action, risk, "denied", message);
-        return { status: "denied", message };
+        return { status: "denied", message, dispatch_attempted: false };
       }
     }
 
     // 等待期间其他动作可能触发安全停止；下发前重新检查。
     const stoppedBeforeDispatch = this.rejectIfStopped(action, risk);
     if (stoppedBeforeDispatch) return stoppedBeforeDispatch;
+
+    // This is the final synchronous boundary before invoking the transport.
+    // Conditions may change while availability or user consent was awaited.
+    if (options.canDispatch !== undefined) {
+      let allowed = false;
+      try { allowed = options.canDispatch() === true; } catch { /* refuse */ }
+      if (!allowed) {
+        const message = "执行条件已变化，本次未下发设备操作";
+        this.record(action, risk, "denied", message);
+        return { status: "denied", message, dispatch_attempted: false };
+      }
+    }
 
     this.record(action, risk, "prepared");
     this.record(action, risk, "dispatched");
@@ -174,7 +188,7 @@ export class DeviceBroker {
       result.message,
       result.evidence,
     );
-    return result;
+    return { ...result, dispatch_attempted: true };
   }
 
   private rejectIfStopped(action: DeviceAction, risk: DeviceRisk): DeviceResult | null {
@@ -182,7 +196,7 @@ export class DeviceBroker {
     const message =
       `安全停止：连续 ${this.consecutiveUnverified} 次设备操作未通过验证，需人工恢复`;
     this.record(action, risk, "denied", message);
-    return { status: "denied", message };
+    return { status: "denied", message, dispatch_attempted: false };
   }
 
   private verifyResult(action: DeviceAction, result: DeviceResult): DeviceResult {
