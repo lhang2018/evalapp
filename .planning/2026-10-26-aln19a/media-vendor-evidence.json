@@ -1,0 +1,152 @@
+{
+ "task": "ALN-19-A 真实音视频供应商切片（本地夹具供应商，非真实供应商实测）",
+ "date": "2026-10-26",
+ "fixture_label": "本地 HTTP 夹具供应商；明确非真实供应商/生产实测",
+ "config": {
+  "provider": "fixture-vendor",
+  "base_url": "http://127.0.0.1:4138",
+  "model_version": "vendor-v1",
+  "budget_usd": 1.0,
+  "price_per_second_usd": 0.02,
+  "edit_price_usd": 0.05,
+  "configured": true,
+  "api_key_configured": true
+ },
+ "render": {
+  "ok": true,
+  "action": "render_clip",
+  "provider": "fixture-vendor",
+  "model_version": "vendor-v1",
+  "cost_usd": 0.1,
+  "remaining_usd": 0.9,
+  "actor": "user-a",
+  "asset": {
+   "asset_id": "clip_fixture_1",
+   "sha256": "2533e269f36ae32a36a280fe5ba330b81fb176da6b51116a321a610df70b86a9",
+   "bytes": 26,
+   "content_type": "video/mp4"
+  }
+ },
+ "edit": {
+  "ok": true,
+  "action": "edit_clip",
+  "cost_usd": 0.1,
+  "remaining_usd": 0.8,
+  "asset": {
+   "asset_id": "edit_fixture_1",
+   "parent_asset_id": "clip_fixture_1",
+   "sha256": "7489aa4701212636556ca9c4c2437d41b9ad8ab3fc44cb119805336468e16540",
+   "bytes": 14,
+   "ops": [
+    "trim",
+    "subtitle"
+   ]
+  }
+ },
+ "refusals": {
+  "missing_config": "MediaVendorRefused",
+  "budget": "MediaVendorRefused",
+  "unknown_edit": "MediaVendorRefused",
+  "vendor_down": "MediaVendorError"
+ },
+ "report": {
+  "config": {
+   "provider": "fixture-vendor",
+   "base_url": "http://127.0.0.1:4138",
+   "model_version": "vendor-v1",
+   "budget_usd": 1.0,
+   "price_per_second_usd": 0.02,
+   "edit_price_usd": 0.05,
+   "configured": true,
+   "api_key_configured": true
+  },
+  "spent_usd": 0.3,
+  "remaining_usd": 0.7,
+  "calls": 3,
+  "failures": 1,
+  "last_call": {
+   "ok": true,
+   "action": "render_clip",
+   "provider": "fixture-vendor",
+   "model_version": "vendor-v1",
+   "asset": {
+    "asset_id": "clip_fixture_1",
+    "sha256": "fcf0d1332c76f1214fa53116ef7b3d3c7b83bc15da95966828356baf95f248bb",
+    "bytes": 20,
+    "content_type": "video/mp4"
+   },
+   "cost_usd": 0.1,
+   "remaining_usd": 0.7,
+   "actor": "u",
+   "reason": "恢复",
+   "at": 1793005914.188658
+  }
+ },
+ "audit": [
+  {
+   "actor": "user-a",
+   "action": "media_render_clip",
+   "target": "fixture-vendor",
+   "detail": {
+    "provider": "fixture-vendor",
+    "model_version": "vendor-v1",
+    "asset_id": "clip_fixture_1",
+    "sha256": "2533e269f36ae32a36a280fe5ba330b81fb176da6b51116a321a610df70b86a9",
+    "cost_usd": 0.1
+   }
+  },
+  {
+   "actor": "user-a",
+   "action": "media_edit_clip",
+   "target": "fixture-vendor",
+   "detail": {
+    "provider": "fixture-vendor",
+    "model_version": "vendor-v1",
+    "asset_id": "edit_fixture_1",
+    "sha256": "7489aa4701212636556ca9c4c2437d41b9ad8ab3fc44cb119805336468e16540",
+    "cost_usd": 0.1
+   }
+  },
+  {
+   "actor": "u",
+   "action": "media_render_clip_failed",
+   "target": "fixture-vendor",
+   "detail": {
+    "ok": false,
+    "action": "render_clip",
+    "actor": "u",
+    "reason": "r",
+    "error": "供应商 HTTP 500: b'{\"error\": \"vendor down\"}'",
+    "at": 1793005914.1881466,
+    "refunded": true
+   }
+  },
+  {
+   "actor": "u",
+   "action": "media_render_clip",
+   "target": "fixture-vendor",
+   "detail": {
+    "provider": "fixture-vendor",
+    "model_version": "vendor-v1",
+    "asset_id": "clip_fixture_1",
+    "sha256": "fcf0d1332c76f1214fa53116ef7b3d3c7b83bc15da95966828356baf95f248bb",
+    "cost_usd": 0.1
+   }
+  }
+ ],
+ "checks": {
+  "missing_config_refused": true,
+  "render_real_http_ok": true,
+  "sha256_matches_bytes": true,
+  "cost_and_remaining_traced": true,
+  "authorization_trace": true,
+  "budget_refusal_no_vendor_call": true,
+  "edit_ok": true,
+  "unknown_edit_refused": true,
+  "failure_refunded": true,
+  "recovery_after_failure": true,
+  "env_config_ready": true
+ },
+ "all_checks_pass": true,
+ "boundary": "真实供应商凭据/预算未提供：本证据仅为契约/校验/追溯/恢复切片，不冒称真实供应商或生产实测"
+}
