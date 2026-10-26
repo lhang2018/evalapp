@@ -150,6 +150,10 @@ class ResourceGovernor:
         """压力回落到 low_water 以下时，给出可恢复任务的恢复决策。"""
         snapshot = self.sample()
         decisions: Dict[str, AdmissionDecision] = {}
+        # Failure to measure is not evidence of recovery. Keep the paused set
+        # until a valid low-water sample can justify resuming these tasks.
+        if not snapshot.sample_valid:
+            return decisions
         if snapshot.pressure <= self.policy.low_water:
             for task_id in list(self.paused_tasks):
                 decisions[task_id] = AdmissionDecision(

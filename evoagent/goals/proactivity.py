@@ -135,7 +135,7 @@ class ProactivityGovernor:
             try:
                 decision = self.resource_governor.admit("opportunity")
                 snapshot = getattr(decision, "snapshot", {})
-                invalid_sample = not isinstance(snapshot, dict) or snapshot.get("sample_valid", True) is not True
+                invalid_sample = not isinstance(snapshot, dict) or snapshot.get("sample_valid") is not True
                 if invalid_sample:
                     reasons.append("资源采样不可用或不合法，主动侧暂缓")
                 elif decision.decision != "admit":
