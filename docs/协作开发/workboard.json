@@ -6384,7 +6384,7 @@
    "title": "跨文件语义与LSP能力扩展",
    "stream": "runtime",
    "owner": "zcode-main",
-   "reviewer": "claude-main",
+   "reviewer": "codex-runtime",
    "branch": "feature/user-direction",
    "base_commit": "e16dbfeedd48d3e58cc24d68886eb76f2d7770d7",
    "status": "review",
