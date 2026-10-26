@@ -5624,6 +5624,17 @@
      "result": "客户端384/384与tsc0；后端相关112通过，非后端全量；未使用真机，未发布",
      "log": ".planning/2026-10-26-mainchain-review/committed-evidence.json",
      "delivery": "docs/协作开发/验收/2026-10-26-07C与12E主链接续复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "scope": "dsh-lead 一审复核 ALN-07-C（非作者）：binding 专项+8关联模块 169 passed；controller._reconciliation_gate 接管恢复路径接线；真实 Database/ActionBindings 探针 6/6：意图崩溃窗口唯一候选补绑+回填、零候选 stale 不伪造、多候选 ambiguous 不自动绑、改写冲突不改原归属、重复 resolve 幂等",
+     "source_commit": "f1a37bc",
+     "reviewer": "dsh-lead",
+     "first_reviewer": "dsh-lead",
+     "verdict": "first_review_pass_pending_other_reviewer",
+     "result": "一审复核通过、无阻断；保持 review。原分配 zcode-main 未复核，按用户要求最终接受前需再一名非作者审阅人复核。缺口：人工裁决入口/多候选裁决API、真实多进程 kill、后端全量与跨层事件视图。",
+     "log": ".planning/2026-10-26-dsh-review/07c-review.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-dsh复核-07C.md"
     }
    ],
    "card": "docs/协作开发/任务卡/07-C-原子绑定、精确步骤授权与对账消费.md",
@@ -5662,7 +5673,7 @@
     "UX-10",
     "F03"
    ],
-   "next_step": "固定077d293只读再检：绑定/对账/授权相关112项通过，未见新阻断；保留原审阅人与review，含本会话历史修复不自批；人工裁决与整包缺口另验。",
+   "next_step": "dsh-lead 已一审复核通过（169 passed；崩溃唯一补绑/stale/ambiguous/改写冲突/幂等探针 6/6；reconciliation gate 已接 recover 路径）。保持 review：原分配 zcode-main 未复核，按用户要求最终接受前需另一名非作者审阅人复核；缺口：WAITING_USER 人工裁决入口/多候选裁决 API、真实多进程 kill、后端全量与跨层事件视图。",
    "working_basis": "2026-10-25 zcode-next 认领开工（WIP=1，本流内无其他在途卡）。锚点 d8ee355。复用 07-B ActionBindings/07-E reconcile/04-R 恢复；写入边界 core/planning/workflows；server.py、budget.py 等他会在途文件不触碰。",
    "prerequisites": "可重复故障注入",
    "review_history": [
@@ -5682,7 +5693,17 @@
     "scope": "绑定/意图原子回滚与竞争歧义只读再检未见新阻断；不自批此前0cf6672修复",
     "report": "docs/协作开发/验收/2026-10-25-第五批补绑凭据与重构复核.md",
     "status": "rechecked_pending_independent_acceptance"
-   }
+   },
+   "first_reviewer": "dsh-lead",
+   "review_verdict": "first_review_pass_pending_other_reviewer",
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "dsh-lead 一审复核通过；待 zcode-main/另一非作者复核"
+    }
+   ]
   },
   {
    "id": "ALN-08-W",

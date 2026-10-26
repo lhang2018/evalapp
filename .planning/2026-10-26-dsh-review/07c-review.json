@@ -1,0 +1,65 @@
+{
+ "card": "ALN-07-C",
+ "reviewer": "dsh-lead（非作者；一审复核；用户要求后续仍需另一人复核）",
+ "date": "2026-10-26",
+ "commands": {
+  "targeted": "tests/test_binding_atomicity.py + 8 关联模块 -> 169 passed",
+  "probe": "真实 Database/ActionBindings 崩溃窗口与补绑语义探针"
+ },
+ "out": {
+  "unique_heal": {
+   "healed": {
+    "eff_1": "step_A"
+   },
+   "stale": [],
+   "ambiguous": []
+  },
+  "binding_after_heal": {
+   "effect_id": "eff_1",
+   "task_id": "task_07c",
+   "step_id": "step_A",
+   "tool_id": "file_write",
+   "bound_at": 1793028752.6099322
+  },
+  "intent_resolved": "eff_1",
+  "zero_candidate": {
+   "healed": {},
+   "stale": [
+    "intent_72007f309accc0acae55793f00c777e2d08b367a97a94f336470cddefcb0adbc"
+   ],
+   "ambiguous": []
+  },
+  "stale_intent_unbound": true,
+  "multi_candidate": {
+   "healed": {},
+   "stale": [
+    "intent_72007f309accc0acae55793f00c777e2d08b367a97a94f336470cddefcb0adbc"
+   ],
+   "ambiguous": [
+    {
+     "intent_id": "intent_c705aaad61bbb2ec3aebcf40d9e9a0b4271ad1f82013b1506dd6402103e1ce34",
+     "candidates": [
+      "eff_2",
+      "eff_3"
+     ]
+    }
+   ]
+  },
+  "ambiguous_unbound": true,
+  "no_bindings_for_ambiguous": true,
+  "rewrite_conflict": "BindingConflict",
+  "binding_unchanged": true,
+  "idempotent_resolve": true,
+  "binding_count": null
+ },
+ "checks": {
+  "unique_candidate_healed": true,
+  "intent_backfilled": true,
+  "zero_candidate_stale": true,
+  "multi_candidate_ambiguous_not_bound": true,
+  "rewrite_conflict": true,
+  "idempotent_resolve": true
+ },
+ "all_checks_pass": true,
+ "boundary": "本地临时 SQLite；崩溃以'意图已登记、resolve 未执行'模拟，非真实进程 kill；未跑全量后端"
+}
