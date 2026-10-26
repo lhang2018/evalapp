@@ -5216,6 +5216,14 @@
      "date": "2026-10-25",
      "scope": "独立复核（zcode-main）：R1专项30过、R2签发→验签ok、R3篡改消息拒（error=签名验证失败非内部错误）、R4错钥拒、R5 hex_even契约（e=010001偶数长度）、R6公开记录仅4字段无私钥材料（无PEM/无JWK d）、R7信封签名一致性；hex_even跨端缺陷修复与变异弱断言自纠两亮点确认；转accepted",
      "review_report": "docs/协作开发/验收/2026-10-25-ALN-03-P独立复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "e1365ef857490936b4db6f5a6b1603059cc937cf",
+     "source_tree": "bc091c500d1a093543c82b094d0d5634b74002f8",
+     "result": "撤销公钥保留revoked、实际回滚目标校验/信任字段统一；固定Python相关292过、客户端437过+类型检查；新增修复待复核，不扩大原接受",
+     "log": ".planning/2026-10-26-release-trust-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-发布撤销与回滚目标信任复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/03-P-生产信任根与元数据制品联验.md",
@@ -5233,9 +5241,29 @@
     "G2",
     "G6"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
+   "next_step": "原签发/联验切片接受保留；e1365ef修完整公钥导出丢失revoked，真实端侧验签回归通过。固定相关292+客户端437/类型检查；新增修复待复核，生产信任根/撤销同步和真机仍保留。",
    "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
-   "prerequisites": "生产或明确标注测试信任材料"
+   "prerequisites": "生产或明确标注测试信任材料",
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-RELEASE-TRUST",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-03-P",
+     "ALN-11-P"
+    ],
+    "fixed_cards": [
+     "ALN-03-P",
+     "ALN-11-P"
+    ],
+    "fix_commit": "e1365ef857490936b4db6f5a6b1603059cc937cf",
+    "report": "docs/协作开发/验收/2026-10-26-发布撤销与回滚目标信任复核.md",
+    "evidence": ".planning/2026-10-26-release-trust-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "撤销公钥端侧投影、回滚实际目标信任与归因；恢复10项接续通过，不是全量或设备接受"
+   }
   },
   {
    "id": "ALN-04-V",
@@ -5804,6 +5832,14 @@
      "scope": "独立复核：3探针(退役生命周期verify/deploy拒绝/退役回执current清空/身份撤销防护+轮换+记录保留)+20项复跑",
      "result": "accepted",
      "evidence": "docs/协作开发/验收/2026-10-25-ALN-11-P独立复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "e1365ef857490936b4db6f5a6b1603059cc937cf",
+     "source_tree": "bc091c500d1a093543c82b094d0d5634b74002f8",
+     "result": "撤销公钥保留revoked、实际回滚目标校验/信任字段统一；固定Python相关292过、客户端437过+类型检查；新增修复待复核，不扩大原接受",
+     "log": ".planning/2026-10-26-release-trust-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-发布撤销与回滚目标信任复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/11-P-生产签名与端侧安装退役回执.md",
@@ -5828,7 +5864,7 @@
     "G0",
     "G6"
    ],
-   "next_step": "复核通过；解锁29-E；生产信任根完整联验按03-P另验",
+   "next_step": "原安装退役切片接受保留；e1365ef为rolled_back解析实际目标并校验退役/生产身份，回执密钥/摘要/版本归因一致，源撤销仍可退回可信目标。固定相关292+客户端437/类型检查；新增修复待复核，生产/设备接受另验。",
    "delivery": "docs/协作开发/交付/ALN-11-P-生产签名与端侧安装退役回执.md",
    "working_basis": "2026-10-25 claude-main 认领开工。base_commit 078b9cc 为实际接手锚点（基线仍 candidate，prepared_candidate 21899e6 未发布）。复用 03-P identity.py 的生产身份签发/撤销与端侧 trust.ts+rsa.ts 验签、11-A 下载验签装载回执与 11-W 健康回滚；本卡补齐生产信任联验、安装/激活/退役回执与灰度回滚。共享文件精确修改点：evoagent/release/delivery.py（ACTIONS 增 retired、record_apply 绑定 signing_key_id 与退役语义、reconcile 输出信任绑定字段）、evoagent/release/signing.py（认领时声明新增辅助，最终由 identity.py 既有能力承担、未改动）、evoagent/release/manager.py（退役版本状态迁移）；evoagent/release/identity.py 为本人 03-P 新增文件继续扩展；android-app 侧新增 src/install/ 独占模块与测试 + update/types.ts action 联合一行加法，不改 App.tsx 与在途的 src/offline/evidence.ts、src/features/voice/。不触碰并行会话在途文件。",
    "prerequisites": "可连接设备与生产或标注测试的签名材料",
@@ -5839,7 +5875,27 @@
      "to": "claude-main",
      "reason": "用户指示再认领；依赖 03-P（review，按待审接口条款开发）与 11-W（accepted），写入边界与并行在途无重叠"
     }
-   ]
+   ],
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-RELEASE-TRUST",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-03-P",
+     "ALN-11-P"
+    ],
+    "fixed_cards": [
+     "ALN-03-P",
+     "ALN-11-P"
+    ],
+    "fix_commit": "e1365ef857490936b4db6f5a6b1603059cc937cf",
+    "report": "docs/协作开发/验收/2026-10-26-发布撤销与回滚目标信任复核.md",
+    "evidence": ".planning/2026-10-26-release-trust-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "撤销公钥端侧投影、回滚实际目标信任与归因；恢复10项接续通过，不是全量或设备接受"
+   }
   },
   {
    "id": "ALN-12-E",
@@ -6931,13 +6987,24 @@
    "workpackage": "ALN-16",
    "title": "聚合观测与受控导出删除API接线",
    "stream": "integration",
-   "owner": null,
+   "owner": "dsh-lead",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "35dfa152a6e378e17e83ce0251f003fa9b205a2f",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-26",
+     "scope": "聚合观测与受控导出/删除 API：GET聚合查询(admin)、POST导出(ExportPolicy裁剪+审计+sha256)、GET受控下载(审计/摘要双匹配)、POST删除(dry-run/plan_digest校验/分层执行/残留对账/retained_layers，不宣称全域擦除)；主体来自鉴权、body伪造principal 403；顺带修复deletion_reconciliation无row_factory计数失败",
+     "source_commit": "aa19558347c622d5461f20f86156754f334efdac",
+     "functional_commit": "aa19558347c622d5461f20f86156754f334efdac",
+     "source_tree": "4e2e296eccdddcca4b32040d4efcb48fd042b451",
+     "result": "专项5 passed；观测/接口域93 passed；全量2362/0/2；实测证据11项全过。缺口：受控下载为JSON(base64)非流式、导出保留期清理、删除执行器不覆盖副作用/审批/审计层(如实retained)、无管理端UI、无生产证据",
+     "log": ".planning/2026-10-26-aln16q/api-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-16-Q-聚合观测与受控导出删除API接线.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/16-Q-聚合观测与受控导出删除API接线.md",
    "shared_files": [
     "evoagent/api/routes.py",
@@ -6955,13 +7022,29 @@
     "G2"
    ],
    "priority": "P0",
-   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
-   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "next_step": "待独立复核：聚合查询/导出审计与下载摘要匹配/删除dry-run与逐层残留对账/越权与伪造principal拒绝的证据见交付文档与 .planning/2026-10-26-aln16q/；审阅人未定不自批；流式下载、导出保留期清理、删除执行器覆盖层扩展、管理端UI属后续，ALN-16整包不关闭",
+   "working_basis": "以35dfa152a6e378e17e83ce0251f003fa9b205a2f（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
    "split_round": "STATUS-SPLIT-2026-10-26",
    "backlog_refs": [
     "ZG-10"
-   ]
+   ],
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户指示继续、按优先级顺序认领；16-Q 为 P1 READY"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "claimed",
+     "to": "review",
+     "reason": "API 接线完成并通过全量回归；流式/保留期/UI/生产证据留缺口"
+    }
+   ],
+   "delivered_commit": "aa19558347c622d5461f20f86156754f334efdac",
+   "delivery": "docs/协作开发/交付/ALN-16-Q-聚合观测与受控导出删除API接线.md"
   },
   {
    "id": "ALN-29-F",
@@ -9444,6 +9527,74 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-他人验收台账与恢复入口代码复核.md",
    "scope": "30-A/17-A恢复入口与门禁修复，291定向过；新增修复待复核，非全量/生产接受"
+  },
+  {
+   "id": "discovered-e1365ef85749",
+   "title": "fix(release): 保留撤销标记并校验实际回滚目标信任",
+   "workpackage": "ALN-03",
+   "source_commit": "e1365ef857490936b4db6f5a6b1603059cc937cf",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/release/delivery.py",
+    "evoagent/release/identity.py",
+    "tests/test_release_trust_review_20261026.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-发布撤销与回滚目标信任复核.md",
+   "scope": "03-P/11-P信任修复；292相关+437客户端新跑，新增修复待复核，非全量/生产发布"
+  },
+  {
+   "id": "discovered-1b590a38b590",
+   "title": "feat(ALN-30-B): 客户端工作区成果与记忆控制接线（本地组件切片）",
+   "workpackage": "ALN-30",
+   "source_commit": "1b590a38b5900a3670e45387870e1441dc5c7a0e",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "android-app/App.tsx",
+    "android-app/src/api.ts",
+    "android-app/src/features/artifacts/panel.ts",
+    "android-app/src/features/memory/control.ts",
+    "android-app/test/offline/artifactPanel.test.ts",
+    "android-app/test/offline/memoryControl.test.ts"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-发布撤销与回滚目标信任复核.md",
+   "scope": "并行交付源码补登记，不改原认领/审阅；具体功能按各卡验收，16-Q不在本轮e136固定回归范围"
+  },
+  {
+   "id": "discovered-2e0c85747397",
+   "title": "feat(ALN-24-F): 多主体记忆范围策略与迁移隔离",
+   "workpackage": "ALN-24",
+   "source_commit": "2e0c857473972ba2ab50bf3dd2c11ef465048fa2",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/api/memory_context_api.py",
+    "evoagent/memory/scope_policy.py",
+    "tests/test_multi_principal_scope.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-发布撤销与回滚目标信任复核.md",
+   "scope": "并行交付源码补登记，不改原认领/审阅；具体功能按各卡验收，16-Q不在本轮e136固定回归范围"
+  },
+  {
+   "id": "discovered-aa19558347c6",
+   "title": "feat(ALN-16-Q): 聚合观测与受控导出/删除 API 接线",
+   "workpackage": "ALN-16",
+   "source_commit": "aa19558347c622d5461f20f86156754f334efdac",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/api/evidence_api.py",
+    "evoagent/api/server.py",
+    "evoagent/observability/repository.py",
+    "tests/test_evidence_api.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-发布撤销与回滚目标信任复核.md",
+   "scope": "并行交付源码补登记，不改原认领/审阅；具体功能按各卡验收，16-Q不在本轮e136固定回归范围"
   }
  ],
  "requirement_batches": [
@@ -9694,6 +9845,26 @@
    "product_acceptance_added": false,
    "published_by_review": false,
    "scope": "105卡元数据普查；30-A恢复入口/17-A恢复门禁修复，17-P/11-P仅相关范围，不是整包重新验收"
+  },
+  {
+   "id": "REVIEW-2026-10-26-RELEASE-TRUST",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-03-P",
+    "ALN-11-P"
+   ],
+   "fixed_cards": [
+    "ALN-03-P",
+    "ALN-11-P"
+   ],
+   "fix_commit": "e1365ef857490936b4db6f5a6b1603059cc937cf",
+   "report": "docs/协作开发/验收/2026-10-26-发布撤销与回滚目标信任复核.md",
+   "evidence": ".planning/2026-10-26-release-trust-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false,
+   "scope": "撤销公钥端侧投影、回滚实际目标信任与归因；恢复10项接续通过，不是全量或设备接受"
   }
  ]
 }
