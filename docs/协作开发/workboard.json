@@ -5698,7 +5698,7 @@
    "reviewer": "zcode-main",
    "branch": "feature/user-direction",
    "base_commit": "f7ccfcb936f4ed06dea26b84b44c01805d19dff0",
-   "status": "accepted",
+   "status": "review",
    "blocker": null,
    "evidence": [
     {
@@ -5715,6 +5715,15 @@
      "date": "2026-10-25",
      "scope": "独立复核（zcode-main）：R1专项16过独立复跑、R2相关域23过、R3入队幂等、R4六线程并发领取仅1成功、R5租约接管后旧token complete被LeaseLost拒、R6新持有者consumed落库、R7 attempts递增；边界自述诚实（非恶意代码强边界）；结论转accepted（本卡范围）",
      "review_report": "docs/协作开发/验收/2026-10-25-ALN-09-H独立复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "85de8e6cb997784e9aaaf27c71f444637956ac38",
+     "functional_commit": "fde8f899d8af9db6b1e4285b5ff75e83b51d7271",
+     "source_tree": "8e65a9dc9dd184e1000e7e2a15cf8adfcc19b289",
+     "result": "已复现rename/replace跨沙箱移动/覆盖合成宿主文件，fde8f89拦截两端路径并拒绝无法核验的描述符修改。目录内移动保留；原接受需重新复核，仍不是OS安全隔离/跨平台完整验收。 固定相关318过，新修复待其他审阅人复核。",
+     "log": ".planning/2026-10-26-benchmark-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/09-H-真实候选宿主、持久队列与进程隔离.md",
@@ -5739,7 +5748,7 @@
     "G2",
     "G3"
    ],
-   "next_step": "待独立复核：票据跨进程领取/租约过期接管/fencing拒绝/候选身份恢复与真实候选资产执行证据见交付文档与 .planning/2026-10-25-aln09h/；审阅人未定，不自批为独立验收；整包ALN-09仍需真实宿主与多进程故障注入实测",
+   "next_step": "已复现rename/replace跨沙箱移动/覆盖合成宿主文件，fde8f89拦截两端路径并拒绝无法核验的描述符修改。目录内移动保留；原接受需重新复核，仍不是OS安全隔离/跨平台完整验收。 固定相关318过，新修复待其他审阅人复核。",
    "working_basis": "以f7ccfcb936f4ed06dea26b84b44c01805d19dff0（认领时feature/user-direction HEAD）作为接手锚点；最终提交435d12f7bbaeef021299c87bfa6f529feaeaff5f基于会话内他人已提交的 HEAD 之上；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
    "prerequisites": "受控宿主与真实候选制品",
    "delivered_commit": "435d12f7bbaeef021299c87bfa6f529feaeaff5f",
@@ -5751,7 +5760,39 @@
      "to": "dsh-lead",
      "reason": "用户指示认领一张；选依赖全绿的 ALN-09-H（09-F 已 accepted），写入面 evoagent/evolution/ 与在途卡 23-A/23-B/23-D/24-B/29-C/15-P/07-C/03-P 均无重叠"
     }
-   ]
+   ],
+   "review_history": [
+    {
+     "date": "2026-10-26",
+     "previous_status": "accepted",
+     "previous_reviewer": "zcode-main",
+     "reason": "接续负向探针确认原核心边界缺陷；已修复但新代码待其他审阅人复核",
+     "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md"
+    }
+   ],
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-BENCHMARK-SANDBOX",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-09-H",
+     "ALN-10-E",
+     "ALN-09-I"
+    ],
+    "fixed_cards": [
+     "ALN-09-H",
+     "ALN-10-E",
+     "ALN-09-I"
+    ],
+    "fix_commit": "fde8f899d8af9db6b1e4285b5ff75e83b51d7271",
+    "validation_commit": "85de8e6cb997784e9aaaf27c71f444637956ac38",
+    "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md",
+    "evidence": ".planning/2026-10-26-benchmark-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "六类基准/隔离缺陷修复，固定相关318过；首轮310过/1旧知识断言失败保留；非全量、设备或生产接受"
+   }
   },
   {
    "id": "ALN-10-E",
@@ -5762,7 +5803,7 @@
    "reviewer": "zcode-next",
    "branch": "feature/user-direction",
    "base_commit": "89accb658a8ce5aa49c7e74d0e45904c2eda6b97",
-   "status": "accepted",
+   "status": "review",
    "blocker": null,
    "evidence": [
     {
@@ -5781,6 +5822,15 @@
      "scope": "独立复核：4探针裁决组合(非确定性/摘要稳定性+身份绑定/回归链/非法配置)+benefit_chain语义+8项复跑",
      "result": "accepted",
      "evidence": "docs/协作开发/验收/2026-10-25-ALN-10-E独立复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "85de8e6cb997784e9aaaf27c71f444637956ac38",
+     "functional_commit": "fde8f899d8af9db6b1e4285b5ff75e83b51d7271",
+     "source_tree": "8e65a9dc9dd184e1000e7e2a15cf8adfcc19b289",
+     "result": "必跑崩溃遗漏、非布尔ok、唯一/类型清单、实际超时和发布后监测完整性已修；host-bench/2区分语义。原接受需重新复核，生产分布/独立oracle/发布门禁消费仍待。 固定相关318过，新修复待其他审阅人复核。",
+     "log": ".planning/2026-10-26-benchmark-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/10-E-真实候选收益与依赖回归证据.md",
@@ -5810,7 +5860,7 @@
     "B-97",
     "G1"
    ],
-   "next_step": "复核通过；解锁27-A/29-D；发布门禁自动接线与生产评测集另卡",
+   "next_step": "必跑崩溃遗漏、非布尔ok、唯一/类型清单、实际超时和发布后监测完整性已修；host-bench/2区分语义。原接受需重新复核，生产分布/独立oracle/发布门禁消费仍待。 固定相关318过，新修复待其他审阅人复核。",
    "working_basis": "以89accb658a8ce5aa49c7e74d0e45904c2eda6b97（认领时feature/user-direction HEAD）作为接手锚点；最终提交8f7625ed31f04ae21ff2bb01aee263baebe1da68；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
    "prerequisites": "代表性基准/对照环境",
    "delivered_commit": "8f7625ed31f04ae21ff2bb01aee263baebe1da68",
@@ -5822,7 +5872,39 @@
      "to": "dsh-lead",
      "reason": "用户指示继续；09-H 已被独立复核 accepted，10-E 依赖满足。写入边界 evoagent/evaluation/ + evolution/，只新增基准模块，不改 evolution 既有接受切片"
     }
-   ]
+   ],
+   "review_history": [
+    {
+     "date": "2026-10-26",
+     "previous_status": "accepted",
+     "previous_reviewer": "zcode-next",
+     "reason": "接续负向探针确认原核心边界缺陷；已修复但新代码待其他审阅人复核",
+     "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md"
+    }
+   ],
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-BENCHMARK-SANDBOX",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-09-H",
+     "ALN-10-E",
+     "ALN-09-I"
+    ],
+    "fixed_cards": [
+     "ALN-09-H",
+     "ALN-10-E",
+     "ALN-09-I"
+    ],
+    "fix_commit": "fde8f899d8af9db6b1e4285b5ff75e83b51d7271",
+    "validation_commit": "85de8e6cb997784e9aaaf27c71f444637956ac38",
+    "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md",
+    "evidence": ".planning/2026-10-26-benchmark-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "六类基准/隔离缺陷修复，固定相关318过；首轮310过/1旧知识断言失败保留；非全量、设备或生产接受"
+   }
   },
   {
    "id": "ALN-11-P",
@@ -7483,6 +7565,15 @@
      "result": "修正release_before取值时序；评测期间独立发布如实显示差异。本轮未建立candidate_id/制品及数据集仓库权威绑定，不当发布授权。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
      "log": ".planning/2026-10-26-new-host-review/committed-evidence.json",
      "delivery": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "85de8e6cb997784e9aaaf27c71f444637956ac38",
+     "functional_commit": "fde8f899d8af9db6b1e4285b5ff75e83b51d7271",
+     "source_tree": "8e65a9dc9dd184e1000e7e2a15cf8adfcc19b289",
+     "result": "实际基准消费已拒绝重复ID/非法required/domain，复用host-bench/2。candidate_id/dataset权威绑定、生产并发和CLI/App仍待；不自动发布。 固定相关318过，新修复待其他审阅人复核。",
+     "log": ".planning/2026-10-26-benchmark-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/09-I-真实候选宿主消费与队列管理入口.md",
@@ -7503,7 +7594,7 @@
     "G3"
    ],
    "priority": "P1",
-   "next_step": "修正release_before取值时序；评测期间独立发布如实显示差异。本轮未建立candidate_id/制品及数据集仓库权威绑定，不当发布授权。 固定相关358过；本轮修复待其他审阅人复核，原review状态保留。",
+   "next_step": "实际基准消费已拒绝重复ID/非法required/domain，复用host-bench/2。candidate_id/dataset权威绑定、生产并发和CLI/App仍待；不自动发布。 固定相关318过，新修复待其他审阅人复核。",
    "working_basis": "以1616e3e5e5f972023df88e1d9b60bc6cd5c9291c（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7528,26 +7619,27 @@
    "delivered_commit": "1d758e9adb762aa839b4c9c4ffb4379cb1bb1680",
    "delivery": "docs/协作开发/交付/ALN-09-I-真实候选宿主消费与队列管理入口.md",
    "latest_code_review": {
-    "id": "REVIEW-2026-10-26-NEW-HOST-MEDIA",
+    "id": "REVIEW-2026-10-26-BENCHMARK-SANDBOX",
     "date": "2026-10-26",
     "reviewer": "codex-runtime",
     "cards": [
-     "ALN-13-S",
-     "ALN-09-I",
-     "ALN-18-H",
-     "ALN-19-A"
+     "ALN-09-H",
+     "ALN-10-E",
+     "ALN-09-I"
     ],
-    "fix_commit": "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9",
-    "fix_commits": [
-     "0ba37e1b8f4ea9a8b4aabdcc1f8ef98d5df44d2f",
-     "01766f58b1d4ec69a63ca4aca07f7f7bf78d34b9"
+    "fixed_cards": [
+     "ALN-09-H",
+     "ALN-10-E",
+     "ALN-09-I"
     ],
-    "report": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md",
-    "evidence": ".planning/2026-10-26-new-host-review/committed-evidence.json",
+    "fix_commit": "fde8f899d8af9db6b1e4285b5ff75e83b51d7271",
+    "validation_commit": "85de8e6cb997784e9aaaf27c71f444637956ac38",
+    "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md",
+    "evidence": ".planning/2026-10-26-benchmark-review/committed-evidence.json",
     "status": "fixes_delivered_pending_independent_recheck",
     "product_acceptance_added": false,
     "published_by_review": false,
-    "scope": "四卡七类问题修复；固定相关358过；非全量/真机/生产接受"
+    "scope": "六类基准/隔离缺陷修复，固定相关318过；首轮310过/1旧知识断言失败保留；非全量、设备或生产接受"
    }
   },
   {
@@ -7780,7 +7872,7 @@
      "source_commit": "79cc06b9838e30ab0c693428d7a3bcc5aaa9c0aa",
      "functional_commit": "79cc06b9838e30ab0c693428d7a3bcc5aaa9c0aa",
      "source_tree": "36ba800519f027090386d58188af08ca5bba816c",
-     "result": "已交付持久化/注入/迁移验证；30-A 旧断言按27-C新语义更新。缺口：未接真实LLM端到端、迁移仅内存→持久、批量/跨实例迁移未做、多进程并发未压测；不冒称知识整包关闭",
+     "result": "已交付持久化/注入/迁移验证；30-A 旧断言按27-C新语义更新。缺口：未接真实LLM端到端、迁移仅内存→持久、批量/跨实例迁移未做、多进程并发未压测；不冒称知识整包关闭；最终HEAD全量(含他人已提交fde8f89基准修复)2462/0/1",
      "log": ".planning/2026-10-26-aln27c/knowledge-persistence-evidence.json",
      "delivery": "docs/协作开发/交付/ALN-27-C-知识持久化真实注入与迁移质量验证.md"
     }
@@ -10096,6 +10188,41 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-证据消费与记忆策略接续复核.md",
    "scope": "16-Q/24-F/30-B修复固定相关341+客户端440；新增修复待其他审阅人复核，非整卡接受"
+  },
+  {
+   "id": "discovered-fde8f899d8af",
+   "title": "fix(eval): 拦截隔离文件移动并收紧候选基准证据",
+   "workpackage": "ALN-09",
+   "source_commit": "fde8f899d8af9db6b1e4285b5ff75e83b51d7271",
+   "files": [
+    "evoagent/evaluation/host_bench.py",
+    "evoagent/evolution/sandbox.py",
+    "evoagent/integration/candidate_execution.py",
+    "tests/test_benchmark_review_20261026.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md",
+   "scope": "09-H/10-E/09-I基准修复；新修复待独立复核"
+  },
+  {
+   "id": "discovered-79cc06b9838e",
+   "title": "feat(ALN-27-C): 知识持久化真实注入与迁移质量验证",
+   "workpackage": "ALN-27",
+   "source_commit": "79cc06b9838e30ab0c693428d7a3bcc5aaa9c0aa",
+   "files": [
+    "evoagent/app.py",
+    "evoagent/knowledge/store.py",
+    "evoagent/knowledge/transfer.py",
+    "evoagent/memory/context.py",
+    "tests/test_knowledge_persistence.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md",
+   "scope": "并行知识持久化源码登记，不代表本轮验收该卡"
   }
  ],
  "requirement_batches": [
@@ -10410,6 +10537,29 @@
    "product_acceptance_added": false,
    "published_by_review": false,
    "scope": "九类证据/策略/客户端问题修复；固定相关341+客户端440/类型检查，不替代全量、设备或多主体消费验收"
+  },
+  {
+   "id": "REVIEW-2026-10-26-BENCHMARK-SANDBOX",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-09-H",
+    "ALN-10-E",
+    "ALN-09-I"
+   ],
+   "fixed_cards": [
+    "ALN-09-H",
+    "ALN-10-E",
+    "ALN-09-I"
+   ],
+   "fix_commit": "fde8f899d8af9db6b1e4285b5ff75e83b51d7271",
+   "validation_commit": "85de8e6cb997784e9aaaf27c71f444637956ac38",
+   "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md",
+   "evidence": ".planning/2026-10-26-benchmark-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false,
+   "scope": "六类基准/隔离缺陷修复，固定相关318过；首轮310过/1旧知识断言失败保留；非全量、设备或生产接受"
   }
  ]
 }

@@ -35,7 +35,7 @@
   - App 持久库写入→重启仍在，`assembler.knowledge is app.knowledge`。
 - 相关域回归：记忆/上下文/知识（`test_memory*.py`、`test_context*.py`、`test_knowledge*.py`）→ **103 passed（5.71s）**。
 - 实测证据：`.planning/2026-10-26-aln27c/knowledge-persistence-evidence.json`，**12 项检查全过**（真实 SQLite/App/真实任务记录/真实 ContextAssembler）。
-- 全量后端：首跑出现 17 failed——其中 **16 项位于 `tests/test_benchmark_review_20261026.py`**（其他会话**未提交**的 `evoagent/evaluation/host_bench.py` 在途改动 + 该未跟踪复核测试文件，非本次改动，我未触碰）；另 1 项为 30-A 旧断言 `knowledge_store_is_not_shared_across_instances`，其语义已被 27-C 持久化取代，已按新语义更新为 `test_knowledge_store_persists_across_instances`（实例对象仍独立、内容持久化）。排除他人未跟踪 WIP 复核文件后复跑：**2433 passed / 0 failed / 1 skipped（402.12s）**，日志 `.planning/2026-10-26-aln27c/backend-tests-clean.txt`。
+- 全量后端：首跑出现 17 failed——其中 **16 项位于 `tests/test_benchmark_review_20261026.py`**（其他会话**未提交**的 `evoagent/evaluation/host_bench.py` 在途改动 + 该未跟踪复核测试文件，非本次改动，我未触碰）；另 1 项为 30-A 旧断言 `knowledge_store_is_not_shared_across_instances`，其语义已被 27-C 持久化取代，已按新语义更新为 `test_knowledge_store_persists_across_instances`（实例对象仍独立、内容持久化）。排除他人未跟踪 WIP 复核文件后复跑：**2433 passed / 0 failed / 1 skipped（402.12s）**，日志 `.planning/2026-10-26-aln27c/backend-tests-clean.txt`。随后他人在途修复已提交（`fde8f89`），最终 HEAD 全量复跑：**2462 passed / 0 failed / 1 skipped（412.82s）**，日志 `.planning/2026-10-26-aln27c/backend-tests-final.txt`（含他人已提交的基准复核修复，非本卡范围）。
 - 边界（如实登记）：
   - 未接真实 LLM，上下文注入为真实装配器但模型为后续评测链；
   - 迁移仅覆盖**内存→持久**单场景；跨实例/批量历史迁移未做；
