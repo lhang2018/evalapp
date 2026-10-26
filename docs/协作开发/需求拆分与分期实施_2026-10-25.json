@@ -173,6 +173,31 @@
         "chat/extracted/154_qa.md",
         "docs/README新增设计梳理与实施映射_2026-10-25.md"
       ]
+    },
+    {
+      "id": "ALN-30",
+      "priority": "P0",
+      "title": "装配收口与主链接线",
+      "depends_on": [
+        "ALN-00",
+        "ALN-11",
+        "ALN-17",
+        "ALN-25",
+        "ALN-27",
+        "ALN-29"
+      ],
+      "stream": "integration",
+      "owner": null,
+      "delivery_state": "planned",
+      "next_step": "按分期任务卡实施；尚无整包验收结论",
+      "requirement_batch": "PRODUCT-2026-10-25",
+      "closure_criteria": "零入口域获得运行主链入口且有可复跑证据；点名的app.py装配缺口逐项闭合；能力可达性可机器校验且审计零悬空；装配收口不等于发布批准",
+      "source_refs": [
+        "chat/extracted/156_qa.md",
+        "chat/extracted/157_qa.md",
+        "chat/extracted/154_qa.md",
+        "docs/README新增设计梳理与实施映射_2026-10-25.md"
+      ]
     }
   ],
   "tasks": [
@@ -1256,11 +1281,41 @@
       "goal": "汇总原23包和新增产品包证据，各自关闭标准分开验证",
       "acceptance": "所有未满足项显式保留；精确版本证据齐备；开发完成不等于发布批准",
       "prerequisites": "原包依赖和真实外部环境逐项满足"
+    },
+    {
+      "id": "ALN-30-A",
+      "workpackage": "ALN-30",
+      "title": "服务端装配收口：零入口域接线与主链可达性",
+      "stream": "integration",
+      "phase": 5,
+      "depends_on": [
+        "ALN-17-P",
+        "ALN-25-A",
+        "ALN-27-A",
+        "ALN-29-C",
+        "ALN-11-P"
+      ],
+      "requirement_refs": [
+        "UX-01",
+        "UX-10",
+        "G0",
+        "G3"
+      ],
+      "write_paths": [
+        "evoagent/integration/",
+        "evoagent/app.py",
+        "evoagent/cli.py",
+        "tests/"
+      ],
+      "goal": "把已交付但零入口的deployment/recovery/observability/knowledge接入运行主链，并让能力可达性可机器校验",
+      "acceptance": "四域各有可达CLI入口且走通真实路径；app.py装配闭合ProactiveAssistService与IdentityRegistry注入；可达性审计零悬空且缺入口即报错",
+      "prerequisites": "仅需仓库与本地测试环境"
     }
   ],
   "ux_coverage": {
     "UX-01": [
-      "ALN-23-A"
+      "ALN-23-A",
+      "ALN-30-A"
     ],
     "UX-02": [
       "ALN-23-F"
@@ -1293,7 +1348,8 @@
     "UX-10": [
       "ALN-23-E",
       "ALN-02-P",
-      "ALN-07-C"
+      "ALN-07-C",
+      "ALN-30-A"
     ],
     "UX-11": [
       "ALN-24-A"
@@ -1393,7 +1449,8 @@
     "UX-F03-04": [
       "ALN-23-E",
       "ALN-07-C",
-      "ALN-12-V"
+      "ALN-12-V",
+      "ALN-30-A"
     ],
     "UX-F03-05": [
       "ALN-23-E",
