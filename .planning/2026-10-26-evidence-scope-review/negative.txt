@@ -1,0 +1,194 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFF                                                              [100%]
+================================== FAILURES ===================================
+___________________ test_execution_requires_preview_digest ____________________
+
+api = (<evoagent.app.App object at 0x0000021D37ECAC80>, '09bf2bd76a82', <function api.<locals>.call at 0x0000021D37F7C670>)
+
+    def test_execution_requires_preview_digest(api):
+        app, task_id, call = api
+        status, _ = call("POST", "/evidence/deletion", {
+            "task_id": task_id, "reason": "review", "dry_run": False})
+>       assert status == 400
+E       assert 200 == 400
+
+tests\test_evidence_scope_review_20261026.py:49: AssertionError
+---------------------------- Captured stdout setup ----------------------------
+EvoAgent API: http://127.0.0.1:7102  (GET /health)
+________________ test_non_boolean_dry_run_never_deletes[None] _________________
+
+api = (<evoagent.app.App object at 0x0000021D3807FF70>, '13223f3c154f', <function api.<locals>.call at 0x0000021D38057A30>)
+dry_run = None
+
+    @pytest.mark.parametrize("dry_run", [None, 0, ""])
+    def test_non_boolean_dry_run_never_deletes(api, dry_run):
+        app, task_id, call = api
+        status, _ = call("POST", "/evidence/deletion", {
+            "task_id": task_id, "reason": "review", "dry_run": dry_run})
+>       assert status == 400
+E       assert 200 == 400
+
+tests\test_evidence_scope_review_20261026.py:59: AssertionError
+---------------------------- Captured stdout setup ----------------------------
+EvoAgent API: http://127.0.0.1:7105  (GET /health)
+__________________ test_non_boolean_dry_run_never_deletes[0] __________________
+
+api = (<evoagent.app.App object at 0x0000021D380A3DF0>, '13420a4e9d76', <function api.<locals>.call at 0x0000021D38098B80>)
+dry_run = 0
+
+    @pytest.mark.parametrize("dry_run", [None, 0, ""])
+    def test_non_boolean_dry_run_never_deletes(api, dry_run):
+        app, task_id, call = api
+        status, _ = call("POST", "/evidence/deletion", {
+            "task_id": task_id, "reason": "review", "dry_run": dry_run})
+>       assert status == 400
+E       assert 200 == 400
+
+tests\test_evidence_scope_review_20261026.py:59: AssertionError
+---------------------------- Captured stdout setup ----------------------------
+EvoAgent API: http://127.0.0.1:7109  (GET /health)
+__________________ test_non_boolean_dry_run_never_deletes[] ___________________
+
+api = (<evoagent.app.App object at 0x0000021D380DBBE0>, 'b20f1dc183a3', <function api.<locals>.call at 0x0000021D3809B1C0>)
+dry_run = ''
+
+    @pytest.mark.parametrize("dry_run", [None, 0, ""])
+    def test_non_boolean_dry_run_never_deletes(api, dry_run):
+        app, task_id, call = api
+        status, _ = call("POST", "/evidence/deletion", {
+            "task_id": task_id, "reason": "review", "dry_run": dry_run})
+>       assert status == 400
+E       assert 200 == 400
+
+tests\test_evidence_scope_review_20261026.py:59: AssertionError
+---------------------------- Captured stdout setup ----------------------------
+EvoAgent API: http://127.0.0.1:7112  (GET /health)
+__________________ test_export_privacy_flags_require_boolean __________________
+
+api = (<evoagent.app.App object at 0x0000021D380DBD30>, 'dd39bd5273d5', <function api.<locals>.call at 0x0000021D3809A950>)
+
+    def test_export_privacy_flags_require_boolean(api):
+        _, task_id, call = api
+        status, _ = call("POST", "/evidence/export", {
+            "task_id": task_id, "reason": "review", "allow_restricted": "false"})
+>       assert status == 400
+E       assert 200 == 400
+
+tests\test_evidence_scope_review_20261026.py:68: AssertionError
+---------------------------- Captured stdout setup ----------------------------
+EvoAgent API: http://127.0.0.1:7114  (GET /health)
+______ test_export_audit_remains_verifiable_after_more_than_1000_entries ______
+
+api = (<evoagent.app.App object at 0x0000021D37F39750>, 'b3a79019b876', <function api.<locals>.call at 0x0000021D37F53E20>)
+
+    def test_export_audit_remains_verifiable_after_more_than_1000_entries(api):
+        app, task_id, call = api
+        status, result = call("POST", "/evidence/export", {"task_id": task_id, "reason": "review"})
+        assert status == 200
+        # Main audit table only; no need to create 1001 unrelated runtime events.
+        with app.db._lock:
+            app.db._conn.executemany(
+                "INSERT INTO audit_log (audit_id,at,actor,action,target,outcome,detail) VALUES (?,?,?,?,?,?,?)",
+                [(f"review_noise_{i}", 10**12 + i, "noise", "noise", "", "ok", "{}") for i in range(1001)])
+            app.db._conn.commit()
+        status, _ = call("GET", result["download"])
+>       assert status == 200
+E       assert 409 == 200
+
+tests\test_evidence_scope_review_20261026.py:82: AssertionError
+---------------------------- Captured stdout setup ----------------------------
+EvoAgent API: http://127.0.0.1:7117  (GET /health)
+______ test_unreadable_event_repository_does_not_return_partial_success _______
+
+api = (<evoagent.app.App object at 0x0000021D37F39990>, '2cff69656539', <function api.<locals>.call at 0x0000021D380D5750>)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000021D380A2470>
+
+    def test_unreadable_event_repository_does_not_return_partial_success(api, monkeypatch):
+        app, task_id, call = api
+        unavailable = sqlite3.connect(":memory:", check_same_thread=False)
+        unavailable.close()
+        with monkeypatch.context() as patch:
+            patch.setattr(app.bus, "_conn", unavailable)
+            status, _ = call("GET", f"/evidence/tasks/{task_id}")
+>           assert status == 503
+E           assert 200 == 503
+
+tests\test_evidence_scope_review_20261026.py:92: AssertionError
+---------------------------- Captured stdout setup ----------------------------
+EvoAgent API: http://127.0.0.1:7121  (GET /health)
+_________________ test_rollback_refuses_changed_legacy_policy _________________
+
+scope = (<sqlite3.Connection object at 0x0000021D380CCC40>, <evoagent.memory.scope_policy.ScopePolicyStore object at 0x0000021D381B3BB0>)
+
+    def test_rollback_refuses_changed_legacy_policy(scope):
+        conn, store = scope
+        store.migrate_legacy(authenticated="review", dry_run=False, reason="seed")
+        legacy(conn, ["user", "shared"])
+>       with pytest.raises(ScopePolicyError):
+E       Failed: DID NOT RAISE <class 'evoagent.memory.scope_policy.ScopePolicyError'>
+
+tests\test_evidence_scope_review_20261026.py:119: Failed
+_________ test_disabled_partition_is_not_reported_as_already_migrated _________
+
+scope = (<sqlite3.Connection object at 0x0000021D380CCE40>, <evoagent.memory.scope_policy.ScopePolicyStore object at 0x0000021D38175AB0>)
+
+    def test_disabled_partition_is_not_reported_as_already_migrated(scope):
+        _, store = scope
+        store.set_principal_policy(authenticated="review", multi_principal=False,
+                                   allow=["user"], deny=[], actor="review", reason="seed")
+>       with pytest.raises(ScopePolicyError):
+E       Failed: DID NOT RAISE <class 'evoagent.memory.scope_policy.ScopePolicyError'>
+
+tests\test_evidence_scope_review_20261026.py:128: Failed
+____________ test_repeated_migration_preserves_all_apply_receipts _____________
+
+scope = (<sqlite3.Connection object at 0x0000021D380CD040>, <evoagent.memory.scope_policy.ScopePolicyStore object at 0x0000021D381702E0>)
+
+    def test_repeated_migration_preserves_all_apply_receipts(scope):
+        _, store = scope
+        store.migrate_legacy(authenticated="review", dry_run=False, reason="first")
+        store.rollback_migration(authenticated="review", reason="rollback")
+        store.migrate_legacy(authenticated="review", dry_run=False, reason="second")
+        history = store.migration_history("review")["migrations"]
+>       assert [row["action"] for row in history] == ["apply", "rollback", "apply"]
+E       AssertionError: assert ['rollback', 'apply'] == ['apply', 'rollback', 'apply']
+E         
+E         At index 0 diff: 'rollback' != 'apply'
+E         Right contains one more item: 'apply'
+E         Use -v to get more diff
+
+tests\test_evidence_scope_review_20261026.py:138: AssertionError
+_______________ test_policy_actor_comes_from_transport_identity _______________
+
+api = (<evoagent.app.App object at 0x0000021D381D3A30>, '2c3615f49205', <function api.<locals>.call at 0x0000021D38056710>)
+
+    def test_policy_actor_comes_from_transport_identity(api):
+        _, _, call = api
+        status, result = call("PUT", "/memory/principal-policy", {
+            "multi_principal": True, "allow": ["user"], "deny": [],
+            "actor": "someone-else", "reason": "review"})
+        assert status == 200
+>       assert result["policy"]["actor"] == "api:admin"
+E       AssertionError: assert 'someone-else' == 'api:admin'
+E         
+E         - api:admin
+E         + someone-else
+
+tests\test_evidence_scope_review_20261026.py:148: AssertionError
+---------------------------- Captured stdout setup ----------------------------
+EvoAgent API: http://127.0.0.1:7123  (GET /health)
+=========================== short test summary info ===========================
+FAILED tests/test_evidence_scope_review_20261026.py::test_execution_requires_preview_digest
+FAILED tests/test_evidence_scope_review_20261026.py::test_non_boolean_dry_run_never_deletes[None]
+FAILED tests/test_evidence_scope_review_20261026.py::test_non_boolean_dry_run_never_deletes[0]
+FAILED tests/test_evidence_scope_review_20261026.py::test_non_boolean_dry_run_never_deletes[]
+FAILED tests/test_evidence_scope_review_20261026.py::test_export_privacy_flags_require_boolean
+FAILED tests/test_evidence_scope_review_20261026.py::test_export_audit_remains_verifiable_after_more_than_1000_entries
+FAILED tests/test_evidence_scope_review_20261026.py::test_unreadable_event_repository_does_not_return_partial_success
+FAILED tests/test_evidence_scope_review_20261026.py::test_rollback_refuses_changed_legacy_policy
+FAILED tests/test_evidence_scope_review_20261026.py::test_disabled_partition_is_not_reported_as_already_migrated
+FAILED tests/test_evidence_scope_review_20261026.py::test_repeated_migration_preserves_all_apply_receipts
+FAILED tests/test_evidence_scope_review_20261026.py::test_policy_actor_comes_from_transport_identity
+11 failed in 6.89s

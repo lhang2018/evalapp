@@ -1,0 +1,144 @@
+{
+  "source_commit": "093c561e2c5d7a9920d6903d02a11c979659bad0",
+  "source_tree": "8584713623cb129f82091c39b9f36d8d21fe1572",
+  "related_python_passed": 341,
+  "client_passed": 440,
+  "typecheck": "passed",
+  "full_backend_rerun": false,
+  "client_evidence_mode": "fresh_fixed_archive",
+  "typescript": "5.9.3",
+  "node": "v24.16.0",
+  "temporary_scopes_removed": 5,
+  "device_verified": false,
+  "multi_principal_retrieval_verified": false,
+  "acceptance_promoted": false,
+  "records": {
+    "expanded-validation.json": {
+      "pytest_arguments": [
+        "tests/test_evidence_scope_review_20261026.py",
+        "tests/test_evidence_api.py",
+        "tests/test_multi_principal_scope.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-cp270dbq",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "fixed-validation.json": {
+      "pytest_arguments": [
+        "tests/test_evidence_scope_review_20261026.py",
+        "tests/test_evidence_api.py",
+        "tests/test_multi_principal_scope.py",
+        "tests/test_observability_repository.py",
+        "tests/test_observability_evidence.py",
+        "tests/test_observability.py",
+        "tests/test_user_memory_control.py",
+        "tests/test_memory_scope.py",
+        "tests/test_memory_policy_runtime.py",
+        "tests/test_memory_owner_partition.py",
+        "tests/test_memory_manifest.py",
+        "tests/test_memory_conflicts.py",
+        "tests/test_memory.py",
+        "tests/test_runtime_memory_identity.py",
+        "tests/test_api.py",
+        "tests/test_release_evidence.py",
+        "tests/test_integration_wiring.py",
+        "tests/test_ledger_drift.py",
+        "tools/tests",
+        "-q"
+      ],
+      "snapshot_commit": "093c561e2c5d7a9920d6903d02a11c979659bad0",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-gltr7vqg",
+      "source_tree": "8584713623cb129f82091c39b9f36d8d21fe1572",
+      "archive_sha256": "a76bdfd12c1bdbe02b9f6d0f60b66805f47b843155a9df8bef736d3345baa546",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-gltr7vqg\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-gltr7vqg\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-gltr7vqg\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "focused-validation.json": {
+      "pytest_arguments": [
+        "tests/test_evidence_scope_review_20261026.py",
+        "tests/test_evidence_api.py",
+        "tests/test_multi_principal_scope.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-8z1rso21",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "negative-validation.json": {
+      "pytest_arguments": [
+        "tests/test_evidence_scope_review_20261026.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-q9spgwn9",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    }
+  },
+  "client_record": {
+    "commit": "093c561e2c5d7a9920d6903d02a11c979659bad0",
+    "source_tree": "8584713623cb129f82091c39b9f36d8d21fe1572",
+    "runner_sha256_lf": "1816f02d884c3569be8df48f5e66b25dee4df6106dd13475e50fe7ed4aefb1e2",
+    "node": "v24.16.0",
+    "owned_temp_directory": "E:\\evalapp\\outputs\\device-review-jkhy8bfb",
+    "archive_sha256": "ca77768ddd2f9df62e6b79dea907dded5795c134bd12da856001074e672560c1",
+    "tested_source": "E:\\evalapp\\outputs\\device-review-jkhy8bfb\\source\\android-app",
+    "typescript": "5.9.3",
+    "commands": {
+      "client-tests": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "test/offline/*.test.ts",
+        "test/device/*.test.ts",
+        "test/update/*.test.ts"
+      ],
+      "typecheck": [
+        "node",
+        "E:\\evalapp\\android-app\\node_modules\\typescript\\bin\\tsc",
+        "--noEmit"
+      ]
+    },
+    "results": {
+      "client-tests": 0,
+      "typecheck": 0
+    },
+    "dependency_junction_removed": true,
+    "installed_dependencies_preserved": true,
+    "temporary_data_removed": true,
+    "cleanup_scope": "only this run's new TemporaryDirectory and junction; no old caches touched"
+  },
+  "negative_probes": {
+    "python_failed": 11,
+    "client_failed": 3
+  },
+  "log_sha256_lf": {
+    "negative.txt": "f40a8b11aac816aca47c275deff9c1223cdbea16c8a93c8b1459f96c35b141c1",
+    "focused.txt": "84dc2b398e346825e5ac52b10f38ac751dffdeffde8cc4092f8a0e4b5474a0d2",
+    "expanded.txt": "2efdf8f99adf2161a4d332f227caa0c0adc5a848381867c4f8ce4998c7d5ae00",
+    "fixed.txt": "e7e2573a0dd69dddf5cdea1db00d0cce44bda357782743d16fd79ffb2cf914f4",
+    "client-negative.txt": "f5d2d57bb55e500de4357e4f8c1d9bdb39667beb05d8799841aa722983739527",
+    "client-focused.txt": "7457ca612c7d289fefc4c087040b3963639ac63563155a3adfd4e69045998438",
+    "client-tests.txt": "28007d56dd2d8d013eee4c06120f1c153158291a016ae9b71b139f50c2c83471",
+    "typecheck.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

@@ -1,0 +1,26 @@
+(node:80176) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/memoryControl.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 记忆行展示来源/范围/状态与任务来源 (0.6347ms)
+✔ 已撤销记忆不允许纠正但仍可删除 (0.0952ms)
+✔ 删除报告展示保留边界与失败项 (0.1407ms)
+✔ 删除失败与部分失败明确可见 (0.098ms)
+✔ 离线与权限错误有明确提示 (0.0934ms)
+✔ 范围策略展示已禁用范围 (0.792ms)
+✔ 禁用/恢复范围校验 (0.5637ms)
+(node:39376) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/memoryScopeReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 禁用再恢复将范围放回允许列表，不开放其他范围 (0.9137ms)
+✔ allow未包含的范围同样显示为禁用 (0.193ms)
+✔ 策略读取失败不能显示全部启用或允许提交 (0.176ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 92.407

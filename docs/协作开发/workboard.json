@@ -6987,6 +6987,14 @@
      "result": "新模块测试13 passed；客户端全量437 passed；tsc 0错；后端契约探针 .planning/2026-10-26-aln30b/api-contract-probe.json 8/8。缺口：项目/工作区视图未接线、服务端仅4KB预览无全量下载、真机设备证据未采（需空闲窗口）、禁用范围对模型上下文的客户端二次验证未做",
      "log": ".planning/2026-10-26-aln30b/api-contract-probe.json",
      "delivery": "docs/协作开发/交付/ALN-30-B-客户端工作区成果与记忆控制接线.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "093c561e2c5d7a9920d6903d02a11c979659bad0",
+     "source_tree": "8584713623cb129f82091c39b9f36d8d21fe1572",
+     "result": "恢复范围同步写回allow/deny；限制性allow与策略未加载状态如实显示。仅全局范围控件修复，项目/节点视图、全量下载、真机/模型上下文端到端仍待。 固定相关341过、客户端新归档440过+类型检查；本轮修复待其他审阅人复核，原review状态保留。",
+     "log": ".planning/2026-10-26-evidence-scope-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-证据消费与记忆策略接续复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/30-B-客户端工作区成果与记忆控制接线.md",
@@ -7013,7 +7021,7 @@
     "UX-24"
    ],
    "priority": "P0",
-   "next_step": "待独立复核（本地组件切片）：成果列表/预览/追溯、记忆控制端点与范围禁用、删除保留边界、离线/权限提示证据见交付文档与 .planning/2026-10-26-aln30b/；审阅需判断是否拆分或要求补：项目/工作区视图接线、全量下载端点、设备真机证据（需空闲窗口）",
+   "next_step": "恢复范围同步写回allow/deny；限制性allow与策略未加载状态如实显示。仅全局范围控件修复，项目/节点视图、全量下载、真机/模型上下文端到端仍待。 固定相关341过、客户端新归档440过+类型检查；本轮修复待其他审阅人复核，原review状态保留。",
    "working_basis": "以2f112276754ae10567e10d62bcfe21b11863037d（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；设备验收需明确空闲窗口",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7037,7 +7045,29 @@
     }
    ],
    "delivered_commit": "1b590a38b5900a3670e45387870e1441dc5c7a0e",
-   "delivery": "docs/协作开发/交付/ALN-30-B-客户端工作区成果与记忆控制接线.md"
+   "delivery": "docs/协作开发/交付/ALN-30-B-客户端工作区成果与记忆控制接线.md",
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-EVIDENCE-SCOPE",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-16-Q",
+     "ALN-24-F",
+     "ALN-30-B"
+    ],
+    "fixed_cards": [
+     "ALN-16-Q",
+     "ALN-24-F",
+     "ALN-30-B"
+    ],
+    "fix_commit": "093c561e2c5d7a9920d6903d02a11c979659bad0",
+    "report": "docs/协作开发/验收/2026-10-26-证据消费与记忆策略接续复核.md",
+    "evidence": ".planning/2026-10-26-evidence-scope-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "九类证据/策略/客户端问题修复；固定相关341+客户端440/类型检查，不替代全量、设备或多主体消费验收"
+   }
   },
   {
    "id": "ALN-16-Q",
@@ -7060,6 +7090,14 @@
      "result": "专项5 passed；观测/接口域93 passed；全量2362/0/2；实测证据11项全过。缺口：受控下载为JSON(base64)非流式、导出保留期清理、删除执行器不覆盖副作用/审批/审计层(如实retained)、无管理端UI、无生产证据",
      "log": ".planning/2026-10-26-aln16q/api-evidence.json",
      "delivery": "docs/协作开发/交付/ALN-16-Q-聚合观测与受控导出删除API接线.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "093c561e2c5d7a9920d6903d02a11c979659bad0",
+     "source_tree": "8584713623cb129f82091c39b9f36d8d21fe1572",
+     "result": "删除执行必需预览摘要/布尔参数，隐私开关显式校验，导出审计无1000窗口误拒，仓储读失败不冒称零残留。大导出/清理期、跨库删除原子性与设备仍待。 固定相关341过、客户端新归档440过+类型检查；本轮修复待其他审阅人复核，原review状态保留。",
+     "log": ".planning/2026-10-26-evidence-scope-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-证据消费与记忆策略接续复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/16-Q-聚合观测与受控导出删除API接线.md",
@@ -7079,7 +7117,7 @@
     "G2"
    ],
    "priority": "P0",
-   "next_step": "待独立复核：聚合查询/导出审计与下载摘要匹配/删除dry-run与逐层残留对账/越权与伪造principal拒绝的证据见交付文档与 .planning/2026-10-26-aln16q/；审阅人未定不自批；流式下载、导出保留期清理、删除执行器覆盖层扩展、管理端UI属后续，ALN-16整包不关闭",
+   "next_step": "删除执行必需预览摘要/布尔参数，隐私开关显式校验，导出审计无1000窗口误拒，仓储读失败不冒称零残留。大导出/清理期、跨库删除原子性与设备仍待。 固定相关341过、客户端新归档440过+类型检查；本轮修复待其他审阅人复核，原review状态保留。",
    "working_basis": "以35dfa152a6e378e17e83ce0251f003fa9b205a2f（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7101,7 +7139,29 @@
     }
    ],
    "delivered_commit": "aa19558347c622d5461f20f86156754f334efdac",
-   "delivery": "docs/协作开发/交付/ALN-16-Q-聚合观测与受控导出删除API接线.md"
+   "delivery": "docs/协作开发/交付/ALN-16-Q-聚合观测与受控导出删除API接线.md",
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-EVIDENCE-SCOPE",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-16-Q",
+     "ALN-24-F",
+     "ALN-30-B"
+    ],
+    "fixed_cards": [
+     "ALN-16-Q",
+     "ALN-24-F",
+     "ALN-30-B"
+    ],
+    "fix_commit": "093c561e2c5d7a9920d6903d02a11c979659bad0",
+    "report": "docs/协作开发/验收/2026-10-26-证据消费与记忆策略接续复核.md",
+    "evidence": ".planning/2026-10-26-evidence-scope-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "九类证据/策略/客户端问题修复；固定相关341+客户端440/类型检查，不替代全量、设备或多主体消费验收"
+   }
   },
   {
    "id": "ALN-29-F",
@@ -7837,6 +7897,14 @@
      "result": "已交付策略与迁移层，复用c6c9872检索过滤不重复；缺口：真实多用户鉴权联调、批量/多主体迁移、App管理入口、检索端到端、生产证据",
      "log": ".planning/2026-10-26-aln24f/scope-policy-evidence.json",
      "delivery": "docs/协作开发/交付/ALN-24-F-多主体记忆范围策略与迁移隔离.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "093c561e2c5d7a9920d6903d02a11c979659bad0",
+     "source_tree": "8584713623cb129f82091c39b9f36d8d21fe1572",
+     "result": "回退核对原legacy摘要和分区版本；迁移事务失败回滚、逐次追加回执、关闭分区不冒称迁移、actor取鉴权主体。真实多主体检索/上下文与UI消费仍未接。 固定相关341过、客户端新归档440过+类型检查；本轮修复待其他审阅人复核，原review状态保留。",
+     "log": ".planning/2026-10-26-evidence-scope-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-证据消费与记忆策略接续复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/24-F-多主体记忆范围策略与迁移隔离.md",
@@ -7856,7 +7924,7 @@
     "GLOBAL"
    ],
    "priority": "P2",
-   "next_step": "待独立复核：主体鉴权决定/越权拒绝、缺失损坏策略拒绝放宽、双主体隔离、迁移dry-run/幂等/冲突/回退篡改拒绝、重启持久与HTTP角色证据见交付文档与 .planning/2026-10-26-aln24f/；审阅人未定不自批；真实多用户鉴权联调、检索端到端与App管理入口属后续，多主体开放整包不关闭",
+   "next_step": "回退核对原legacy摘要和分区版本；迁移事务失败回滚、逐次追加回执、关闭分区不冒称迁移、actor取鉴权主体。真实多主体检索/上下文与UI消费仍未接。 固定相关341过、客户端新归档440过+类型检查；本轮修复待其他审阅人复核，原review状态保留。",
    "working_basis": "以69b0524a6450fc14124a324f82c1a211b23cdb4b（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "只在明确启用多主体场景前实施；当前单用户过滤修复单独复核",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7879,7 +7947,29 @@
     }
    ],
    "delivered_commit": "2e0c857473972ba2ab50bf3dd2c11ef465048fa2",
-   "delivery": "docs/协作开发/交付/ALN-24-F-多主体记忆范围策略与迁移隔离.md"
+   "delivery": "docs/协作开发/交付/ALN-24-F-多主体记忆范围策略与迁移隔离.md",
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-26-EVIDENCE-SCOPE",
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "cards": [
+     "ALN-16-Q",
+     "ALN-24-F",
+     "ALN-30-B"
+    ],
+    "fixed_cards": [
+     "ALN-16-Q",
+     "ALN-24-F",
+     "ALN-30-B"
+    ],
+    "fix_commit": "093c561e2c5d7a9920d6903d02a11c979659bad0",
+    "report": "docs/协作开发/验收/2026-10-26-证据消费与记忆策略接续复核.md",
+    "evidence": ".planning/2026-10-26-evidence-scope-review/committed-evidence.json",
+    "status": "fixes_delivered_pending_independent_recheck",
+    "product_acceptance_added": false,
+    "published_by_review": false,
+    "scope": "九类证据/策略/客户端问题修复；固定相关341+客户端440/类型检查，不替代全量、设备或多主体消费验收"
+   }
   }
  ],
  "workpackages": [
@@ -9924,6 +10014,28 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-新增宿主与音视频费用复核.md",
    "scope": "原卡/修复有固定相关回归；本轮不自批修复或整卡/父包接受"
+  },
+  {
+   "id": "discovered-093c561e2c5d",
+   "title": "fix(review): 收紧证据删除与迁移回退并恢复范围开关语义",
+   "workpackage": "ALN-16",
+   "source_commit": "093c561e2c5d7a9920d6903d02a11c979659bad0",
+   "files": [
+    "android-app/App.tsx",
+    "android-app/src/features/memory/control.ts",
+    "android-app/test/offline/memoryControl.test.ts",
+    "android-app/test/offline/memoryScopeReview.test.ts",
+    "evoagent/api/evidence_api.py",
+    "evoagent/api/memory_context_api.py",
+    "evoagent/memory/scope_policy.py",
+    "evoagent/observability/repository.py",
+    "tests/test_evidence_scope_review_20261026.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-证据消费与记忆策略接续复核.md",
+   "scope": "16-Q/24-F/30-B修复固定相关341+客户端440；新增修复待其他审阅人复核，非整卡接受"
   }
  ],
  "requirement_batches": [
@@ -10216,6 +10328,28 @@
    "product_acceptance_added": false,
    "published_by_review": false,
    "scope": "四卡七类问题修复；固定相关358过；非全量/真机/生产接受"
+  },
+  {
+   "id": "REVIEW-2026-10-26-EVIDENCE-SCOPE",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-16-Q",
+    "ALN-24-F",
+    "ALN-30-B"
+   ],
+   "fixed_cards": [
+    "ALN-16-Q",
+    "ALN-24-F",
+    "ALN-30-B"
+   ],
+   "fix_commit": "093c561e2c5d7a9920d6903d02a11c979659bad0",
+   "report": "docs/协作开发/验收/2026-10-26-证据消费与记忆策略接续复核.md",
+   "evidence": ".planning/2026-10-26-evidence-scope-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false,
+   "scope": "九类证据/策略/客户端问题修复；固定相关341+客户端440/类型检查，不替代全量、设备或多主体消费验收"
   }
  ]
 }

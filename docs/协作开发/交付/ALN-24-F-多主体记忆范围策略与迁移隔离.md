@@ -1,5 +1,7 @@
 # ALN-24-F 多主体记忆范围策略与迁移隔离
 
+> 2026-10-26 证据与策略接续复核：回退核对原legacy摘要和分区版本；迁移事务失败回滚、逐次追加回执、关闭分区不冒称迁移、actor取鉴权主体。真实多主体检索/上下文与UI消费仍未接。 修复093c561，固定相关341过、客户端新归档440过/类型检查；新增修复待其他审阅人复核。下文为原交付历史描述，最新行为及保留缺口见[复核报告](../验收/2026-10-26-证据消费与记忆策略接续复核.md)，不扩大接受。
+
 任务：ALN-24-F / 多主体记忆范围策略与迁移隔离（P2，阶段4，integration 线；多主体开放前置）
 负责人：dsh-lead（本会话认领；按"按优先级顺序认领"接 P0/P2 READY 卡）
 审阅人：待定（未分配独立审阅人，不自批）
@@ -30,7 +32,7 @@
 - 未改：`store.py`、`user_control.py`（继续使用 `read_scope_policy`，检索过滤语义不变）；未新增第二套检索/身份/预算权威。
 - 兼容/迁移：幂等 `CREATE TABLE IF NOT EXISTS`（`memory_principal_scope_policy`、`memory_scope_policy_migrations`），无版本化迁移；单用户路径行为不变。
 
-## 验证证据
+## 验证证据（原交付历史记录）
 
 - 专项：`python -m pytest tests/test_multi_principal_scope.py -q` → **12 passed**：
   - 缺失/损坏旧策略拒绝默认开放；默认单用户仍走 legacy；
