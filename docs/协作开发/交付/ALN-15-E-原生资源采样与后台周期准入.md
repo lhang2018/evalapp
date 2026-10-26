@@ -4,8 +4,16 @@
 负责人：dsh-lead（25-B 一审接受后解锁）
 审阅人：待定（未分配独立审阅人，不自批）
 基线 commit：`efe5ac0eccf1538eef086f94ce3c93452349e720`（认领时 HEAD；基线 published `21899e6`）
-最终 commit：`cefdc7c61148a736572992d8779d7b3a15f95067`（tree `ecc6fa2e6b5d9448f247fd2ef346bc8770ed8320`）
+首轮 commit：`cefdc7c61148a736572992d8779d7b3a15f95067`（tree `ecc6fa2e6b5d9448f247fd2ef346bc8770ed8320`）
 认领状态：claimed → **review（本地组件切片；真机压力实测未做，不冒称通过）**
+
+## 接续复核：当前实现以 6e82856 为准
+
+codex-runtime 复核确认：首轮 Kotlin 的 valid 只检查内存，TS 也允许缺CPU的样本据内存放行，因此“首次CPU无基线不冒称低压”尚未成立。6e82856 已在两层要求 CPU 与内存同时有效，CPU无基线/不可读均如实不可用；同时拒绝未来采样时间和非法当前时钟，导出判定也不再把 NaN 压力当低压。
+
+固定 6e82856 客户端 **459 passed**、TypeScript 检查通过，新增12项负向/边界探针全部通过。**本轮没有重跑 Kotlin 编译、安装 APK 或真机压力验收**；首轮447项/编译日志仍只作历史证据，以下为首轮历史描述。详见[复核报告](../验收/2026-10-26-主动执行与原生资源采样复核.md)。
+
+**接受仍阻塞**：index.js 的真实 HeadlessTask 仍直接注册 runStoredBackgroundSync，没有注入 resourceSampler/highWater；注册原生模块和可注入 runner 不等于后台已消费采样。须接既有策略下发、真实原生 sampler（处理首次基线及 /proc/stat 不可读）、补真实后台拒绝/恢复/前台不受影响证据。本轮不另造客户端默认阈值。新补丁待另一审阅人复核，原 owner/reviewer 保留。
 
 ## 触发场景与行为变化
 

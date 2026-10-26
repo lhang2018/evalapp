@@ -1,0 +1,338 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFFFFF                                                         [100%]
+================================== FAILURES ===================================
+_________ test_real_store_missing_submit_does_not_reserve_or_dispatch _________
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68B55AE0>, <function runtime.<locals>.service at 0x000001AB68C253F0>)
+
+    def test_real_store_missing_submit_does_not_reserve_or_dispatch(runtime):
+        store, service = runtime
+>       result = attempt(service(None))
+
+tests\test_proactive_execution_review_20261026.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_proactive_execution_review_20261026.py:27: in attempt
+    return svc.attempt(**dict(actor="host", reason="test", opportunity_value=1,
+evoagent\goals\proactive_execution.py:119: in attempt
+    self._release(reservation_id, actor=actor, reason="no_submit_entry")
+evoagent\goals\proactive_execution.py:51: in _release
+    refund(reservation_id, actor=actor, reason=reason)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.core.reservations.BudgetReservations object at 0x000001AB68B55AE0>
+reservation_id = 'res_6b18f3679bb34f3dac12921d6bb3d797'
+
+    def refund(self, reservation_id, *, actor, reason):
+        actor, reason = _text(actor, "actor"), _text(reason, "reason")
+        with self._write():
+            reservation = self._get(reservation_id)
+            if reservation["state"] == "refunded":
+                return reservation
+            if reservation["state"] != "reserved" or reservation["dispatched"]:
+>               raise ReservationConflict("dispatched or unknown charge requires evidenced reconciliation")
+E               evoagent.core.reservations.ReservationConflict: dispatched or unknown charge requires evidenced reconciliation
+
+evoagent\core\reservations.py:319: ReservationConflict
+____ test_created_task_then_exception_keeps_unknown_hold_and_blocks_retry _____
+
+kwargs = {'actor': 'host', 'idempotency_key': 'opportunity-1', 'opportunity_id': '', 'payload': {}, ...}
+
+    def submit(**kwargs):
+        tasks.append("task-created")
+>       raise RuntimeError("receipt lost after creation")
+E       RuntimeError: receipt lost after creation
+
+tests\test_proactive_execution_review_20261026.py:44: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68B57A60>, <function runtime.<locals>.service at 0x000001AB68D709D0>)
+
+    def test_created_task_then_exception_keeps_unknown_hold_and_blocks_retry(runtime):
+        store, service = runtime
+        tasks = []
+        def submit(**kwargs):
+            tasks.append("task-created")
+            raise RuntimeError("receipt lost after creation")
+        svc = service(submit)
+>       result = attempt(svc)
+
+tests\test_proactive_execution_review_20261026.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_proactive_execution_review_20261026.py:27: in attempt
+    return svc.attempt(**dict(actor="host", reason="test", opportunity_value=1,
+evoagent\goals\proactive_execution.py:128: in attempt
+    refunded = self._release(reservation_id, actor=actor,
+evoagent\goals\proactive_execution.py:51: in _release
+    refund(reservation_id, actor=actor, reason=reason)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.core.reservations.BudgetReservations object at 0x000001AB68B57A60>
+reservation_id = 'res_f03e55cf266f447ba1a94c9d801f6067'
+
+    def refund(self, reservation_id, *, actor, reason):
+        actor, reason = _text(actor, "actor"), _text(reason, "reason")
+        with self._write():
+            reservation = self._get(reservation_id)
+            if reservation["state"] == "refunded":
+                return reservation
+            if reservation["state"] != "reserved" or reservation["dispatched"]:
+>               raise ReservationConflict("dispatched or unknown charge requires evidenced reconciliation")
+E               evoagent.core.reservations.ReservationConflict: dispatched or unknown charge requires evidenced reconciliation
+
+evoagent\core\reservations.py:319: ReservationConflict
+__________ test_invalid_receipt_is_unknown_not_success_or_free[None] __________
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68D14B50>, <function runtime.<locals>.service at 0x000001AB68D70AF0>)
+receipt = None
+
+    @pytest.mark.parametrize("receipt", [None, {}, {"ok": False}, {"task_id": ""},
+                                         {"task_id": 3}, {"ok": False, "task_id": "t"}])
+    def test_invalid_receipt_is_unknown_not_success_or_free(runtime, receipt):
+        store, service = runtime
+        result = attempt(service(lambda **kw: receipt))
+>       assert result["started"] is False
+E       assert True is False
+
+tests\test_proactive_execution_review_20261026.py:61: AssertionError
+________ test_invalid_receipt_is_unknown_not_success_or_free[receipt1] ________
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68DBBCA0>, <function runtime.<locals>.service at 0x000001AB68D71090>)
+receipt = {}
+
+    @pytest.mark.parametrize("receipt", [None, {}, {"ok": False}, {"task_id": ""},
+                                         {"task_id": 3}, {"ok": False, "task_id": "t"}])
+    def test_invalid_receipt_is_unknown_not_success_or_free(runtime, receipt):
+        store, service = runtime
+        result = attempt(service(lambda **kw: receipt))
+>       assert result["started"] is False
+E       assert True is False
+
+tests\test_proactive_execution_review_20261026.py:61: AssertionError
+________ test_invalid_receipt_is_unknown_not_success_or_free[receipt2] ________
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68D17A30>, <function runtime.<locals>.service at 0x000001AB68D71510>)
+receipt = {'ok': False}
+
+    @pytest.mark.parametrize("receipt", [None, {}, {"ok": False}, {"task_id": ""},
+                                         {"task_id": 3}, {"ok": False, "task_id": "t"}])
+    def test_invalid_receipt_is_unknown_not_success_or_free(runtime, receipt):
+        store, service = runtime
+        result = attempt(service(lambda **kw: receipt))
+>       assert result["started"] is False
+E       assert True is False
+
+tests\test_proactive_execution_review_20261026.py:61: AssertionError
+________ test_invalid_receipt_is_unknown_not_success_or_free[receipt3] ________
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68DB9210>, <function runtime.<locals>.service at 0x000001AB68D71990>)
+receipt = {'task_id': ''}
+
+    @pytest.mark.parametrize("receipt", [None, {}, {"ok": False}, {"task_id": ""},
+                                         {"task_id": 3}, {"ok": False, "task_id": "t"}])
+    def test_invalid_receipt_is_unknown_not_success_or_free(runtime, receipt):
+        store, service = runtime
+        result = attempt(service(lambda **kw: receipt))
+>       assert result["started"] is False
+E       assert True is False
+
+tests\test_proactive_execution_review_20261026.py:61: AssertionError
+________ test_invalid_receipt_is_unknown_not_success_or_free[receipt4] ________
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68D13AC0>, <function runtime.<locals>.service at 0x000001AB68D71E10>)
+receipt = {'task_id': 3}
+
+    @pytest.mark.parametrize("receipt", [None, {}, {"ok": False}, {"task_id": ""},
+                                         {"task_id": 3}, {"ok": False, "task_id": "t"}])
+    def test_invalid_receipt_is_unknown_not_success_or_free(runtime, receipt):
+        store, service = runtime
+        result = attempt(service(lambda **kw: receipt))
+>       assert result["started"] is False
+E       assert True is False
+
+tests\test_proactive_execution_review_20261026.py:61: AssertionError
+________ test_invalid_receipt_is_unknown_not_success_or_free[receipt5] ________
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68DB4790>, <function runtime.<locals>.service at 0x000001AB68D71510>)
+receipt = {'ok': False, 'task_id': 't'}
+
+    @pytest.mark.parametrize("receipt", [None, {}, {"ok": False}, {"task_id": ""},
+                                         {"task_id": 3}, {"ok": False, "task_id": "t"}])
+    def test_invalid_receipt_is_unknown_not_success_or_free(runtime, receipt):
+        store, service = runtime
+        result = attempt(service(lambda **kw: receipt))
+>       assert result["started"] is False
+E       assert True is False
+
+tests\test_proactive_execution_review_20261026.py:61: AssertionError
+____ test_real_store_success_retains_usage_hold_and_cannot_double_dispatch ____
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68DBB3D0>, <function runtime.<locals>.service at 0x000001AB68D70B80>)
+
+    def test_real_store_success_retains_usage_hold_and_cannot_double_dispatch(runtime):
+        store, service = runtime
+        calls = []
+        svc = service(lambda **kw: calls.append(kw) or {"task_id": "task-1"})
+        first = attempt(svc)
+        assert first["started"] is True
+>       assert first["reconciliation_required"] is True
+E       KeyError: 'reconciliation_required'
+
+tests\test_proactive_execution_review_20261026.py:72: KeyError
+___________ test_malformed_admission_inputs_never_submit[changes0] ____________
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68DB7D60>, <function runtime.<locals>.service at 0x000001AB68D71EA0>)
+changes = {'opportunity_value': nan}
+
+    @pytest.mark.parametrize("changes", [
+        {"opportunity_value": float("nan")}, {"opportunity_value": float("inf")},
+        {"opportunity_value": True}, {"concurrent_proactive": 0.5},
+        {"concurrent_proactive": False}, {"estimated_cost_known": "false"},
+    ])
+    def test_malformed_admission_inputs_never_submit(runtime, changes):
+        _, service = runtime
+        calls = []
+        svc = service(lambda **kw: calls.append(kw) or {"task_id": "t"})
+        values = dict(actor="host", reason="test", opportunity_value=1,
+                      estimated_cost_known=True, idempotency_key="k", amounts={"model_calls": 1})
+        values.update(changes)
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_proactive_execution_review_20261026.py:92: Failed
+___________ test_malformed_admission_inputs_never_submit[changes1] ____________
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68D12BF0>, <function runtime.<locals>.service at 0x000001AB68D72320>)
+changes = {'opportunity_value': inf}
+
+    @pytest.mark.parametrize("changes", [
+        {"opportunity_value": float("nan")}, {"opportunity_value": float("inf")},
+        {"opportunity_value": True}, {"concurrent_proactive": 0.5},
+        {"concurrent_proactive": False}, {"estimated_cost_known": "false"},
+    ])
+    def test_malformed_admission_inputs_never_submit(runtime, changes):
+        _, service = runtime
+        calls = []
+        svc = service(lambda **kw: calls.append(kw) or {"task_id": "t"})
+        values = dict(actor="host", reason="test", opportunity_value=1,
+                      estimated_cost_known=True, idempotency_key="k", amounts={"model_calls": 1})
+        values.update(changes)
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_proactive_execution_review_20261026.py:92: Failed
+___________ test_malformed_admission_inputs_never_submit[changes2] ____________
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68D8E170>, <function runtime.<locals>.service at 0x000001AB68D72A70>)
+changes = {'opportunity_value': True}
+
+    @pytest.mark.parametrize("changes", [
+        {"opportunity_value": float("nan")}, {"opportunity_value": float("inf")},
+        {"opportunity_value": True}, {"concurrent_proactive": 0.5},
+        {"concurrent_proactive": False}, {"estimated_cost_known": "false"},
+    ])
+    def test_malformed_admission_inputs_never_submit(runtime, changes):
+        _, service = runtime
+        calls = []
+        svc = service(lambda **kw: calls.append(kw) or {"task_id": "t"})
+        values = dict(actor="host", reason="test", opportunity_value=1,
+                      estimated_cost_known=True, idempotency_key="k", amounts={"model_calls": 1})
+        values.update(changes)
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_proactive_execution_review_20261026.py:92: Failed
+___________ test_malformed_admission_inputs_never_submit[changes3] ____________
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68D12050>, <function runtime.<locals>.service at 0x000001AB68D723B0>)
+changes = {'concurrent_proactive': 0.5}
+
+    @pytest.mark.parametrize("changes", [
+        {"opportunity_value": float("nan")}, {"opportunity_value": float("inf")},
+        {"opportunity_value": True}, {"concurrent_proactive": 0.5},
+        {"concurrent_proactive": False}, {"estimated_cost_known": "false"},
+    ])
+    def test_malformed_admission_inputs_never_submit(runtime, changes):
+        _, service = runtime
+        calls = []
+        svc = service(lambda **kw: calls.append(kw) or {"task_id": "t"})
+        values = dict(actor="host", reason="test", opportunity_value=1,
+                      estimated_cost_known=True, idempotency_key="k", amounts={"model_calls": 1})
+        values.update(changes)
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_proactive_execution_review_20261026.py:92: Failed
+___________ test_malformed_admission_inputs_never_submit[changes4] ____________
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68D8C2E0>, <function runtime.<locals>.service at 0x000001AB68D72440>)
+changes = {'concurrent_proactive': False}
+
+    @pytest.mark.parametrize("changes", [
+        {"opportunity_value": float("nan")}, {"opportunity_value": float("inf")},
+        {"opportunity_value": True}, {"concurrent_proactive": 0.5},
+        {"concurrent_proactive": False}, {"estimated_cost_known": "false"},
+    ])
+    def test_malformed_admission_inputs_never_submit(runtime, changes):
+        _, service = runtime
+        calls = []
+        svc = service(lambda **kw: calls.append(kw) or {"task_id": "t"})
+        values = dict(actor="host", reason="test", opportunity_value=1,
+                      estimated_cost_known=True, idempotency_key="k", amounts={"model_calls": 1})
+        values.update(changes)
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_proactive_execution_review_20261026.py:92: Failed
+___________ test_malformed_admission_inputs_never_submit[changes5] ____________
+
+runtime = (<evoagent.core.reservations.BudgetReservations object at 0x000001AB68D12410>, <function runtime.<locals>.service at 0x000001AB68D71000>)
+changes = {'estimated_cost_known': 'false'}
+
+    @pytest.mark.parametrize("changes", [
+        {"opportunity_value": float("nan")}, {"opportunity_value": float("inf")},
+        {"opportunity_value": True}, {"concurrent_proactive": 0.5},
+        {"concurrent_proactive": False}, {"estimated_cost_known": "false"},
+    ])
+    def test_malformed_admission_inputs_never_submit(runtime, changes):
+        _, service = runtime
+        calls = []
+        svc = service(lambda **kw: calls.append(kw) or {"task_id": "t"})
+        values = dict(actor="host", reason="test", opportunity_value=1,
+                      estimated_cost_known=True, idempotency_key="k", amounts={"model_calls": 1})
+        values.update(changes)
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_proactive_execution_review_20261026.py:92: Failed
+_____ test_missing_reservations_and_sampler_cannot_silently_bypass_guard ______
+
+    def test_missing_reservations_and_sampler_cannot_silently_bypass_guard():
+        calls = []
+        svc = ProactiveExecutionService(ProactivityGovernor(),
+            submit=lambda **kw: calls.append(kw) or {"task_id": "t"})
+        result = attempt(svc)
+>       assert result["started"] is False
+E       assert True is False
+
+tests\test_proactive_execution_review_20261026.py:102: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_proactive_execution_review_20261026.py::test_real_store_missing_submit_does_not_reserve_or_dispatch
+FAILED tests/test_proactive_execution_review_20261026.py::test_created_task_then_exception_keeps_unknown_hold_and_blocks_retry
+FAILED tests/test_proactive_execution_review_20261026.py::test_invalid_receipt_is_unknown_not_success_or_free[None]
+FAILED tests/test_proactive_execution_review_20261026.py::test_invalid_receipt_is_unknown_not_success_or_free[receipt1]
+FAILED tests/test_proactive_execution_review_20261026.py::test_invalid_receipt_is_unknown_not_success_or_free[receipt2]
+FAILED tests/test_proactive_execution_review_20261026.py::test_invalid_receipt_is_unknown_not_success_or_free[receipt3]
+FAILED tests/test_proactive_execution_review_20261026.py::test_invalid_receipt_is_unknown_not_success_or_free[receipt4]
+FAILED tests/test_proactive_execution_review_20261026.py::test_invalid_receipt_is_unknown_not_success_or_free[receipt5]
+FAILED tests/test_proactive_execution_review_20261026.py::test_real_store_success_retains_usage_hold_and_cannot_double_dispatch
+FAILED tests/test_proactive_execution_review_20261026.py::test_malformed_admission_inputs_never_submit[changes0]
+FAILED tests/test_proactive_execution_review_20261026.py::test_malformed_admission_inputs_never_submit[changes1]
+FAILED tests/test_proactive_execution_review_20261026.py::test_malformed_admission_inputs_never_submit[changes2]
+FAILED tests/test_proactive_execution_review_20261026.py::test_malformed_admission_inputs_never_submit[changes3]
+FAILED tests/test_proactive_execution_review_20261026.py::test_malformed_admission_inputs_never_submit[changes4]
+FAILED tests/test_proactive_execution_review_20261026.py::test_malformed_admission_inputs_never_submit[changes5]
+FAILED tests/test_proactive_execution_review_20261026.py::test_missing_reservations_and_sampler_cannot_silently_bypass_guard
+16 failed in 4.42s

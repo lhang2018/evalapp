@@ -7517,7 +7517,7 @@
    "branch": "feature/user-direction",
    "base_commit": "efe5ac0eccf1538eef086f94ce3c93452349e720",
    "status": "review",
-   "blocker": null,
+   "blocker": "接受阻塞：真实HeadlessTask未注入sampler/highWater（默认仍旧同步）；策略下发、CPU首次基线/不可读、固定Kotlin编译及新APK真机压力/关闭/恢复证据待补；6e82856补丁待另一审阅人复核",
    "evidence": [
     {
      "date": "2026-10-26",
@@ -7528,6 +7528,16 @@
      "result": "组件/编译层交付；真机安装-采样-后台准入-压力实测未做（需设备窗口），Kotlin单测、策略下发/UI与设备OEM差异未覆盖；不冒称真机通过",
      "log": ".planning/2026-10-26-aln15e/client-evidence.json",
      "delivery": "docs/协作开发/交付/ALN-15-E-原生资源采样与后台周期准入.md"
+    },
+    {
+     "date": "2026-10-26",
+     "reviewer": "codex-runtime",
+     "source_commit": "6e8285632092e2fc1482417d432023134f7ba535",
+     "source_tree": "f68a50fcd3375496ff3a681c261f3a2f1403098f",
+     "report": "docs/协作开发/验收/2026-10-26-主动执行与原生资源采样复核.md",
+     "log": ".planning/2026-10-26-proactive-native-review/committed-evidence.json",
+     "scope": "真实预算派发/未知回执与必需准入/Goal幂等、CPU与时间样本校验；两卡接续复核",
+     "result": "固定相关后端310 passed/1 deselected，客户端459 passed/tsc0；Kotlin/真机/供应商未重跑；保留review与接受阻塞，新修复不自批"
     }
    ],
    "card": "docs/协作开发/任务卡/15-E-原生资源采样与后台周期准入.md",
@@ -7544,7 +7554,7 @@
     "G5"
    ],
    "priority": "P1",
-   "next_step": "待独立复核（本地组件切片，非真机验收）：原生采样来源/单位/时间/valid、缺失与过期不伪造低压、highWater 无内置权威、后台高压/不可用 deferred、客户端447/tsc0/Kotlin编译exit0 证据见交付文档与 .planning/2026-10-26-aln15e/；真机安装与压力测量、Kotlin单测、策略下发/UI 属后续；审阅人未定不自批",
+   "next_step": "接受阻塞：真实HeadlessTask未注入sampler/highWater（默认仍旧同步）；策略下发、CPU首次基线/不可读、固定Kotlin编译及新APK真机压力/关闭/恢复证据待补；6e82856补丁待另一审阅人复核；详见docs/协作开发/验收/2026-10-26-主动执行与原生资源采样复核.md",
    "working_basis": "以efe5ac0eccf1538eef086f94ce3c93452349e720（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终需Android硬件与压力测量",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -7955,7 +7965,7 @@
    "branch": "feature/user-direction",
    "base_commit": "a3e05d30748e15d29cd40bb85e8d7a7a2d3afe63",
    "status": "review",
-   "blocker": null,
+   "blocker": "接受阻塞：真实宿主资源/主动预算账户及策略未装配；实际费用/任务结果对账、权威并发与运行中停止/让位、真实核心质量证据未接；6e82856新补丁待另一审阅人复核",
    "evidence": [
     {
      "date": "2026-10-26",
@@ -7966,6 +7976,16 @@
      "result": "策略→实际启动/预留/停止闭环与App入口交付；缺口：App未装配真实15-D决策器与预算账户、策略下发/UI未接、真实LLM质量对照与生产证据未采；不冒称整包关闭",
      "log": ".planning/2026-10-26-aln25c/proactive-execution-evidence.json",
      "delivery": "docs/协作开发/交付/ALN-25-C-主动任务准入执行与真实资源非干扰.md"
+    },
+    {
+     "date": "2026-10-26",
+     "reviewer": "codex-runtime",
+     "source_commit": "6e8285632092e2fc1482417d432023134f7ba535",
+     "source_tree": "f68a50fcd3375496ff3a681c261f3a2f1403098f",
+     "report": "docs/协作开发/验收/2026-10-26-主动执行与原生资源采样复核.md",
+     "log": ".planning/2026-10-26-proactive-native-review/committed-evidence.json",
+     "scope": "真实预算派发/未知回执与必需准入/Goal幂等、CPU与时间样本校验；两卡接续复核",
+     "result": "固定相关后端310 passed/1 deselected，客户端459 passed/tsc0；Kotlin/真机/供应商未重跑；保留review与接受阻塞，新修复不自批"
     }
    ],
    "card": "docs/协作开发/任务卡/25-C-主动任务准入执行与真实资源非干扰.md",
@@ -7987,7 +8007,7 @@
     "G5"
    ],
    "priority": "P1",
-   "next_step": "待独立复核：拒绝/未知成本/预留与失败释放/App 真实提交 origin=opportunity 且绑定授权Goal/关闭档位零新增/真实宿主压力让出且核心任务不改写证据见交付文档与 .planning/2026-10-26-aln25c/；审阅人未定不自批；真实15-D决策器与预算账户装配、策略下发/UI、真实LLM质量对照属后续",
+   "next_step": "接受阻塞：真实宿主资源/主动预算账户及策略未装配；实际费用/任务结果对账、权威并发与运行中停止/让位、真实核心质量证据未接；6e82856新补丁待另一审阅人复核；详见docs/协作开发/验收/2026-10-26-主动执行与原生资源采样复核.md",
    "working_basis": "以a3e05d30748e15d29cd40bb85e8d7a7a2d3afe63（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终需固定宿主真实压力数据",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -10589,6 +10609,27 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-Windows二审与资源恢复复核.md",
    "scope": "并行25-C实际提交接线登记；不在本轮5bc1725固定回归范围"
+  },
+  {
+   "id": "review-fix-6e8285632092",
+   "title": "fix(proactive): 保留派发未知预算并拒绝无效资源采样",
+   "workpackage": "ALN-25",
+   "source_commit": "6e8285632092e2fc1482417d432023134f7ba535",
+   "files": [
+    "android-app/android/app/src/main/java/com/evoagent/ResourceSamplerModule.kt",
+    "android-app/src/device/resourceSampler.ts",
+    "android-app/test/device/resourceSampler.review.test.ts",
+    "android-app/test/device/resourceSampler.test.ts",
+    "evoagent/app.py",
+    "evoagent/goals/proactive_execution.py",
+    "tests/test_proactive_execution.py",
+    "tests/test_proactive_execution_review_20261026.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-主动执行与原生资源采样复核.md",
+   "scope": "25-C/15-E六类问题修复，固定相关310/客户端459/tsc0；待另一审阅人复核，非设备/生产接受"
   }
  ],
  "requirement_batches": [
@@ -10984,6 +11025,26 @@
    "product_acceptance_added": false,
    "published_by_review": false,
    "scope": "缺有效采样标记拒主动启动、无效采样不自动恢复/遗忘暂停集合；固定相关295，不代新25-C执行链验收"
+  },
+  {
+   "id": "REVIEW-2026-10-26-PROACTIVE-NATIVE",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-25-C",
+    "ALN-15-E"
+   ],
+   "fixed_cards": [
+    "ALN-25-C",
+    "ALN-15-E"
+   ],
+   "fix_commit": "6e8285632092e2fc1482417d432023134f7ba535",
+   "report": "docs/协作开发/验收/2026-10-26-主动执行与原生资源采样复核.md",
+   "evidence": ".planning/2026-10-26-proactive-native-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false,
+   "scope": "真实预留/未知回执、必需准入配置/Goal幂等、CPU/时间采样；固定310/1项整机饱和未跑，客户端459/tsc0，后台真实接线与对账等仍阻塞"
   }
  ]
 }

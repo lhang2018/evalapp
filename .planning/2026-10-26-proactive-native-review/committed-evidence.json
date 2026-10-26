@@ -1,0 +1,180 @@
+{
+  "date": "2026-10-26",
+  "reviewer": "codex-runtime",
+  "cards": [
+    "ALN-25-C",
+    "ALN-15-E"
+  ],
+  "fix_commit": "6e8285632092e2fc1482417d432023134f7ba535",
+  "source_tree": "f68a50fcd3375496ff3a681c261f3a2f1403098f",
+  "report": "docs/协作开发/验收/2026-10-26-主动执行与原生资源采样复核.md",
+  "environment": {
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.10.11 (tags/v3.10.11:7d4cc5a, Apr  5 2023, 00:38:17) [MSC v.1929 64 bit (AMD64)]"
+  },
+  "results": {
+    "negative_python": "16 failed",
+    "negative_client": "11 failed, 1 passed",
+    "focused_python": "34 passed, 1 deselected",
+    "fixed_related_python": "310 passed, 1 deselected",
+    "fixed_client": "459 passed",
+    "typecheck": "exit 0"
+  },
+  "omitted": {
+    "saturation_test": "test_real_host_pressure_yields_and_core_state_untouched",
+    "reason": "Does not repeat whole-host CPU saturation; controlled samples and persisted core state separately tested",
+    "not_run": [
+      "full backend",
+      "Kotlin compile",
+      "new APK install",
+      "device pressure",
+      "real provider billing or LLM quality"
+    ]
+  },
+  "validation_records": {
+    "negative-python": {
+      "pytest_arguments": [
+        "tests/test_proactive_execution_review_20261026.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-an8esm71",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "focused-python": {
+      "pytest_arguments": [
+        "tests/test_proactive_execution_review_20261026.py",
+        "tests/test_proactive_execution.py",
+        "-k",
+        "not test_real_host_pressure_yields_and_core_state_untouched",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-ebph9it0",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "focused-python-2": {
+      "pytest_arguments": [
+        "tests/test_proactive_execution_review_20261026.py",
+        "tests/test_proactive_execution.py",
+        "-k",
+        "not test_real_host_pressure_yields_and_core_state_untouched",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-8zgiacxp",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "focused-python-3": {
+      "pytest_arguments": [
+        "tests/test_proactive_execution_review_20261026.py",
+        "tests/test_proactive_execution.py",
+        "-k",
+        "not test_real_host_pressure_yields_and_core_state_untouched",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-9kaafd3e",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "committed-python": {
+      "pytest_arguments": [
+        "tests/test_runtime_reservations.py",
+        "tests/test_resource_second_review_20261026.py",
+        "tests/test_resource_admission.py",
+        "tests/test_proactivity.py",
+        "tests/test_proactive_review_20261026.py",
+        "tests/test_proactive_execution_review_20261026.py",
+        "tests/test_proactive_execution.py",
+        "tests/test_proactive_assist.py",
+        "tests/test_goal_scheduler_host.py",
+        "tests/test_goal_scheduler.py",
+        "tests/test_goal_opportunities.py",
+        "tests/test_goal_governance.py",
+        "tests/test_goal_budget_migration.py",
+        "tests/test_budget_reservations.py",
+        "-k",
+        "not test_real_host_pressure_yields_and_core_state_untouched",
+        "-q"
+      ],
+      "snapshot_commit": "6e8285632092e2fc1482417d432023134f7ba535",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-k74c3v3y",
+      "source_tree": "f68a50fcd3375496ff3a681c261f3a2f1403098f",
+      "archive_sha256": "21db5653a6f141291e67d01089cdf65bff0bbf4b32417c7699c606e82f4d046e",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-k74c3v3y\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-k74c3v3y\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-k74c3v3y\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "validation": {
+      "commit": "6e8285632092e2fc1482417d432023134f7ba535",
+      "source_tree": "f68a50fcd3375496ff3a681c261f3a2f1403098f",
+      "runner_sha256_lf": "1816f02d884c3569be8df48f5e66b25dee4df6106dd13475e50fe7ed4aefb1e2",
+      "node": "v24.16.0",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\device-review-c2gm5fbh",
+      "archive_sha256": "050117e525bc4eea1674c0c3aac893372bb12f67ddfedc1a1b98aeac8b54f4f7",
+      "tested_source": "E:\\evalapp\\outputs\\device-review-c2gm5fbh\\source\\android-app",
+      "typescript": "5.9.3",
+      "commands": {
+        "client-tests": [
+          "node",
+          "--test",
+          "--test-reporter=tap",
+          "test/offline/*.test.ts",
+          "test/device/*.test.ts",
+          "test/update/*.test.ts"
+        ],
+        "typecheck": [
+          "node",
+          "E:\\evalapp\\android-app\\node_modules\\typescript\\bin\\tsc",
+          "--noEmit"
+        ]
+      },
+      "results": {
+        "client-tests": 0,
+        "typecheck": 0
+      },
+      "dependency_junction_removed": true,
+      "installed_dependencies_preserved": true,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only this run's new TemporaryDirectory and junction; no old caches touched"
+    }
+  },
+  "owned_scopes_removed": 6,
+  "old_caches_and_foreign_changes_preserved": true,
+  "status": "fixes_delivered_pending_independent_recheck",
+  "log_hashes_sha256_lf": {
+    "client-run.txt": "343f071374fcbfb42f60e05c33dfed849aa58f32686b7db1db97b7e2c9dd4f9e",
+    "client-tests.txt": "e69f02fab5b8e14c2dc6f6e37217f936d6055966064690026990e5d2492d9929",
+    "committed-python.txt": "6ed223e232be82e0fcf7e66a732d2d17bb77a6953d6ede7fbd54fe1c0038c00b",
+    "focused-client.txt": "96dc75b1186ce24883815c7c1bb937f780744d536ca352e1441902e1adfb0f06",
+    "focused-python-2.txt": "16c862d9f444f76fba577bc29fd943a20c89f14b470cd0d9ddeeee9fe818ea03",
+    "focused-python-3.txt": "8bf1ec4b468ece151310a4a08bfcf4817e6949e1599fae205448583f0de77ae9",
+    "focused-python.txt": "21ffb4a49b34ccf1e543f130b5b752be25af601756eebdc2538b8ffd4f536563",
+    "negative-client.txt": "f4c627e9fd95c57cf616e3651843f988cd69305cdd5da6b25a046acd118498be",
+    "negative-python.txt": "535460c674fa82bf6e07dd648738b7034ecb932bae9706dbd2050e413b2158a7",
+    "typecheck.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

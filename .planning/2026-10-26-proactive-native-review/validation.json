@@ -1,0 +1,33 @@
+{
+  "commit": "6e8285632092e2fc1482417d432023134f7ba535",
+  "source_tree": "f68a50fcd3375496ff3a681c261f3a2f1403098f",
+  "runner_sha256_lf": "1816f02d884c3569be8df48f5e66b25dee4df6106dd13475e50fe7ed4aefb1e2",
+  "node": "v24.16.0",
+  "owned_temp_directory": "E:\\evalapp\\outputs\\device-review-c2gm5fbh",
+  "archive_sha256": "050117e525bc4eea1674c0c3aac893372bb12f67ddfedc1a1b98aeac8b54f4f7",
+  "tested_source": "E:\\evalapp\\outputs\\device-review-c2gm5fbh\\source\\android-app",
+  "typescript": "5.9.3",
+  "commands": {
+    "client-tests": [
+      "node",
+      "--test",
+      "--test-reporter=tap",
+      "test/offline/*.test.ts",
+      "test/device/*.test.ts",
+      "test/update/*.test.ts"
+    ],
+    "typecheck": [
+      "node",
+      "E:\\evalapp\\android-app\\node_modules\\typescript\\bin\\tsc",
+      "--noEmit"
+    ]
+  },
+  "results": {
+    "client-tests": 0,
+    "typecheck": 0
+  },
+  "dependency_junction_removed": true,
+  "installed_dependencies_preserved": true,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only this run's new TemporaryDirectory and junction; no old caches touched"
+}

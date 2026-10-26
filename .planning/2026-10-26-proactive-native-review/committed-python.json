@@ -1,0 +1,31 @@
+{
+  "pytest_arguments": [
+    "tests/test_runtime_reservations.py",
+    "tests/test_resource_second_review_20261026.py",
+    "tests/test_resource_admission.py",
+    "tests/test_proactivity.py",
+    "tests/test_proactive_review_20261026.py",
+    "tests/test_proactive_execution_review_20261026.py",
+    "tests/test_proactive_execution.py",
+    "tests/test_proactive_assist.py",
+    "tests/test_goal_scheduler_host.py",
+    "tests/test_goal_scheduler.py",
+    "tests/test_goal_opportunities.py",
+    "tests/test_goal_governance.py",
+    "tests/test_goal_budget_migration.py",
+    "tests/test_budget_reservations.py",
+    "-k",
+    "not test_real_host_pressure_yields_and_core_state_untouched",
+    "-q"
+  ],
+  "snapshot_commit": "6e8285632092e2fc1482417d432023134f7ba535",
+  "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+  "owned_temp_directory": "E:\\evalapp\\outputs\\review5-k74c3v3y",
+  "source_tree": "f68a50fcd3375496ff3a681c261f3a2f1403098f",
+  "archive_sha256": "21db5653a6f141291e67d01089cdf65bff0bbf4b32417c7699c606e82f4d046e",
+  "source_path_when_tested": "E:\\evalapp\\outputs\\review5-k74c3v3y\\source",
+  "module_source_probe": "E:\\evalapp\\outputs\\review5-k74c3v3y\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-k74c3v3y\\source\\evoagent\\tools\\refactor.py\n",
+  "exit_code": 0,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+}

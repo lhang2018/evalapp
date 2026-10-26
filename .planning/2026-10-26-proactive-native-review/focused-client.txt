@@ -1,0 +1,35 @@
+(node:73436) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/resourceSampler.review.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ CPU不可用不冒称低压力: undefined (0.7222ms)
+✔ CPU不可用不冒称低压力: null (0.1891ms)
+✔ CPU不可用不冒称低压力: NaN (0.1827ms)
+✔ CPU不可用不冒称低压力: Infinity (0.0958ms)
+✔ CPU不可用不冒称低压力: -1 (0.083ms)
+✔ CPU不可用不冒称低压力: 2 (0.9593ms)
+✔ 无效时钟不放行: NaN (0.1231ms)
+✔ 无效时钟不放行: Infinity (0.0891ms)
+✔ 无效时钟不放行: -Infinity (0.0827ms)
+✔ 无效时钟不放行: 0 (0.1162ms)
+✔ 未来时间不通过钳制年龄冒充新鲜采样 (0.1379ms)
+✔ 导出的判定不信任伪造valid标记与NaN压力 (0.172ms)
+(node:46284) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/resourceSampler.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 合法采样保留来源/单位/时间与各项分数 (1.1725ms)
+✔ 原生不可用/缺失内存/缺少采样时间均判不可用，不伪造低压力 (0.1828ms)
+✔ 过期采样判 stale，不按旧值放行 (0.1453ms)
+✔ 非法分数/非法 maxAge 判不可用 (0.0944ms)
+✔ 缺失 CPU 的部分采样不作为后台低压力依据 (0.9059ms)
+✔ 调用方必须提供 highWater；缺失/非法即拒绝（不内置阈值权威） (0.1251ms)
+✔ 高压拒绝后台、低压放行，判定不影响前台 (0.1165ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 127.6954

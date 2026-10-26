@@ -1,0 +1,28 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+..........................F                                              [100%]
+================================== FAILURES ===================================
+_________ test_app_wires_attempt_to_authorized_goal_opportunity_task __________
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-ebph9it0/scratch/pytest/test_app_wires_attempt_to_auth0')
+
+    def test_app_wires_attempt_to_authorized_goal_opportunity_task(tmp_path):
+        from evoagent.app import App
+    
+        app = App(data_dir=str(tmp_path))
+        try:
+            _configure_host(app)
+            goal = _ready_goal(app)
+            result = app.proactive_execution.attempt(
+                actor="user", reason="主动帮助", opportunity_value=1.0,
+                estimated_cost_known=True, amounts={"model_calls": 1}, idempotency_key="authorized",
+                submit_payload={"goal": "检查项目风险", "goal_id": goal["goal_id"]})
+>           assert result["started"] is True, result
+E           AssertionError: {'core_state_touched': False, 'detail': '非法command_id', 'reason': 'submit_failed:ValueError', 'reconciliation_error': None, ...}
+E           assert False is True
+
+tests\test_proactive_execution.py:324: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_proactive_execution.py::test_app_wires_attempt_to_authorized_goal_opportunity_task
+1 failed, 26 passed, 1 deselected in 4.77s
