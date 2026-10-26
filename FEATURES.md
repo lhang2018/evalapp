@@ -789,7 +789,7 @@ cd android-app && npm run test:offline
 | **人工接管 / 等待审批** | R-10 | `request_user` 被转成失败 check（任务 FAILED 而非挂起）；`WAITING_USER` 在 API 零命中 | WP-0.4 / F-12 |
 | **Planner 计划修订** | R-04 | **ALN-07-P 已补分级修订与证据不变量**（2026-10-22）：`adjust` 增 append/replace/replan 分级，`completed_work` 单调不减、已完成步骤不得丢弃/降级、修订后计划须过结构校验，违约抛 `PlanRevisionError` 且计划保持原状；剩余缺口：`_risks_for` 静态文案未转为可执行恢复策略，工作流匹配与轨迹编译未做 | **WP-6.4 / F-54** |
 | **进化并发与停止条件** | E-13 | 进化侧无 Semaphore；`react/engine.py` 的 `repeated_failure` 是单任务 ReAct 停止，与进化实验无关（概念混淆） | WP-3.3 / F-08 |
-| **候选证据门禁（手工入口）** | C-11 | `evoagent/api/server.py:1141` 接受调用方自述的任意证据字符串数组（`evidence=body.get("evidence") or []`）→ 可零证据建候选 | WP-3.4 / F-14 |
+| **候选证据门禁（手工入口）** | C-11 | `evoagent/api/server.py::_evolution_propose` 接受调用方自述的任意证据字符串数组（`evidence=body.get("evidence") or []`）→ 可零证据建候选 | WP-3.4 / F-14 |
 | **Capability Asset 实体** | C-05/C-08 | 无打包实体（`class *Pack` 零命中）；`CapabilityEntry.status`（`evoagent/experts/registry.py:33`）只 3 值 vs 契约八态（`evoagent/core/contracts.py:117` 的 `ASSET_LIFECYCLE`）；`namespace` 缺失 | WP-1.5 / F-11 |
 | **离线降级矩阵** | O-08 | `OFFLINE_INTENTS = ["time_query"]` 硬编码；无降级声明机制 | WP-5.9 / F-43 |
 | **低资源调度** | S-10 | `BudgetLimits` 无 CPU/内存/磁盘/电量任何维度 | WP-5.6 |

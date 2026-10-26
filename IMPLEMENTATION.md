@@ -261,7 +261,7 @@ C 专家能力与工作流（14）：
 | C-08 能力资产生命周期 | 🔹 | 候选工作流有状态机；**但 `CapabilityEntry.status`（`evoagent/experts/registry.py:33`）只有 active/experimental/disabled 三值**，与契约 §6 的八态（`evoagent/core/contracts.py:117` 的 `ASSET_LIFECYCLE`：draft/candidate/validating/approved/active/degraded/deprecated/retired）无语义对应 |
 | C-09 能力依赖图与影响分析 | 🔹 | `impact_analysis` 已补齐上下游传递闭包与分层回归范围（`evoagent/experts/registry.py::impact_analysis`）：shared 内核变更全量回归、仅领域层受影响走领域回归、无受影响能力则复用证据；被候选创建（`evoagent/evolution/controller.py::_impact_for`）与 `GET /impact`（`evoagent/api/impact_api.py`）真实消费，test=7。**剩余缺口**：依赖图数据仍少（`evoagent/experts/builtin.py` 手工边），`shared` 判定依赖 `domain=="shared"` 约定 |
 | C-10 能力去重、别名与合并 | ⬜ | 未实现 |
-| C-11 经验来源与晋升证据 | 🔹 | `promote_to_candidate` 的证据门禁是真的（无证据直接 raise、模型假设须先过探针）；**但只覆盖失败证据**（成功运行→进化候选的路径不存在），且**手工入口可零证据建候选**（`evoagent/api/server.py:1141` 接受调用方自述的任意字符串数组，`propose_candidate` 原样存入不校验） |
+| C-11 经验来源与晋升证据 | 🔹 | `promote_to_candidate` 的证据门禁是真的（无证据直接 raise、模型假设须先过探针）；**但只覆盖失败证据**（成功运行→进化候选的路径不存在），且**手工入口可零证据建候选**（`evoagent/api/server.py::_evolution_propose` 接受调用方自述的任意字符串数组，`propose_candidate` 原样存入不校验） |
 | C-12 编程专家 AST/LSP | ⬜ | 全仓 grep `AST\|LSP` 在 evoagent 下零命中（仅 node_modules）；`experts/builtin.py` 无编程专家 |
 | C-13 AI 漫剧能力包 | 🔹 | 7 节点示例工作流 ✅；**但生成环节全为 mock**（4 个工具都是 lambda 返回 f-string）；无素材资产化、无角色一致性、无 FFmpeg 合成（`mock_compose` 返回字符串不产文件）；`out_path` 形参声明后全函数体未使用，**成片不落盘**；`storyboard` 节点用 `calculate` 工具算 `6` 来"分镜" |
 | C-14 受控手机操作能力包 | ✅ | 观察-动作-再观察+权限检查+安全停止（真机验收）；前后节点快照证据完整。证据：`WorkflowEngine`（`evoagent/workflows/engine.py::WorkflowEngine`）、`node`（`evoagent/workflows/models.py::node`）|
