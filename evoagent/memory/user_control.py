@@ -22,10 +22,7 @@ import time
 from typing import Any, Dict, List, Optional
 
 from .store import Credibility, MemoryItem, MemoryKind, MemoryStore, Scope
-
-POLICY_TABLE = """CREATE TABLE IF NOT EXISTS memory_scope_policy(
-    id INTEGER PRIMARY KEY CHECK(id=1), allow_json TEXT NOT NULL,
-    deny_json TEXT NOT NULL, actor TEXT, reason TEXT, updated_at REAL)"""
+from .scope_policy import POLICY_TABLE, read_scope_policy
 
 RETAINED_LAYERS = [
     {"layer": "tombstones",
@@ -172,18 +169,8 @@ class MemoryControlService:
 
     # ---- 范围调整 ----
     def get_scope_policy(self) -> Dict[str, Any]:
-        row = self.store._conn.execute(
-            "SELECT allow_json, deny_json, actor, reason, updated_at"
-            " FROM memory_scope_policy WHERE id=1").fetchone()
-        if row is None:
-            return {"allow": sorted(_scope_values()), "deny": [],
-                    "all_layers": True, "updated_at": None,
-                    "scope_values": sorted(_scope_values())}
-        return {"allow": json.loads(row["allow_json"]),
-                "deny": json.loads(row["deny_json"]),
-                "actor": row["actor"], "reason": row["reason"],
-                "updated_at": row["updated_at"], "all_layers": False,
-                "scope_values": sorted(_scope_values())}
+        with self.store._lock:
+            return read_scope_policy(self.store._conn, _scope_values())
 
     def set_scope_policy(self, *, allow: Any, deny: Any, actor: str,
                          reason: str) -> Dict[str, Any]:
@@ -191,6 +178,8 @@ class MemoryControlService:
         reason = self._text(reason, "reason")
         if not isinstance(allow, list) or not isinstance(deny, list):
             raise MemoryControlError("allow/deny 必须是作用域数组")
+        if any(not isinstance(scope, str) for scope in allow + deny):
+            raise MemoryControlError("allow/deny 成员必须是作用域字符串")
         values = set(_scope_values())
         allow_set, deny_set = set(allow), set(deny)
         if not allow_set <= values or not deny_set <= values:
@@ -214,7 +203,7 @@ class MemoryControlService:
                             allow=sorted(allow_set), deny=sorted(deny_set),
                             actor=actor, reason=reason)
         return {"ok": True, "policy": self.get_scope_policy(), "audit": audit,
-                "note": "禁止优先；策略用于控制面过滤，装配器接线见保留缺口"}
+                "note": "禁止优先；持久策略约束后续记忆检索与上下文装配，不删除已存记忆"}
 
     def scope_allowed(self, scope: str) -> bool:
         policy = self.get_scope_policy()

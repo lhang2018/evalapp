@@ -20,6 +20,7 @@ from .conflicts import ConflictLedger, TombstoneLedger
 from .embeddings import (EmbeddingProvider, HashEmbeddingProvider, hash_vector,
                          normalize, words)
 from .manifest import AccessGrant, MemoryAccessError, MemoryIdentity
+from .scope_policy import POLICY_TABLE, read_scope_policy
 
 
 class MemoryKind(str, Enum):
@@ -144,6 +145,7 @@ class MemoryStore:
             self._migrate_if_needed()
             self._conn.execute(self._SCHEMA)
             self._conn.execute(self._VECTOR_SCHEMA)
+            self._conn.execute(POLICY_TABLE)
             self._conn.commit()
         self.conflicts = ConflictLedger(self._conn, self._lock)
         self.tombstones = TombstoneLedger(self._conn, self._lock)
@@ -306,9 +308,16 @@ class MemoryStore:
                identity: Optional[MemoryIdentity] = None,
                grant: Optional[AccessGrant] = None) -> List[MemoryItem]:
         now = time.time()
-        rows = self._conn.execute(
-            "SELECT memory_id, kind, scope, scope_key, status, content, source,"
-            " allowed, created_at, updated_at, extra FROM memory_items").fetchall()
+        # Persisted user controls restrict every retrieval, before embeddings and
+        # ranking. Keep the query signature and identity/grant checks unchanged.
+        with self._lock:
+            policy = read_scope_policy(self._conn, [item.value for item in Scope])
+            allowed_scopes = sorted(set(policy["allow"]) - set(policy["deny"]))
+            placeholders = ",".join("?" for _ in allowed_scopes)
+            rows = self._conn.execute(
+                "SELECT memory_id, kind, scope, scope_key, status, content, source,"
+                " allowed, created_at, updated_at, extra FROM memory_items"
+                f" WHERE scope IN ({placeholders})", allowed_scopes).fetchall() if allowed_scopes else []
         # noqa: superseded_by 在 extra JSON 中，检索时以 status 过滤为主
         items = [self._row_to_item(r) for r in rows]
         # 1) 权限过滤
