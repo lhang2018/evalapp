@@ -7345,13 +7345,24 @@
    "workpackage": "ALN-18",
    "title": "编程专家按项目安装与真实工具消费",
    "stream": "runtime",
-   "owner": null,
+   "owner": "dsh-lead",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "eed09f46ea11ceb38fc38b9fcb674b311254734f",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-26",
+     "scope": "编程专家按项目安装本地组件切片：CodingExpertConsumer 复用既有精确版本编码包+独立ToolRegistry(按受信project_root)；安装校验根/拒符号链接根/版本必须匹配/actor+reason/同根幂等；安装失败实际回滚并重新检查；execute 仅本包工具、未安装根与未知工具拒绝，真实语法检查记录returncode/duration/磁盘摘要变化；不自动装依赖/不提交/不扩权；app装配coding_consumer；专项6 passed、实测9项全过、全量2381/0/1",
+     "source_commit": "f43c8efd5135d09d521b39b4d4d1bb315023cd33",
+     "functional_commit": "f43c8efd5135d09d521b39b4d4d1bb315023cd33",
+     "source_tree": "66b80b87093dfb3342f083591583875fdada26bd",
+     "result": "本地组件与拒绝/回滚路径交付；未完成(如实)：用户未选定临时真实项目→项目级集成与固定测试依赖未做、任务→专家自动选中/controller未接、升级/半写入回滚场景未构造、无真机/生产证据；不冒称真实项目通过",
+     "log": ".planning/2026-10-26-aln18h/coding-consumer-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-18-H-编程专家按项目安装与真实工具消费.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/18-H-编程专家按项目安装与真实工具消费.md",
    "shared_files": [
     "evoagent/app.py",
@@ -7370,13 +7381,29 @@
     "A-60"
    ],
    "priority": "P1",
-   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
-   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "next_step": "待独立复核（本地组件切片，非真实项目验收）：按根安装/幂等/双根独立/跨根与链接与版本与未知工具拒绝/安装失败回滚后恢复/returncode与磁盘变化证据见交付文档与 .planning/2026-10-26-aln18h/；需用户选定临时真实项目与固定测试依赖后再做项目级集成；任务→专家自动选中与升级回滚场景待补；审阅人未定不自批",
+   "working_basis": "以eed09f46ea11ceb38fc38b9fcb674b311254734f（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；选定临时真实项目与固定测试依赖",
    "split_round": "STATUS-SPLIT-2026-10-26",
    "backlog_refs": [
     "ZG-07"
-   ]
+   ],
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户指示继续、按优先级顺序认领；18-H 为唯一剩余可认领 READY 卡（需真实项目，先做本地组件/拒绝路径）"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "claimed",
+     "to": "review",
+     "reason": "本地组件与拒绝/回滚路径完成；真实项目未提供，正式验收未做（不冒称通过）"
+    }
+   ],
+   "delivered_commit": "f43c8efd5135d09d521b39b4d4d1bb315023cd33",
+   "delivery": "docs/协作开发/交付/ALN-18-H-编程专家按项目安装与真实工具消费.md"
   },
   {
    "id": "ALN-25-C",
