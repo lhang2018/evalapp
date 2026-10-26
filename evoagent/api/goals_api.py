@@ -157,3 +157,46 @@ def register_opportunity(ctx):
 @get("/opportunities/{candidate_id}/outcome")
 def opportunity_outcome(ctx):
     _call(ctx, lambda: ctx.app.opportunities.outcome(ctx.path.split("/")[2]))
+
+
+# ---- 长期目标周期调度宿主（ALN-13-S）----
+@get("/goals/scheduler/status")
+def goal_scheduler_status(ctx):
+    _call(ctx, lambda: ctx.app.goal_scheduler.status())
+
+
+@post("/goals/scheduler/tick")
+def goal_scheduler_tick(ctx):
+    if not _admin(ctx):
+        return
+    body = ctx.body if isinstance(ctx.body, dict) else {}
+    now = body.get("now")
+    _call(ctx, lambda: {"report": ctx.app.goal_scheduler.tick(
+        now=float(now) if now is not None else None)})
+
+
+@post("/goals/scheduler/start")
+def goal_scheduler_start(ctx):
+    if not _admin(ctx):
+        return
+    body = ctx.body if isinstance(ctx.body, dict) else {}
+    poll = body.get("poll_seconds")
+
+    def run():
+        ctx.app.goal_scheduler.start(
+            poll_seconds=float(poll) if poll is not None else None)
+        return ctx.app.goal_scheduler.status()
+    _call(ctx, run)
+
+
+@post("/goals/scheduler/stop")
+def goal_scheduler_stop(ctx):
+    if not _admin(ctx):
+        return
+    body = ctx.body if isinstance(ctx.body, dict) else {}
+    timeout = body.get("timeout", 5.0)
+
+    def run():
+        ctx.app.goal_scheduler.stop(timeout=float(timeout))
+        return ctx.app.goal_scheduler.status()
+    _call(ctx, run)

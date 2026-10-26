@@ -762,6 +762,42 @@ def cmd_wiring_audit() -> str:
     return ""
 
 
+def cmd_goal_scheduler_status() -> str:
+    """长期目标调度宿主观测（周期/延迟/失败/恢复）。"""
+    app = _app()
+    print(json.dumps(app.goal_scheduler.status(), ensure_ascii=False,
+                     indent=1, default=str))
+    return ""
+
+
+def cmd_goal_scheduler_tick(now: float = 0.0) -> str:
+    """执行一轮长期目标周期推进（CLI 可观测报告）。"""
+    app = _app()
+    report = app.goal_scheduler.tick(now=float(now) if now else None)
+    print(json.dumps(report, ensure_ascii=False, indent=1, default=str))
+    return ""
+
+
+def cmd_goal_scheduler_start(poll_seconds: float = 0.0) -> str:
+    """前台启动调度循环，Ctrl+C 停止且不遗留失控循环。"""
+    import time as _time
+    app = _app()
+    app.goal_scheduler.start(
+        poll_seconds=float(poll_seconds) if poll_seconds else None)
+    print(json.dumps(app.goal_scheduler.status(), ensure_ascii=False,
+                     indent=1, default=str))
+    try:
+        while True:
+            _time.sleep(1.0)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        app.goal_scheduler.stop()
+        print(json.dumps(app.goal_scheduler.status(), ensure_ascii=False,
+                         indent=1, default=str))
+    return ""
+
+
 def main() -> None:
     p = argparse.ArgumentParser("evoagent")
     sub = p.add_subparsers(dest="cmd")
@@ -922,6 +958,14 @@ def main() -> None:
     ao.add_argument("--scope", default="", help="记忆作用域（可空）")
     sub.add_parser("identity-list")
     sub.add_parser("wiring-audit")
+    # 长期目标调度宿主（ALN-13-S）：启停/单轮/观测
+    sub.add_parser("goals-scheduler-status")
+    gt = sub.add_parser("goals-tick")
+    gt.add_argument("--now", type=float, default=0,
+                    help="显式时间戳（测试/回放用；空=当前时间）")
+    gst = sub.add_parser("goals-scheduler-start")
+    gst.add_argument("--poll-seconds", type=float, default=0,
+                     help="轮询秒数（空=策略周期）")
     args = p.parse_args()
     if args.cmd == "demo":
         cmd_demo()
@@ -1032,6 +1076,12 @@ def main() -> None:
         cmd_identity_list()
     elif args.cmd == "wiring-audit":
         cmd_wiring_audit()
+    elif args.cmd == "goals-scheduler-status":
+        cmd_goal_scheduler_status()
+    elif args.cmd == "goals-tick":
+        cmd_goal_scheduler_tick(args.now)
+    elif args.cmd == "goals-scheduler-start":
+        cmd_goal_scheduler_start(args.poll_seconds)
     elif args.cmd == "serve":
         cmd_serve(args.host, args.port)
     else:

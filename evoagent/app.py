@@ -229,8 +229,13 @@ class App:
             audit=self.audit, memory_bindings=self.memory_bindings)  # S-05 执行环节审计
         from .goals.governance import GoalGovernor
         from .goals.opportunities import OpportunityService
+        from .goals.scheduler import GoalScheduler
         self.goal_governor = GoalGovernor(self.db, controller=self.controller)
         self.opportunities = OpportunityService(self.db)
+        # ALN-13-S：长期目标周期调度接入宿主（CLI/API 可启停与观测）
+        self.goal_scheduler = GoalScheduler(
+            self.goal_governor, db=self.db, bus=self.bus,
+            owner_id="host_goal_scheduler")
 
         # 评测器依赖运行时执行入口；在控制器之后注入以打破循环依赖
         self.evaluator = Evaluator(

@@ -1,0 +1,79 @@
+{
+ "task": "ALN-13-S 长期目标调度宿主接线实测",
+ "date": "2026-10-26",
+ "first_tick": {
+  "tick_id": "tick_29883387",
+  "advances": [
+   {
+    "goal_id": "goal_cdee1044266c428492734129b75b6ebf",
+    "command_id": "sched:goal_cdee1044266c428492734129b75b6ebf:29883387",
+    "tasks": [
+     "788678b9ed80"
+    ],
+    "goal_status": "running"
+   }
+  ],
+  "reason": null
+ },
+ "restart_tick": {
+  "tick_id": "tick_29883387",
+  "advances": []
+ },
+ "replay_tick": {
+  "tick_id": "tick_29883387",
+  "advances": [
+   {
+    "goal_id": "goal_cdee1044266c428492734129b75b6ebf",
+    "command_id": "sched:goal_cdee1044266c428492734129b75b6ebf:29883387",
+    "tasks": [
+     "788678b9ed80"
+    ],
+    "goal_status": "running"
+   }
+  ]
+ },
+ "task_counts": {
+  "after_first": 1,
+  "after_restart": 1,
+  "after_replay": 1
+ },
+ "status_after_first": {
+  "owner_id": "host_goal_scheduler",
+  "running": false,
+  "ticks": 1,
+  "last_tick_at": 1793003221.7428863,
+  "stats": {
+   "total": 1,
+   "due": 0,
+   "leased": 0,
+   "policy": {
+    "interval_seconds": 60.0,
+    "max_goals_per_tick": 3,
+    "max_steps_per_goal": 1,
+    "primary_busy_limit": 1,
+    "lease_ttl_seconds": 30.0,
+    "failure_backoff_seconds": 120.0,
+    "max_backoff_seconds": 3600.0
+   },
+   "next_due_at": 1793003281.7428863
+  }
+ },
+ "start_stop": {
+  "running_during": true,
+  "running_after": false,
+  "stop_latency_s": 0.302
+ },
+ "checks": {
+  "host_wired": true,
+  "first_tick_advanced_once": true,
+  "one_task_created": true,
+  "status_observable": true,
+  "restart_same_slot_no_duplicate": true,
+  "replay_same_slot_idempotent": true,
+  "start_running_then_stopped": true,
+  "stop_latency_under_6s": true,
+  "status_has_cycle_and_failure_fields": true
+ },
+ "all_checks_pass": true,
+ "boundary": "真实 App/GoalGovernor/GoalScheduler + 真实持久化重启；非生产 daemon 长跑"
+}

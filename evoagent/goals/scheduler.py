@@ -93,6 +93,11 @@ class GoalScheduler:
         self.owner_id = owner_id or ("sched_" + uuid.uuid4().hex)
         self._stop = threading.Event()
         self._thread: Optional[threading.Thread] = None
+        # ALN-13-S：宿主可观测量（周期/延迟/失败/恢复）
+        self._started_at: Optional[float] = None
+        self._ticks = 0
+        self._last_tick_at: Optional[float] = None
+        self._last_report: Optional[Dict[str, Any]] = None
 
     # ---- 事务与事件 ----
     @contextmanager
@@ -258,7 +263,7 @@ class GoalScheduler:
             report["reason"] = "primary_load_guard"
             self._emit("goal_schedule_yielded",
                        {"reason": "primary_load_guard", **load, "at": moment})
-            return report
+            return self._record_report(report, moment)
         self.sync(now=moment)
         processed = 0
         for row in self.due(now=moment,
@@ -299,7 +304,7 @@ class GoalScheduler:
                     "stopped": len(report["stopped"]),
                     "errors": len(report["errors"]),
                     "load": load})
-        return report
+        return self._record_report(report, moment)
 
     def _advance_one(self, goal_id: str, moment: float, slot: int,
                      command_prefix: str, report: Dict[str, Any]):
@@ -341,12 +346,36 @@ class GoalScheduler:
         })
         return {"status": status, "reason": "", "tasks": tasks}, True
 
-    # ---- 后台周期（接入用；不在本卡写入边界内改 App/CLI）----
+    # ---- 后台周期（ALN-13-S：接入宿主）----
+    def _record_report(self, report: Dict[str, Any],
+                       moment: float) -> Dict[str, Any]:
+        self._ticks += 1
+        self._last_tick_at = moment
+        self._last_report = report
+        return report
+
+    def status(self, *, now: Optional[float] = None) -> Dict[str, Any]:
+        """宿主观测：周期/延迟/失败/恢复状态（供 CLI/API 读取）。"""
+        thread = self._thread
+        return {
+            "owner_id": self.owner_id,
+            "running": bool(thread is not None and thread.is_alive()),
+            "started_at": self._started_at,
+            "ticks": self._ticks,
+            "last_tick_at": self._last_tick_at,
+            "stats": self.stats(now=now),
+            "load": self.primary_load(),
+            "policy": self.policy.to_dict()
+            if hasattr(self.policy, "to_dict") else self.stats(now=now)["policy"],
+            "last_report": self._last_report,
+        }
+
     def start(self, *, poll_seconds: Optional[float] = None) -> threading.Thread:
         if self._thread is not None and self._thread.is_alive():
             return self._thread
         self._stop.clear()
         interval = float(poll_seconds or self.policy.interval_seconds)
+        self._started_at = self.clock()
 
         def loop() -> None:
             while not self._stop.is_set():
@@ -369,3 +398,4 @@ class GoalScheduler:
         if thread is not None:
             thread.join(timeout=timeout)
             self._thread = None
+        self._started_at = None
