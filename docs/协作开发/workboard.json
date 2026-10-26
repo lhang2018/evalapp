@@ -6724,7 +6724,7 @@
    "reviewer": null,
    "branch": "feature/user-direction",
    "base_commit": "206bcd7900b727ac8f69c463b7e5f315177cd791",
-   "status": "in_progress",
+   "status": "review",
    "phase": 5,
    "depends_on": [
     "ALN-17-P",
@@ -6734,7 +6734,17 @@
     "ALN-11-P"
    ],
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-26",
+     "scope": "装配收口：新增 evoagent/integration/（wiring.py 可达性声明六项+三面审计+悬空即抛；services.py 部署包装）；app.py 两处精确点（IdentityRegistry 注入 ReleaseDelivery 闭合 11-P 缺口；装配 deployment/recovery/credentials/knowledge/memory_control/assist 六属性闭合 25-A 缺口）；cli.py 七入口（host-deploy/host-restore/credential-audit/knowledge-list/assist-organize/identity-list/wiring-audit）",
+     "source_commit": "67bed4644a84",
+     "command": "python -m pytest tests/test_integration_wiring.py -q; 相关八套件 -q; 隔离worktree python -m pytest tests/ -q; python .planning/2026-10-26-aln30a/mutation_test.py; CLI 实测 host-deploy→backup→host-restore 链",
+     "result": "新增测试27项全过；相关既有139 passed无回归；隔离全量2299 passed/1 skipped/0 failed（455s）；变异10/10捕获0存活（M4/M7/M9首轮存活暴露审计语义盲区，补装配事实/声明集/verify真实性测试后全捕获）；真实链路：host-deploy落盘清单、host-restore identity_preserved+counts_matched+自动安全备份、无清单拒绝恢复fail-closed、私钥片段检出。修复既有切片1处：test_update_artifact_delivery补齐测试前提（登记激活release-key-1）5/5",
+     "log": ".planning/2026-10-26-aln30a/iso-full-server.log; mutation-results.log",
+     "delivery": "docs/协作开发/交付/ALN-30-A-服务端装配收口与主链可达性.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/30-A-服务端装配收口与主链可达性.md",
    "shared_files": [
     "evoagent/app.py",
@@ -6748,9 +6758,17 @@
     "G0",
     "G3"
    ],
-   "next_step": "按卡实施并提交证据；未经复核不记accepted",
+   "next_step": "已交付转review（提交67bed46）；审阅人未定保留null，不自批；保留缺口：App.tsx客户端装配（12-E在途）、knowledge进程内存储持久化、25-B策略层启动装配、门禁证据回填（ALN-29/22范围）",
    "working_basis": "claude-main 认领实施：新增 evoagent/integration/wiring.py 独占模块；app.py/cli.py 按精确点外科手术式修改（当前两者均无他人在途）；客户端 App.tsx 装配不在本卡",
-   "prerequisites": "仅需仓库与本地测试环境"
+   "prerequisites": "仅需仓库与本地测试环境",
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": null,
+     "to": "claude-main",
+     "reason": "用户批准开装配收口卡；勘察发现四域零入口+两处点名缺口，27份交付报告提及app.py/App.tsx"
+    }
+   ]
   }
  ],
  "workpackages": [
