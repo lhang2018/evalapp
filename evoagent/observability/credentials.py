@@ -100,8 +100,9 @@ _PATTERNS = (
     (
         "pem",
         re.compile(
-            r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----[\s\S]+?"
-            r"-----END (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"
+            r"-----BEGIN (?:RSA |DSA |EC |OPENSSH |ENCRYPTED )?PRIVATE KEY-----[\s\S]*?"
+            r"(?:-----END (?:RSA |DSA |EC |OPENSSH |ENCRYPTED )?PRIVATE KEY-----|$)",
+            re.IGNORECASE,
         ),
     ),
 )

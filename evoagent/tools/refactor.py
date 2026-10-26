@@ -23,6 +23,7 @@ import symtable
 import unicodedata
 import sys
 import tokenize
+from functools import lru_cache
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -293,6 +294,15 @@ def _top_definition(tree, name):
             yield node
 
 
+def _namespace_dict_write(node):
+    return (
+        isinstance(node, ast.Subscript)
+        and isinstance(node.ctx, (ast.Store, ast.Del))
+        and isinstance(node.value, ast.Attribute)
+        and node.value.attr == "__dict__"
+    )
+
+
 def analyze_rename(root: str | Path, symbol: str, new_name: str) -> RenameDecision:
     """Prove project-local identity or refuse; this is not a semantic LSP."""
     base = Path(root).resolve()
@@ -398,6 +408,56 @@ def analyze_rename(root: str | Path, symbol: str, new_name: str) -> RenameDecisi
     target_modules = {_module_name(_rel(definition_path, base))}
     if (base / "__init__.py").is_file():
         target_modules |= {base.name + ("." + m if m else "") for m in target_modules}
+    module_sources = {}
+    root_is_package = (base / "__init__.py").is_file()
+    for source_path, (_text, source_tree, _names, _scope) in data.items():
+        name = _module_name(_rel(source_path, base))
+        variants = {name}
+        if root_is_package:
+            variants.add(base.name + ("." + name if name else ""))
+        for variant in variants:
+            module_sources.setdefault(variant, []).append((source_path, source_tree))
+
+    @lru_cache(maxsize=None)
+    def ambiguous_module(module):
+        # A dotted import is not proof that a package attribute is that module.
+        if len(module_sources.get(module, ())) != 1:
+            return True
+        parts = module.split(".")
+        for cut in range(len(parts)):
+            parent, child = ".".join(parts[:cut]), parts[cut]
+            parents = module_sources.get(parent, ())
+            if len(parents) > 1:
+                return True
+            for parent_path, parent_tree in parents:
+                if parent_path.name != "__init__.py" or list(_binding_nodes(parent_tree, child)):
+                    return True
+                parent_names = {name for name, sources in module_sources.items()
+                                if any(path == parent_path for path, _tree in sources)}
+                child_names = {(name + "." if name else "") + child for name in parent_names}
+                for statement in ast.walk(parent_tree):
+                    if (isinstance(statement, ast.Attribute)
+                            and isinstance(statement.ctx, (ast.Store, ast.Del))
+                            and statement.attr == child):
+                        return True
+                    if _namespace_dict_write(statement):
+                        if not isinstance(statement.slice, ast.Constant) or statement.slice.value == child:
+                            return True
+                    if (isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef))
+                            and statement.name in ("__getattr__", "__getattribute__")):
+                        return True
+                    if isinstance(statement, ast.Import):
+                        for item in statement.names:
+                            if (item.asname or item.name.split(".")[0]) == child and item.name not in child_names:
+                                return True
+                    elif isinstance(statement, ast.ImportFrom):
+                        for item in statement.names:
+                            if (item.asname or item.name) == child and (
+                                item.name != child or _from_module(statement, _rel(parent_path, base)) not in parent_names
+                            ):
+                                return True
+        return False
+
     planned = []
     total = 0
     for path, (source, tree, names, scope) in data.items():
@@ -446,8 +506,10 @@ def analyze_rename(root: str | Path, symbol: str, new_name: str) -> RenameDecisi
                 module = _from_module(node, rel)
                 for item in node.names:
                     local = item.asname or item.name
-                    if module is not None:
-                        aliases[local] = (module + "." if module else "") + item.name
+                    resolved = (module + "." if module else "") + item.name if module is not None else None
+                    if local in aliases and aliases[local] != resolved:
+                        questions.append(f"{rel} 导入别名被重复绑定，无法证明每处引用身份")
+                    aliases[local] = resolved
                     if item.name == symbol:
                         if module not in target_modules:
                             questions.append(
@@ -469,6 +531,17 @@ def analyze_rename(root: str | Path, symbol: str, new_name: str) -> RenameDecisi
                                 add(token.start[0], token.start[1], token.end[1])
                     elif local == symbol:
                         questions.append(f"{rel} 同名导入绑定了其他对象，需澄清")
+        rebound_modules = set()
+        for candidate in ast.walk(tree):
+            if isinstance(candidate, ast.Attribute) and isinstance(candidate.ctx, (ast.Store, ast.Del)):
+                resolved = module_value(candidate)
+                if resolved:
+                    rebound_modules.add(resolved)
+            elif _namespace_dict_write(candidate):
+                owner = module_value(candidate.value.value)
+                if owner:
+                    key = candidate.slice.value if isinstance(candidate.slice, ast.Constant) else None
+                    rebound_modules.add(owner + "." + key if isinstance(key, str) and key != symbol else owner)
         if path == definition_path and isinstance(
             definition_node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
         ):
@@ -485,7 +558,9 @@ def analyze_rename(root: str | Path, symbol: str, new_name: str) -> RenameDecisi
                 else:
                     questions.append(f"{rel} 未证明同名引用的导入来源")
             elif isinstance(node, ast.Attribute) and node.attr == symbol:
-                if module_value(node.value) in target_modules:
+                owner_module = module_value(node.value)
+                if (owner_module in target_modules and not ambiguous_module(owner_module)
+                        and not any(owner_module == ref or owner_module.startswith(ref + ".") for ref in rebound_modules)):
                     end = column(node.end_lineno, node.end_col_offset)
                     add(node.end_lineno, end - len(symbol), end)
                 else:
