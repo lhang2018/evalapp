@@ -1,0 +1,60 @@
+{
+  "observed_head": "44815c256f58de0547868c2e7ec68fab466a0ac8",
+  "scope": "parallel bookkeeping snapshot; not acceptance by this review",
+  "cards": [
+    {
+      "id": "ALN-30-B",
+      "owner": "dsh-lead",
+      "reviewer": null,
+      "status": "review",
+      "priority": "P0",
+      "delivered_commit": "1b590a38b5900a3670e45387870e1441dc5c7a0e"
+    },
+    {
+      "id": "ALN-16-Q",
+      "owner": "dsh-lead",
+      "reviewer": null,
+      "status": "review",
+      "priority": "P0",
+      "delivered_commit": "aa19558347c622d5461f20f86156754f334efdac"
+    },
+    {
+      "id": "ALN-24-F",
+      "owner": "dsh-lead",
+      "reviewer": null,
+      "status": "review",
+      "priority": "P2",
+      "delivered_commit": "2e0c857473972ba2ab50bf3dd2c11ef465048fa2"
+    }
+  ],
+  "earlier_observation": {
+    "observed_head": "44815c256f58de0547868c2e7ec68fab466a0ac8",
+    "scope": "parallel bookkeeping snapshot; not acceptance by this review",
+    "cards": [
+      {
+        "id": "ALN-30-B",
+        "owner": "dsh-lead",
+        "reviewer": null,
+        "status": "review",
+        "priority": "P0",
+        "delivered_commit": "1b590a38b5900a3670e45387870e1441dc5c7a0e"
+      },
+      {
+        "id": "ALN-16-Q",
+        "owner": "dsh-lead",
+        "reviewer": null,
+        "status": "review",
+        "priority": "P0",
+        "delivered_commit": "aa19558347c622d5461f20f86156754f334efdac"
+      },
+      {
+        "id": "ALN-24-F",
+        "owner": "dsh-lead",
+        "reviewer": null,
+        "status": "review",
+        "priority": "P2",
+        "delivered_commit": "2e0c857473972ba2ab50bf3dd2c11ef465048fa2"
+      }
+    ]
+  }
+}

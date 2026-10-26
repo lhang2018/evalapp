@@ -1,0 +1,212 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFF.F..........                                                      [100%]
+================================== FAILURES ===================================
+_______ test_revoked_public_export_stays_revoked_in_actual_client_ring ________
+
+keys = (<evoagent.release.identity.PrivateIdentityKey object at 0x00000204D58FB400>, <evoagent.release.identity.PrivateIdentityKey object at 0x00000204D58FB4C0>)
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-2qr3reun/scratch/pytest/test_revoked_public_export_sta0')
+
+    def test_revoked_public_export_stays_revoked_in_actual_client_ring(keys, tmp_path):
+        old, new = keys
+        registry = IdentityRegistry(tmp_path/"identity.json")
+        registry.register_from_private(old, activate=True, actor="test", reason="synthetic setup")
+        registry.register_from_private(new, actor="test", reason="synthetic rotation")
+        body = b"synthetic artifact"
+        _, wire = envelope(old,"old-release","v1.0.0",body)
+        before = client_verify(registry.public_records(include_revoked=True),wire,body)
+        assert before["usable"] and before["verified"]["ok"]
+        registry.rotate(new.key_id, actor="test", reason="synthetic rotation")
+        registry.revoke(old.key_id, actor="test", reason="synthetic revocation")
+        reopened = IdentityRegistry(tmp_path/"identity.json")
+        after = client_verify(reopened.public_records(include_revoked=True),wire,body)
+>       assert after["usable"] is False
+E       assert True is False
+
+tests\test_release_trust_review_20261026.py:72: AssertionError
+_ test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt[revoked] _
+
+chain = (<evoagent.release.delivery.ReleaseDelivery object at 0x00000204D562CF70>, <evoagent.core.persistence.Database object ...IdentityKey object at 0x00000204D58FB400>, <evoagent.release.identity.PrivateIdentityKey object at 0x00000204D58FB4C0>)
+invalid = 'revoked'
+
+    @pytest.mark.parametrize("invalid", ["revoked","expired","future","unregistered","retired"])
+    def test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt(chain, invalid):
+        delivery, db, releases, registry, old, _ = chain
+        if invalid == "revoked":
+            registry.revoke(old.key_id,actor="test",reason="synthetic revocation")
+        elif invalid == "expired":
+            registry.get(old.key_id).not_after = time.time()-60
+        elif invalid == "future":
+            registry.get(old.key_id).not_before = time.time()+3600
+        elif invalid == "unregistered":
+            other = IdentityRegistry()
+            other.register_from_private(chain[-1],activate=True,actor="test",reason="synthetic only new")
+            delivery.set_identity_registry(other)
+        else:
+            releases.retire("old-release",actor="test",reason="synthetic retirement")
+        before = db.get_installation("inst-test")
+        count = db._conn.execute("SELECT COUNT(*) FROM device_deployments").fetchone()[0]
+        result = delivery.record_apply(installation_id="inst-test",action="rolled_back",
+            release_id="new-release",to_release_id="old-release",apply_id="rollback-denied-01")
+>       assert result["ok"] is False
+E       assert True is False
+
+tests\test_release_trust_review_20261026.py:119: AssertionError
+_ test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt[expired] _
+
+chain = (<evoagent.release.delivery.ReleaseDelivery object at 0x00000204D5846B90>, <evoagent.core.persistence.Database object ...IdentityKey object at 0x00000204D58FB400>, <evoagent.release.identity.PrivateIdentityKey object at 0x00000204D58FB4C0>)
+invalid = 'expired'
+
+    @pytest.mark.parametrize("invalid", ["revoked","expired","future","unregistered","retired"])
+    def test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt(chain, invalid):
+        delivery, db, releases, registry, old, _ = chain
+        if invalid == "revoked":
+            registry.revoke(old.key_id,actor="test",reason="synthetic revocation")
+        elif invalid == "expired":
+            registry.get(old.key_id).not_after = time.time()-60
+        elif invalid == "future":
+            registry.get(old.key_id).not_before = time.time()+3600
+        elif invalid == "unregistered":
+            other = IdentityRegistry()
+            other.register_from_private(chain[-1],activate=True,actor="test",reason="synthetic only new")
+            delivery.set_identity_registry(other)
+        else:
+            releases.retire("old-release",actor="test",reason="synthetic retirement")
+        before = db.get_installation("inst-test")
+        count = db._conn.execute("SELECT COUNT(*) FROM device_deployments").fetchone()[0]
+        result = delivery.record_apply(installation_id="inst-test",action="rolled_back",
+            release_id="new-release",to_release_id="old-release",apply_id="rollback-denied-01")
+>       assert result["ok"] is False
+E       assert True is False
+
+tests\test_release_trust_review_20261026.py:119: AssertionError
+_ test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt[future] _
+
+chain = (<evoagent.release.delivery.ReleaseDelivery object at 0x00000204D5437400>, <evoagent.core.persistence.Database object ...IdentityKey object at 0x00000204D58FB400>, <evoagent.release.identity.PrivateIdentityKey object at 0x00000204D58FB4C0>)
+invalid = 'future'
+
+    @pytest.mark.parametrize("invalid", ["revoked","expired","future","unregistered","retired"])
+    def test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt(chain, invalid):
+        delivery, db, releases, registry, old, _ = chain
+        if invalid == "revoked":
+            registry.revoke(old.key_id,actor="test",reason="synthetic revocation")
+        elif invalid == "expired":
+            registry.get(old.key_id).not_after = time.time()-60
+        elif invalid == "future":
+            registry.get(old.key_id).not_before = time.time()+3600
+        elif invalid == "unregistered":
+            other = IdentityRegistry()
+            other.register_from_private(chain[-1],activate=True,actor="test",reason="synthetic only new")
+            delivery.set_identity_registry(other)
+        else:
+            releases.retire("old-release",actor="test",reason="synthetic retirement")
+        before = db.get_installation("inst-test")
+        count = db._conn.execute("SELECT COUNT(*) FROM device_deployments").fetchone()[0]
+        result = delivery.record_apply(installation_id="inst-test",action="rolled_back",
+            release_id="new-release",to_release_id="old-release",apply_id="rollback-denied-01")
+>       assert result["ok"] is False
+E       assert True is False
+
+tests\test_release_trust_review_20261026.py:119: AssertionError
+_ test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt[unregistered] _
+
+chain = (<evoagent.release.delivery.ReleaseDelivery object at 0x00000204D5997D90>, <evoagent.core.persistence.Database object ...IdentityKey object at 0x00000204D58FB400>, <evoagent.release.identity.PrivateIdentityKey object at 0x00000204D58FB4C0>)
+invalid = 'unregistered'
+
+    @pytest.mark.parametrize("invalid", ["revoked","expired","future","unregistered","retired"])
+    def test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt(chain, invalid):
+        delivery, db, releases, registry, old, _ = chain
+        if invalid == "revoked":
+            registry.revoke(old.key_id,actor="test",reason="synthetic revocation")
+        elif invalid == "expired":
+            registry.get(old.key_id).not_after = time.time()-60
+        elif invalid == "future":
+            registry.get(old.key_id).not_before = time.time()+3600
+        elif invalid == "unregistered":
+            other = IdentityRegistry()
+            other.register_from_private(chain[-1],activate=True,actor="test",reason="synthetic only new")
+            delivery.set_identity_registry(other)
+        else:
+            releases.retire("old-release",actor="test",reason="synthetic retirement")
+        before = db.get_installation("inst-test")
+        count = db._conn.execute("SELECT COUNT(*) FROM device_deployments").fetchone()[0]
+        result = delivery.record_apply(installation_id="inst-test",action="rolled_back",
+            release_id="new-release",to_release_id="old-release",apply_id="rollback-denied-01")
+>       assert result["ok"] is False
+E       assert True is False
+
+tests\test_release_trust_review_20261026.py:119: AssertionError
+_ test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt[retired] _
+
+chain = (<evoagent.release.delivery.ReleaseDelivery object at 0x00000204D54341F0>, <evoagent.core.persistence.Database object ...IdentityKey object at 0x00000204D58FB400>, <evoagent.release.identity.PrivateIdentityKey object at 0x00000204D58FB4C0>)
+invalid = 'retired'
+
+    @pytest.mark.parametrize("invalid", ["revoked","expired","future","unregistered","retired"])
+    def test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt(chain, invalid):
+        delivery, db, releases, registry, old, _ = chain
+        if invalid == "revoked":
+            registry.revoke(old.key_id,actor="test",reason="synthetic revocation")
+        elif invalid == "expired":
+            registry.get(old.key_id).not_after = time.time()-60
+        elif invalid == "future":
+            registry.get(old.key_id).not_before = time.time()+3600
+        elif invalid == "unregistered":
+            other = IdentityRegistry()
+            other.register_from_private(chain[-1],activate=True,actor="test",reason="synthetic only new")
+            delivery.set_identity_registry(other)
+        else:
+            releases.retire("old-release",actor="test",reason="synthetic retirement")
+        before = db.get_installation("inst-test")
+        count = db._conn.execute("SELECT COUNT(*) FROM device_deployments").fetchone()[0]
+        result = delivery.record_apply(installation_id="inst-test",action="rolled_back",
+            release_id="new-release",to_release_id="old-release",apply_id="rollback-denied-01")
+>       assert result["ok"] is False
+E       assert True is False
+
+tests\test_release_trust_review_20261026.py:119: AssertionError
+_ test_valid_rollback_checks_destination_and_records_its_actual_trust[new-release] _
+
+chain = (<evoagent.release.delivery.ReleaseDelivery object at 0x00000204D5965750>, <evoagent.core.persistence.Database object ...IdentityKey object at 0x00000204D58FB400>, <evoagent.release.identity.PrivateIdentityKey object at 0x00000204D58FB4C0>)
+reported_release = 'new-release'
+
+    @pytest.mark.parametrize("reported_release", ["new-release","old-release"])
+    def test_valid_rollback_checks_destination_and_records_its_actual_trust(chain, reported_release):
+        delivery, db, releases, registry, old, new = chain
+        registry.rotate(old.key_id,actor="test",reason="recover to trusted previous")
+        registry.revoke(new.key_id,actor="test",reason="synthetic bad current key")
+        result = delivery.record_apply(installation_id="inst-test",action="rolled_back",
+            release_id=reported_release,to_release_id="old-release",signing_key_id=old.key_id)
+        assert result["ok"] is True
+        assert result["installation"]["current_release_id"] == "old-release"
+        receipt = result["deployment"]
+>       assert receipt["release_id"] == "old-release"
+E       AssertionError: assert 'new-release' == 'old-release'
+E         
+E         - old-release
+E         + new-release
+
+tests\test_release_trust_review_20261026.py:134: AssertionError
+___________ test_rollback_claimed_wrong_destination_key_is_rejected ___________
+
+chain = (<evoagent.release.delivery.ReleaseDelivery object at 0x00000204D562CF70>, <evoagent.core.persistence.Database object ...IdentityKey object at 0x00000204D58FB400>, <evoagent.release.identity.PrivateIdentityKey object at 0x00000204D58FB4C0>)
+
+    def test_rollback_claimed_wrong_destination_key_is_rejected(chain):
+        delivery, db, _, _, _, new = chain
+        before = db.get_installation("inst-test")
+        result = delivery.record_apply(installation_id="inst-test",action="rolled_back",
+            release_id="new-release",to_release_id="old-release",signing_key_id=new.key_id)
+>       assert result["ok"] is False
+E       assert True is False
+
+tests\test_release_trust_review_20261026.py:146: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_release_trust_review_20261026.py::test_revoked_public_export_stays_revoked_in_actual_client_ring
+FAILED tests/test_release_trust_review_20261026.py::test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt[revoked]
+FAILED tests/test_release_trust_review_20261026.py::test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt[expired]
+FAILED tests/test_release_trust_review_20261026.py::test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt[future]
+FAILED tests/test_release_trust_review_20261026.py::test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt[unregistered]
+FAILED tests/test_release_trust_review_20261026.py::test_rollback_to_untrusted_or_retired_destination_is_refused_without_receipt[retired]
+FAILED tests/test_release_trust_review_20261026.py::test_valid_rollback_checks_destination_and_records_its_actual_trust[new-release]
+FAILED tests/test_release_trust_review_20261026.py::test_rollback_claimed_wrong_destination_key_is_rejected
+8 failed, 11 passed in 6.38s

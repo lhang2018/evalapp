@@ -1,0 +1,29 @@
+{
+  "pytest_arguments": [
+    "tests/test_release_trust_review_20261026.py",
+    "tests/test_release_identity.py",
+    "tests/test_release_install_retire.py",
+    "tests/test_update_artifact_delivery.py",
+    "tests/test_release.py",
+    "tests/test_release_channels.py",
+    "tests/test_release_signing.py",
+    "tests/test_release_assets.py",
+    "tests/test_release_evidence.py",
+    "tests/test_release_gates.py",
+    "tests/test_restore_entry_review_20261026.py",
+    "tests/test_integration_wiring.py",
+    "tests/test_ledger_drift.py",
+    "tools/tests",
+    "-q"
+  ],
+  "snapshot_commit": "e1365ef857490936b4db6f5a6b1603059cc937cf",
+  "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+  "owned_temp_directory": "E:\\evalapp\\outputs\\review5-fgzhi5op",
+  "source_tree": "bc091c500d1a093543c82b094d0d5634b74002f8",
+  "archive_sha256": "a324564d72de4e8f31ec39b2670c9295acea0e6aa87dbe12262e79206584bff2",
+  "source_path_when_tested": "E:\\evalapp\\outputs\\review5-fgzhi5op\\source",
+  "module_source_probe": "E:\\evalapp\\outputs\\review5-fgzhi5op\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-fgzhi5op\\source\\evoagent\\tools\\refactor.py\n",
+  "exit_code": 0,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+}

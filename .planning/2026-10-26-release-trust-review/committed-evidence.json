@@ -1,0 +1,124 @@
+{
+  "source_commit": "e1365ef857490936b4db6f5a6b1603059cc937cf",
+  "source_tree": "bc091c500d1a093543c82b094d0d5634b74002f8",
+  "python_passed": 292,
+  "client_passed": 437,
+  "typecheck": "passed",
+  "typescript": "5.9.3",
+  "node": "v24.16.0",
+  "full_backend_rerun": false,
+  "client_evidence_mode": "fresh_fixed_archive",
+  "initial_result": {
+    "failed": 8,
+    "passed": 11,
+    "scope": "9 new release probes plus 10 previous restore regressions"
+  },
+  "focused_passed": 74,
+  "records": {
+    "negative-validation.json": {
+      "pytest_arguments": [
+        "tests/test_release_trust_review_20261026.py",
+        "tests/test_restore_entry_review_20261026.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-2qr3reun",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "focused-validation.json": {
+      "pytest_arguments": [
+        "tests/test_release_trust_review_20261026.py",
+        "tests/test_release_identity.py",
+        "tests/test_release_install_retire.py",
+        "tests/test_update_artifact_delivery.py",
+        "tests/test_restore_entry_review_20261026.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-xibopyv2",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "fixed-validation.json": {
+      "pytest_arguments": [
+        "tests/test_release_trust_review_20261026.py",
+        "tests/test_release_identity.py",
+        "tests/test_release_install_retire.py",
+        "tests/test_update_artifact_delivery.py",
+        "tests/test_release.py",
+        "tests/test_release_channels.py",
+        "tests/test_release_signing.py",
+        "tests/test_release_assets.py",
+        "tests/test_release_evidence.py",
+        "tests/test_release_gates.py",
+        "tests/test_restore_entry_review_20261026.py",
+        "tests/test_integration_wiring.py",
+        "tests/test_ledger_drift.py",
+        "tools/tests",
+        "-q"
+      ],
+      "snapshot_commit": "e1365ef857490936b4db6f5a6b1603059cc937cf",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-fgzhi5op",
+      "source_tree": "bc091c500d1a093543c82b094d0d5634b74002f8",
+      "archive_sha256": "a324564d72de4e8f31ec39b2670c9295acea0e6aa87dbe12262e79206584bff2",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-fgzhi5op\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-fgzhi5op\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-fgzhi5op\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    }
+  },
+  "client_record": {
+    "commit": "e1365ef857490936b4db6f5a6b1603059cc937cf",
+    "source_tree": "bc091c500d1a093543c82b094d0d5634b74002f8",
+    "runner_sha256_lf": "1816f02d884c3569be8df48f5e66b25dee4df6106dd13475e50fe7ed4aefb1e2",
+    "node": "v24.16.0",
+    "owned_temp_directory": "E:\\evalapp\\outputs\\device-review-n4rpmm2c",
+    "archive_sha256": "07e6abb283b1dcda324b85768a11d2738e3a21b5cfc83e2072b59624af2a692a",
+    "tested_source": "E:\\evalapp\\outputs\\device-review-n4rpmm2c\\source\\android-app",
+    "typescript": "5.9.3",
+    "commands": {
+      "client-tests": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "test/offline/*.test.ts",
+        "test/device/*.test.ts",
+        "test/update/*.test.ts"
+      ],
+      "typecheck": [
+        "node",
+        "E:\\evalapp\\android-app\\node_modules\\typescript\\bin\\tsc",
+        "--noEmit"
+      ]
+    },
+    "results": {
+      "client-tests": 0,
+      "typecheck": 0
+    },
+    "dependency_junction_removed": true,
+    "installed_dependencies_preserved": true,
+    "temporary_data_removed": true,
+    "cleanup_scope": "only this run's new TemporaryDirectory and junction; no old caches touched"
+  },
+  "temporary_data_removed": true,
+  "product_acceptance_added": false,
+  "device_verified": false,
+  "log_sha256_lf": {
+    "negative.txt": "4062ef87c72a6c3b3ccf52ebc3e102075a95d945134e4484f499694609fdeed9",
+    "focused.txt": "e3cacea173dd9805114d31317aafeec60707e9ea09a393e835b6b80747826428",
+    "fixed.txt": "b8cbf1ed29832ba4eca08f9b5d600d86a800e15f4a08924afce7e0cbb842c188",
+    "client-tests.txt": "a0bc02124fc70022247c181bebbef01801bd44de0a8dcb9d7ed61b948cb4fc3e",
+    "typecheck.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}
