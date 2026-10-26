@@ -356,8 +356,11 @@ export function parseState(raw: string | null): OfflineState {
   }
 }
 
+// App/后台/重建服务共享同一KV对象时，读改写必须使用同一条串行队列。
+// 只覆盖当前JS运行时；不是跨进程存储事务。
+const repositoryChains = new WeakMap<KeyValueStore, Map<string, Promise<unknown>>>();
+
 export class OfflineRepository {
-  private chain: Promise<unknown> = Promise.resolve();
   private readonly kv: KeyValueStore;
   private readonly key: string;
 
@@ -382,8 +385,11 @@ export class OfflineRepository {
       await this.save(state);
       return result;
     };
-    const next = this.chain.then(run, run);
-    this.chain = next.catch(() => undefined);
+    let chains = repositoryChains.get(this.kv);
+    if (!chains) { chains = new Map(); repositoryChains.set(this.kv, chains); }
+    const previous = chains.get(this.key) ?? Promise.resolve();
+    const next = previous.then(run, run);
+    chains.set(this.key, next.catch(() => undefined));
     return next;
   }
 }

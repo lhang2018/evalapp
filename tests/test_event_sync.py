@@ -159,6 +159,28 @@ class TestEventSyncApi(unittest.TestCase):
         self.assertEqual(len(matching), 2)
         self.assertTrue(all(e.sync_status == "acknowledged" for e in matching))
 
+    def test_device_receipt_metadata_is_acknowledged_without_creating_server_task(self):
+        before = {task.task_id for task in self.app.db.list_tasks(limit=500)}
+        payload = dict(effect_id="fx_device", action_id="act_device", proposal_id="prop_device",
+                       task_id="local_device_demo", run_id="local:local_device_demo",
+                       kind="launch_intent", risk="low", state="verified", terminal=True,
+                       replayed=False, has_evidence=True, occurred_at=int(time.time() * 1000))
+        event = make_event(eid(900), event_type="device_action_receipt_verification",
+                           task_id=payload["task_id"], run_id=payload["run_id"],
+                           runtime_manifest_id="client-manifest-0.1.0", sequence_no=1, payload=payload)
+        batch = {"client_id": "android", "events": [event]}
+        status, receipt = self._post("/events/sync", batch)
+        self.assertEqual(status, 200)
+        self.assertIn(event["event_id"], receipt["confirmed"])
+        status, replay = self._post("/events/sync", batch)
+        self.assertEqual(status, 200)
+        self.assertIn(event["event_id"], replay["duplicates"])
+        rows = self.app.bus.query(task_id="local_device_demo", limit=10)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].run_id, payload["run_id"])
+        self.assertEqual(rows[0].payload, payload)
+        self.assertEqual({task.task_id for task in self.app.db.list_tasks(limit=500)}, before)
+
     def test_sensitive_event_rejected(self):
         st, out = self._post("/events/sync", {"events": [
             make_event(eid(12), privacy_classification="sensitive")]})

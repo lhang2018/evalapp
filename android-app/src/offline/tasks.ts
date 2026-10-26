@@ -116,7 +116,7 @@ export class LocalTaskService {
     return this.repo.update((state) => {
       let count = 0;
       for (const task of state.tasks) {
-        if (task.status === "SUBMITTING") {
+        if (task.execution_target !== "device" && task.status === "SUBMITTING") {
           task.status = "NEEDS_RECONCILE";
           task.last_sync_error = "提交过程被中断，需确认是否已创建";
           task.updated_at = now;
@@ -137,7 +137,7 @@ export class LocalTaskService {
 
   private async _flushPending(): Promise<TaskFlushResult> {
     const state = await this.repo.load();
-    const pending = state.tasks.filter((t) => t.status === "LOCAL_ONLY");
+    const pending = state.tasks.filter((t) => t.execution_target !== "device" && t.status === "LOCAL_ONLY");
     const result: TaskFlushResult = { submitted: 0, failed: 0, recovered: 0 };
     for (const task of pending) {
       await this.setStatus(task.local_task_id, "SUBMITTING", null);
@@ -195,6 +195,7 @@ export class LocalTaskService {
     const state = await this.repo.load();
     const targets = state.tasks.filter(
       (t) =>
+        t.execution_target !== "device" &&
         (t.status === "SUBMITTED" || t.status === "WAITING_DEPENDENCY") &&
         Boolean(t.server_task_id),
     );
@@ -260,7 +261,7 @@ export class LocalTaskService {
   confirmResubmit(localTaskId: string): Promise<boolean> {
     return this.repo.update((state) => {
       const task = state.tasks.find((t) => t.local_task_id === localTaskId);
-      if (!task || task.status !== "NEEDS_RECONCILE") return false;
+      if (!task || task.execution_target === "device" || task.status !== "NEEDS_RECONCILE") return false;
       task.status = "LOCAL_ONLY";
       task.last_sync_error = null;
       task.updated_at = this.now();

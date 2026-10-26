@@ -1,4 +1,11 @@
 /** 离线层共享类型（PRD 72-76）。 */
+import type { DeviceActionProposal } from "../device/taskProtocol.ts";
+
+export interface DeviceTaskExecution {
+  proposal: DeviceActionProposal;
+  phase: "prepared" | "claimed" | "awaiting_acceptance" | "needs_review" | "cancelled" | "accepted";
+  queued_receipt?: string;
+}
 
 export type PrivacyLevel = "standard" | "sensitive" | "secret" | "private";
 
@@ -148,6 +155,9 @@ export interface TaskContractInput {
 }
 
 export interface LocalTask {
+  /** 本机任务不进入服务端提交/重提队列；缺省保持既有服务端路径。 */
+  execution_target?: "device";
+  device_execution?: DeviceTaskExecution;
   server_status?: string;
   current_run_id?: string | null;
   waiting_request?: UserInputRequest | null;

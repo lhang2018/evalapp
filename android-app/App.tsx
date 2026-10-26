@@ -7,7 +7,7 @@
  *
  * UI 可通过 OTA（CodePush / Expo Updates）整包推送更新。
  */
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -67,6 +67,10 @@ import type {
 import { DeviceBroker } from "./src/device/broker.ts";
 import { NativeDeviceTransport } from "./src/device/nativeTransport.ts";
 import type { NativeDeviceModuleLike } from "./src/device/nativeTransport.ts";
+import { TaskActionLedger } from "./src/device/taskProtocol.ts";
+import type { ActionReceipt } from "./src/device/taskProtocol.ts";
+import { DeviceTaskService } from "./src/features/pipeline/deviceTasks.ts";
+import { resultView } from "./src/features/pipeline/chain.ts";
 import { formatLocalTime } from "./src/offline/policy.ts";
 import { taskViewOf } from "./src/features/taskview/state.ts";
 import {
@@ -188,6 +192,10 @@ export default function App(): React.JSX.Element {
   const [quarantined, setQuarantined] = useState<OfflineEvent[]>([]);
   const [deviceAvailable, setDeviceAvailable] = useState(false);
   const [deviceResult, setDeviceResult] = useState<DeviceResult | null>(null);
+  const [deviceTaskReceipts, setDeviceTaskReceipts] = useState<Record<string, ActionReceipt>>({});
+  const [deviceTaskBusy, setDeviceTaskBusy] = useState<string | null>(null);
+  const deviceTaskBusyRef = useRef(false);
+  const [deviceLedgerError, setDeviceLedgerError] = useState<string | null>(null);
   const [journal, setJournal] = useState<ActionJournalEntry[]>([]);
   const [deviceSnapshot, setDeviceSnapshot] = useState<DeviceSnapshot | null>(
     null
@@ -281,6 +289,9 @@ export default function App(): React.JSX.Element {
     const broker = new DeviceBroker(deviceTransport, {
       confirm: confirmHighRisk,
     });
+    const deviceLedger = new TaskActionLedger(asyncStorageStore);
+    const deviceTasks = new DeviceTaskService(repo, deviceLedger, broker, undefined,
+      `client-manifest-${APP_VERSION}`);
     // 能力包工具注册表：设备动作走既有 DeviceBroker 授权/副作用边界；
     // 纯本地工具只做无副作用计算。未注册工具的节点在执行前被拒绝。
     const bundleTools: Record<string, BundleTool> = {
@@ -333,6 +344,8 @@ export default function App(): React.JSX.Element {
       sync,
       deviceTransport,
       broker,
+      deviceLedger,
+      deviceTasks,
       bundleRuntime,
       update,
       exporter: new DiagnosticsExporter(),
@@ -376,7 +389,21 @@ export default function App(): React.JSX.Element {
   }, [services, feedbackDrafts, feedbackBusy]);
 
   const reloadLocal = useCallback(async () => {
-    setLocalTasks(await services.tasks.list());
+    const tasks = await services.tasks.list();
+    setLocalTasks(tasks);
+    try {
+      const receipts: Record<string, ActionReceipt> = {};
+      for (const task of tasks) {
+        if (task.execution_target !== "device" || !task.device_execution) continue;
+        const receipt = await services.deviceLedger.getReceipt(task.device_execution.proposal.action_id);
+        if (receipt) receipts[task.local_task_id] = receipt;
+      }
+      setDeviceTaskReceipts(receipts);
+      setDeviceLedgerError(null);
+    } catch {
+      setDeviceTaskReceipts({});
+      setDeviceLedgerError("本机操作台账读取失败，请勿重复执行，先核对本机记录");
+    }
     setStats(await services.queue.stats());
     setDeadLetters(await services.queue.deadLetters());
     setQuarantined(await services.queue.quarantined());
@@ -697,6 +724,14 @@ export default function App(): React.JSX.Element {
     if (!text) return;
     setBusy(true);
     try {
+      const deviceTask = await services.deviceTasks.prepare(text);
+      if (deviceTask) {
+        setGoal("");
+        setVoiceEntry(null);
+        setError(null);
+        await reloadLocal();
+        return;
+      }
       const intent = guessIntent(text);
       // 活动能力包声明消费该意图：执行前校验，被拒则不建任务不执行
       if (await services.bundleRuntime.declaresIntent(intent)) {
@@ -751,6 +786,35 @@ export default function App(): React.JSX.Element {
       setBusy(false);
     }
   }, [goal, online, services, reloadLocal, flush]);
+
+  const runDeviceTask = useCallback(async (task: LocalTask, action: "execute" | "refresh" | "accept" | "cancel") => {
+    if (deviceTaskBusyRef.current) return;
+    deviceTaskBusyRef.current = true;
+    setDeviceTaskBusy(task.local_task_id);
+    try {
+      if (action === "execute") {
+        await services.deviceTasks.execute(task.local_task_id, () => new Promise<boolean>((resolve) => {
+          Alert.alert("执行本机操作", "将打开系统设置并切换到设置应用。只执行这一次操作，不会替你修改设置。", [
+            { text: "暂不执行", style: "cancel", onPress: () => resolve(false) },
+            { text: "打开系统设置", onPress: () => resolve(true) },
+          ], { cancelable: true, onDismiss: () => resolve(false) });
+        }), () => AppState.currentState === "active");
+      } else if (action === "refresh") {
+        await services.deviceTasks.refresh(task.local_task_id);
+      } else if (action === "accept") {
+        await services.deviceTasks.accept(task.local_task_id, true);
+      } else {
+        await services.deviceTasks.cancel(task.local_task_id);
+      }
+      setError(null);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      try { await reloadLocal(); }
+      catch (e: unknown) { setError(e instanceof Error ? e.message : String(e)); }
+      finally { deviceTaskBusyRef.current = false; setDeviceTaskBusy(null); }
+    }
+  }, [services, reloadLocal]);
 
   // 语音输入：只在用户点击时录音；识别文本只填入输入框，不自动提交
   const startVoiceInput = useCallback(async () => {
@@ -1493,6 +1557,7 @@ export default function App(): React.JSX.Element {
           )}
 
           <Text style={s.section}>本地任务</Text>
+          {deviceLedgerError && <Text style={s.fail}>{deviceLedgerError}</Text>}
           {localTasks.length === 0 && <Text style={s.hint}>暂无任务</Text>}
           {localTasks.map((task) => (
             <View key={task.local_task_id} style={s.card}>
@@ -1500,7 +1565,7 @@ export default function App(): React.JSX.Element {
                 <Text style={[s.status, statusColor(task.status)]}>
                   {taskViewOf(task).label}
                 </Text>
-                {task.status === "NEEDS_RECONCILE" && (
+                {task.execution_target !== "device" && task.status === "NEEDS_RECONCILE" && (
                   <View style={s.action}>
                     <Button
                       title="确认重提"
@@ -1520,10 +1585,42 @@ export default function App(): React.JSX.Element {
                   )}
               </View>
               <Text style={s.goal}>{task.goal}</Text>
+              {task.execution_target === "device" && task.device_execution && (
+                <View style={s.gap}>
+                  <Text style={s.hint}>本机操作，联网后不会交给服务端重复执行。</Text>
+                  {deviceTaskReceipts[task.local_task_id] && (
+                    <View>
+                      <Text>{resultView(deviceTaskReceipts[task.local_task_id], task).label}</Text>
+                      {!!resultView(deviceTaskReceipts[task.local_task_id], task).sideEffectWarning && (
+                        <Text style={s.hint}>{resultView(deviceTaskReceipts[task.local_task_id], task).sideEffectWarning}</Text>
+                      )}
+                    </View>
+                  )}
+                  {task.device_execution.phase === "prepared" && (
+                    <View>
+                      <Button title="确认并执行本机操作" disabled={deviceTaskBusy !== null || !!deviceLedgerError}
+                        onPress={() => void runDeviceTask(task, "execute")} />
+                      <Button title="取消本机操作" disabled={deviceTaskBusy !== null}
+                        onPress={() => void runDeviceTask(task, "cancel")} />
+                    </View>
+                  )}
+                  {(task.device_execution.phase === "claimed" || task.device_execution.phase === "needs_review") && (
+                    <View>
+                      <Text style={s.hint}>读取回执不会再次执行。结果不明时，请先手动核对系统设置是否已打开。</Text>
+                      <Button title="读取操作回执" disabled={deviceTaskBusy !== null}
+                        onPress={() => void runDeviceTask(task, "refresh")} />
+                    </View>
+                  )}
+                  {task.device_execution.phase === "awaiting_acceptance" && (
+                    <Button title="确认任务已完成" disabled={deviceTaskBusy !== null || !!deviceLedgerError}
+                      onPress={() => void runDeviceTask(task, "accept")} />
+                  )}
+                </View>
+              )}
               {taskViewOf(task).wait.reason && (
                 <Text style={s.hint}>等待：{taskViewOf(task).wait.reason}</Text>
               )}
-              {(task.server_status === "SUCCEEDED" ||
+              {task.execution_target !== "device" && (task.server_status === "SUCCEEDED" ||
                 task.server_status === "FAILED" ||
                 task.server_status === "CANCELLED" ||
                 task.status === "DONE") && (

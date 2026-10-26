@@ -106,6 +106,15 @@ export function waitReasonOf(task: {
  * 状态展示；完成只认服务端终态。
  */
 export function taskViewOf(task: LocalTask): UserTaskView {
+  if (task.execution_target === "device") {
+    const phase = task.device_execution?.phase;
+    if (phase === "accepted") return { state: "done", label: "已完成（你已确认）", wait: { reason: null, needsUserAction: false } };
+    if (phase === "cancelled") return { state: "cancelled", label: "已取消（本机）", wait: { reason: null, needsUserAction: false } };
+    const label = phase === "prepared" ? "等待你确认本机操作"
+      : phase === "awaiting_acceptance" ? "设备操作已核验，等待你确认成果"
+      : "设备操作结果待核对，不会自动重放";
+    return { state: "needs_you", label, wait: { reason: label, needsUserAction: true } };
+  }
   const server = task.server_status as ServerTaskStatus | undefined;
   const wait = waitReasonOf(task);
   if (server && isTerminalServerStatus(server)) {

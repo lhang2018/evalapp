@@ -77,7 +77,8 @@ export function describeTerminalTask(task: LocalTask): TaskNotification | null {
   const result = collapse(task.result, MAX_NOTIFICATION_BODY_CHARS);
   const goal = collapse(task.goal, MAX_NOTIFICATION_BODY_CHARS);
   // 服务端终态优先；无server_status的旧记录/离线任务保留兼容推导。
-  const cancelled = status === "CANCELLED";
+  const cancelled = status === "CANCELLED" ||
+    (task.execution_target === "device" && task.device_execution?.phase === "cancelled");
   const failed = status === "FAILED" || (!status && Boolean(failure));
   return {
     id: notificationIdFor(task.local_task_id),
