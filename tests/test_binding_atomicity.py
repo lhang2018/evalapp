@@ -239,15 +239,8 @@ class RecoveryGateTest(unittest.TestCase):
         self.task.runtime_manifest["execution_plan"] = _plan_dict(
             (("s1", "current_time", "done"),))
         self.app.db.save_task(self.task)
-        # current_time 为纯观察工具：账本无行、计划 done——为使对账干净，
-        # 不给它 tool_hint 声明（无副作用声明即无分歧）
-        self.task.runtime_manifest["execution_plan"] = {
-            "plan_id": "p_gate", "goal": "g",
-            "steps": [{"step_id": "s1", "description": "完成",
-                       "state": "done"}],
-            "completed_work": ["s1"],
-            "acceptance_criteria": [{"type": "tool_succeeded"}]}
-        self.app.db.save_task(self.task)
+        # Pure observations retain their real tool_hint. The consumer must
+        # consult contracts rather than demand side-effect receipts for them.
         self._checkpoint()
         self._abandon()
         out = self.app.controller.recover_task("t_gate")

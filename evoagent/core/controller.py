@@ -1061,15 +1061,15 @@ class RuntimeController:
                           force: bool, *, registered=False, recovery=False) -> Task:
         if not registered:
             self._register_active(task)
-        if recovery:
-            # ALN-07-C：接管恢复先对账后决定——副作用不明时禁止自动续跑
-            gated = self._reconciliation_gate(task)
-            if gated is not None:
-                self._unregister_active(task.task_id)
-                return gated
-        task.runtime_manifest["resume_versions"] = copy.deepcopy(task.version_manifest)
-        # Verification failures also release the active-task registration.
+        # Gate reads/events can fail before a run exists, just like asset checks.
         try:
+            if recovery:
+                # ALN-07-C：接管恢复先对账后决定——副作用不明时禁止自动续跑
+                gated = self._reconciliation_gate(task)
+                if gated is not None:
+                    self._unregister_active(task.task_id)
+                    return gated
+            task.runtime_manifest["resume_versions"] = copy.deepcopy(task.version_manifest)
             if self.asset_binder is not None and task.runtime_manifest.get("asset_bindings"):
                 self.asset_binder.verify_pinned(task.runtime_manifest["asset_bindings"])
             run_id, started = self.runs.begin(task, task.version_manifest, recovery=recovery)
@@ -1129,6 +1129,7 @@ class RuntimeController:
         try:
             plan = self._plan_from_task(task)
         except PlanRevisionError as exc:
+            task = self._move(task, TaskStatus.RECOVERING, save=False)
             task = self._move(task, TaskStatus.FAILED)
             task.failure_reason = f"恢复对账失败：计划不可读: {exc}"
             self.db.save_task(task)
@@ -1139,14 +1140,23 @@ class RuntimeController:
             task.runtime_manifest["reconciliation_skipped"] = (
                 "no_plan" if plan is None else "no_bindings")
             return None
-        rows = self.side_fx.history(task.task_id)
         try:
+            rows = self.side_fx.history(task.task_id)
+            # tool_hint includes observation tools. Only known side-effect-free
+            # contracts may omit a ledger declaration; keep unknown tools and
+            # every ledger row so missing/contradictory evidence still blocks.
+            effect_plan = copy.deepcopy(plan)
+            for step in effect_plan.steps:
+                contract = self.tools.contract(step.tool_hint) if step.tool_hint else None
+                if contract is not None and contract.side_effect_level == "none":
+                    step.tool_hint = None
             healed = bindings.heal_pending(task.task_id, rows)
             from ..planning.reconcile import reconcile_plan
             report = reconcile_plan(
-                plan, rows, step_bindings=bindings.for_task(task.task_id),
+                effect_plan, rows, step_bindings=bindings.for_task(task.task_id),
                 task_id=task.task_id)
         except Exception as exc:  # noqa: BLE001
+            task = self._move(task, TaskStatus.RECOVERING, save=False)
             task = self._move(task, TaskStatus.FAILED)
             task.failure_reason = f"恢复对账异常: {type(exc).__name__}: {exc}"
             self.db.save_task(task)

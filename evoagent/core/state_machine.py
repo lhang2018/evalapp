@@ -23,6 +23,7 @@ ALLOWED_TRANSITIONS: dict[TaskStatus, FrozenSet[TaskStatus]] = {
     TaskStatus.WAITING_DEPENDENCY: frozenset({TaskStatus.RUNNING, TaskStatus.CANCELLED, TaskStatus.FAILED}),
     TaskStatus.VERIFYING: frozenset({TaskStatus.SUCCEEDED, TaskStatus.RECOVERING, TaskStatus.FAILED, TaskStatus.CANCELLED}),
     TaskStatus.SUSPENDED: frozenset({TaskStatus.RUNNING, TaskStatus.CLASSIFYING,
+                                   TaskStatus.RECOVERING,
                                    TaskStatus.CANCELLED}),
     # 终态：无出边（该规则由下面的 can_transition 强制）
     TaskStatus.SUCCEEDED: frozenset(),
