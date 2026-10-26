@@ -10,6 +10,7 @@ import type {
   ActionReceipt, DeviceActionProposal, DeviceBrokerLike, TaskActionLedger,
 } from "../../device/taskProtocol.ts";
 import { classifyPipeline } from "./chain.ts";
+import { sha256Hex } from "../../offline/sha256.ts";
 
 export class DeviceTaskService {
   private readonly repo: OfflineRepository;
@@ -57,7 +58,23 @@ export class DeviceTaskService {
         || p.task_id !== id || p.run_id !== task.current_run_id) {
       throw new Error("本机任务与设备提议身份不一致");
     }
+    const expected = typeof task.goal === "string" ? classifyPipeline({ text: task.goal,
+      modeOverride: "work", task_id: id, run_id: task.current_run_id ?? undefined }).proposalInput : null;
+    if (!expected || task.intent !== "device_action" || task.risk_level !== "low"
+        || p.run_id !== `local:${id}` || p.risk !== "low" || !Number.isFinite(p.created_at)
+        || [p.proposal_id, p.action_id, p.effect_id].some((value) => typeof value !== "string" || !value.trim())
+        || p.kind !== expected.kind || p.target !== expected.target
+        || JSON.stringify(p.args === undefined ? {} : p.args) !== JSON.stringify(expected.args)
+        || JSON.stringify(p.expected_observation) !== JSON.stringify(expected.expected_observation)) {
+      throw new Error("保存的设备动作或任务确认范围已变化，禁止执行");
+    }
     return task;
+  }
+
+  private checkReceipt(receipt: ActionReceipt, p: DeviceActionProposal): void {
+    if (receipt.action_id !== p.action_id || receipt.task_id !== p.task_id || receipt.run_id !== p.run_id
+        || receipt.effect_id !== p.effect_id || receipt.proposal_id !== p.proposal_id
+        || receipt.kind !== p.kind || receipt.risk !== p.risk) throw new Error("本机回执身份不一致，禁止继续");
   }
 
   private event(state: OfflineState, task: LocalTask, type: string, payload: Record<string, unknown>) {
@@ -93,28 +110,26 @@ export class DeviceTaskService {
   async refresh(id: string): Promise<ActionReceipt | null> {
     const task = this.task(await this.repo.load(), id);
     const p = task.device_execution!.proposal;
-    const receipt = await this.ledger.getReceipt(p.action_id);
-    if (!receipt) return null;
-    if (receipt.task_id !== id || receipt.run_id !== p.run_id || receipt.effect_id !== p.effect_id
-        || receipt.proposal_id !== p.proposal_id || receipt.kind !== p.kind) {
-      throw new Error("本机回执身份不一致，禁止继续");
-    }
-    await this.repo.update((state) => {
-      const current = this.task(state, id);
-      const execution = current.device_execution!;
-      if (JSON.stringify(execution.proposal) !== JSON.stringify(p)) throw new Error("设备提议已变化");
-      if (execution.phase === "claimed" || execution.phase === "needs_review") {
-        execution.phase = receipt.state === "verified" ? "awaiting_acceptance" : "needs_review";
-      }
-      const projection = receiptForUpload(receipt);
-      const signature = JSON.stringify(projection);
-      if (execution.queued_receipt !== signature) {
-        this.event(state, current, "device_action_receipt_verification", { ...projection });
-        execution.queued_receipt = signature;
-      }
-      current.updated_at = this.now();
+    return this.ledger.withReceipt(p.action_id, async (receipt) => {
+      if (!receipt) return null;
+      this.checkReceipt(receipt, p);
+      await this.repo.update((state) => {
+        const current = this.task(state, id);
+        const execution = current.device_execution!;
+        if (JSON.stringify(execution.proposal) !== JSON.stringify(p)) throw new Error("设备提议已变化");
+        if (["claimed", "needs_review", "awaiting_acceptance"].includes(execution.phase)) {
+          execution.phase = receipt.state === "verified" ? "awaiting_acceptance" : "needs_review";
+        }
+        const projection = receiptForUpload(receipt);
+        const signature = JSON.stringify(projection);
+        if (execution.queued_receipt !== signature) {
+          this.event(state, current, "device_action_receipt_verification", { ...projection });
+          execution.queued_receipt = signature;
+        }
+        current.updated_at = this.now();
+      });
+      return receipt;
     });
-    return receipt;
   }
 
   async accept(id: string, confirmed: boolean): Promise<void> {
@@ -123,16 +138,24 @@ export class DeviceTaskService {
     if (!receipt || receipt.state !== "verified" || receipt.terminal !== true) {
       throw new Error("设备操作尚未核验，不能确认任务完成");
     }
-    await this.repo.update((state) => {
-      const task = this.task(state, id);
-      if (task.device_execution!.phase === "accepted") return;
-      if (task.device_execution!.phase !== "awaiting_acceptance"
-          || task.device_execution!.proposal.action_id !== receipt.action_id) throw new Error("任务不处于成果确认阶段");
-      task.device_execution!.phase = "accepted";
-      task.status = "DONE";
-      task.result = "你已确认：系统设置已打开";
-      task.updated_at = this.now();
-      this.event(state, task, "device_task_accepted", { action_id: receipt.action_id, effect_id: receipt.effect_id });
+    const signature = JSON.stringify(receiptForUpload(receipt));
+    await this.ledger.withReceipt(receipt.action_id, async (current) => {
+      if (!current || current.state !== "verified" || !current.terminal
+          || JSON.stringify(receiptForUpload(current)) !== signature) throw new Error("设备回执已更新，请重新核对成果");
+      await this.repo.update((state) => {
+        const task = this.task(state, id);
+        this.checkReceipt(current, task.device_execution!.proposal);
+        if (task.device_execution!.phase === "accepted") return;
+        if (task.device_execution!.phase !== "awaiting_acceptance"
+            || task.device_execution!.proposal.action_id !== receipt.action_id) throw new Error("任务不处于成果确认阶段");
+        task.device_execution!.phase = "accepted";
+        task.device_execution!.accepted_receipt = signature;
+        task.status = "DONE";
+        task.result = "你已确认：系统设置已打开";
+        task.updated_at = this.now();
+        this.event(state, task, "device_task_accepted", { action_id: receipt.action_id,
+          effect_id: receipt.effect_id, receipt_sha256: sha256Hex(signature) });
+      });
     });
   }
 

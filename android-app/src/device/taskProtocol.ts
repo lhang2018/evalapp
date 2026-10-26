@@ -176,6 +176,25 @@ export interface ActionReceipt {
   recorded_at: number;
 }
 
+const RECEIPT_REFS = ["action_id", "effect_id", "proposal_id", "task_id", "run_id", "kind", "risk"] as const;
+const JOURNAL_STATES: readonly JournalState[] = ["prepared", "dispatched", "verified", "unverified", "failed", "denied", "unavailable"];
+
+function assertReceipt(receipt: ActionReceipt,
+  reference?: Pick<DeviceActionProposal, typeof RECEIPT_REFS[number]>): void {
+  if (!receipt || typeof receipt !== "object" || Array.isArray(receipt)
+      || RECEIPT_REFS.some((key) => typeof receipt[key] !== "string" || !receipt[key].trim())
+      || !riskOrder.includes(receipt.risk) || !JOURNAL_STATES.includes(receipt.state)
+      || typeof receipt.terminal !== "boolean" || receipt.terminal !== isTerminalJournalState(receipt.state)
+      || typeof receipt.replayed !== "boolean" || !Number.isFinite(receipt.occurred_at)
+      || !Number.isFinite(receipt.recorded_at)
+      || (receipt.evidence !== undefined && (!receipt.evidence || typeof receipt.evidence !== "object" || Array.isArray(receipt.evidence)))) {
+    throw new Error("设备回执字段或状态不合法");
+  }
+  if (reference && RECEIPT_REFS.some((key) => receipt[key] !== reference[key])) {
+    throw new Error("回执引用或风险与提议不一致");
+  }
+}
+
 export function receiptFromJournal(
   proposal: DeviceActionProposal,
   entry: ActionJournalEntry,
@@ -324,14 +343,13 @@ function parseLedgerState(raw: string | null): TaskActionLedgerState {
     }
     for (const [id, receipt] of Object.entries(state.receipts)) {
       const p = state.proposals[id];
-      if (!p || !receipt || receipt.action_id !== id || receipt.task_id !== p.task_id
-          || receipt.run_id !== p.run_id || receipt.effect_id !== p.effect_id
-          || receipt.proposal_id !== p.proposal_id || receipt.kind !== p.kind
-          || receipt.terminal !== isTerminalJournalState(receipt.state)) throw new Error("receipt identity mismatch");
+      if (!p || receipt?.action_id !== id) throw new Error("receipt identity mismatch");
+      assertReceipt(receipt, p);
     }
     for (const [id, marker] of Object.entries(state.retired)) {
       if (!marker || !/^[a-f0-9]{64}$/.test(marker.fingerprint) || !marker.receipt
           || marker.receipt.action_id !== id || !marker.receipt.terminal) throw new Error("invalid retired receipt");
+      assertReceipt(marker.receipt);
     }
     return state;
   } catch {
@@ -389,6 +407,13 @@ export class TaskActionLedger {
     return state.receipts[actionId] ?? state.retired?.[actionId]?.receipt ?? null;
   }
 
+  /** Hold the same-runtime mutation gate until the dependent task write finishes.
+   * The reader must not call ledger mutation methods (that would re-enter this gate).
+   */
+  async withReceipt<T>(actionId: string, reader: (receipt: ActionReceipt | null) => Promise<T>): Promise<T> {
+    return storeExclusive(this.kv, this.storeKey, async () => reader(await this.getReceipt(actionId)));
+  }
+
   async getProposal(actionId: string): Promise<DeviceActionProposal | null> {
     const state = await this.loadState();
     return state.proposals[actionId] ?? null;
@@ -398,8 +423,8 @@ export class TaskActionLedger {
     receipt = clone(receipt);
     await this.persist((state) => {
       const p = state.proposals[receipt.action_id];
-      if (!p || receipt.task_id !== p.task_id || receipt.run_id !== p.run_id
-          || receipt.effect_id !== p.effect_id || receipt.proposal_id !== p.proposal_id) throw new Error("回执引用不一致");
+      if (!p) throw new Error("回执缺少对应提议");
+      assertReceipt(receipt, p);
       state.receipts[receipt.action_id] = receipt;
     });
   }
@@ -416,10 +441,14 @@ export class TaskActionLedger {
   }
 
   async recordRecoveryReceipt(receipt: ActionReceipt): Promise<ActionReceipt> {
+    receipt = clone(receipt);
     return this.persist((state) => {
       const prior = state.receipts[receipt.action_id] ?? state.retired?.[receipt.action_id]?.receipt;
+      const reference = state.proposals[receipt.action_id] ?? prior;
+      if (!reference) throw new Error("恢复回执缺少对应提议");
+      assertReceipt(receipt, reference);
       if (prior) return { ...prior, replayed: true };
-      state.receipts[receipt.action_id] = clone(receipt);
+      state.receipts[receipt.action_id] = receipt;
       return receipt;
     });
   }

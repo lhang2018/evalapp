@@ -5,6 +5,8 @@ export interface DeviceTaskExecution {
   proposal: DeviceActionProposal;
   phase: "prepared" | "claimed" | "awaiting_acceptance" | "needs_review" | "cancelled" | "accepted";
   queued_receipt?: string;
+  /** Minimal receipt projection seen when the user explicitly accepted the result. */
+  accepted_receipt?: string;
 }
 
 export type PrivacyLevel = "standard" | "sensitive" | "secret" | "private";
