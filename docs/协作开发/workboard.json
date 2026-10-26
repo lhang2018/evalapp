@@ -7838,13 +7838,24 @@
    "workpackage": "ALN-25",
    "title": "主动任务准入执行与真实资源非干扰",
    "stream": "runtime",
-   "owner": null,
+   "owner": "dsh-lead",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "a3e05d30748e15d29cd40bb85e8d7a7a2d3afe63",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-26",
+     "scope": "主动任务准入执行：ProactiveExecutionService 把 may_start/defer/stop 接实际提交——无高价值/off/资源高压/无进展停止/未知成本→零启动零提交；reserve→dispatch→submit，失败 refund/未启动释放；app 装配 proactivity+proactive_execution，提交走 controller.submit_task(origin=opportunity、已授权Goal、wait=True)；专项12 passed、相关43 passed、真实宿主CPU压力让出且核心任务状态不变、全量2508/0/1、实测8项全过",
+     "source_commit": "4c2a942ee9720bb16a02c10a082b8ab7c100a2f1",
+     "functional_commit": "4c2a942ee9720bb16a02c10a082b8ab7c100a2f1",
+     "source_tree": "eb7743f267af26dcc05fc00c00b3749689bb3f00",
+     "result": "策略→实际启动/预留/停止闭环与App入口交付；缺口：App未装配真实15-D决策器与预算账户、策略下发/UI未接、真实LLM质量对照与生产证据未采；不冒称整包关闭",
+     "log": ".planning/2026-10-26-aln25c/proactive-execution-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-25-C-主动任务准入执行与真实资源非干扰.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/25-C-主动任务准入执行与真实资源非干扰.md",
    "shared_files": [
     "evoagent/core/controller.py",
@@ -7864,13 +7875,29 @@
     "G5"
    ],
    "priority": "P1",
-   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
-   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "next_step": "待独立复核：拒绝/未知成本/预留与失败释放/App 真实提交 origin=opportunity 且绑定授权Goal/关闭档位零新增/真实宿主压力让出且核心任务不改写证据见交付文档与 .planning/2026-10-26-aln25c/；审阅人未定不自批；真实15-D决策器与预算账户装配、策略下发/UI、真实LLM质量对照属后续",
+   "working_basis": "以a3e05d30748e15d29cd40bb85e8d7a7a2d3afe63（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终需固定宿主真实压力数据",
    "split_round": "STATUS-SPLIT-2026-10-26",
    "backlog_refs": [
     "ZG-08"
-   ]
+   ],
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户指示继续；25-B/30-A 接受后 25-C 解锁为唯一 READY 卡"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "claimed",
+     "to": "review",
+     "reason": "准入执行/预留释放/App 入口完成；真实决策器与预算账户装配留缺口"
+    }
+   ],
+   "delivered_commit": "4c2a942ee9720bb16a02c10a082b8ab7c100a2f1",
+   "delivery": "docs/协作开发/交付/ALN-25-C-主动任务准入执行与真实资源非干扰.md"
   },
   {
    "id": "ALN-26-C",
