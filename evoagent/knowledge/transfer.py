@@ -145,3 +145,19 @@ def evaluate_transfer(
         degradations=degradations,
         reasons=tuple(reasons),
     )
+
+
+def outcomes_from_tasks(tasks, *, expert: str):
+    """把**真实任务记录**转成迁移评估输入（通过与否取任务自身状态）。"""
+    if not isinstance(expert, str) or not expert.strip():
+        raise ValueError("expert 必填")
+    outcomes = []
+    for task in tasks:
+        status = getattr(task, "task_status", "")
+        status = getattr(status, "value", status)
+        passed = str(status).strip().lower() in {
+            "succeeded", "success", "done", "completed", "accepted", "verified"}
+        outcomes.append(TaskOutcome(
+            task_id=str(getattr(task, "task_id", "")),
+            expert=expert.strip(), passed=bool(passed)))
+    return outcomes

@@ -1,0 +1,48 @@
+{
+ "task": "ALN-27-C 知识持久化真实注入与迁移质量验证实测",
+ "date": "2026-10-26",
+ "context": {
+  "memory_lines": [
+   "[knowledge v2 source=run-42 confidence=0.9] 经验-good"
+  ],
+  "knowledge_manifest": [
+   {
+    "kind": "knowledge",
+    "source": "run-42",
+    "source_version": 2
+   }
+  ]
+ },
+ "restart": {
+  "version": 2,
+  "revoked": true
+ },
+ "migration": {
+  "status": "migrated",
+  "count": 2,
+  "revoked": 1,
+  "digest": "53471f850361c24375c5c0cad0c2afa67c33987d90af981cf9c7054b1f4a7098"
+ },
+ "transfer": {
+  "improved": "improved",
+  "degraded": "degraded",
+  "unproven": "unproven",
+  "basis": "task_quality"
+ },
+ "checks": {
+  "context_injects_knowledge": true,
+  "manifest_has_source_and_version": true,
+  "revoked_not_in_messages": true,
+  "restart_keeps_version": true,
+  "restart_keeps_revocation": true,
+  "migration_digest_verified": true,
+  "migration_preserves_revoke": true,
+  "migration_idempotent": true,
+  "migration_conflict_refused": true,
+  "real_task_quality_improved": true,
+  "degradation_visible": true,
+  "hit_rate_alone_unproven": true
+ },
+ "all_checks_pass": true,
+ "boundary": "真实 SQLite/App/任务记录与真实上下文装配；未接真实 LLM 与生产迁移"
+}

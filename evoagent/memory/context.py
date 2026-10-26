@@ -121,8 +121,12 @@ class AssembledContext:
 
 class ContextAssembler:
     def __init__(self, memory_store: Optional[MemoryStore] = None,
-                 budget: Optional[ContextBudget] = None):
+                 budget: Optional[ContextBudget] = None,
+                 knowledge_store: Optional[Any] = None,
+                 knowledge_min_confidence: float = 0.5):
         self.memory = memory_store
+        self.knowledge = knowledge_store
+        self.knowledge_min_confidence = float(knowledge_min_confidence)
         self.budget = budget or ContextBudget()
 
     def assemble(self, goal: str, *, intent: str = "general",
@@ -188,6 +192,20 @@ class ContextAssembler:
                 ctx.memory_used += 1
                 self.memory.record_use(m.memory_id)
 
+        knowledge_pairs: List[Any] = []
+        knowledge_skipped = 0
+        if self.knowledge is not None:
+            from ..knowledge.applicability import plan_injection
+            plan = plan_injection(
+                self.knowledge, domain=domain,
+                min_confidence=self.knowledge_min_confidence)
+            knowledge_skipped = len(plan.skipped)
+            for entry in plan.injected:
+                text = (f"[knowledge v{entry.version} source={entry.source} "
+                        f"confidence={entry.confidence}] {entry.content}")
+                ctx.memories.append(text)
+                knowledge_pairs.append((text, entry))
+
         # 结果同样视为外部数据：可疑指令加标记但不丢弃（证据仍需保留）
         results = []
         for r in ctx.recent_results:
@@ -232,6 +250,7 @@ class ContextAssembler:
             ctx, goal=goal, intent=intent, domain=domain,
             scope_key=scope_key, limit=limit, identity=identity,
             grant=grant, memory_pairs=memory_pairs, rejected=rejected,
+            knowledge_pairs=knowledge_pairs,
             pre_memories=pre_memories, pre_results=pre_results,
             pre_tool_docs=pre_tool_docs, pre_evidence=pre_evidence,
             notes=notes)
@@ -242,6 +261,7 @@ class ContextAssembler:
                         limit: int, identity: Optional[MemoryIdentity],
                         grant: Optional[AccessGrant], memory_pairs: List[Any],
                         rejected: List[Dict[str, Any]],
+                        knowledge_pairs: List[Any] = (),
                         pre_memories: List[str], pre_results: List[str],
                         pre_tool_docs: List[str], pre_evidence: List[str],
                         notes: List[str]) -> ContextManifest:
@@ -282,6 +302,18 @@ class ContextAssembler:
                 included=False, created_at=item.created_at,
                 conflict_ids=getattr(item, "conflict_ids", ())))
 
+        for i, (text, entry) in enumerate(knowledge_pairs):
+            included = text in retained
+            if included:
+                retained.remove(text)
+            entries.append(make_entry(
+                "knowledge", entry.content, index=i + 1,
+                source=entry.source, source_id=entry.entry_id,
+                source_version=entry.version,
+                reason="knowledge_injection" if included
+                else "dropped_by_compression",
+                included=included, created_at=entry.created_at))
+
         _append_queue(entries, "result", pre_results, ctx.recent_results,
                       "最近执行结果")
         for i, criterion in enumerate(ctx.acceptance_criteria):
@@ -313,6 +345,7 @@ class ContextAssembler:
                      if grant is not None else None,
             "memory_candidates": ctx.memory_candidates,
             "memory_used": ctx.memory_used,
+            "knowledge_injected": len(knowledge_pairs),
         }
         return ContextManifest.build(
             assembly=assembly, budget_tokens=max(1, (limit + 3) // 4),

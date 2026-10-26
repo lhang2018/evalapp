@@ -130,14 +130,14 @@ class App:
                                          memory=self.memory,
                                          releases=self.releases)
         self.credentials = CredentialRegistry()
-        self.knowledge = KnowledgeStore()
+        self.knowledge = KnowledgeStore(self.db._conn)
         self.memory_control = MemoryControlService(self.memory, db=self.db,
                                                    audit=self.audit)
         self.assist = ProactiveAssistService(self.db,
                                              memory_control=self.memory_control)
 
         # 记忆与上下文
-        self.assembler = ContextAssembler(self.memory)
+        self.assembler = ContextAssembler(self.memory, knowledge_store=self.knowledge)
         self.memory_evaluator = MemoryEvaluator()
 
         # 模型（包装后记录调用成功/失败与时延，PRD 40）
