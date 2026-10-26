@@ -23,7 +23,7 @@ ACTIONS = ("download_started", "verified", "activation_pending", "activated",
            "activation_failed", "health_check", "rolled_back", "retired")
 # 这些动作意味着“该版本将被/已被安装实例使用”，必须绑定可用的生产签名身份
 TRUST_BOUND_ACTIONS = frozenset({
-    "verified", "activation_pending", "activated",
+    "verified", "activation_pending", "activated", "rolled_back",
 })
 SLOT_KINDS = {"capability", "workflow", "model_adapter"}
 APP_VERSION_RE = re.compile(r"^[vV]?(\d+)(?:\.(\d+))?(?:\.(\d+))?")
@@ -372,6 +372,17 @@ class ReleaseDelivery:
         data = dict(installation.get("data") or {})
         resolved_release = release_id or target or current
 
+        # A rollback uses the destination's trust, not the failed source's.
+        # Normalize it before either validation or receipt fields are built.
+        if action == "rolled_back":
+            resolved_release = to_release_id or data.get("last_known_good_release_id")
+            if not resolved_release:
+                return {"ok": False, "error": "没有可用回滚目标",
+                        "installation": installation}
+            if resolved_release not in self.releases.manifests:
+                return {"ok": False, "error": "回滚目标版本不存在",
+                        "installation": installation}
+
         # 回执信任绑定（ALN-11-P）：身份与制品摘要一律以服务端清单为准，
         # 不采信客户端自报值；自报密钥与清单不一致即拒绝。
         manifest = (self.releases.manifests.get(resolved_release)
@@ -422,16 +433,9 @@ class ReleaseDelivery:
             elif target == resolved_release:
                 target = None
         elif action == "rolled_back":
-            rollback = to_release_id or data.get("last_known_good_release_id")
-            if not rollback:
-                return {"ok": False, "error": "没有可用回滚目标",
-                        "installation": installation}
-            if rollback not in self.releases.manifests:
-                return {"ok": False, "error": "回滚目标版本不存在",
-                        "installation": installation}
             data["last_rollback_reason"] = reason
             data["last_rolled_back_at"] = time.time()
-            current, target, status = rollback, None, "rolled_back"
+            current, target, status = resolved_release, None, "rolled_back"
         elif action == "activation_failed":
             data["last_failure_reason"] = reason
             status = "failed"

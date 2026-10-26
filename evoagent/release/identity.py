@@ -251,6 +251,9 @@ class TrustedIdentity:
             "algorithm": self.algorithm,
             "n": self.modulus,
             "e": self.exponent,
+            # Complete exports must not turn revoked identities back into
+            # usable client keys. Keep lifecycle details/reasons server-side.
+            "revoked": self.revoked,
         }
         if self.not_before is not None:
             record["not_before"] = self.not_before
