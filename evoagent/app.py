@@ -236,6 +236,13 @@ class App:
         self.goal_scheduler = GoalScheduler(
             self.goal_governor, db=self.db, bus=self.bus,
             owner_id="host_goal_scheduler")
+        # ALN-09-I：受控候选评测入口（复用资产库/隔离宿主/基准/问题队列）
+        from .assets.repository import AssetRepository
+        from .integration.candidate_execution import CandidateEvaluationService
+        self.candidate_execution = CandidateEvaluationService(
+            AssetRepository(self.db._conn),
+            queue=getattr(self.evolution, "problem_queue", None),
+            releases=self.releases, source="host/candidate-execution")
 
         # 评测器依赖运行时执行入口；在控制器之后注入以打破循环依赖
         self.evaluator = Evaluator(

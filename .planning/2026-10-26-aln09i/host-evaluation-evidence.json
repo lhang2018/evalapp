@@ -1,0 +1,80 @@
+{
+ "task": "ALN-09-I 候选宿主消费与队列管理入口实测",
+ "date": "2026-10-26",
+ "improved": {
+  "candidate_id": "cand_ok",
+  "verdict": "improved",
+  "evidence_digest": "8f40789bf6e789eb9ff60b2910d83c44d20d2e553ebdc8b85e84afc564cb281c",
+  "auto_published": false,
+  "release_before": null,
+  "release_after": null,
+  "baseline": {
+   "asset_ref": "base.pack@1.0.0",
+   "asset_id": "base.pack",
+   "version": "1.0.0",
+   "content_digest": "abf83564992427a0218a968002a98b85c24877c6320ed44430b942e96e4adc80",
+   "entry": "main.py",
+   "file_count": 1
+  },
+  "candidate": {
+   "asset_ref": "cand.pack@2.0.0",
+   "asset_id": "cand.pack",
+   "version": "2.0.0",
+   "content_digest": "0c7a324fcfae05bd8f2653572acd5dd8221253ea75e97ac227ed55023f504f47",
+   "entry": "main.py",
+   "file_count": 1
+  },
+  "release_decision": {
+   "allow": true,
+   "blockers": [],
+   "verdict": "improved",
+   "evidence_digest": "8f40789bf6e789eb9ff60b2910d83c44d20d2e553ebdc8b85e84afc564cb281c"
+  },
+  "host": {
+   "benchmark_version": "host-bench/1",
+   "timeout_s": 5.0,
+   "repeat": 2,
+   "source": "candidate-host/09-I"
+  }
+ },
+ "regressed": {
+  "verdict": "regressed",
+  "release_decision": {
+   "allow": false,
+   "blockers": [
+    "候选在必跑用例上回归",
+    "候选回归: c1, c2"
+   ],
+   "verdict": "regressed",
+   "evidence_digest": "e7c3b77a118a68742c2b209bbd316138c84a0ac6a34f4ccd942e332a3fc49cd0"
+  }
+ },
+ "timeout": {
+  "verdict": "inconclusive",
+  "release_decision": {
+   "allow": false,
+   "blockers": [
+    "必跑用例覆盖不完整",
+    "覆盖率低于阈值 0.80",
+    "收益证据不足（inconclusive）"
+   ],
+   "verdict": "inconclusive",
+   "evidence_digest": "adf49755d925a709f0781609f2091d79c70b2248d8551368d220db5849336ac9"
+  }
+ },
+ "refusals": {
+  "missing_asset": "CandidateAssetError",
+  "empty_cases": "CandidateExecutionError"
+ },
+ "checks": {
+  "improved_verdict": true,
+  "improved_publish_gate_allows_but_no_autopublish": true,
+  "identity_bound": "0c7a324fcfae05bd8f2653572acd5dd8221253ea75e97ac227ed55023f504f47",
+  "host_bound": true,
+  "regressed_blocked": true,
+  "timeout_attributed_no_publish": true,
+  "missing_asset_refused": true,
+  "empty_cases_refused": true
+ },
+ "all_checks_pass": true
+}

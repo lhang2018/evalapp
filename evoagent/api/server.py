@@ -46,6 +46,7 @@ from . import feedback_api  # ALN-29-C 用户反馈与运行证据关联
 from . import artifacts_api  # ALN-24-A 任务产物列表与预览
 from . import benefit_api  # ALN-29-D 用户收益说明（候选/评测/发布/观测四阶段）
 from . import evidence_api  # ALN-16-Q 聚合证据查询/受控导出下载/删除执行
+from . import candidate_host_api  # ALN-09-I 候选宿主评测与问题队列管理
 from .routes import RouteContext
 from .diagnostics_import import (
     MAX_PACKAGE_BYTES,
