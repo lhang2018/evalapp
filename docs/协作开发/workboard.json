@@ -7279,13 +7279,24 @@
    "workpackage": "ALN-09",
    "title": "真实候选宿主消费与队列管理入口",
    "stream": "assets",
-   "owner": null,
+   "owner": "dsh-lead",
    "reviewer": null,
-   "branch": null,
-   "base_commit": null,
-   "status": "unclaimed",
+   "branch": "feature/user-direction",
+   "base_commit": "1616e3e5e5f972023df88e1d9b60bc6cd5c9291c",
+   "status": "review",
    "blocker": null,
-   "evidence": [],
+   "evidence": [
+    {
+     "date": "2026-10-26",
+     "scope": "候选宿主消费与队列管理入口：新增 CandidateEvaluationService(复用09-H host/queue + 10-E bench)：只消费摘要/版本校验真实资产、结果绑定baseline/candidate/dataset/host、评测成功不自动发布(release_before==release_after)、超时/回退如实归因；队列只读视图+过期租约恢复；新增3个admin API端点；专项6 passed、实测8项全过、全量2374/0/2(复跑，首跑1例网络抖动已单测确认)",
+     "source_commit": "1d758e9adb762aa839b4c9c4ffb4379cb1bb1680",
+     "functional_commit": "1d758e9adb762aa839b4c9c4ffb4379cb1bb1680",
+     "source_tree": "1dcb9cc447fd777f9e7cd28f9508dcd4544e595e",
+     "result": "受控候选评测入口与队列管理面交付；缺口：dataset_ref未做仓库级校验、CLI/App入口未接、手动重试/放弃未开放、多进程/生产并发证据未采",
+     "log": ".planning/2026-10-26-aln09i/host-evaluation-evidence.json",
+     "delivery": "docs/协作开发/交付/ALN-09-I-真实候选宿主消费与队列管理入口.md"
+    }
+   ],
    "card": "docs/协作开发/任务卡/09-I-真实候选宿主消费与队列管理入口.md",
    "shared_files": [
     "evoagent/evolution/controller.py",
@@ -7304,14 +7315,30 @@
     "G3"
    ],
    "priority": "P1",
-   "next_step": "按本卡来源、依赖与写入边界认领；已交付待审接口可用于准备，正式验收须实际消费证据",
-   "working_basis": "用户要求核对新增状态并拆需求；0e1b4fd61c9f616f9f9fe560b39f3d759d7437cd为本次拆分来源锚点，尚未认领，不预填开发base_commit",
+   "next_step": "待独立复核：只消费校验后真实资产/结果绑定身份与宿主/成功不自动发布/超时回退归因/篡改拒绝/API角色/队列过期租约恢复证据见交付文档与 .planning/2026-10-26-aln09i/；审阅人未定不自批；dataset仓库校验、CLI/App入口、生产并发证据属后续，进化整包不关闭",
+   "working_basis": "以1616e3e5e5f972023df88e1d9b60bc6cd5c9291c（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
    "split_round": "STATUS-SPLIT-2026-10-26",
    "backlog_refs": [
     "ZG-01",
     "ZG-11"
-   ]
+   ],
+   "ownership_history": [
+    {
+     "date": "2026-10-26",
+     "from": "待认领",
+     "to": "dsh-lead",
+     "reason": "用户指示继续、按优先级顺序认领；09-I 为 P1 READY"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "claimed",
+     "to": "review",
+     "reason": "受控评测入口与队列管理完成并通过全量复跑；dataset校验/CLI/生产证据留缺口"
+    }
+   ],
+   "delivered_commit": "1d758e9adb762aa839b4c9c4ffb4379cb1bb1680",
+   "delivery": "docs/协作开发/交付/ALN-09-I-真实候选宿主消费与队列管理入口.md"
   },
   {
    "id": "ALN-18-H",
