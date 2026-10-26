@@ -232,6 +232,13 @@ class App:
         from .goals.scheduler import GoalScheduler
         self.goal_governor = GoalGovernor(self.db, controller=self.controller)
         self.opportunities = OpportunityService(self.db)
+        # ALN-25-C：主动任务准入执行（策略→实际提交入口；资源决策器由宿主注入）
+        from .goals.proactivity import ProactivityGovernor
+        from .goals.proactive_execution import ProactiveExecutionService
+        self.proactivity = ProactivityGovernor(level="normal")
+        self.proactive_execution = ProactiveExecutionService(
+            self.proactivity, submit=self._submit_proactive_task)
+
         # ALN-13-S：长期目标周期调度接入宿主（CLI/API 可启停与观测）
         self.goal_scheduler = GoalScheduler(
             self.goal_governor, db=self.db, bus=self.bus,
@@ -340,6 +347,22 @@ class App:
                 continue
             if wf is not None:
                 self._workflows[wid] = wf
+
+    def _submit_proactive_task(self, *, actor: str, reason: str,
+                               idempotency_key: str, opportunity_id: str,
+                               payload: Dict[str, Any]) -> Dict[str, str]:
+        """既有执行通道：以 opportunity origin 提交，不新建第二套执行权威。"""
+        goal = str((payload or {}).get("goal") or "").strip()
+        if not goal:
+            raise ValueError("主动任务缺少 goal")
+        goal_id = str((payload or {}).get("goal_id") or "").strip() or None
+        task = self.controller.submit_task(
+            goal, origin="opportunity", wait=True, source="opportunity",
+            goal_id=goal_id, principal_id="local:host",
+            manifest_extras={"reason": reason,
+                             "opportunity_id": opportunity_id,
+                             "idempotency_key": idempotency_key})
+        return {"task_id": task.task_id}
 
     def _wf_lookup(self, wid: str):
         return self._workflows.get(wid)

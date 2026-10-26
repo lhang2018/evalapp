@@ -1,0 +1,50 @@
+{
+ "task": "ALN-25-C 主动任务准入执行与真实资源非干扰实测",
+ "date": "2026-10-26",
+ "started": {
+  "started": true,
+  "task_id": "052c8bc49510",
+  "reservation_id": "",
+  "refunded": false,
+  "core_state_touched": false,
+  "reason": ""
+ },
+ "denied_off": {
+  "started": false,
+  "task_id": null,
+  "reservation_id": null,
+  "refunded": false,
+  "core_state_touched": false,
+  "reason": "主动帮助已关闭（off 档）",
+  "safety_notice": "主动帮助已关闭：不再自动分析或发起建议任务；已保存的机会与建议保留可查，随时可重新开启。",
+  "zero_new_non_essential_tasks": true
+ },
+ "stress": {
+  "started": false,
+  "task_id": null,
+  "reservation_id": null,
+  "refunded": false,
+  "core_state_touched": false,
+  "reason": "资源压力让位核心任务或状态未知: 资源压力达到绝对上限，全部任务暂缓",
+  "safety_notice": null,
+  "zero_new_non_essential_tasks": true
+ },
+ "host": {
+  "machine": "DESKTOP-4O44IBU",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "cpu_count": 16,
+  "psutil": "7.0.0"
+ },
+ "checks": {
+  "app_opportunity_task_started": true,
+  "task_origin_opportunity": true,
+  "task_bound_to_authorized_goal": true,
+  "off_blocks_new_task": true,
+  "off_returns_safety_notice": true,
+  "stress_defers_proactive": true,
+  "stress_reason_mentions_resource": true,
+  "core_task_state_untouched": true
+ },
+ "all_checks_pass": true,
+ "boundary": "组件+App执行入口+真实宿主CPU压力；模型为本地Mock，未做真实LLM质量对照、未接服务端策略下发/UI；核心任务状态按任务记录核对"
+}
