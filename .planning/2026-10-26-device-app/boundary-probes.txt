@@ -1,0 +1,74 @@
+(node:75900) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/deviceTaskApp.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ unknown and compound goals stay on the existing planner path (1.3759ms)
+✔ prepare persists exact identity without dispatch or server submission (1.9315ms)
+✔ end-to-end local orchestration separates action verification from user acceptance (3.1329ms)
+✔ refusing authorization leaves the prepared task unclaimed (0.3391ms)
+✔ restart and repeated refresh never dispatch again or enqueue duplicate receipts (1.8062ms)
+✔ concurrent UI execution claims the prepared task once (0.7553ms)
+✔ cancellation while confirmation is pending prevents subsequent dispatch (0.4975ms)
+✔ an interrupted claimed task is never dispatched on restart (0.6618ms)
+✔ task storage failure before claim prevents any device dispatch (0.2799ms)
+✔ receipt survives projection write failure and can be published after restart (0.8575ms)
+✔ unverified action cannot be promoted to task success or retried (0.78ms)
+✔ device marker prevents even stale submission statuses from reaching server (0.941ms)
+✔ leaving foreground during confirmation does not claim or execute the task (0.2242ms)
+✔ real sync engine retries metadata only and never submits the device task (1.8555ms)
+✔ unknown receipt cannot be forged by corrupting the action ledger (0.2435ms)
+✔ foreground loss after durable claim remains pending without dispatch (0.2356ms)
+✔ a proposal changed during confirmation cannot use the old consent (0.1918ms)
+✔ a truthy consent value is not explicit approval (0.1108ms)
+✔ a full critical event queue preserves the device receipt until space is available (10.5727ms)
+✖ a reconciled receipt replaces the older unknown projection without another action (1.3878ms)
+✖ two repository instances cannot overwrite each other's task updates (4.1877ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 19
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 165.0564
+
+✖ failing tests:
+
+test at test\offline\deviceTaskApp.test.ts:298:1
+✖ a reconciled receipt replaces the older unknown projection without another action (1.3878ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      'unverified',
+  -   'verified'
+    ]
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskApp.test.ts:307:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'unverified' ],
+    expected: [ 'unverified', 'verified' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test\offline\deviceTaskApp.test.ts:311:1
+✖ two repository instances cannot overwrite each other's task updates (4.1877ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 2
+  
+      at TestContext.<anonymous> (file:///E:/evalapp/android-app/test/offline/deviceTaskApp.test.ts:326:10)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,4 +1,20 @@
-# ALN-12-E 自然语言任务提议与回执投影
+# ALN-12-E 自然语言本机任务与回执
+
+## 当前交付（2026-10-26）
+
+增量提交 `c2e6871d1bc3c0011a43788d3dc2f0089dc76fbc`，执行者 codex-runtime。状态 review，原作者/审阅历史保留。
+
+- App提交入口已挂载DeviceTaskService：精确的单一“打开设置”请求保存为本机任务，其他请求保持原规划路径，不猜测任意点击。
+- 用户在任务卡明确确认后，经既有executeProposal/TaskActionLedger/DeviceBroker/NativeDeviceTransport下发。回执持久展示，verified后仍待用户确认成果，之后才标记本地完成，不伪造服务端SUCCEEDED。
+- 本机任务标记execution_target=device，排除服务端提交/重提/轮询。未知或claimed中断只读取回执，不自动重放；prepared阶段可取消。
+- 回执最小投影经既有队列和/events/sync上传，参数/消息/证据正文留本机。以投影签名去重，状态变化可再次发布。元数据接收不等于服务端核验成果。
+- OfflineRepository按同一KV对象和键共享串行写入，修复多实例丢写；不提供跨进程事务。
+
+固定提交客户端 **405 passed**、TypeScript退出码0、后端事件同步 **13 passed**。新增本机编排21项集成测试，原生模块为替身；App挂载经类型检查。未构建APK、未操作真机、未运行RN界面自动化，整包不关闭。仅交付“打开设置”本机纵切片，其他动作、多步骤/服务端计划驱动设备、文件成果、人工裁决及真机验证仍保留。
+
+详见[本机任务App挂载报告](../验收/2026-10-26-12E本机任务App挂载.md)及 `.planning/2026-10-26-device-app/committed-evidence.json`。
+
+## 以下为历史交付范围（已由上述增量接续）
 
 原实现07edc6ba5ce4f035d0a3f3bdba8b67245c8e485f；审查修复a1b3a3183b057b4e72a50677a703555a05ba4acf。此文补齐台账原先引用但缺失的交付文件，代码状态review，新增修复待独立复核。
 

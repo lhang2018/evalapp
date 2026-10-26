@@ -1,0 +1,21 @@
+{
+  "source_commit": "c2e6871d1bc3c0011a43788d3dc2f0089dc76fbc",
+  "source_tree": "4b9e729c5802a30c6d2db7c6a6635abe07d44afa",
+  "client_passed": 405,
+  "typecheck": "passed",
+  "backend_related_passed": 13,
+  "backend_full_rerun": false,
+  "device_verified": false,
+  "scope": "本机打开设置纵切片已挂载App；非真机/非任意多步骤或服务端设备规划验收",
+  "new_temporary_data_removed": true,
+  "evidence_sha256_lf": {
+    "validation.json": "1010a640be487a1b446f5641204907dc07bce979759ba774db1734430f0e3c24",
+    "backend-validation.json": "78b4ffa23e358f627048e19647e6123b4800663cbddf99273749f76b9b55ac34",
+    "initial-tests.txt": "d1d6b625b3f091886db9b8d3c53c707d0aa5aae3627a6bc45194a7c820404910",
+    "boundary-probes.txt": "f60d44aea7ea4de7fff5f7184372fd4b31e673ead11be437292964e15308dcd9",
+    "focused-tests.txt": "3675af0987d5d9c5479578713f50f04a4605a29d53ee16c15479557499426898",
+    "client-tests.txt": "f71f5d809f42f8871f7a96f240124031778aca45ec0a2473e623eefa45a8fc25",
+    "typecheck.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend-tests.txt": "093a433d23e6d00dcafd996cbb72b3b0579d84029430e04adba3f5b3da742a1c"
+  }
+}

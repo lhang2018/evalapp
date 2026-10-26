@@ -1,0 +1,25 @@
+(node:31112) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/deviceTaskApp.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ unknown and compound goals stay on the existing planner path (1.3255ms)
+✔ prepare persists exact identity without dispatch or server submission (1.5271ms)
+✔ end-to-end local orchestration separates action verification from user acceptance (3.3964ms)
+✔ refusing authorization leaves the prepared task unclaimed (0.3232ms)
+✔ restart and repeated refresh never dispatch again or enqueue duplicate receipts (1.1268ms)
+✔ concurrent UI execution claims the prepared task once (1.2033ms)
+✔ cancellation while confirmation is pending prevents subsequent dispatch (0.5101ms)
+✔ an interrupted claimed task is never dispatched on restart (0.6399ms)
+✔ task storage failure before claim prevents any device dispatch (0.269ms)
+✔ receipt survives projection write failure and can be published after restart (0.8728ms)
+✔ unverified action cannot be promoted to task success or retried (0.7024ms)
+✔ device marker prevents even stale submission statuses from reaching server (0.4491ms)
+✔ leaving foreground during confirmation does not claim or execute the task (0.1737ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 146.7556

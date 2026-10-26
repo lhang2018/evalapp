@@ -1,0 +1,69 @@
+(node:15204) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/mainchainReview.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ confirmation callback cannot rewrite the action identity or nested parameters (2.1871ms)
+✔ non-boolean confirmation "false" cannot authorize execution (0.28ms)
+✔ non-boolean confirmation "true" cannot authorize execution (0.1514ms)
+✔ non-boolean confirmation 1 cannot authorize execution (0.1533ms)
+✔ non-boolean confirmation {} cannot authorize execution (0.2287ms)
+✔ safety stop prevents dispatch after waiting on availability (0.8661ms)
+✔ safety stop prevents dispatch after waiting on confirmation (0.3333ms)
+✔ native truthy ok "false" is not verified success (0.2294ms)
+✔ native truthy ok "true" is not verified success (0.1075ms)
+✔ native truthy ok 1 is not verified success (0.1303ms)
+✔ native truthy ok {} is not verified success (0.0974ms)
+✔ native service availability must be literal true before dispatch (0.4544ms)
+(node:83856) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/device/notificationRecovery.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 没有标记存储时保持旧语义：同步已先行完成不补发 (0.9169ms)
+✔ 同步已先行完成时用持久化标记补发一次且不重复 (0.4305ms)
+✔ 本次跃迁仍会投递并写入标记（不因标记路径重复） (0.2053ms)
+✔ 投递失败不写标记，下次 run 重试 (0.2501ms)
+✔ 标记读取失败时退化为跃迁判断且不崩溃 (0.2198ms)
+✔ 已有持久标记会抑制陈旧快照中的重复跃迁 (0.1471ms)
+✔ 首次初始化只基线化历史终态，后续新终态仍会通知 (0.2479ms)
+✔ 并发通知器共享串行门禁，不会同时穿过标记检查 (0.702ms)
+✔ 无标记存储时 initializeExisting 是安全空操作 (0.136ms)
+✔ initializeExisting 幂等：基线就绪后不再重复写标记 (0.1772ms)
+✔ 基线写失败不抛错且保持未就绪，恢复后补发可用 (0.1821ms)
+✔ 基线读取失败时补发被禁用但不崩溃 (0.1008ms)
+✔ 任务标记读取失败但基线就绪时仍按跃迁投递 (0.1578ms)
+✔ 基线读取暂时失败不得把待补发任务误写为历史已通知 (0.1698ms)
+✔ 系统拒绝投递不写标记，下一通知器仍可补发 (0.1388ms)
+✔ 系统接受后标记写失败允许重试，不能宣称恰好一次 (0.234ms)
+(node:54448) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/android-app/test/offline/deviceTaskApp.test.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\evalapp\android-app\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ unknown and compound goals stay on the existing planner path (1.3017ms)
+✔ prepare persists exact identity without dispatch or server submission (1.8559ms)
+✔ end-to-end local orchestration separates action verification from user acceptance (3.3189ms)
+✔ refusing authorization leaves the prepared task unclaimed (0.3419ms)
+✔ restart and repeated refresh never dispatch again or enqueue duplicate receipts (1.798ms)
+✔ concurrent UI execution claims the prepared task once (0.8335ms)
+✔ cancellation while confirmation is pending prevents subsequent dispatch (0.5787ms)
+✔ an interrupted claimed task is never dispatched on restart (0.6757ms)
+✔ task storage failure before claim prevents any device dispatch (0.2927ms)
+✔ receipt survives projection write failure and can be published after restart (0.929ms)
+✔ unverified action cannot be promoted to task success or retried (0.7542ms)
+✔ device marker prevents even stale submission statuses from reaching server (0.5059ms)
+✔ leaving foreground during confirmation does not claim or execute the task (0.1941ms)
+✔ real sync engine retries metadata only and never submits the device task (1.8874ms)
+✔ unknown receipt cannot be forged by corrupting the action ledger (0.2782ms)
+✔ foreground loss after durable claim remains pending without dispatch (0.2361ms)
+✔ a proposal changed during confirmation cannot use the old consent (0.2121ms)
+✔ a truthy consent value is not explicit approval (0.1186ms)
+✔ a full critical event queue preserves the device receipt until space is available (12.3705ms)
+✔ a reconciled receipt replaces the older unknown projection without another action (0.8441ms)
+✔ two repository instances cannot overwrite each other's task updates (3.6441ms)
+ℹ tests 49
+ℹ suites 0
+ℹ pass 49
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 197.0117
