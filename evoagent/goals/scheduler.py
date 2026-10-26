@@ -31,6 +31,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Dict, Iterator, List, Optional
 
 from ..core.leases import LeaseLost
+from ..core.task import Task, TERMINAL_STATES
 from .store import ACTIVE, TERMINAL, GoalStore, _json
 
 SCHEDULED_PREFIX = "sched"
@@ -53,6 +54,21 @@ class SchedulerPolicy:
     failure_backoff_seconds: float = 120.0
     max_backoff_seconds: float = 3600.0
 
+    def __post_init__(self):
+        for key, value in asdict(self).items():
+            try:
+                valid = type(value) in (int, float) and math.isfinite(value) and value > 0
+            except OverflowError:
+                valid = False
+            if not valid:
+                raise ValueError(key + " must be a positive finite number")
+        for key in ("max_goals_per_tick", "max_steps_per_goal", "primary_busy_limit"):
+            value = getattr(self, key)
+            if type(value) is not int or not 1 <= value <= 1000:
+                raise ValueError(key + " must be an integer in 1..1000")
+        if self.max_steps_per_goal > 32:
+            raise ValueError("max_steps_per_goal must be <= 32")
+
     @classmethod
     def parse(cls, values: Optional[Dict[str, Any]]) -> "SchedulerPolicy":
         if values is None:
@@ -61,19 +77,7 @@ class SchedulerPolicy:
             raise ValueError("scheduler policy must be a mapping")
         if set(values) - set(cls.__dataclass_fields__):
             raise ValueError("unknown scheduler policy field")
-        result = cls(**values)
-        for key, value in asdict(result).items():
-            if isinstance(value, bool) or not isinstance(value, (int, float)):
-                raise ValueError(key + " must be a number")
-            if not value > 0:
-                raise ValueError(key + " must be positive")
-        for key in ("max_goals_per_tick", "max_steps_per_goal", "primary_busy_limit"):
-            value = getattr(result, key)
-            if type(value) is not int or not 1 <= value <= 1000:
-                raise ValueError(key + " must be an integer in 1..1000")
-        if result.max_steps_per_goal > 32:
-            raise ValueError("max_steps_per_goal must be <= 32")
-        return result
+        return cls(**values)
 
 
 class GoalScheduler:
@@ -129,17 +133,32 @@ class GoalScheduler:
             pass
 
     # ---- 调度状态 ----
+    def _moment(self, now: Optional[float]) -> float:
+        value = self.clock() if now is None else now
+        try:
+            valid = type(value) in (int, float) and math.isfinite(value) and value >= 0
+        except OverflowError:
+            valid = False
+        if not valid:
+            raise ValueError("scheduler time must be a finite nonnegative number")
+        return float(value)
+
     def sync(self, *, now: Optional[float] = None) -> int:
         """为尚未登记调度的目标补行（首个 tick 立即到期）。
 
         非终态目标都登记：paused/blocked/review 的目标之后可能恢复，
         登记后每轮只记录跳过原因，不做任何推进。
         """
-        moment = self.clock() if now is None else float(now)
-        goals = [g for g in self.goals.list(limit=1000)
-                 if g["status"] not in TERMINAL]
+        moment = self._moment(now)
+        self.goals.expire_due()
         created = 0
         with self._write() as conn:
+            # Registration is a whole-ledger operation, not a bounded UI list.
+            terminal = sorted(TERMINAL)
+            placeholders = ",".join("?" for _ in terminal)
+            goals = conn.execute(
+                f"SELECT goal_id FROM goals WHERE status NOT IN ({placeholders}) ORDER BY goal_id",
+                terminal).fetchall()
             for goal in goals:
                 cursor = conn.execute(
                     "INSERT OR IGNORE INTO goal_schedules"
@@ -152,7 +171,7 @@ class GoalScheduler:
 
     def due(self, *, now: Optional[float] = None, limit: int = 100
             ) -> List[Dict[str, Any]]:
-        moment = self.clock() if now is None else float(now)
+        moment = self._moment(now)
         rows = self.db._conn.execute(
             "SELECT * FROM goal_schedules WHERE next_due_at<=?"
             " ORDER BY next_due_at ASC, goal_id ASC LIMIT ?",
@@ -160,7 +179,7 @@ class GoalScheduler:
         return [dict(row) for row in rows]
 
     def stats(self, *, now: Optional[float] = None) -> Dict[str, Any]:
-        moment = self.clock() if now is None else float(now)
+        moment = self._moment(now)
         rows = self.db._conn.execute(
             "SELECT COUNT(*) AS total,"
             " SUM(CASE WHEN next_due_at<=? THEN 1 ELSE 0 END) AS due,"
@@ -236,7 +255,15 @@ class GoalScheduler:
     # ---- 主任务负载守护 ----
     def primary_load(self) -> Dict[str, Any]:
         """当前主任务 / 派生在途计数（供守护与排障读取）。"""
-        tasks = self.db.list_tasks(limit=500)
+        terminal = sorted(status.value for status in TERMINAL_STATES)
+        placeholders = ",".join("?" for _ in terminal)
+        with self.db._lock:
+            # Filter terminal history before decoding, but never truncate the
+            # pending set: an old running task still owns host resources.
+            rows = self.db._conn.execute(
+                f"SELECT data FROM tasks WHERE status IS NULL OR status NOT IN ({placeholders})"
+                " ORDER BY created_at DESC", terminal).fetchall()
+        tasks = [Task.from_dict(json.loads(row["data"])) for row in rows]
         primary = [t for t in tasks
                    if t.origin in ("user", "scheduled") and not t.is_terminal()
                    and t.task_status.value in _PRIMARY_ACTIVE]
@@ -251,7 +278,7 @@ class GoalScheduler:
     def tick(self, *, now: Optional[float] = None,
              command_prefix: str = SCHEDULED_PREFIX) -> Dict[str, Any]:
         """执行一轮周期推进；返回本轮报告（可持久化/审计）。"""
-        moment = self.clock() if now is None else float(now)
+        moment = self._moment(now)
         slot = int(moment // self.policy.interval_seconds) if self.policy.interval_seconds else 0
         report: Dict[str, Any] = {
             "tick_id": f"tick_{slot}", "at": moment, "slot": slot,
