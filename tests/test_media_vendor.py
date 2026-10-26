@@ -147,8 +147,9 @@ def test_edit_allowed_and_refused_paths(vendor):
         client.edit_clip("clip_1", ["unknown-op"], actor="user-a", reason="x")
     with pytest.raises(MediaVendorError):
         client.edit_clip("missing", ["trim"], actor="user-a", reason="不存在")
-    assert client.spent_usd == 0.1  # 失败未扣费
-    assert client.failures[-1]["refunded"] is True
+    assert client.spent_usd == 0.1  # 已确认费用；未知费用单列预留，不冒称退款
+    assert client.failures[-1]["refunded"] is False
+    assert client.report()["reserved_usd"] == 0.05
     actions = [row["action"] for row in audit.rows]
     assert "media_edit_clip_failed" in actions
 
@@ -161,6 +162,10 @@ def test_vendor_failure_then_recovery(vendor):
     assert client.spent_usd == 0.0
     assert client.failures
     vendor.healthy = True
+    with pytest.raises(MediaVendorRefused):
+        client.render_clip("cat", duration_s=5, actor="user", reason="禁止盲重试")
+    client.reconcile_failure(0, actual_cost_usd=0, billing_ref="fixture-zero-charge",
+                             actor="user", reason="夹具账单核对，非真实退款")
     result = client.render_clip("cat", duration_s=5, actor="user", reason="恢复")
     assert result["ok"] is True
     assert client.spent_usd == 0.1

@@ -6,7 +6,7 @@
 
 - 只有配置了真实供应商（provider/base_url/api_key/model_version/预算/单价）
   才允许调用；缺失即拒绝，绝不默认放行或用假成功代替；
-- 费用按调用前预估 + 供应商回执对账；失败不扣预算（回滚），并记录失败审计；
+- 费用按调用前预留 + 供应商回执对账；发送后失败保留未知费用，核对账单后恢复；
 - 测试用本地 HTTP **夹具（fixture）** 供应商，明确标注为夹具，**不冒充**
   真实供应商/生产实测；真实供应商凭据与预算未提供前不冒称 19-A 关闭。
 """
@@ -14,14 +14,30 @@
 import base64
 import hashlib
 import json
+import math
 import os
+import threading
 import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
+from functools import wraps
 from typing import Any, Callable, Dict, List, Optional
 
 ALLOWED_EDITS = ("trim", "concat", "subtitle")
+
+
+def _finite_number(value: Any) -> bool:
+    return (not isinstance(value, bool) and isinstance(value, (int, float))
+            and math.isfinite(value))
+
+
+def _serialized_call(method):
+    @wraps(method)
+    def run(self, *args, **kwargs):
+        with self._lock:
+            return method(self, *args, **kwargs)
+    return run
 
 
 class MediaVendorError(RuntimeError):
@@ -47,7 +63,9 @@ class MediaVendorConfig:
     def ready(self) -> bool:
         return bool(self.provider.strip() and self.base_url.strip()
                     and self.api_key.strip() and self.model_version.strip()
-                    and self.budget_usd > 0 and self.price_per_second_usd > 0)
+                    and all(_finite_number(value) and value > 0 for value in (
+                        self.budget_usd, self.price_per_second_usd, self.timeout_s))
+                    and _finite_number(self.edit_price_usd) and self.edit_price_usd >= 0)
 
     def public(self) -> Dict[str, Any]:
         return {"provider": self.provider, "base_url": self.base_url,
@@ -109,12 +127,15 @@ class MediaVendorClient:
         self.spent_usd = 0.0
         self.calls: List[Dict[str, Any]] = []
         self.failures: List[Dict[str, Any]] = []
+        self._lock = threading.RLock()
 
     # ---- 内部：拒绝/审计/预算 ----
     def _require_ready(self) -> None:
         if not self.config.ready:
             raise MediaVendorRefused(
                 "未配置真实音视频供应商或预算；拒绝调用（不伪造产物）")
+        if any(row["cost_status"] == "unknown" for row in self.failures):
+            raise MediaVendorRefused("存在发送后未知费用，需先核对供应商账单，禁止直接重试")
 
     def _require_actor(self, actor: str, reason: str) -> None:
         if not isinstance(actor, str) or not actor.strip():
@@ -123,7 +144,11 @@ class MediaVendorClient:
             raise MediaVendorRefused("调用必须记录 reason")
 
     def _remaining(self) -> float:
-        return round(self.config.budget_usd - self.spent_usd, 6)
+        return round(self.config.budget_usd - self.spent_usd - self._reserved(), 6)
+
+    def _reserved(self) -> float:
+        return round(sum(row["reserved_usd"] for row in self.failures
+                         if row["cost_status"] == "unknown"), 6)
 
     def _audit(self, actor: str, action: str, detail: Dict[str, Any]) -> None:
         if self.audit is None:
@@ -156,14 +181,17 @@ class MediaVendorClient:
     def _record(self, actor: str, reason: str, action: str, asset: Dict[str, Any],
                 cost: float, response: Dict[str, Any]) -> Dict[str, Any]:
         vendor_cost = response.get("vendor_cost_usd")
-        if isinstance(vendor_cost, (int, float)) and not isinstance(vendor_cost, bool):
+        if "vendor_cost_usd" in response:
+            if not _finite_number(vendor_cost) or vendor_cost < 0:
+                raise MediaVendorError("供应商费用必须是有限非负数字")
             cost = round(float(vendor_cost), 6)
-        if cost < 0 or cost > self._remaining() + 1e-9:
+        if not _finite_number(cost) or cost < 0 or cost > self._remaining() + 1e-9:
             raise MediaVendorError("供应商回执费用超出剩余预算，拒绝记账")
         self.spent_usd = round(self.spent_usd + cost, 6)
         record = {"ok": True, "action": action, "provider": self.config.provider,
                   "model_version": self.config.model_version,
                   "asset": asset, "cost_usd": cost,
+                  "cost_basis": "vendor_receipt" if "vendor_cost_usd" in response else "estimate",
                   "remaining_usd": self._remaining(), "actor": actor,
                   "reason": reason, "at": self.clock()}
         self.calls.append(record)
@@ -175,14 +203,17 @@ class MediaVendorClient:
         return record
 
     def _fail(self, actor: str, reason: str, action: str,
-              error: Exception) -> None:
+              error: Exception, estimated_cost: float) -> None:
         entry = {"ok": False, "action": action, "actor": actor,
                  "reason": reason, "error": str(error), "at": self.clock(),
-                 "refunded": True}
+                 "refunded": False, "cost_status": "unknown",
+                 "reserved_usd": estimated_cost,
+                 "note": "本地失败不证明供应商未计费或已退款，需独立账单对账"}
         self.failures.append(entry)
         self._audit(actor, "media_" + action + "_failed", entry)
 
     # ---- 真实供应商操作 ----
+    @_serialized_call
     def render_clip(self, prompt: str, *, duration_s: float, actor: str,
                     reason: str) -> Dict[str, Any]:
         self._require_ready()
@@ -203,17 +234,20 @@ class MediaVendorClient:
                 "prompt": prompt.strip(), "duration_s": duration_s,
                 "model_version": self.config.model_version})
             content = self._content(response)
-            asset_id = str(response.get("asset_id") or "").strip()
-            if not asset_id:
+            asset_id = response.get("asset_id")
+            if not isinstance(asset_id, str) or not asset_id.strip():
                 raise MediaVendorError("供应商回执缺少 asset_id")
-            asset = {"asset_id": asset_id, "sha256": hashlib.sha256(content).hexdigest(),
+            asset = {"asset_id": asset_id.strip(), "sha256": hashlib.sha256(content).hexdigest(),
                      "bytes": len(content),
                      "content_type": str(response.get("content_type") or "")}
             return self._record(actor, reason, "render_clip", asset, cost, response)
-        except MediaVendorError as exc:
-            self._fail(actor, reason, "render_clip", exc)
-            raise
+        except Exception as exc:
+            self._fail(actor, reason, "render_clip", exc, cost)
+            if isinstance(exc, MediaVendorError):
+                raise
+            raise MediaVendorError("供应商调用失败，费用待核对") from exc
 
+    @_serialized_call
     def edit_clip(self, asset_ref: str, ops: List[str], *, actor: str,
                   reason: str) -> Dict[str, Any]:
         self._require_ready()
@@ -232,19 +266,54 @@ class MediaVendorClient:
                 "asset_ref": asset_ref.strip(), "ops": list(ops),
                 "model_version": self.config.model_version})
             content = self._content(response)
-            asset = {"asset_id": str(response.get("asset_id") or ""),
+            asset_id = response.get("asset_id")
+            if not isinstance(asset_id, str) or not asset_id.strip():
+                raise MediaVendorError("供应商回执缺少 asset_id")
+            asset = {"asset_id": asset_id.strip(),
                      "parent_asset_id": asset_ref.strip(),
                      "sha256": hashlib.sha256(content).hexdigest(),
                      "bytes": len(content),
                      "ops": list(ops)}
             return self._record(actor, reason, "edit_clip", asset, cost, response)
-        except MediaVendorError as exc:
-            self._fail(actor, reason, "edit_clip", exc)
-            raise
+        except Exception as exc:
+            self._fail(actor, reason, "edit_clip", exc, cost)
+            if isinstance(exc, MediaVendorError):
+                raise
+            raise MediaVendorError("供应商调用失败，费用待核对") from exc
 
+    @_serialized_call
+    def reconcile_failure(self, failure_index: int, *, actual_cost_usd: float,
+                          billing_ref: str, actor: str, reason: str) -> Dict[str, Any]:
+        """Trusted host records an independently obtained provider bill.
+
+        This is a manual component entry, not provider verification or a refund.
+        Never infer a zero charge from a network failure. No transport is called.
+        """
+        self._require_actor(actor, reason)
+        if (type(failure_index) is not int or not 0 <= failure_index < len(self.failures)
+                or not _finite_number(actual_cost_usd) or actual_cost_usd < 0
+                or not isinstance(billing_ref, str) or not billing_ref.strip()):
+            raise MediaVendorError("对账需要有效失败序号、有限非负实际费用和账单引用")
+        row = self.failures[failure_index]
+        cost = round(float(actual_cost_usd), 6)
+        if row["cost_status"] == "reconciled":
+            if row["actual_cost_usd"] != cost or row["billing_ref"] != billing_ref.strip():
+                raise MediaVendorError("已对账费用不可被不同账单覆盖")
+            return dict(row)
+        # A confirmed charge remains real even if it exceeds the local budget.
+        self.spent_usd = round(self.spent_usd + cost, 6)
+        row.update(cost_status="reconciled", actual_cost_usd=cost,
+                   billing_ref=billing_ref.strip(), reconciled_by=actor,
+                   reconciliation_reason=reason, reconciled_at=self.clock())
+        self._audit(actor, "media_cost_reconciled", dict(row))
+        return dict(row)
+
+    @_serialized_call
     def report(self) -> Dict[str, Any]:
         return {"config": self.config.public(),
                 "spent_usd": self.spent_usd,
+                "reserved_usd": self._reserved(),
+                "unknown_costs": sum(row["cost_status"] == "unknown" for row in self.failures),
                 "remaining_usd": self._remaining(),
                 "calls": len(self.calls),
                 "failures": len(self.failures),
