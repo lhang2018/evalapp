@@ -1,0 +1,82 @@
+{
+ "task": "ALN-18-H 编程专家按项目安装与真实工具消费实测",
+ "date": "2026-10-26",
+ "install": {
+  "ok": true,
+  "already_installed": false,
+  "root": "C:\\Users\\lhang\\AppData\\Local\\Temp\\aln18h_ecu7cxzy\\good",
+  "version": "1.5.2",
+  "pack_id": "coding_pack",
+  "tool_ids": [
+   "coding_symbols",
+   "coding_references",
+   "coding_edit",
+   "coding_patch",
+   "coding_patch_recover",
+   "coding_syntax_check",
+   "coding_typecheck",
+   "coding_test"
+  ],
+  "disk_changes": {
+   "added": [],
+   "modified": [],
+   "removed": []
+  }
+ },
+ "check_good": {
+  "ok": true,
+  "tool_id": "coding_syntax_check",
+  "returncode": 0,
+  "duration_s": 0.281,
+  "disk_changes": {
+   "added": [],
+   "modified": [],
+   "removed": []
+  },
+  "error": null
+ },
+ "check_broken": {
+  "ok": false,
+  "returncode": 1,
+  "error": "存在语法错误",
+  "error_class": "contract_violation"
+ },
+ "idempotent": true,
+ "refusals": {
+  "uninstalled": "CodingConsumerError",
+  "version_mismatch": "CodingConsumerRefused",
+  "unknown_tool": "CodingConsumerRefused"
+ },
+ "status": {
+  "roots": [
+   "C:\\Users\\lhang\\AppData\\Local\\Temp\\aln18h_ecu7cxzy\\broken",
+   "C:\\Users\\lhang\\AppData\\Local\\Temp\\aln18h_ecu7cxzy\\good"
+  ],
+  "count": 2,
+  "entries": [
+   {
+    "root": "C:\\Users\\lhang\\AppData\\Local\\Temp\\aln18h_ecu7cxzy\\broken",
+    "version": "1.5.2",
+    "installed_at": 1793005083.762881
+   },
+   {
+    "root": "C:\\Users\\lhang\\AppData\\Local\\Temp\\aln18h_ecu7cxzy\\good",
+    "version": "1.5.2",
+    "installed_at": 1793005083.7618806
+   }
+  ]
+ },
+ "checks": {
+  "install_ok": true,
+  "good_syntax_returncode_0": true,
+  "broken_syntax_rejected_by_rc": true,
+  "same_root_idempotent": true,
+  "two_roots_independent": true,
+  "cross_root_uninstalled_refused": true,
+  "version_mismatch_refused": true,
+  "unknown_tool_refused": true,
+  "disk_changes_recorded": true
+ },
+ "all_checks_pass": true,
+ "boundary": "本地组件以临时目录作受限项目根；真实用户项目未提供，未冒称真实项目集成通过"
+}
