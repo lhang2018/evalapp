@@ -9,10 +9,30 @@
    "scope": "客户端工作区成果+记忆控制（api.ts/App.tsx/features）",
    "tests": "cd android-app; npm run test:offline; npx tsc --noEmit",
    "evidence": ".planning/2026-10-26-aln30b/api-contract-probe.json；docs/协作开发/交付/ALN-30-B-*.md",
-   "gaps": "项目/节点视图未接线、无全量下载、真机未采",
+   "gaps": "项目/工作区节点、全量文件下载、固定APK真机与后续模型实际禁用验证未闭合",
    "review_stage": "first_independent_review",
    "reviewer": "codex-runtime",
-   "final_reviewer": "claude-main"
+   "final_reviewer": "claude-main",
+   "technical_review": {
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+    "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+    "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "checks": {
+     "backend_passed": 0,
+     "backend_modules": [],
+     "client_passed": 459,
+     "typecheck_exit": 0,
+     "client_commit": "a435ce14ad0ef175a73fa1a8b628fbde31c047b6",
+     "client_tree": "a3e36b9ebb6cf70ef04f71bb5a3e4dea35343b52"
+    },
+    "remaining_acceptance_gaps": "项目/工作区节点、全量文件下载、固定APK真机与后续模型实际禁用验证未闭合",
+    "independent_acceptance_added": false,
+    "prior_codex_fixes_require_independent_review": true
+   }
   },
   {
    "id": "ALN-24-F",
@@ -20,10 +40,29 @@
    "scope": "多主体记忆范围策略/迁移隔离（memory/scope_policy.py+api）",
    "tests": "python -m pytest tests/test_multi_principal_scope.py -q",
    "evidence": ".planning/2026-10-26-aln24f/scope-policy-evidence.json",
-   "gaps": "真实多用户鉴权联调、批量迁移、App 入口、检索端到端",
+   "gaps": "真实API→模型消息/manifest的主体分区与Grant/撤销联验、App管理消费未闭合",
    "review_stage": "first_independent_review",
    "reviewer": "codex-runtime",
-   "final_reviewer": "claude-main"
+   "final_reviewer": "claude-main",
+   "technical_review": {
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+    "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+    "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "checks": {
+     "backend_passed": 29,
+     "backend_modules": [
+      "test_multi_principal_scope",
+      "test_evidence_scope_review_20261026"
+     ]
+    },
+    "remaining_acceptance_gaps": "真实API→模型消息/manifest的主体分区与Grant/撤销联验、App管理消费未闭合",
+    "independent_acceptance_added": false,
+    "prior_codex_fixes_require_independent_review": true
+   }
   },
   {
    "id": "ALN-16-Q",
@@ -31,10 +70,31 @@
    "scope": "聚合观测/受控导出删除 API（api/evidence_api.py）",
    "tests": "python -m pytest tests/test_evidence_api.py -q",
    "evidence": ".planning/2026-10-26-aln16q/api-evidence.json",
-   "gaps": "大导出/清理期、跨库删除原子性、设备",
+   "gaps": "跨主体真实身份/授权证据消费、大导出/清理期和管理端设备仍待；跨库删除仅维护窗口，不能宣称全域擦除",
    "review_stage": "first_independent_review",
    "reviewer": "codex-runtime",
-   "final_reviewer": "claude-main"
+   "final_reviewer": "claude-main",
+   "technical_review": {
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+    "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+    "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "checks": {
+     "backend_passed": 45,
+     "backend_modules": [
+      "test_evidence_api",
+      "test_evidence_scope_review_20261026",
+      "test_observability_repository",
+      "test_observability_evidence"
+     ]
+    },
+    "remaining_acceptance_gaps": "跨主体真实身份/授权证据消费、大导出/清理期和管理端设备仍待；跨库删除仅维护窗口，不能宣称全域擦除",
+    "independent_acceptance_added": false,
+    "prior_codex_fixes_require_independent_review": true
+   }
   },
   {
    "id": "ALN-13-S",
@@ -42,10 +102,31 @@
    "scope": "长期目标调度宿主（scheduler/app/cli/api）",
    "tests": "python -m pytest tests/test_goal_scheduler_host.py -q",
    "evidence": ".planning/2026-10-26-aln13s/scheduler-host-evidence.json",
-   "gaps": "生产长跑/自动拉起、多进程压测、资源治理联调",
+   "gaps": "本轮新调度补丁待独立复核；默认App真实资源/主动预算配置、运行中unknown/停止及生产长跑/多进程证据未闭合",
    "review_stage": "first_independent_review",
    "reviewer": "codex-runtime",
-   "final_reviewer": "claude-main"
+   "final_reviewer": "claude-main",
+   "technical_review": {
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+    "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+    "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+    "status": "changes_fixed_pending_independent_recheck",
+    "checks": {
+     "backend_passed": 49,
+     "backend_modules": [
+      "test_goal_scheduler",
+      "test_goal_scheduler_host",
+      "test_new_host_review_20261026",
+      "test_assigned_scheduler_review_20261026"
+     ]
+    },
+    "remaining_acceptance_gaps": "本轮新调度补丁待独立复核；默认App真实资源/主动预算配置、运行中unknown/停止及生产长跑/多进程证据未闭合",
+    "independent_acceptance_added": false,
+    "prior_codex_fixes_require_independent_review": true
+   }
   },
   {
    "id": "ALN-09-I",
@@ -53,10 +134,31 @@
    "scope": "候选宿主评测+问题队列管理（integration/candidate_execution.py+api）",
    "tests": "python -m pytest tests/test_candidate_host_api.py -q",
    "evidence": ".planning/2026-10-26-aln09i/host-evaluation-evidence.json；.planning/2026-10-26-benchmark-review/",
-   "gaps": "candidate_id/dataset 权威绑定、生产并发、CLI/App",
+   "gaps": "candidate_id/dataset到权威仓库精确绑定、生产并发及完整管理入口未闭合",
    "review_stage": "first_independent_review",
    "reviewer": "codex-runtime",
-   "final_reviewer": "claude-main"
+   "final_reviewer": "claude-main",
+   "technical_review": {
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+    "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+    "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "checks": {
+     "backend_passed": 53,
+     "backend_modules": [
+      "test_candidate_host_api",
+      "test_host_benchmark",
+      "test_benchmark_review_20261026",
+      "test_new_host_review_20261026"
+     ]
+    },
+    "remaining_acceptance_gaps": "candidate_id/dataset到权威仓库精确绑定、生产并发及完整管理入口未闭合",
+    "independent_acceptance_added": false,
+    "prior_codex_fixes_require_independent_review": true
+   }
   },
   {
    "id": "ALN-18-H",
@@ -64,10 +166,31 @@
    "scope": "编程专家按项目安装（experts/coding_consumer.py+app）",
    "tests": "python -m pytest tests/test_coding_expert_consumer.py -q",
    "evidence": ".planning/2026-10-26-aln18h/coding-consumer-evidence.json",
-   "gaps": "真实项目/固定依赖、任务→专家自动选择、升级回滚",
+   "gaps": "真实任务自动选专家→受信根安装→失败回滚再检闭环、真实项目/升级恢复仍待",
    "review_stage": "first_independent_review",
    "reviewer": "codex-runtime",
-   "final_reviewer": "claude-main"
+   "final_reviewer": "claude-main",
+   "technical_review": {
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+    "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+    "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "checks": {
+     "backend_passed": 73,
+     "backend_modules": [
+      "test_coding_expert_consumer",
+      "test_coding_consumption",
+      "test_coding_tools",
+      "test_new_host_review_20261026"
+     ]
+    },
+    "remaining_acceptance_gaps": "真实任务自动选专家→受信根安装→失败回滚再检闭环、真实项目/升级恢复仍待",
+    "independent_acceptance_added": false,
+    "prior_codex_fixes_require_independent_review": true
+   }
   },
   {
    "id": "ALN-19-A",
@@ -75,10 +198,30 @@
    "scope": "音视频供应商契约切片（tools/media_vendor.py）",
    "tests": "python -m pytest tests/test_media_vendor.py tests/test_release_evidence.py -q",
    "evidence": ".planning/2026-10-26-aln19a/media-vendor-evidence.json",
-   "gaps": "真实供应商凭据/预算、费用持久账本、真实协议",
+   "gaps": "真实供应商可播放产物/协议/价格与账单、持久预算权威未提供，现仅本地HTTP夹具及单实例费用状态",
    "review_stage": "first_independent_review",
    "reviewer": "codex-runtime",
-   "final_reviewer": "claude-main"
+   "final_reviewer": "claude-main",
+   "technical_review": {
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+    "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+    "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "checks": {
+     "backend_passed": 62,
+     "backend_modules": [
+      "test_media_vendor",
+      "test_media_vendor_review_20261026",
+      "test_release_evidence"
+     ]
+    },
+    "remaining_acceptance_gaps": "真实供应商可播放产物/协议/价格与账单、持久预算权威未提供，现仅本地HTTP夹具及单实例费用状态",
+    "independent_acceptance_added": false,
+    "prior_codex_fixes_require_independent_review": true
+   }
   },
   {
    "id": "ALN-27-C",
@@ -86,10 +229,30 @@
    "scope": "知识持久化/注入/迁移（knowledge+memory/context+app）",
    "tests": "python -m pytest tests/test_knowledge_persistence.py tests/test_knowledge_review_20261026.py -q",
    "evidence": ".planning/2026-10-26-aln27c/knowledge-persistence-evidence.json；.planning/2026-10-26-knowledge-review/",
-   "gaps": "用户/项目身份可见性绑定、真实前后质量、多进程/逆向迁移",
+   "gaps": "正式验收项2用户/项目可见性绑定仍缺；真实同任务集前后质量/退化、多进程及逆向迁移仍待",
    "review_stage": "first_independent_review",
    "reviewer": "codex-runtime",
-   "final_reviewer": "claude-main"
+   "final_reviewer": "claude-main",
+   "technical_review": {
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+    "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+    "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "checks": {
+     "backend_passed": 54,
+     "backend_modules": [
+      "test_knowledge",
+      "test_knowledge_persistence",
+      "test_knowledge_review_20261026"
+     ]
+    },
+    "remaining_acceptance_gaps": "正式验收项2用户/项目可见性绑定仍缺；真实同任务集前后质量/退化、多进程及逆向迁移仍待",
+    "independent_acceptance_added": false,
+    "prior_codex_fixes_require_independent_review": true
+   }
   },
   {
    "id": "ALN-15-E",
@@ -97,10 +260,30 @@
    "scope": "原生资源采样+后台准入（Kotlin/TS/backgroundRunner）",
    "tests": "cd android-app; node --test test/device/resourceSampler.test.ts; npm run test:offline; npx tsc --noEmit; cd android; gradlew :app:compileDebugKotlin",
    "evidence": ".planning/2026-10-26-aln15e/client-evidence.json；.planning/2026-10-26-proactive-native-review/",
-   "gaps": "默认后台路径未注入 sampler/highWater、真机周期与压力、OEM 差异",
+   "gaps": "默认HeadlessTask仍未注入sampler/highWater；策略下发、Kotlin重编译/新APK真机周期压力及OEM不可读处理待补",
    "review_stage": "first_independent_review",
    "reviewer": "codex-runtime",
-   "final_reviewer": "claude-main"
+   "final_reviewer": "claude-main",
+   "technical_review": {
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+    "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+    "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "checks": {
+     "backend_passed": 0,
+     "backend_modules": [],
+     "client_passed": 459,
+     "typecheck_exit": 0,
+     "client_commit": "a435ce14ad0ef175a73fa1a8b628fbde31c047b6",
+     "client_tree": "a3e36b9ebb6cf70ef04f71bb5a3e4dea35343b52"
+    },
+    "remaining_acceptance_gaps": "默认HeadlessTask仍未注入sampler/highWater；策略下发、Kotlin重编译/新APK真机周期压力及OEM不可读处理待补",
+    "independent_acceptance_added": false,
+    "prior_codex_fixes_require_independent_review": true
+   }
   },
   {
    "id": "ALN-25-C",
@@ -108,10 +291,31 @@
    "scope": "主动任务准入执行/预留释放（goals/proactive_execution.py+app）",
    "tests": "python -m pytest tests/test_proactive_execution.py -q",
    "evidence": ".planning/2026-10-26-aln25c/proactive-execution-evidence.json；.planning/2026-10-26-proactive-native-review/",
-   "gaps": "App 真实 15-D 决策器/预算账户、并发与运行中 pause/stop、真实 LLM 质量",
+   "gaps": "默认宿主真实sampler/预算账户、实际用量对账、权威并发/运行中pause-stop和真实核心质量/延迟仍待",
    "review_stage": "first_independent_review",
    "reviewer": "codex-runtime",
-   "final_reviewer": "claude-main"
+   "final_reviewer": "claude-main",
+   "technical_review": {
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+    "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+    "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "checks": {
+     "backend_passed": 54,
+     "backend_modules": [
+      "test_proactive_execution",
+      "test_proactive_execution_review_20261026",
+      "test_proactivity",
+      "test_resource_second_review_20261026"
+     ]
+    },
+    "remaining_acceptance_gaps": "默认宿主真实sampler/预算账户、实际用量对账、权威并发/运行中pause-stop和真实核心质量/延迟仍待",
+    "independent_acceptance_added": false,
+    "prior_codex_fixes_require_independent_review": true
+   }
   },
   {
    "id": "ALN-30-A",
@@ -120,10 +324,30 @@
    "scope": "服务端装配收口（integration/wiring+cli+app）",
    "tests": "python -m pytest tests/test_integration_wiring.py tests/test_restore_entry_review_20261026.py -q",
    "evidence": ".planning/2026-10-26-dsh-review/review-probes.json；docs/协作开发/验收/2026-10-26-dsh独立复核-25B-30A.md",
-   "gaps": "host-restore 成功链路需真实部署实例补证；621a191 回退路径复核",
+   "gaps": "本地真实部署三库恢复成功链路已补证；原作者claude-main不能终审，需另分配独立终审，旧codex补丁也需独立确认",
    "review_stage": "second_review",
    "reviewer": "codex-runtime",
-   "final_reviewer": "claude-main"
+   "final_reviewer": null,
+   "technical_review": {
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+    "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+    "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "checks": {
+     "backend_passed": 38,
+     "backend_modules": [
+      "test_integration_wiring",
+      "test_restore_entry_review_20261026",
+      "test_assigned_restore_review_20261026"
+     ]
+    },
+    "remaining_acceptance_gaps": "本地真实部署三库恢复成功链路已补证；原作者claude-main不能终审，需另分配独立终审，旧codex补丁也需独立确认",
+    "independent_acceptance_added": false,
+    "prior_codex_fixes_require_independent_review": true
+   }
   },
   {
    "id": "ALN-25-B",
@@ -132,10 +356,60 @@
    "scope": "主动强度/停止/资源非干扰（goals/proactivity.py）",
    "tests": "python -m pytest tests/test_proactivity.py tests/test_resource_admission.py -q",
    "evidence": ".planning/2026-10-26-dsh-review/25b-real-resource-pressure.json；.planning/2026-10-26-windows-second-review/",
-   "gaps": "真实设备 UI、执行层 submit 接线；5bc1725 采样未知/恢复修复需复核",
+   "gaps": "本轮未重造真实CPU饱和；旧0.768仅新准入；5bc1725补丁独立复核、真实执行层/固定设备非干扰仍待",
    "review_stage": "second_review",
    "reviewer": "codex-runtime",
-   "final_reviewer": "claude-main"
+   "final_reviewer": "claude-main",
+   "technical_review": {
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+    "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+    "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "checks": {
+     "backend_passed": 50,
+     "backend_modules": [
+      "test_proactivity",
+      "test_resource_admission",
+      "test_resource_second_review_20261026",
+      "test_proactive_review_20261026"
+     ]
+    },
+    "remaining_acceptance_gaps": "本轮未重造真实CPU饱和；旧0.768仅新准入；5bc1725补丁独立复核、真实执行层/固定设备非干扰仍待",
+    "independent_acceptance_added": false,
+    "prior_codex_fixes_require_independent_review": true
+   }
+  },
+  {
+   "id": "ALN-18-L",
+   "commit": "8ca1ba1f03a0b286cda92107b6e502511498d8f0",
+   "reviewer": "codex-runtime",
+   "final_reviewer": null,
+   "scope": "受限跨文件AST重构与诊断，非语义LSP",
+   "technical_review": {
+    "date": "2026-10-26",
+    "reviewer": "codex-runtime",
+    "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+    "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+    "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+    "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "checks": {
+     "backend_passed": 123,
+     "backend_modules": [
+      "test_refactor",
+      "test_feedback_refactor_review_20261026",
+      "test_developed_review_5",
+      "test_coding_tools"
+     ]
+    },
+    "remaining_acceptance_gaps": "仍为受限AST/符号分析，语义LSP和真实专家装配未实现；旧codex修复需独立复核",
+    "independent_acceptance_added": false,
+    "prior_codex_fixes_require_independent_review": true
+   },
+   "gaps": "仍为受限AST/符号分析，语义LSP和真实专家装配未实现；旧codex修复需独立复核"
   }
  ],
  "global_commands": [
@@ -147,5 +421,17 @@
   "每卡证据路径均在 .planning/ 与 docs/协作开发/交付/",
   "修复记录见各卡 evidence 末条与配套验收文档",
   "已知缺口不因组件通过而关闭整包"
- ]
+ ],
+ "latest_technical_review": {
+  "date": "2026-10-26",
+  "reviewer": "codex-runtime",
+  "cards": 13,
+  "source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+  "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+  "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+  "independent_acceptance_added": false,
+  "author_final_review_conflicts": [
+   "ALN-30-A: claude-main=owner，已清空需重分配"
+  ]
+ }
 }

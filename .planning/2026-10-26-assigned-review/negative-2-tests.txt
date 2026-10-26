@@ -1,0 +1,220 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFF.F.FF                                                        [100%]
+================================== FAILURES ===================================
+_____ test_old_running_primary_beyond_500_still_blocks_and_then_recovers ______
+
+app = <evoagent.app.App object at 0x00000191A2C8D870>
+
+    def test_old_running_primary_beyond_500_still_blocks_and_then_recovers(app):
+        goal = ready(app)
+        primary = Task(user_goal="old user job", task_status=TaskStatus.RUNNING, created_at=1)
+        app.db.save_task(primary)
+        add_terminal_tasks(app)
+        result = app.goal_scheduler.tick(now=time.time())
+>       assert result["reason"] == "primary_load_guard"
+E       AssertionError: assert None == 'primary_load_guard'
+
+tests\test_assigned_scheduler_review_20261026.py:50: AssertionError
+______________ test_old_derived_in_flight_is_counted_beyond_500 _______________
+
+app = <evoagent.app.App object at 0x00000191A2D77190>
+
+    def test_old_derived_in_flight_is_counted_beyond_500(app):
+        task = Task(user_goal="old derived", task_status=TaskStatus.RUNNING,
+                    origin="derived", created_at=1)
+        app.db.save_task(task)
+        add_terminal_tasks(app)
+>       assert app.goal_scheduler.primary_load()["derived_in_flight"] == 1
+E       assert 0 == 1
+
+tests\test_assigned_scheduler_review_20261026.py:67: AssertionError
+___________ test_live_goal_beyond_1000_terminal_goals_is_registered ___________
+
+app = <evoagent.app.App object at 0x00000191A2EBDD50>
+
+    def test_live_goal_beyond_1000_terminal_goals_is_registered(app):
+        target = app.goals.create("synthetic active goal", actor="review", goal_id="zz_target",
+                                  success_criteria=["synthetic verification"])
+        rows = []
+        for i in range(1001):
+            record = dict(target, goal_id=f"aa_{i:04}", status="completed")
+            rows.append((record["goal_id"], record["owner"], record["status"],
+                         record["revision"], json.dumps(record)))
+        with app.db._lock, app.db._conn:
+            app.db._conn.executemany("INSERT INTO goals(goal_id,owner,status,revision,data) VALUES (?,?,?,?,?)", rows)
+>       assert app.goal_scheduler.sync(now=time.time()) == 1
+E       assert 0 == 1
+E        +  where 0 = sync(now=1793023030.211805)
+E        +    where sync = <evoagent.goals.scheduler.GoalScheduler object at 0x00000191A2EBFCD0>.sync
+E        +      where <evoagent.goals.scheduler.GoalScheduler object at 0x00000191A2EBFCD0> = <evoagent.app.App object at 0x00000191A2EBDD50>.goal_scheduler
+E        +    and   1793023030.211805 = <built-in function time>()
+E        +      where <built-in function time> = time.time
+
+tests\test_assigned_scheduler_review_20261026.py:80: AssertionError
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-interval_seconds] _
+
+field = 'interval_seconds', direct = False
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:89: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-lease_ttl_seconds] _
+
+field = 'lease_ttl_seconds', direct = False
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:89: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-failure_backoff_seconds] _
+
+field = 'failure_backoff_seconds', direct = False
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:89: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-max_backoff_seconds] _
+
+field = 'max_backoff_seconds', direct = False
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:89: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-interval_seconds] _
+
+field = 'interval_seconds', direct = True
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:89: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-lease_ttl_seconds] _
+
+field = 'lease_ttl_seconds', direct = True
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:89: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-failure_backoff_seconds] _
+
+field = 'failure_backoff_seconds', direct = True
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:89: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-max_backoff_seconds] _
+
+field = 'max_backoff_seconds', direct = True
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:89: Failed
+_____ test_invalid_schedule_time_is_rejected_before_persisting[inf-sync] ______
+
+app = <evoagent.app.App object at 0x00000191A3064970>, method = 'sync'
+now = inf
+
+    @pytest.mark.parametrize("method", ["sync", "tick"])
+    @pytest.mark.parametrize("now", [float("inf"), float("nan"), True])
+    def test_invalid_schedule_time_is_rejected_before_persisting(app, method, now):
+        app.goals.create("synthetic pending", actor="review", success_criteria=["synthetic verification"])
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:100: Failed
+_____ test_invalid_schedule_time_is_rejected_before_persisting[nan-sync] ______
+
+app = <evoagent.app.App object at 0x00000191A2D734C0>, method = 'sync'
+now = nan
+
+    @pytest.mark.parametrize("method", ["sync", "tick"])
+    @pytest.mark.parametrize("now", [float("inf"), float("nan"), True])
+    def test_invalid_schedule_time_is_rejected_before_persisting(app, method, now):
+        app.goals.create("synthetic pending", actor="review", success_criteria=["synthetic verification"])
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:100: Failed
+_____ test_invalid_schedule_time_is_rejected_before_persisting[True-sync] _____
+
+app = <evoagent.app.App object at 0x00000191A2D6F7C0>, method = 'sync'
+now = True
+
+    @pytest.mark.parametrize("method", ["sync", "tick"])
+    @pytest.mark.parametrize("now", [float("inf"), float("nan"), True])
+    def test_invalid_schedule_time_is_rejected_before_persisting(app, method, now):
+        app.goals.create("synthetic pending", actor="review", success_criteria=["synthetic verification"])
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:100: Failed
+_____ test_invalid_schedule_time_is_rejected_before_persisting[True-tick] _____
+
+app = <evoagent.app.App object at 0x00000191A2CD3CA0>, method = 'tick'
+now = True
+
+    @pytest.mark.parametrize("method", ["sync", "tick"])
+    @pytest.mark.parametrize("now", [float("inf"), float("nan"), True])
+    def test_invalid_schedule_time_is_rejected_before_persisting(app, method, now):
+        app.goals.create("synthetic pending", actor="review", success_criteria=["synthetic verification"])
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:100: Failed
+=========================== short test summary info ===========================
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_old_running_primary_beyond_500_still_blocks_and_then_recovers
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_old_derived_in_flight_is_counted_beyond_500
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_live_goal_beyond_1000_terminal_goals_is_registered
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-interval_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-lease_ttl_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-failure_backoff_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-max_backoff_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-interval_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-lease_ttl_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-failure_backoff_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-max_backoff_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_invalid_schedule_time_is_rejected_before_persisting[inf-sync]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_invalid_schedule_time_is_rejected_before_persisting[nan-sync]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_invalid_schedule_time_is_rejected_before_persisting[True-sync]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_invalid_schedule_time_is_rejected_before_persisting[True-tick]
+15 failed, 2 passed in 3.38s

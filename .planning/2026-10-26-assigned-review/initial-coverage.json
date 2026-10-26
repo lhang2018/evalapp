@@ -1,0 +1,73 @@
+{
+  "commit": "a435ce14ad0ef175a73fa1a8b628fbde31c047b6",
+  "cards": {
+    "ALN-30-B": [],
+    "ALN-24-F": [
+      "test_multi_principal_scope",
+      "test_evidence_scope_review_20261026"
+    ],
+    "ALN-16-Q": [
+      "test_evidence_api",
+      "test_evidence_scope_review_20261026",
+      "test_observability_repository",
+      "test_observability_evidence"
+    ],
+    "ALN-13-S": [
+      "test_goal_scheduler",
+      "test_goal_scheduler_host",
+      "test_new_host_review_20261026",
+      "test_assigned_scheduler_review_20261026"
+    ],
+    "ALN-09-I": [
+      "test_candidate_host_api",
+      "test_host_benchmark",
+      "test_benchmark_review_20261026",
+      "test_new_host_review_20261026"
+    ],
+    "ALN-18-H": [
+      "test_coding_expert_consumer",
+      "test_coding_consumption",
+      "test_coding_tools",
+      "test_new_host_review_20261026"
+    ],
+    "ALN-19-A": [
+      "test_media_vendor",
+      "test_media_vendor_review_20261026",
+      "test_release_evidence"
+    ],
+    "ALN-27-C": [
+      "test_knowledge",
+      "test_knowledge_persistence",
+      "test_knowledge_review_20261026"
+    ],
+    "ALN-15-E": [],
+    "ALN-25-C": [
+      "test_proactive_execution",
+      "test_proactive_execution_review_20261026",
+      "test_proactivity",
+      "test_resource_second_review_20261026"
+    ],
+    "ALN-30-A": [
+      "test_integration_wiring",
+      "test_restore_entry_review_20261026",
+      "test_assigned_restore_review_20261026"
+    ],
+    "ALN-25-B": [
+      "test_proactivity",
+      "test_resource_admission",
+      "test_resource_second_review_20261026",
+      "test_proactive_review_20261026"
+    ],
+    "ALN-18-L": [
+      "test_refactor",
+      "test_feedback_refactor_review_20261026",
+      "test_developed_review_5",
+      "test_coding_tools"
+    ]
+  },
+  "client_cards": [
+    "ALN-30-B",
+    "ALN-15-E"
+  ],
+  "note": "overlapping modules: per-card counts are not additive"
+}

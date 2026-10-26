@@ -5,8 +5,10 @@
 任务：ALN-18-L（PRODUCT-2026-10-25，父包 ALN-18，阶段5）
 负责人：zcode-main；审阅人：待定（须独立复核）
 基线 commit：`e16dbfeedd48d3e58cc24d68886eb76f2d7770d7`（接手锚点，非已发布基线）
-分支与最终 commit：feature/user-direction（源码随本卡提交落库）
+分支与首轮交付commit：feature/user-direction / `8ca1ba1f03a0b286cda92107b6e502511498d8f0`（原台账空值已按Git事实补齐）；后续修复3331898/b5b376d。
 认领状态：delivered（review，待独立复核）
+
+2026-10-26指派复核：固定f973dcc本卡相关123项通过（与其他卡模块交集不可相加），当前受限AST重构切片已技术复核，旧codex补丁仍需他人确认。语义LSP/真实专家装配缺口保留，review不关闭；详见[13项复核](../验收/2026-10-26-指派十三项技术复核.md)。
 
 ## 目标与行为变化
 

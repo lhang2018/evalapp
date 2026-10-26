@@ -1,0 +1,2984 @@
+TAP version 13
+# (node:43612) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/broker.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: high-risk actions require independent confirmation
+ok 1 - high-risk actions require independent confirmation
+  ---
+  duration_ms: 2.0307
+  type: 'test'
+  ...
+# Subtest: confirmed high-risk action executes and records evidence
+ok 2 - confirmed high-risk action executes and records evidence
+  ---
+  duration_ms: 1.2669
+  type: 'test'
+  ...
+# Subtest: transport errors become failed rather than throwing
+ok 3 - transport errors become failed rather than throwing
+  ---
+  duration_ms: 0.5478
+  type: 'test'
+  ...
+# Subtest: verified results without evidence are downgraded to unverified
+ok 4 - verified results without evidence are downgraded to unverified
+  ---
+  duration_ms: 0.3406
+  type: 'test'
+  ...
+# Subtest: repeating an action_id never replays the device action
+ok 5 - repeating an action_id never replays the device action
+  ---
+  duration_ms: 0.8642
+  type: 'test'
+  ...
+# Subtest: dispatched-but-unverified actions are not replayed
+ok 6 - dispatched-but-unverified actions are not replayed
+  ---
+  duration_ms: 0.5993
+  type: 'test'
+  ...
+# Subtest: missing native module reports unavailable without crashing
+ok 7 - missing native module reports unavailable without crashing
+  ---
+  duration_ms: 0.449
+  type: 'test'
+  ...
+# Subtest: click results are verified only when the UI actually changed
+ok 8 - click results are verified only when the UI actually changed
+  ---
+  duration_ms: 1.7548
+  type: 'test'
+  ...
+# Subtest: permission dialogs downgrade otherwise successful clicks
+ok 9 - permission dialogs downgrade otherwise successful clicks
+  ---
+  duration_ms: 0.5135
+  type: 'test'
+  ...
+# Subtest: consecutive unverified actions trigger a safety stop until resumed
+ok 10 - consecutive unverified actions trigger a safety stop until resumed
+  ---
+  duration_ms: 0.9048
+  type: 'test'
+  ...
+# Subtest: verified actions reset the consecutive failure counter
+ok 11 - verified actions reset the consecutive failure counter
+  ---
+  duration_ms: 0.4459
+  type: 'test'
+  ...
+# Subtest: native transport passes through evidence and failure messages
+ok 12 - native transport passes through evidence and failure messages
+  ---
+  duration_ms: 0.4019
+  type: 'test'
+  ...
+# (node:43304) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/failureMatrix.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 矩阵覆盖任务卡要求的全部故障类别
+ok 13 - 矩阵覆盖任务卡要求的全部故障类别
+  ---
+  duration_ms: 16.6943
+  type: 'test'
+  ...
+# Subtest: 每个条目六要素齐备：可见状态/降级/重试/停止/对账/设备动作规则
+ok 14 - 每个条目六要素齐备：可见状态/降级/重试/停止/对账/设备动作规则
+  ---
+  duration_ms: 0.4624
+  type: 'test'
+  ...
+# Subtest: 服务端不可达/断网：退避重试 + 死信不静默丢弃 + 幂等对账
+ok 15 - 服务端不可达/断网：退避重试 + 死信不静默丢弃 + 幂等对账
+  ---
+  duration_ms: 0.6197
+  type: 'test'
+  ...
+# Subtest: 模型故障：预算约束 + 不本地伪造结果 + 未知计费对账
+ok 16 - 模型故障：预算约束 + 不本地伪造结果 + 未知计费对账
+  ---
+  duration_ms: 0.4426
+  type: 'test'
+  ...
+# Subtest: 进程被杀/重启：持久化恢复 + NEEDS_RECONCILE + 未验证动作不重放
+ok 17 - 进程被杀/重启：持久化恢复 + NEEDS_RECONCILE + 未验证动作不重放
+  ---
+  duration_ms: 0.3324
+  type: 'test'
+  ...
+# Subtest: 同步冲突：隔离区 + 人工处理 + 失联不当作未执行
+ok 18 - 同步冲突：隔离区 + 人工处理 + 失联不当作未执行
+  ---
+  duration_ms: 0.2162
+  type: 'test'
+  ...
+# Subtest: 资源与权限：低电量推迟、低空间 critical 永不清理、无障碍不自动重试
+ok 19 - 资源与权限：低电量推迟、低空间 critical 永不清理、无障碍不自动重试
+  ---
+  duration_ms: 0.3124
+  type: 'test'
+  ...
+# Subtest: 全矩阵设备动作规则一致：未知副作用永不自动重放
+ok 20 - 全矩阵设备动作规则一致：未知副作用永不自动重放
+  ---
+  duration_ms: 0.3412
+  type: 'test'
+  ...
+# Subtest: 查询入口：已知类别返回对应条目，未知类别按服务端不可达降级
+ok 21 - 查询入口：已知类别返回对应条目，未知类别按服务端不可达降级
+  ---
+  duration_ms: 0.2652
+  type: 'test'
+  ...
+# (node:63732) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/mainchainReview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: confirmation callback cannot rewrite the action identity or nested parameters
+ok 22 - confirmation callback cannot rewrite the action identity or nested parameters
+  ---
+  duration_ms: 4.4143
+  type: 'test'
+  ...
+# Subtest: non-boolean confirmation "false" cannot authorize execution
+ok 23 - non-boolean confirmation "false" cannot authorize execution
+  ---
+  duration_ms: 0.6562
+  type: 'test'
+  ...
+# Subtest: non-boolean confirmation "true" cannot authorize execution
+ok 24 - non-boolean confirmation "true" cannot authorize execution
+  ---
+  duration_ms: 0.3707
+  type: 'test'
+  ...
+# Subtest: non-boolean confirmation 1 cannot authorize execution
+ok 25 - non-boolean confirmation 1 cannot authorize execution
+  ---
+  duration_ms: 0.3142
+  type: 'test'
+  ...
+# Subtest: non-boolean confirmation {} cannot authorize execution
+ok 26 - non-boolean confirmation {} cannot authorize execution
+  ---
+  duration_ms: 0.4146
+  type: 'test'
+  ...
+# Subtest: safety stop prevents dispatch after waiting on availability
+ok 27 - safety stop prevents dispatch after waiting on availability
+  ---
+  duration_ms: 2.0332
+  type: 'test'
+  ...
+# Subtest: safety stop prevents dispatch after waiting on confirmation
+ok 28 - safety stop prevents dispatch after waiting on confirmation
+  ---
+  duration_ms: 0.6866
+  type: 'test'
+  ...
+# Subtest: native truthy ok "false" is not verified success
+ok 29 - native truthy ok "false" is not verified success
+  ---
+  duration_ms: 0.4465
+  type: 'test'
+  ...
+# Subtest: native truthy ok "true" is not verified success
+ok 30 - native truthy ok "true" is not verified success
+  ---
+  duration_ms: 0.2042
+  type: 'test'
+  ...
+# Subtest: native truthy ok 1 is not verified success
+ok 31 - native truthy ok 1 is not verified success
+  ---
+  duration_ms: 0.4553
+  type: 'test'
+  ...
+# Subtest: native truthy ok {} is not verified success
+ok 32 - native truthy ok {} is not verified success
+  ---
+  duration_ms: 0.1888
+  type: 'test'
+  ...
+# Subtest: native service availability must be literal true before dispatch
+ok 33 - native service availability must be literal true before dispatch
+  ---
+  duration_ms: 1.3914
+  type: 'test'
+  ...
+# (node:16444) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/notificationRecovery.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 没有标记存储时保持旧语义：同步已先行完成不补发
+ok 34 - 没有标记存储时保持旧语义：同步已先行完成不补发
+  ---
+  duration_ms: 1.7086
+  type: 'test'
+  ...
+# Subtest: 同步已先行完成时用持久化标记补发一次且不重复
+ok 35 - 同步已先行完成时用持久化标记补发一次且不重复
+  ---
+  duration_ms: 0.9847
+  type: 'test'
+  ...
+# Subtest: 本次跃迁仍会投递并写入标记（不因标记路径重复）
+ok 36 - 本次跃迁仍会投递并写入标记（不因标记路径重复）
+  ---
+  duration_ms: 0.4551
+  type: 'test'
+  ...
+# Subtest: 投递失败不写标记，下次 run 重试
+ok 37 - 投递失败不写标记，下次 run 重试
+  ---
+  duration_ms: 0.5248
+  type: 'test'
+  ...
+# Subtest: 标记读取失败时退化为跃迁判断且不崩溃
+ok 38 - 标记读取失败时退化为跃迁判断且不崩溃
+  ---
+  duration_ms: 0.4632
+  type: 'test'
+  ...
+# Subtest: 已有持久标记会抑制陈旧快照中的重复跃迁
+ok 39 - 已有持久标记会抑制陈旧快照中的重复跃迁
+  ---
+  duration_ms: 0.3511
+  type: 'test'
+  ...
+# Subtest: 首次初始化只基线化历史终态，后续新终态仍会通知
+ok 40 - 首次初始化只基线化历史终态，后续新终态仍会通知
+  ---
+  duration_ms: 0.4899
+  type: 'test'
+  ...
+# Subtest: 并发通知器共享串行门禁，不会同时穿过标记检查
+ok 41 - 并发通知器共享串行门禁，不会同时穿过标记检查
+  ---
+  duration_ms: 1.149
+  type: 'test'
+  ...
+# Subtest: 无标记存储时 initializeExisting 是安全空操作
+ok 42 - 无标记存储时 initializeExisting 是安全空操作
+  ---
+  duration_ms: 0.2985
+  type: 'test'
+  ...
+# Subtest: initializeExisting 幂等：基线就绪后不再重复写标记
+ok 43 - initializeExisting 幂等：基线就绪后不再重复写标记
+  ---
+  duration_ms: 0.5784
+  type: 'test'
+  ...
+# Subtest: 基线写失败不抛错且保持未就绪，恢复后补发可用
+ok 44 - 基线写失败不抛错且保持未就绪，恢复后补发可用
+  ---
+  duration_ms: 0.4296
+  type: 'test'
+  ...
+# Subtest: 基线读取失败时补发被禁用但不崩溃
+ok 45 - 基线读取失败时补发被禁用但不崩溃
+  ---
+  duration_ms: 0.2358
+  type: 'test'
+  ...
+# Subtest: 任务标记读取失败但基线就绪时仍按跃迁投递
+ok 46 - 任务标记读取失败但基线就绪时仍按跃迁投递
+  ---
+  duration_ms: 0.3159
+  type: 'test'
+  ...
+# Subtest: 基线读取暂时失败不得把待补发任务误写为历史已通知
+ok 47 - 基线读取暂时失败不得把待补发任务误写为历史已通知
+  ---
+  duration_ms: 0.4261
+  type: 'test'
+  ...
+# Subtest: 系统拒绝投递不写标记，下一通知器仍可补发
+ok 48 - 系统拒绝投递不写标记，下一通知器仍可补发
+  ---
+  duration_ms: 0.344
+  type: 'test'
+  ...
+# Subtest: 系统接受后标记写失败允许重试，不能宣称恰好一次
+ok 49 - 系统接受后标记写失败允许重试，不能宣称恰好一次
+  ---
+  duration_ms: 0.6003
+  type: 'test'
+  ...
+# (node:5652) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/notificationReview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: native false is not an accepted notification post
+ok 50 - native false is not an accepted notification post
+  ---
+  duration_ms: 2.3408
+  type: 'test'
+  ...
+# Subtest: native undefined is not an accepted notification post
+ok 51 - native undefined is not an accepted notification post
+  ---
+  duration_ms: 1.9577
+  type: 'test'
+  ...
+# Subtest: native null is not an accepted notification post
+ok 52 - native null is not an accepted notification post
+  ---
+  duration_ms: 0.2893
+  type: 'test'
+  ...
+# Subtest: native "true" is not an accepted notification post
+ok 53 - native "true" is not an accepted notification post
+  ---
+  duration_ms: 0.2182
+  type: 'test'
+  ...
+# Subtest: native {"ok":true} is not an accepted notification post
+ok 54 - native {"ok":true} is not an accepted notification post
+  ---
+  duration_ms: 0.2716
+  type: 'test'
+  ...
+# Subtest: accepted and refused native posts are counted separately
+ok 55 - accepted and refused native posts are counted separately
+  ---
+  duration_ms: 0.3523
+  type: 'test'
+  ...
+# Subtest: FAILED without failure text cannot be reported as success
+ok 56 - FAILED without failure text cannot be reported as success
+  ---
+  duration_ms: 0.1826
+  type: 'test'
+  ...
+# Subtest: CANCELLED with or without a reason is a cancellation notification
+ok 57 - CANCELLED with or without a reason is a cancellation notification
+  ---
+  duration_ms: 0.2258
+  type: 'test'
+  ...
+# Subtest: SUCCEEDED is not overridden by an old failure reason
+ok 58 - SUCCEEDED is not overridden by an old failure reason
+  ---
+  duration_ms: 0.2131
+  type: 'test'
+  ...
+# Subtest: nonterminal or unknown server status cannot produce a terminal notification
+ok 59 - nonterminal or unknown server status cannot produce a terminal notification
+  ---
+  duration_ms: 0.6054
+  type: 'test'
+  ...
+# (node:25156) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/notifications.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: notification id is stable, positive, and task-specific
+ok 60 - notification id is stable, positive, and task-specific
+  ---
+  duration_ms: 1.7568
+  type: 'test'
+  ...
+# Subtest: non-terminal tasks produce no notification
+ok 61 - non-terminal tasks produce no notification
+  ---
+  duration_ms: 0.321
+  type: 'test'
+  ...
+# Subtest: terminal task uses result, failure reason, or goal as body
+ok 62 - terminal task uses result, failure reason, or goal as body
+  ---
+  duration_ms: 0.4907
+  type: 'test'
+  ...
+# Subtest: notification body collapses whitespace and truncates
+ok 63 - notification body collapses whitespace and truncates
+  ---
+  duration_ms: 0.2454
+  type: 'test'
+  ...
+# Subtest: only transitions into DONE are selected
+ok 64 - only transitions into DONE are selected
+  ---
+  duration_ms: 2.215
+  type: 'test'
+  ...
+# Subtest: transitions are delivered once each with the stable id
+ok 65 - transitions are delivered once each with the stable id
+  ---
+  duration_ms: 0.802
+  type: 'test'
+  ...
+# Subtest: missing native module degrades to a no-op
+ok 66 - missing native module degrades to a no-op
+  ---
+  duration_ms: 0.241
+  type: 'test'
+  ...
+# Subtest: notification failure never breaks the sync path
+ok 67 - notification failure never breaks the sync path
+  ---
+  duration_ms: 1.047
+  type: 'test'
+  ...
+# (node:55100) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/observation.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: identical snapshots do not verify an action
+ok 68 - identical snapshots do not verify an action
+  ---
+  duration_ms: 1.6255
+  type: 'test'
+  ...
+# Subtest: new text after the action verifies it
+ok 69 - new text after the action verifies it
+  ---
+  duration_ms: 3.265
+  type: 'test'
+  ...
+# Subtest: package switch verifies launch
+ok 70 - package switch verifies launch
+  ---
+  duration_ms: 0.4373
+  type: 'test'
+  ...
+# Subtest: expected text absent is reported as unverified
+ok 71 - expected text absent is reported as unverified
+  ---
+  duration_ms: 0.2363
+  type: 'test'
+  ...
+# Subtest: permission dialog package is recognized and blocks verification
+ok 72 - permission dialog package is recognized and blocks verification
+  ---
+  duration_ms: 0.3294
+  type: 'test'
+  ...
+# Subtest: permission dialog by keywords requires allow, deny and permission word
+ok 73 - permission dialog by keywords requires allow, deny and permission word
+  ---
+  duration_ms: 0.2032
+  type: 'test'
+  ...
+# Subtest: missing snapshots never verify
+ok 74 - missing snapshots never verify
+  ---
+  duration_ms: 0.1336
+  type: 'test'
+  ...
+# Subtest: native snapshots are normalized with limits and empty input rejected
+ok 75 - native snapshots are normalized with limits and empty input rejected
+  ---
+  duration_ms: 0.4116
+  type: 'test'
+  ...
+# (node:57780) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/peerTaskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: two ledger instances sharing durable storage claim an action only once
+ok 76 - two ledger instances sharing durable storage claim an action only once
+  ---
+  duration_ms: 7.9968
+  type: 'test'
+  ...
+# Subtest: cached action id cannot be reused with a different task_id
+ok 77 - cached action id cannot be reused with a different task_id
+  ---
+  duration_ms: 2.5021
+  type: 'test'
+  ...
+# Subtest: cached action id cannot be reused with a different run_id
+ok 78 - cached action id cannot be reused with a different run_id
+  ---
+  duration_ms: 1.7344
+  type: 'test'
+  ...
+# Subtest: cached action id cannot be reused with a different effect_id
+ok 79 - cached action id cannot be reused with a different effect_id
+  ---
+  duration_ms: 0.8869
+  type: 'test'
+  ...
+# Subtest: cached action id cannot be reused with a different target
+ok 80 - cached action id cannot be reused with a different target
+  ---
+  duration_ms: 0.9429
+  type: 'test'
+  ...
+# Subtest: proposal owns nested input snapshots
+ok 81 - proposal owns nested input snapshots
+  ---
+  duration_ms: 0.2853
+  type: 'test'
+  ...
+# Subtest: retention does not make an already dispatched action executable again after restart
+ok 82 - retention does not make an already dispatched action executable again after restart
+  ---
+  duration_ms: 1.0718
+  type: 'test'
+  ...
+# Subtest: pending proposal is not evicted to permit replay
+ok 83 - pending proposal is not evicted to permit replay
+  ---
+  duration_ms: 0.5876
+  type: 'test'
+  ...
+# Subtest: invalid persisted ledger is rejected rather than becoming an empty execution history
+ok 84 - invalid persisted ledger is rejected rather than becoming an empty execution history
+  ---
+  duration_ms: 0.3434
+  type: 'test'
+  ...
+# Subtest: missing broker journal after dispatch remains unknown
+ok 85 - missing broker journal after dispatch remains unknown
+  ---
+  duration_ms: 0.5999
+  type: 'test'
+  ...
+# Subtest: journal receipt cannot refer to another action
+ok 86 - journal receipt cannot refer to another action
+  ---
+  duration_ms: 0.3033
+  type: 'test'
+  ...
+# Subtest: upload never contains expected screen text or recipient targets
+ok 87 - upload never contains expected screen text or recipient targets
+  ---
+  duration_ms: 0.3503
+  type: 'test'
+  ...
+# Subtest: explicit low risk cannot downgrade a known high risk device operation
+ok 88 - explicit low risk cannot downgrade a known high risk device operation
+  ---
+  duration_ms: 0.2062
+  type: 'test'
+  ...
+# Subtest: raw broker concurrent duplicates cannot both dispatch
+ok 89 - raw broker concurrent duplicates cannot both dispatch
+  ---
+  duration_ms: 0.2756
+  type: 'test'
+  ...
+# Subtest: raw broker never returns another task's cached action receipt
+ok 90 - raw broker never returns another task's cached action receipt
+  ---
+  duration_ms: 0.2164
+  type: 'test'
+  ...
+# (node:64048) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/resourceSampler.review.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: CPU不可用不冒称低压力: undefined
+ok 91 - CPU不可用不冒称低压力: undefined
+  ---
+  duration_ms: 1.4503
+  type: 'test'
+  ...
+# Subtest: CPU不可用不冒称低压力: null
+ok 92 - CPU不可用不冒称低压力: null
+  ---
+  duration_ms: 0.208
+  type: 'test'
+  ...
+# Subtest: CPU不可用不冒称低压力: NaN
+ok 93 - CPU不可用不冒称低压力: NaN
+  ---
+  duration_ms: 0.1674
+  type: 'test'
+  ...
+# Subtest: CPU不可用不冒称低压力: Infinity
+ok 94 - CPU不可用不冒称低压力: Infinity
+  ---
+  duration_ms: 0.1358
+  type: 'test'
+  ...
+# Subtest: CPU不可用不冒称低压力: -1
+ok 95 - CPU不可用不冒称低压力: -1
+  ---
+  duration_ms: 0.2381
+  type: 'test'
+  ...
+# Subtest: CPU不可用不冒称低压力: 2
+ok 96 - CPU不可用不冒称低压力: 2
+  ---
+  duration_ms: 2.0453
+  type: 'test'
+  ...
+# Subtest: 无效时钟不放行: NaN
+ok 97 - 无效时钟不放行: NaN
+  ---
+  duration_ms: 0.2666
+  type: 'test'
+  ...
+# Subtest: 无效时钟不放行: Infinity
+ok 98 - 无效时钟不放行: Infinity
+  ---
+  duration_ms: 0.1968
+  type: 'test'
+  ...
+# Subtest: 无效时钟不放行: -Infinity
+ok 99 - 无效时钟不放行: -Infinity
+  ---
+  duration_ms: 0.1649
+  type: 'test'
+  ...
+# Subtest: 无效时钟不放行: 0
+ok 100 - 无效时钟不放行: 0
+  ---
+  duration_ms: 0.2046
+  type: 'test'
+  ...
+# Subtest: 未来时间不通过钳制年龄冒充新鲜采样
+ok 101 - 未来时间不通过钳制年龄冒充新鲜采样
+  ---
+  duration_ms: 0.2038
+  type: 'test'
+  ...
+# Subtest: 导出的判定不信任伪造valid标记与NaN压力
+ok 102 - 导出的判定不信任伪造valid标记与NaN压力
+  ---
+  duration_ms: 0.1975
+  type: 'test'
+  ...
+# (node:42812) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/resourceSampler.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 合法采样保留来源/单位/时间与各项分数
+ok 103 - 合法采样保留来源/单位/时间与各项分数
+  ---
+  duration_ms: 1.8887
+  type: 'test'
+  ...
+# Subtest: 原生不可用/缺失内存/缺少采样时间均判不可用，不伪造低压力
+ok 104 - 原生不可用/缺失内存/缺少采样时间均判不可用，不伪造低压力
+  ---
+  duration_ms: 0.448
+  type: 'test'
+  ...
+# Subtest: 过期采样判 stale，不按旧值放行
+ok 105 - 过期采样判 stale，不按旧值放行
+  ---
+  duration_ms: 0.3255
+  type: 'test'
+  ...
+# Subtest: 非法分数/非法 maxAge 判不可用
+ok 106 - 非法分数/非法 maxAge 判不可用
+  ---
+  duration_ms: 0.1658
+  type: 'test'
+  ...
+# Subtest: 缺失 CPU 的部分采样不作为后台低压力依据
+ok 107 - 缺失 CPU 的部分采样不作为后台低压力依据
+  ---
+  duration_ms: 1.5759
+  type: 'test'
+  ...
+# Subtest: 调用方必须提供 highWater；缺失/非法即拒绝（不内置阈值权威）
+ok 108 - 调用方必须提供 highWater；缺失/非法即拒绝（不内置阈值权威）
+  ---
+  duration_ms: 0.2258
+  type: 'test'
+  ...
+# Subtest: 高压拒绝后台、低压放行，判定不影响前台
+ok 109 - 高压拒绝后台、低压放行，判定不影响前台
+  ---
+  duration_ms: 0.166
+  type: 'test'
+  ...
+# (node:36224) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/taskGaps.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 缺口1：DeviceAction/ActionJournalEntry 无 task_id/run_id/effect_id 关联
+ok 110 - 缺口1：DeviceAction/ActionJournalEntry 无 task_id/run_id/effect_id 关联
+  ---
+  duration_ms: 2.1062
+  type: 'test'
+  ...
+# Subtest: 缺口2：broker 幂等日志不持久化——重启后同 action_id 会重复下发
+ok 111 - 缺口2：broker 幂等日志不持久化——重启后同 action_id 会重复下发
+  ---
+  duration_ms: 0.6003
+  type: 'test'
+  ...
+# Subtest: 缺口3：无统一 effect 引用与回执投影——任务侧拿不到可上传的回执
+ok 112 - 缺口3：无统一 effect 引用与回执投影——任务侧拿不到可上传的回执
+  ---
+  duration_ms: 0.3207
+  type: 'test'
+  ...
+# (node:3468) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/taskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 缺口证明：任务链路引用随动作进入 broker 日志（task→action→effect 可追溯）
+ok 113 - 缺口证明：任务链路引用随动作进入 broker 日志（task→action→effect 可追溯）
+  ---
+  duration_ms: 3.6855
+  type: 'test'
+  ...
+# Subtest: createProposal：引用完整且稳定，run_id 缺省派生自任务，风险按 broker 同表推导
+ok 114 - createProposal：引用完整且稳定，run_id 缺省派生自任务，风险按 broker 同表推导
+  ---
+  duration_ms: 0.6827
+  type: 'test'
+  ...
+# Subtest: proposalToAction：预期观察映射 expect_text，引用随动作下发
+ok 115 - proposalToAction：预期观察映射 expect_text，引用随动作下发
+  ---
+  duration_ms: 0.2506
+  type: 'test'
+  ...
+# Subtest: 执行成功：回执终态 verified、证据与时间戳齐备，任务链可查
+ok 116 - 执行成功：回执终态 verified、证据与时间戳齐备，任务链可查
+  ---
+  duration_ms: 1.0607
+  type: 'test'
+  ...
+# Subtest: 同一 action_id 重放：返回原回执，不重复下发，原始证据保留
+ok 117 - 同一 action_id 重放：返回原回执，不重复下发，原始证据保留
+  ---
+  duration_ms: 4.2202
+  type: 'test'
+  ...
+# Subtest: 未知副作用（unverified）不是终态：不自动重放，需人工对账
+ok 118 - 未知副作用（unverified）不是终态：不自动重放，需人工对账
+  ---
+  duration_ms: 5.1828
+  type: 'test'
+  ...
+# Subtest: 高风险无确认：终态 denied；重放不重复询问、不下发
+ok 119 - 高风险无确认：终态 denied；重放不重复询问、不下发
+  ---
+  duration_ms: 0.7941
+  type: 'test'
+  ...
+# Subtest: 无障碍未授权：终态 unavailable，重试需新提议（新 action_id）
+ok 120 - 无障碍未授权：终态 unavailable，重试需新提议（新 action_id）
+  ---
+  duration_ms: 0.8898
+  type: 'test'
+  ...
+# Subtest: 失败动作不自动重放：同一 action_id 返回原失败回执
+ok 121 - 失败动作不自动重放：同一 action_id 返回原失败回执
+  ---
+  duration_ms: 0.6028
+  type: 'test'
+  ...
+# Subtest: 中断恢复：先落提议后下发——崩溃窗口（已记账无回执）不自动重发
+ok 122 - 中断恢复：先落提议后下发——崩溃窗口（已记账无回执）不自动重发
+  ---
+  duration_ms: 1.0094
+  type: 'test'
+  ...
+# Subtest: 台账持久化：重启（新实例）后提议、回执与任务链完整
+ok 123 - 台账持久化：重启（新实例）后提议、回执与任务链完整
+  ---
+  duration_ms: 6.8232
+  type: 'test'
+  ...
+# Subtest: 台账容量上界：超出 limit 淘汰最旧条目
+ok 124 - 台账容量上界：超出 limit 淘汰最旧条目
+  ---
+  duration_ms: 1.6642
+  type: 'test'
+  ...
+# Subtest: 上传投影：回执只含引用与状态，提议脱敏文本目标，本地保留字段列明
+ok 125 - 上传投影：回执只含引用与状态，提议脱敏文本目标，本地保留字段列明
+  ---
+  duration_ms: 0.6047
+  type: 'test'
+  ...
+# (node:37240) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/voice.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: missing native module degrades to unavailable without throwing
+ok 126 - missing native module degrades to unavailable without throwing
+  ---
+  duration_ms: 2.4965
+  type: 'test'
+  ...
+# Subtest: native capability is normalized with engine names
+ok 127 - native capability is normalized with engine names
+  ---
+  duration_ms: 0.3001
+  type: 'test'
+  ...
+# Subtest: capability failure is treated as unavailable
+ok 128 - capability failure is treated as unavailable
+  ---
+  duration_ms: 0.2293
+  type: 'test'
+  ...
+# Subtest: timeout is clamped to the supported window
+ok 129 - timeout is clamped to the supported window
+  ---
+  duration_ms: 0.195
+  type: 'test'
+  ...
+# Subtest: transcription trims text and forwards the clamped timeout
+ok 130 - transcription trims text and forwards the clamped timeout
+  ---
+  duration_ms: 1.3574
+  type: 'test'
+  ...
+# Subtest: empty result never carries stale transcript
+ok 131 - empty result never carries stale transcript
+  ---
+  duration_ms: 0.1862
+  type: 'test'
+  ...
+# Subtest: denied and unknown statuses are mapped safely
+ok 132 - denied and unknown statuses are mapped safely
+  ---
+  duration_ms: 0.3273
+  type: 'test'
+  ...
+# Subtest: module exceptions become failed with the error message
+ok 133 - module exceptions become failed with the error message
+  ---
+  duration_ms: 0.2718
+  type: 'test'
+  ...
+# Subtest: speech text collapses whitespace and caps length
+ok 134 - speech text collapses whitespace and caps length
+  ---
+  duration_ms: 0.1905
+  type: 'test'
+  ...
+# Subtest: speak sends prepared text to the native module
+ok 135 - speak sends prepared text to the native module
+  ---
+  duration_ms: 0.4195
+  type: 'test'
+  ...
+# Subtest: empty speech input fails without calling the module
+ok 136 - empty speech input fails without calling the module
+  ---
+  duration_ms: 1.7252
+  type: 'test'
+  ...
+# Subtest: normalizeSpeakResult maps unknown statuses to failed
+ok 137 - normalizeSpeakResult maps unknown statuses to failed
+  ---
+  duration_ms: 2.7652
+  type: 'test'
+  ...
+# Subtest: cancel and stop delegate to the native module
+ok 138 - cancel and stop delegate to the native module
+  ---
+  duration_ms: 1.2483
+  type: 'test'
+  ...
+# (node:36320) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/device/voiceEntry.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 转写完成不等于执行成功：只产出可提交 goal，不自动提交
+ok 139 - 转写完成不等于执行成功：只产出可提交 goal，不自动提交
+  ---
+  duration_ms: 1.8669
+  type: 'test'
+  ...
+# Subtest: 非识别成功状态一律不可提交且不保留文本
+ok 140 - 非识别成功状态一律不可提交且不保留文本
+  ---
+  duration_ms: 2.8302
+  type: 'test'
+  ...
+# Subtest: 声称识别成功但文本为空按空结果处理
+ok 141 - 声称识别成功但文本为空按空结果处理
+  ---
+  duration_ms: 0.3557
+  type: 'test'
+  ...
+# Subtest: 转写错误可修正：提交取修正文本，原始转写保留
+ok 142 - 转写错误可修正：提交取修正文本，原始转写保留
+  ---
+  duration_ms: 0.3366
+  type: 'test'
+  ...
+# Subtest: 修正后清空文本变为不可提交，不退回原始转写
+ok 143 - 修正后清空文本变为不可提交，不退回原始转写
+  ---
+  duration_ms: 0.232
+  type: 'test'
+  ...
+# Subtest: 清除语音草稿回到无语音且不可提交
+ok 144 - 清除语音草稿回到无语音且不可提交
+  ---
+  duration_ms: 0.4462
+  type: 'test'
+  ...
+# Subtest: 声明识别/播报及离线范围：可用时如实标注引擎相关
+ok 145 - 声明识别/播报及离线范围：可用时如实标注引擎相关
+  ---
+  duration_ms: 0.223
+  type: 'test'
+  ...
+# Subtest: 声明范围：缺依赖时离线与识别均标不可用
+ok 146 - 声明范围：缺依赖时离线与识别均标不可用
+  ---
+  duration_ms: 0.1881
+  type: 'test'
+  ...
+# Subtest: 识别可用但麦克风未授权：范围显式标注未授权
+ok 147 - 识别可用但麦克风未授权：范围显式标注未授权
+  ---
+  duration_ms: 0.3157
+  type: 'test'
+  ...
+# Subtest: 空草稿桥接失败并给出原因，不产生提交目标
+ok 148 - 空草稿桥接失败并给出原因，不产生提交目标
+  ---
+  duration_ms: 0.3199
+  type: 'test'
+  ...
+# Subtest: 重复录音以最后一次结果整体替换（不叠加）
+ok 149 - 重复录音以最后一次结果整体替换（不叠加）
+  ---
+  duration_ms: 0.2804
+  type: 'test'
+  ...
+# (node:17748) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/approvals.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: shows full binding, accepts once, and does not equate acceptance with task success
+ok 150 - shows full binding, accepts once, and does not equate acceptance with task success
+  ---
+  duration_ms: 5.219
+  type: 'test'
+  ...
+# Subtest: reject and per-approval state are independent
+ok 151 - reject and per-approval state are independent
+  ---
+  duration_ms: 0.4368
+  type: 'test'
+  ...
+# Subtest: expiration and offline mode disable decisions while retaining details
+ok 152 - expiration and offline mode disable decisions while retaining details
+  ---
+  duration_ms: 0.3872
+  type: 'test'
+  ...
+# Subtest: status or binding changes on re-read require review before decision
+ok 153 - status or binding changes on re-read require review before decision
+  ---
+  duration_ms: 0.3021
+  type: 'test'
+  ...
+# Subtest: HTTP 401 errors never echo a credential or server error body
+ok 154 - HTTP 401 errors never echo a credential or server error body
+  ---
+  duration_ms: 6.6183
+  type: 'test'
+  ...
+# Subtest: HTTP 403 errors never echo a credential or server error body
+ok 155 - HTTP 403 errors never echo a credential or server error body
+  ---
+  duration_ms: 0.2649
+  type: 'test'
+  ...
+# Subtest: HTTP 404 errors never echo a credential or server error body
+ok 156 - HTTP 404 errors never echo a credential or server error body
+  ---
+  duration_ms: 0.241
+  type: 'test'
+  ...
+# Subtest: HTTP 409 errors never echo a credential or server error body
+ok 157 - HTTP 409 errors never echo a credential or server error body
+  ---
+  duration_ms: 0.3202
+  type: 'test'
+  ...
+# Subtest: HTTP 500 errors never echo a credential or server error body
+ok 158 - HTTP 500 errors never echo a credential or server error body
+  ---
+  duration_ms: 0.7467
+  type: 'test'
+  ...
+# Subtest: an ambiguous POST is checked by the same approval id before any retry
+ok 159 - an ambiguous POST is checked by the same approval id before any retry
+  ---
+  duration_ms: 0.5438
+  type: 'test'
+  ...
+# Subtest: responses from a previous credential or disposed page cannot enable a button
+ok 160 - responses from a previous credential or disposed page cannot enable a button
+  ---
+  duration_ms: 0.5122
+  type: 'test'
+  ...
+# Subtest: a response for another task cannot be approved
+ok 161 - a response for another task cannot be approved
+  ---
+  duration_ms: 0.2878
+  type: 'test'
+  ...
+# (node:78552) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/artifactPanel.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 有真实文件的产物可打开并带追溯信息
+ok 162 - 有真实文件的产物可打开并带追溯信息
+  ---
+  duration_ms: 1.0827
+  type: 'test'
+  ...
+# Subtest: 无文件/无摘要的产物不显示打开入口
+ok 163 - 无文件/无摘要的产物不显示打开入口
+  ---
+  duration_ms: 0.2915
+  type: 'test'
+  ...
+# Subtest: 文本预览截断如实标注
+ok 164 - 文本预览截断如实标注
+  ---
+  duration_ms: 0.2746
+  type: 'test'
+  ...
+# Subtest: 二进制预览不当作文本展示
+ok 165 - 二进制预览不当作文本展示
+  ---
+  duration_ms: 0.1378
+  type: 'test'
+  ...
+# Subtest: 空结果提示为无成果而不是已交付
+ok 166 - 空结果提示为无成果而不是已交付
+  ---
+  duration_ms: 0.244
+  type: 'test'
+  ...
+# Subtest: 未关联服务端任务时明确提示无成果可查
+ok 167 - 未关联服务端任务时明确提示无成果可查
+  ---
+  duration_ms: 1.1112
+  type: 'test'
+  ...
+# (node:39432) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/artifactsView.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: toCardView：类型标签/大小格式/digest/可下载
+ok 168 - toCardView：类型标签/大小格式/digest/可下载
+  ---
+  duration_ms: 1.154
+  type: 'test'
+  ...
+# Subtest: 无 sha256 或零字节不显示下载
+ok 169 - 无 sha256 或零字节不显示下载
+  ---
+  duration_ms: 0.2154
+  type: 'test'
+  ...
+# Subtest: 预览文本与截断提示
+ok 170 - 预览文本与截断提示
+  ---
+  duration_ms: 0.1931
+  type: 'test'
+  ...
+# Subtest: formatBytes 格式
+ok 171 - formatBytes 格式
+  ---
+  duration_ms: 0.1184
+  type: 'test'
+  ...
+# Subtest: rebuildPlanView：只重做受影响产物
+ok 172 - rebuildPlanView：只重做受影响产物
+  ---
+  duration_ms: 0.9621
+  type: 'test'
+  ...
+# Subtest: rebuildPlanView：无变更
+ok 173 - rebuildPlanView：无变更
+  ---
+  duration_ms: 0.1373
+  type: 'test'
+  ...
+# (node:18536) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/attachments.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: add requires explicit consent and non-empty bytes
+ok 174 - add requires explicit consent and non-empty bytes
+  ---
+  duration_ms: 5.7748
+  type: 'test'
+  ...
+# Subtest: add records digest, chunk plan and pending status
+ok 175 - add records digest, chunk plan and pending status
+  ---
+  duration_ms: 25.1462
+  type: 'test'
+  ...
+# Subtest: flush uploads every chunk, verifies digest and marks complete
+ok 176 - flush uploads every chunk, verifies digest and marks complete
+  ---
+  duration_ms: 57.4842
+  type: 'test'
+  ...
+# Subtest: flush resumes from server-reported chunk progress
+ok 177 - flush resumes from server-reported chunk progress
+  ---
+  duration_ms: 23.6688
+  type: 'test'
+  ...
+# Subtest: network failure marks failed and a later flush retries
+ok 178 - network failure marks failed and a later flush retries
+  ---
+  duration_ms: 2.2053
+  type: 'test'
+  ...
+# Subtest: chunk digest mismatch is rejected before completion
+ok 179 - chunk digest mismatch is rejected before completion
+  ---
+  duration_ms: 1.9674
+  type: 'test'
+  ...
+# Subtest: full digest mismatch clears progress and retry re-uploads
+ok 180 - full digest mismatch clears progress and retry re-uploads
+  ---
+  duration_ms: 5.5174
+  type: 'test'
+  ...
+# Subtest: server 422 on complete clears progress for full retry
+ok 181 - server 422 on complete clears progress for full retry
+  ---
+  duration_ms: 1.5851
+  type: 'test'
+  ...
+# Subtest: after restart bytes are gone and flush reports failure
+ok 182 - after restart bytes are gone and flush reports failure
+  ---
+  duration_ms: 0.5497
+  type: 'test'
+  ...
+# Subtest: re-adding identical content reuses the record and resumes chunks
+ok 183 - re-adding identical content reuses the record and resumes chunks
+  ---
+  duration_ms: 23.2358
+  type: 'test'
+  ...
+# Subtest: re-adding completed content does not upload again
+ok 184 - re-adding completed content does not upload again
+  ---
+  duration_ms: 1.0372
+  type: 'test'
+  ...
+# Subtest: different content creates a separate attachment
+ok 185 - different content creates a separate attachment
+  ---
+  duration_ms: 0.4736
+  type: 'test'
+  ...
+# Subtest: queue carries attachment refs and rejects invalid ones
+ok 186 - queue carries attachment refs and rejects invalid ones
+  ---
+  duration_ms: 2.0639
+  type: 'test'
+  ...
+# (node:32828) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/background.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: offline health check skips sync without throwing
+ok 187 - offline health check skips sync without throwing
+  ---
+  duration_ms: 2.5565
+  type: 'test'
+  ...
+# Subtest: online run flushes events and tasks before refreshing
+ok 188 - online run flushes events and tasks before refreshing
+  ---
+  duration_ms: 0.3584
+  type: 'test'
+  ...
+# Subtest: flush failure is reported and refresh is skipped
+ok 189 - flush failure is reported and refresh is skipped
+  ---
+  duration_ms: 0.2852
+  type: 'test'
+  ...
+# Subtest: refresh failure never rejects the headless task
+ok 190 - refresh failure never rejects the headless task
+  ---
+  duration_ms: 0.2649
+  type: 'test'
+  ...
+# Subtest: background interval is clamped and rounded
+ok 191 - background interval is clamped and rounded
+  ---
+  duration_ms: 0.2156
+  type: 'test'
+  ...
+# (node:74020) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/backgroundNative.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: missing native module degrades to unavailable
+ok 192 - missing native module degrades to unavailable
+  ---
+  duration_ms: 1.3831
+  type: 'test'
+  ...
+# Subtest: status maps native values and treats zero as no attempt
+ok 193 - status maps native values and treats zero as no attempt
+  ---
+  duration_ms: 2.2109
+  type: 'test'
+  ...
+# Subtest: enable clamps invalid intervals before calling native
+ok 194 - enable clamps invalid intervals before calling native
+  ---
+  duration_ms: 1.5773
+  type: 'test'
+  ...
+# Subtest: disable and run-now delegate once
+ok 195 - disable and run-now delegate once
+  ---
+  duration_ms: 0.3676
+  type: 'test'
+  ...
+# (node:45932) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/backgroundNotificationReview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# [background-sync] online=true flushed=true refreshed=true notified=0 error=none
+# [background-sync] online=true flushed=true refreshed=true notified=0 error=none
+# [background-sync] online=true flushed=true refreshed=true notified=0 error=none
+# [background-sync] online=false flushed=false refreshed=false notified=0 error=offline
+# [background-sync] online=true flushed=true refreshed=true notified=1 error=none
+# [background-sync] online=true flushed=true refreshed=false notified=0 error=sync upload failed
+# [background-sync] online=true flushed=true refreshed=true notified=1 error=none
+# [background-sync] online=true flushed=true refreshed=false notified=0 error=sync upload failed
+# [background-sync] online=true flushed=true refreshed=true notified=0 error=none
+# [background-sync] online=true flushed=true refreshed=false notified=0 error=sync upload failed
+# [background-sync] online=true flushed=true refreshed=true notified=1 error=none
+# [background-sync] online=true flushed=true refreshed=false notified=0 error=sync upload failed
+# Subtest: native-lookup notification failure preserves actual successful sync and refresh
+ok 196 - native-lookup notification failure preserves actual successful sync and refresh
+  ---
+  duration_ms: 35.7157
+  type: 'test'
+  ...
+# Subtest: after-read notification failure preserves actual successful sync and refresh
+ok 197 - after-read notification failure preserves actual successful sync and refresh
+  ---
+  duration_ms: 13.3946
+  type: 'test'
+  ...
+# Subtest: before-read notification failure preserves actual successful sync and refresh
+ok 198 - before-read notification failure preserves actual successful sync and refresh
+  ---
+  duration_ms: 3.8709
+  type: 'test'
+  ...
+# Subtest: offline sync retains its error and does not invoke the notification bridge
+ok 199 - offline sync retains its error and does not invoke the notification bridge
+  ---
+  duration_ms: 0.5146
+  type: 'test'
+  ...
+# Subtest: actual background assembly still posts a successful transition
+ok 200 - actual background assembly still posts a successful transition
+  ---
+  duration_ms: 1.7465
+  type: 'test'
+  ...
+# Subtest: a resolved unsuccessful SyncResult is preserved as a flush failure, without notification
+ok 201 - a resolved unsuccessful SyncResult is preserved as a flush failure, without notification
+  ---
+  duration_ms: 1.9045
+  type: 'test'
+  ...
+# Subtest: assembly baselines historical DONE before refresh but not a newly completed task
+ok 202 - assembly baselines historical DONE before refresh but not a newly completed task
+  ---
+  duration_ms: 2.4364
+  type: 'test'
+  ...
+# Subtest: missing pre-sync snapshot cannot establish an empty baseline and replay history
+ok 203 - missing pre-sync snapshot cannot establish an empty baseline and replay history
+  ---
+  duration_ms: 2.8994
+  type: 'test'
+  ...
+# Subtest: a missing snapshot preserves recovery when an earlier reliable baseline exists
+ok 204 - a missing snapshot preserves recovery when an earlier reliable baseline exists
+  ---
+  duration_ms: 1.3413
+  type: 'test'
+  ...
+# (node:35428) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/budget.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: formatCost / formatCalls 基本格式
+ok 205 - formatCost / formatCalls 基本格式
+  ---
+  duration_ms: 1.3515
+  type: 'test'
+  ...
+# Subtest: unknown 不能当 0 金额：单独标注
+ok 206 - unknown 不能当 0 金额：单独标注
+  ---
+  duration_ms: 2.4558
+  type: 'test'
+  ...
+# Subtest: 预算状态三档：ok / warning(≥80%) / exhausted(=100%)
+ok 207 - 预算状态三档：ok / warning(≥80%) / exhausted(=100%)
+  ---
+  duration_ms: 0.3506
+  type: 'test'
+  ...
+# Subtest: 预算耗尽不推断产物已保留；独立核验结果单独传入
+ok 208 - 预算耗尽不推断产物已保留；独立核验结果单独传入
+  ---
+  duration_ms: 0.3121
+  type: 'test'
+  ...
+# Subtest: maxModelCalls 未定义时如实显示未知
+ok 209 - maxModelCalls 未定义时如实显示未知
+  ---
+  duration_ms: 0.2281
+  type: 'test'
+  ...
+# Subtest: taskBudgetView：needs_you 状态透传
+ok 210 - taskBudgetView：needs_you 状态透传
+  ---
+  duration_ms: 0.4218
+  type: 'test'
+  ...
+# (node:66600) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/capabilities.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 六档服务端状态逐档投影为用户视图与恢复路径
+ok 211 - 六档服务端状态逐档投影为用户视图与恢复路径
+  ---
+  duration_ms: 1.4286
+  type: 'test'
+  ...
+# Subtest: 未知状态不伪装可用：fallback 归为 unknown
+ok 212 - 未知状态不伪装可用：fallback 归为 unknown
+  ---
+  duration_ms: 0.2616
+  type: 'test'
+  ...
+# Subtest: 拒绝/撤销后受保护动作不能执行：blocked 守卫
+ok 213 - 拒绝/撤销后受保护动作不能执行：blocked 守卫
+  ---
+  duration_ms: 4.2037
+  type: 'test'
+  ...
+# Subtest: 设备动作能力在本机无障碍未开启时覆盖为待设置
+ok 214 - 设备动作能力在本机无障碍未开启时覆盖为待设置
+  ---
+  duration_ms: 0.3371
+  type: 'test'
+  ...
+# (node:73804) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/contract.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 契约展示：全字段投影
+ok 215 - 契约展示：全字段投影
+  ---
+  duration_ms: 8.0855
+  type: 'test'
+  ...
+# Subtest: 空契约：hasContract=false
+ok 216 - 空契约：hasContract=false
+  ---
+  duration_ms: 0.2927
+  type: 'test'
+  ...
+# Subtest: 旧任务（无契约字段）兼容
+ok 217 - 旧任务（无契约字段）兼容
+  ---
+  duration_ms: 0.12
+  type: 'test'
+  ...
+# Subtest: acceptance_criteria 兼容非标准格式
+ok 218 - acceptance_criteria 兼容非标准格式
+  ---
+  duration_ms: 0.1399
+  type: 'test'
+  ...
+# (node:9140) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/controls.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 执行中任务：可取消和暂停
+ok 219 - 执行中任务：可取消和暂停
+  ---
+  duration_ms: 1.1049
+  type: 'test'
+  ...
+# Subtest: 暂停中任务：可继续（无暂停选项）
+ok 220 - 暂停中任务：可继续（无暂停选项）
+  ---
+  duration_ms: 0.221
+  type: 'test'
+  ...
+# Subtest: 终态任务：无控制动作
+ok 221 - 终态任务：无控制动作
+  ---
+  duration_ms: 1.2466
+  type: 'test'
+  ...
+# Subtest: NEEDS_RECONCILE：确认重提选项
+ok 222 - NEEDS_RECONCILE：确认重提选项
+  ---
+  duration_ms: 0.2013
+  type: 'test'
+  ...
+# Subtest: 目标变更：新目标创建新任务，旧任务保留
+ok 223 - 目标变更：新目标创建新任务，旧任务保留
+  ---
+  duration_ms: 0.2983
+  type: 'test'
+  ...
+# Subtest: 安全恢复：未决副作用阻断，已决放行
+ok 224 - 安全恢复：未决副作用阻断，已决放行
+  ---
+  duration_ms: 0.2221
+  type: 'test'
+  ...
+# (node:44712) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/developedReview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 概念问答包含文件/报告/运行词仍应保持轻量聊天
+ok 225 - 概念问答包含文件/报告/运行词仍应保持轻量聊天
+  ---
+  duration_ms: 2.8555
+  type: 'test'
+  ...
+# Subtest: 过去的纠正不覆盖后来明确的新目标，约束不被当目标
+ok 226 - 过去的纠正不覆盖后来明确的新目标，约束不被当目标
+  ---
+  duration_ms: 1.5824
+  type: 'test'
+  ...
+# Subtest: 服务端终态不保留过期审批或网络等待动作
+ok 227 - 服务端终态不保留过期审批或网络等待动作
+  ---
+  duration_ms: 2.0948
+  type: 'test'
+  ...
+# Subtest: 已回答的澄清不能继续要求用户补充
+ok 228 - 已回答的澄清不能继续要求用户补充
+  ---
+  duration_ms: 0.2218
+  type: 'test'
+  ...
+# (node:57196) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/developedReview2.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 服务端终态覆盖NEEDS_RECONCILE旧缓存，不允许再次确认重提
+ok 229 - 服务端终态覆盖NEEDS_RECONCILE旧缓存，不允许再次确认重提
+  ---
+  duration_ms: 3.4527
+  type: 'test'
+  ...
+# Subtest: planned与未知副作用状态均不能宣称安全恢复
+ok 230 - planned与未知副作用状态均不能宣称安全恢复
+  ---
+  duration_ms: 0.3561
+  type: 'test'
+  ...
+# Subtest: 预算上限未知不能显示充足；零预算是硬上限
+ok 231 - 预算上限未知不能显示充足；零预算是硬上限
+  ---
+  duration_ms: 0.2485
+  type: 'test'
+  ...
+# Subtest: 未核对产物时不能宣称产物已保留，异常费用不得显示成金额
+ok 232 - 未核对产物时不能宣称产物已保留，异常费用不得显示成金额
+  ---
+  duration_ms: 0.2234
+  type: 'test'
+  ...
+# (node:34260) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/developedReview3.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: settings proposal reaches supported native operation through real adapter
+ok 233 - settings proposal reaches supported native operation through real adapter
+  ---
+  duration_ms: 13.2947
+  type: 'test'
+  ...
+# Subtest: work requiring planning must not invent click: 帮我整理报告
+ok 234 - work requiring planning must not invent click: 帮我整理报告
+  ---
+  duration_ms: 0.5349
+  type: 'test'
+  ...
+# Subtest: work requiring planning must not invent click: 打开设置然后发送消息
+ok 235 - work requiring planning must not invent click: 打开设置然后发送消息
+  ---
+  duration_ms: 0.2289
+  type: 'test'
+  ...
+# Subtest: work requiring planning must not invent click: 设置一个提醒
+ok 236 - work requiring planning must not invent click: 设置一个提醒
+  ---
+  duration_ms: 0.1486
+  type: 'test'
+  ...
+# Subtest: device proposal without task identity stays pending
+ok 237 - device proposal without task identity stays pending
+  ---
+  duration_ms: 0.2136
+  type: 'test'
+  ...
+# Subtest: verified action is not presented as completed whole task
+ok 238 - verified action is not presented as completed whole task
+  ---
+  duration_ms: 0.778
+  type: 'test'
+  ...
+# Subtest: non-success receipt labels retain denial and pending state
+ok 239 - non-success receipt labels retain denial and pending state
+  ---
+  duration_ms: 0.2434
+  type: 'test'
+  ...
+# Subtest: receipt cannot borrow another task identity
+ok 240 - receipt cannot borrow another task identity
+  ---
+  duration_ms: 0.5617
+  type: 'test'
+  ...
+# Subtest: inconsistent terminal flag cannot hide uncertain effect
+ok 241 - inconsistent terminal flag cannot hide uncertain effect
+  ---
+  duration_ms: 0.2381
+  type: 'test'
+  ...
+# Subtest: unknown receipt state fails closed without automatic replay
+ok 242 - unknown receipt state fails closed without automatic replay
+  ---
+  duration_ms: 0.3063
+  type: 'test'
+  ...
+# Subtest: old-run receipt cannot borrow current-run task view
+ok 243 - old-run receipt cannot borrow current-run task view
+  ---
+  duration_ms: 0.2247
+  type: 'test'
+  ...
+# (node:75848) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/deviceTaskApp.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: unknown and compound goals stay on the existing planner path
+ok 244 - unknown and compound goals stay on the existing planner path
+  ---
+  duration_ms: 2.5075
+  type: 'test'
+  ...
+# Subtest: prepare persists exact identity without dispatch or server submission
+ok 245 - prepare persists exact identity without dispatch or server submission
+  ---
+  duration_ms: 3.0776
+  type: 'test'
+  ...
+# Subtest: end-to-end local orchestration separates action verification from user acceptance
+ok 246 - end-to-end local orchestration separates action verification from user acceptance
+  ---
+  duration_ms: 8.286
+  type: 'test'
+  ...
+# Subtest: refusing authorization leaves the prepared task unclaimed
+ok 247 - refusing authorization leaves the prepared task unclaimed
+  ---
+  duration_ms: 0.6438
+  type: 'test'
+  ...
+# Subtest: restart and repeated refresh never dispatch again or enqueue duplicate receipts
+ok 248 - restart and repeated refresh never dispatch again or enqueue duplicate receipts
+  ---
+  duration_ms: 3.7299
+  type: 'test'
+  ...
+# Subtest: concurrent UI execution claims the prepared task once
+ok 249 - concurrent UI execution claims the prepared task once
+  ---
+  duration_ms: 1.7386
+  type: 'test'
+  ...
+# Subtest: cancellation while confirmation is pending prevents subsequent dispatch
+ok 250 - cancellation while confirmation is pending prevents subsequent dispatch
+  ---
+  duration_ms: 1.152
+  type: 'test'
+  ...
+# Subtest: an interrupted claimed task is never dispatched on restart
+ok 251 - an interrupted claimed task is never dispatched on restart
+  ---
+  duration_ms: 1.5419
+  type: 'test'
+  ...
+# Subtest: task storage failure before claim prevents any device dispatch
+ok 252 - task storage failure before claim prevents any device dispatch
+  ---
+  duration_ms: 0.9727
+  type: 'test'
+  ...
+# Subtest: receipt survives projection write failure and can be published after restart
+ok 253 - receipt survives projection write failure and can be published after restart
+  ---
+  duration_ms: 6.3141
+  type: 'test'
+  ...
+# Subtest: unverified action cannot be promoted to task success or retried
+ok 254 - unverified action cannot be promoted to task success or retried
+  ---
+  duration_ms: 1.3756
+  type: 'test'
+  ...
+# Subtest: device marker prevents even stale submission statuses from reaching server
+ok 255 - device marker prevents even stale submission statuses from reaching server
+  ---
+  duration_ms: 0.9635
+  type: 'test'
+  ...
+# Subtest: leaving foreground during confirmation does not claim or execute the task
+ok 256 - leaving foreground during confirmation does not claim or execute the task
+  ---
+  duration_ms: 0.5246
+  type: 'test'
+  ...
+# Subtest: real sync engine retries metadata only and never submits the device task
+ok 257 - real sync engine retries metadata only and never submits the device task
+  ---
+  duration_ms: 3.5864
+  type: 'test'
+  ...
+# Subtest: unknown receipt cannot be forged by corrupting the action ledger
+ok 258 - unknown receipt cannot be forged by corrupting the action ledger
+  ---
+  duration_ms: 0.6323
+  type: 'test'
+  ...
+# Subtest: foreground loss after durable claim remains pending without dispatch
+ok 259 - foreground loss after durable claim remains pending without dispatch
+  ---
+  duration_ms: 0.5406
+  type: 'test'
+  ...
+# Subtest: a proposal changed during confirmation cannot use the old consent
+ok 260 - a proposal changed during confirmation cannot use the old consent
+  ---
+  duration_ms: 0.4692
+  type: 'test'
+  ...
+# Subtest: a truthy consent value is not explicit approval
+ok 261 - a truthy consent value is not explicit approval
+  ---
+  duration_ms: 0.2766
+  type: 'test'
+  ...
+# Subtest: a full critical event queue preserves the device receipt until space is available
+ok 262 - a full critical event queue preserves the device receipt until space is available
+  ---
+  duration_ms: 29.303
+  type: 'test'
+  ...
+# Subtest: a reconciled receipt replaces the older unknown projection without another action
+ok 263 - a reconciled receipt replaces the older unknown projection without another action
+  ---
+  duration_ms: 1.5909
+  type: 'test'
+  ...
+# Subtest: two repository instances cannot overwrite each other's task updates
+ok 264 - two repository instances cannot overwrite each other's task updates
+  ---
+  duration_ms: 10.1337
+  type: 'test'
+  ...
+# (node:19888) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/deviceTaskReview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: persisted target outside the displayed settings scope is refused before consent
+ok 265 - persisted target outside the displayed settings scope is refused before consent
+  ---
+  duration_ms: 5.3247
+  type: 'test'
+  ...
+# Subtest: persisted kind outside the displayed settings scope is refused before consent
+ok 266 - persisted kind outside the displayed settings scope is refused before consent
+  ---
+  duration_ms: 1.1783
+  type: 'test'
+  ...
+# Subtest: persisted args outside the displayed settings scope is refused before consent
+ok 267 - persisted args outside the displayed settings scope is refused before consent
+  ---
+  duration_ms: 0.6408
+  type: 'test'
+  ...
+# Subtest: persisted expectation outside the displayed settings scope is refused before consent
+ok 268 - persisted expectation outside the displayed settings scope is refused before consent
+  ---
+  duration_ms: 0.7607
+  type: 'test'
+  ...
+# Subtest: persisted risk outside the displayed settings scope is refused before consent
+ok 269 - persisted risk outside the displayed settings scope is refused before consent
+  ---
+  duration_ms: 1.8967
+  type: 'test'
+  ...
+# Subtest: persisted goal outside the displayed settings scope is refused before consent
+ok 270 - persisted goal outside the displayed settings scope is refused before consent
+  ---
+  duration_ms: 0.7795
+  type: 'test'
+  ...
+# Subtest: receipt downgrade removes the stale awaiting-acceptance task state
+ok 271 - receipt downgrade removes the stale awaiting-acceptance task state
+  ---
+  duration_ms: 4.8553
+  type: 'test'
+  ...
+# Subtest: acceptance cannot use a receipt revoked while publishing its projection
+ok 272 - acceptance cannot use a receipt revoked while publishing its projection
+  ---
+  duration_ms: 3.8864
+  type: 'test'
+  ...
+# Subtest: invalid receipt kind is rejected before changing durable history
+ok 273 - invalid receipt kind is rejected before changing durable history
+  ---
+  duration_ms: 1.8704
+  type: 'test'
+  ...
+# Subtest: invalid receipt risk is rejected before changing durable history
+ok 274 - invalid receipt risk is rejected before changing durable history
+  ---
+  duration_ms: 0.6357
+  type: 'test'
+  ...
+# Subtest: invalid receipt terminal is rejected before changing durable history
+ok 275 - invalid receipt terminal is rejected before changing durable history
+  ---
+  duration_ms: 0.3767
+  type: 'test'
+  ...
+# Subtest: invalid receipt unknown state is rejected before changing durable history
+ok 276 - invalid receipt unknown state is rejected before changing durable history
+  ---
+  duration_ms: 0.2352
+  type: 'test'
+  ...
+# Subtest: invalid receipt replay flag is rejected before changing durable history
+ok 277 - invalid receipt replay flag is rejected before changing durable history
+  ---
+  duration_ms: 0.2067
+  type: 'test'
+  ...
+# Subtest: invalid receipt timestamp is rejected before changing durable history
+ok 278 - invalid receipt timestamp is rejected before changing durable history
+  ---
+  duration_ms: 2.3197
+  type: 'test'
+  ...
+# Subtest: orphan recovery receipt cannot poison the entire action ledger
+ok 279 - orphan recovery receipt cannot poison the entire action ledger
+  ---
+  duration_ms: 1.7955
+  type: 'test'
+  ...
+# Subtest: recovery cannot borrow a cached receipt from another task
+ok 280 - recovery cannot borrow a cached receipt from another task
+  ---
+  duration_ms: 1.796
+  type: 'test'
+  ...
+# Subtest: dependent task write holds off a second ledger instance until it completes
+ok 281 - dependent task write holds off a second ledger instance until it completes
+  ---
+  duration_ms: 8.7906
+  type: 'test'
+  ...
+# Subtest: a failed dependent write releases the receipt gate
+ok 282 - a failed dependent write releases the receipt gate
+  ---
+  duration_ms: 0.561
+  type: 'test'
+  ...
+# Subtest: user acceptance retains the exact receipt seen even if later evidence changes
+ok 283 - user acceptance retains the exact receipt seen even if later evidence changes
+  ---
+  duration_ms: 3.0255
+  type: 'test'
+  ...
+# (node:7780) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/evidence.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 普通事件投影为 internal/trusted，正文保留
+ok 284 - 普通事件投影为 internal/trusted，正文保留
+  ---
+  duration_ms: 3.8788
+  type: 'test'
+  ...
+# Subtest: 敏感事件类型 restricted+redacted，正文不复制
+ok 285 - 敏感事件类型 restricted+redacted，正文不复制
+  ---
+  duration_ms: 0.613
+  type: 'test'
+  ...
+# Subtest: 未知隐私分级 fail-safe 到 restricted
+ok 286 - 未知隐私分级 fail-safe 到 restricted
+  ---
+  duration_ms: 0.3732
+  type: 'test'
+  ...
+# Subtest: 密钥载荷拒绝入证据流
+ok 287 - 密钥载荷拒绝入证据流
+  ---
+  duration_ms: 0.7512
+  type: 'test'
+  ...
+# Subtest: 故障分级推断覆盖 critical/error/warn/unknown
+ok 288 - 故障分级推断覆盖 critical/error/warn/unknown
+  ---
+  duration_ms: 0.2905
+  type: 'test'
+  ...
+# (node:50492) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/export.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: sha256 and crc32 match standard vectors
+ok 289 - sha256 and crc32 match standard vectors
+  ---
+  duration_ms: 2.5648
+  type: 'test'
+  ...
+# Subtest: builds a self-consistent package with manifest and checksums
+ok 290 - builds a self-consistent package with manifest and checksums
+  ---
+  duration_ms: 26.5399
+  type: 'test'
+  ...
+# Subtest: filters by task, time range, failure, and capability
+ok 291 - filters by task, time range, failure, and capability
+  ---
+  duration_ms: 5.9965
+  type: 'test'
+  ...
+# Subtest: redacts sensitive payloads by default and secret keys always
+ok 292 - redacts sensitive payloads by default and secret keys always
+  ---
+  duration_ms: 4.5358
+  type: 'test'
+  ...
+# Subtest: attachments are opt-in, filtered, and redacted by sensitivity
+ok 293 - attachments are opt-in, filtered, and redacted by sensitivity
+  ---
+  duration_ms: 3.4555
+  type: 'test'
+  ...
+# Subtest: export is read-only and deterministic for a fixed clock
+ok 294 - export is read-only and deterministic for a fixed clock
+  ---
+  duration_ms: 2.7221
+  type: 'test'
+  ...
+# Subtest: exportTo cleans up the temp file when delivery fails
+ok 295 - exportTo cleans up the temp file when delivery fails
+  ---
+  duration_ms: 3.5444
+  type: 'test'
+  ...
+# (node:31856) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/importApi.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: diagnostics import posts raw zip with an admin token
+ok 296 - diagnostics import posts raw zip with an admin token
+  ---
+  duration_ms: 1.726
+  type: 'test'
+  ...
+# Subtest: import errors keep the server status and message
+ok 297 - import errors keep the server status and message
+  ---
+  duration_ms: 0.8421
+  type: 'test'
+  ...
+# (node:24416) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/memoryControl.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 记忆行展示来源/范围/状态与任务来源
+ok 298 - 记忆行展示来源/范围/状态与任务来源
+  ---
+  duration_ms: 3.8818
+  type: 'test'
+  ...
+# Subtest: 已撤销记忆不允许纠正但仍可删除
+ok 299 - 已撤销记忆不允许纠正但仍可删除
+  ---
+  duration_ms: 0.3259
+  type: 'test'
+  ...
+# Subtest: 删除报告展示保留边界与失败项
+ok 300 - 删除报告展示保留边界与失败项
+  ---
+  duration_ms: 0.3362
+  type: 'test'
+  ...
+# Subtest: 删除失败与部分失败明确可见
+ok 301 - 删除失败与部分失败明确可见
+  ---
+  duration_ms: 0.19
+  type: 'test'
+  ...
+# Subtest: 离线与权限错误有明确提示
+ok 302 - 离线与权限错误有明确提示
+  ---
+  duration_ms: 0.1568
+  type: 'test'
+  ...
+# Subtest: 范围策略展示已禁用范围
+ok 303 - 范围策略展示已禁用范围
+  ---
+  duration_ms: 0.3166
+  type: 'test'
+  ...
+# Subtest: 禁用/恢复范围校验
+ok 304 - 禁用/恢复范围校验
+  ---
+  duration_ms: 1.1222
+  type: 'test'
+  ...
+# (node:6440) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/memoryScopeReview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 禁用再恢复将范围放回允许列表，不开放其他范围
+ok 305 - 禁用再恢复将范围放回允许列表，不开放其他范围
+  ---
+  duration_ms: 1.8736
+  type: 'test'
+  ...
+# Subtest: allow未包含的范围同样显示为禁用
+ok 306 - allow未包含的范围同样显示为禁用
+  ---
+  duration_ms: 0.3848
+  type: 'test'
+  ...
+# Subtest: 策略读取失败不能显示全部启用或允许提交
+ok 307 - 策略读取失败不能显示全部启用或允许提交
+  ---
+  duration_ms: 0.2346
+  type: 'test'
+  ...
+# (node:47188) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/modes.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 模式判定：显式切换优先于输入特征
+ok 308 - 模式判定：显式切换优先于输入特征
+  ---
+  duration_ms: 1.3991
+  type: 'test'
+  ...
+# Subtest: 模式判定：请求代为执行/需要产物/需要工具 → work
+ok 309 - 模式判定：请求代为执行/需要产物/需要工具 → work
+  ---
+  duration_ms: 0.6403
+  type: 'test'
+  ...
+# Subtest: 模式判定：直接问答轻量完成 → chat
+ok 310 - 模式判定：直接问答轻量完成 → chat
+  ---
+  duration_ms: 0.2428
+  type: 'test'
+  ...
+# Subtest: 聊天转工作：goal 取最后目标；纠正口径优先
+ok 311 - 聊天转工作：goal 取最后目标；纠正口径优先
+  ---
+  duration_ms: 0.3746
+  type: 'test'
+  ...
+# Subtest: 聊天转工作：仅确认过的讨论升级为约束
+ok 312 - 聊天转工作：仅确认过的讨论升级为约束
+  ---
+  duration_ms: 0.2605
+  type: 'test'
+  ...
+# Subtest: 聊天转工作：已完成要点只进摘要，不重复执行
+ok 313 - 聊天转工作：已完成要点只进摘要，不重复执行
+  ---
+  duration_ms: 0.338
+  type: 'test'
+  ...
+# Subtest: 聊天转工作：讨论≠执行——assistant 结论不产生待办
+ok 314 - 聊天转工作：讨论≠执行——assistant 结论不产生待办
+  ---
+  duration_ms: 0.1862
+  type: 'test'
+  ...
+# (node:68492) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/packageImport.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: picked package decodes bytes and keeps the file name
+ok 315 - picked package decodes bytes and keeps the file name
+  ---
+  duration_ms: 1.9343
+  type: 'test'
+  ...
+# Subtest: cancelled or missing picks surface the native message
+ok 316 - cancelled or missing picks surface the native message
+  ---
+  duration_ms: 0.5439
+  type: 'test'
+  ...
+# Subtest: invalid, empty, and oversized packages are rejected
+ok 317 - invalid, empty, and oversized packages are rejected
+  ---
+  duration_ms: 0.3361
+  type: 'test'
+  ...
+# Subtest: HTTP header file names are ASCII and path-free
+ok 318 - HTTP header file names are ASCII and path-free
+  ---
+  duration_ms: 0.4363
+  type: 'test'
+  ...
+# (node:34104) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/pipeline.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 概念问题 → chat 模式
+ok 319 - 概念问题 → chat 模式
+  ---
+  duration_ms: 2.0776
+  type: 'test'
+  ...
+# Subtest: 请求执行 → work 模式
+ok 320 - 请求执行 → work 模式
+  ---
+  duration_ms: 0.5541
+  type: 'test'
+  ...
+# Subtest: 用户显式切换优先
+ok 321 - 用户显式切换优先
+  ---
+  duration_ms: 0.3279
+  type: 'test'
+  ...
+# Subtest: 成功回执 → 用户看到完成状态
+ok 322 - 成功回执 → 用户看到完成状态
+  ---
+  duration_ms: 0.3419
+  type: 'test'
+  ...
+# Subtest: 未验证副作用 → 警告不自动重放
+ok 323 - 未验证副作用 → 警告不自动重放
+  ---
+  duration_ms: 0.3169
+  type: 'test'
+  ...
+# Subtest: 拒绝 → 用户看到拒绝原因
+ok 324 - 拒绝 → 用户看到拒绝原因
+  ---
+  duration_ms: 0.175
+  type: 'test'
+  ...
+# Subtest: 上传载荷不含参数/文本/证据内容
+ok 325 - 上传载荷不含参数/文本/证据内容
+  ---
+  duration_ms: 0.2192
+  type: 'test'
+  ...
+# Subtest: chat → 无设备动作；work → 设备动作并投影
+ok 326 - chat → 无设备动作；work → 设备动作并投影
+  ---
+  duration_ms: 0.401
+  type: 'test'
+  ...
+# Subtest: 任务视图衔接：回执终态→任务视图显示完成
+ok 327 - 任务视图衔接：回执终态→任务视图显示完成
+  ---
+  duration_ms: 0.3926
+  type: 'test'
+  ...
+# (node:75816) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/projects.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 按 goal_id 归集项目
+ok 328 - 按 goal_id 归集项目
+  ---
+  duration_ms: 1.3177
+  type: 'test'
+  ...
+# Subtest: 无 goal_id 时按 intent 归集
+ok 329 - 无 goal_id 时按 intent 归集
+  ---
+  duration_ms: 0.3134
+  type: 'test'
+  ...
+# Subtest: 项目摘要：任务数/完成数/约束去重
+ok 330 - 项目摘要：任务数/完成数/约束去重
+  ---
+  duration_ms: 1.4991
+  type: 'test'
+  ...
+# Subtest: 跨会话延续：目标/约束/产物/未完成任务
+ok 331 - 跨会话延续：目标/约束/产物/未完成任务
+  ---
+  duration_ms: 0.5102
+  type: 'test'
+  ...
+# Subtest: 跨会话延续：全部完成时 openTasks 为空
+ok 332 - 跨会话延续：全部完成时 openTasks 为空
+  ---
+  duration_ms: 0.2745
+  type: 'test'
+  ...
+# (node:47980) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/queue.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: queue keeps FIFO order, dedupes, and numbers events per run
+ok 333 - queue keeps FIFO order, dedupes, and numbers events per run
+  ---
+  duration_ms: 4.9015
+  type: 'test'
+  ...
+# Subtest: queue rejects new events when capacity reached
+ok 334 - queue rejects new events when capacity reached
+  ---
+  duration_ms: 16.9938
+  type: 'test'
+  ...
+# Subtest: expired non-critical events are dropped with loss markers
+ok 335 - expired non-critical events are dropped with loss markers
+  ---
+  duration_ms: 1.4727
+  type: 'test'
+  ...
+# Subtest: capacity evicts lower tiers for critical events and warns
+ok 336 - capacity evicts lower tiers for critical events and warns
+  ---
+  duration_ms: 8.3587
+  type: 'test'
+  ...
+# Subtest: critical events can displace normal ones under capacity pressure
+ok 337 - critical events can displace normal ones under capacity pressure
+  ---
+  duration_ms: 6.6075
+  type: 'test'
+  ...
+# Subtest: claim marks events in flight and stale batches are recovered
+ok 338 - claim marks events in flight and stale batches are recovered
+  ---
+  duration_ms: 1.4448
+  type: 'test'
+  ...
+# Subtest: checkpoint only advances over confirmed continuous prefix
+ok 339 - checkpoint only advances over confirmed continuous prefix
+  ---
+  duration_ms: 1.6611
+  type: 'test'
+  ...
+# Subtest: sensitive events stay local and are never uploaded
+ok 340 - sensitive events stay local and are never uploaded
+  ---
+  duration_ms: 1.35
+  type: 'test'
+  ...
+# Subtest: secret payloads are rejected before entering the queue
+ok 341 - secret payloads are rejected before entering the queue
+  ---
+  duration_ms: 0.3686
+  type: 'test'
+  ...
+# Subtest: rejected events are quarantined and stay reviewable
+ok 342 - rejected events are quarantined and stay reviewable
+  ---
+  duration_ms: 1.3021
+  type: 'test'
+  ...
+# Subtest: repeated failures move an event to dead letters
+ok 343 - repeated failures move an event to dead letters
+  ---
+  duration_ms: 1.0167
+  type: 'test'
+  ...
+# Subtest: legacy snapshots migrate to the sync state machine
+ok 344 - legacy snapshots migrate to the sync state machine
+  ---
+  duration_ms: 0.2697
+  type: 'test'
+  ...
+# Subtest: corrupted snapshots fall back to an empty state
+ok 345 - corrupted snapshots fall back to an empty state
+  ---
+  duration_ms: 0.1642
+  type: 'test'
+  ...
+# (node:73152) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/sync.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: flush uploads pending events and advances checkpoint
+ok 346 - flush uploads pending events and advances checkpoint
+  ---
+  duration_ms: 33.9748
+  type: 'test'
+  ...
+# Subtest: network failure keeps events and backs off before retrying
+ok 347 - network failure keeps events and backs off before retrying
+  ---
+  duration_ms: 1.8293
+  type: 'test'
+  ...
+# Subtest: permanently rejected events are quarantined, not retried forever
+ok 348 - permanently rejected events are quarantined, not retried forever
+  ---
+  duration_ms: 1.7368
+  type: 'test'
+  ...
+# Subtest: HTTP 400 rejection details quarantine the batch
+ok 349 - HTTP 400 rejection details quarantine the batch
+  ---
+  duration_ms: 0.8229
+  type: 'test'
+  ...
+# Subtest: a persisted in-flight batch is recovered on the next session
+ok 350 - a persisted in-flight batch is recovered on the next session
+  ---
+  duration_ms: 0.8123
+  type: 'test'
+  ...
+# Subtest: duplicate acknowledgements also remove local events
+ok 351 - duplicate acknowledgements also remove local events
+  ---
+  duration_ms: 0.5741
+  type: 'test'
+  ...
+# Subtest: event sync runs before task submission on reconnect
+ok 352 - event sync runs before task submission on reconnect
+  ---
+  duration_ms: 3.1493
+  type: 'test'
+  ...
+# Subtest: server receipts are persisted locally with counts and deduped
+ok 353 - server receipts are persisted locally with counts and deduped
+  ---
+  duration_ms: 0.8633
+  type: 'test'
+  ...
+# Subtest: repeated failures raise and success clears the unavailable warning
+ok 354 - repeated failures raise and success clears the unavailable warning
+  ---
+  duration_ms: 1.3372
+  type: 'test'
+  ...
+# Subtest: stale last success with pending events raises the unavailable warning
+ok 355 - stale last success with pending events raises the unavailable warning
+  ---
+  duration_ms: 0.6298
+  type: 'test'
+  ...
+# (node:55392) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/taskAnswer.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: answer sends the question id and answer to the task endpoint
+ok 356 - answer sends the question id and answer to the task endpoint
+  ---
+  duration_ms: 34.6239
+  type: 'test'
+  ...
+# Subtest: approval requests send the admin credential only on the explicit admin call
+ok 357 - approval requests send the admin credential only on the explicit admin call
+  ---
+  duration_ms: 2.8807
+  type: 'test'
+  ...
+# (node:45392) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/tasks.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: offline time_query completes locally without server submission
+ok 358 - offline time_query completes locally without server submission
+  ---
+  duration_ms: 7.2039
+  type: 'test'
+  ...
+# Subtest: offline submission is stored with a stable idempotency key
+ok 359 - offline submission is stored with a stable idempotency key
+  ---
+  duration_ms: 0.8243
+  type: 'test'
+  ...
+# Subtest: flushPending submits with the same client_request_id across retries
+ok 360 - flushPending submits with the same client_request_id across retries
+  ---
+  duration_ms: 2.1489
+  type: 'test'
+  ...
+# Subtest: interrupted submissions require explicit reconciliation
+ok 361 - interrupted submissions require explicit reconciliation
+  ---
+  duration_ms: 0.9315
+  type: 'test'
+  ...
+# Subtest: refresh maps server statuses into local states
+ok 362 - refresh maps server statuses into local states
+  ---
+  duration_ms: 1.5371
+  type: 'test'
+  ...
+# Subtest: failed server tasks become DONE with a failure reason
+ok 363 - failed server tasks become DONE with a failure reason
+  ---
+  duration_ms: 0.9875
+  type: 'test'
+  ...
+# Subtest: mapServerStatus covers terminal and waiting states
+ok 364 - mapServerStatus covers terminal and waiting states
+  ---
+  duration_ms: 0.2234
+  type: 'test'
+  ...
+# Subtest: clarification and run identity persist across client restart and clear on resume
+ok 365 - clarification and run identity persist across client restart and clear on resume
+  ---
+  duration_ms: 0.9072
+  type: 'test'
+  ...
+# Subtest: pending approval ids persist and clear after task resumes
+ok 366 - pending approval ids persist and clear after task resumes
+  ---
+  duration_ms: 1.7739
+  type: 'test'
+  ...
+# (node:39176) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/taskview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 服务端九态语义逐态映射，终态判定不受模型文字影响
+ok 367 - 服务端九态语义逐态映射，终态判定不受模型文字影响
+  ---
+  duration_ms: 1.3558
+  type: 'test'
+  ...
+# Subtest: 终态判定：仅服务端终态有效
+ok 368 - 终态判定：仅服务端终态有效
+  ---
+  duration_ms: 0.2131
+  type: 'test'
+  ...
+# Subtest: 等待原因来自权威字段：审批/澄清/中断/网络
+ok 369 - 等待原因来自权威字段：审批/澄清/中断/网络
+  ---
+  duration_ms: 19.6178
+  type: 'test'
+  ...
+# Subtest: 离线本地阶段：无服务端状态按本地展示，DONE 不宣称服务端已验证
+ok 370 - 离线本地阶段：无服务端状态按本地展示，DONE 不宣称服务端已验证
+  ---
+  duration_ms: 0.5699
+  type: 'test'
+  ...
+# Subtest: 暂停任务给出可继续/取消的等待原因
+ok 371 - 暂停任务给出可继续/取消的等待原因
+  ---
+  duration_ms: 5.9236
+  type: 'test'
+  ...
+# (node:35516) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/transport.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: millisecond timestamps are converted to seconds
+ok 372 - millisecond timestamps are converted to seconds
+  ---
+  duration_ms: 1.5655
+  type: 'test'
+  ...
+# Subtest: second timestamps pass through unchanged
+ok 373 - second timestamps pass through unchanged
+  ---
+  duration_ms: 0.3266
+  type: 'test'
+  ...
+# Subtest: run identity, sequence and manifest are forwarded with the batch id
+ok 374 - run identity, sequence and manifest are forwarded with the batch id
+  ---
+  duration_ms: 0.239
+  type: 'test'
+  ...
+# (node:6820) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/offline/workspace.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 六种节点态可辨（服务端权威 node_states）
+ok 375 - 六种节点态可辨（服务端权威 node_states）
+  ---
+  duration_ms: 3.5196
+  type: 'test'
+  ...
+# Subtest: 未知服务端态按 pending 保守显示（fail-closed）
+ok 376 - 未知服务端态按 pending 保守显示（fail-closed）
+  ---
+  duration_ms: 0.4098
+  type: 'test'
+  ...
+# Subtest: 依赖失败时下游 blocked（服务端权威判定）
+ok 377 - 依赖失败时下游 blocked（服务端权威判定）
+  ---
+  duration_ms: 0.2224
+  type: 'test'
+  ...
+# Subtest: 无依据不显示百分比：部分完成但未全部终结
+ok 378 - 无依据不显示百分比：部分完成但未全部终结
+  ---
+  duration_ms: 0.3865
+  type: 'test'
+  ...
+# Subtest: 全部节点有终态时显示百分比
+ok 379 - 全部节点有终态时显示百分比
+  ---
+  duration_ms: 0.4239
+  type: 'test'
+  ...
+# Subtest: 部分成果可见
+ok 380 - 部分成果可见
+  ---
+  duration_ms: 0.3621
+  type: 'test'
+  ...
+# Subtest: 用户待办：审批和澄清
+ok 381 - 用户待办：审批和澄清
+  ---
+  duration_ms: 0.3185
+  type: 'test'
+  ...
+# Subtest: NEEDS_RECONCILE 出现在待办
+ok 382 - NEEDS_RECONCILE 出现在待办
+  ---
+  duration_ms: 0.2199
+  type: 'test'
+  ...
+# Subtest: 空 checkpoint：全部 pending、无成果、无百分比
+ok 383 - 空 checkpoint：全部 pending、无成果、无百分比
+  ---
+  duration_ms: 0.2348
+  type: 'test'
+  ...
+# (node:29232) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/update/artifact.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: downloader resumes from the staged offset and renames after digest check
+ok 384 - downloader resumes from the staged offset and renames after digest check
+  ---
+  duration_ms: 4.8457
+  type: 'test'
+  ...
+# Subtest: downloader rejects bad digest and truncated sources without renaming
+ok 385 - downloader rejects bad digest and truncated sources without renaming
+  ---
+  duration_ms: 2.2102
+  type: 'test'
+  ...
+# Subtest: downloader refuses when free space is below the next chunk
+ok 386 - downloader refuses when free space is below the next chunk
+  ---
+  duration_ms: 0.5315
+  type: 'test'
+  ...
+# Subtest: trusted key ring verifies real artifact bytes and rejects tampering
+ok 387 - trusted key ring verifies real artifact bytes and rejects tampering
+  ---
+  duration_ms: 40.0972
+  type: 'test'
+  ...
+# Subtest: prepare downloads and verifies before allowing activation
+ok 388 - prepare downloads and verifies before allowing activation
+  ---
+  duration_ms: 30.2765
+  type: 'test'
+  ...
+# Subtest: prepare rejects an untrusted signing key before downloading
+ok 389 - prepare rejects an untrusted signing key before downloading
+  ---
+  duration_ms: 22.5877
+  type: 'test'
+  ...
+# Subtest: prepare blocks missing permissions, incompatible app and bad signature
+ok 390 - prepare blocks missing permissions, incompatible app and bad signature
+  ---
+  duration_ms: 30.2317
+  type: 'test'
+  ...
+# Subtest: low free space and store failures never reach activation
+ok 391 - low free space and store failures never reach activation
+  ---
+  duration_ms: 35.0829
+  type: 'test'
+  ...
+# Subtest: bundle apply failure keeps the active slot and reports activation_failed
+ok 392 - bundle apply failure keeps the active slot and reports activation_failed
+  ---
+  duration_ms: 89.4369
+  type: 'test'
+  ...
+# Subtest: a restart before activation does not switch slots without a verifier/applier
+ok 393 - a restart before activation does not switch slots without a verifier/applier
+  ---
+  duration_ms: 13.3383
+  type: 'test'
+  ...
+# Subtest: failed receipts persist and flush with the same apply id
+ok 394 - failed receipts persist and flush with the same apply id
+  ---
+  duration_ms: 15.7208
+  type: 'test'
+  ...
+# Subtest: real artifact cannot use the legacy verify shortcut
+ok 395 - real artifact cannot use the legacy verify shortcut
+  ---
+  duration_ms: 22.0335
+  type: 'test'
+  ...
+# Subtest: activation rechecks actual bytes before calling the applier
+ok 396 - activation rechecks actual bytes before calling the applier
+  ---
+  duration_ms: 30.8819
+  type: 'test'
+  ...
+# Subtest: activation rechecks permission revocation
+ok 397 - activation rechecks permission revocation
+  ---
+  duration_ms: 54.9775
+  type: 'test'
+  ...
+# Subtest: activation rechecks signing key expiry
+ok 398 - activation rechecks signing key expiry
+  ---
+  duration_ms: 26.1385
+  type: 'test'
+  ...
+# Subtest: unknown-length downloads enforce the byte cap before appending
+ok 399 - unknown-length downloads enforce the byte cap before appending
+  ---
+  duration_ms: 0.2302
+  type: 'test'
+  ...
+# Subtest: cached files cannot evade the download byte cap
+ok 400 - cached files cannot evade the download byte cap
+  ---
+  duration_ms: 0.1092
+  type: 'test'
+  ...
+# Subtest: release IDs cannot escape the staging directory
+ok 401 - release IDs cannot escape the staging directory
+  ---
+  duration_ms: 11.3716
+  type: 'test'
+  ...
+# Subtest: short App versions are compared with zero-filled segments
+ok 402 - short App versions are compared with zero-filled segments
+  ---
+  duration_ms: 14.1836
+  type: 'test'
+  ...
+# Subtest: real rollback reapplies the known-good bundle before reporting success
+ok 403 - real rollback reapplies the known-good bundle before reporting success
+  ---
+  duration_ms: 45.1495
+  type: 'test'
+  ...
+# Subtest: failed rollback apply preserves the active slot and does not report success
+ok 404 - failed rollback apply preserves the active slot and does not report success
+  ---
+  duration_ms: 42.5405
+  type: 'test'
+  ...
+# Subtest: unacknowledged receipts are retained beyond fifty events
+ok 405 - unacknowledged receipts are retained beyond fifty events
+  ---
+  duration_ms: 39.1309
+  type: 'test'
+  ...
+# Subtest: concurrent health checks cannot overwrite each other's receipts
+ok 406 - concurrent health checks cannot overwrite each other's receipts
+  ---
+  duration_ms: 30.56
+  type: 'test'
+  ...
+# Subtest: unconfirmed releases cannot replace the last known healthy bundle
+ok 407 - unconfirmed releases cannot replace the last known healthy bundle
+  ---
+  duration_ms: 20.1204
+  type: 'test'
+  ...
+# (node:37500) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/update/bundleRuntime.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 没有活动包时执行前拒绝，工具不被调用
+ok 408 - 没有活动包时执行前拒绝，工具不被调用
+  ---
+  duration_ms: 2.4315
+  type: 'test'
+  ...
+# Subtest: 旧版包（未内嵌 workflow_def）不可执行，仅展示
+ok 409 - 旧版包（未内嵌 workflow_def）不可执行，仅展示
+  ---
+  duration_ms: 1.256
+  type: 'test'
+  ...
+# Subtest: 未注册工具在执行前拒绝
+ok 410 - 未注册工具在执行前拒绝
+  ---
+  duration_ms: 1.1852
+  type: 'test'
+  ...
+# Subtest: 不兼容版本与权限不足在执行前拒绝
+ok 411 - 不兼容版本与权限不足在执行前拒绝
+  ---
+  duration_ms: 3.0621
+  type: 'test'
+  ...
+# Subtest: 非法 workflow（环/重复ID/未知依赖/标识不一致）在执行前拒绝
+ok 412 - 非法 workflow（环/重复ID/未知依赖/标识不一致）在执行前拒绝
+  ---
+  duration_ms: 2.5249
+  type: 'test'
+  ...
+# Subtest: 装载层拒绝非法 workflow_def，非法包不会成为活动包
+ok 413 - 装载层拒绝非法 workflow_def，非法包不会成为活动包
+  ---
+  duration_ms: 0.8322
+  type: 'test'
+  ...
+# Subtest: 同一输入在更新前后使用各自版本 workflow，输出与证据绑定版本
+ok 414 - 同一输入在更新前后使用各自版本 workflow，输出与证据绑定版本
+  ---
+  duration_ms: 2.557
+  type: 'test'
+  ...
+# Subtest: DAG 按依赖执行并传递上游输出；失败阻断下游并校验输出契约
+ok 415 - DAG 按依赖执行并传递上游输出；失败阻断下游并校验输出契约
+  ---
+  duration_ms: 2.1632
+  type: 'test'
+  ...
+# Subtest: 探针：执行成功且期望相符才算 healthy
+ok 416 - 探针：执行成功且期望相符才算 healthy
+  ---
+  duration_ms: 1.7868
+  type: 'test'
+  ...
+# Subtest: 探针：期望不符或执行失败为 unhealthy
+ok 417 - 探针：期望不符或执行失败为 unhealthy
+  ---
+  duration_ms: 1.4618
+  type: 'test'
+  ...
+# Subtest: 探针：超时无结果为 unknown，不标健康
+ok 418 - 探针：超时无结果为 unknown，不标健康
+  ---
+  duration_ms: 26.463
+  type: 'test'
+  ...
+# Subtest: 探针：已激活但非法的包被判 unhealthy（执行前拒绝）
+ok 419 - 探针：已激活但非法的包被判 unhealthy（执行前拒绝）
+  ---
+  duration_ms: 0.4403
+  type: 'test'
+  ...
+# Subtest: declaresIntent 只匹配活动包声明的意图
+ok 420 - declaresIntent 只匹配活动包声明的意图
+  ---
+  duration_ms: 0.2846
+  type: 'test'
+  ...
+# Subtest: 健康失败自动回滚后，原健康包真实可执行且版本关联跨重启保留
+ok 421 - 健康失败自动回滚后，原健康包真实可执行且版本关联跨重启保留
+  ---
+  duration_ms: 59.2883
+  type: 'test'
+  ...
+# Subtest: versionAtLeast 语义与更新管理器一致
+ok 422 - versionAtLeast 语义与更新管理器一致
+  ---
+  duration_ms: 0.114
+  type: 'test'
+  ...
+# Subtest: validateWorkflowDef 拒绝无可执行体与非法参数
+ok 423 - validateWorkflowDef 拒绝无可执行体与非法参数
+  ---
+  duration_ms: 0.074
+  type: 'test'
+  ...
+# (node:65844) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/update/control.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 稳定/实验版本角色：已激活=stable，target.channel 判候选
+ok 424 - 稳定/实验版本角色：已激活=stable，target.channel 判候选
+  ---
+  duration_ms: 1.0131
+  type: 'test'
+  ...
+# Subtest: GLOBAL-01：运行中任务禁止热切换，理由用户可读
+ok 425 - GLOBAL-01：运行中任务禁止热切换，理由用户可读
+  ---
+  duration_ms: 0.383
+  type: 'test'
+  ...
+# Subtest: 无候选时激活被拒（理由可见）
+ok 426 - 无候选时激活被拒（理由可见）
+  ---
+  duration_ms: 0.1981
+  type: 'test'
+  ...
+# Subtest: 拒绝可见：failed 的 last_error 与 blocked 的 reasons 映射
+ok 427 - 拒绝可见：failed 的 last_error 与 blocked 的 reasons 映射
+  ---
+  duration_ms: 0.3189
+  type: 'test'
+  ...
+# Subtest: 回滚证据：rolled_back 回执绑定 from→to 版本与 digest
+ok 428 - 回滚证据：rolled_back 回执绑定 from→to 版本与 digest
+  ---
+  duration_ms: 1.3993
+  type: 'test'
+  ...
+# (node:24552) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/update/manager.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: init generates and persists an installation id
+ok 429 - init generates and persists an installation id
+  ---
+  duration_ms: 2.825
+  type: 'test'
+  ...
+# Subtest: check accepts a signed capability target
+ok 430 - check accepts a signed capability target
+  ---
+  duration_ms: 1.4926
+  type: 'test'
+  ...
+# Subtest: check blocks target without artifact digest
+ok 431 - check blocks target without artifact digest
+  ---
+  duration_ms: 0.443
+  type: 'test'
+  ...
+# Subtest: check blocks unsigned target
+ok 432 - check blocks unsigned target
+  ---
+  duration_ms: 0.3216
+  type: 'test'
+  ...
+# Subtest: check blocks native binary updates that need the app store
+ok 433 - check blocks native binary updates that need the app store
+  ---
+  duration_ms: 0.3205
+  type: 'test'
+  ...
+# Subtest: network failure during check marks phase failed and rethrows
+ok 434 - network failure during check marks phase failed and rethrows
+  ---
+  duration_ms: 0.8344
+  type: 'test'
+  ...
+# Subtest: verify refuses when storage headroom is insufficient
+ok 435 - verify refuses when storage headroom is insufficient
+  ---
+  duration_ms: 0.7354
+  type: 'test'
+  ...
+# Subtest: verify stores a pending candidate after integrity and space checks
+ok 436 - verify stores a pending candidate after integrity and space checks
+  ---
+  duration_ms: 0.718
+  type: 'test'
+  ...
+# Subtest: activate requires a verified candidate
+ok 437 - activate requires a verified candidate
+  ---
+  duration_ms: 0.8379
+  type: 'test'
+  ...
+# Subtest: verify without a candidate throws
+ok 438 - verify without a candidate throws
+  ---
+  duration_ms: 0.4652
+  type: 'test'
+  ...
+# Subtest: activate switches the inactive slot and keeps the previous release
+ok 439 - activate switches the inactive slot and keeps the previous release
+  ---
+  duration_ms: 3.8733
+  type: 'test'
+  ...
+# Subtest: health check success promotes the active slot to last known good
+ok 440 - health check success promotes the active slot to last known good
+  ---
+  duration_ms: 0.7674
+  type: 'test'
+  ...
+# Subtest: health check failure rolls back to the last known good release
+ok 441 - health check failure rolls back to the last known good release
+  ---
+  duration_ms: 1.2342
+  type: 'test'
+  ...
+# Subtest: rollback without a known good release throws
+ok 442 - rollback without a known good release throws
+  ---
+  duration_ms: 0.481
+  type: 'test'
+  ...
+# Subtest: report upload failure keeps the local activation and records the error
+ok 443 - report upload failure keeps the local activation and records the error
+  ---
+  duration_ms: 0.4711
+  type: 'test'
+  ...
+# Subtest: corrupted state falls back to an empty slot state
+ok 444 - corrupted state falls back to an empty slot state
+  ---
+  duration_ms: 0.1637
+  type: 'test'
+  ...
+# Subtest: candidate sync stores server stages without changing the active slot
+ok 445 - candidate sync stores server stages without changing the active slot
+  ---
+  duration_ms: 0.5531
+  type: 'test'
+  ...
+# Subtest: candidate sync failure records an error and keeps local state
+ok 446 - candidate sync failure records an error and keeps local state
+  ---
+  duration_ms: 0.4851
+  type: 'test'
+  ...
+# Subtest: state persisted before candidate sync defaults to an empty list
+ok 447 - state persisted before candidate sync defaults to an empty list
+  ---
+  duration_ms: 0.2141
+  type: 'test'
+  ...
+# (node:30380) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/update/nativeArtifact.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: base64 codec round-trips arbitrary bytes and UTF-8 text
+ok 448 - base64 codec round-trips arbitrary bytes and UTF-8 text
+  ---
+  duration_ms: 2.0707
+  type: 'test'
+  ...
+# Subtest: production trust never accepts the bundled development key
+ok 449 - production trust never accepts the bundled development key
+  ---
+  duration_ms: 2.126
+  type: 'test'
+  ...
+# Subtest: bundle applier installs to the slot and points the active marker
+ok 450 - bundle applier installs to the slot and points the active marker
+  ---
+  duration_ms: 0.5461
+  type: 'test'
+  ...
+# Subtest: bundle applier checks the bytes it reads against the verified digest
+ok 451 - bundle applier checks the bytes it reads against the verified digest
+  ---
+  duration_ms: 0.4546
+  type: 'test'
+  ...
+# Subtest: bundle applier rejects invalid payloads without touching the marker
+ok 452 - bundle applier rejects invalid payloads without touching the marker
+  ---
+  duration_ms: 0.339
+  type: 'test'
+  ...
+# Subtest: range source slices full responses and parses totals
+ok 453 - range source slices full responses and parses totals
+  ---
+  duration_ms: 4.5398
+  type: 'test'
+  ...
+# (node:73484) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/evalapp/outputs/device-review-xqaa8fnr/source/android-app/test/update/peerBundleReview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to \\\\?\\E:\\evalapp\\outputs\\device-review-xqaa8fnr\\source\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: normal execution has a hard wait bound and never dispatches a dependent after a late timeout
+ok 454 - normal execution has a hard wait bound and never dispatches a dependent after a late timeout
+  ---
+  duration_ms: 65.8139
+  type: 'test'
+  ...
+# Subtest: a health result cannot certify an active bundle switched during the probe
+ok 455 - a health result cannot certify an active bundle switched during the probe
+  ---
+  duration_ms: 0.8597
+  type: 'test'
+  ...
+# Subtest: recovery must satisfy the restored bundle expectation
+ok 456 - recovery must satisfy the restored bundle expectation
+  ---
+  duration_ms: 0.8646
+  type: 'test'
+  ...
+# Subtest: recovery cannot call the same failed release a rollback
+ok 457 - recovery cannot call the same failed release a rollback
+  ---
+  duration_ms: 0.4501
+  type: 'test'
+  ...
+# Subtest: active marker and slot contents must refer to the same artifact
+ok 458 - active marker and slot contents must refer to the same artifact
+  ---
+  duration_ms: 0.1318
+  type: 'test'
+  ...
+# Subtest: update manager validates the probe artifact inside its serialized health decision
+ok 459 - update manager validates the probe artifact inside its serialized health decision
+  ---
+  duration_ms: 0.6277
+  type: 'test'
+  ...
+1..459
+# tests 459
+# suites 0
+# pass 459
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1753.6274

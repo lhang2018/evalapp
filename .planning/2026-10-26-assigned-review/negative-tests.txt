@@ -1,0 +1,375 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFFFFFF                                                        [100%]
+================================== FAILURES ===================================
+_____ test_old_running_primary_beyond_500_still_blocks_and_then_recovers ______
+
+app = <evoagent.app.App object at 0x000001DE8B0C5B70>
+
+    def test_old_running_primary_beyond_500_still_blocks_and_then_recovers(app):
+        goal = ready(app)
+        primary = Task(user_goal="old user job", task_status=TaskStatus.RUNNING, created_at=1)
+        app.db.save_task(primary)
+        add_terminal_tasks(app)
+        result = app.goal_scheduler.tick(now=time.time())
+>       assert result["reason"] == "primary_load_guard"
+E       AssertionError: assert None == 'primary_load_guard'
+
+tests\test_assigned_scheduler_review_20261026.py:50: AssertionError
+______________ test_old_derived_in_flight_is_counted_beyond_500 _______________
+
+app = <evoagent.app.App object at 0x000001DE8B303CA0>
+
+    def test_old_derived_in_flight_is_counted_beyond_500(app):
+        task = Task(user_goal="old derived", task_status=TaskStatus.RUNNING,
+                    origin="derived", created_at=1)
+        app.db.save_task(task)
+        add_terminal_tasks(app)
+>       assert app.goal_scheduler.primary_load()["derived_in_flight"] == 1
+E       assert 0 == 1
+
+tests\test_assigned_scheduler_review_20261026.py:67: AssertionError
+___________ test_live_goal_beyond_1000_terminal_goals_is_registered ___________
+
+app = <evoagent.app.App object at 0x000001DE8B1D6350>
+
+    def test_live_goal_beyond_1000_terminal_goals_is_registered(app):
+>       target = app.goals.create("synthetic active goal", actor="review", goal_id="zz_target")
+
+tests\test_assigned_scheduler_review_20261026.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.goals.store.GoalStore object at 0x000001DE8B1D6B90>
+title = 'synthetic active goal'
+
+    def create(self, title, *, actor, owner=None, goal_type="explicit",
+               success_criteria=None, parent_goal_id=None, deadline=None,
+               goal_id=None, command_id=None):
+        title, actor = _text(title, "目标"), _text(actor, "actor")
+        owner = _text(owner or actor, "owner")
+        if goal_type not in GOAL_TYPE:
+            raise ValueError("非法goal_type")
+        if parent_goal_id is not None and (not isinstance(parent_goal_id, str) or not ID.fullmatch(parent_goal_id)):
+            raise ValueError("非法parent_goal_id")
+        if goal_type == "derived" and not parent_goal_id:
+            raise ValueError("派生目标必须关联父目标")
+        if not isinstance(success_criteria, list) or not success_criteria or any(
+                not isinstance(item, str) or not item.strip() for item in success_criteria):
+>           raise ValueError("success_criteria必须是非空字符串数组")
+E           ValueError: success_criteria必须是非空字符串数组
+
+evoagent\goals\store.py:198: ValueError
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-interval_seconds] _
+
+field = 'interval_seconds', direct = False
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:88: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-lease_ttl_seconds] _
+
+field = 'lease_ttl_seconds', direct = False
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:88: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-failure_backoff_seconds] _
+
+field = 'failure_backoff_seconds', direct = False
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:88: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-max_backoff_seconds] _
+
+field = 'max_backoff_seconds', direct = False
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:88: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-interval_seconds] _
+
+field = 'interval_seconds', direct = True
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:88: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-lease_ttl_seconds] _
+
+field = 'lease_ttl_seconds', direct = True
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:88: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-failure_backoff_seconds] _
+
+field = 'failure_backoff_seconds', direct = True
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:88: Failed
+_ test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-max_backoff_seconds] _
+
+field = 'max_backoff_seconds', direct = True
+
+    @pytest.mark.parametrize("field", ["interval_seconds", "lease_ttl_seconds",
+                                      "failure_backoff_seconds", "max_backoff_seconds"])
+    @pytest.mark.parametrize("direct", [False, True])
+    def test_infinite_policy_cannot_create_immortal_schedule_or_lease(field, direct):
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_assigned_scheduler_review_20261026.py:88: Failed
+_____ test_invalid_schedule_time_is_rejected_before_persisting[inf-sync] ______
+
+app = <evoagent.app.App object at 0x000001DE8B1956F0>, method = 'sync'
+now = inf
+
+    @pytest.mark.parametrize("method", ["sync", "tick"])
+    @pytest.mark.parametrize("now", [float("inf"), float("nan"), True])
+    def test_invalid_schedule_time_is_rejected_before_persisting(app, method, now):
+>       app.goals.create("synthetic pending", actor="review")
+
+tests\test_assigned_scheduler_review_20261026.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.goals.store.GoalStore object at 0x000001DE8B1948B0>
+title = 'synthetic pending'
+
+    def create(self, title, *, actor, owner=None, goal_type="explicit",
+               success_criteria=None, parent_goal_id=None, deadline=None,
+               goal_id=None, command_id=None):
+        title, actor = _text(title, "目标"), _text(actor, "actor")
+        owner = _text(owner or actor, "owner")
+        if goal_type not in GOAL_TYPE:
+            raise ValueError("非法goal_type")
+        if parent_goal_id is not None and (not isinstance(parent_goal_id, str) or not ID.fullmatch(parent_goal_id)):
+            raise ValueError("非法parent_goal_id")
+        if goal_type == "derived" and not parent_goal_id:
+            raise ValueError("派生目标必须关联父目标")
+        if not isinstance(success_criteria, list) or not success_criteria or any(
+                not isinstance(item, str) or not item.strip() for item in success_criteria):
+>           raise ValueError("success_criteria必须是非空字符串数组")
+E           ValueError: success_criteria必须是非空字符串数组
+
+evoagent\goals\store.py:198: ValueError
+_____ test_invalid_schedule_time_is_rejected_before_persisting[inf-tick] ______
+
+app = <evoagent.app.App object at 0x000001DE8B37E050>, method = 'tick'
+now = inf
+
+    @pytest.mark.parametrize("method", ["sync", "tick"])
+    @pytest.mark.parametrize("now", [float("inf"), float("nan"), True])
+    def test_invalid_schedule_time_is_rejected_before_persisting(app, method, now):
+>       app.goals.create("synthetic pending", actor="review")
+
+tests\test_assigned_scheduler_review_20261026.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.goals.store.GoalStore object at 0x000001DE8B37E0B0>
+title = 'synthetic pending'
+
+    def create(self, title, *, actor, owner=None, goal_type="explicit",
+               success_criteria=None, parent_goal_id=None, deadline=None,
+               goal_id=None, command_id=None):
+        title, actor = _text(title, "目标"), _text(actor, "actor")
+        owner = _text(owner or actor, "owner")
+        if goal_type not in GOAL_TYPE:
+            raise ValueError("非法goal_type")
+        if parent_goal_id is not None and (not isinstance(parent_goal_id, str) or not ID.fullmatch(parent_goal_id)):
+            raise ValueError("非法parent_goal_id")
+        if goal_type == "derived" and not parent_goal_id:
+            raise ValueError("派生目标必须关联父目标")
+        if not isinstance(success_criteria, list) or not success_criteria or any(
+                not isinstance(item, str) or not item.strip() for item in success_criteria):
+>           raise ValueError("success_criteria必须是非空字符串数组")
+E           ValueError: success_criteria必须是非空字符串数组
+
+evoagent\goals\store.py:198: ValueError
+_____ test_invalid_schedule_time_is_rejected_before_persisting[nan-sync] ______
+
+app = <evoagent.app.App object at 0x000001DE8B3797B0>, method = 'sync'
+now = nan
+
+    @pytest.mark.parametrize("method", ["sync", "tick"])
+    @pytest.mark.parametrize("now", [float("inf"), float("nan"), True])
+    def test_invalid_schedule_time_is_rejected_before_persisting(app, method, now):
+>       app.goals.create("synthetic pending", actor="review")
+
+tests\test_assigned_scheduler_review_20261026.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.goals.store.GoalStore object at 0x000001DE8B379570>
+title = 'synthetic pending'
+
+    def create(self, title, *, actor, owner=None, goal_type="explicit",
+               success_criteria=None, parent_goal_id=None, deadline=None,
+               goal_id=None, command_id=None):
+        title, actor = _text(title, "目标"), _text(actor, "actor")
+        owner = _text(owner or actor, "owner")
+        if goal_type not in GOAL_TYPE:
+            raise ValueError("非法goal_type")
+        if parent_goal_id is not None and (not isinstance(parent_goal_id, str) or not ID.fullmatch(parent_goal_id)):
+            raise ValueError("非法parent_goal_id")
+        if goal_type == "derived" and not parent_goal_id:
+            raise ValueError("派生目标必须关联父目标")
+        if not isinstance(success_criteria, list) or not success_criteria or any(
+                not isinstance(item, str) or not item.strip() for item in success_criteria):
+>           raise ValueError("success_criteria必须是非空字符串数组")
+E           ValueError: success_criteria必须是非空字符串数组
+
+evoagent\goals\store.py:198: ValueError
+_____ test_invalid_schedule_time_is_rejected_before_persisting[nan-tick] ______
+
+app = <evoagent.app.App object at 0x000001DE8B324D00>, method = 'tick'
+now = nan
+
+    @pytest.mark.parametrize("method", ["sync", "tick"])
+    @pytest.mark.parametrize("now", [float("inf"), float("nan"), True])
+    def test_invalid_schedule_time_is_rejected_before_persisting(app, method, now):
+>       app.goals.create("synthetic pending", actor="review")
+
+tests\test_assigned_scheduler_review_20261026.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.goals.store.GoalStore object at 0x000001DE8B324D30>
+title = 'synthetic pending'
+
+    def create(self, title, *, actor, owner=None, goal_type="explicit",
+               success_criteria=None, parent_goal_id=None, deadline=None,
+               goal_id=None, command_id=None):
+        title, actor = _text(title, "目标"), _text(actor, "actor")
+        owner = _text(owner or actor, "owner")
+        if goal_type not in GOAL_TYPE:
+            raise ValueError("非法goal_type")
+        if parent_goal_id is not None and (not isinstance(parent_goal_id, str) or not ID.fullmatch(parent_goal_id)):
+            raise ValueError("非法parent_goal_id")
+        if goal_type == "derived" and not parent_goal_id:
+            raise ValueError("派生目标必须关联父目标")
+        if not isinstance(success_criteria, list) or not success_criteria or any(
+                not isinstance(item, str) or not item.strip() for item in success_criteria):
+>           raise ValueError("success_criteria必须是非空字符串数组")
+E           ValueError: success_criteria必须是非空字符串数组
+
+evoagent\goals\store.py:198: ValueError
+_____ test_invalid_schedule_time_is_rejected_before_persisting[True-sync] _____
+
+app = <evoagent.app.App object at 0x000001DE8AC57280>, method = 'sync'
+now = True
+
+    @pytest.mark.parametrize("method", ["sync", "tick"])
+    @pytest.mark.parametrize("now", [float("inf"), float("nan"), True])
+    def test_invalid_schedule_time_is_rejected_before_persisting(app, method, now):
+>       app.goals.create("synthetic pending", actor="review")
+
+tests\test_assigned_scheduler_review_20261026.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.goals.store.GoalStore object at 0x000001DE8AC55960>
+title = 'synthetic pending'
+
+    def create(self, title, *, actor, owner=None, goal_type="explicit",
+               success_criteria=None, parent_goal_id=None, deadline=None,
+               goal_id=None, command_id=None):
+        title, actor = _text(title, "目标"), _text(actor, "actor")
+        owner = _text(owner or actor, "owner")
+        if goal_type not in GOAL_TYPE:
+            raise ValueError("非法goal_type")
+        if parent_goal_id is not None and (not isinstance(parent_goal_id, str) or not ID.fullmatch(parent_goal_id)):
+            raise ValueError("非法parent_goal_id")
+        if goal_type == "derived" and not parent_goal_id:
+            raise ValueError("派生目标必须关联父目标")
+        if not isinstance(success_criteria, list) or not success_criteria or any(
+                not isinstance(item, str) or not item.strip() for item in success_criteria):
+>           raise ValueError("success_criteria必须是非空字符串数组")
+E           ValueError: success_criteria必须是非空字符串数组
+
+evoagent\goals\store.py:198: ValueError
+_____ test_invalid_schedule_time_is_rejected_before_persisting[True-tick] _____
+
+app = <evoagent.app.App object at 0x000001DE8B1E26E0>, method = 'tick'
+now = True
+
+    @pytest.mark.parametrize("method", ["sync", "tick"])
+    @pytest.mark.parametrize("now", [float("inf"), float("nan"), True])
+    def test_invalid_schedule_time_is_rejected_before_persisting(app, method, now):
+>       app.goals.create("synthetic pending", actor="review")
+
+tests\test_assigned_scheduler_review_20261026.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <evoagent.goals.store.GoalStore object at 0x000001DE8B1E36D0>
+title = 'synthetic pending'
+
+    def create(self, title, *, actor, owner=None, goal_type="explicit",
+               success_criteria=None, parent_goal_id=None, deadline=None,
+               goal_id=None, command_id=None):
+        title, actor = _text(title, "目标"), _text(actor, "actor")
+        owner = _text(owner or actor, "owner")
+        if goal_type not in GOAL_TYPE:
+            raise ValueError("非法goal_type")
+        if parent_goal_id is not None and (not isinstance(parent_goal_id, str) or not ID.fullmatch(parent_goal_id)):
+            raise ValueError("非法parent_goal_id")
+        if goal_type == "derived" and not parent_goal_id:
+            raise ValueError("派生目标必须关联父目标")
+        if not isinstance(success_criteria, list) or not success_criteria or any(
+                not isinstance(item, str) or not item.strip() for item in success_criteria):
+>           raise ValueError("success_criteria必须是非空字符串数组")
+E           ValueError: success_criteria必须是非空字符串数组
+
+evoagent\goals\store.py:198: ValueError
+=========================== short test summary info ===========================
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_old_running_primary_beyond_500_still_blocks_and_then_recovers
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_old_derived_in_flight_is_counted_beyond_500
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_live_goal_beyond_1000_terminal_goals_is_registered
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-interval_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-lease_ttl_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-failure_backoff_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[False-max_backoff_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-interval_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-lease_ttl_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-failure_backoff_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_infinite_policy_cannot_create_immortal_schedule_or_lease[True-max_backoff_seconds]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_invalid_schedule_time_is_rejected_before_persisting[inf-sync]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_invalid_schedule_time_is_rejected_before_persisting[inf-tick]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_invalid_schedule_time_is_rejected_before_persisting[nan-sync]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_invalid_schedule_time_is_rejected_before_persisting[nan-tick]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_invalid_schedule_time_is_rejected_before_persisting[True-sync]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_invalid_schedule_time_is_rejected_before_persisting[True-tick]
+17 failed in 3.85s

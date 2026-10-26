@@ -1,0 +1,82 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFF..                                                                   [100%]
+================================== FAILURES ===================================
+_ test_real_app_scheduler_consumes_off_and_resource_admission_before_creating_tasks[off] _
+
+app = <evoagent.app.App object at 0x0000015B7DD635B0>, mode = 'off'
+
+    @pytest.mark.parametrize("mode", ["off", "high_pressure", "invalid_sample"])
+    def test_real_app_scheduler_consumes_off_and_resource_admission_before_creating_tasks(app, mode):
+        from evoagent.core.resource_admission import ResourceGovernor
+        goal = ready(app)
+        if mode == "off":
+            app.proactivity.set_level("off")
+        else:
+            sample = {"cpu": 0.99, "memory": 0.1, "model_pool": 0.1} if mode == "high_pressure" else {}
+            app.proactivity.resource_governor = ResourceGovernor(lambda: sample)
+        report = app.goal_scheduler.tick(now=time.time())
+>       assert report["reason"] == "proactivity_guard"
+E       AssertionError: assert None == 'proactivity_guard'
+
+tests\test_assigned_scheduler_review_20261026.py:115: AssertionError
+_ test_real_app_scheduler_consumes_off_and_resource_admission_before_creating_tasks[high_pressure] _
+
+app = <evoagent.app.App object at 0x0000015B7D8DBE50>, mode = 'high_pressure'
+
+    @pytest.mark.parametrize("mode", ["off", "high_pressure", "invalid_sample"])
+    def test_real_app_scheduler_consumes_off_and_resource_admission_before_creating_tasks(app, mode):
+        from evoagent.core.resource_admission import ResourceGovernor
+        goal = ready(app)
+        if mode == "off":
+            app.proactivity.set_level("off")
+        else:
+            sample = {"cpu": 0.99, "memory": 0.1, "model_pool": 0.1} if mode == "high_pressure" else {}
+            app.proactivity.resource_governor = ResourceGovernor(lambda: sample)
+        report = app.goal_scheduler.tick(now=time.time())
+>       assert report["reason"] == "proactivity_guard"
+E       AssertionError: assert None == 'proactivity_guard'
+
+tests\test_assigned_scheduler_review_20261026.py:115: AssertionError
+_ test_real_app_scheduler_consumes_off_and_resource_admission_before_creating_tasks[invalid_sample] _
+
+app = <evoagent.app.App object at 0x0000015B7DB93280>, mode = 'invalid_sample'
+
+    @pytest.mark.parametrize("mode", ["off", "high_pressure", "invalid_sample"])
+    def test_real_app_scheduler_consumes_off_and_resource_admission_before_creating_tasks(app, mode):
+        from evoagent.core.resource_admission import ResourceGovernor
+        goal = ready(app)
+        if mode == "off":
+            app.proactivity.set_level("off")
+        else:
+            sample = {"cpu": 0.99, "memory": 0.1, "model_pool": 0.1} if mode == "high_pressure" else {}
+            app.proactivity.resource_governor = ResourceGovernor(lambda: sample)
+        report = app.goal_scheduler.tick(now=time.time())
+>       assert report["reason"] == "proactivity_guard"
+E       AssertionError: assert None == 'proactivity_guard'
+
+tests\test_assigned_scheduler_review_20261026.py:115: AssertionError
+___ test_api_does_not_coerce_invalid_time_before_scheduler_validation[True] ___
+
+app = <evoagent.app.App object at 0x0000015B7DA27AC0>, now = True
+
+    @pytest.mark.parametrize("now", [True, float("inf"), "not-a-time"])
+    def test_api_does_not_coerce_invalid_time_before_scheduler_validation(app, now):
+        from types import SimpleNamespace
+        from evoagent.api.goals_api import goal_scheduler_tick
+        ready(app)
+        responses = []
+        ctx = SimpleNamespace(app=app, body={"now": now},
+            auth=SimpleNamespace(role="admin"), json=lambda status, payload: responses.append((status, payload)))
+        goal_scheduler_tick(ctx)
+>       assert responses[0][0] == 400
+E       assert 200 == 400
+
+tests\test_assigned_scheduler_review_20261026.py:134: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_real_app_scheduler_consumes_off_and_resource_admission_before_creating_tasks[off]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_real_app_scheduler_consumes_off_and_resource_admission_before_creating_tasks[high_pressure]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_real_app_scheduler_consumes_off_and_resource_admission_before_creating_tasks[invalid_sample]
+FAILED tests/test_assigned_scheduler_review_20261026.py::test_api_does_not_coerce_invalid_time_before_scheduler_validation[True]
+4 failed, 2 passed, 17 deselected in 3.61s
