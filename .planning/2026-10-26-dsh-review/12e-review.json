@@ -1,0 +1,27 @@
+{
+ "card": "ALN-12-E",
+ "reviewer": "dsh-lead（非作者；一审复核；用户要求后续仍需另一人复核）",
+ "date": "2026-10-26",
+ "commands": {
+  "targeted": "node --test test/device/mainchainReview.test.ts test/offline/deviceTaskReview.test.ts -> 31 passed",
+  "client_offline": "npm run test:offline -> 459 passed / 0 failed",
+  "typecheck": "npx tsc --noEmit -> 0 errors"
+ },
+ "checks": {
+  "client_full_suite_459": true,
+  "typecheck_0": true,
+  "mainchain_and_receipt_review_31": true,
+  "fix_commit_998db6f_present": true,
+  "app_mounts_device_tasks": true,
+  "confirmation_scope_tests": true,
+  "receipt_race_tests": true,
+  "invalid_receipt_tests": true
+ },
+ "all_checks_pass": true,
+ "gaps": [
+  "仅‘打开设置’本机纵切片；多步骤/服务端设备规划、文件成果、人工裁决未完成",
+  "未构建 APK、未操作真机、未跑 RN 界面自动化；真机/JS 绑定验收仍缺",
+  "服务端核验成果语义不因回执上传而完成"
+ ],
+ "verdict": "first_review_pass_pending_assigned_and_second_reviewer"
+}

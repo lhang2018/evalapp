@@ -6196,6 +6196,17 @@
      "result": "相关68通过；固定客户端424/424、tsc0、事件同步13通过；同JS/KV实例写保护，不是跨进程事务；未构建APK/未使用真机/未独立接受/未发布",
      "log": ".planning/2026-10-26-device-review/committed-evidence.json",
      "delivery": "docs/协作开发/验收/2026-10-26-12E确认范围与回执复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "scope": "dsh-lead 一审复核 ALN-12-E（已分配卡，非作者）：客户端459/0 passed、tsc0、主链+回执专项31 passed；998db6f 确认范围/回执降级/验收竞态/非法回执修复在 HEAD；App.tsx 已挂载 DeviceTaskService；负向覆盖确认不可改写/非布尔/安全停止/回执竞争/非法与孤儿回执/跨实例串行",
+     "source_commit": "ebb38dd",
+     "reviewer": "dsh-lead",
+     "first_reviewer": "dsh-lead",
+     "verdict": "first_review_pass_pending_assigned_and_other_reviewer",
+     "result": "一审复核通过、无阻断；保持 review。原分配审阅人 zcode-next 未复核；按用户要求最终接受前需再有一名非作者审阅人复核。缺口：真机APK/JS绑定、多步骤/服务端设备规划、文件成果、人工裁决、服务端核验成果语义。",
+     "log": ".planning/2026-10-26-dsh-review/12e-review.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-dsh复核-12E.md"
     }
    ],
    "card": "docs/协作开发/任务卡/12-E-自然语言手机App真实任务主链.md",
@@ -6226,7 +6237,7 @@
     "G0",
     "G1"
    ],
-   "next_step": "本机打开设置App纵切片c2e6871已接线；998db6f进一步修确认范围、回执降级/验收竞态、非法恢复回执。固定客户端424/424+tsc0、事件同步13通过。新增修复待复核与真机APK/JS绑定验收；多步骤/服务端设备规划与人工裁决等仍未完成。",
+   "next_step": "dsh-lead 已一审复核通过（客户端459/tsc0/主链回执31 passed），本卡保持 review；原分配审阅人 zcode-next 仍未复核，按用户要求最终接受前必须再有一名非作者审阅人复核（zcode-next 或独立终审）。缺口：真机APK/JS绑定、多步骤/服务端设备规划、文件成果、人工裁决、服务端核验成果语义。",
    "working_basis": "2026-10-25 zcode-main 认领开工。依赖全部满足（23-C review/07-C review/06-R accepted）。复用已交付的 23-A 契约、23-B 模式、23-C 工作区、23-D 状态映射、24-B 能力六档、29-C 反馈、11-W 真机链路、12-A 协议协议；本卡连成完整链路。",
    "prerequisites": "可连接且授权的Android设备",
    "ownership_history": [
@@ -6241,6 +6252,12 @@
      "from": "review",
      "to": "review",
      "reason": "codex-runtime接续自检并修复998db6f；保留原owner/reviewer，新修复待独立复查与真机验收，不改原作者历史"
+    },
+    {
+     "date": "2026-10-26",
+     "from": "review",
+     "to": "review",
+     "reason": "dsh-lead 一审复核通过；待 zcode-next/另一非作者审阅人复核后才可接受"
     }
    ],
    "review_history": [
@@ -6261,7 +6278,9 @@
     "report": "docs/协作开发/验收/2026-10-25-第三批交叉审查与真实性修复.md",
     "status": "fixes_delivered_pending_independent_recheck"
    },
-   "delivery": "docs/协作开发/交付/ALN-12-E-自然语言任务主链.md"
+   "delivery": "docs/协作开发/交付/ALN-12-E-自然语言任务主链.md",
+   "first_reviewer": "dsh-lead",
+   "review_verdict": "first_review_pass_pending_other_reviewer"
   },
   {
    "id": "ALN-12-V",
