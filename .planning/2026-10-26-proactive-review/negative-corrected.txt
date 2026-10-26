@@ -1,0 +1,192 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFF.FFFFF.F.                                                         [100%]
+================================== FAILURES ===================================
+_ test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples[None] _
+
+sample = None
+
+    @pytest.mark.parametrize("sample", [None, {}, {"cpu": float("nan")}, {"cpu": -0.1}, {"cpu": False}, {"cpu": "0.1"}])
+    def test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples(sample):
+        resources = ResourceGovernor(lambda: sample)
+>       assert not ProactivityGovernor(resource_governor=resources).may_start().allowed
+E       AssertionError: assert not True
+E        +  where True = ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None).allowed
+E        +    where ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None) = may_start()
+E        +      where may_start = <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A0B7580>.may_start
+E        +        where <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A0B7580> = ProactivityGovernor(resource_governor=<evoagent.core.resource_admission.ResourceGovernor object at 0x000001563A0B6320>)
+
+tests\test_proactive_review_20261026.py:18: AssertionError
+_ test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples[sample1] _
+
+sample = {}
+
+    @pytest.mark.parametrize("sample", [None, {}, {"cpu": float("nan")}, {"cpu": -0.1}, {"cpu": False}, {"cpu": "0.1"}])
+    def test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples(sample):
+        resources = ResourceGovernor(lambda: sample)
+>       assert not ProactivityGovernor(resource_governor=resources).may_start().allowed
+E       AssertionError: assert not True
+E        +  where True = ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None).allowed
+E        +    where ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None) = may_start()
+E        +      where may_start = <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A103C70>.may_start
+E        +        where <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A103C70> = ProactivityGovernor(resource_governor=<evoagent.core.resource_admission.ResourceGovernor object at 0x000001563A103BB0>)
+
+tests\test_proactive_review_20261026.py:18: AssertionError
+_ test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples[sample2] _
+
+sample = {'cpu': nan}
+
+    @pytest.mark.parametrize("sample", [None, {}, {"cpu": float("nan")}, {"cpu": -0.1}, {"cpu": False}, {"cpu": "0.1"}])
+    def test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples(sample):
+        resources = ResourceGovernor(lambda: sample)
+>       assert not ProactivityGovernor(resource_governor=resources).may_start().allowed
+E       AssertionError: assert not True
+E        +  where True = ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None).allowed
+E        +    where ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None) = may_start()
+E        +      where may_start = <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A0B53F0>.may_start
+E        +        where <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A0B53F0> = ProactivityGovernor(resource_governor=<evoagent.core.resource_admission.ResourceGovernor object at 0x000001563A0B63B0>)
+
+tests\test_proactive_review_20261026.py:18: AssertionError
+_ test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples[sample3] _
+
+sample = {'cpu': -0.1}
+
+    @pytest.mark.parametrize("sample", [None, {}, {"cpu": float("nan")}, {"cpu": -0.1}, {"cpu": False}, {"cpu": "0.1"}])
+    def test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples(sample):
+        resources = ResourceGovernor(lambda: sample)
+>       assert not ProactivityGovernor(resource_governor=resources).may_start().allowed
+E       AssertionError: assert not True
+E        +  where True = ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None).allowed
+E        +    where ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None) = may_start()
+E        +      where may_start = <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A1033A0>.may_start
+E        +        where <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A1033A0> = ProactivityGovernor(resource_governor=<evoagent.core.resource_admission.ResourceGovernor object at 0x000001563A102FE0>)
+
+tests\test_proactive_review_20261026.py:18: AssertionError
+_ test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples[sample4] _
+
+sample = {'cpu': False}
+
+    @pytest.mark.parametrize("sample", [None, {}, {"cpu": float("nan")}, {"cpu": -0.1}, {"cpu": False}, {"cpu": "0.1"}])
+    def test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples(sample):
+        resources = ResourceGovernor(lambda: sample)
+>       assert not ProactivityGovernor(resource_governor=resources).may_start().allowed
+E       AssertionError: assert not True
+E        +  where True = ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None).allowed
+E        +    where ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None) = may_start()
+E        +      where may_start = <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A233070>.may_start
+E        +        where <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A233070> = ProactivityGovernor(resource_governor=<evoagent.core.resource_admission.ResourceGovernor object at 0x000001563A232E60>)
+
+tests\test_proactive_review_20261026.py:18: AssertionError
+_ test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples[sample5] _
+
+sample = {'cpu': '0.1'}
+
+    @pytest.mark.parametrize("sample", [None, {}, {"cpu": float("nan")}, {"cpu": -0.1}, {"cpu": False}, {"cpu": "0.1"}])
+    def test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples(sample):
+        resources = ResourceGovernor(lambda: sample)
+>       assert not ProactivityGovernor(resource_governor=resources).may_start().allowed
+E       AssertionError: assert not True
+E        +  where True = ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None).allowed
+E        +    where ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None) = may_start()
+E        +      where may_start = <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A101FC0>.may_start
+E        +        where <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A101FC0> = ProactivityGovernor(resource_governor=<evoagent.core.resource_admission.ResourceGovernor object at 0x000001563A101CF0>)
+
+tests\test_proactive_review_20261026.py:18: AssertionError
+_____ test_real_sampler_exception_does_not_become_proactive_zero_pressure _____
+
+    def test_real_sampler_exception_does_not_become_proactive_zero_pressure():
+        def broken():
+            raise OSError("sensor unavailable")
+        resources = ResourceGovernor(broken)
+>       assert not ProactivityGovernor(resource_governor=resources).may_start().allowed
+E       AssertionError: assert not True
+E        +  where True = ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None).allowed
+E        +    where ProactivityDecision(allowed=True, level='normal', reasons=[], safety_notice=None) = may_start()
+E        +      where may_start = <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A231BD0>.may_start
+E        +        where <evoagent.goals.proactivity.ProactivityGovernor object at 0x000001563A231BD0> = ProactivityGovernor(resource_governor=<evoagent.core.resource_admission.ResourceGovernor object at 0x000001563A232170>)
+
+tests\test_proactive_review_20261026.py:25: AssertionError
+________________ test_default_team_identity_is_scoped_to_task _________________
+
+    def test_default_team_identity_is_scoped_to_task():
+        p = planner()
+        a = p.form(intent="i", domain="d", required_capabilities=["cap"], task_ref="task:a")
+        b = p.form(intent="i", domain="d", required_capabilities=["cap"], task_ref="task:b")
+>       assert a.contract_id != b.contract_id
+E       AssertionError: assert 'team_d68843d0a4ab' != 'team_d68843d0a4ab'
+E        +  where 'team_d68843d0a4ab' = <evoagent.experts.team.TeamContract object at 0x000001563A061FF0>.contract_id
+E        +  and   'team_d68843d0a4ab' = <evoagent.experts.team.TeamContract object at 0x000001563A060730>.contract_id
+
+tests\test_proactive_review_20261026.py:49: AssertionError
+________ test_team_identity_does_not_alias_delimited_intent_and_domain ________
+
+    def test_team_identity_does_not_alias_delimited_intent_and_domain():
+        p = planner()
+        a = p.form(intent="a|b", domain="c", required_capabilities=["cap"])
+        b = p.form(intent="a", domain="b|c", required_capabilities=["cap"])
+>       assert a.contract_id != b.contract_id
+E       AssertionError: assert 'team_52925902d648' != 'team_52925902d648'
+E        +  where 'team_52925902d648' = <evoagent.experts.team.TeamContract object at 0x000001563A26E470>.contract_id
+E        +  and   'team_52925902d648' = <evoagent.experts.team.TeamContract object at 0x000001563A26E3B0>.contract_id
+
+tests\test_proactive_review_20261026.py:56: AssertionError
+__________ test_team_identity_does_not_alias_one_capability_with_two __________
+
+    def test_team_identity_does_not_alias_one_capability_with_two():
+        p = planner(capabilities=["a,b", "a", "b"])
+        a = p.form(intent="i", domain="d", required_capabilities=["a,b"])
+        b = p.form(intent="i", domain="d", required_capabilities=["a", "b"])
+>       assert a.contract_id != b.contract_id
+E       AssertionError: assert 'team_b5c89789dd49' != 'team_b5c89789dd49'
+E        +  where 'team_b5c89789dd49' = <evoagent.experts.team.TeamContract object at 0x000001563A063A00>.contract_id
+E        +  and   'team_b5c89789dd49' = <evoagent.experts.team.TeamContract object at 0x000001563A0636A0>.contract_id
+
+tests\test_proactive_review_20261026.py:63: AssertionError
+________________ test_team_identity_tracks_the_selected_expert ________________
+
+    def test_team_identity_tracks_the_selected_expert():
+>       assert form(planner("first")).contract_id != form(planner("second")).contract_id
+E       AssertionError: assert 'team_d68843d0a4ab' != 'team_d68843d0a4ab'
+E        +  where 'team_d68843d0a4ab' = <evoagent.experts.team.TeamContract object at 0x000001563A26C9D0>.contract_id
+E        +    where <evoagent.experts.team.TeamContract object at 0x000001563A26C9D0> = form(<evoagent.experts.team.TeamPlanner object at 0x000001563A26CA30>)
+E        +      where <evoagent.experts.team.TeamPlanner object at 0x000001563A26CA30> = planner('first')
+E        +  and   'team_d68843d0a4ab' = <evoagent.experts.team.TeamContract object at 0x000001563A26C670>.contract_id
+E        +    where <evoagent.experts.team.TeamContract object at 0x000001563A26C670> = form(<evoagent.experts.team.TeamPlanner object at 0x000001563A26CB20>)
+E        +      where <evoagent.experts.team.TeamPlanner object at 0x000001563A26CB20> = planner('second')
+
+tests\test_proactive_review_20261026.py:67: AssertionError
+__________ test_team_identity_and_role_snapshot_track_expert_version __________
+
+    def test_team_identity_and_role_snapshot_track_expert_version():
+        a, b = form(planner(version="1")), form(planner(version="2"))
+>       assert a.contract_id != b.contract_id
+E       AssertionError: assert 'team_d68843d0a4ab' != 'team_d68843d0a4ab'
+E        +  where 'team_d68843d0a4ab' = <evoagent.experts.team.TeamContract object at 0x000001563A0608E0>.contract_id
+E        +  and   'team_d68843d0a4ab' = <evoagent.experts.team.TeamContract object at 0x000001563A0616F0>.contract_id
+
+tests\test_proactive_review_20261026.py:72: AssertionError
+_________ test_delimited_domains_do_not_mix_independent_gap_evidence __________
+
+    def test_delimited_domains_do_not_mix_independent_gap_evidence():
+        gaps = analyze_domains([("part:a", "b"), ("part", "a:b")])
+>       assert len(gaps) == 2
+E       AssertionError: assert 1 == 2
+E        +  where 1 = len([{'capability': 'missing_capability:part:a:b', 'distinct_goals': 0, 'distinct_tasks': 4, 'domain': 'part', ...}])
+
+tests\test_proactive_review_20261026.py:96: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_proactive_review_20261026.py::test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples[None]
+FAILED tests/test_proactive_review_20261026.py::test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples[sample1]
+FAILED tests/test_proactive_review_20261026.py::test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples[sample2]
+FAILED tests/test_proactive_review_20261026.py::test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples[sample3]
+FAILED tests/test_proactive_review_20261026.py::test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples[sample4]
+FAILED tests/test_proactive_review_20261026.py::test_real_resource_adapter_does_not_admit_proactivity_on_unknown_samples[sample5]
+FAILED tests/test_proactive_review_20261026.py::test_real_sampler_exception_does_not_become_proactive_zero_pressure
+FAILED tests/test_proactive_review_20261026.py::test_default_team_identity_is_scoped_to_task
+FAILED tests/test_proactive_review_20261026.py::test_team_identity_does_not_alias_delimited_intent_and_domain
+FAILED tests/test_proactive_review_20261026.py::test_team_identity_does_not_alias_one_capability_with_two
+FAILED tests/test_proactive_review_20261026.py::test_team_identity_tracks_the_selected_expert
+FAILED tests/test_proactive_review_20261026.py::test_team_identity_and_role_snapshot_track_expert_version
+FAILED tests/test_proactive_review_20261026.py::test_delimited_domains_do_not_mix_independent_gap_evidence
+13 failed, 3 passed in 0.26s

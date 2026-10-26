@@ -104,14 +104,18 @@
    "scope": "候选准备Git/日志证据有效；当前源码新增显式验收不通过，915/1仅为此前普通tests基线"
   },
   "latest_source_verification": {
-   "source_commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
-   "source_tree": "6b9bd53adb72c95676fc14d657c438a19687e550",
-   "python_passed": 1661,
+   "source_commit": "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
+   "source_tree": "e568cb717e3b3e47b50bd9c936c126b4bfa9a642",
+   "python_passed": 2315,
    "python_skipped": 1,
-   "client_passed": 228,
+   "python_deselected": 1,
+   "client_passed": 424,
    "typecheck": "passed",
-   "scope": "新候选干净源码全量、独立npm ci与Android构建；最新APK+JS真机模块9项回归；正式App入口已恢复",
-   "evidence": "../../.planning/2026-10-24-baseline-device/candidate-validation.json"
+   "client_source_commit": "998db6fd6427586a4ba23bd99bf91a7edf03625e",
+   "client_evidence_mode": "reused_identical_client_tree",
+   "device_verified": false,
+   "scope": "精确Git归档tests2245+tools/tests70合计2315/1/1；客户端子树相同沿用998db6f的424与类型检查，非重跑；无真机/生产接受，不替换已发布基线",
+   "evidence": "../../.planning/2026-10-26-proactive-review/committed-evidence.json"
   },
   "latest_peer_review": {
    "date": "2026-10-23",
@@ -323,6 +327,18 @@
     "device_verified": false,
     "evidence": ".planning/2026-10-26-device-app/committed-evidence.json",
     "scope": "固定Git归档客户端405/405与TypeScript5.9.3、后端事件同步相关13通过；App本机纵切片已接线，未跑RN UI自动化/未构建APK/未使用真机，非后端全量；不替换发布基线"
+   }
+  ],
+  "source_verification_history": [
+   {
+    "source_commit": "f550d9063f7773f5b18893decde668fbc001f7ae",
+    "source_tree": "6b9bd53adb72c95676fc14d657c438a19687e550",
+    "python_passed": 1661,
+    "python_skipped": 1,
+    "client_passed": 228,
+    "typecheck": "passed",
+    "scope": "新候选干净源码全量、独立npm ci与Android构建；最新APK+JS真机模块9项回归；正式App入口已恢复",
+    "evidence": "../../.planning/2026-10-24-baseline-device/candidate-validation.json"
    }
   ]
  },
@@ -4360,7 +4376,16 @@
     "代码: 704ec42b（goals/proactivity.py 策略层 + 12 项专项）",
     "测试: 专项 12/12；相关回归 55/55（15-D+机会+预算）；全量 2105/1/0",
     "交付: docs/协作开发/交付/ALN-25-B-主动强度停止与资源非干扰.md（四档/独立分账/无进展停止/关闭即停/失败隔离语义）",
-    "遗留: 真实设备资源测量下 F04-03 实测（与12-V同窗）；app.py 启动装配与客户端开关 UI 后续卡"
+    "遗留: 真实设备资源测量下 F04-03 实测（与12-V同窗）；app.py 启动装配与客户端开关 UI 后续卡",
+    {
+     "date": "2026-10-26",
+     "source_commit": "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
+     "source_tree": "e568cb717e3b3e47b50bd9c936c126b4bfa9a642",
+     "scope": "主动采样/缺口/团队标识接续复核修复，按本卡范围",
+     "result": "相关109；固定Git两分区合计2315 passed/1 skipped/1 deselected；客户端同子树沿用424非重跑；未做生产/真机或独立接受，未发布",
+     "log": ".planning/2026-10-26-proactive-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md"
+    }
    ],
    "card": "docs/协作开发/任务卡/25-B-主动强度、停止与资源非干扰.md",
    "shared_files": [
@@ -4385,7 +4410,7 @@
     "F04",
     "G5"
    ],
-   "next_step": "按固定提交6ae4b30独立复查：off与调档/回调/严格并发收益类型/资源未知拒绝；主链装配/真实业务与资源验收依交付保留，不关闭整包。",
+   "next_step": "5f09fb8修复实际资源采样无效被主动层当低压放行；内置资源层原前台策略保留。相关109、固定完整后端2315/1/1通过；新增修复待复核，主链装配/真实资源非干扰仍未完成。",
    "working_basis": "2026-10-25 zcode-next 认领。复用 15-D ResourceGovernor（已accepted）、25-A ProactiveAssistService（已accepted）、BudgetLedger 既有池语义；写入边界 goals/ + budget.py + android-app（客户端开关投影）；资源压力实测用可控压力源（真机测量另验）。",
    "prerequisites": "设备或宿主资源测量环境；单纯Mock预算计数不算非干扰验收",
    "latest_code_review": {
@@ -4426,6 +4451,15 @@
      "scope": "独立复核：5探针(失败证据采集/聚合门控晋升/不足fail-closed/非法阈值/消失引用可追溯拒绝)+9项复跑；候选只经既有演化通道走读确认",
      "result": "accepted",
      "evidence": "docs/协作开发/验收/2026-10-25-ALN-26-A独立复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
+     "source_tree": "e568cb717e3b3e47b50bd9c936c126b4bfa9a642",
+     "scope": "主动采样/缺口/团队标识接续复核修复，按本卡范围",
+     "result": "相关109；固定Git两分区合计2315 passed/1 skipped/1 deselected；客户端同子树沿用424非重跑；未做生产/真机或独立接受，未发布",
+     "log": ".planning/2026-10-26-proactive-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/26-A-能力缺口证据与主动规划候选.md",
@@ -4450,7 +4484,7 @@
    "requirement_refs": [
     "A-59"
    ],
-   "next_step": "按固定提交6ae4b30独立复查：权威快照复核/独立证据阈值/候选实际登记与去重；主链装配/真实业务与资源验收依交付保留，不关闭整包。",
+   "next_step": "5f09fb8修复domain/intent分隔符混合缺口证据；真实候选登记与重复去重通过。固定完整后端2315/1/1；新修复待复核，线上遥测/API/UI/真实预算保留。",
    "working_basis": "以95f3e38aaeae06434edbe6b8d8d832e02640cc61（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布",
    "prerequisites": "仅需仓库与本地测试环境",
    "ownership_history": [
@@ -4503,6 +4537,15 @@
      "result": "专项11 passed；专家/规划/路由域68 passed；全量2123 passed/0 failed/1 skipped(374.91s)。实测证据 .planning/2026-10-25-aln26b/team-contract-evidence.json：真实builtin registry成组coding+travel、交接、唯一写入者推进、失败隔离与不越权，13项检查全过。边界：契约层未接运行时主链(planning/workflows未改)、未持久化、外部动作未接工具权限、预算未接BudgetLedger",
      "log": ".planning/2026-10-25-aln26b/team-contract-evidence.json",
      "delivery": "docs/协作开发/交付/ALN-26-B-动态团队与跨专家协作契约.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
+     "source_tree": "e568cb717e3b3e47b50bd9c936c126b4bfa9a642",
+     "scope": "主动采样/缺口/团队标识接续复核修复，按本卡范围",
+     "result": "相关109；固定Git两分区合计2315 passed/1 skipped/1 deselected；客户端同子树沿用424非重跑；未做生产/真机或独立接受，未发布",
+     "log": ".planning/2026-10-26-proactive-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/26-B-动态团队与跨专家协作契约.md",
@@ -4524,7 +4567,7 @@
     "A-53",
     "A-60"
    ],
-   "next_step": "按固定提交6ae4b30独立复查：契约准入/唯一写入者与全员完成/交接范围预算及失败隔离；主链装配/真实业务与资源验收依交付保留，不关闭整包。",
+   "next_step": "5f09fb8默认ID纳入任务、角色与专家版本并规范化编码，角色版本快照冻结；显式ID不重写。固定完整后端2315/1/1；新修复待复核，真实运行装配/权限预算仍未完成。",
    "working_basis": "以6a8501233f0ec0f7b4fce74d97fd13facd6e6b0d（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布",
    "prerequisites": "仅需仓库与本地测试环境",
    "ownership_history": [
@@ -4635,6 +4678,15 @@
      "scope": "独立复核：4探针(闭包递归/缺失拒绝/IO名称类型/组合版本固定升级不变)+10项复跑；发现交付文档缺失（owner补，不阻塞）",
      "result": "accepted",
      "evidence": "docs/协作开发/验收/2026-10-25-ALN-27-B独立复核.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
+     "source_tree": "e568cb717e3b3e47b50bd9c936c126b4bfa9a642",
+     "scope": "27-B只读再检、无新修复",
+     "result": "相关109；固定Git两分区合计2315 passed/1 skipped/1 deselected；客户端同子树沿用424非重跑；未做生产/真机或独立接受，未发布",
+     "log": ".planning/2026-10-26-proactive-review/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/27-B-可组合能力与动态工作流资产.md",
@@ -4652,7 +4704,7 @@
     "A-70",
     "B-85"
    ],
-   "next_step": "按固定提交6ae4b30独立复查：真实IO与仓储draft/完整依赖摘要/评测后绑定与升级稳定；主链装配/真实业务与资源验收依交付保留，不关闭整包。",
+   "next_step": "固定5f09fb8只读再检：组合/闭包/仓储与版本绑定回归未见新阻断；不自批6ae4b30。本轮未改组合代码，生产执行、动态展开与独立验收仍保留。",
    "working_basis": "2026-10-25 zcode-main 认领开工。依赖 26-B(claimed) + 27-A(accepted) 已满足。复用 06-R 精确消费绑定 + 27-A 经验沉淀 + 07-W 工作流匹配，构建可组合能力资产层。",
    "prerequisites": "仅需仓库与本地测试环境",
    "review_history": [
@@ -8366,6 +8418,24 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-12E确认范围与回执复核.md",
    "scope": "固定客户端424/424、tsc0与事件同步13；修复待独立复核、未做真机验收或纳入发布基线"
+  },
+  {
+   "id": "discovered-5f09fb845c1b",
+   "title": "fix(review): 隔离主动资源未知与规划身份碰撞",
+   "workpackage": "ALN-26",
+   "source_commit": "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/core/resource_admission.py",
+    "evoagent/experts/team.py",
+    "evoagent/goals/gap_planner.py",
+    "evoagent/goals/proactivity.py",
+    "tests/test_proactive_review_20261026.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md",
+   "scope": "25-B/26-A/26-B修复；27-B只读；完整后端2315/1/1，新修复待独立接受且未纳入基线"
   }
  ],
  "requirement_batches": [
@@ -8541,6 +8611,31 @@
    "fix_commit": "998db6fd6427586a4ba23bd99bf91a7edf03625e",
    "report": "docs/协作开发/验收/2026-10-26-12E确认范围与回执复核.md",
    "evidence": ".planning/2026-10-26-device-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false
+  },
+  {
+   "id": "REVIEW-2026-10-26-PROACTIVE",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-25-B",
+    "ALN-26-A",
+    "ALN-26-B",
+    "ALN-27-B"
+   ],
+   "fixed_cards": [
+    "ALN-25-B",
+    "ALN-26-A",
+    "ALN-26-B"
+   ],
+   "read_only_recheck_cards": [
+    "ALN-27-B"
+   ],
+   "fix_commit": "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
+   "report": "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md",
+   "evidence": ".planning/2026-10-26-proactive-review/committed-evidence.json",
    "status": "fixes_delivered_pending_independent_recheck",
    "product_acceptance_added": false,
    "published_by_review": false
