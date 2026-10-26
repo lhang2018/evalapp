@@ -1,0 +1,271 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFF                                                                     [100%]
+================================== FAILURES ===================================
+_____ test_recovery_errors_follow_legal_failure_transitions[plan-RUNNING] _____
+
+self = <evoagent.core.controller.RuntimeController object at 0x0000022DB58B7640>
+task = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_19eccb466adf4359a7acb83146f18596', parent_run...st_id': 'manifest_run_19eccb466adf4359a7acb83146f18596'}, created_at=1793058209.6007993, updated_at=1793058209.6007993)
+
+    def _reconciliation_gate(self, task: Task) -> Optional[Task]:
+        """接管恢复的对账门禁（07-C 验收：真实恢复先对账后决定）。
+    
+        步骤：补绑崩溃遗留的未决意图 → 计划声明 × 账本 × 绑定三方对账 →
+        干净（divergence_free）才放行续跑；存在未声明/未执行/未决/歧义
+        效果时保守转 WAITING_USER，禁止自动重放（R-12）。无持久计划的
+        任务无从对账，放行并如实标注（legacy 路径，不虚构门禁结论）。
+        """
+        bindings = getattr(self.react, "bindings", None)
+        try:
+>           plan = self._plan_from_task(task)
+
+evoagent\core\controller.py:1130: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+task = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_19eccb466adf4359a7acb83146f18596', parent_run...st_id': 'manifest_run_19eccb466adf4359a7acb83146f18596'}, created_at=1793058209.6007993, updated_at=1793058209.6007993)
+
+    @staticmethod
+    def _plan_from_task(task: Task) -> Optional[ExecutionPlan]:
+        if "execution_plan" not in task.runtime_manifest:
+            return None  # Legacy tasks truly lacking a plan remain supported.
+        raw = task.runtime_manifest.get("execution_plan")
+        if (not isinstance(raw, dict) or not isinstance(raw.get("steps"), list)
+                or any(not isinstance(step, dict) for step in raw["steps"])):
+>           raise PlanRevisionError("持久执行计划格式损坏")
+E           evoagent.planning.planner.PlanRevisionError: 持久执行计划格式损坏
+
+evoagent\core\controller.py:1380: PlanRevisionError
+
+During handling of the above exception, another exception occurred:
+
+app = <evoagent.app.App object at 0x0000022DB584AB00>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000022DB591C580>
+status = <TaskStatus.RUNNING: 'RUNNING'>, broken = 'plan'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("broken", ["plan", "bindings"])
+    def test_recovery_errors_follow_legal_failure_transitions(app, monkeypatch, status, broken):
+        task = task_with_plan(app, ["current_time"])
+        abandon(app, task)
+        task.task_status = status
+        if broken == "plan":
+            task.runtime_manifest["execution_plan"] = {"steps": "corrupt"}
+        else:
+            def fail(*args):
+                raise ValueError("binding evidence corrupt")
+            monkeypatch.setattr(app.controller.react.bindings, "heal_pending", fail)
+        app.db.save_task(task)
+>       result = app.controller.recover_task(task.task_id)
+
+tests\test_recovery_gate_review_20261027.py:129: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\core\controller.py:1054: in recover_task
+    return self._resume_suspended(task, budget, False, recovery=True)
+evoagent\core\controller.py:1068: in _resume_suspended
+    gated = self._reconciliation_gate(task)
+evoagent\core\controller.py:1132: in _reconciliation_gate
+    task = self._move(task, TaskStatus.FAILED)
+evoagent\core\controller.py:1563: in _move
+    task.task_status = transition(task.task_status, target)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+current = <TaskStatus.RUNNING: 'RUNNING'>
+target = <TaskStatus.FAILED: 'FAILED'>
+
+    def transition(current: TaskStatus, target: TaskStatus) -> TaskStatus:
+        """校验并返回目标状态；非法转换抛错。"""
+        if not can_transition(current, target):
+>           raise IllegalTransition(f"非法状态转换: {current.value} -> {target.value}")
+E           evoagent.core.state_machine.IllegalTransition: 非法状态转换: RUNNING -> FAILED
+
+evoagent\core\state_machine.py:45: IllegalTransition
+____ test_recovery_errors_follow_legal_failure_transitions[plan-SUSPENDED] ____
+
+self = <evoagent.core.controller.RuntimeController object at 0x0000022DB5ABF8E0>
+task = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_0c5d3e5fbd2345ea80f1d4e01845d5a9', parent_run...st_id': 'manifest_run_0c5d3e5fbd2345ea80f1d4e01845d5a9'}, created_at=1793058210.1336448, updated_at=1793058210.1336448)
+
+    def _reconciliation_gate(self, task: Task) -> Optional[Task]:
+        """接管恢复的对账门禁（07-C 验收：真实恢复先对账后决定）。
+    
+        步骤：补绑崩溃遗留的未决意图 → 计划声明 × 账本 × 绑定三方对账 →
+        干净（divergence_free）才放行续跑；存在未声明/未执行/未决/歧义
+        效果时保守转 WAITING_USER，禁止自动重放（R-12）。无持久计划的
+        任务无从对账，放行并如实标注（legacy 路径，不虚构门禁结论）。
+        """
+        bindings = getattr(self.react, "bindings", None)
+        try:
+>           plan = self._plan_from_task(task)
+
+evoagent\core\controller.py:1130: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+task = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_0c5d3e5fbd2345ea80f1d4e01845d5a9', parent_run...st_id': 'manifest_run_0c5d3e5fbd2345ea80f1d4e01845d5a9'}, created_at=1793058210.1336448, updated_at=1793058210.1336448)
+
+    @staticmethod
+    def _plan_from_task(task: Task) -> Optional[ExecutionPlan]:
+        if "execution_plan" not in task.runtime_manifest:
+            return None  # Legacy tasks truly lacking a plan remain supported.
+        raw = task.runtime_manifest.get("execution_plan")
+        if (not isinstance(raw, dict) or not isinstance(raw.get("steps"), list)
+                or any(not isinstance(step, dict) for step in raw["steps"])):
+>           raise PlanRevisionError("持久执行计划格式损坏")
+E           evoagent.planning.planner.PlanRevisionError: 持久执行计划格式损坏
+
+evoagent\core\controller.py:1380: PlanRevisionError
+
+During handling of the above exception, another exception occurred:
+
+app = <evoagent.app.App object at 0x0000022DB591DD80>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000022DB5ABF190>
+status = <TaskStatus.SUSPENDED: 'SUSPENDED'>, broken = 'plan'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("broken", ["plan", "bindings"])
+    def test_recovery_errors_follow_legal_failure_transitions(app, monkeypatch, status, broken):
+        task = task_with_plan(app, ["current_time"])
+        abandon(app, task)
+        task.task_status = status
+        if broken == "plan":
+            task.runtime_manifest["execution_plan"] = {"steps": "corrupt"}
+        else:
+            def fail(*args):
+                raise ValueError("binding evidence corrupt")
+            monkeypatch.setattr(app.controller.react.bindings, "heal_pending", fail)
+        app.db.save_task(task)
+>       result = app.controller.recover_task(task.task_id)
+
+tests\test_recovery_gate_review_20261027.py:129: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\core\controller.py:1054: in recover_task
+    return self._resume_suspended(task, budget, False, recovery=True)
+evoagent\core\controller.py:1068: in _resume_suspended
+    gated = self._reconciliation_gate(task)
+evoagent\core\controller.py:1132: in _reconciliation_gate
+    task = self._move(task, TaskStatus.FAILED)
+evoagent\core\controller.py:1563: in _move
+    task.task_status = transition(task.task_status, target)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+current = <TaskStatus.SUSPENDED: 'SUSPENDED'>
+target = <TaskStatus.FAILED: 'FAILED'>
+
+    def transition(current: TaskStatus, target: TaskStatus) -> TaskStatus:
+        """校验并返回目标状态；非法转换抛错。"""
+        if not can_transition(current, target):
+>           raise IllegalTransition(f"非法状态转换: {current.value} -> {target.value}")
+E           evoagent.core.state_machine.IllegalTransition: 非法状态转换: SUSPENDED -> FAILED
+
+evoagent\core\state_machine.py:45: IllegalTransition
+___ test_recovery_errors_follow_legal_failure_transitions[bindings-RUNNING] ___
+
+args = ('recovery-review', [])
+
+    def fail(*args):
+>       raise ValueError("binding evidence corrupt")
+E       ValueError: binding evidence corrupt
+
+tests\test_recovery_gate_review_20261027.py:126: ValueError
+
+During handling of the above exception, another exception occurred:
+
+app = <evoagent.app.App object at 0x0000022DB55048B0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000022DB53C1A80>
+status = <TaskStatus.RUNNING: 'RUNNING'>, broken = 'bindings'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("broken", ["plan", "bindings"])
+    def test_recovery_errors_follow_legal_failure_transitions(app, monkeypatch, status, broken):
+        task = task_with_plan(app, ["current_time"])
+        abandon(app, task)
+        task.task_status = status
+        if broken == "plan":
+            task.runtime_manifest["execution_plan"] = {"steps": "corrupt"}
+        else:
+            def fail(*args):
+                raise ValueError("binding evidence corrupt")
+            monkeypatch.setattr(app.controller.react.bindings, "heal_pending", fail)
+        app.db.save_task(task)
+>       result = app.controller.recover_task(task.task_id)
+
+tests\test_recovery_gate_review_20261027.py:129: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\core\controller.py:1054: in recover_task
+    return self._resume_suspended(task, budget, False, recovery=True)
+evoagent\core\controller.py:1068: in _resume_suspended
+    gated = self._reconciliation_gate(task)
+evoagent\core\controller.py:1158: in _reconciliation_gate
+    task = self._move(task, TaskStatus.FAILED)
+evoagent\core\controller.py:1563: in _move
+    task.task_status = transition(task.task_status, target)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+current = <TaskStatus.RUNNING: 'RUNNING'>
+target = <TaskStatus.FAILED: 'FAILED'>
+
+    def transition(current: TaskStatus, target: TaskStatus) -> TaskStatus:
+        """校验并返回目标状态；非法转换抛错。"""
+        if not can_transition(current, target):
+>           raise IllegalTransition(f"非法状态转换: {current.value} -> {target.value}")
+E           evoagent.core.state_machine.IllegalTransition: 非法状态转换: RUNNING -> FAILED
+
+evoagent\core\state_machine.py:45: IllegalTransition
+__ test_recovery_errors_follow_legal_failure_transitions[bindings-SUSPENDED] __
+
+args = ('recovery-review', [])
+
+    def fail(*args):
+>       raise ValueError("binding evidence corrupt")
+E       ValueError: binding evidence corrupt
+
+tests\test_recovery_gate_review_20261027.py:126: ValueError
+
+During handling of the above exception, another exception occurred:
+
+app = <evoagent.app.App object at 0x0000022DB5A17B20>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000022DB5A9E7D0>
+status = <TaskStatus.SUSPENDED: 'SUSPENDED'>, broken = 'bindings'
+
+    @pytest.mark.parametrize("status", [TaskStatus.RUNNING, TaskStatus.SUSPENDED])
+    @pytest.mark.parametrize("broken", ["plan", "bindings"])
+    def test_recovery_errors_follow_legal_failure_transitions(app, monkeypatch, status, broken):
+        task = task_with_plan(app, ["current_time"])
+        abandon(app, task)
+        task.task_status = status
+        if broken == "plan":
+            task.runtime_manifest["execution_plan"] = {"steps": "corrupt"}
+        else:
+            def fail(*args):
+                raise ValueError("binding evidence corrupt")
+            monkeypatch.setattr(app.controller.react.bindings, "heal_pending", fail)
+        app.db.save_task(task)
+>       result = app.controller.recover_task(task.task_id)
+
+tests\test_recovery_gate_review_20261027.py:129: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\core\controller.py:1054: in recover_task
+    return self._resume_suspended(task, budget, False, recovery=True)
+evoagent\core\controller.py:1068: in _resume_suspended
+    gated = self._reconciliation_gate(task)
+evoagent\core\controller.py:1158: in _reconciliation_gate
+    task = self._move(task, TaskStatus.FAILED)
+evoagent\core\controller.py:1563: in _move
+    task.task_status = transition(task.task_status, target)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+current = <TaskStatus.SUSPENDED: 'SUSPENDED'>
+target = <TaskStatus.FAILED: 'FAILED'>
+
+    def transition(current: TaskStatus, target: TaskStatus) -> TaskStatus:
+        """校验并返回目标状态；非法转换抛错。"""
+        if not can_transition(current, target):
+>           raise IllegalTransition(f"非法状态转换: {current.value} -> {target.value}")
+E           evoagent.core.state_machine.IllegalTransition: 非法状态转换: SUSPENDED -> FAILED
+
+evoagent\core\state_machine.py:45: IllegalTransition
+=========================== short test summary info ===========================
+FAILED tests/test_recovery_gate_review_20261027.py::test_recovery_errors_follow_legal_failure_transitions[plan-RUNNING]
+FAILED tests/test_recovery_gate_review_20261027.py::test_recovery_errors_follow_legal_failure_transitions[plan-SUSPENDED]
+FAILED tests/test_recovery_gate_review_20261027.py::test_recovery_errors_follow_legal_failure_transitions[bindings-RUNNING]
+FAILED tests/test_recovery_gate_review_20261027.py::test_recovery_errors_follow_legal_failure_transitions[bindings-SUSPENDED]
+4 failed, 9 deselected in 1.84s

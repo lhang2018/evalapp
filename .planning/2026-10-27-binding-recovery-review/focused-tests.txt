@@ -1,0 +1,55 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+......F................................................................. [ 92%]
+......                                                                   [100%]
+================================== FAILURES ===================================
+______ test_ledger_read_error_is_a_recorded_failure_without_active_leak _______
+
+_ = 'recovery-review'
+
+    def unreadable(_):
+>       raise sqlite3.OperationalError("ledger read unavailable")
+E       sqlite3.OperationalError: ledger read unavailable
+
+tests\test_recovery_gate_review_20261027.py:105: OperationalError
+
+During handling of the above exception, another exception occurred:
+
+app = <evoagent.app.App object at 0x0000026A6FD7CF70>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000026A6FD43A00>
+
+    def test_ledger_read_error_is_a_recorded_failure_without_active_leak(app, monkeypatch):
+        task = task_with_plan(app, ["current_time"])
+        abandon(app, task)
+        # Recovery inspection still succeeds; the following history read fails.
+        def unreadable(_):
+            raise sqlite3.OperationalError("ledger read unavailable")
+        monkeypatch.setattr(app.controller.side_fx, "history", unreadable)
+>       result = app.controller.recover_task(task.task_id)
+
+tests\test_recovery_gate_review_20261027.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\core\controller.py:1054: in recover_task
+    return self._resume_suspended(task, budget, False, recovery=True)
+evoagent\core\controller.py:1068: in _resume_suspended
+    gated = self._reconciliation_gate(task)
+evoagent\core\controller.py:1158: in _reconciliation_gate
+    task = self._move(task, TaskStatus.FAILED)
+evoagent\core\controller.py:1563: in _move
+    task.task_status = transition(task.task_status, target)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+current = <TaskStatus.RUNNING: 'RUNNING'>
+target = <TaskStatus.FAILED: 'FAILED'>
+
+    def transition(current: TaskStatus, target: TaskStatus) -> TaskStatus:
+        """校验并返回目标状态；非法转换抛错。"""
+        if not can_transition(current, target):
+>           raise IllegalTransition(f"非法状态转换: {current.value} -> {target.value}")
+E           evoagent.core.state_machine.IllegalTransition: 非法状态转换: RUNNING -> FAILED
+
+evoagent\core\state_machine.py:45: IllegalTransition
+=========================== short test summary info ===========================
+FAILED tests/test_recovery_gate_review_20261027.py::test_ledger_read_error_is_a_recorded_failure_without_active_leak
+1 failed, 77 passed in 16.39s

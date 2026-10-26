@@ -5605,7 +5605,7 @@
    "branch": "feature/user-direction",
    "base_commit": "d8ee3551aab5bb7a80936880a13cd7d828edbff3",
    "status": "review",
-   "blocker": null,
+   "blocker": "7de95f7新补丁待独立复核；人工裁决消费/多候选裁决API、统一事件视图与真实多进程kill仍待",
    "evidence": [
     "代码: 58de0e8（binding.py 意图API+heal/engine 前置登记/schema intents 表+13项专项）；controller._reconciliation_gate 部分已随并行会话 0fda873 入库（提交卷入，内容一致）",
     "测试: 专项 13 passed；相关回归 156 passed（07-B/reconcile/ownership/continuation/approvals/boundaries）；全量 1769/1/2failed 中 ledger_drift(GAP_ANALYSIS 裸引用漂移,非本卡) 与 runtime_reservations(并行15-P在途) 均经核实与本卡无关",
@@ -5635,6 +5635,15 @@
      "result": "一审复核通过、无阻断；保持 review。原分配 zcode-main 未复核，按用户要求最终接受前需再一名非作者审阅人复核。缺口：人工裁决入口/多候选裁决API、真实多进程 kill、后端全量与跨层事件视图。",
      "log": ".planning/2026-10-26-dsh-review/07c-review.json",
      "delivery": "docs/协作开发/验收/2026-10-26-dsh复核-07C.md"
+    },
+    {
+     "date": "2026-10-27",
+     "reviewer": "codex-runtime",
+     "source_commit": "7de95f79deef83c0b10fcff1cad3dab56d85225a",
+     "report": "docs/协作开发/验收/2026-10-27-恢复对账消费边界复核.md",
+     "log": ".planning/2026-10-27-binding-recovery-review/committed-evidence.json",
+     "result": "13新探针；聚焦86；固定相关241 passed；三类恢复消费缺陷修复，待独立复核",
+     "scope": "只读声明/保守证据处理、门禁异常收尾、合法失败转换；非真机或真实kill"
     }
    ],
    "card": "docs/协作开发/任务卡/07-C-原子绑定、精确步骤授权与对账消费.md",
@@ -5673,7 +5682,7 @@
     "UX-10",
     "F03"
    ],
-   "next_step": "dsh-lead 已一审复核通过（169 passed；崩溃唯一补绑/stale/ambiguous/改写冲突/幂等探针 6/6；reconciliation gate 已接 recover 路径）。保持 review：原分配 zcode-main 未复核，按用户要求最终接受前需另一名非作者审阅人复核；缺口：WAITING_USER 人工裁决入口/多候选裁决 API、真实多进程 kill、后端全量与跨层事件视图。",
+   "next_step": "固定相关241 passed；另审阅人核对7de95f7只读计划/异常活动登记/合法失败转换，之后继续人工裁决与真实故障验收。保留原owner/reviewer/一审人和早期接受后重开历史；docs/协作开发/验收/2026-10-27-恢复对账消费边界复核.md",
    "working_basis": "2026-10-25 zcode-next 认领开工（WIP=1，本流内无其他在途卡）。锚点 d8ee355。复用 07-B ActionBindings/07-E reconcile/04-R 恢复；写入边界 core/planning/workflows；server.py、budget.py 等他会在途文件不触碰。",
    "prerequisites": "可重复故障注入",
    "review_history": [
@@ -5683,19 +5692,25 @@
      "previous_reviewer": "zcode-main",
      "reason": "后续负向审查发现旧审阅未覆盖的缺陷，新修复待独立复查",
      "report": "docs/协作开发/验收/2026-10-25-第二批交叉审查与恢复边界修复.md"
+    },
+    {
+     "date": "2026-10-27",
+     "previous_review_verdict": "first_review_pass_pending_other_reviewer",
+     "reason": "新负向探针确认三类真实恢复消费缺陷，补丁已交付待独立复核；一审历史保留",
+     "report": "docs/协作开发/验收/2026-10-27-恢复对账消费边界复核.md"
     }
    ],
    "latest_code_review": {
-    "id": "REVIEW-2026-10-25-DEVELOPED-5",
-    "date": "2026-10-25",
+    "id": "REVIEW-2026-10-27-RECOVERY-GATE",
+    "date": "2026-10-27",
     "reviewer": "codex-runtime",
-    "reviewed_commit": "3331898fcddb78b4b271db152fbd408b7c981889",
-    "scope": "绑定/意图原子回滚与竞争歧义只读再检未见新阻断；不自批此前0cf6672修复",
-    "report": "docs/协作开发/验收/2026-10-25-第五批补绑凭据与重构复核.md",
-    "status": "rechecked_pending_independent_acceptance"
+    "reviewed_commit": "7de95f79deef83c0b10fcff1cad3dab56d85225a",
+    "report": "docs/协作开发/验收/2026-10-27-恢复对账消费边界复核.md",
+    "status": "changes_fixed_pending_independent_recheck",
+    "scope": "三类恢复消费边界修复；新/旧自有补丁不自批"
    },
    "first_reviewer": "dsh-lead",
-   "review_verdict": "first_review_pass_pending_other_reviewer",
+   "review_verdict": "changes_fixed_pending_independent_recheck",
    "ownership_history": [
     {
      "date": "2026-10-26",
@@ -5703,7 +5718,19 @@
      "to": "review",
      "reason": "dsh-lead 一审复核通过；待 zcode-main/另一非作者复核"
     }
-   ]
+   ],
+   "technical_review": {
+    "date": "2026-10-27",
+    "reviewer": "codex-runtime",
+    "source_commit": "7de95f79deef83c0b10fcff1cad3dab56d85225a",
+    "report": "docs/协作开发/验收/2026-10-27-恢复对账消费边界复核.md",
+    "log": ".planning/2026-10-27-binding-recovery-review/committed-evidence.json",
+    "result": "13新探针；聚焦86；固定相关241 passed；三类恢复消费缺陷修复，待独立复核",
+    "scope": "只读声明/保守证据处理、门禁异常收尾、合法失败转换；非真机或真实kill",
+    "status": "changes_fixed_pending_independent_recheck",
+    "evidence": ".planning/2026-10-27-binding-recovery-review/committed-evidence.json",
+    "independent_acceptance_added": false
+   }
   },
   {
    "id": "ALN-08-W",
@@ -11442,6 +11469,24 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-27-资源准入与手机下发边界复核.md",
    "scope": "资源/手机消费边界接续修复；343相关/469客户端/TS，待独立接受"
+  },
+  {
+   "id": "review-fix-7de95f79deef",
+   "title": "fix(runtime): 修正恢复对账声明与异常收尾",
+   "workpackage": "ALN-07",
+   "source_commit": "7de95f79deef83c0b10fcff1cad3dab56d85225a",
+   "files": [
+    "evoagent/core/controller.py",
+    "evoagent/core/state_machine.py",
+    "tests/test_binding_atomicity.py",
+    "tests/test_recovery_gate_review_20261027.py",
+    "tests/test_state_machine.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-27-恢复对账消费边界复核.md",
+   "scope": "恢复对账三类边界；固定相关241 passed；新补丁待独立接受"
   }
  ],
  "requirement_batches": [
@@ -11935,6 +11980,24 @@
    "product_acceptance_added": false,
    "published_by_review": false,
    "scope": "直接资源准入消费者与异步前台下发；原一审观察升级确认缺陷，保留原历史/审核分工；非设备/生产接受"
+  },
+  {
+   "id": "REVIEW-2026-10-27-RECOVERY-GATE",
+   "date": "2026-10-27",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-07-C"
+   ],
+   "fixed_cards": [
+    "ALN-07-C"
+   ],
+   "fix_commit": "7de95f79deef83c0b10fcff1cad3dab56d85225a",
+   "report": "docs/协作开发/验收/2026-10-27-恢复对账消费边界复核.md",
+   "evidence": ".planning/2026-10-27-binding-recovery-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false,
+   "scope": "接续一审：只读计划与异常收尾，保留历史审阅与原分工"
   }
  ]
 }

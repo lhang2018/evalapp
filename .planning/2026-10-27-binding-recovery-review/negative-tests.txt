@@ -1,0 +1,205 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFF..FFFF                                                                [100%]
+================================== FAILURES ===================================
+___ test_completed_observations_do_not_require_side_effect_receipts[hints0] ___
+
+app = <evoagent.app.App object at 0x0000024E24CED8D0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024E24DBACB0>
+hints = ['current_time']
+
+    @pytest.mark.parametrize("hints", [
+        ["current_time"], ["file_read"], ["current_time", "file_write"],
+    ])
+    def test_completed_observations_do_not_require_side_effect_receipts(app, monkeypatch, hints):
+        task = task_with_plan(app, hints)
+        before = copy.deepcopy(task.runtime_manifest["execution_plan"])
+        if "file_write" in hints:
+            app.db.save_side_effect("fx", task.task_id, "", "file_write", None, "", "confirmed")
+            app.controller.react.bindings.bind("fx", "s1", task_id=task.task_id, tool_id="file_write")
+        abandon(app, task)
+        calls = []
+    
+        def continue_run(current, budget, start=False):
+            calls.append(current.task_id)
+            current.task_status = TaskStatus.SUCCEEDED
+            return current
+    
+        monkeypatch.setattr(app.controller, "_run", continue_run)
+        result = app.controller.recover_task(task.task_id)
+>       assert result.task_status == TaskStatus.SUCCEEDED
+E       AssertionError: assert <TaskStatus.W...WAITING_USER'> == <TaskStatus.S...: 'SUCCEEDED'>
+E         
+E         - SUCCEEDED
+E         + WAITING_USER
+
+tests\test_recovery_gate_review_20261027.py:71: AssertionError
+___ test_completed_observations_do_not_require_side_effect_receipts[hints1] ___
+
+app = <evoagent.app.App object at 0x0000024E24EDFC40>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024E24ED3D90>
+hints = ['file_read']
+
+    @pytest.mark.parametrize("hints", [
+        ["current_time"], ["file_read"], ["current_time", "file_write"],
+    ])
+    def test_completed_observations_do_not_require_side_effect_receipts(app, monkeypatch, hints):
+        task = task_with_plan(app, hints)
+        before = copy.deepcopy(task.runtime_manifest["execution_plan"])
+        if "file_write" in hints:
+            app.db.save_side_effect("fx", task.task_id, "", "file_write", None, "", "confirmed")
+            app.controller.react.bindings.bind("fx", "s1", task_id=task.task_id, tool_id="file_write")
+        abandon(app, task)
+        calls = []
+    
+        def continue_run(current, budget, start=False):
+            calls.append(current.task_id)
+            current.task_status = TaskStatus.SUCCEEDED
+            return current
+    
+        monkeypatch.setattr(app.controller, "_run", continue_run)
+        result = app.controller.recover_task(task.task_id)
+>       assert result.task_status == TaskStatus.SUCCEEDED
+E       AssertionError: assert <TaskStatus.W...WAITING_USER'> == <TaskStatus.S...: 'SUCCEEDED'>
+E         
+E         - SUCCEEDED
+E         + WAITING_USER
+
+tests\test_recovery_gate_review_20261027.py:71: AssertionError
+___ test_completed_observations_do_not_require_side_effect_receipts[hints2] ___
+
+app = <evoagent.app.App object at 0x0000024E24F17F70>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024E24F0F5E0>
+hints = ['current_time', 'file_write']
+
+    @pytest.mark.parametrize("hints", [
+        ["current_time"], ["file_read"], ["current_time", "file_write"],
+    ])
+    def test_completed_observations_do_not_require_side_effect_receipts(app, monkeypatch, hints):
+        task = task_with_plan(app, hints)
+        before = copy.deepcopy(task.runtime_manifest["execution_plan"])
+        if "file_write" in hints:
+            app.db.save_side_effect("fx", task.task_id, "", "file_write", None, "", "confirmed")
+            app.controller.react.bindings.bind("fx", "s1", task_id=task.task_id, tool_id="file_write")
+        abandon(app, task)
+        calls = []
+    
+        def continue_run(current, budget, start=False):
+            calls.append(current.task_id)
+            current.task_status = TaskStatus.SUCCEEDED
+            return current
+    
+        monkeypatch.setattr(app.controller, "_run", continue_run)
+        result = app.controller.recover_task(task.task_id)
+>       assert result.task_status == TaskStatus.SUCCEEDED
+E       AssertionError: assert <TaskStatus.W...WAITING_USER'> == <TaskStatus.S...: 'SUCCEEDED'>
+E         
+E         - SUCCEEDED
+E         + WAITING_USER
+
+tests\test_recovery_gate_review_20261027.py:71: AssertionError
+_____________ test_receipt_on_observation_tool_remains_undeclared _____________
+
+app = <evoagent.app.App object at 0x0000024E24DF01F0>
+
+    def test_receipt_on_observation_tool_remains_undeclared(app):
+        task = task_with_plan(app, ["current_time"])
+        task.task_status = TaskStatus.RUNNING
+        app.db.save_task(task)
+        app.db.save_side_effect("rogue", task.task_id, "", "current_time", None, "", "confirmed")
+        result = app.controller._reconciliation_gate(task)
+>       assert result.task_status == TaskStatus.WAITING_USER
+E       AttributeError: 'NoneType' object has no attribute 'task_status'
+
+tests\test_recovery_gate_review_20261027.py:96: AttributeError
+______ test_ledger_read_error_is_a_recorded_failure_without_active_leak _______
+
+app = <evoagent.app.App object at 0x0000024E24F0E800>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024E24F0DA80>
+
+    def test_ledger_read_error_is_a_recorded_failure_without_active_leak(app, monkeypatch):
+        task = task_with_plan(app, ["current_time"])
+        abandon(app, task)
+        # Recovery inspection still succeeds; the following history read fails.
+        def unreadable(_):
+            raise sqlite3.OperationalError("ledger read unavailable")
+        monkeypatch.setattr(app.controller.side_fx, "history", unreadable)
+>       result = app.controller.recover_task(task.task_id)
+
+tests\test_recovery_gate_review_20261027.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+evoagent\core\controller.py:1054: in recover_task
+    return self._resume_suspended(task, budget, False, recovery=True)
+evoagent\core\controller.py:1066: in _resume_suspended
+    gated = self._reconciliation_gate(task)
+evoagent\core\controller.py:1142: in _reconciliation_gate
+    rows = self.side_fx.history(task.task_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+_ = 'recovery-review'
+
+    def unreadable(_):
+>       raise sqlite3.OperationalError("ledger read unavailable")
+E       sqlite3.OperationalError: ledger read unavailable
+
+tests\test_recovery_gate_review_20261027.py:105: OperationalError
+_ test_gate_event_failure_releases_registration_even_when_not_caught[OSError] _
+
+app = <evoagent.app.App object at 0x0000024E2494E590>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024E24ED0640>
+failure = <class 'OSError'>
+
+    @pytest.mark.parametrize("failure", [OSError, KeyboardInterrupt])
+    def test_gate_event_failure_releases_registration_even_when_not_caught(app, monkeypatch, failure):
+        task = task_with_plan(app, [None])
+        abandon(app, task)
+        original_emit = app.controller._emit
+        def emit(current, event_type, *args, **kwargs):
+            if event_type == "reconciliation_gate":
+                raise failure("event sink unavailable")
+            return original_emit(current, event_type, *args, **kwargs)
+        monkeypatch.setattr(app.controller, "_emit", emit)
+        with pytest.raises(failure, match="event sink unavailable"):
+            app.controller.recover_task(task.task_id)
+>       assert task.task_id not in app.controller._active
+E       AssertionError: assert 'recovery-review' not in {'recovery-review': <evoagent.core.controller.RuntimeController._register_active.<locals>._Flag object at 0x0000024E24ED14E0>}
+E        +  where 'recovery-review' = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_d1af30e338dc42be9079f94387d9a13b', parent_run...st_id': 'manifest_run_d1af30e338dc42be9079f94387d9a13b'}, created_at=1793058097.1190898, updated_at=1793058097.1190898).task_id
+E        +  and   {'recovery-review': <evoagent.core.controller.RuntimeController._register_active.<locals>._Flag object at 0x0000024E24ED14E0>} = <evoagent.core.controller.RuntimeController object at 0x0000024E24F16BF0>._active
+E        +    where <evoagent.core.controller.RuntimeController object at 0x0000024E24F16BF0> = <evoagent.app.App object at 0x0000024E2494E590>.controller
+
+tests\test_recovery_gate_review_20261027.py:128: AssertionError
+_ test_gate_event_failure_releases_registration_even_when_not_caught[KeyboardInterrupt] _
+
+app = <evoagent.app.App object at 0x0000024E24DF0820>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024E24F822F0>
+failure = <class 'KeyboardInterrupt'>
+
+    @pytest.mark.parametrize("failure", [OSError, KeyboardInterrupt])
+    def test_gate_event_failure_releases_registration_even_when_not_caught(app, monkeypatch, failure):
+        task = task_with_plan(app, [None])
+        abandon(app, task)
+        original_emit = app.controller._emit
+        def emit(current, event_type, *args, **kwargs):
+            if event_type == "reconciliation_gate":
+                raise failure("event sink unavailable")
+            return original_emit(current, event_type, *args, **kwargs)
+        monkeypatch.setattr(app.controller, "_emit", emit)
+        with pytest.raises(failure, match="event sink unavailable"):
+            app.controller.recover_task(task.task_id)
+>       assert task.task_id not in app.controller._active
+E       AssertionError: assert 'recovery-review' not in {'recovery-review': <evoagent.core.controller.RuntimeController._register_active.<locals>._Flag object at 0x0000024E24F82050>}
+E        +  where 'recovery-review' = Task(task_id='recovery-review', parent_task_id=None, current_run_id='run_ebfbf41a06e14b49833302a17a8bb6bb', parent_run...st_id': 'manifest_run_ebfbf41a06e14b49833302a17a8bb6bb'}, created_at=1793058097.4175432, updated_at=1793058097.4175432).task_id
+E        +  and   {'recovery-review': <evoagent.core.controller.RuntimeController._register_active.<locals>._Flag object at 0x0000024E24F82050>} = <evoagent.core.controller.RuntimeController object at 0x0000024E24F826E0>._active
+E        +    where <evoagent.core.controller.RuntimeController object at 0x0000024E24F826E0> = <evoagent.app.App object at 0x0000024E24DF0820>.controller
+
+tests\test_recovery_gate_review_20261027.py:128: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_recovery_gate_review_20261027.py::test_completed_observations_do_not_require_side_effect_receipts[hints0]
+FAILED tests/test_recovery_gate_review_20261027.py::test_completed_observations_do_not_require_side_effect_receipts[hints1]
+FAILED tests/test_recovery_gate_review_20261027.py::test_completed_observations_do_not_require_side_effect_receipts[hints2]
+FAILED tests/test_recovery_gate_review_20261027.py::test_receipt_on_observation_tool_remains_undeclared
+FAILED tests/test_recovery_gate_review_20261027.py::test_ledger_read_error_is_a_recorded_failure_without_active_leak
+FAILED tests/test_recovery_gate_review_20261027.py::test_gate_event_failure_releases_registration_even_when_not_caught[OSError]
+FAILED tests/test_recovery_gate_review_20261027.py::test_gate_event_failure_releases_registration_even_when_not_caught[KeyboardInterrupt]
+7 failed, 2 passed in 3.50s

@@ -1,0 +1,167 @@
+{
+  "date": "2026-10-27",
+  "reviewer": "codex-runtime",
+  "source_commit": "7de95f79deef83c0b10fcff1cad3dab56d85225a",
+  "source_tree": "cc96a5152309b1c5b593c9b8013b33912bdd9ec4",
+  "report": "docs/协作开发/验收/2026-10-27-恢复对账消费边界复核.md",
+  "fix_commits": [
+    "7de95f79deef83c0b10fcff1cad3dab56d85225a"
+  ],
+  "validation_records": {
+    "negative-validation": {
+      "pytest_arguments": [
+        "tests/test_recovery_gate_review_20261027.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-lygs2oif",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "error-negative-validation": {
+      "pytest_arguments": [
+        "tests/test_recovery_gate_review_20261027.py",
+        "-q",
+        "-k",
+        "legal_failure"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-eb2wx6q7",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "focused-validation": {
+      "pytest_arguments": [
+        "tests/test_recovery_gate_review_20261027.py",
+        "tests/test_binding_atomicity.py",
+        "tests/test_peer_action_binding_review.py",
+        "tests/test_peer_plan_reconcile_review.py",
+        "tests/test_run_ownership.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-h00x3pak",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "final-focused-validation": {
+      "pytest_arguments": [
+        "tests/test_recovery_gate_review_20261027.py",
+        "tests/test_binding_atomicity.py",
+        "tests/test_peer_action_binding_review.py",
+        "tests/test_peer_plan_reconcile_review.py",
+        "tests/test_run_ownership.py",
+        "tests/test_state_machine.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-e9l7v6ur",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "committed-validation": {
+      "pytest_arguments": [
+        "tests/test_recovery_gate_review_20261027.py",
+        "tests/test_binding_atomicity.py",
+        "tests/test_action_binding.py",
+        "tests/test_peer_action_binding_review.py",
+        "tests/test_plan_side_effect_reconcile.py",
+        "tests/test_peer_plan_reconcile_review.py",
+        "tests/test_run_ownership.py",
+        "tests/test_run_continuation.py",
+        "tests/test_async_approvals.py",
+        "tests/test_execution_boundaries.py",
+        "tests/test_state_machine.py",
+        "tests/test_approvals.py",
+        "tests/test_runtime_admission_review_20261026.py",
+        "tests/test_host_deployment_review.py",
+        "-q"
+      ],
+      "snapshot_commit": "7de95f79deef83c0b10fcff1cad3dab56d85225a",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-hr2i0o5x",
+      "source_tree": "cc96a5152309b1c5b593c9b8013b33912bdd9ec4",
+      "archive_sha256": "84bc3708eecdc0a4eab815b3dad8d8a7ab3e1ffde2b27fc471cae6abe0e54628",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-hr2i0o5x\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-hr2i0o5x\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-hr2i0o5x\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 4,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "final-validation": {
+      "pytest_arguments": [
+        "tests/test_recovery_gate_review_20261027.py",
+        "tests/test_binding_atomicity.py",
+        "tests/test_action_binding.py",
+        "tests/test_peer_action_binding_review.py",
+        "tests/test_plan_side_effect_reconcile.py",
+        "tests/test_peer_plan_reconcile_review.py",
+        "tests/test_run_ownership.py",
+        "tests/test_run_continuation.py",
+        "tests/test_async_approvals.py",
+        "tests/test_execution_boundaries.py",
+        "tests/test_state_machine.py",
+        "tests/test_approvals.py",
+        "tests/test_runtime_admission_review_20261026.py",
+        "tests/test_deployment_recovery.py",
+        "tests/test_restore_entry_review_20261026.py",
+        "tests/test_assigned_restore_review_20261026.py",
+        "-q"
+      ],
+      "snapshot_commit": "7de95f79deef83c0b10fcff1cad3dab56d85225a",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-fbmbc0at",
+      "source_tree": "cc96a5152309b1c5b593c9b8013b33912bdd9ec4",
+      "archive_sha256": "84bc3708eecdc0a4eab815b3dad8d8a7ab3e1ffde2b27fc471cae6abe0e54628",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-fbmbc0at\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-fbmbc0at\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-fbmbc0at\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    }
+  },
+  "results": {
+    "initial_negative": "7 failed, 2 passed",
+    "extra_error_negative": "4 failed, 9 deselected",
+    "initial_focused": "1 failed, 77 passed",
+    "final_focused": "86 passed",
+    "fixed_related": "241 passed"
+  },
+  "initial_fixed_attempt": "No tests ran: mistyped nonexistent test_host_deployment_review.py; corrected file selection in final-validation",
+  "owned_validation_scopes_removed": 6,
+  "independent_acceptance_added": false,
+  "status": "fixes_delivered_pending_independent_recheck",
+  "not_run": [
+    "full backend",
+    "client/TypeScript",
+    "device/APK",
+    "real multi-process kill",
+    "production providers"
+  ],
+  "continuation_test_boundary": "Real App/Database/expired lease/recover_task; new clean probes stub only _run to assert gate admits continuation; existing clean e2e also retained",
+  "foreign_changes_and_old_caches_preserved": true,
+  "log_sha256_lf": {
+    "committed-tests.txt": "b2d80ff88a3c5e3a256c0ff30d16a15f1202e756dba506b9995395c90b1aba9f",
+    "error-negative-tests.txt": "01a318f9f7e1477ab6697c4c59688ac78836f4d5abdd3054220e92d5150f3844",
+    "final-focused-tests.txt": "4c8e6ace779e978ecda8ce0c2e288904a0809af164a70e947d8408f2e5a36979",
+    "final-tests.txt": "ed1bf6109f3ed14a589a4ffedfd61dfd79e85ecd70f2e049a8ab0c5b8f656cee",
+    "focused-tests.txt": "237bd8252512d685d10e1da0b5d28c061b2f28bd0bb919eb5434f2d368587d6f",
+    "negative-tests.txt": "a3852d2652a6c914f79e316357d7ff4b72199c4eeb188246495fe9d002f4547d"
+  }
+}
