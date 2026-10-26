@@ -250,9 +250,9 @@ def deletion_reconciliation(db: Any, task_id: str,
                ("audit_log", "target=?", conn))
     for table, where, source in sources:
         try:
-            n = source.execute(
-                f"SELECT COUNT(*) AS n FROM {table} WHERE {where}",
-                (task_id,)).fetchone()["n"]
+            rows = _rows(source, f"SELECT COUNT(*) AS n FROM {table}"
+                                 f" WHERE {where}", (task_id,))
+            n = int(rows[0]["n"]) if rows else 0
         except Exception:
             n = None  # 表不存在视为零残留（域模块未建）
         residuals[table] = n

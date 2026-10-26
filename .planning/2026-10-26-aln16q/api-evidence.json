@@ -1,0 +1,74 @@
+{
+ "task": "ALN-16-Q 聚合观测/受控导出下载/删除执行 API 实测",
+ "date": "2026-10-26",
+ "task_id": "351752b4e55b",
+ "export": {
+  "export_id": "exp_34d2fe3067cc",
+  "sha256": "f5a1c45226df48ccfe341ff4f1166c94438c912a92d16f5fa9caf0128874377e",
+  "events_digest": "6a8132e7827c642e1e9929631e931975be3386be5e16a2ae1d397a86513fc9a2",
+  "count": 1,
+  "skipped": {
+   "privacy": 2,
+   "scope": 0
+  },
+  "policy": {
+   "role": "admin",
+   "max_level": "internal"
+  }
+ },
+ "download": {
+  "export_id": "exp_34d2fe3067cc",
+  "sha256": "f5a1c45226df48ccfe341ff4f1166c94438c912a92d16f5fa9caf0128874377e",
+  "events_digest": "6a8132e7827c642e1e9929631e931975be3386be5e16a2ae1d397a86513fc9a2",
+  "count": 1,
+  "audit_match": true
+ },
+ "deletion": {
+  "plan_digest": "8ea1368c6f3e7c0e8f885ae4ecbaca739eaac1ab7d6fa79bfd4571f7f65a2d67",
+  "residuals": {
+   "runtime_events": 0,
+   "task_side_effects": 1,
+   "approvals": 1,
+   "audit_log": 4
+  },
+  "retained_layers": [
+   "task_side_effects",
+   "approvals",
+   "audit_log"
+  ],
+  "executed_counts": {
+   "runtime_event": 1,
+   "execution_trace": 0,
+   "diagnostic_evidence": 0,
+   "diagnostics": {
+    "cases": 0,
+    "hypotheses": 0,
+    "experiments": 0
+   }
+  },
+  "note": "执行器实际覆盖 runtime_events/execution_trace/diagnostic_evidence/diagnostics；task_side_effects、approvals 与审计层按现有执行器保留（见 retained_layers/reconciliation），不宣称跨备份或全域擦除"
+ },
+ "checks": {
+  "aggregate_ok": true,
+  "aggregate_operator_403": true,
+  "export_ok": "6a8132e7827c642e1e9929631e931975be3386be5e16a2ae1d397a86513fc9a2",
+  "export_principal_mismatch_403": true,
+  "download_digest_matches": true,
+  "download_audit_match": true,
+  "dry_run_ok": true,
+  "bad_digest_409": true,
+  "delete_ok": {
+   "runtime_event": 1,
+   "execution_trace": 0,
+   "diagnostic_evidence": 0,
+   "diagnostics": {
+    "cases": 0,
+    "hypotheses": 0,
+    "experiments": 0
+   }
+  },
+  "delete_reconciliation_honest": true,
+  "delete_runtime_residual_zero": true
+ },
+ "all_checks_pass": true
+}
