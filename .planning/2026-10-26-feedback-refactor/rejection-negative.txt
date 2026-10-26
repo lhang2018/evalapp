@@ -1,0 +1,59 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FF                                                                       [100%]
+================================== FAILURES ===================================
+_ test_rejected_small_upload_is_discarded_without_parsing[admin-text/plain-415] _
+
+actor = 'admin', content_type = 'text/plain', expected = 415
+
+    @pytest.mark.parametrize("actor,content_type,expected", [
+        ("admin", "text/plain", 415), ("operator", "application/zip", 403),
+    ])
+    def test_rejected_small_upload_is_discarded_without_parsing(actor, content_type, expected):
+        handler = object.__new__(make_handler(SimpleNamespace()))
+        body = b"not parsed as a diagnostic package"
+        handler.headers = {"Content-Type": content_type, "Content-Length": str(len(body))}
+        handler.connection = Connection()
+        handler.rfile = io.BytesIO(body)
+        responses = []
+        handler._json = lambda status, payload: responses.append((status, payload))
+        handler._diagnostics_import(actor)
+        assert responses[0][0] == expected
+>       assert handler.rfile.tell() == len(body)
+E       AssertionError: assert 0 == 34
+E        +  where 0 = <built-in method tell of _io.BytesIO object at 0x0000025E18E8A0C0>()
+E        +    where <built-in method tell of _io.BytesIO object at 0x0000025E18E8A0C0> = <_io.BytesIO object at 0x0000025E18E8A0C0>.tell
+E        +      where <_io.BytesIO object at 0x0000025E18E8A0C0> = <evoagent.api.server.make_handler.<locals>.Handler object at 0x0000025E18E75750>.rfile
+E        +  and   34 = len(b'not parsed as a diagnostic package')
+
+tests\test_diagnostics_rejection_body.py:34: AssertionError
+_ test_rejected_small_upload_is_discarded_without_parsing[operator-application/zip-403] _
+
+actor = 'operator', content_type = 'application/zip', expected = 403
+
+    @pytest.mark.parametrize("actor,content_type,expected", [
+        ("admin", "text/plain", 415), ("operator", "application/zip", 403),
+    ])
+    def test_rejected_small_upload_is_discarded_without_parsing(actor, content_type, expected):
+        handler = object.__new__(make_handler(SimpleNamespace()))
+        body = b"not parsed as a diagnostic package"
+        handler.headers = {"Content-Type": content_type, "Content-Length": str(len(body))}
+        handler.connection = Connection()
+        handler.rfile = io.BytesIO(body)
+        responses = []
+        handler._json = lambda status, payload: responses.append((status, payload))
+        handler._diagnostics_import(actor)
+        assert responses[0][0] == expected
+>       assert handler.rfile.tell() == len(body)
+E       AssertionError: assert 0 == 34
+E        +  where 0 = <built-in method tell of _io.BytesIO object at 0x0000025E18F64A90>()
+E        +    where <built-in method tell of _io.BytesIO object at 0x0000025E18F64A90> = <_io.BytesIO object at 0x0000025E18F64A90>.tell
+E        +      where <_io.BytesIO object at 0x0000025E18F64A90> = <evoagent.api.server.make_handler.<locals>.Handler object at 0x0000025E18E77520>.rfile
+E        +  and   34 = len(b'not parsed as a diagnostic package')
+
+tests\test_diagnostics_rejection_body.py:34: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_diagnostics_rejection_body.py::test_rejected_small_upload_is_discarded_without_parsing[admin-text/plain-415]
+FAILED tests/test_diagnostics_rejection_body.py::test_rejected_small_upload_is_discarded_without_parsing[operator-application/zip-403]
+2 failed in 0.29s

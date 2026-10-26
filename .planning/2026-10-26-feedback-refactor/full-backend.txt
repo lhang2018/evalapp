@@ -1,0 +1,92 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+........................................................................ [  3%]
+........................................................................ [  6%]
+........................................................................ [  9%]
+........................................................................ [ 12%]
+........................................................................ [ 15%]
+........................................................................ [ 18%]
+........................................................................ [ 21%]
+........................................................................ [ 24%]
+........................................................................ [ 27%]
+........................................................................ [ 30%]
+............................................F........................... [ 33%]
+........................................................................ [ 36%]
+........................................................................ [ 39%]
+........................................................................ [ 43%]
+........................................................................ [ 46%]
+........................................................................ [ 49%]
+........................................................................ [ 52%]
+........................................................................ [ 55%]
+........................................................................ [ 58%]
+........................................................................ [ 61%]
+........................................................................ [ 64%]
+........................................................................ [ 67%]
+........................................................................ [ 70%]
+........................................................................ [ 73%]
+........................................................................ [ 76%]
+........................................................................ [ 79%]
+........................................................................ [ 82%]
+........................................................................ [ 86%]
+........................................................................ [ 89%]
+........................................................................ [ 92%]
+................s....................................................... [ 95%]
+........................................................................ [ 98%]
+.......................................                                  [100%]
+================================== FAILURES ===================================
+_________ TestDiagnosticsImport.test_content_type_and_admin_required __________
+
+self = <test_diagnostics_import.TestDiagnosticsImport testMethod=test_content_type_and_admin_required>
+
+    def test_content_type_and_admin_required(self):
+>       st, out = self._post(build_package(), {"Content-Type": "text/plain"})
+
+tests\test_diagnostics_import.py:243: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_diagnostics_import.py:111: in _post
+    with urllib.request.urlopen(req, timeout=15) as r:
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:216: in urlopen
+    return opener.open(url, data, timeout)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:519: in open
+    response = self._open(req, data)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:536: in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:496: in _call_chain
+    result = func(*args)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:1377: in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\urllib\request.py:1352: in do_open
+    r = h.getresponse()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:1375: in getresponse
+    response.begin()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:318: in begin
+    version, status, reason = self._read_status()
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\http\client.py:279: in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <socket.SocketIO object at 0x000001B7C3924220>
+b = <memory at 0x000001B7C11DA080>
+
+    def readinto(self, b):
+        """Read up to len(b) bytes into the writable buffer *b* and return
+        the number of bytes read.  If the socket is non-blocking and no bytes
+        are available, None is returned.
+    
+        If *b* is non-empty, a 0 return value indicates that the connection
+        was shutdown at the other end.
+        """
+        self._checkClosed()
+        self._checkReadable()
+        if self._timeout_occurred:
+            raise OSError("cannot read from timed out object")
+        while True:
+            try:
+>               return self._sock.recv_into(b)
+E               ConnectionAbortedError: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\socket.py:705: ConnectionAbortedError
+=========================== short test summary info ===========================
+FAILED tests/test_diagnostics_import.py::TestDiagnosticsImport::test_content_type_and_admin_required
+1 failed, 2341 passed, 1 skipped, 1 deselected in 475.71s (0:07:55)

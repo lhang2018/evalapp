@@ -1,0 +1,70 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+......................FFF                                                [100%]
+================================== FAILURES ===================================
+_ test_package_attribute_mutation_does_not_prove_module_identity[sys.modules[__name__].target = SimpleNamespace(helper=lambda: 'foreign')] _
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-mayen1ly/scratch/pytest/test_package_attribute_mutatio0')
+assignment = "sys.modules[__name__].target = SimpleNamespace(helper=lambda: 'foreign')"
+
+    @pytest.mark.parametrize("assignment", [
+        "sys.modules[__name__].target = SimpleNamespace(helper=lambda: 'foreign')",
+        "sys.modules[__name__].__dict__['target'] = SimpleNamespace(helper=lambda: 'foreign')",
+    ])
+    def test_package_attribute_mutation_does_not_prove_module_identity(tmp_path, assignment):
+        project(tmp_path, {"pkg/__init__.py": "import sys\nfrom types import SimpleNamespace\n" + assignment + "\n",
+            "pkg/target.py": "def helper():\n    return 1\n",
+            "consumer.py": "from pkg import target as mod\nanswer = mod.helper()\n"})
+        assert run_consumer(tmp_path) == "foreign"
+        result = analyze_rename(tmp_path, "helper", "compute")
+>       assert result.status == "needs_clarification" and not result.edits
+E       AssertionError: assert ('ok' == 'needs_clarification'
+E         
+E         - needs_clarification
+E         + ok)
+
+tests\test_feedback_refactor_review_20261026.py:136: AssertionError
+_ test_package_attribute_mutation_does_not_prove_module_identity[sys.modules[__name__].__dict__['target'] = SimpleNamespace(helper=lambda: 'foreign')] _
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-mayen1ly/scratch/pytest/test_package_attribute_mutatio1')
+assignment = "sys.modules[__name__].__dict__['target'] = SimpleNamespace(helper=lambda: 'foreign')"
+
+    @pytest.mark.parametrize("assignment", [
+        "sys.modules[__name__].target = SimpleNamespace(helper=lambda: 'foreign')",
+        "sys.modules[__name__].__dict__['target'] = SimpleNamespace(helper=lambda: 'foreign')",
+    ])
+    def test_package_attribute_mutation_does_not_prove_module_identity(tmp_path, assignment):
+        project(tmp_path, {"pkg/__init__.py": "import sys\nfrom types import SimpleNamespace\n" + assignment + "\n",
+            "pkg/target.py": "def helper():\n    return 1\n",
+            "consumer.py": "from pkg import target as mod\nanswer = mod.helper()\n"})
+        assert run_consumer(tmp_path) == "foreign"
+        result = analyze_rename(tmp_path, "helper", "compute")
+>       assert result.status == "needs_clarification" and not result.edits
+E       AssertionError: assert ('ok' == 'needs_clarification'
+E         
+E         - needs_clarification
+E         + ok)
+
+tests\test_feedback_refactor_review_20261026.py:136: AssertionError
+_____ test_importer_cannot_rebind_a_package_prefix_and_keep_module_proof ______
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-mayen1ly/scratch/pytest/test_importer_cannot_rebind_a_0')
+
+    def test_importer_cannot_rebind_a_package_prefix_and_keep_module_proof(tmp_path):
+        project(tmp_path, {"pkg/__init__.py": "", "pkg/target.py": "def helper():\n    return 1\n",
+            "consumer.py": "import pkg.target\nfrom types import SimpleNamespace\npkg.target = SimpleNamespace(helper=lambda: 'foreign')\nanswer = pkg.target.helper()\n"})
+        assert run_consumer(tmp_path) == "foreign"
+        result = analyze_rename(tmp_path, "helper", "compute")
+>       assert result.status == "needs_clarification" and not result.edits
+E       AssertionError: assert ('ok' == 'needs_clarification'
+E         
+E         - needs_clarification
+E         + ok)
+
+tests\test_feedback_refactor_review_20261026.py:144: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_feedback_refactor_review_20261026.py::test_package_attribute_mutation_does_not_prove_module_identity[sys.modules[__name__].target = SimpleNamespace(helper=lambda: 'foreign')]
+FAILED tests/test_feedback_refactor_review_20261026.py::test_package_attribute_mutation_does_not_prove_module_identity[sys.modules[__name__].__dict__['target'] = SimpleNamespace(helper=lambda: 'foreign')]
+FAILED tests/test_feedback_refactor_review_20261026.py::test_importer_cannot_rebind_a_package_prefix_and_keep_module_proof
+3 failed, 22 passed in 0.60s

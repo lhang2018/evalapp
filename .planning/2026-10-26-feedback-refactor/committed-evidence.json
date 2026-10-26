@@ -1,0 +1,222 @@
+{
+  "source_commit": "67fcc54275b09b06232a67bd0cf1530da7e60d84",
+  "feature_fix_commit": "b5b376d386d3aee58529007df30fc55d1386c687",
+  "api_fix_commit": "026ab2b7e2b63410d939d7c285f9ef8ac3f973ad",
+  "source_tree": "caa7851095370690a20f1ab31273645534b4aa6b",
+  "python_passed": 2344,
+  "python_skipped": 1,
+  "python_deselected": 1,
+  "validation_mode": "full runtime plus metadata revalidation with identical product/test/tool trees; no third full run",
+  "code_trees": {
+    "evoagent": "20cf8d9b00b80894fbb152f7263b7141f879a393",
+    "tests": "73d28eb2ddec7e9b327a060397336709af5dafa3",
+    "tools": "43a35921691dd910567ac936078bcc2f4f63fdcb"
+  },
+  "metadata_recheck_passed": 85,
+  "second_full_result": {
+    "source_commit": "026ab2b7e2b63410d939d7c285f9ef8ac3f973ad",
+    "passed": 2343,
+    "failed": 1,
+    "failure": "ledger reference drift; fixed by metadata-only commit"
+  },
+  "records": {
+    "negative-validation.json": {
+      "pytest_arguments": [
+        "tests/test_feedback_refactor_review_20261026.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-6cvsaeig",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "focused-validation.json": {
+      "pytest_arguments": [
+        "tests/test_feedback_refactor_review_20261026.py",
+        "tests/test_developed_review_5.py",
+        "tests/test_refactor.py",
+        "tests/test_feedback.py",
+        "tests/test_credential_pattern_coverage.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-r1op1eyo",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "focused-final-validation.json": {
+      "pytest_arguments": [
+        "tests/test_feedback_refactor_review_20261026.py",
+        "tests/test_developed_review_5.py",
+        "tests/test_refactor.py",
+        "tests/test_feedback.py",
+        "tests/test_credential_pattern_coverage.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-l1i3dqhu",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "namespace-validation.json": {
+      "pytest_arguments": [
+        "tests/test_feedback_refactor_review_20261026.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-mayen1ly",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "related-final-validation.json": {
+      "pytest_arguments": [
+        "tests/test_feedback_refactor_review_20261026.py",
+        "tests/test_developed_review_5.py",
+        "tests/test_refactor.py",
+        "tests/test_feedback.py",
+        "tests/test_credential_pattern_coverage.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-8k7z2vdf",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "fixed-validation.json": {
+      "pytest_arguments": [
+        "tests",
+        "tools/tests",
+        "-q",
+        "--deselect=tests/test_fact_verification.py::test_real_http_source_is_accessible_and_cited"
+      ],
+      "snapshot_commit": "b5b376d386d3aee58529007df30fc55d1386c687",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-b629d6wo",
+      "source_tree": "6f13b9549d4b4666370097dfc39f981767bfee9e",
+      "archive_sha256": "60dbf8870139072a334864316ecf42c17a54bc9d488f980c8e25530331e5c16e",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-b629d6wo\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-b629d6wo\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-b629d6wo\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "rejection-negative-validation.json": {
+      "pytest_arguments": [
+        "tests/test_diagnostics_rejection_body.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-4it25od8",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "rejection-fixed-validation.json": {
+      "pytest_arguments": [
+        "tests/test_diagnostics_rejection_body.py",
+        "tests/test_diagnostics_import.py",
+        "tests/test_feedback_refactor_review_20261026.py",
+        "tests/test_developed_review_5.py",
+        "tests/test_refactor.py",
+        "tests/test_feedback.py",
+        "tests/test_credential_pattern_coverage.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-83yfapzg",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "final-fixed-validation.json": {
+      "pytest_arguments": [
+        "tests",
+        "tools/tests",
+        "-q",
+        "--deselect=tests/test_fact_verification.py::test_real_http_source_is_accessible_and_cited"
+      ],
+      "snapshot_commit": "026ab2b7e2b63410d939d7c285f9ef8ac3f973ad",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-d9h86uiz",
+      "source_tree": "6a415cbd5beed2bc821ab734521311f1b1a6e3f5",
+      "archive_sha256": "542adc76dc2d3737e30c75e876d9b9377295be85f8feda3795ecf10b70d2ab22",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-d9h86uiz\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-d9h86uiz\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-d9h86uiz\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "ledger-fixed-validation.json": {
+      "pytest_arguments": [
+        "tests/test_ledger_drift.py",
+        "tools/tests",
+        "-q"
+      ],
+      "snapshot_commit": "67fcc54275b09b06232a67bd0cf1530da7e60d84",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-f0peza99",
+      "source_tree": "caa7851095370690a20f1ab31273645534b4aa6b",
+      "archive_sha256": "bc081e3dd7af3c6376faae0db4a36b26ed57702b41b4e04a3b32e1f3ce05a79b",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-f0peza99\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-f0peza99\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-f0peza99\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    }
+  },
+  "initial_full_result": {
+    "passed": 2341,
+    "failed": 1,
+    "skipped": 1,
+    "deselected": 1,
+    "failure": "test_diagnostics_import.py::TestDiagnosticsImport::test_content_type_and_admin_required; WinError10053",
+    "resolution": "bounded drain on diagnostics rejection; deterministic regression, no test assertion relaxation"
+  },
+  "client_passed": 424,
+  "typecheck": "passed",
+  "client_source_commit": "998db6fd6427586a4ba23bd99bf91a7edf03625e",
+  "client_tree": "f4321e56cb157556550fcd58bd5ddad5900d7b63",
+  "client_evidence_mode": "reused_identical_client_tree",
+  "client_evidence": ".planning/2026-10-26-device-review/committed-evidence.json",
+  "device_verified": false,
+  "product_acceptance_added": false,
+  "new_temporary_data_removed": true,
+  "evidence_sha256_lf": {
+    "negative-probes.txt": "e1670da0c713afcbf6e98c8d8840cf2e8e0f519a61a1781387df783971a22dee",
+    "focused-tests.txt": "940166072c7ba944eca633d428985e9e0b5917cfa669afbb678365d32a92e6aa",
+    "focused-final.txt": "eb21afcb0aa6f8b1d9043e0419959ee358ee4ea525ff0a00f766bab2a41a3703",
+    "namespace-probes.txt": "2a194280fb9c98dfc47b46ec0e06d17c38f2da2cc4980cd78517c3dde3a3fc92",
+    "related-final.txt": "122150a306ce20516d21bcfb3d2d131734e92bbfe30ad18a3159375c27954615",
+    "full-backend.txt": "437f0a64c3b6bb9fe532efe3498d63b2ce9371d63f8e8cc0698fe5b1c19b496d",
+    "rejection-negative.txt": "42f849d9de026e0bc1f7e6b916c26e4ae4239d45d60a1c2bbc2ae92861fa72a0",
+    "rejection-fixed.txt": "7e5c09d3e90ed4ee215025f6d4e787f47e25432b95dc880fbc61813ec0b9c95a",
+    "full-backend-final.txt": "49abbde281eaad7ad4e17f377169d145c6df98343f0fe8fe4c84f7eeaece4f09",
+    "ledger-fixed.txt": "1fbef62d68231e51926daf46cea2c394d3b3cf051fab781ce28a1a93a1457919"
+  }
+}

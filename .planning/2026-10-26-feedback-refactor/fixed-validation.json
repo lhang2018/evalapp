@@ -1,0 +1,18 @@
+{
+  "pytest_arguments": [
+    "tests",
+    "tools/tests",
+    "-q",
+    "--deselect=tests/test_fact_verification.py::test_real_http_source_is_accessible_and_cited"
+  ],
+  "snapshot_commit": "b5b376d386d3aee58529007df30fc55d1386c687",
+  "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+  "owned_temp_directory": "E:\\evalapp\\outputs\\review5-b629d6wo",
+  "source_tree": "6f13b9549d4b4666370097dfc39f981767bfee9e",
+  "archive_sha256": "60dbf8870139072a334864316ecf42c17a54bc9d488f980c8e25530331e5c16e",
+  "source_path_when_tested": "E:\\evalapp\\outputs\\review5-b629d6wo\\source",
+  "module_source_probe": "E:\\evalapp\\outputs\\review5-b629d6wo\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-b629d6wo\\source\\evoagent\\tools\\refactor.py\n",
+  "exit_code": 1,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+}

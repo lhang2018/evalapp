@@ -104,9 +104,9 @@
    "scope": "候选准备Git/日志证据有效；当前源码新增显式验收不通过，915/1仅为此前普通tests基线"
   },
   "latest_source_verification": {
-   "source_commit": "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
-   "source_tree": "e568cb717e3b3e47b50bd9c936c126b4bfa9a642",
-   "python_passed": 2315,
+   "source_commit": "67fcc54275b09b06232a67bd0cf1530da7e60d84",
+   "source_tree": "caa7851095370690a20f1ab31273645534b4aa6b",
+   "python_passed": 2344,
    "python_skipped": 1,
    "python_deselected": 1,
    "client_passed": 424,
@@ -114,8 +114,9 @@
    "client_source_commit": "998db6fd6427586a4ba23bd99bf91a7edf03625e",
    "client_evidence_mode": "reused_identical_client_tree",
    "device_verified": false,
-   "scope": "精确Git归档tests2245+tools/tests70合计2315/1/1；客户端子树相同沿用998db6f的424与类型检查，非重跑；无真机/生产接受，不替换已发布基线",
-   "evidence": "../../.planning/2026-10-26-proactive-review/committed-evidence.json"
+   "validation_mode": "identical-code metadata revalidation; no third full rerun",
+   "scope": "026ab2b全量2343通过/1台账失败，67fcc54仅修引用后台账+工具85通过；产品/测试/工具树相同，去重覆盖2344/1/1；两轮原失败保留，无第三次全套；客户端沿用998db6f的424，非重跑；无真机/生产接受，不替换基线",
+   "evidence": "../../.planning/2026-10-26-feedback-refactor/committed-evidence.json"
   },
   "latest_peer_review": {
    "date": "2026-10-23",
@@ -339,6 +340,20 @@
     "typecheck": "passed",
     "scope": "新候选干净源码全量、独立npm ci与Android构建；最新APK+JS真机模块9项回归；正式App入口已恢复",
     "evidence": "../../.planning/2026-10-24-baseline-device/candidate-validation.json"
+   },
+   {
+    "source_commit": "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
+    "source_tree": "e568cb717e3b3e47b50bd9c936c126b4bfa9a642",
+    "python_passed": 2315,
+    "python_skipped": 1,
+    "python_deselected": 1,
+    "client_passed": 424,
+    "typecheck": "passed",
+    "client_source_commit": "998db6fd6427586a4ba23bd99bf91a7edf03625e",
+    "client_evidence_mode": "reused_identical_client_tree",
+    "device_verified": false,
+    "scope": "精确Git归档tests2245+tools/tests70合计2315/1/1；客户端子树相同沿用998db6f的424与类型检查，非重跑；无真机/生产接受，不替换已发布基线",
+    "evidence": "../../.planning/2026-10-26-proactive-review/committed-evidence.json"
    }
   ]
  },
@@ -4846,6 +4861,16 @@
      "result": "已修复并自检通过；按用户流程仍需另一名审阅人复核（修复者不自评/不自收）；12-V 真机通知复验待解锁设备",
      "log": ".planning/2026-10-25-review-fixes/backend-tests.txt",
      "delivery": "docs/协作开发/验收/2026-10-25-复核问题修复记录-29C-12V.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "67fcc54275b09b06232a67bd0cf1530da7e60d84",
+     "functional_commit": "b5b376d386d3aee58529007df30fc55d1386c687",
+     "source_tree": "caa7851095370690a20f1ab31273645534b4aa6b",
+     "scope": "29-C私钥信封/18-L模块身份，按本卡范围；附带诊断早拒绝连接修复",
+     "result": "代码2343通过、唯一文档失败修复后85项复检通过；去重覆盖2344/1/1，产品/测试/工具树相同，未第三次全套；两轮原失败保留；客户端沿用424，未独立接受/未发布",
+     "log": ".planning/2026-10-26-feedback-refactor/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-反馈私钥与模块身份复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/29-C-问题反馈与运行证据关联.md",
@@ -4872,7 +4897,7 @@
    "requirement_refs": [
     "UX-26"
    ],
-   "next_step": "按第五批固定源码复查：嵌入JSON/敏感键名别名/集合及导出脱敏，凭据反馈拒绝入库；生产装配/真实语义服务等原验收缺口不自动关闭。",
+   "next_step": "b5b376d补私钥片段检测/零入库；026ab2b修诊断拒绝连接，67fcc54修台账锚点。代码全量2343通过，唯一文档失败修复后85项复检通过，去重覆盖2344/1/1；未第三次全套。客户端同树沿用424，新修复待复核，产品缺口保留。",
    "working_basis": "沿用5e2b7e3现有已交付实现；实际接手锚点并非已发布共同基线",
    "prerequisites": "仅需仓库与本地测试环境",
    "claim_metadata_calibration": {
@@ -6397,6 +6422,16 @@
      "command": "python -m pytest tests/test_refactor.py -q; python -m pytest tests/test_refactor.py tests/test_coding_tools.py -q; python -m pytest tests/ -q",
      "log": ".planning/2026-10-25-aln18l/backend-tests.txt",
      "delivery": "docs/协作开发/交付/ALN-18-L-跨文件语义与LSP能力扩展.md"
+    },
+    {
+     "date": "2026-10-26",
+     "source_commit": "67fcc54275b09b06232a67bd0cf1530da7e60d84",
+     "functional_commit": "b5b376d386d3aee58529007df30fc55d1386c687",
+     "source_tree": "caa7851095370690a20f1ab31273645534b4aa6b",
+     "scope": "29-C私钥信封/18-L模块身份，按本卡范围；附带诊断早拒绝连接修复",
+     "result": "代码2343通过、唯一文档失败修复后85项复检通过；去重覆盖2344/1/1，产品/测试/工具树相同，未第三次全套；两轮原失败保留；客户端沿用424，未独立接受/未发布",
+     "log": ".planning/2026-10-26-feedback-refactor/committed-evidence.json",
+     "delivery": "docs/协作开发/验收/2026-10-26-反馈私钥与模块身份复核.md"
     }
    ],
    "card": "docs/协作开发/任务卡/18-L-跨文件语义与LSP能力扩展.md",
@@ -6415,7 +6450,7 @@
     "A-60",
     "A-70"
    ],
-   "next_step": "按第五批固定源码复查：唯一静态符号归属/歧义拒绝/f-string/CRLF/编译诊断/文件范围；生产装配/真实语义服务等原验收缺口不自动关闭。",
+   "next_step": "b5b376d拒绝别名重绑/包导出遮蔽/命名空间歧义；合法项目应用结果保持。最终代码/台账分层验证覆盖2344/1/1（2343过+文档修复后85复检，无第三次全套）；仍非LSP，新修复待复核，真实项目/装配另验。",
    "delivery": "docs/协作开发/交付/ALN-18-L-跨文件语义与LSP能力扩展.md",
    "working_basis": "2026-10-25 zcode-main 认领开工。base_commit e16dbfe 为实际接手锚点（基线仍 candidate，prepared_candidate 21899e6 未发布）。新增独占模块 evoagent/tools/refactor.py（跨文件 AST 引用分析 + 固定语言服务版本与不可用诚实降级 + 诊断前后对照 + 歧义重构澄清），仅新增文件与测试，不改 coding/registry 等共享文件。",
    "prerequisites": "语言服务依赖与真实项目",
@@ -8436,6 +8471,37 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md",
    "scope": "25-B/26-A/26-B修复；27-B只读；完整后端2315/1/1，新修复待独立接受且未纳入基线"
+  },
+  {
+   "id": "discovered-b5b376d386d3",
+   "title": "fix(review): 拦截私钥片段并拒绝模块身份歧义改写",
+   "workpackage": "ALN-29",
+   "source_commit": "b5b376d386d3aee58529007df30fc55d1386c687",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/observability/credentials.py",
+    "evoagent/tools/refactor.py",
+    "tests/test_feedback_refactor_review_20261026.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-反馈私钥与模块身份复核.md",
+   "scope": "反馈/重构及全量发现的诊断拒绝修复；最终2344/1/1，新修复待独立接受且未纳入发布基线"
+  },
+  {
+   "id": "discovered-026ab2b7e2b6",
+   "title": "fix(api): 在诊断导入拒绝前有界丢弃小请求体",
+   "workpackage": "ALN-16",
+   "source_commit": "026ab2b7e2b63410d939d7c285f9ef8ac3f973ad",
+   "status": "source_registered_pending_validation",
+   "files": [
+    "evoagent/api/server.py",
+    "tests/test_diagnostics_rejection_body.py"
+   ],
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-26-反馈私钥与模块身份复核.md",
+   "scope": "反馈/重构及全量发现的诊断拒绝修复；最终2344/1/1，新修复待独立接受且未纳入发布基线"
   }
  ],
  "requirement_batches": [
@@ -8636,6 +8702,27 @@
    "fix_commit": "5f09fb845c1bae952cd81863b4b149bf7389bdc5",
    "report": "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md",
    "evidence": ".planning/2026-10-26-proactive-review/committed-evidence.json",
+   "status": "fixes_delivered_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false
+  },
+  {
+   "id": "REVIEW-2026-10-26-FEEDBACK-REFACTOR",
+   "date": "2026-10-26",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-29-C",
+    "ALN-18-L"
+   ],
+   "fixed_cards": [
+    "ALN-29-C",
+    "ALN-18-L"
+   ],
+   "fix_commit": "026ab2b7e2b63410d939d7c285f9ef8ac3f973ad",
+   "feature_fix_commit": "b5b376d386d3aee58529007df30fc55d1386c687",
+   "validation_commit": "67fcc54275b09b06232a67bd0cf1530da7e60d84",
+   "report": "docs/协作开发/验收/2026-10-26-反馈私钥与模块身份复核.md",
+   "evidence": ".planning/2026-10-26-feedback-refactor/committed-evidence.json",
    "status": "fixes_delivered_pending_independent_recheck",
    "product_acceptance_added": false,
    "published_by_review": false

@@ -1,0 +1,183 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+...F.FFFFFFF..FFF.                                                       [100%]
+================================== FAILURES ===================================
+_ test_private_envelope_and_truncated_material_never_enter_feedback[True-DSA] _
+
+kind = 'DSA', closed = True
+
+    @pytest.mark.parametrize("kind", ["", "RSA", "EC", "DSA", "OPENSSH", "ENCRYPTED"])
+    @pytest.mark.parametrize("closed", [True, False])
+    def test_private_envelope_and_truncated_material_never_enter_feedback(kind, closed):
+        text = private_fixture(kind, closed)
+>       assert contains_secret(text)
+E       AssertionError: assert False
+E        +  where False = contains_secret('-----BEGIN DSA PRIVATE KEY-----\nsynthetic fixture bytes\n-----END DSA PRIVATE KEY-----')
+
+tests\test_feedback_refactor_review_20261026.py:23: AssertionError
+_ test_private_envelope_and_truncated_material_never_enter_feedback[True-ENCRYPTED] _
+
+kind = 'ENCRYPTED', closed = True
+
+    @pytest.mark.parametrize("kind", ["", "RSA", "EC", "DSA", "OPENSSH", "ENCRYPTED"])
+    @pytest.mark.parametrize("closed", [True, False])
+    def test_private_envelope_and_truncated_material_never_enter_feedback(kind, closed):
+        text = private_fixture(kind, closed)
+>       assert contains_secret(text)
+E       AssertionError: assert False
+E        +  where False = contains_secret('-----BEGIN ENCRYPTED PRIVATE KEY-----\nsynthetic fixture bytes\n-----END ENCRYPTED PRIVATE KEY-----')
+
+tests\test_feedback_refactor_review_20261026.py:23: AssertionError
+__ test_private_envelope_and_truncated_material_never_enter_feedback[False-] __
+
+kind = '', closed = False
+
+    @pytest.mark.parametrize("kind", ["", "RSA", "EC", "DSA", "OPENSSH", "ENCRYPTED"])
+    @pytest.mark.parametrize("closed", [True, False])
+    def test_private_envelope_and_truncated_material_never_enter_feedback(kind, closed):
+        text = private_fixture(kind, closed)
+>       assert contains_secret(text)
+E       AssertionError: assert False
+E        +  where False = contains_secret('-----BEGIN PRIVATE KEY-----\nsynthetic fixture bytes\n')
+
+tests\test_feedback_refactor_review_20261026.py:23: AssertionError
+_ test_private_envelope_and_truncated_material_never_enter_feedback[False-RSA] _
+
+kind = 'RSA', closed = False
+
+    @pytest.mark.parametrize("kind", ["", "RSA", "EC", "DSA", "OPENSSH", "ENCRYPTED"])
+    @pytest.mark.parametrize("closed", [True, False])
+    def test_private_envelope_and_truncated_material_never_enter_feedback(kind, closed):
+        text = private_fixture(kind, closed)
+>       assert contains_secret(text)
+E       AssertionError: assert False
+E        +  where False = contains_secret('-----BEGIN RSA PRIVATE KEY-----\nsynthetic fixture bytes\n')
+
+tests\test_feedback_refactor_review_20261026.py:23: AssertionError
+_ test_private_envelope_and_truncated_material_never_enter_feedback[False-EC] _
+
+kind = 'EC', closed = False
+
+    @pytest.mark.parametrize("kind", ["", "RSA", "EC", "DSA", "OPENSSH", "ENCRYPTED"])
+    @pytest.mark.parametrize("closed", [True, False])
+    def test_private_envelope_and_truncated_material_never_enter_feedback(kind, closed):
+        text = private_fixture(kind, closed)
+>       assert contains_secret(text)
+E       AssertionError: assert False
+E        +  where False = contains_secret('-----BEGIN EC PRIVATE KEY-----\nsynthetic fixture bytes\n')
+
+tests\test_feedback_refactor_review_20261026.py:23: AssertionError
+_ test_private_envelope_and_truncated_material_never_enter_feedback[False-DSA] _
+
+kind = 'DSA', closed = False
+
+    @pytest.mark.parametrize("kind", ["", "RSA", "EC", "DSA", "OPENSSH", "ENCRYPTED"])
+    @pytest.mark.parametrize("closed", [True, False])
+    def test_private_envelope_and_truncated_material_never_enter_feedback(kind, closed):
+        text = private_fixture(kind, closed)
+>       assert contains_secret(text)
+E       AssertionError: assert False
+E        +  where False = contains_secret('-----BEGIN DSA PRIVATE KEY-----\nsynthetic fixture bytes\n')
+
+tests\test_feedback_refactor_review_20261026.py:23: AssertionError
+_ test_private_envelope_and_truncated_material_never_enter_feedback[False-OPENSSH] _
+
+kind = 'OPENSSH', closed = False
+
+    @pytest.mark.parametrize("kind", ["", "RSA", "EC", "DSA", "OPENSSH", "ENCRYPTED"])
+    @pytest.mark.parametrize("closed", [True, False])
+    def test_private_envelope_and_truncated_material_never_enter_feedback(kind, closed):
+        text = private_fixture(kind, closed)
+>       assert contains_secret(text)
+E       AssertionError: assert False
+E        +  where False = contains_secret('-----BEGIN OPENSSH PRIVATE KEY-----\nsynthetic fixture bytes\n')
+
+tests\test_feedback_refactor_review_20261026.py:23: AssertionError
+_ test_private_envelope_and_truncated_material_never_enter_feedback[False-ENCRYPTED] _
+
+kind = 'ENCRYPTED', closed = False
+
+    @pytest.mark.parametrize("kind", ["", "RSA", "EC", "DSA", "OPENSSH", "ENCRYPTED"])
+    @pytest.mark.parametrize("closed", [True, False])
+    def test_private_envelope_and_truncated_material_never_enter_feedback(kind, closed):
+        text = private_fixture(kind, closed)
+>       assert contains_secret(text)
+E       AssertionError: assert False
+E        +  where False = contains_secret('-----BEGIN ENCRYPTED PRIVATE KEY-----\nsynthetic fixture bytes\n')
+
+tests\test_feedback_refactor_review_20261026.py:23: AssertionError
+____ test_rebound_from_import_alias_cannot_rename_foreign_object_attribute ____
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-6cvsaeig/scratch/pytest/test_rebound_from_import_alias0')
+
+    def test_rebound_from_import_alias_cannot_rename_foreign_object_attribute(tmp_path):
+        project(tmp_path, {
+            "pkg/__init__.py": "",
+            "pkg/target.py": "def helper():\n    return 'target'\n",
+            "external_lib.py": "from types import SimpleNamespace\nobj = SimpleNamespace(helper=lambda: 'foreign')\n",
+            "consumer.py": "from external_lib import obj as mod\nfirst = mod.helper()\nfrom pkg import target as mod\nsecond = mod.helper()\n",
+        })
+        result = analyze_rename(tmp_path, "helper", "compute")
+>       assert result.status == "needs_clarification" and not result.edits
+E       AssertionError: assert ('ok' == 'needs_clarification'
+E         
+E         - needs_clarification
+E         + ok)
+
+tests\test_feedback_refactor_review_20261026.py:66: AssertionError
+_______ test_package_export_shadow_cannot_be_mistaken_for_module[False] _______
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-6cvsaeig/scratch/pytest/test_package_export_shadow_can0')
+root_package = False
+
+    @pytest.mark.parametrize("root_package", [False, True])
+    def test_package_export_shadow_cannot_be_mistaken_for_module(tmp_path, root_package):
+        prefix = "" if root_package else "pkg/"
+        project(tmp_path, {
+            prefix + "__init__.py": "from types import SimpleNamespace\ntarget = SimpleNamespace(helper=lambda: 'foreign')\n",
+            prefix + "target.py": "def helper():\n    return 'target'\n",
+            "consumer.py": ("from . import target as mod\n" if root_package else "from pkg import target as mod\n") + "answer = mod.helper()\n",
+        })
+        result = analyze_rename(tmp_path, "helper", "compute")
+>       assert result.status == "needs_clarification" and not result.edits
+E       AssertionError: assert ('ok' == 'needs_clarification'
+E         
+E         - needs_clarification
+E         + ok)
+
+tests\test_feedback_refactor_review_20261026.py:78: AssertionError
+_______ test_package_export_shadow_cannot_be_mistaken_for_module[True] ________
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-6cvsaeig/scratch/pytest/test_package_export_shadow_can1')
+root_package = True
+
+    @pytest.mark.parametrize("root_package", [False, True])
+    def test_package_export_shadow_cannot_be_mistaken_for_module(tmp_path, root_package):
+        prefix = "" if root_package else "pkg/"
+        project(tmp_path, {
+            prefix + "__init__.py": "from types import SimpleNamespace\ntarget = SimpleNamespace(helper=lambda: 'foreign')\n",
+            prefix + "target.py": "def helper():\n    return 'target'\n",
+            "consumer.py": ("from . import target as mod\n" if root_package else "from pkg import target as mod\n") + "answer = mod.helper()\n",
+        })
+        result = analyze_rename(tmp_path, "helper", "compute")
+>       assert result.status == "needs_clarification" and not result.edits
+E       AssertionError: assert ('ok' == 'needs_clarification'
+E         
+E         - needs_clarification
+E         + ok)
+
+tests\test_feedback_refactor_review_20261026.py:78: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_feedback_refactor_review_20261026.py::test_private_envelope_and_truncated_material_never_enter_feedback[True-DSA]
+FAILED tests/test_feedback_refactor_review_20261026.py::test_private_envelope_and_truncated_material_never_enter_feedback[True-ENCRYPTED]
+FAILED tests/test_feedback_refactor_review_20261026.py::test_private_envelope_and_truncated_material_never_enter_feedback[False-]
+FAILED tests/test_feedback_refactor_review_20261026.py::test_private_envelope_and_truncated_material_never_enter_feedback[False-RSA]
+FAILED tests/test_feedback_refactor_review_20261026.py::test_private_envelope_and_truncated_material_never_enter_feedback[False-EC]
+FAILED tests/test_feedback_refactor_review_20261026.py::test_private_envelope_and_truncated_material_never_enter_feedback[False-DSA]
+FAILED tests/test_feedback_refactor_review_20261026.py::test_private_envelope_and_truncated_material_never_enter_feedback[False-OPENSSH]
+FAILED tests/test_feedback_refactor_review_20261026.py::test_private_envelope_and_truncated_material_never_enter_feedback[False-ENCRYPTED]
+FAILED tests/test_feedback_refactor_review_20261026.py::test_rebound_from_import_alias_cannot_rename_foreign_object_attribute
+FAILED tests/test_feedback_refactor_review_20261026.py::test_package_export_shadow_cannot_be_mistaken_for_module[False]
+FAILED tests/test_feedback_refactor_review_20261026.py::test_package_export_shadow_cannot_be_mistaken_for_module[True]
+11 failed, 7 passed in 0.29s
