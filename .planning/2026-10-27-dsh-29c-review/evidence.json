@@ -1,0 +1,45 @@
+{
+ "card": "ALN-29-C",
+ "reviewer": "dsh-lead（非 29-C 主实现作者；但曾参与其凭据模式修复，独立性有限；claude-main 已分配复核）",
+ "date": "2026-10-27",
+ "commands": {
+  "tests": "test_feedback + test_feedback_evidence_review_20261026 + test_feedback_refactor_review_20261026 -> 56 passed"
+ },
+ "probe": {
+  "secret_rejected": {
+   "text": true,
+   "ref": true
+  },
+  "over_limit_rejected": true,
+  "aggregated_same_key": true,
+  "union_dedup": [
+   "run-1",
+   "run-2",
+   "run-3"
+  ],
+  "first_seen_preserved": true,
+  "last_seen_max": true,
+  "bad_times_rejected": {
+   "nan": true,
+   "inf": true,
+   "neg": true,
+   "string": true,
+   "bool": true
+  },
+  "corrupt_existing_rejected": true
+ },
+ "checks": {
+  "secret_text_refused": true,
+  "secret_ref_refused": true,
+  "over_32_refused": true,
+  "same_normalized_text_aggregates": true,
+  "union_dedup_deterministic": true,
+  "first_seen_preserved": true,
+  "last_seen_is_max": true,
+  "bad_times_rejected": true,
+  "corrupt_existing_refused": true
+ },
+ "all_checks_pass": true,
+ "independence": "limited: credentials.py 凭据模式修复含我此前提交；反馈聚合主实现非我",
+ "boundary": "本地 SQLite；真实 HTTP 权限/事务并发由 codex 证据覆盖，本轮未重复"
+}
