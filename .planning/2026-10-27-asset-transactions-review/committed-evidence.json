@@ -1,0 +1,149 @@
+{
+  "date": "2026-10-27",
+  "source_commit": "518aa26125e582cc75d9f95c97d7d14030b7e161",
+  "fix_commits": [
+    "518aa26125e582cc75d9f95c97d7d14030b7e161"
+  ],
+  "report": "docs/协作开发/验收/2026-10-27-资产仓储共享事务复核.md",
+  "validation_records": {
+    "negative-validation": {
+      "pytest_arguments": [
+        "tests/test_asset_transactions_review_20261027.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-5rtj5vu0",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "focused-validation": {
+      "pytest_arguments": [
+        "tests/test_asset_transactions_review_20261027.py",
+        "tests/test_asset_identity.py",
+        "tests/test_asset_composition.py",
+        "tests/test_asset_consumption.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-s7dy9m3f",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "extra-validation": {
+      "pytest_arguments": [
+        "tests/test_asset_transactions_review_20261027.py",
+        "-q",
+        "-k",
+        "nested_schema_failure or interrupt_after_event"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-68494yxl",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "final-validation": {
+      "pytest_arguments": [
+        "tests/test_asset_transactions_review_20261027.py",
+        "tests/test_asset_identity.py",
+        "tests/test_asset_consumption.py",
+        "tests/test_asset_composition.py",
+        "tests/test_release_assets.py",
+        "tests/test_release_channels.py",
+        "tests/test_integration_wiring.py",
+        "tests/test_coding_consumption.py",
+        "tests/test_coding_expert_consumer.py",
+        "tests/test_evolution_queue_host.py",
+        "tests/test_host_benchmark.py",
+        "tests/test_other_review_20261027.py",
+        "tests/test_candidate_host_api.py",
+        "tests/test_benchmark_review_20261026.py",
+        "tests/test_aln06_acceptance.py",
+        "-q"
+      ],
+      "snapshot_commit": "518aa26125e582cc75d9f95c97d7d14030b7e161",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-5vq3awnc",
+      "source_tree": "a45712bc3e4a46b898e6cc808309ceadce912172",
+      "archive_sha256": "8804acf067e868c6131c4b4e18d04097116703312c237ce4ead482034e71db50",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-5vq3awnc\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-5vq3awnc\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-5vq3awnc\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 4,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "committed-validation": {
+      "pytest_arguments": [
+        "tests/test_asset_transactions_review_20261027.py",
+        "tests/test_asset_identity.py",
+        "tests/test_asset_consumption.py",
+        "tests/test_asset_composition.py",
+        "tests/test_release_assets.py",
+        "tests/test_release_channels.py",
+        "tests/test_integration_wiring.py",
+        "tests/test_coding_consumption.py",
+        "tests/test_coding_expert_consumer.py",
+        "tests/test_evolution_queue_host.py",
+        "tests/test_host_benchmark.py",
+        "tests/test_other_review_20261027.py",
+        "tests/test_candidate_host_api.py",
+        "tests/test_benchmark_review_20261026.py",
+        "-q"
+      ],
+      "snapshot_commit": "518aa26125e582cc75d9f95c97d7d14030b7e161",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-y92cj7vc",
+      "source_tree": "a45712bc3e4a46b898e6cc808309ceadce912172",
+      "archive_sha256": "8804acf067e868c6131c4b4e18d04097116703312c237ce4ead482034e71db50",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-y92cj7vc\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-y92cj7vc\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-y92cj7vc\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    }
+  },
+  "results": {
+    "negative": "28 failed",
+    "focused": "106 passed",
+    "extra": "3 passed, 28 deselected",
+    "fixed_related": "243 passed"
+  },
+  "new_probes": 31,
+  "independent_patch_confirmation": {
+    "commit": "803f5bc",
+    "reviewer": "dsh-lead",
+    "report": "docs/协作开发/验收/2026-10-27-dsh二次确认-资产事务.md",
+    "evidence": ".planning/2026-10-27-dsh-asset-tx-confirm/evidence.json",
+    "result": "118 passed；4独立探针通过",
+    "scope": "518aa26事务所有权修复点二次确认；非27-B/06-A完整最终接受"
+  },
+  "owned_validation_scopes_removed": 5,
+  "independent_acceptance_added": false,
+  "initial_fixed_attempt": "Nonexistent test_aln06_acceptance.py: no tests ran; original final-* retained, committed-* is final evidence",
+  "not_run": [
+    "full backend",
+    "client/TypeScript",
+    "device/APK",
+    "real process kill",
+    "production concurrency/storage"
+  ],
+  "foreign_work_preserved": true,
+  "log_sha256_lf": {
+    "committed-tests.txt": "6dcc9268b4ff3ecd4d5275590333736ed9b1143c1545d1a1d98af1398e488655",
+    "extra-tests.txt": "fd282f0155f2a262c92ae0852e2089f97149a4edeeb3775058bbce3c7eeda1ff",
+    "final-tests.txt": "7ca80ec82965d2576a2c3cb5a7d653f4075d4eb381cd0301d582fcaa87b708a7",
+    "focused-tests.txt": "d2bd8e9d68bff4326d074611397064b2b7846141704cb298bd607881fa80638e",
+    "negative-tests.txt": "75ebc3f07a4c798ffa1fd85332cfdad93b53904746efa5967a01d331b4f92355"
+  }
+}

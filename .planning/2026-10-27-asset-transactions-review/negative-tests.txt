@@ -1,0 +1,625 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFFFFFFFFFFFFFFFFFFFF                                             [100%]
+================================== FAILURES ===================================
+_________ test_constructor_preserves_ambient_transaction[False-False] _________
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-5rtj5vu0/scratch/pytest/test_constructor_preserves_amb0')
+initialized = False, commit = False
+
+    @pytest.mark.parametrize("initialized", [False, True])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_constructor_preserves_ambient_transaction(tmp_path, initialized, commit):
+        conn = connect(tmp_path / "construct.db")
+        observer = connect(tmp_path / "construct.db")
+        try:
+            conn.execute("CREATE TABLE host_pending(value TEXT)")
+            if initialized:
+                AssetRepository(conn)
+            conn.execute("INSERT INTO host_pending VALUES ('host')")
+            AssetRepository(conn)
+>           assert conn.in_transaction
+E           assert False
+E            +  where False = <sqlite3.Connection object at 0x0000029D17C68940>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:53: AssertionError
+_________ test_constructor_preserves_ambient_transaction[False-True] __________
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-5rtj5vu0/scratch/pytest/test_constructor_preserves_amb1')
+initialized = True, commit = False
+
+    @pytest.mark.parametrize("initialized", [False, True])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_constructor_preserves_ambient_transaction(tmp_path, initialized, commit):
+        conn = connect(tmp_path / "construct.db")
+        observer = connect(tmp_path / "construct.db")
+        try:
+            conn.execute("CREATE TABLE host_pending(value TEXT)")
+            if initialized:
+                AssetRepository(conn)
+            conn.execute("INSERT INTO host_pending VALUES ('host')")
+            AssetRepository(conn)
+>           assert conn.in_transaction
+E           assert False
+E            +  where False = <sqlite3.Connection object at 0x0000029D17C6A940>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:53: AssertionError
+_________ test_constructor_preserves_ambient_transaction[True-False] __________
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-5rtj5vu0/scratch/pytest/test_constructor_preserves_amb2')
+initialized = False, commit = True
+
+    @pytest.mark.parametrize("initialized", [False, True])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_constructor_preserves_ambient_transaction(tmp_path, initialized, commit):
+        conn = connect(tmp_path / "construct.db")
+        observer = connect(tmp_path / "construct.db")
+        try:
+            conn.execute("CREATE TABLE host_pending(value TEXT)")
+            if initialized:
+                AssetRepository(conn)
+            conn.execute("INSERT INTO host_pending VALUES ('host')")
+            AssetRepository(conn)
+>           assert conn.in_transaction
+E           assert False
+E            +  where False = <sqlite3.Connection object at 0x0000029D17C6AB40>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:53: AssertionError
+__________ test_constructor_preserves_ambient_transaction[True-True] __________
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-5rtj5vu0/scratch/pytest/test_constructor_preserves_amb3')
+initialized = True, commit = True
+
+    @pytest.mark.parametrize("initialized", [False, True])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_constructor_preserves_ambient_transaction(tmp_path, initialized, commit):
+        conn = connect(tmp_path / "construct.db")
+        observer = connect(tmp_path / "construct.db")
+        try:
+            conn.execute("CREATE TABLE host_pending(value TEXT)")
+            if initialized:
+                AssetRepository(conn)
+            conn.execute("INSERT INTO host_pending VALUES ('host')")
+            AssetRepository(conn)
+>           assert conn.in_transaction
+E           assert False
+E            +  where False = <sqlite3.Connection object at 0x0000029D17C6AD40>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:53: AssertionError
+____ test_all_write_entries_leave_commit_decision_to_host[False-register] _____
+
+store = (<sqlite3.Connection object at 0x0000029D17C6AF40>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17D9FEE0>, <sqlite3.Connection object at 0x0000029D17C6AE40>)
+kind = 'register', commit = False
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6AF40>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+___ test_all_write_entries_leave_commit_decision_to_host[False-idempotent] ____
+
+store = (<sqlite3.Connection object at 0x0000029D17C6AC40>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17B6C340>, <sqlite3.Connection object at 0x0000029D17C6AD40>)
+kind = 'idempotent', commit = False
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6AC40>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+___ test_all_write_entries_leave_commit_decision_to_host[False-transition] ____
+
+store = (<sqlite3.Connection object at 0x0000029D17C6AB40>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17B65ED0>, <sqlite3.Connection object at 0x0000029D17C6AA40>)
+kind = 'transition', commit = False
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6AB40>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+____ test_all_write_entries_leave_commit_decision_to_host[False-approved] _____
+
+store = (<sqlite3.Connection object at 0x0000029D17C6A940>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17D8FC10>, <sqlite3.Connection object at 0x0000029D17C6A840>)
+kind = 'approved', commit = False
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6A940>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+_ test_all_write_entries_leave_commit_decision_to_host[False-dependency_success] _
+
+store = (<sqlite3.Connection object at 0x0000029D17C68940>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17C0D900>, <sqlite3.Connection object at 0x0000029D17C68B40>)
+kind = 'dependency_success', commit = False
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C68940>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+_ test_all_write_entries_leave_commit_decision_to_host[False-dependency_failure] _
+
+store = (<sqlite3.Connection object at 0x0000029D17C6A940>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17D8E5F0>, <sqlite3.Connection object at 0x0000029D17C6A840>)
+kind = 'dependency_failure', commit = False
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6A940>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+_____ test_all_write_entries_leave_commit_decision_to_host[False-collect] _____
+
+store = (<sqlite3.Connection object at 0x0000029D17C6AA40>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17D9D8A0>, <sqlite3.Connection object at 0x0000029D17C6AB40>)
+kind = 'collect', commit = False
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6AA40>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+_____ test_all_write_entries_leave_commit_decision_to_host[True-register] _____
+
+store = (<sqlite3.Connection object at 0x0000029D17C6AD40>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17C0F970>, <sqlite3.Connection object at 0x0000029D17C6AC40>)
+kind = 'register', commit = True
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6AD40>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+____ test_all_write_entries_leave_commit_decision_to_host[True-idempotent] ____
+
+store = (<sqlite3.Connection object at 0x0000029D17C6B140>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17D91CC0>, <sqlite3.Connection object at 0x0000029D17C6B040>)
+kind = 'idempotent', commit = True
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6B140>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+____ test_all_write_entries_leave_commit_decision_to_host[True-transition] ____
+
+store = (<sqlite3.Connection object at 0x0000029D17C6AD40>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17B64BE0>, <sqlite3.Connection object at 0x0000029D17C6AC40>)
+kind = 'transition', commit = True
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6AD40>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+_____ test_all_write_entries_leave_commit_decision_to_host[True-approved] _____
+
+store = (<sqlite3.Connection object at 0x0000029D17C6AB40>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17D9D510>, <sqlite3.Connection object at 0x0000029D17C6AA40>)
+kind = 'approved', commit = True
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6AB40>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+_ test_all_write_entries_leave_commit_decision_to_host[True-dependency_success] _
+
+store = (<sqlite3.Connection object at 0x0000029D17C6A840>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17C0D660>, <sqlite3.Connection object at 0x0000029D17C6A940>)
+kind = 'dependency_success', commit = True
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6A840>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+_ test_all_write_entries_leave_commit_decision_to_host[True-dependency_failure] _
+
+store = (<sqlite3.Connection object at 0x0000029D17C6B340>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17D91510>, <sqlite3.Connection object at 0x0000029D17C6B440>)
+kind = 'dependency_failure', commit = True
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6B340>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+_____ test_all_write_entries_leave_commit_decision_to_host[True-collect] ______
+
+store = (<sqlite3.Connection object at 0x0000029D17C6A840>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17B64F40>, <sqlite3.Connection object at 0x0000029D17C6A940>)
+kind = 'collect', commit = True
+
+    @pytest.mark.parametrize("kind", ["register", "idempotent", "transition", "approved",
+                                      "dependency_success", "dependency_failure", "collect"])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_all_write_entries_leave_commit_decision_to_host(store, kind, commit):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        act()
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6A840>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:95: AssertionError
+_ test_event_failure_rolls_back_only_asset_operation[False-register-register] _
+
+store = (<sqlite3.Connection object at 0x0000029D17C6AA40>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17D8F3D0>, <sqlite3.Connection object at 0x0000029D17C6AB40>)
+kind = 'register', event = 'register', ambient = False
+
+    @pytest.mark.parametrize("kind,event", [("register", "register"), ("transition", "transition"),
+                                           ("approved", "transition"), ("collect", "collect")])
+    @pytest.mark.parametrize("ambient", [False, True])
+    def test_event_failure_rolls_back_only_asset_operation(store, kind, event, ambient):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute(f"CREATE TRIGGER refuse_asset_event BEFORE INSERT ON asset_events "
+                     f"WHEN NEW.action='{event}' BEGIN SELECT RAISE(ABORT, 'event storage failed'); END")
+        conn.commit()
+        if ambient:
+            conn.execute("INSERT INTO host_pending VALUES ('host')")
+        with pytest.raises(sqlite3.IntegrityError, match="event storage failed"):
+            act()
+>       assert conn.in_transaction is ambient
+E       assert True is False
+E        +  where True = <sqlite3.Connection object at 0x0000029D17C6AA40>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:118: AssertionError
+_ test_event_failure_rolls_back_only_asset_operation[False-transition-transition] _
+
+store = (<sqlite3.Connection object at 0x0000029D17C6AC40>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17C0CD00>, <sqlite3.Connection object at 0x0000029D17C6AD40>)
+kind = 'transition', event = 'transition', ambient = False
+
+    @pytest.mark.parametrize("kind,event", [("register", "register"), ("transition", "transition"),
+                                           ("approved", "transition"), ("collect", "collect")])
+    @pytest.mark.parametrize("ambient", [False, True])
+    def test_event_failure_rolls_back_only_asset_operation(store, kind, event, ambient):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute(f"CREATE TRIGGER refuse_asset_event BEFORE INSERT ON asset_events "
+                     f"WHEN NEW.action='{event}' BEGIN SELECT RAISE(ABORT, 'event storage failed'); END")
+        conn.commit()
+        if ambient:
+            conn.execute("INSERT INTO host_pending VALUES ('host')")
+        with pytest.raises(sqlite3.IntegrityError, match="event storage failed"):
+            act()
+>       assert conn.in_transaction is ambient
+E       assert True is False
+E        +  where True = <sqlite3.Connection object at 0x0000029D17C6AC40>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:118: AssertionError
+_ test_event_failure_rolls_back_only_asset_operation[False-approved-transition] _
+
+store = (<sqlite3.Connection object at 0x0000029D17C6B240>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17D9DC30>, <sqlite3.Connection object at 0x0000029D17C6B540>)
+kind = 'approved', event = 'transition', ambient = False
+
+    @pytest.mark.parametrize("kind,event", [("register", "register"), ("transition", "transition"),
+                                           ("approved", "transition"), ("collect", "collect")])
+    @pytest.mark.parametrize("ambient", [False, True])
+    def test_event_failure_rolls_back_only_asset_operation(store, kind, event, ambient):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute(f"CREATE TRIGGER refuse_asset_event BEFORE INSERT ON asset_events "
+                     f"WHEN NEW.action='{event}' BEGIN SELECT RAISE(ABORT, 'event storage failed'); END")
+        conn.commit()
+        if ambient:
+            conn.execute("INSERT INTO host_pending VALUES ('host')")
+        with pytest.raises(sqlite3.IntegrityError, match="event storage failed"):
+            act()
+>       assert conn.in_transaction is ambient
+E       assert True is False
+E        +  where True = <sqlite3.Connection object at 0x0000029D17C6B240>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:118: AssertionError
+__ test_event_failure_rolls_back_only_asset_operation[False-collect-collect] __
+
+store = (<sqlite3.Connection object at 0x0000029D17C6AC40>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17E1B190>, <sqlite3.Connection object at 0x0000029D17C6AD40>)
+kind = 'collect', event = 'collect', ambient = False
+
+    @pytest.mark.parametrize("kind,event", [("register", "register"), ("transition", "transition"),
+                                           ("approved", "transition"), ("collect", "collect")])
+    @pytest.mark.parametrize("ambient", [False, True])
+    def test_event_failure_rolls_back_only_asset_operation(store, kind, event, ambient):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute(f"CREATE TRIGGER refuse_asset_event BEFORE INSERT ON asset_events "
+                     f"WHEN NEW.action='{event}' BEGIN SELECT RAISE(ABORT, 'event storage failed'); END")
+        conn.commit()
+        if ambient:
+            conn.execute("INSERT INTO host_pending VALUES ('host')")
+        with pytest.raises(sqlite3.IntegrityError, match="event storage failed"):
+            act()
+>       assert conn.in_transaction is ambient
+E       assert True is False
+E        +  where True = <sqlite3.Connection object at 0x0000029D17C6AC40>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:118: AssertionError
+_ test_event_failure_rolls_back_only_asset_operation[True-register-register] __
+
+store = (<sqlite3.Connection object at 0x0000029D17C6AB40>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17D9F370>, <sqlite3.Connection object at 0x0000029D17C6AA40>)
+kind = 'register', event = 'register', ambient = True
+
+    @pytest.mark.parametrize("kind,event", [("register", "register"), ("transition", "transition"),
+                                           ("approved", "transition"), ("collect", "collect")])
+    @pytest.mark.parametrize("ambient", [False, True])
+    def test_event_failure_rolls_back_only_asset_operation(store, kind, event, ambient):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute(f"CREATE TRIGGER refuse_asset_event BEFORE INSERT ON asset_events "
+                     f"WHEN NEW.action='{event}' BEGIN SELECT RAISE(ABORT, 'event storage failed'); END")
+        conn.commit()
+        if ambient:
+            conn.execute("INSERT INTO host_pending VALUES ('host')")
+        with pytest.raises(sqlite3.IntegrityError, match="event storage failed"):
+            act()
+        assert conn.in_transaction is ambient
+>       assert snapshot(conn) == before
+E       AssertionError: assert ([('sample', ...didate')], []) == ([], [])
+E         
+E         At index 0 diff: [('sample', 'candidate')] != []
+E         Use -v to get more diff
+
+tests\test_asset_transactions_review_20261027.py:119: AssertionError
+_ test_event_failure_rolls_back_only_asset_operation[True-transition-transition] _
+
+store = (<sqlite3.Connection object at 0x0000029D17C6A940>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17E19ED0>, <sqlite3.Connection object at 0x0000029D17C6A840>)
+kind = 'transition', event = 'transition', ambient = True
+
+    @pytest.mark.parametrize("kind,event", [("register", "register"), ("transition", "transition"),
+                                           ("approved", "transition"), ("collect", "collect")])
+    @pytest.mark.parametrize("ambient", [False, True])
+    def test_event_failure_rolls_back_only_asset_operation(store, kind, event, ambient):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute(f"CREATE TRIGGER refuse_asset_event BEFORE INSERT ON asset_events "
+                     f"WHEN NEW.action='{event}' BEGIN SELECT RAISE(ABORT, 'event storage failed'); END")
+        conn.commit()
+        if ambient:
+            conn.execute("INSERT INTO host_pending VALUES ('host')")
+        with pytest.raises(sqlite3.IntegrityError, match="event storage failed"):
+            act()
+        assert conn.in_transaction is ambient
+>       assert snapshot(conn) == before
+E       AssertionError: assert ([('sample', ... 'register')]) == ([('sample', ... 'register')])
+E         
+E         At index 0 diff: [('sample', 'validating')] != [('sample', 'candidate')]
+E         Use -v to get more diff
+
+tests\test_asset_transactions_review_20261027.py:119: AssertionError
+_ test_event_failure_rolls_back_only_asset_operation[True-approved-transition] _
+
+store = (<sqlite3.Connection object at 0x0000029D17C6B740>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17E179A0>, <sqlite3.Connection object at 0x0000029D17C6B840>)
+kind = 'approved', event = 'transition', ambient = True
+
+    @pytest.mark.parametrize("kind,event", [("register", "register"), ("transition", "transition"),
+                                           ("approved", "transition"), ("collect", "collect")])
+    @pytest.mark.parametrize("ambient", [False, True])
+    def test_event_failure_rolls_back_only_asset_operation(store, kind, event, ambient):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute(f"CREATE TRIGGER refuse_asset_event BEFORE INSERT ON asset_events "
+                     f"WHEN NEW.action='{event}' BEGIN SELECT RAISE(ABORT, 'event storage failed'); END")
+        conn.commit()
+        if ambient:
+            conn.execute("INSERT INTO host_pending VALUES ('host')")
+        with pytest.raises(sqlite3.IntegrityError, match="event storage failed"):
+            act()
+        assert conn.in_transaction is ambient
+>       assert snapshot(conn) == before
+E       AssertionError: assert ([('sample', ...ency_check')]) == ([('sample', ...transition')])
+E         
+E         At index 0 diff: [('sample', 'approved')] != [('sample', 'validating')]
+E         Use -v to get more diff
+
+tests\test_asset_transactions_review_20261027.py:119: AssertionError
+__ test_event_failure_rolls_back_only_asset_operation[True-collect-collect] ___
+
+store = (<sqlite3.Connection object at 0x0000029D17C6B540>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17E18490>, <sqlite3.Connection object at 0x0000029D17C6B340>)
+kind = 'collect', event = 'collect', ambient = True
+
+    @pytest.mark.parametrize("kind,event", [("register", "register"), ("transition", "transition"),
+                                           ("approved", "transition"), ("collect", "collect")])
+    @pytest.mark.parametrize("ambient", [False, True])
+    def test_event_failure_rolls_back_only_asset_operation(store, kind, event, ambient):
+        conn, repo, observer = store
+        act = operation(repo, kind)
+        before = snapshot(observer)
+        conn.execute(f"CREATE TRIGGER refuse_asset_event BEFORE INSERT ON asset_events "
+                     f"WHEN NEW.action='{event}' BEGIN SELECT RAISE(ABORT, 'event storage failed'); END")
+        conn.commit()
+        if ambient:
+            conn.execute("INSERT INTO host_pending VALUES ('host')")
+        with pytest.raises(sqlite3.IntegrityError, match="event storage failed"):
+            act()
+        assert conn.in_transaction is ambient
+>       assert snapshot(conn) == before
+E       AssertionError: assert ([], [('sampl...transition')]) == ([('sample', ...transition')])
+E         
+E         At index 0 diff: [] != [('sample', 'retired')]
+E         Use -v to get more diff
+
+tests\test_asset_transactions_review_20261027.py:119: AssertionError
+______ test_owned_schema_failure_leaves_no_partial_tables_and_can_retry _______
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-5rtj5vu0/scratch/pytest/test_owned_schema_failure_leav0')
+
+    def test_owned_schema_failure_leaves_no_partial_tables_and_can_retry(tmp_path):
+        conn = connect(tmp_path / "schema.db", factory=FailingSchemaConnection)
+        try:
+            with pytest.raises(sqlite3.OperationalError, match="asset schema failed"):
+                AssetRepository(conn)
+            assert not conn.in_transaction
+>           assert conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall() == []
+E           assert [<sqlite3.Row...029D17D91900>] == []
+E             
+E             Left contains one more item: <sqlite3.Row object at 0x0000029D17D91900>
+E             Use -v to get more diff
+
+tests\test_asset_transactions_review_20261027.py:146: AssertionError
+_________ test_composition_draft_is_rolled_back_with_host_transaction _________
+
+store = (<sqlite3.Connection object at 0x0000029D17C6B140>, <evoagent.assets.repository.AssetRepository object at 0x0000029D17E19FC0>, <sqlite3.Connection object at 0x0000029D17C6B040>)
+
+    def test_composition_draft_is_rolled_back_with_host_transaction(store):
+        conn, repo, observer = store
+        register(repo)
+        repo.transition("sample", "1", "validating")
+        repo.transition("sample", "1", "approved", evidence_refs=("test:evaluation",))
+        repo.transition("sample", "1", "active")
+        before = snapshot(observer)
+        conn.execute("INSERT INTO host_pending VALUES ('host')")
+        result = compose(repo, ["sample@1"], new_asset_id="composed", new_version="1")
+        assert result.asset_ref == "composed@1"
+>       assert conn.in_transaction
+E       assert False
+E        +  where False = <sqlite3.Connection object at 0x0000029D17C6B140>.in_transaction
+
+tests\test_asset_transactions_review_20261027.py:164: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_asset_transactions_review_20261027.py::test_constructor_preserves_ambient_transaction[False-False]
+FAILED tests/test_asset_transactions_review_20261027.py::test_constructor_preserves_ambient_transaction[False-True]
+FAILED tests/test_asset_transactions_review_20261027.py::test_constructor_preserves_ambient_transaction[True-False]
+FAILED tests/test_asset_transactions_review_20261027.py::test_constructor_preserves_ambient_transaction[True-True]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[False-register]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[False-idempotent]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[False-transition]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[False-approved]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[False-dependency_success]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[False-dependency_failure]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[False-collect]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[True-register]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[True-idempotent]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[True-transition]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[True-approved]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[True-dependency_success]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[True-dependency_failure]
+FAILED tests/test_asset_transactions_review_20261027.py::test_all_write_entries_leave_commit_decision_to_host[True-collect]
+FAILED tests/test_asset_transactions_review_20261027.py::test_event_failure_rolls_back_only_asset_operation[False-register-register]
+FAILED tests/test_asset_transactions_review_20261027.py::test_event_failure_rolls_back_only_asset_operation[False-transition-transition]
+FAILED tests/test_asset_transactions_review_20261027.py::test_event_failure_rolls_back_only_asset_operation[False-approved-transition]
+FAILED tests/test_asset_transactions_review_20261027.py::test_event_failure_rolls_back_only_asset_operation[False-collect-collect]
+FAILED tests/test_asset_transactions_review_20261027.py::test_event_failure_rolls_back_only_asset_operation[True-register-register]
+FAILED tests/test_asset_transactions_review_20261027.py::test_event_failure_rolls_back_only_asset_operation[True-transition-transition]
+FAILED tests/test_asset_transactions_review_20261027.py::test_event_failure_rolls_back_only_asset_operation[True-approved-transition]
+FAILED tests/test_asset_transactions_review_20261027.py::test_event_failure_rolls_back_only_asset_operation[True-collect-collect]
+FAILED tests/test_asset_transactions_review_20261027.py::test_owned_schema_failure_leaves_no_partial_tables_and_can_retry
+FAILED tests/test_asset_transactions_review_20261027.py::test_composition_draft_is_rolled_back_with_host_transaction
+28 failed in 0.85s

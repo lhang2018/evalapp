@@ -1,0 +1,13 @@
+{
+  "parent_commit": "9e43a92e9abfeb11977131721a90f1be8fe85393",
+  "changed_cards": [
+    "ALN-06-A",
+    "ALN-27-B"
+  ],
+  "errors": [],
+  "workpackages": 31,
+  "dispatches": 105,
+  "working_board_not_replaced": true,
+  "working_markdown_not_replaced": true,
+  "note": "Only own 06-A/27-B review deltas reconstructed on HEAD; peer patch confirmation and all original reviewers/concurrent changes preserved."
+}

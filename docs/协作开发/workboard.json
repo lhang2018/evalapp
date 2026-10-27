@@ -836,8 +836,8 @@
    "reviewer": "codex-runtime",
    "branch": null,
    "base_commit": null,
-   "status": "accepted",
-   "blocker": null,
+   "status": "review",
+   "blocker": "共享仓储新补丁已有非作者二次确认、最终卡接受仍待；生产多进程/设备及组合展开缺口不因此关闭",
    "evidence": [
     {
      "date": "2026-10-22",
@@ -883,6 +883,15 @@
      "result": "既定切片accepted",
      "report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
      "log": ".planning/2026-10-23-peer-review/committed-evidence.json"
+    },
+    {
+     "date": "2026-10-27",
+     "reviewer": "codex-runtime",
+     "source_commit": "518aa26125e582cc75d9f95c97d7d14030b7e161",
+     "report": "docs/协作开发/验收/2026-10-27-资产仓储共享事务复核.md",
+     "log": ".planning/2026-10-27-asset-transactions-review/committed-evidence.json",
+     "scope": "仓储事务所有权/保存点、资产与审计原子、真实compose父事务回滚",
+     "result": "固定243通过；已有dsh二次确认，非整卡最终接受"
     }
    ],
    "card": "docs/协作开发/任务卡/06-资产基础.md",
@@ -898,7 +907,7 @@
    ],
    "review_result": "accepted",
    "review_note": "2026-10-23 独立接受既定切片；06墓碑/证据门禁重验，11/16依赖R卡已有claude-main独立接受及第三方探针重放；不重批本人R修复，不表示整包或新增真机通过",
-   "next_step": "既定资产基础切片已接受；运行时精确选择/消费、Android安装/退役另验",
+   "next_step": "518aa26仓储事务修复固定243通过，803f5bc已有dsh二次确认118/4；最终卡接受及生产/组合展开缺口仍待；docs/协作开发/验收/2026-10-27-资产仓储共享事务复核.md",
    "acceptance_findings": [
     {
      "id": "CA-06-01",
@@ -909,7 +918,44 @@
    ],
    "acceptance_report": "docs/协作开发/验收/2026-10-22-Claude认领验收.md",
    "review_report": "docs/协作开发/验收/2026-10-23-其他作者待审卡独立审核.md",
-   "fix_status": "independently_verified_scoped_slice"
+   "fix_status": "independently_verified_scoped_slice",
+   "technical_review": {
+    "date": "2026-10-27",
+    "reviewer": "codex-runtime",
+    "source_commit": "518aa26125e582cc75d9f95c97d7d14030b7e161",
+    "source_tree": "a45712bc3e4a46b898e6cc808309ceadce912172",
+    "report": "docs/协作开发/验收/2026-10-27-资产仓储共享事务复核.md",
+    "evidence": ".planning/2026-10-27-asset-transactions-review/committed-evidence.json",
+    "status": "patch_rechecked_pending_final_acceptance",
+    "result": "31新探针；固定14模块243通过",
+    "independent_patch_confirmation": {
+     "commit": "803f5bc",
+     "reviewer": "dsh-lead",
+     "report": "docs/协作开发/验收/2026-10-27-dsh二次确认-资产事务.md",
+     "evidence": ".planning/2026-10-27-dsh-asset-tx-confirm/evidence.json",
+     "result": "118 passed；4独立探针通过",
+     "scope": "518aa26事务所有权修复点二次确认；非27-B/06-A完整最终接受"
+    },
+    "independent_acceptance_added": false
+   },
+   "latest_code_review": {
+    "id": "REVIEW-2026-10-27-ASSET-TX",
+    "date": "2026-10-27",
+    "reviewer": "codex-runtime",
+    "reviewed_commit": "518aa26125e582cc75d9f95c97d7d14030b7e161",
+    "report": "docs/协作开发/验收/2026-10-27-资产仓储共享事务复核.md",
+    "status": "patch_rechecked_pending_final_acceptance"
+   },
+   "review_verdict": "reopened_patch_rechecked_pending_final_acceptance",
+   "review_history": [
+    {
+     "date": "2026-10-27",
+     "previous_status": "accepted",
+     "previous_technical_review": null,
+     "reason": "新共享仓储缺陷修复，早期接受/审阅保留；518aa26已有803f5bc二次确认，待最终卡复核",
+     "report": "docs/协作开发/验收/2026-10-27-资产仓储共享事务复核.md"
+    }
+   ]
   },
   {
    "id": "ALN-08-M",
@@ -4945,7 +4991,7 @@
    "branch": "feature/user-direction",
    "base_commit": "2782cd25ef690d5286f76345f4eb838d8c6b19ad",
    "status": "review",
-   "blocker": null,
+   "blocker": "共享仓储新补丁已有非作者二次确认、最终卡接受仍待；生产多进程/设备及组合展开缺口不因此关闭",
    "evidence": [
     "代码: 3a716d0 assets/composition.py（dependency_closure/check_io_compatibility/compose）+ 10项测试",
     "测试: composition 10项 + 资产域回归 78 passed",
@@ -4974,6 +5020,15 @@
      "log": ".planning/2026-10-27-other-review/committed-evidence.json",
      "scope": "精确依赖闭包/摘要、可消费状态与IO兼容、组合草稿及版本固定；本轮无新阻断",
      "result": "固定相关278通过，非完整接受"
+    },
+    {
+     "date": "2026-10-27",
+     "reviewer": "codex-runtime",
+     "source_commit": "518aa26125e582cc75d9f95c97d7d14030b7e161",
+     "report": "docs/协作开发/验收/2026-10-27-资产仓储共享事务复核.md",
+     "log": ".planning/2026-10-27-asset-transactions-review/committed-evidence.json",
+     "scope": "仓储事务所有权/保存点、资产与审计原子、真实compose父事务回滚",
+     "result": "固定243通过；已有dsh二次确认，非整卡最终接受"
     }
    ],
    "card": "docs/协作开发/任务卡/27-B-可组合能力与动态工作流资产.md",
@@ -4991,7 +5046,7 @@
     "A-70",
     "B-85"
    ],
-   "next_step": "本轮固定16模块278通过；生产执行/动态展开与组合收益证据、旧6ae4b30补丁独立确认仍待；docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+   "next_step": "518aa26仓储事务修复固定243通过，803f5bc已有dsh二次确认118/4；最终卡接受及生产/组合展开缺口仍待；docs/协作开发/验收/2026-10-27-资产仓储共享事务复核.md",
    "working_basis": "2026-10-25 zcode-main 认领开工。依赖 26-B(claimed) + 27-A(accepted) 已满足。复用 06-R 精确消费绑定 + 27-A 经验沉淀 + 07-W 工作流匹配，构建可组合能力资产层。",
    "prerequisites": "仅需仓库与本地测试环境",
    "review_history": [
@@ -5016,29 +5071,53 @@
      },
      "reason": "其他五卡接续复核，10-E新增v3修复；原审阅历史保留",
      "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md"
+    },
+    {
+     "date": "2026-10-27",
+     "previous_status": "review",
+     "previous_technical_review": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+      "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
+      "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+      "evidence": ".planning/2026-10-27-other-review/committed-evidence.json",
+      "scope": "精确依赖闭包/摘要、可消费状态与IO兼容、组合草稿及版本固定；本轮无新阻断",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "result": "固定16相关模块278通过；非全量/设备/生产",
+      "remaining_acceptance_gaps": "生产执行/动态展开与组合收益证据、旧6ae4b30补丁独立确认仍待",
+      "independent_acceptance_added": false
+     },
+     "reason": "新共享仓储缺陷修复，早期接受/审阅保留；518aa26已有803f5bc二次确认，待最终卡复核",
+     "report": "docs/协作开发/验收/2026-10-27-资产仓储共享事务复核.md"
     }
    ],
    "latest_code_review": {
-    "id": "REVIEW-2026-10-27-OTHER-5",
+    "id": "REVIEW-2026-10-27-ASSET-TX",
     "date": "2026-10-27",
     "reviewer": "codex-runtime",
-    "reviewed_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
-    "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
-    "scope": "精确依赖闭包/摘要、可消费状态与IO兼容、组合草稿及版本固定；本轮无新阻断",
-    "status": "technical_recheck_complete_with_acceptance_gaps"
+    "reviewed_commit": "518aa26125e582cc75d9f95c97d7d14030b7e161",
+    "report": "docs/协作开发/验收/2026-10-27-资产仓储共享事务复核.md",
+    "status": "patch_rechecked_pending_final_acceptance"
    },
    "delivery": "docs/协作开发/交付/ALN-27-B-可组合能力与动态工作流资产.md",
    "technical_review": {
     "date": "2026-10-27",
     "reviewer": "codex-runtime",
-    "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
-    "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
-    "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
-    "evidence": ".planning/2026-10-27-other-review/committed-evidence.json",
-    "scope": "精确依赖闭包/摘要、可消费状态与IO兼容、组合草稿及版本固定；本轮无新阻断",
-    "status": "technical_recheck_complete_with_acceptance_gaps",
-    "result": "固定16相关模块278通过；非全量/设备/生产",
-    "remaining_acceptance_gaps": "生产执行/动态展开与组合收益证据、旧6ae4b30补丁独立确认仍待",
+    "source_commit": "518aa26125e582cc75d9f95c97d7d14030b7e161",
+    "source_tree": "a45712bc3e4a46b898e6cc808309ceadce912172",
+    "report": "docs/协作开发/验收/2026-10-27-资产仓储共享事务复核.md",
+    "evidence": ".planning/2026-10-27-asset-transactions-review/committed-evidence.json",
+    "status": "patch_rechecked_pending_final_acceptance",
+    "result": "31新探针；固定14模块243通过",
+    "independent_patch_confirmation": {
+     "commit": "803f5bc",
+     "reviewer": "dsh-lead",
+     "report": "docs/协作开发/验收/2026-10-27-dsh二次确认-资产事务.md",
+     "evidence": ".planning/2026-10-27-dsh-asset-tx-confirm/evidence.json",
+     "result": "118 passed；4独立探针通过",
+     "scope": "518aa26事务所有权修复点二次确认；非27-B/06-A完整最终接受"
+    },
     "independent_acceptance_added": false
    }
   },
@@ -12087,6 +12166,29 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
    "scope": "host-bench/3严格输出/语义摘要/门禁输入；278相关，待独立复核"
+  },
+  {
+   "id": "review-fix-518aa26125e5",
+   "title": "fix(assets): 隔离宿主事务并原子保存资产与审计",
+   "workpackage": "ALN-06",
+   "source_commit": "518aa26125e582cc75d9f95c97d7d14030b7e161",
+   "files": [
+    "evoagent/assets/repository.py",
+    "tests/test_asset_transactions_review_20261027.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "independent_patch_confirmation": {
+    "commit": "803f5bc",
+    "reviewer": "dsh-lead",
+    "report": "docs/协作开发/验收/2026-10-27-dsh二次确认-资产事务.md",
+    "evidence": ".planning/2026-10-27-dsh-asset-tx-confirm/evidence.json",
+    "result": "118 passed；4独立探针通过",
+    "scope": "518aa26事务所有权修复点二次确认；非27-B/06-A完整最终接受"
+   },
+   "report": "docs/协作开发/验收/2026-10-27-资产仓储共享事务复核.md",
+   "scope": "243相关；已有修复点二次确认，非整卡/基线接受"
   }
  ],
  "requirement_batches": [
@@ -12667,6 +12769,33 @@
    "product_acceptance_added": false,
    "published_by_review": false,
    "scope": "其余五卡接续；278相关，新15探针，host-bench/3；原分工与缺口保留"
+  },
+  {
+   "id": "REVIEW-2026-10-27-ASSET-TX",
+   "date": "2026-10-27",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-06-A",
+    "ALN-27-B"
+   ],
+   "fixed_cards": [
+    "ALN-06-A"
+   ],
+   "fix_commit": "518aa26125e582cc75d9f95c97d7d14030b7e161",
+   "report": "docs/协作开发/验收/2026-10-27-资产仓储共享事务复核.md",
+   "evidence": ".planning/2026-10-27-asset-transactions-review/committed-evidence.json",
+   "status": "patch_rechecked_pending_final_acceptance",
+   "independent_patch_confirmation": {
+    "commit": "803f5bc",
+    "reviewer": "dsh-lead",
+    "report": "docs/协作开发/验收/2026-10-27-dsh二次确认-资产事务.md",
+    "evidence": ".planning/2026-10-27-dsh-asset-tx-confirm/evidence.json",
+    "result": "118 passed；4独立探针通过",
+    "scope": "518aa26事务所有权修复点二次确认；非27-B/06-A完整最终接受"
+   },
+   "product_acceptance_added": false,
+   "published_by_review": false,
+   "scope": "资产仓储共享事务与组合消费；06-A保留旧接受后重开，27-B维持review"
   }
  ]
 }
