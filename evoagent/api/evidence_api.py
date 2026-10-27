@@ -20,6 +20,7 @@ import hashlib
 import json
 import os
 import re
+import time
 import uuid
 from functools import wraps
 
@@ -28,6 +29,11 @@ from ..observability.repository import EvidenceRepositoryError
 
 EXPORT_ID_RE = re.compile(r"^exp_[0-9a-f]{12}$")
 EXPORT_RELATIVE_PREFIX = "exports"
+#: 分块下载默认/最大切片，避免一次回显整份大导出（ALN-16-Q 缺口）。
+DEFAULT_CHUNK_BYTES = 1 << 20
+MAX_CHUNK_BYTES = 8 << 20
+#: 导出文件保留期默认 7 天（ALN-16-Q 缺口：此前无清理）。
+DEFAULT_EXPORT_RETENTION_SECONDS = 7 * 24 * 3600
 
 
 def _repository_response(handler):
@@ -193,23 +199,54 @@ def post_evidence_export(ctx):
     })
 
 
-@get("/evidence/exports/{export_id}/download")
-def download_evidence_export(ctx):
-    if _role(ctx) != "admin":
-        return ctx.json(403, {"error": "导出下载需要 admin 角色"})
-    export_id = ctx.path.split("/")[3]
+def _export_file(ctx, export_id):
+    """返回 (path, error_response)。路径根校验 + 存在性检查复用。"""
     if not EXPORT_ID_RE.fullmatch(export_id):
-        return ctx.json(400, {"error": "非法导出标识"})
+        return None, ctx.json(400, {"error": "非法导出标识"})
     path = os.path.realpath(os.path.join(_export_root(ctx.app),
                                          f"{export_id}.json"))
     root = os.path.realpath(_export_root(ctx.app))
     try:
         if os.path.commonpath([root, path]) != root:
-            return ctx.json(403, {"error": "导出路径越出授权目录"})
+            return None, ctx.json(403, {"error": "导出路径越出授权目录"})
     except ValueError:
-        return ctx.json(403, {"error": "导出路径越出授权目录"})
+        return None, ctx.json(403, {"error": "导出路径越出授权目录"})
     if not os.path.isfile(path):
-        return ctx.json(404, {"error": "导出文件不存在或已清理"})
+        return None, ctx.json(404, {"error": "导出文件不存在或已清理"})
+    return path, None
+
+
+def _chunk_params(ctx):
+    """解析 offset/limit；返回 (offset, limit, error_response)。
+
+    两者都缺省时返回 (None, None, None) 表示整文件下载。
+    """
+    query = getattr(ctx, "query", None) or {}
+    raw_offset, raw_limit = query.get("offset"), query.get("limit")
+    if raw_offset in (None, "") and raw_limit in (None, ""):
+        return None, None, None
+    try:
+        offset = int(raw_offset or 0)
+        limit = (int(raw_limit) if raw_limit not in (None, "")
+                 else DEFAULT_CHUNK_BYTES)
+    except (TypeError, ValueError):
+        return None, None, ctx.json(400, {"error": "offset/limit 必须是整数"})
+    if offset < 0 or limit <= 0:
+        return None, None, ctx.json(400, {"error": "offset 需 >=0，limit 需 >0"})
+    return offset, min(limit, MAX_CHUNK_BYTES), None
+
+
+@get("/evidence/exports/{export_id}/download")
+def download_evidence_export(ctx):
+    if _role(ctx) != "admin":
+        return ctx.json(403, {"error": "导出下载需要 admin 角色"})
+    export_id = ctx.path.split("/")[3]
+    path, error = _export_file(ctx, export_id)
+    if error is not None:
+        return error
+    offset, limit, error = _chunk_params(ctx)
+    if error is not None:
+        return error
     with open(path, "rb") as handle:
         body = handle.read()
     sha256 = hashlib.sha256(body).hexdigest()
@@ -223,13 +260,85 @@ def download_evidence_export(ctx):
                            events_digest=events_digest)
     if not matched:
         return ctx.json(409, {"error": "下载字节与审计/摘要不匹配，拒绝下载"})
+    if offset is None:
+        return ctx.json(200, {
+            "export_id": export_id, "sha256": sha256,
+            "events_digest": events_digest,
+            "count": len(report.get("events") or []),
+            "actor": actor, "audit_match": True,
+            "bytes_b64": base64.b64encode(body).decode("ascii"),
+            "note": "受控下载：base64 字节；客户端校验 sha256",
+        })
+    chunk = body[offset:offset + limit]
+    next_offset = offset + len(chunk)
     return ctx.json(200, {
         "export_id": export_id, "sha256": sha256,
-        "events_digest": events_digest,
-        "count": len(report.get("events") or []),
-        "actor": actor, "audit_match": True,
-        "bytes_b64": base64.b64encode(body).decode("ascii"),
-        "note": "受控下载：base64 字节；客户端校验 sha256",
+        "events_digest": events_digest, "actor": actor, "audit_match": True,
+        "offset": offset, "chunk_bytes": len(chunk),
+        "total_bytes": len(body), "next_offset": next_offset,
+        "eof": next_offset >= len(body),
+        "chunk_sha256": hashlib.sha256(chunk).hexdigest(),
+        "bytes_b64": base64.b64encode(chunk).decode("ascii"),
+        "note": "分块下载：按 offset/limit 切片；整体 sha256 用于拼装校验",
+    })
+
+
+@post("/evidence/exports/cleanup")
+def post_exports_cleanup(ctx):
+    """按保留期清理过期导出文件（ALN-16-Q 缺口：此前导出无清理期）。"""
+    if _role(ctx) != "admin":
+        return ctx.json(403, {"error": "导出清理需要 admin 角色"})
+    body = ctx.body
+    if not isinstance(body, dict):
+        return ctx.json(400, {"error": "请求体必须是对象"})
+    try:
+        principal = _auth_principal(ctx, body)
+    except PermissionError as exc:
+        return ctx.json(403, {"error": str(exc)})
+    retention = body.get("retention_seconds", DEFAULT_EXPORT_RETENTION_SECONDS)
+    if isinstance(retention, bool) or not isinstance(retention, (int, float)) \
+            or not (retention >= 0):
+        return ctx.json(400, {"error": "retention_seconds 必须是 >=0 的数值"})
+    try:
+        dry_run = _boolean(body, "dry_run", True)
+    except ValueError as exc:
+        return ctx.json(400, {"error": str(exc)})
+    root = _export_root(ctx.app)
+    now = time.time()
+    expired, kept = [], 0
+    names = []
+    if os.path.isdir(root):
+        names = sorted(os.listdir(root))
+    for name in names:
+        if not name.endswith(".json"):
+            continue
+        export_id = name[:-5]
+        if not EXPORT_ID_RE.fullmatch(export_id):
+            continue
+        path = os.path.join(root, name)
+        try:
+            age = now - os.path.getmtime(path)
+        except OSError:
+            continue
+        if age < float(retention):
+            kept += 1
+            continue
+        if not dry_run:
+            try:
+                os.remove(path)
+            except OSError:
+                continue
+            ctx.app.audit.record(
+                principal, "export_cleanup", target=export_id,
+                detail={"retention_seconds": float(retention),
+                        "age_seconds": round(age, 3)})
+        expired.append(export_id)
+    return ctx.json(200, {
+        "ok": True, "dry_run": dry_run,
+        "retention_seconds": float(retention),
+        "expired": expired, "kept": kept,
+        "note": ("按文件修改时间清理过期导出；dry_run 只列出不删除；"
+                 "实际删除逐项写入审计"),
     })
 
 
