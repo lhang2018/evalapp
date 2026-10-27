@@ -1,0 +1,39 @@
+{
+ "card": "ALN-27-A",
+ "reviewer": "dsh-lead（非 27-A 作者；但 27-C 重写了 knowledge/store.py，独立性有限，需他人终审）",
+ "date": "2026-10-27",
+ "commands": {
+  "tests": "test_knowledge + test_knowledge_review_20261026 -> 47 passed"
+ },
+ "probe": {
+  "injected": [
+   "good"
+  ],
+  "skipped": {
+   "other": "适用域不含 coding",
+   "revoked": "已撤销",
+   "low": "可信度 0.2 低于阈值 0.5"
+  },
+  "nan_rejected": true,
+  "improved": "improved",
+  "different_task_list": "unproven",
+  "duplicate_rejected": "同一专家任务结果不可重复计数",
+  "non_bool_rejected": "ValueError",
+  "hit_rate_only": "unproven"
+ },
+ "checks": {
+  "applicable_injected": true,
+  "revoked_not_injected": true,
+  "low_confidence_not_injected": true,
+  "wrong_domain_not_injected": true,
+  "nan_confidence_rejected": true,
+  "quality_improvement_proven": true,
+  "different_task_list_unproven": true,
+  "duplicate_samples_rejected": true,
+  "non_boolean_rejected": true,
+  "hit_rate_alone_unproven": true
+ },
+ "all_checks_pass": true,
+ "independence": "limited: store.py 由我在 27-C 重写；本轮验证 27-A 行为在现网代码上保持，不能替代完全独立终审",
+ "boundary": "本地；未接真实 LLM 前后质量与用户/项目可见性"
+}
