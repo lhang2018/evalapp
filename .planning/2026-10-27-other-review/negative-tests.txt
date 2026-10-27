@@ -1,0 +1,210 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFFFFFFFFF.FF.                                                           [100%]
+================================== FAILURES ===================================
+_______ test_last_nonempty_line_must_be_a_strict_json_object[not-json] ________
+
+repository = <evoagent.assets.repository.AssetRepository object at 0x00000226ECC89210>
+ending = 'not-json'
+
+    @pytest.mark.parametrize("ending", ["not-json", "[]", "false", '{"ok": true, "value": NaN}',
+                                         '{"ok": true, "value": Infinity}'])
+    def test_last_nonempty_line_must_be_a_strict_json_object(repository, ending):
+        base = asset(repository, "base", 'print(\'{"ok": false}\')')
+        code = 'print(\'{"ok": true, "value": "early"}\')\nprint(' + repr(ending) + ')\n'
+        cand = asset(repository, "candidate", code)
+        result = benchmark(repository).compare(base, cand, [BenchCase("one")])
+>       assert result["cases"][0]["candidate"]["status"] == "invalid_output"
+E       AssertionError: assert 'ok' == 'invalid_output'
+E         
+E         - invalid_output
+E         + ok
+
+tests\test_other_review_20261027.py:45: AssertionError
+__________ test_last_nonempty_line_must_be_a_strict_json_object[[]] ___________
+
+repository = <evoagent.assets.repository.AssetRepository object at 0x00000226ECDD7790>
+ending = '[]'
+
+    @pytest.mark.parametrize("ending", ["not-json", "[]", "false", '{"ok": true, "value": NaN}',
+                                         '{"ok": true, "value": Infinity}'])
+    def test_last_nonempty_line_must_be_a_strict_json_object(repository, ending):
+        base = asset(repository, "base", 'print(\'{"ok": false}\')')
+        code = 'print(\'{"ok": true, "value": "early"}\')\nprint(' + repr(ending) + ')\n'
+        cand = asset(repository, "candidate", code)
+        result = benchmark(repository).compare(base, cand, [BenchCase("one")])
+>       assert result["cases"][0]["candidate"]["status"] == "invalid_output"
+E       AssertionError: assert 'ok' == 'invalid_output'
+E         
+E         - invalid_output
+E         + ok
+
+tests\test_other_review_20261027.py:45: AssertionError
+_________ test_last_nonempty_line_must_be_a_strict_json_object[false] _________
+
+repository = <evoagent.assets.repository.AssetRepository object at 0x00000226ECDEE5C0>
+ending = 'false'
+
+    @pytest.mark.parametrize("ending", ["not-json", "[]", "false", '{"ok": true, "value": NaN}',
+                                         '{"ok": true, "value": Infinity}'])
+    def test_last_nonempty_line_must_be_a_strict_json_object(repository, ending):
+        base = asset(repository, "base", 'print(\'{"ok": false}\')')
+        code = 'print(\'{"ok": true, "value": "early"}\')\nprint(' + repr(ending) + ')\n'
+        cand = asset(repository, "candidate", code)
+        result = benchmark(repository).compare(base, cand, [BenchCase("one")])
+>       assert result["cases"][0]["candidate"]["status"] == "invalid_output"
+E       AssertionError: assert 'ok' == 'invalid_output'
+E         
+E         - invalid_output
+E         + ok
+
+tests\test_other_review_20261027.py:45: AssertionError
+_ test_last_nonempty_line_must_be_a_strict_json_object[{"ok": true, "value": NaN}] _
+
+repository = <evoagent.assets.repository.AssetRepository object at 0x00000226ECDD6830>
+ending = '{"ok": true, "value": NaN}'
+
+    @pytest.mark.parametrize("ending", ["not-json", "[]", "false", '{"ok": true, "value": NaN}',
+                                         '{"ok": true, "value": Infinity}'])
+    def test_last_nonempty_line_must_be_a_strict_json_object(repository, ending):
+        base = asset(repository, "base", 'print(\'{"ok": false}\')')
+        code = 'print(\'{"ok": true, "value": "early"}\')\nprint(' + repr(ending) + ')\n'
+        cand = asset(repository, "candidate", code)
+        result = benchmark(repository).compare(base, cand, [BenchCase("one")])
+>       assert result["cases"][0]["candidate"]["status"] == "invalid_output"
+E       AssertionError: assert 'ok' == 'invalid_output'
+E         
+E         - invalid_output
+E         + ok
+
+tests\test_other_review_20261027.py:45: AssertionError
+_ test_last_nonempty_line_must_be_a_strict_json_object[{"ok": true, "value": Infinity}] _
+
+repository = <evoagent.assets.repository.AssetRepository object at 0x00000226ECDED8A0>
+ending = '{"ok": true, "value": Infinity}'
+
+    @pytest.mark.parametrize("ending", ["not-json", "[]", "false", '{"ok": true, "value": NaN}',
+                                         '{"ok": true, "value": Infinity}'])
+    def test_last_nonempty_line_must_be_a_strict_json_object(repository, ending):
+        base = asset(repository, "base", 'print(\'{"ok": false}\')')
+        code = 'print(\'{"ok": true, "value": "early"}\')\nprint(' + repr(ending) + ')\n'
+        cand = asset(repository, "candidate", code)
+        result = benchmark(repository).compare(base, cand, [BenchCase("one")])
+>       assert result["cases"][0]["candidate"]["status"] == "invalid_output"
+E       AssertionError: assert 'ok' == 'invalid_output'
+E         
+E         - invalid_output
+E         + ok
+
+tests\test_other_review_20261027.py:45: AssertionError
+_ test_digest_binds_each_case_semantics_and_gate_detects_stale_digest[value-2] _
+
+report = {'baseline': {'asset_id': 'review.base', 'asset_ref': 'review.base@1.0.0', 'content_digest': 'a75015655f93238f695d33a1...', 'content_digest': '9fcefa055319218cf2150a77f0e92c34954d6157c976576de3179ff6f93043c5', 'entry': 'main.py', ...}, ...}
+field = 'value', value = 2
+
+    @pytest.mark.parametrize("field,value", [("value", 2), ("ok", False), ("status", "failed")])
+    def test_digest_binds_each_case_semantics_and_gate_detects_stale_digest(report, field, value):
+        changed = copy.deepcopy(report)
+        changed["cases"][0]["candidate"][field] = value
+>       assert evidence_digest(changed) != report["evidence_digest"]
+E       AssertionError: assert '5ec11b0ae84e33d0bfd7eea4b66ecc6d3ad57e791a0392feef8a7fb508146b59' != '5ec11b0ae84e33d0bfd7eea4b66ecc6d3ad57e791a0392feef8a7fb508146b59'
+E        +  where '5ec11b0ae84e33d0bfd7eea4b66ecc6d3ad57e791a0392feef8a7fb508146b59' = evidence_digest({'baseline': {'asset_id': 'review.base', 'asset_ref': 'review.base@1.0.0', 'content_digest': 'a75015655f93238f695d33a1...', 'content_digest': '9fcefa055319218cf2150a77f0e92c34954d6157c976576de3179ff6f93043c5', 'entry': 'main.py', ...}, ...})
+
+tests\test_other_review_20261027.py:53: AssertionError
+_ test_digest_binds_each_case_semantics_and_gate_detects_stale_digest[ok-False] _
+
+report = {'baseline': {'asset_id': 'review.base', 'asset_ref': 'review.base@1.0.0', 'content_digest': 'a75015655f93238f695d33a1...', 'content_digest': '9fcefa055319218cf2150a77f0e92c34954d6157c976576de3179ff6f93043c5', 'entry': 'main.py', ...}, ...}
+field = 'ok', value = False
+
+    @pytest.mark.parametrize("field,value", [("value", 2), ("ok", False), ("status", "failed")])
+    def test_digest_binds_each_case_semantics_and_gate_detects_stale_digest(report, field, value):
+        changed = copy.deepcopy(report)
+        changed["cases"][0]["candidate"][field] = value
+>       assert evidence_digest(changed) != report["evidence_digest"]
+E       AssertionError: assert '5ec11b0ae84e33d0bfd7eea4b66ecc6d3ad57e791a0392feef8a7fb508146b59' != '5ec11b0ae84e33d0bfd7eea4b66ecc6d3ad57e791a0392feef8a7fb508146b59'
+E        +  where '5ec11b0ae84e33d0bfd7eea4b66ecc6d3ad57e791a0392feef8a7fb508146b59' = evidence_digest({'baseline': {'asset_id': 'review.base', 'asset_ref': 'review.base@1.0.0', 'content_digest': 'a75015655f93238f695d33a1...', 'content_digest': '9fcefa055319218cf2150a77f0e92c34954d6157c976576de3179ff6f93043c5', 'entry': 'main.py', ...}, ...})
+
+tests\test_other_review_20261027.py:53: AssertionError
+_ test_digest_binds_each_case_semantics_and_gate_detects_stale_digest[status-failed] _
+
+report = {'baseline': {'asset_id': 'review.base', 'asset_ref': 'review.base@1.0.0', 'content_digest': 'a75015655f93238f695d33a1...', 'content_digest': '9fcefa055319218cf2150a77f0e92c34954d6157c976576de3179ff6f93043c5', 'entry': 'main.py', ...}, ...}
+field = 'status', value = 'failed'
+
+    @pytest.mark.parametrize("field,value", [("value", 2), ("ok", False), ("status", "failed")])
+    def test_digest_binds_each_case_semantics_and_gate_detects_stale_digest(report, field, value):
+        changed = copy.deepcopy(report)
+        changed["cases"][0]["candidate"][field] = value
+>       assert evidence_digest(changed) != report["evidence_digest"]
+E       AssertionError: assert '5ec11b0ae84e33d0bfd7eea4b66ecc6d3ad57e791a0392feef8a7fb508146b59' != '5ec11b0ae84e33d0bfd7eea4b66ecc6d3ad57e791a0392feef8a7fb508146b59'
+E        +  where '5ec11b0ae84e33d0bfd7eea4b66ecc6d3ad57e791a0392feef8a7fb508146b59' = evidence_digest({'baseline': {'asset_id': 'review.base', 'asset_ref': 'review.base@1.0.0', 'content_digest': 'a75015655f93238f695d33a1...', 'content_digest': '9fcefa055319218cf2150a77f0e92c34954d6157c976576de3179ff6f93043c5', 'entry': 'main.py', ...}, ...})
+
+tests\test_other_review_20261027.py:53: AssertionError
+______ test_digest_binds_timeout_and_policy_without_binding_timing_noise ______
+
+report = {'baseline': {'asset_id': 'review.base', 'asset_ref': 'review.base@1.0.0', 'content_digest': 'a75015655f93238f695d33a1...', 'content_digest': '9fcefa055319218cf2150a77f0e92c34954d6157c976576de3179ff6f93043c5', 'entry': 'main.py', ...}, ...}
+
+    def test_digest_binds_timeout_and_policy_without_binding_timing_noise(report):
+        changed = copy.deepcopy(report)
+        changed["timeout_s"] = 1.0
+>       assert evidence_digest(changed) != report["evidence_digest"]
+E       AssertionError: assert '5ec11b0ae84e33d0bfd7eea4b66ecc6d3ad57e791a0392feef8a7fb508146b59' != '5ec11b0ae84e33d0bfd7eea4b66ecc6d3ad57e791a0392feef8a7fb508146b59'
+E        +  where '5ec11b0ae84e33d0bfd7eea4b66ecc6d3ad57e791a0392feef8a7fb508146b59' = evidence_digest({'baseline': {'asset_id': 'review.base', 'asset_ref': 'review.base@1.0.0', 'content_digest': 'a75015655f93238f695d33a1...', 'content_digest': '9fcefa055319218cf2150a77f0e92c34954d6157c976576de3179ff6f93043c5', 'entry': 'main.py', ...}, ...})
+
+tests\test_other_review_20261027.py:60: AssertionError
+_ test_gate_does_not_treat_negative_or_unknown_verdict_as_neutral[regressed] __
+
+report = {'baseline': {'asset_id': 'review.base', 'asset_ref': 'review.base@1.0.0', 'content_digest': 'a75015655f93238f695d33a1...', 'content_digest': '9fcefa055319218cf2150a77f0e92c34954d6157c976576de3179ff6f93043c5', 'entry': 'main.py', ...}, ...}
+verdict = 'regressed'
+
+    @pytest.mark.parametrize("verdict", ["regressed", "inconclusive", "unknown"])
+    def test_gate_does_not_treat_negative_or_unknown_verdict_as_neutral(report, verdict):
+        changed = copy.deepcopy(report)
+        changed["verdict"] = verdict
+        changed["benefit"]["verdict"] = verdict
+        changed["evidence_digest"] = evidence_digest(changed)
+>       assert release_decision(changed)["allow"] is False
+E       assert True is False
+
+tests\test_other_review_20261027.py:79: AssertionError
+__ test_gate_does_not_treat_negative_or_unknown_verdict_as_neutral[unknown] ___
+
+report = {'baseline': {'asset_id': 'review.base', 'asset_ref': 'review.base@1.0.0', 'content_digest': 'a75015655f93238f695d33a1...', 'content_digest': '9fcefa055319218cf2150a77f0e92c34954d6157c976576de3179ff6f93043c5', 'entry': 'main.py', ...}, ...}
+verdict = 'unknown'
+
+    @pytest.mark.parametrize("verdict", ["regressed", "inconclusive", "unknown"])
+    def test_gate_does_not_treat_negative_or_unknown_verdict_as_neutral(report, verdict):
+        changed = copy.deepcopy(report)
+        changed["verdict"] = verdict
+        changed["benefit"]["verdict"] = verdict
+        changed["evidence_digest"] = evidence_digest(changed)
+>       assert release_decision(changed)["allow"] is False
+E       assert True is False
+
+tests\test_other_review_20261027.py:79: AssertionError
+______ test_legacy_evidence_requires_rerun_instead_of_automatic_upgrade _______
+
+report = {'baseline': {'asset_id': 'review.base', 'asset_ref': 'review.base@1.0.0', 'content_digest': 'a75015655f93238f695d33a1...', 'content_digest': '9fcefa055319218cf2150a77f0e92c34954d6157c976576de3179ff6f93043c5', 'entry': 'main.py', ...}, ...}
+
+    def test_legacy_evidence_requires_rerun_instead_of_automatic_upgrade(report):
+        legacy = copy.deepcopy(report)
+        legacy["benchmark_version"] = "host-bench/2"
+        legacy["evidence_digest"] = evidence_digest(legacy)
+>       assert release_decision(legacy)["allow"] is False
+E       assert True is False
+
+tests\test_other_review_20261027.py:86: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_other_review_20261027.py::test_last_nonempty_line_must_be_a_strict_json_object[not-json]
+FAILED tests/test_other_review_20261027.py::test_last_nonempty_line_must_be_a_strict_json_object[[]]
+FAILED tests/test_other_review_20261027.py::test_last_nonempty_line_must_be_a_strict_json_object[false]
+FAILED tests/test_other_review_20261027.py::test_last_nonempty_line_must_be_a_strict_json_object[{"ok": true, "value": NaN}]
+FAILED tests/test_other_review_20261027.py::test_last_nonempty_line_must_be_a_strict_json_object[{"ok": true, "value": Infinity}]
+FAILED tests/test_other_review_20261027.py::test_digest_binds_each_case_semantics_and_gate_detects_stale_digest[value-2]
+FAILED tests/test_other_review_20261027.py::test_digest_binds_each_case_semantics_and_gate_detects_stale_digest[ok-False]
+FAILED tests/test_other_review_20261027.py::test_digest_binds_each_case_semantics_and_gate_detects_stale_digest[status-failed]
+FAILED tests/test_other_review_20261027.py::test_digest_binds_timeout_and_policy_without_binding_timing_noise
+FAILED tests/test_other_review_20261027.py::test_gate_does_not_treat_negative_or_unknown_verdict_as_neutral[regressed]
+FAILED tests/test_other_review_20261027.py::test_gate_does_not_treat_negative_or_unknown_verdict_as_neutral[unknown]
+FAILED tests/test_other_review_20261027.py::test_legacy_evidence_requires_rerun_instead_of_automatic_upgrade
+12 failed, 2 passed in 1.32s

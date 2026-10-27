@@ -1,0 +1,33 @@
+{
+  "pytest_arguments": [
+    "tests/test_other_review_20261027.py",
+    "tests/test_gap_planner.py",
+    "tests/test_gap_closure.py",
+    "tests/test_proactive_review_20261026.py",
+    "tests/test_knowledge.py",
+    "tests/test_knowledge_persistence.py",
+    "tests/test_knowledge_review_20261026.py",
+    "tests/test_asset_composition.py",
+    "tests/test_asset_consumption.py",
+    "tests/test_asset_identity.py",
+    "tests/test_host_benchmark.py",
+    "tests/test_benchmark_review_20261026.py",
+    "tests/test_evolution_queue_host.py",
+    "tests/test_sandbox.py",
+    "tests/test_candidate_host_api.py",
+    "tests/test_new_host_review_20261026.py",
+    "-q",
+    "-k",
+    "not test_real_host_pressure_yields_and_core_state_untouched"
+  ],
+  "snapshot_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+  "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+  "owned_temp_directory": "E:\\evalapp\\outputs\\review5-vbkdful9",
+  "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
+  "archive_sha256": "3779bf11a640a9b18ee9ab3dabda08281e9b4e9e5a199c8237b29e1de59aa2e8",
+  "source_path_when_tested": "E:\\evalapp\\outputs\\review5-vbkdful9\\source",
+  "module_source_probe": "E:\\evalapp\\outputs\\review5-vbkdful9\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-vbkdful9\\source\\evoagent\\tools\\refactor.py\n",
+  "exit_code": 0,
+  "temporary_data_removed": true,
+  "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+}

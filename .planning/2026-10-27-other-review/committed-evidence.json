@@ -1,0 +1,180 @@
+{
+  "date": "2026-10-27",
+  "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+  "fix_commits": [
+    "1015f543923b5ac50e106cbf23a7331892965d70"
+  ],
+  "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+  "validation_records": {
+    "negative-validation": {
+      "pytest_arguments": [
+        "tests/test_other_review_20261027.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-4yd9yf1v",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "focused-validation": {
+      "pytest_arguments": [
+        "tests/test_other_review_20261027.py",
+        "tests/test_host_benchmark.py",
+        "tests/test_benchmark_review_20261026.py",
+        "tests/test_candidate_host_api.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-wez6h0mg",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "extra-validation": {
+      "pytest_arguments": [
+        "tests/test_other_review_20261027.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-juuhzf__",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "final-validation": {
+      "pytest_arguments": [
+        "tests/test_other_review_20261027.py",
+        "tests/test_gap_planner.py",
+        "tests/test_gap_closure.py",
+        "tests/test_proactive_review_20261026.py",
+        "tests/test_knowledge.py",
+        "tests/test_knowledge_persistence.py",
+        "tests/test_knowledge_review_20261026.py",
+        "tests/test_asset_composition.py",
+        "tests/test_asset_consumption.py",
+        "tests/test_asset_identity.py",
+        "tests/test_host_benchmark.py",
+        "tests/test_benchmark_review_20261026.py",
+        "tests/test_evolution_queue_host.py",
+        "tests/test_sandbox.py",
+        "tests/test_candidate_host_api.py",
+        "tests/test_new_host_review_20261026.py",
+        "-q",
+        "-k",
+        "not test_real_host_pressure_yields_and_core_state_untouched"
+      ],
+      "snapshot_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-vbkdful9",
+      "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
+      "archive_sha256": "3779bf11a640a9b18ee9ab3dabda08281e9b4e9e5a199c8237b29e1de59aa2e8",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-vbkdful9\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-vbkdful9\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-vbkdful9\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    }
+  },
+  "cards": {
+    "ALN-26-A": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+      "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
+      "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+      "evidence": ".planning/2026-10-27-other-review/committed-evidence.json",
+      "scope": "权威任务/目标证据、快照新鲜性比对、去重与既有演化候选登记；本轮无新阻断",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "result": "固定16相关模块278通过；非全量/设备/生产",
+      "remaining_acceptance_gaps": "线上遥测/API/UI与真实预算、跨进程规划去重仍待；此前5f09fb8补丁独立确认另计",
+      "independent_acceptance_added": false
+    },
+    "ALN-27-A": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+      "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
+      "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+      "evidence": ".planning/2026-10-27-other-review/committed-evidence.json",
+      "scope": "知识验证/撤销/持久化和同专家同逻辑任务质量对照；本轮无新阻断",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "result": "固定16相关模块278通过；非全量/设备/生产",
+      "remaining_acceptance_gaps": "真实运行版本/数据集权威绑定、LLM前后质量和用户/项目可见性相关闭环仍待；旧修复待独立确认",
+      "independent_acceptance_added": false
+    },
+    "ALN-27-B": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+      "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
+      "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+      "evidence": ".planning/2026-10-27-other-review/committed-evidence.json",
+      "scope": "精确依赖闭包/摘要、可消费状态与IO兼容、组合草稿及版本固定；本轮无新阻断",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "result": "固定16相关模块278通过；非全量/设备/生产",
+      "remaining_acceptance_gaps": "生产执行/动态展开与组合收益证据、旧6ae4b30补丁独立确认仍待",
+      "independent_acceptance_added": false
+    },
+    "ALN-09-H": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+      "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
+      "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+      "evidence": ".planning/2026-10-27-other-review/committed-evidence.json",
+      "scope": "真实候选资产/子进程、边界拒绝和持久队列租约fencing；本轮无新阻断",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "result": "固定16相关模块278通过；非全量/设备/生产",
+      "remaining_acceptance_gaps": "OS级隔离、跨平台文件描述符、资源/输出内存上限和生产并发仍待；旧fde8f89补丁须独立确认",
+      "independent_acceptance_added": false
+    },
+    "ALN-10-E": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+      "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
+      "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+      "evidence": ".planning/2026-10-27-other-review/committed-evidence.json",
+      "scope": "真实候选输出末行严格JSON、逐例/政策/timeout摘要绑定、门禁一致性与版本拒绝，1015f54修复",
+      "status": "changes_fixed_pending_independent_recheck",
+      "result": "固定16相关模块278通过；非全量/设备/生产",
+      "remaining_acceptance_gaps": "1015f54待独立复核；v2仅历史、v3需重跑；生产任务集/独立oracle、发布门禁自动消费与真实收益监测仍待",
+      "independent_acceptance_added": false
+    }
+  },
+  "results": {
+    "initial_negative": "12 failed, 2 passed",
+    "focused": "57 passed",
+    "final_new_probes": "15 passed",
+    "fixed_related": "278 passed"
+  },
+  "benchmark_version": "host-bench/3",
+  "owned_validation_scopes_removed": 4,
+  "not_run": [
+    "full backend",
+    "client/TypeScript",
+    "device/APK",
+    "whole-host CPU saturation",
+    "production dataset/providers",
+    "OS security isolation"
+  ],
+  "digest_boundary": "Consistency binding only, not signature/provenance authentication or an independent result oracle",
+  "independent_acceptance_added": false,
+  "foreign_work_preserved": true,
+  "log_sha256_lf": {
+    "extra-tests.txt": "bf520cb4fdc368a2019642e5f7e64d0e3c97582a48f03608f3521fd22706accb",
+    "final-tests.txt": "1b6cb70fe3cd0cb5614e6ad1e216ae512580a5fd7fe181c71bea8449f2c4c7d6",
+    "focused-tests.txt": "500591681f5741859394448e74403fc074bb5b78476b4cc53f65681e4411055e",
+    "negative-tests.txt": "019cc763da6d1b400679171633ee0d2487fab7b127de9b6ce61dbb9bca88219d"
+  }
+}

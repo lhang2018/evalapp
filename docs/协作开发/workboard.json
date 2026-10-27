@@ -4615,6 +4615,15 @@
      "result": "相关109；固定Git两分区合计2315 passed/1 skipped/1 deselected；客户端同子树沿用424非重跑；未做生产/真机或独立接受，未发布",
      "log": ".planning/2026-10-26-proactive-review/committed-evidence.json",
      "delivery": "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md"
+    },
+    {
+     "date": "2026-10-27",
+     "reviewer": "codex-runtime",
+     "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+     "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+     "log": ".planning/2026-10-27-other-review/committed-evidence.json",
+     "scope": "权威任务/目标证据、快照新鲜性比对、去重与既有演化候选登记；本轮无新阻断",
+     "result": "固定相关278通过，非完整接受"
     }
    ],
    "card": "docs/协作开发/任务卡/26-A-能力缺口证据与主动规划候选.md",
@@ -4639,7 +4648,7 @@
    "requirement_refs": [
     "A-59"
    ],
-   "next_step": "5f09fb8修复domain/intent分隔符混合缺口证据；真实候选登记与重复去重通过。固定完整后端2315/1/1；新修复待复核，线上遥测/API/UI/真实预算保留。",
+   "next_step": "本轮固定16模块278通过；线上遥测/API/UI与真实预算、跨进程规划去重仍待；此前5f09fb8补丁独立确认另计；docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
    "working_basis": "以95f3e38aaeae06434edbe6b8d8d832e02640cc61（feature/user-direction HEAD）作为实际接手锚点；基线仍为candidate、prepared_candidate 21899e6 未发布",
    "prerequisites": "仅需仓库与本地测试环境",
    "ownership_history": [
@@ -4659,16 +4668,44 @@
      "previous_reviewer": "zcode-next",
      "reason": "后续负向探针确认旧审查未覆盖的边界缺陷，本次完整修复待固定提交复查",
      "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md"
+    },
+    {
+     "date": "2026-10-27",
+     "previous_technical_review": null,
+     "previous_latest_code_review": {
+      "id": "REVIEW-2026-10-25-DEVELOPED-4",
+      "date": "2026-10-25",
+      "reviewer": "codex-runtime",
+      "fix_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+      "scope": "权威快照复核/独立证据阈值/候选实际登记与去重",
+      "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
+      "status": "fixes_delivered_pending_independent_recheck"
+     },
+     "reason": "其他五卡接续复核，10-E新增v3修复；原审阅历史保留",
+     "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md"
     }
    ],
    "latest_code_review": {
-    "id": "REVIEW-2026-10-25-DEVELOPED-4",
-    "date": "2026-10-25",
+    "id": "REVIEW-2026-10-27-OTHER-5",
+    "date": "2026-10-27",
     "reviewer": "codex-runtime",
-    "fix_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
-    "scope": "权威快照复核/独立证据阈值/候选实际登记与去重",
-    "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
-    "status": "fixes_delivered_pending_independent_recheck"
+    "reviewed_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+    "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+    "scope": "权威任务/目标证据、快照新鲜性比对、去重与既有演化候选登记；本轮无新阻断",
+    "status": "technical_recheck_complete_with_acceptance_gaps"
+   },
+   "technical_review": {
+    "date": "2026-10-27",
+    "reviewer": "codex-runtime",
+    "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+    "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
+    "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+    "evidence": ".planning/2026-10-27-other-review/committed-evidence.json",
+    "scope": "权威任务/目标证据、快照新鲜性比对、去重与既有演化候选登记；本轮无新阻断",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "result": "固定16相关模块278通过；非全量/设备/生产",
+    "remaining_acceptance_gaps": "线上遥测/API/UI与真实预算、跨进程规划去重仍待；此前5f09fb8补丁独立确认另计",
+    "independent_acceptance_added": false
    }
   },
   {
@@ -4787,6 +4824,15 @@
      "result": "公共知识验证、NaN门禁和固定任务比较缺陷已修，原接受重新review；重复/非布尔样本拒绝、不同任务清单unproven。真实运行版本/数据集绑定和LLM质量仍待。 固定相关341过，本轮新修复待另一审阅人复核；不关闭父包。",
      "log": ".planning/2026-10-26-knowledge-review/committed-evidence.json",
      "delivery": "docs/协作开发/验收/2026-10-26-知识持久化与上下文注入复核.md"
+    },
+    {
+     "date": "2026-10-27",
+     "reviewer": "codex-runtime",
+     "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+     "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+     "log": ".planning/2026-10-27-other-review/committed-evidence.json",
+     "scope": "知识验证/撤销/持久化和同专家同逻辑任务质量对照；本轮无新阻断",
+     "result": "固定相关278通过，非完整接受"
     }
    ],
    "card": "docs/协作开发/任务卡/27-A-故障经验沉淀与跨专家迁移验证.md",
@@ -4815,7 +4861,7 @@
     "B-81",
     "B-88"
    ],
-   "next_step": "公共知识验证、NaN门禁和固定任务比较缺陷已修，原接受重新review；重复/非布尔样本拒绝、不同任务清单unproven。真实运行版本/数据集绑定和LLM质量仍待。 固定相关341过，本轮新修复待另一审阅人复核；不关闭父包。",
+   "next_step": "本轮固定16模块278通过；真实运行版本/数据集权威绑定、LLM前后质量和用户/项目可见性相关闭环仍待；旧修复待独立确认；docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
    "delivery": "docs/协作开发/交付/ALN-27-A-故障经验沉淀与跨专家迁移验证.md",
    "working_basis": "2026-10-25 zcode-main 认领开工。base_commit af5e66e 为实际接手锚点（基线仍 candidate，prepared_candidate 21899e6 未发布）。新增独占模块 evoagent/knowledge/（来源/可信度/适用域/版本与撤销 + 注入前适用性门禁 + 跨专家前后对照迁移验证），仅新增文件与测试，不改 controller/api/shared 既有文件。",
    "prerequisites": "仅需仓库与本地测试环境",
@@ -4834,31 +4880,59 @@
      "previous_reviewer": "zcode-next",
      "reason": "负向探针确认质量比较未约束同一任务清单等公共语义缺陷；本轮修复待他人复核",
      "report": "docs/协作开发/验收/2026-10-26-知识持久化与上下文注入复核.md"
+    },
+    {
+     "date": "2026-10-27",
+     "previous_technical_review": null,
+     "previous_latest_code_review": {
+      "id": "REVIEW-2026-10-26-KNOWLEDGE-CONSUMPTION",
+      "date": "2026-10-26",
+      "reviewer": "codex-runtime",
+      "cards": [
+       "ALN-27-A",
+       "ALN-27-C"
+      ],
+      "fixed_cards": [
+       "ALN-27-A",
+       "ALN-27-C"
+      ],
+      "fix_commit": "36d078aad0470a3c54f3abe88e6977bd02d39369",
+      "fix_commits": [
+       "a0de59535b5f8faa7b87ce265fc9dd17e9cd80b6",
+       "36d078aad0470a3c54f3abe88e6977bd02d39369"
+      ],
+      "report": "docs/协作开发/验收/2026-10-26-知识持久化与上下文注入复核.md",
+      "evidence": ".planning/2026-10-26-knowledge-review/committed-evidence.json",
+      "status": "fixes_delivered_pending_independent_recheck",
+      "product_acceptance_added": false,
+      "published_by_review": false,
+      "scope": "知识鲜度/事务/迁移、注入控制和固定任务质量；固定相关341过，非全量/真实LLM/身份隔离接受"
+     },
+     "reason": "其他五卡接续复核，10-E新增v3修复；原审阅历史保留",
+     "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md"
     }
    ],
    "latest_code_review": {
-    "id": "REVIEW-2026-10-26-KNOWLEDGE-CONSUMPTION",
-    "date": "2026-10-26",
+    "id": "REVIEW-2026-10-27-OTHER-5",
+    "date": "2026-10-27",
     "reviewer": "codex-runtime",
-    "cards": [
-     "ALN-27-A",
-     "ALN-27-C"
-    ],
-    "fixed_cards": [
-     "ALN-27-A",
-     "ALN-27-C"
-    ],
-    "fix_commit": "36d078aad0470a3c54f3abe88e6977bd02d39369",
-    "fix_commits": [
-     "a0de59535b5f8faa7b87ce265fc9dd17e9cd80b6",
-     "36d078aad0470a3c54f3abe88e6977bd02d39369"
-    ],
-    "report": "docs/协作开发/验收/2026-10-26-知识持久化与上下文注入复核.md",
-    "evidence": ".planning/2026-10-26-knowledge-review/committed-evidence.json",
-    "status": "fixes_delivered_pending_independent_recheck",
-    "product_acceptance_added": false,
-    "published_by_review": false,
-    "scope": "知识鲜度/事务/迁移、注入控制和固定任务质量；固定相关341过，非全量/真实LLM/身份隔离接受"
+    "reviewed_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+    "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+    "scope": "知识验证/撤销/持久化和同专家同逻辑任务质量对照；本轮无新阻断",
+    "status": "technical_recheck_complete_with_acceptance_gaps"
+   },
+   "technical_review": {
+    "date": "2026-10-27",
+    "reviewer": "codex-runtime",
+    "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+    "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
+    "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+    "evidence": ".planning/2026-10-27-other-review/committed-evidence.json",
+    "scope": "知识验证/撤销/持久化和同专家同逻辑任务质量对照；本轮无新阻断",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "result": "固定16相关模块278通过；非全量/设备/生产",
+    "remaining_acceptance_gaps": "真实运行版本/数据集权威绑定、LLM前后质量和用户/项目可见性相关闭环仍待；旧修复待独立确认",
+    "independent_acceptance_added": false
    }
   },
   {
@@ -4891,6 +4965,15 @@
      "result": "相关109；固定Git两分区合计2315 passed/1 skipped/1 deselected；客户端同子树沿用424非重跑；未做生产/真机或独立接受，未发布",
      "log": ".planning/2026-10-26-proactive-review/committed-evidence.json",
      "delivery": "docs/协作开发/验收/2026-10-26-主动规划与团队标识接续复核.md"
+    },
+    {
+     "date": "2026-10-27",
+     "reviewer": "codex-runtime",
+     "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+     "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+     "log": ".planning/2026-10-27-other-review/committed-evidence.json",
+     "scope": "精确依赖闭包/摘要、可消费状态与IO兼容、组合草稿及版本固定；本轮无新阻断",
+     "result": "固定相关278通过，非完整接受"
     }
    ],
    "card": "docs/协作开发/任务卡/27-B-可组合能力与动态工作流资产.md",
@@ -4908,7 +4991,7 @@
     "A-70",
     "B-85"
    ],
-   "next_step": "固定5f09fb8只读再检：组合/闭包/仓储与版本绑定回归未见新阻断；不自批6ae4b30。本轮未改组合代码，生产执行、动态展开与独立验收仍保留。",
+   "next_step": "本轮固定16模块278通过；生产执行/动态展开与组合收益证据、旧6ae4b30补丁独立确认仍待；docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
    "working_basis": "2026-10-25 zcode-main 认领开工。依赖 26-B(claimed) + 27-A(accepted) 已满足。复用 06-R 精确消费绑定 + 27-A 经验沉淀 + 07-W 工作流匹配，构建可组合能力资产层。",
    "prerequisites": "仅需仓库与本地测试环境",
    "review_history": [
@@ -4918,18 +5001,46 @@
      "previous_reviewer": "zcode-next",
      "reason": "后续负向探针确认旧审查未覆盖的边界缺陷，本次完整修复待固定提交复查",
      "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md"
+    },
+    {
+     "date": "2026-10-27",
+     "previous_technical_review": null,
+     "previous_latest_code_review": {
+      "id": "REVIEW-2026-10-25-DEVELOPED-4",
+      "date": "2026-10-25",
+      "reviewer": "codex-runtime",
+      "fix_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
+      "scope": "真实IO与仓储draft/完整依赖摘要/评测后绑定与升级稳定",
+      "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
+      "status": "fixes_delivered_pending_independent_recheck"
+     },
+     "reason": "其他五卡接续复核，10-E新增v3修复；原审阅历史保留",
+     "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md"
     }
    ],
    "latest_code_review": {
-    "id": "REVIEW-2026-10-25-DEVELOPED-4",
-    "date": "2026-10-25",
+    "id": "REVIEW-2026-10-27-OTHER-5",
+    "date": "2026-10-27",
     "reviewer": "codex-runtime",
-    "fix_commit": "6ae4b30525e30e6f7278953a0c5e8772e4727dcb",
-    "scope": "真实IO与仓储draft/完整依赖摘要/评测后绑定与升级稳定",
-    "report": "docs/协作开发/验收/2026-10-25-第四批主动规划与组合资产审查.md",
-    "status": "fixes_delivered_pending_independent_recheck"
+    "reviewed_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+    "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+    "scope": "精确依赖闭包/摘要、可消费状态与IO兼容、组合草稿及版本固定；本轮无新阻断",
+    "status": "technical_recheck_complete_with_acceptance_gaps"
    },
-   "delivery": "docs/协作开发/交付/ALN-27-B-可组合能力与动态工作流资产.md"
+   "delivery": "docs/协作开发/交付/ALN-27-B-可组合能力与动态工作流资产.md",
+   "technical_review": {
+    "date": "2026-10-27",
+    "reviewer": "codex-runtime",
+    "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+    "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
+    "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+    "evidence": ".planning/2026-10-27-other-review/committed-evidence.json",
+    "scope": "精确依赖闭包/摘要、可消费状态与IO兼容、组合草稿及版本固定；本轮无新阻断",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "result": "固定16相关模块278通过；非全量/设备/生产",
+    "remaining_acceptance_gaps": "生产执行/动态展开与组合收益证据、旧6ae4b30补丁独立确认仍待",
+    "independent_acceptance_added": false
+   }
   },
   {
    "id": "ALN-28-A",
@@ -5935,6 +6046,15 @@
      "result": "已复现rename/replace跨沙箱移动/覆盖合成宿主文件，fde8f89拦截两端路径并拒绝无法核验的描述符修改。目录内移动保留；原接受需重新复核，仍不是OS安全隔离/跨平台完整验收。 固定相关318过，新修复待其他审阅人复核。",
      "log": ".planning/2026-10-26-benchmark-review/committed-evidence.json",
      "delivery": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md"
+    },
+    {
+     "date": "2026-10-27",
+     "reviewer": "codex-runtime",
+     "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+     "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+     "log": ".planning/2026-10-27-other-review/committed-evidence.json",
+     "scope": "真实候选资产/子进程、边界拒绝和持久队列租约fencing；本轮无新阻断",
+     "result": "固定相关278通过，非完整接受"
     }
    ],
    "card": "docs/协作开发/任务卡/09-H-真实候选宿主、持久队列与进程隔离.md",
@@ -5959,7 +6079,7 @@
     "G2",
     "G3"
    ],
-   "next_step": "已复现rename/replace跨沙箱移动/覆盖合成宿主文件，fde8f89拦截两端路径并拒绝无法核验的描述符修改。目录内移动保留；原接受需重新复核，仍不是OS安全隔离/跨平台完整验收。 固定相关318过，新修复待其他审阅人复核。",
+   "next_step": "本轮固定16模块278通过；OS级隔离、跨平台文件描述符、资源/输出内存上限和生产并发仍待；旧fde8f89补丁须独立确认；docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
    "working_basis": "以f7ccfcb936f4ed06dea26b84b44c01805d19dff0（认领时feature/user-direction HEAD）作为接手锚点；最终提交435d12f7bbaeef021299c87bfa6f529feaeaff5f基于会话内他人已提交的 HEAD 之上；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
    "prerequisites": "受控宿主与真实候选制品",
    "delivered_commit": "435d12f7bbaeef021299c87bfa6f529feaeaff5f",
@@ -5979,30 +6099,58 @@
      "previous_reviewer": "zcode-main",
      "reason": "接续负向探针确认原核心边界缺陷；已修复但新代码待其他审阅人复核",
      "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md"
+    },
+    {
+     "date": "2026-10-27",
+     "previous_technical_review": null,
+     "previous_latest_code_review": {
+      "id": "REVIEW-2026-10-26-BENCHMARK-SANDBOX",
+      "date": "2026-10-26",
+      "reviewer": "codex-runtime",
+      "cards": [
+       "ALN-09-H",
+       "ALN-10-E",
+       "ALN-09-I"
+      ],
+      "fixed_cards": [
+       "ALN-09-H",
+       "ALN-10-E",
+       "ALN-09-I"
+      ],
+      "fix_commit": "fde8f899d8af9db6b1e4285b5ff75e83b51d7271",
+      "validation_commit": "85de8e6cb997784e9aaaf27c71f444637956ac38",
+      "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md",
+      "evidence": ".planning/2026-10-26-benchmark-review/committed-evidence.json",
+      "status": "fixes_delivered_pending_independent_recheck",
+      "product_acceptance_added": false,
+      "published_by_review": false,
+      "scope": "六类基准/隔离缺陷修复，固定相关318过；首轮310过/1旧知识断言失败保留；非全量、设备或生产接受"
+     },
+     "reason": "其他五卡接续复核，10-E新增v3修复；原审阅历史保留",
+     "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md"
     }
    ],
    "latest_code_review": {
-    "id": "REVIEW-2026-10-26-BENCHMARK-SANDBOX",
-    "date": "2026-10-26",
+    "id": "REVIEW-2026-10-27-OTHER-5",
+    "date": "2026-10-27",
     "reviewer": "codex-runtime",
-    "cards": [
-     "ALN-09-H",
-     "ALN-10-E",
-     "ALN-09-I"
-    ],
-    "fixed_cards": [
-     "ALN-09-H",
-     "ALN-10-E",
-     "ALN-09-I"
-    ],
-    "fix_commit": "fde8f899d8af9db6b1e4285b5ff75e83b51d7271",
-    "validation_commit": "85de8e6cb997784e9aaaf27c71f444637956ac38",
-    "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md",
-    "evidence": ".planning/2026-10-26-benchmark-review/committed-evidence.json",
-    "status": "fixes_delivered_pending_independent_recheck",
-    "product_acceptance_added": false,
-    "published_by_review": false,
-    "scope": "六类基准/隔离缺陷修复，固定相关318过；首轮310过/1旧知识断言失败保留；非全量、设备或生产接受"
+    "reviewed_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+    "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+    "scope": "真实候选资产/子进程、边界拒绝和持久队列租约fencing；本轮无新阻断",
+    "status": "technical_recheck_complete_with_acceptance_gaps"
+   },
+   "technical_review": {
+    "date": "2026-10-27",
+    "reviewer": "codex-runtime",
+    "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+    "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
+    "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+    "evidence": ".planning/2026-10-27-other-review/committed-evidence.json",
+    "scope": "真实候选资产/子进程、边界拒绝和持久队列租约fencing；本轮无新阻断",
+    "status": "technical_recheck_complete_with_acceptance_gaps",
+    "result": "固定16相关模块278通过；非全量/设备/生产",
+    "remaining_acceptance_gaps": "OS级隔离、跨平台文件描述符、资源/输出内存上限和生产并发仍待；旧fde8f89补丁须独立确认",
+    "independent_acceptance_added": false
    }
   },
   {
@@ -6015,7 +6163,7 @@
    "branch": "feature/user-direction",
    "base_commit": "89accb658a8ce5aa49c7e74d0e45904c2eda6b97",
    "status": "review",
-   "blocker": null,
+   "blocker": "1015f54待独立复核；v2仅历史、v3需重跑；生产任务集/独立oracle、发布门禁自动消费与真实收益监测仍待",
    "evidence": [
     {
      "date": "2026-10-25",
@@ -6042,6 +6190,15 @@
      "result": "必跑崩溃遗漏、非布尔ok、唯一/类型清单、实际超时和发布后监测完整性已修；host-bench/2区分语义。原接受需重新复核，生产分布/独立oracle/发布门禁消费仍待。 固定相关318过，新修复待其他审阅人复核。",
      "log": ".planning/2026-10-26-benchmark-review/committed-evidence.json",
      "delivery": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md"
+    },
+    {
+     "date": "2026-10-27",
+     "reviewer": "codex-runtime",
+     "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+     "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+     "log": ".planning/2026-10-27-other-review/committed-evidence.json",
+     "scope": "真实候选输出末行严格JSON、逐例/政策/timeout摘要绑定、门禁一致性与版本拒绝，1015f54修复",
+     "result": "固定相关278通过，非完整接受"
     }
    ],
    "card": "docs/协作开发/任务卡/10-E-真实候选收益与依赖回归证据.md",
@@ -6071,7 +6228,7 @@
     "B-97",
     "G1"
    ],
-   "next_step": "必跑崩溃遗漏、非布尔ok、唯一/类型清单、实际超时和发布后监测完整性已修；host-bench/2区分语义。原接受需重新复核，生产分布/独立oracle/发布门禁消费仍待。 固定相关318过，新修复待其他审阅人复核。",
+   "next_step": "本轮固定16模块278通过；1015f54待独立复核；v2仅历史、v3需重跑；生产任务集/独立oracle、发布门禁自动消费与真实收益监测仍待；docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
    "working_basis": "以89accb658a8ce5aa49c7e74d0e45904c2eda6b97（认领时feature/user-direction HEAD）作为接手锚点；最终提交8f7625ed31f04ae21ff2bb01aee263baebe1da68；基线仍为candidate、prepared_candidate 21899e6 未发布，不代表已发布共同基线",
    "prerequisites": "代表性基准/对照环境",
    "delivered_commit": "8f7625ed31f04ae21ff2bb01aee263baebe1da68",
@@ -6091,31 +6248,60 @@
      "previous_reviewer": "zcode-next",
      "reason": "接续负向探针确认原核心边界缺陷；已修复但新代码待其他审阅人复核",
      "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md"
+    },
+    {
+     "date": "2026-10-27",
+     "previous_technical_review": null,
+     "previous_latest_code_review": {
+      "id": "REVIEW-2026-10-26-BENCHMARK-SANDBOX",
+      "date": "2026-10-26",
+      "reviewer": "codex-runtime",
+      "cards": [
+       "ALN-09-H",
+       "ALN-10-E",
+       "ALN-09-I"
+      ],
+      "fixed_cards": [
+       "ALN-09-H",
+       "ALN-10-E",
+       "ALN-09-I"
+      ],
+      "fix_commit": "fde8f899d8af9db6b1e4285b5ff75e83b51d7271",
+      "validation_commit": "85de8e6cb997784e9aaaf27c71f444637956ac38",
+      "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md",
+      "evidence": ".planning/2026-10-26-benchmark-review/committed-evidence.json",
+      "status": "fixes_delivered_pending_independent_recheck",
+      "product_acceptance_added": false,
+      "published_by_review": false,
+      "scope": "六类基准/隔离缺陷修复，固定相关318过；首轮310过/1旧知识断言失败保留；非全量、设备或生产接受"
+     },
+     "reason": "其他五卡接续复核，10-E新增v3修复；原审阅历史保留",
+     "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md"
     }
    ],
    "latest_code_review": {
-    "id": "REVIEW-2026-10-26-BENCHMARK-SANDBOX",
-    "date": "2026-10-26",
+    "id": "REVIEW-2026-10-27-OTHER-5",
+    "date": "2026-10-27",
     "reviewer": "codex-runtime",
-    "cards": [
-     "ALN-09-H",
-     "ALN-10-E",
-     "ALN-09-I"
-    ],
-    "fixed_cards": [
-     "ALN-09-H",
-     "ALN-10-E",
-     "ALN-09-I"
-    ],
-    "fix_commit": "fde8f899d8af9db6b1e4285b5ff75e83b51d7271",
-    "validation_commit": "85de8e6cb997784e9aaaf27c71f444637956ac38",
-    "report": "docs/协作开发/验收/2026-10-26-候选基准与隔离文件边界复核.md",
-    "evidence": ".planning/2026-10-26-benchmark-review/committed-evidence.json",
-    "status": "fixes_delivered_pending_independent_recheck",
-    "product_acceptance_added": false,
-    "published_by_review": false,
-    "scope": "六类基准/隔离缺陷修复，固定相关318过；首轮310过/1旧知识断言失败保留；非全量、设备或生产接受"
-   }
+    "reviewed_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+    "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+    "scope": "真实候选输出末行严格JSON、逐例/政策/timeout摘要绑定、门禁一致性与版本拒绝，1015f54修复",
+    "status": "changes_fixed_pending_independent_recheck"
+   },
+   "technical_review": {
+    "date": "2026-10-27",
+    "reviewer": "codex-runtime",
+    "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+    "source_tree": "3418d8d5e56f64362ff739dcbe5358afe0e5f64e",
+    "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+    "evidence": ".planning/2026-10-27-other-review/committed-evidence.json",
+    "scope": "真实候选输出末行严格JSON、逐例/政策/timeout摘要绑定、门禁一致性与版本拒绝，1015f54修复",
+    "status": "changes_fixed_pending_independent_recheck",
+    "result": "固定16相关模块278通过；非全量/设备/生产",
+    "remaining_acceptance_gaps": "1015f54待独立复核；v2仅历史、v3需重跑；生产任务集/独立oracle、发布门禁自动消费与真实收益监测仍待",
+    "independent_acceptance_added": false
+   },
+   "review_verdict": "changes_fixed_pending_independent_recheck"
   },
   {
    "id": "ALN-11-P",
@@ -11886,6 +12072,21 @@
    "independent_review": false,
    "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
    "scope": "18-L/24-F接续缺陷修复；明确指派11项逐卡复核，待独立补丁确认"
+  },
+  {
+   "id": "review-fix-1015f543923b",
+   "title": "fix(benchmark): 严格核验候选输出与证据摘要",
+   "workpackage": "ALN-10",
+   "source_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+   "files": [
+    "evoagent/evaluation/host_bench.py",
+    "tests/test_other_review_20261027.py"
+   ],
+   "status": "source_registered_pending_validation",
+   "candidate_included": false,
+   "independent_review": false,
+   "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+   "scope": "host-bench/3严格输出/语义摘要/门禁输入；278相关，待独立复核"
   }
  ],
  "requirement_batches": [
@@ -12444,6 +12645,28 @@
    "product_acceptance_added": false,
    "published_by_review": false,
    "scope": "明确指定11卡；487/1未选，469客户端/TS；原分工与缺口保留"
+  },
+  {
+   "id": "REVIEW-2026-10-27-OTHER-5",
+   "date": "2026-10-27",
+   "reviewer": "codex-runtime",
+   "cards": [
+    "ALN-26-A",
+    "ALN-27-A",
+    "ALN-27-B",
+    "ALN-09-H",
+    "ALN-10-E"
+   ],
+   "fixed_cards": [
+    "ALN-10-E"
+   ],
+   "fix_commit": "1015f543923b5ac50e106cbf23a7331892965d70",
+   "report": "docs/协作开发/验收/2026-10-27-其余五项与基准证据复核.md",
+   "evidence": ".planning/2026-10-27-other-review/committed-evidence.json",
+   "status": "technical_reviews_complete_fixes_pending_independent_recheck",
+   "product_acceptance_added": false,
+   "published_by_review": false,
+   "scope": "其余五卡接续；278相关，新15探针，host-bench/3；原分工与缺口保留"
   }
  ]
 }
