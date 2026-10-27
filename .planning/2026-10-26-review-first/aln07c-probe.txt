@@ -1,0 +1,6 @@
+PASS RG-01 只读工具不作为副作用声明
+PASS RG-02 门禁活动登记受清理保护
+PASS RG-03 SUSPENDED→RECOVERING 合法边
+PASS 裁决先随状态提交再发事件(33c22a1)
+PASS SUSPENDED 转移表含 RECOVERING
+ALL_PASS
