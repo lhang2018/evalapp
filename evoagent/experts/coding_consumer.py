@@ -135,6 +135,57 @@ class CodingExpertConsumer:
                 "disk_changes": self._diff(before, after),
                 "note": "仅装配既有精确版本编码包；未安装外部依赖/未提交代码"}
 
+    def reinstall(self, project_root: str, *, expected_version: str,
+                  actor: str, reason: str, installer=None) -> Dict[str, Any]:
+        """原子升级/重装：失败保留原版本，不留下半装状态（ALN-18-H 缺口）。
+
+        ``installer`` 可注入（默认 ``install_coding_pack``），用于构造升级
+        失败/半写入场景；成功才替换该根的注册表与版本记录。
+        """
+        root = self._root(project_root)
+        if not isinstance(expected_version, str) or not expected_version:
+            raise CodingConsumerError("expected_version 不得为空")
+        if expected_version != CODING_PACK.version:
+            raise CodingConsumerRefused(
+                f"编码包版本不符：请求 {expected_version}，实际 {CODING_PACK.version}")
+        if not isinstance(actor, str) or not actor.strip() or \
+                not isinstance(reason, str) or not reason.strip():
+            raise CodingConsumerError("升级/重装必须记录 actor 与 reason")
+        previous = self._roots.get(root)
+        if previous is None:
+            raise CodingConsumerError("项目根未安装，无法升级/重装")
+
+        registry = self._registry_factory()
+        registry.permissions = self.permissions
+        before = _hash_tree(root)
+        try:
+            manifest = (installer or install_coding_pack)(registry, root)
+        except BaseException as exc:  # noqa: BLE001 —— 升级失败必须保留原版本
+            self._roots[root] = previous          # 显式恢复，不留下半装条目
+            after = _hash_tree(root)
+            return {"ok": False, "rolled_back": True,
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "root": root,
+                    "previous_version": previous["version"],
+                    "restored_version": previous["version"],
+                    "disk_changes": self._diff(before, after),
+                    "recheck": self._recheck(previous, root),
+                    "note": "升级失败保留原版本与注册表；无半装状态、未提交代码"}
+        entry = {"root": root, "registry": registry,
+                 "version": manifest.version, "pack_id": manifest.pack_id,
+                 "tool_ids": tuple(manifest.tool_ids),
+                 "installed_at": self.clock(), "actor": actor,
+                 "reason": reason}
+        self._roots[root] = entry
+        after = _hash_tree(root)
+        return {"ok": True, "rolled_back": False,
+                "previous_version": previous["version"],
+                "version": entry["version"], "pack_id": entry["pack_id"],
+                "tool_ids": list(entry["tool_ids"]),
+                "installed_at": entry["installed_at"],
+                "disk_changes": self._diff(before, after),
+                "note": "升级已原子替换；仅装配既有精确版本编码包"}
+
     def _recheck(self, entry: Dict[str, Any], root: str) -> Dict[str, Any]:
         result = entry["registry"].execute(
             "coding_syntax_check", {"targets": ["."]},
