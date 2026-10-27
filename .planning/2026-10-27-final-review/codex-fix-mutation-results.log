@@ -1,0 +1,37 @@
+======================================================================
+终审独立复核：codex 自写修复的变异判别力检验
+ROOT=C:\Users\lhang\AppData\Local\Temp\fin-fixed
+起点=2026-10-27T10:33:15
+======================================================================
+
+[基线] 修复后跑 codex 自带相关测试 → exit=0 （期望 0）
+
+[V1-AS01-恢复500行窗口截断] 回退修复 → 跑其自带测试 exit=1 → 捕获 ✓
+    目标: evoagent/goals/scheduler.py
+    理由: AS-01：primary_load 不得只读最近 500 条（终态记录会遮住旧 RUNNING 任务）
+
+[V2-AS02-恢复sync的1000目标窗口] 回退修复 → 跑其自带测试 exit=1 → 捕获 ✓
+    目标: evoagent/goals/scheduler.py
+    理由: AS-02：sync 必须扫描完整非终态目标集合，不得用 UI 列表窗口
+
+[V3-AS03-放开SchedulerPolicy的有限正数校验] 回退修复 → 跑其自带测试 exit=1 → 捕获 ✓
+    目标: evoagent/goals/scheduler.py
+    理由: AS-03：SchedulerPolicy 必须拒绝 Inf/布尔/非正数
+
+[V4-AS04-API恢复float(now)布尔旁路] 回退修复 → 跑其自带测试 exit=1 → 捕获 ✓
+    目标: evoagent/api/goals_api.py
+    理由: AS-04：API 不得把布尔/坏字符串静默转成时间
+
+[V5-AS05-移除调度器的主动准入检查] 回退修复 → 跑其自带测试 exit=1 → 捕获 ✓
+    目标: evoagent/goals/scheduler.py
+    理由: AS-05：调度派发前必须消费 may_start 主动准入（关闭/高压不得派发）
+
+[V6-AS05-移除App的proactivity注入] 回退修复 → 跑其自带测试 exit=1 → 捕获 ✓
+    目标: evoagent/app.py
+    理由: AS-05：App 必须把同一个 ProactivityGovernor 注入 GoalScheduler
+
+[复原校验] 全部变异回退后重跑 → exit=0 （期望 0）
+======================================================================
+结论：捕获 6 / 存活 0 / 锚点未命中 0 （共 6 个变异体）
+存活含义：codex 的该修复缺乏测试判别力 → 该项不可视为已验证
+======================================================================

@@ -106,6 +106,38 @@ def test_invalid_chunk_params_are_400(api):
         assert status == 400, query
 
 
+def test_oversized_limit_is_clamped_to_max_chunk(api):
+    """终审补证：超出 MAX_CHUNK_BYTES 的 limit 必须被钳制，不得原样生效。
+
+    没有这条断言时，导出上限只是一段无人守护的死代码——重构可静默移除。
+    断言放在参数解析层：HTTP 层的 chunk_bytes 恒为文件实际大小（夹具仅数 KB），
+    无法区分"已钳制"与"未钳制"，故直接检验 _chunk_params 的钳制结果。
+    """
+    from evoagent.api.evidence_api import MAX_CHUNK_BYTES, _chunk_params
+
+    class _Ctx:
+        def __init__(self, query):
+            self.query = query
+
+        def json(self, code, body):  # 正常路径不应触发
+            raise AssertionError(f"不应返回错误：{code} {body}")
+
+    offset, limit, error = _chunk_params(_Ctx({"limit": "999999999"}))
+    assert error is None
+    assert offset == 0
+    assert limit == MAX_CHUNK_BYTES
+
+    # 边界：恰好等于上限不被改写
+    offset2, limit2, error2 = _chunk_params(_Ctx({"limit": str(MAX_CHUNK_BYTES)}))
+    assert error2 is None
+    assert limit2 == MAX_CHUNK_BYTES
+
+    # 小于上限时原样通过
+    offset3, limit3, error3 = _chunk_params(_Ctx({"limit": "1024"}))
+    assert error3 is None
+    assert limit3 == 1024
+
+
 def test_cleanup_dry_run_then_execute(api):
     app, task_id, base = api
     exported = _export(api)

@@ -1,0 +1,24 @@
+======================================================================
+终审独立复核第二批：codex 之后新增修复的判别力检验
+ROOT=C:\Users\lhang\AppData\Local\Temp\fin-head
+起点=2026-10-27T10:43:20
+======================================================================
+
+[基线] tests/test_artifacts_api.py → exit=0 （期望 0）
+
+[基线] tests/test_evidence_exports_chunk.py → exit=0 （期望 0）
+
+[基线] tests/test_coding_expert_consumer_upgrade.py → exit=0 （期望 0）
+
+[P1-30B-移除下载大小上限拒绝] 回退 → tests/test_artifacts_api.py exit=1 → 捕获 ✓
+    理由: 下载超过 32MB 上限必须被拒
+
+[P2-16Q-移除limit上限钳制] 回退 → tests/test_evidence_exports_chunk.py exit=1 → 捕获 ✓
+    理由: 导出 limit 必须被钳制到 MAX_CHUNK_BYTES（防超大导出）
+
+[P3-16Q-移除非法offset/limit拒绝] 回退 → tests/test_evidence_exports_chunk.py exit=1 → 捕获 ✓
+    理由: 负 offset / 非正 limit 必须返回 400
+
+[复原校验] 全部回退后复跑 → 全绿 ✓
+结论：捕获 3 / 存活 0 / 锚点未命中 0
+======================================================================

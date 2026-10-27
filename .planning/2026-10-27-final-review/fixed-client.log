@@ -1,0 +1,885 @@
+
+> evoagent-mobile@0.1.0 test:offline
+> node --test "test/offline/*.test.ts" "test/device/*.test.ts" "test/update/*.test.ts"
+
+TAP version 13
+# (node:32720) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fin-fixed/android-app/test/device/broker.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\fin-fixed\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: high-risk actions require independent confirmation
+ok 1 - high-risk actions require independent confirmation
+  ---
+  duration_ms: 4.001
+  type: 'test'
+  ...
+# Subtest: confirmed high-risk action executes and records evidence
+ok 2 - confirmed high-risk action executes and records evidence
+  ---
+  duration_ms: 1.7919
+  type: 'test'
+  ...
+# Subtest: transport errors become failed rather than throwing
+ok 3 - transport errors become failed rather than throwing
+  ---
+  duration_ms: 0.7424
+  type: 'test'
+  ...
+# Subtest: verified results without evidence are downgraded to unverified
+ok 4 - verified results without evidence are downgraded to unverified
+  ---
+  duration_ms: 0.4706
+  type: 'test'
+  ...
+# Subtest: repeating an action_id never replays the device action
+ok 5 - repeating an action_id never replays the device action
+  ---
+  duration_ms: 0.7094
+  type: 'test'
+  ...
+# Subtest: dispatched-but-unverified actions are not replayed
+ok 6 - dispatched-but-unverified actions are not replayed
+  ---
+  duration_ms: 0.5754
+  type: 'test'
+  ...
+# Subtest: missing native module reports unavailable without crashing
+ok 7 - missing native module reports unavailable without crashing
+  ---
+  duration_ms: 0.6111
+  type: 'test'
+  ...
+# Subtest: click results are verified only when the UI actually changed
+ok 8 - click results are verified only when the UI actually changed
+  ---
+  duration_ms: 2.2406
+  type: 'test'
+  ...
+# Subtest: permission dialogs downgrade otherwise successful clicks
+ok 9 - permission dialogs downgrade otherwise successful clicks
+  ---
+  duration_ms: 1.0057
+  type: 'test'
+  ...
+# Subtest: consecutive unverified actions trigger a safety stop until resumed
+ok 10 - consecutive unverified actions trigger a safety stop until resumed
+  ---
+  duration_ms: 1.6818
+  type: 'test'
+  ...
+# Subtest: verified actions reset the consecutive failure counter
+ok 11 - verified actions reset the consecutive failure counter
+  ---
+  duration_ms: 1.4319
+  type: 'test'
+  ...
+# Subtest: native transport passes through evidence and failure messages
+ok 12 - native transport passes through evidence and failure messages
+  ---
+  duration_ms: 0.6193
+  type: 'test'
+  ...
+# (node:32160) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fin-fixed/android-app/test/device/failureMatrix.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\fin-fixed\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 矩阵覆盖任务卡要求的全部故障类别
+ok 13 - 矩阵覆盖任务卡要求的全部故障类别
+  ---
+  duration_ms: 1.8706
+  type: 'test'
+  ...
+# Subtest: 每个条目六要素齐备：可见状态/降级/重试/停止/对账/设备动作规则
+ok 14 - 每个条目六要素齐备：可见状态/降级/重试/停止/对账/设备动作规则
+  ---
+  duration_ms: 0.3718
+  type: 'test'
+  ...
+# Subtest: 服务端不可达/断网：退避重试 + 死信不静默丢弃 + 幂等对账
+ok 15 - 服务端不可达/断网：退避重试 + 死信不静默丢弃 + 幂等对账
+  ---
+  duration_ms: 0.4078
+  type: 'test'
+  ...
+# Subtest: 模型故障：预算约束 + 不本地伪造结果 + 未知计费对账
+ok 16 - 模型故障：预算约束 + 不本地伪造结果 + 未知计费对账
+  ---
+  duration_ms: 0.3325
+  type: 'test'
+  ...
+# Subtest: 进程被杀/重启：持久化恢复 + NEEDS_RECONCILE + 未验证动作不重放
+ok 17 - 进程被杀/重启：持久化恢复 + NEEDS_RECONCILE + 未验证动作不重放
+  ---
+  duration_ms: 0.2816
+  type: 'test'
+  ...
+# Subtest: 同步冲突：隔离区 + 人工处理 + 失联不当作未执行
+ok 18 - 同步冲突：隔离区 + 人工处理 + 失联不当作未执行
+  ---
+  duration_ms: 0.209
+  type: 'test'
+  ...
+# Subtest: 资源与权限：低电量推迟、低空间 critical 永不清理、无障碍不自动重试
+ok 19 - 资源与权限：低电量推迟、低空间 critical 永不清理、无障碍不自动重试
+  ---
+  duration_ms: 0.4575
+  type: 'test'
+  ...
+# Subtest: 全矩阵设备动作规则一致：未知副作用永不自动重放
+ok 20 - 全矩阵设备动作规则一致：未知副作用永不自动重放
+  ---
+  duration_ms: 0.3377
+  type: 'test'
+  ...
+# Subtest: 查询入口：已知类别返回对应条目，未知类别按服务端不可达降级
+ok 21 - 查询入口：已知类别返回对应条目，未知类别按服务端不可达降级
+  ---
+  duration_ms: 0.497
+  type: 'test'
+  ...
+# (node:31908) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fin-fixed/android-app/test/device/mainchainReview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\fin-fixed\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: confirmation callback cannot rewrite the action identity or nested parameters
+ok 22 - confirmation callback cannot rewrite the action identity or nested parameters
+  ---
+  duration_ms: 4.809
+  type: 'test'
+  ...
+# Subtest: non-boolean confirmation "false" cannot authorize execution
+ok 23 - non-boolean confirmation "false" cannot authorize execution
+  ---
+  duration_ms: 1.6698
+  type: 'test'
+  ...
+# Subtest: non-boolean confirmation "true" cannot authorize execution
+ok 24 - non-boolean confirmation "true" cannot authorize execution
+  ---
+  duration_ms: 0.3717
+  type: 'test'
+  ...
+# Subtest: non-boolean confirmation 1 cannot authorize execution
+ok 25 - non-boolean confirmation 1 cannot authorize execution
+  ---
+  duration_ms: 0.4366
+  type: 'test'
+  ...
+# Subtest: non-boolean confirmation {} cannot authorize execution
+ok 26 - non-boolean confirmation {} cannot authorize execution
+  ---
+  duration_ms: 0.3046
+  type: 'test'
+  ...
+# Subtest: safety stop prevents dispatch after waiting on availability
+ok 27 - safety stop prevents dispatch after waiting on availability
+  ---
+  duration_ms: 1.5727
+  type: 'test'
+  ...
+# Subtest: safety stop prevents dispatch after waiting on confirmation
+ok 28 - safety stop prevents dispatch after waiting on confirmation
+  ---
+  duration_ms: 0.9375
+  type: 'test'
+  ...
+# Subtest: native truthy ok "false" is not verified success
+ok 29 - native truthy ok "false" is not verified success
+  ---
+  duration_ms: 1.1898
+  type: 'test'
+  ...
+# Subtest: native truthy ok "true" is not verified success
+ok 30 - native truthy ok "true" is not verified success
+  ---
+  duration_ms: 0.5606
+  type: 'test'
+  ...
+# Subtest: native truthy ok 1 is not verified success
+ok 31 - native truthy ok 1 is not verified success
+  ---
+  duration_ms: 0.6632
+  type: 'test'
+  ...
+# Subtest: native truthy ok {} is not verified success
+ok 32 - native truthy ok {} is not verified success
+  ---
+  duration_ms: 0.2772
+  type: 'test'
+  ...
+# Subtest: native service availability must be literal true before dispatch
+ok 33 - native service availability must be literal true before dispatch
+  ---
+  duration_ms: 1.2759
+  type: 'test'
+  ...
+# (node:31760) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fin-fixed/android-app/test/device/notificationRecovery.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\fin-fixed\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 没有标记存储时保持旧语义：同步已先行完成不补发
+ok 34 - 没有标记存储时保持旧语义：同步已先行完成不补发
+  ---
+  duration_ms: 1.7062
+  type: 'test'
+  ...
+# Subtest: 同步已先行完成时用持久化标记补发一次且不重复
+ok 35 - 同步已先行完成时用持久化标记补发一次且不重复
+  ---
+  duration_ms: 1.6935
+  type: 'test'
+  ...
+# Subtest: 本次跃迁仍会投递并写入标记（不因标记路径重复）
+ok 36 - 本次跃迁仍会投递并写入标记（不因标记路径重复）
+  ---
+  duration_ms: 0.4332
+  type: 'test'
+  ...
+# Subtest: 投递失败不写标记，下次 run 重试
+ok 37 - 投递失败不写标记，下次 run 重试
+  ---
+  duration_ms: 0.6792
+  type: 'test'
+  ...
+# Subtest: 标记读取失败时退化为跃迁判断且不崩溃
+ok 38 - 标记读取失败时退化为跃迁判断且不崩溃
+  ---
+  duration_ms: 0.5853
+  type: 'test'
+  ...
+# Subtest: 已有持久标记会抑制陈旧快照中的重复跃迁
+ok 39 - 已有持久标记会抑制陈旧快照中的重复跃迁
+  ---
+  duration_ms: 0.3334
+  type: 'test'
+  ...
+# Subtest: 首次初始化只基线化历史终态，后续新终态仍会通知
+ok 40 - 首次初始化只基线化历史终态，后续新终态仍会通知
+  ---
+  duration_ms: 0.6057
+  type: 'test'
+  ...
+# Subtest: 并发通知器共享串行门禁，不会同时穿过标记检查
+ok 41 - 并发通知器共享串行门禁，不会同时穿过标记检查
+  ---
+  duration_ms: 2.4707
+  type: 'test'
+  ...
+# Subtest: 无标记存储时 initializeExisting 是安全空操作
+ok 42 - 无标记存储时 initializeExisting 是安全空操作
+  ---
+  duration_ms: 0.5666
+  type: 'test'
+  ...
+# Subtest: initializeExisting 幂等：基线就绪后不再重复写标记
+ok 43 - initializeExisting 幂等：基线就绪后不再重复写标记
+  ---
+  duration_ms: 0.7172
+  type: 'test'
+  ...
+# Subtest: 基线写失败不抛错且保持未就绪，恢复后补发可用
+ok 44 - 基线写失败不抛错且保持未就绪，恢复后补发可用
+  ---
+  duration_ms: 0.4927
+  type: 'test'
+  ...
+# Subtest: 基线读取失败时补发被禁用但不崩溃
+ok 45 - 基线读取失败时补发被禁用但不崩溃
+  ---
+  duration_ms: 0.2454
+  type: 'test'
+  ...
+# Subtest: 任务标记读取失败但基线就绪时仍按跃迁投递
+ok 46 - 任务标记读取失败但基线就绪时仍按跃迁投递
+  ---
+  duration_ms: 0.4183
+  type: 'test'
+  ...
+# Subtest: 基线读取暂时失败不得把待补发任务误写为历史已通知
+ok 47 - 基线读取暂时失败不得把待补发任务误写为历史已通知
+  ---
+  duration_ms: 0.2779
+  type: 'test'
+  ...
+# Subtest: 系统拒绝投递不写标记，下一通知器仍可补发
+ok 48 - 系统拒绝投递不写标记，下一通知器仍可补发
+  ---
+  duration_ms: 0.3153
+  type: 'test'
+  ...
+# Subtest: 系统接受后标记写失败允许重试，不能宣称恰好一次
+ok 49 - 系统接受后标记写失败允许重试，不能宣称恰好一次
+  ---
+  duration_ms: 0.3771
+  type: 'test'
+  ...
+# (node:31772) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fin-fixed/android-app/test/device/notificationReview.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\fin-fixed\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: native false is not an accepted notification post
+ok 50 - native false is not an accepted notification post
+  ---
+  duration_ms: 2.3267
+  type: 'test'
+  ...
+# Subtest: native undefined is not an accepted notification post
+ok 51 - native undefined is not an accepted notification post
+  ---
+  duration_ms: 0.2798
+  type: 'test'
+  ...
+# Subtest: native null is not an accepted notification post
+ok 52 - native null is not an accepted notification post
+  ---
+  duration_ms: 0.1988
+  type: 'test'
+  ...
+# Subtest: native "true" is not an accepted notification post
+ok 53 - native "true" is not an accepted notification post
+  ---
+  duration_ms: 0.1782
+  type: 'test'
+  ...
+# Subtest: native {"ok":true} is not an accepted notification post
+ok 54 - native {"ok":true} is not an accepted notification post
+  ---
+  duration_ms: 0.2883
+  type: 'test'
+  ...
+# Subtest: accepted and refused native posts are counted separately
+ok 55 - accepted and refused native posts are counted separately
+  ---
+  duration_ms: 0.3838
+  type: 'test'
+  ...
+# Subtest: FAILED without failure text cannot be reported as success
+ok 56 - FAILED without failure text cannot be reported as success
+  ---
+  duration_ms: 0.168
+  type: 'test'
+  ...
+# Subtest: CANCELLED with or without a reason is a cancellation notification
+ok 57 - CANCELLED with or without a reason is a cancellation notification
+  ---
+  duration_ms: 0.1822
+  type: 'test'
+  ...
+# Subtest: SUCCEEDED is not overridden by an old failure reason
+ok 58 - SUCCEEDED is not overridden by an old failure reason
+  ---
+  duration_ms: 0.3887
+  type: 'test'
+  ...
+# Subtest: nonterminal or unknown server status cannot produce a terminal notification
+ok 59 - nonterminal or unknown server status cannot produce a terminal notification
+  ---
+  duration_ms: 0.8606
+  type: 'test'
+  ...
+# (node:31460) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fin-fixed/android-app/test/device/notifications.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\fin-fixed\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: notification id is stable, positive, and task-specific
+ok 60 - notification id is stable, positive, and task-specific
+  ---
+  duration_ms: 1.5417
+  type: 'test'
+  ...
+# Subtest: non-terminal tasks produce no notification
+ok 61 - non-terminal tasks produce no notification
+  ---
+  duration_ms: 0.3138
+  type: 'test'
+  ...
+# Subtest: terminal task uses result, failure reason, or goal as body
+ok 62 - terminal task uses result, failure reason, or goal as body
+  ---
+  duration_ms: 0.375
+  type: 'test'
+  ...
+# Subtest: notification body collapses whitespace and truncates
+ok 63 - notification body collapses whitespace and truncates
+  ---
+  duration_ms: 0.1962
+  type: 'test'
+  ...
+# Subtest: only transitions into DONE are selected
+ok 64 - only transitions into DONE are selected
+  ---
+  duration_ms: 1.5773
+  type: 'test'
+  ...
+# Subtest: transitions are delivered once each with the stable id
+ok 65 - transitions are delivered once each with the stable id
+  ---
+  duration_ms: 1.0185
+  type: 'test'
+  ...
+# Subtest: missing native module degrades to a no-op
+ok 66 - missing native module degrades to a no-op
+  ---
+  duration_ms: 0.3818
+  type: 'test'
+  ...
+# Subtest: notification failure never breaks the sync path
+ok 67 - notification failure never breaks the sync path
+  ---
+  duration_ms: 0.3312
+  type: 'test'
+  ...
+# (node:4564) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fin-fixed/android-app/test/device/observation.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\fin-fixed\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: identical snapshots do not verify an action
+ok 68 - identical snapshots do not verify an action
+  ---
+  duration_ms: 2.4494
+  type: 'test'
+  ...
+# Subtest: new text after the action verifies it
+ok 69 - new text after the action verifies it
+  ---
+  duration_ms: 1.3969
+  type: 'test'
+  ...
+# Subtest: package switch verifies launch
+ok 70 - package switch verifies launch
+  ---
+  duration_ms: 0.3252
+  type: 'test'
+  ...
+# Subtest: expected text absent is reported as unverified
+ok 71 - expected text absent is reported as unverified
+  ---
+  duration_ms: 0.2451
+  type: 'test'
+  ...
+# Subtest: permission dialog package is recognized and blocks verification
+ok 72 - permission dialog package is recognized and blocks verification
+  ---
+  duration_ms: 0.5262
+  type: 'test'
+  ...
+# Subtest: permission dialog by keywords requires allow, deny and permission word
+ok 73 - permission dialog by keywords requires allow, deny and permission word
+  ---
+  duration_ms: 0.5181
+  type: 'test'
+  ...
+# Subtest: missing snapshots never verify
+ok 74 - missing snapshots never verify
+  ---
+  duration_ms: 0.1982
+  type: 'test'
+  ...
+# Subtest: native snapshots are normalized with limits and empty input rejected
+ok 75 - native snapshots are normalized with limits and empty input rejected
+  ---
+  duration_ms: 0.5052
+  type: 'test'
+  ...
+# (node:32520) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fin-fixed/android-app/test/device/peerTaskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\fin-fixed\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: two ledger instances sharing durable storage claim an action only once
+ok 76 - two ledger instances sharing durable storage claim an action only once
+  ---
+  duration_ms: 7.2172
+  type: 'test'
+  ...
+# Subtest: cached action id cannot be reused with a different task_id
+ok 77 - cached action id cannot be reused with a different task_id
+  ---
+  duration_ms: 3.273
+  type: 'test'
+  ...
+# Subtest: cached action id cannot be reused with a different run_id
+ok 78 - cached action id cannot be reused with a different run_id
+  ---
+  duration_ms: 8.0591
+  type: 'test'
+  ...
+# Subtest: cached action id cannot be reused with a different effect_id
+ok 79 - cached action id cannot be reused with a different effect_id
+  ---
+  duration_ms: 1.4321
+  type: 'test'
+  ...
+# Subtest: cached action id cannot be reused with a different target
+ok 80 - cached action id cannot be reused with a different target
+  ---
+  duration_ms: 1.5601
+  type: 'test'
+  ...
+# Subtest: proposal owns nested input snapshots
+ok 81 - proposal owns nested input snapshots
+  ---
+  duration_ms: 0.2957
+  type: 'test'
+  ...
+# Subtest: retention does not make an already dispatched action executable again after restart
+ok 82 - retention does not make an already dispatched action executable again after restart
+  ---
+  duration_ms: 2.4995
+  type: 'test'
+  ...
+# Subtest: pending proposal is not evicted to permit replay
+ok 83 - pending proposal is not evicted to permit replay
+  ---
+  duration_ms: 0.8789
+  type: 'test'
+  ...
+# Subtest: invalid persisted ledger is rejected rather than becoming an empty execution history
+ok 84 - invalid persisted ledger is rejected rather than becoming an empty execution history
+  ---
+  duration_ms: 0.7667
+  type: 'test'
+  ...
+# Subtest: missing broker journal after dispatch remains unknown
+ok 85 - missing broker journal after dispatch remains unknown
+  ---
+  duration_ms: 1.0475
+  type: 'test'
+  ...
+# Subtest: journal receipt cannot refer to another action
+ok 86 - journal receipt cannot refer to another action
+  ---
+  duration_ms: 0.3975
+  type: 'test'
+  ...
+# Subtest: upload never contains expected screen text or recipient targets
+ok 87 - upload never contains expected screen text or recipient targets
+  ---
+  duration_ms: 0.3293
+  type: 'test'
+  ...
+# Subtest: explicit low risk cannot downgrade a known high risk device operation
+ok 88 - explicit low risk cannot downgrade a known high risk device operation
+  ---
+  duration_ms: 0.4272
+  type: 'test'
+  ...
+# Subtest: raw broker concurrent duplicates cannot both dispatch
+ok 89 - raw broker concurrent duplicates cannot both dispatch
+  ---
+  duration_ms: 2.3325
+  type: 'test'
+  ...
+# Subtest: raw broker never returns another task's cached action receipt
+ok 90 - raw broker never returns another task's cached action receipt
+  ---
+  duration_ms: 0.5084
+  type: 'test'
+  ...
+# (node:32136) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fin-fixed/android-app/test/device/resourceSampler.review.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\fin-fixed\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: CPU不可用不冒称低压力: undefined
+ok 91 - CPU不可用不冒称低压力: undefined
+  ---
+  duration_ms: 1.5299
+  type: 'test'
+  ...
+# Subtest: CPU不可用不冒称低压力: null
+ok 92 - CPU不可用不冒称低压力: null
+  ---
+  duration_ms: 0.2617
+  type: 'test'
+  ...
+# Subtest: CPU不可用不冒称低压力: NaN
+ok 93 - CPU不可用不冒称低压力: NaN
+  ---
+  duration_ms: 0.1363
+  type: 'test'
+  ...
+# Subtest: CPU不可用不冒称低压力: Infinity
+ok 94 - CPU不可用不冒称低压力: Infinity
+  ---
+  duration_ms: 0.1064
+  type: 'test'
+  ...
+# Subtest: CPU不可用不冒称低压力: -1
+ok 95 - CPU不可用不冒称低压力: -1
+  ---
+  duration_ms: 0.2249
+  type: 'test'
+  ...
+# Subtest: CPU不可用不冒称低压力: 2
+ok 96 - CPU不可用不冒称低压力: 2
+  ---
+  duration_ms: 0.1055
+  type: 'test'
+  ...
+# Subtest: 无效时钟不放行: NaN
+ok 97 - 无效时钟不放行: NaN
+  ---
+  duration_ms: 0.2285
+  type: 'test'
+  ...
+# Subtest: 无效时钟不放行: Infinity
+ok 98 - 无效时钟不放行: Infinity
+  ---
+  duration_ms: 0.105
+  type: 'test'
+  ...
+# Subtest: 无效时钟不放行: -Infinity
+ok 99 - 无效时钟不放行: -Infinity
+  ---
+  duration_ms: 0.366
+  type: 'test'
+  ...
+# Subtest: 无效时钟不放行: 0
+ok 100 - 无效时钟不放行: 0
+  ---
+  duration_ms: 0.4454
+  type: 'test'
+  ...
+# Subtest: 未来时间不通过钳制年龄冒充新鲜采样
+ok 101 - 未来时间不通过钳制年龄冒充新鲜采样
+  ---
+  duration_ms: 0.326
+  type: 'test'
+  ...
+# Subtest: 导出的判定不信任伪造valid标记与NaN压力
+ok 102 - 导出的判定不信任伪造valid标记与NaN压力
+  ---
+  duration_ms: 0.1819
+  type: 'test'
+  ...
+# (node:29692) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fin-fixed/android-app/test/device/resourceSampler.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\fin-fixed\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 合法采样保留来源/单位/时间与各项分数
+ok 103 - 合法采样保留来源/单位/时间与各项分数
+  ---
+  duration_ms: 2.0277
+  type: 'test'
+  ...
+# Subtest: 原生不可用/缺失内存/缺少采样时间均判不可用，不伪造低压力
+ok 104 - 原生不可用/缺失内存/缺少采样时间均判不可用，不伪造低压力
+  ---
+  duration_ms: 0.3086
+  type: 'test'
+  ...
+# Subtest: 过期采样判 stale，不按旧值放行
+ok 105 - 过期采样判 stale，不按旧值放行
+  ---
+  duration_ms: 0.2916
+  type: 'test'
+  ...
+# Subtest: 非法分数/非法 maxAge 判不可用
+ok 106 - 非法分数/非法 maxAge 判不可用
+  ---
+  duration_ms: 0.1417
+  type: 'test'
+  ...
+# Subtest: 缺失 CPU 的部分采样不作为后台低压力依据
+ok 107 - 缺失 CPU 的部分采样不作为后台低压力依据
+  ---
+  duration_ms: 0.2243
+  type: 'test'
+  ...
+# Subtest: 调用方必须提供 highWater；缺失/非法即拒绝（不内置阈值权威）
+ok 108 - 调用方必须提供 highWater；缺失/非法即拒绝（不内置阈值权威）
+  ---
+  duration_ms: 0.1385
+  type: 'test'
+  ...
+# Subtest: 高压拒绝后台、低压放行，判定不影响前台
+ok 109 - 高压拒绝后台、低压放行，判定不影响前台
+  ---
+  duration_ms: 0.2885
+  type: 'test'
+  ...
+# (node:31336) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fin-fixed/android-app/test/device/taskGaps.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\fin-fixed\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 缺口1：DeviceAction/ActionJournalEntry 无 task_id/run_id/effect_id 关联
+ok 110 - 缺口1：DeviceAction/ActionJournalEntry 无 task_id/run_id/effect_id 关联
+  ---
+  duration_ms: 5.6678
+  type: 'test'
+  ...
+# Subtest: 缺口2：broker 幂等日志不持久化——重启后同 action_id 会重复下发
+ok 111 - 缺口2：broker 幂等日志不持久化——重启后同 action_id 会重复下发
+  ---
+  duration_ms: 1.0083
+  type: 'test'
+  ...
+# Subtest: 缺口3：无统一 effect 引用与回执投影——任务侧拿不到可上传的回执
+ok 112 - 缺口3：无统一 effect 引用与回执投影——任务侧拿不到可上传的回执
+  ---
+  duration_ms: 2.376
+  type: 'test'
+  ...
+# (node:13260) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fin-fixed/android-app/test/device/taskProtocol.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\fin-fixed\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 缺口证明：任务链路引用随动作进入 broker 日志（task→action→effect 可追溯）
+ok 113 - 缺口证明：任务链路引用随动作进入 broker 日志（task→action→effect 可追溯）
+  ---
+  duration_ms: 5.8324
+  type: 'test'
+  ...
+# Subtest: createProposal：引用完整且稳定，run_id 缺省派生自任务，风险按 broker 同表推导
+ok 114 - createProposal：引用完整且稳定，run_id 缺省派生自任务，风险按 broker 同表推导
+  ---
+  duration_ms: 0.9943
+  type: 'test'
+  ...
+# Subtest: proposalToAction：预期观察映射 expect_text，引用随动作下发
+ok 115 - proposalToAction：预期观察映射 expect_text，引用随动作下发
+  ---
+  duration_ms: 0.4368
+  type: 'test'
+  ...
+# Subtest: 执行成功：回执终态 verified、证据与时间戳齐备，任务链可查
+ok 116 - 执行成功：回执终态 verified、证据与时间戳齐备，任务链可查
+  ---
+  duration_ms: 1.2185
+  type: 'test'
+  ...
+# Subtest: 同一 action_id 重放：返回原回执，不重复下发，原始证据保留
+ok 117 - 同一 action_id 重放：返回原回执，不重复下发，原始证据保留
+  ---
+  duration_ms: 2.9077
+  type: 'test'
+  ...
+# Subtest: 未知副作用（unverified）不是终态：不自动重放，需人工对账
+ok 118 - 未知副作用（unverified）不是终态：不自动重放，需人工对账
+  ---
+  duration_ms: 2.3034
+  type: 'test'
+  ...
+# Subtest: 高风险无确认：终态 denied；重放不重复询问、不下发
+ok 119 - 高风险无确认：终态 denied；重放不重复询问、不下发
+  ---
+  duration_ms: 1.8103
+  type: 'test'
+  ...
+# Subtest: 无障碍未授权：终态 unavailable，重试需新提议（新 action_id）
+ok 120 - 无障碍未授权：终态 unavailable，重试需新提议（新 action_id）
+  ---
+  duration_ms: 3.4633
+  type: 'test'
+  ...
+# Subtest: 失败动作不自动重放：同一 action_id 返回原失败回执
+ok 121 - 失败动作不自动重放：同一 action_id 返回原失败回执
+  ---
+  duration_ms: 3.9463
+  type: 'test'
+  ...
+# Subtest: 中断恢复：先落提议后下发——崩溃窗口（已记账无回执）不自动重发
+ok 122 - 中断恢复：先落提议后下发——崩溃窗口（已记账无回执）不自动重发
+  ---
+  duration_ms: 4.0416
+  type: 'test'
+  ...
+# Subtest: 台账持久化：重启（新实例）后提议、回执与任务链完整
+ok 123 - 台账持久化：重启（新实例）后提议、回执与任务链完整
+  ---
+  duration_ms: 1.4775
+  type: 'test'
+  ...
+# Subtest: 台账容量上界：超出 limit 淘汰最旧条目
+ok 124 - 台账容量上界：超出 limit 淘汰最旧条目
+  ---
+  duration_ms: 3.9755
+  type: 'test'
+  ...
+# Subtest: 上传投影：回执只含引用与状态，提议脱敏文本目标，本地保留字段列明
+ok 125 - 上传投影：回执只含引用与状态，提议脱敏文本目标，本地保留字段列明
+  ---
+  duration_ms: 0.8332
+  type: 'test'
+  ...
+# (node:3496) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/lhang/AppData/Local/Temp/fin-fixed/android-app/test/device/voice.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to C:\\Users\\lhang\\AppData\\Local\\Temp\\fin-fixed\\android-app\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: missing native module degrades to unavailable without throwing
+ok 126 - missing native module degrades to unavailable without throwing
+  ---
+  duration_ms: 1.9211
+  type: 'test'
+  ...
+# Subtest: native capability is normalized with engine names
+ok 127 - native capability is normalized with engine names
+  ---
+  duration_ms: 0.5905
+  type: 'test'
+  ...
+# Subtest: capability failure is treated as unavailable
+ok 128 - capability failure is treated as unavailable
+  ---
+  duration_ms: 0.3483
+  type: 'test'
+  ...
+# Subtest: timeout is clamped to the supported window
+ok 129 - timeout is clamped to the supported window
+  ---
+  duration_ms: 0.241
+  type: 'test'
+  ...
+# Subtest: transcription trims text and forwards the clamped timeout
+ok 130 - transcription trims text and forwards the clamped timeout
+  ---
+  duration_ms: 0.4618
+  type: 'test'
+  ...
+# Subtest: empty result never carries stale transcript
+ok 131 - empty result never carries stale transcript
+  ---
+  duration_ms: 0.1791
+  type: 'test'
+  ...
+# Subtest: denied and unknown statuses are mapped safely
+ok 132 - denied and unknown statuses are mapped safely
+  ---
+  duration_ms: 0.2444
+  type: 'test'
+  ...
+# Subtest: module exceptions become failed with the error message
+ok 133 - module exceptions become failed with the error message
+  ---
+  duration_ms: 0.3994
+  type: 'test'
+  ...
+# Subtest: speech text collapses whitespace and caps length
+ok 134 - speech text collapses whitespace and caps length
+  ---
+  duration_ms: 0.4228
+  type: 'test'
+  ...
+# Subtest: speak sends prepared text to the native module
+ok 135 - speak sends prepared text to the native module
+  ---
+  duration_ms: 0.6216
+  type: 'test'
+  ...
+# Subtest: empty speech input fails without calling the module
+ok 136 - empty speech input fails without calling the module
+  ---
+  duration_ms: 0.3747
+  type: 'test'
+  ...
+# Subtest: normalizeSpeakResult maps unknown statuses to failed
+ok 137 - normalizeSpeakResult maps unknown statuses to failed
+  ---
+  duration_ms: 0.1766
+  type: 'test'
+  ...
+# Subtest: cancel and stop delegate to the native module
+ok 138 - cancel and stop delegate to the native module
+  ---
+  duration_ms: 0.1868
+  type: 'test'
+  ...
