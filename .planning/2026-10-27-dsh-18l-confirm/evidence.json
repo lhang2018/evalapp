@@ -1,0 +1,20 @@
+{
+ "card": "ALN-18-L",
+ "reviewer": "dsh-lead（e89b4ae 二次确认；非作者）",
+ "date": "2026-10-27",
+ "commands": {
+  "tests": "test_assigned_review_20261027 + test_refactor + test_cross_review_regressions -> 见 tests.txt"
+ },
+ "string_forward_case": {
+  "status": "needs_clarification"
+ },
+ "real_case": {
+  "status": "ok"
+ },
+ "checks": {
+  "string_forward_variadic_requires_clarification": true,
+  "real_variadic_annotation_rename_planned": true
+ },
+ "all_checks_pass": true,
+ "boundary": "本地临时项目真实 analyze_rename；未接真实 LSP/生产"
+}
