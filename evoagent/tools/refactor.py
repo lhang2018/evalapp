@@ -586,7 +586,10 @@ def analyze_rename(root: str | Path, symbol: str, new_name: str) -> RenameDecisi
                         *node.args.posonlyargs,
                         *node.args.args,
                         *node.args.kwonlyargs,
+                        node.args.vararg,
+                        node.args.kwarg,
                     )
+                    if arg is not None
                 ] + [node.returns]
             elif isinstance(node, ast.AnnAssign):
                 annotations = [node.annotation]

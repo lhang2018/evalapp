@@ -122,12 +122,13 @@ class ScopePolicyStore:
         self._clock = clock or time.time
         self._ensure()
 
+    @_transactional
     def _ensure(self) -> None:
-        with self._lock:
-            self._conn.execute(POLICY_TABLE)
-            self._conn.execute(PRINCIPAL_POLICY_TABLE)
-            self._conn.execute(MIGRATION_TABLE)
-            self._conn.commit()
+        # Schema setup follows the same transaction ownership as policy writes.
+        # Never commit a host transaction; roll back our own partial setup.
+        self._conn.execute(POLICY_TABLE)
+        self._conn.execute(PRINCIPAL_POLICY_TABLE)
+        self._conn.execute(MIGRATION_TABLE)
 
     # ---- 主体解析：服务端鉴权为唯一来源 ----
     @staticmethod
