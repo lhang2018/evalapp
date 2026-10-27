@@ -1,0 +1,23 @@
+{
+ "card": "ALN-27-B 资产事务修复 518aa26",
+ "reviewer": "dsh-lead（非作者；二次确认）",
+ "date": "2026-10-27",
+ "commands": {
+  "tests": "asset_transactions_review + composition/consumption/identity/release_assets -> 118 passed"
+ },
+ "probe": {
+  "own_txn_visible": true,
+  "visible_inside_host_txn": true,
+  "gone_after_host_rollback": true,
+  "events_before": 1,
+  "events_after_rollback": 1
+ },
+ "checks": {
+  "own_transaction_commits": true,
+  "host_transaction_not_committed": true,
+  "host_rollback_discards_asset": true,
+  "host_rollback_discards_audit": true
+ },
+ "all_checks_pass": true,
+ "boundary": "本地内存 SQLite；未做生产并发/多库崩溃"
+}
