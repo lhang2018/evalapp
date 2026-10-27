@@ -1,0 +1,45 @@
+{
+ "card": "ALN-27-B",
+ "reviewer": "dsh-lead（非作者；独立复核；用户要求后续仍需他人终审）",
+ "date": "2026-10-27",
+ "commands": {
+  "tests": "asset_composition/consumption/identity/transactions/release_assets -> 115 passed"
+ },
+ "probe": {
+  "valid": {
+   "ref": "skill:combo@1.0.0",
+   "lifecycle": "draft",
+   "composed_from": [
+    "skill:extract-text@1.0.0",
+    "skill:summarize@1.0.0"
+   ],
+   "dependency_digests": {
+    "skill:extract-text@1.0.0": "b1b5a9ec0f2e9ad215018a7463d77cb59bd16d717c1b1ecdbd63e4c2a96f52e9",
+    "skill:summarize@1.0.0": "2f345cf540092f9da6a6af6ad1e54f6cc098c666a72db2fb021c2e2d7b11b244"
+   },
+   "io": {
+    "required": [],
+    "produced": [
+     "summary"
+    ]
+   }
+  },
+  "io_refused": true,
+  "io_no_partial": true,
+  "unverified_refused": true,
+  "missing_refused": true,
+  "pin_stable_after_upgrade": true,
+  "new_version_available": true
+ },
+ "checks": {
+  "compose_registers_draft": true,
+  "composed_from_traceable": true,
+  "io_compat_checked": true,
+  "io_mismatch_refused": true,
+  "unverified_dep_refused": true,
+  "missing_dep_refused": true,
+  "pin_not_changed_by_new_version": true
+ },
+ "all_checks_pass": true,
+ "boundary": "本地内存 AssetRepository/真实组合 API；未做生产组合执行、动态展开、分支/并行与真实业务重用"
+}
