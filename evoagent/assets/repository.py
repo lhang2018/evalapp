@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import time
+import uuid
 from contextlib import contextmanager
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 
@@ -36,9 +37,9 @@ class AssetRepository:
         self._lock = lock
         self._conn.row_factory = sqlite3.Row
         if ensure_schema:
-            for stmt in TABLES:
-                self._conn.execute(stmt)
-            self._conn.commit()
+            with self._write():
+                for stmt in TABLES:
+                    self._conn.execute(stmt)
 
     @contextmanager
     def _locked(self) -> Iterator[None]:
@@ -48,6 +49,29 @@ class AssetRepository:
             return
         with self._lock:
             yield
+
+    @contextmanager
+    def _write(self) -> Iterator[None]:
+        """Own only our transaction, or roll back our savepoint within host work."""
+        with self._locked():
+            conn = self._conn
+            own = not conn.in_transaction
+            savepoint = "assets_" + uuid.uuid4().hex
+            conn.execute("BEGIN IMMEDIATE" if own else "SAVEPOINT " + savepoint)
+            try:
+                yield
+                if own:
+                    conn.commit()
+                else:
+                    conn.execute("RELEASE " + savepoint)
+            except BaseException:
+                if conn.in_transaction:
+                    if own:
+                        conn.rollback()
+                    else:
+                        conn.execute("ROLLBACK TO " + savepoint)
+                        conn.execute("RELEASE " + savepoint)
+                raise
 
     # ---- 登记 ----
     def register(self, *, asset_id: str, asset_type: str, namespace: str,
@@ -84,14 +108,13 @@ class AssetRepository:
             created_at=now, updated_at=now)
         asset.validate()
 
-        with self._locked():
+        with self._write():
             existing = self.get(asset_id, version)
             if existing is not None:
                 if existing.content_digest == digest and \
                         existing.to_contract_dict() == asset.to_contract_dict():
                     self._event(asset.ref, "register_idempotent", None, None,
                                 {"content_digest": digest})
-                    self._conn.commit()
                     return existing
                 raise AssetConflict(
                     f"{asset.ref} 已登记且内容/元数据不同 "
@@ -132,7 +155,6 @@ class AssetRepository:
                         {"content_digest": digest,
                          "asset_type": asset.asset_type,
                          "namespace": asset.namespace})
-            self._conn.commit()
             return asset
 
     def register_draft(self, draft: AssetDraft) -> Asset:
@@ -197,7 +219,8 @@ class AssetRepository:
     def transition(self, asset_id: str, version: str, to_state: str,
                    *, evidence_refs: Sequence[str] = ()
                    ) -> Asset:
-        with self._locked():
+        dependency_error = None
+        with self._write():
             asset = self.get(asset_id, version)
             if asset is None:
                 raise AssetNotFound(f"资产不存在: {asset_id}@{version}")
@@ -214,24 +237,37 @@ class AssetRepository:
                 if not asset.source_refs:
                     raise LifecycleError(
                         f"{asset.ref} 晋升 {to_state} 需要来源引用")
-                self._check_dependencies_audited(asset)
+                try:
+                    self._check_dependencies_audited(asset)
+                except DependencyError as exc:
+                    # Preserve failed-check evidence without changing lifecycle.
+                    # Raising after the context keeps caller commit ownership.
+                    dependency_error = exc
 
-            now = time.time()
-            self._conn.execute(
-                "UPDATE assets SET lifecycle_state=?,"
-                " evaluation_evidence_refs_json=?, updated_at=?"
-                " WHERE asset_id=? AND version=?",
-                (to_state, self._dump(tuple(merged)), now, asset_id, version))
-            self._event(asset.ref, "transition", asset.lifecycle_state,
-                        to_state, {"evidence_refs": merged})
-            self._conn.commit()
-            return self.get(asset_id, version)
+            if dependency_error is None:
+                now = time.time()
+                self._conn.execute(
+                    "UPDATE assets SET lifecycle_state=?,"
+                    " evaluation_evidence_refs_json=?, updated_at=?"
+                    " WHERE asset_id=? AND version=?",
+                    (to_state, self._dump(tuple(merged)), now, asset_id, version))
+                self._event(asset.ref, "transition", asset.lifecycle_state,
+                            to_state, {"evidence_refs": merged})
+                return self.get(asset_id, version)
+        raise dependency_error
 
     # ---- 依赖解析与兼容检查 ----
     def check_dependencies(self, asset: Asset) -> Dict[str, Asset]:
         """返回依赖表；缺失/环/兼容不满足时抛 DependencyError。"""
-        with self._locked():
-            return self._check_dependencies_audited(asset)
+        error = None
+        with self._write():
+            try:
+                result = self._check_dependencies_audited(asset)
+            except DependencyError as exc:
+                error = exc
+        if error is not None:
+            raise error
+        return result
 
     def _check_dependencies_audited(self, asset: Asset) -> Dict[str, Asset]:
         try:
@@ -239,12 +275,10 @@ class AssetRepository:
         except DependencyError as exc:
             self._event(asset.ref, "dependency_check", None, None,
                         {"ok": False, "error": str(exc)})
-            self._conn.commit()
             raise
         self._event(asset.ref, "dependency_check", None, None,
                     {"ok": True, "dependencies": sorted(deps),
                      "pins": sorted((asset.compatibility.get("pins") or {}))})
-        self._conn.commit()
         return deps
 
     def _resolve_dependencies(self, asset: Asset) -> Dict[str, Asset]:
@@ -329,7 +363,7 @@ class AssetRepository:
         return out
 
     def collect(self, asset_id: str, version: str) -> bool:
-        with self._locked():
+        with self._write():
             asset = self.get(asset_id, version)
             if asset is None:
                 raise AssetNotFound(f"资产不存在: {asset_id}@{version}")
@@ -347,7 +381,6 @@ class AssetRepository:
                 (asset_id, version))
             self._event(asset.ref, "collect", "retired", None,
                         {"content_digest": asset.content_digest})
-            self._conn.commit()
             return True
 
     # ---- 追溯 ----
