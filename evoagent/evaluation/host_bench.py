@@ -34,7 +34,7 @@ from ..assets.content import content_digest
 from ..evolution.host import IsolatedCandidateHost
 from ..evolution.sandbox import MAX_TIMEOUT_S
 
-BENCH_VERSION = "host-bench/2"
+BENCH_VERSION = "host-bench/3"
 INPUT_FILE = "input.json"
 
 
@@ -109,6 +109,8 @@ def evidence_digest(report: Dict[str, Any]) -> str:
         "candidate": report.get("candidate"),
         "repeat": report.get("repeat"),
         "source": report.get("source"),
+        "timeout_s": report.get("timeout_s"),
+        "policy": report.get("policy"),
         "cases_digest": report.get("cases_digest"),
         "reproducible": report.get("reproducible"),
         "regression_cases": report.get("regression_cases"),
@@ -120,19 +122,38 @@ def evidence_digest(report: Dict[str, Any]) -> str:
         "benefit": {"verdict": benefit.get("verdict"),
                     "success_delta": benefit.get("success_delta"),
                     "blockers": benefit.get("blockers")},
+        "cases": [
+            {"case_id": row.get("case_id"), "domain": row.get("domain"),
+             "required": row.get("required"), "reproducible": row.get("reproducible"),
+             "omissions": row.get("omissions", []),
+             **{side: {key: (row.get(side) or {}).get(key)
+                       for key in ("case_id", "status", "ok", "value", "violations")}
+                for side in ("baseline", "candidate")}}
+            for row in report.get("cases", [])
+        ],
     }
     return hashlib.sha256(_canonical(body).encode()).hexdigest()
 
 
 def _last_json(stdout: str) -> Optional[Dict[str, Any]]:
-    for line in reversed([item for item in (stdout or "").splitlines() if item.strip()]):
-        try:
-            value = json.loads(line)
-        except ValueError:
-            continue
-        if isinstance(value, dict):
-            return value
-    return None
+    lines = [item for item in (stdout or "").splitlines() if item.strip()]
+    if not lines:
+        return None
+
+    def reject_constant(value):
+        raise ValueError("non-finite JSON constant: " + value)
+
+    def finite_float(value):
+        number = float(value)
+        if not math.isfinite(number):
+            raise ValueError("non-finite JSON number")
+        return number
+
+    try:
+        value = json.loads(lines[-1], parse_constant=reject_constant, parse_float=finite_float)
+    except ValueError:
+        return None
+    return value if isinstance(value, dict) else None
 
 
 class HostBenchmark:
@@ -316,6 +337,9 @@ class HostBenchmark:
             "candidate": candidate_identity,
             "repeat": self.repeat,
             "timeout_s": self.timeout,
+            "policy": {"min_coverage": self.min_coverage,
+                       "latency_tolerance": self.latency_tolerance,
+                       "max_violations": self.max_violations},
             "cases_digest": cases_digest,
             "source": self.source,
             "reproducible": reproducible,
@@ -361,14 +385,23 @@ class HostBenchmark:
 def release_decision(report: Dict[str, Any]) -> Dict[str, Any]:
     """把证据翻译成发布门禁输入（fail-closed：任何阻断项都不放行）。"""
     blockers: List[str] = []
-    if not report.get("reproducible"):
+    if report.get("benchmark_version") != BENCH_VERSION:
+        blockers.append("基准版本不受当前门禁支持，需重新评测")
+    try:
+        digest_valid = (isinstance(report.get("evidence_digest"), str)
+                        and report["evidence_digest"] == evidence_digest(report))
+    except (AttributeError, TypeError, ValueError):
+        digest_valid = False
+    if not digest_valid:
+        blockers.append("基准证据摘要缺失或不匹配")
+    if report.get("reproducible") is not True:
         blockers.append("对照不可复现")
     if report.get("regression_cases"):
         blockers.append("候选在必跑用例上回归")
     benefit = report.get("benefit") or {}
     blockers.extend(benefit.get("blockers") or [])
-    if report.get("verdict") == "inconclusive":
-        blockers.append("收益证据不足（inconclusive）")
+    if report.get("verdict") not in ("improved", "neutral"):
+        blockers.append("收益结论不允许发布")
     seen = list(dict.fromkeys(blockers))
     return {"allow": not seen, "blockers": seen,
             "verdict": report.get("verdict"),
