@@ -1,0 +1,853 @@
+{
+  "cards": {
+    "ALN-18-L": {
+      "fields": {
+        "technical_review": {
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+          "status": "changes_fixed_pending_independent_recheck",
+          "scope": "可变参数注解缺口修复，AST重构/诊断及编码工具消费者",
+          "checks": {
+            "backend_modules": [
+              "test_refactor",
+              "test_feedback_refactor_review_20261026",
+              "test_developed_review_5",
+              "test_coding_tools",
+              "test_assigned_review_20261027"
+            ],
+            "backend_passed": 132,
+            "backend_skipped": 0,
+            "client_passed": 0,
+            "typecheck_exit": null
+          },
+          "remaining_acceptance_gaps": "语义LSP/真实专家自动装配仍缺；e89b4ae新注解拒绝补丁待独立确认",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "latest_code_review": {
+          "id": "REVIEW-2026-10-27-ASSIGNED-11",
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "scope": "可变参数注解缺口修复，AST重构/诊断及编码工具消费者",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "status": "changes_fixed_pending_independent_recheck"
+        },
+        "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；语义LSP/真实专家自动装配仍缺；e89b4ae新注解拒绝补丁待独立确认；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+        "review_verdict": "changes_fixed_pending_independent_recheck",
+        "blocker": "语义LSP/真实专家自动装配仍缺；e89b4ae新注解拒绝补丁待独立确认"
+      },
+      "evidence": {
+        "date": "2026-10-27",
+        "reviewer": "codex-runtime",
+        "source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+        "scope": "可变参数注解缺口修复，AST重构/诊断及编码工具消费者",
+        "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+        "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+      },
+      "history": {
+        "date": "2026-10-27",
+        "previous_technical_review": {
+          "date": "2026-10-26",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+          "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+          "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+          "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "checks": {
+            "backend_passed": 123,
+            "backend_modules": [
+              "test_refactor",
+              "test_feedback_refactor_review_20261026",
+              "test_developed_review_5",
+              "test_coding_tools"
+            ]
+          },
+          "remaining_acceptance_gaps": "仍为受限AST/符号分析，语义LSP和真实专家装配未实现；旧codex修复需独立复核",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "reason": "明确指派11卡接续审核，新源证据与新缺陷补丁；旧审核保留",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      }
+    },
+    "ALN-19-A": {
+      "fields": {
+        "technical_review": {
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "scope": "本地HTTP供应商/未知费用、预算预留与拒绝、发布证据契约",
+          "checks": {
+            "backend_modules": [
+              "test_media_vendor",
+              "test_media_vendor_review_20261026",
+              "test_release_evidence"
+            ],
+            "backend_passed": 62,
+            "backend_skipped": 0,
+            "client_passed": 0,
+            "typecheck_exit": null
+          },
+          "remaining_acceptance_gaps": "真实可播放供应商产物/版本、价格与账单、持久预算及生产凭证未验",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "latest_code_review": {
+          "id": "REVIEW-2026-10-27-ASSIGNED-11",
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "scope": "本地HTTP供应商/未知费用、预算预留与拒绝、发布证据契约",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "status": "technical_recheck_complete_with_acceptance_gaps"
+        },
+        "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；真实可播放供应商产物/版本、价格与账单、持久预算及生产凭证未验；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      },
+      "evidence": {
+        "date": "2026-10-27",
+        "reviewer": "codex-runtime",
+        "source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+        "scope": "本地HTTP供应商/未知费用、预算预留与拒绝、发布证据契约",
+        "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+        "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+      },
+      "history": {
+        "date": "2026-10-27",
+        "previous_technical_review": {
+          "date": "2026-10-26",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+          "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+          "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+          "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "checks": {
+            "backend_passed": 62,
+            "backend_modules": [
+              "test_media_vendor",
+              "test_media_vendor_review_20261026",
+              "test_release_evidence"
+            ]
+          },
+          "remaining_acceptance_gaps": "真实供应商可播放产物/协议/价格与账单、持久预算权威未提供，现仅本地HTTP夹具及单实例费用状态",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "reason": "明确指派11卡接续审核，新源证据与新缺陷补丁；旧审核保留",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      }
+    },
+    "ALN-30-B": {
+      "fields": {
+        "technical_review": {
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "scope": "固定源码成果视图/记忆控制及完整离线、设备、更新测试与TS",
+          "checks": {
+            "backend_modules": [],
+            "backend_passed": 0,
+            "backend_skipped": 0,
+            "client_passed": 469,
+            "typecheck_exit": 0
+          },
+          "remaining_acceptance_gaps": "项目工作区节点、全量成果下载、固定APK与模型实际禁用链仍待",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "latest_code_review": {
+          "id": "REVIEW-2026-10-27-ASSIGNED-11",
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "scope": "固定源码成果视图/记忆控制及完整离线、设备、更新测试与TS",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "status": "technical_recheck_complete_with_acceptance_gaps"
+        },
+        "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；项目工作区节点、全量成果下载、固定APK与模型实际禁用链仍待；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      },
+      "evidence": {
+        "date": "2026-10-27",
+        "reviewer": "codex-runtime",
+        "source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+        "scope": "固定源码成果视图/记忆控制及完整离线、设备、更新测试与TS",
+        "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+        "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+      },
+      "history": {
+        "date": "2026-10-27",
+        "previous_technical_review": {
+          "date": "2026-10-26",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+          "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+          "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+          "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "checks": {
+            "backend_passed": 0,
+            "backend_modules": [],
+            "client_passed": 459,
+            "typecheck_exit": 0,
+            "client_commit": "a435ce14ad0ef175a73fa1a8b628fbde31c047b6",
+            "client_tree": "a3e36b9ebb6cf70ef04f71bb5a3e4dea35343b52"
+          },
+          "remaining_acceptance_gaps": "项目/工作区节点、全量文件下载、固定APK真机与后续模型实际禁用验证未闭合",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "reason": "明确指派11卡接续审核，新源证据与新缺陷补丁；旧审核保留",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      }
+    },
+    "ALN-16-Q": {
+      "fields": {
+        "technical_review": {
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "scope": "聚合证据、授权导出下载、删除预览摘要/拒绝及残留对账",
+          "checks": {
+            "backend_modules": [
+              "test_evidence_api",
+              "test_evidence_scope_review_20261026",
+              "test_observability_repository",
+              "test_observability_evidence"
+            ],
+            "backend_passed": 45,
+            "backend_skipped": 0,
+            "client_passed": 0,
+            "typecheck_exit": null
+          },
+          "remaining_acceptance_gaps": "受信主体/授权证据联验、大导出/清理期与设备仍待；跨库删除仅维护窗口",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "latest_code_review": {
+          "id": "REVIEW-2026-10-27-ASSIGNED-11",
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "scope": "聚合证据、授权导出下载、删除预览摘要/拒绝及残留对账",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "status": "technical_recheck_complete_with_acceptance_gaps"
+        },
+        "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；受信主体/授权证据联验、大导出/清理期与设备仍待；跨库删除仅维护窗口；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      },
+      "evidence": {
+        "date": "2026-10-27",
+        "reviewer": "codex-runtime",
+        "source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+        "scope": "聚合证据、授权导出下载、删除预览摘要/拒绝及残留对账",
+        "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+        "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+      },
+      "history": {
+        "date": "2026-10-27",
+        "previous_technical_review": {
+          "date": "2026-10-26",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+          "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+          "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+          "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "checks": {
+            "backend_passed": 45,
+            "backend_modules": [
+              "test_evidence_api",
+              "test_evidence_scope_review_20261026",
+              "test_observability_repository",
+              "test_observability_evidence"
+            ]
+          },
+          "remaining_acceptance_gaps": "跨主体真实身份/授权证据消费、大导出/清理期和管理端设备仍待；跨库删除仅维护窗口，不能宣称全域擦除",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "reason": "明确指派11卡接续审核，新源证据与新缺陷补丁；旧审核保留",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      }
+    },
+    "ALN-15-E": {
+      "fields": {
+        "technical_review": {
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "scope": "原生采样TS解析和后台helper；真实index.js接线走读，非Kotlin/设备接受",
+          "checks": {
+            "backend_modules": [],
+            "backend_passed": 0,
+            "backend_skipped": 0,
+            "client_passed": 469,
+            "typecheck_exit": 0
+          },
+          "remaining_acceptance_gaps": "index.js实际HeadlessTask未注入sampler/highWater；策略下发/Kotlin/新APK真机未验",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "latest_code_review": {
+          "id": "REVIEW-2026-10-27-ASSIGNED-11",
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "scope": "原生采样TS解析和后台helper；真实index.js接线走读，非Kotlin/设备接受",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "status": "technical_recheck_complete_with_acceptance_gaps"
+        },
+        "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；index.js实际HeadlessTask未注入sampler/highWater；策略下发/Kotlin/新APK真机未验；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      },
+      "evidence": {
+        "date": "2026-10-27",
+        "reviewer": "codex-runtime",
+        "source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+        "scope": "原生采样TS解析和后台helper；真实index.js接线走读，非Kotlin/设备接受",
+        "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+        "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+      },
+      "history": {
+        "date": "2026-10-27",
+        "previous_technical_review": {
+          "date": "2026-10-26",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+          "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+          "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+          "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "checks": {
+            "backend_passed": 0,
+            "backend_modules": [],
+            "client_passed": 459,
+            "typecheck_exit": 0,
+            "client_commit": "a435ce14ad0ef175a73fa1a8b628fbde31c047b6",
+            "client_tree": "a3e36b9ebb6cf70ef04f71bb5a3e4dea35343b52"
+          },
+          "remaining_acceptance_gaps": "默认HeadlessTask仍未注入sampler/highWater；策略下发、Kotlin重编译/新APK真机周期压力及OEM不可读处理待补",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "reason": "明确指派11卡接续审核，新源证据与新缺陷补丁；旧审核保留",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      }
+    },
+    "ALN-13-S": {
+      "fields": {
+        "technical_review": {
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "scope": "完整在途/目标账本、时钟/策略、宿主主动off和资源准入",
+          "checks": {
+            "backend_modules": [
+              "test_goal_scheduler",
+              "test_goal_scheduler_host",
+              "test_new_host_review_20261026",
+              "test_assigned_scheduler_review_20261026"
+            ],
+            "backend_passed": 49,
+            "backend_skipped": 0,
+            "client_passed": 0,
+            "typecheck_exit": null
+          },
+          "remaining_acceptance_gaps": "既有a435ce1/f973dcc调度补丁待独立确认；真实sampler/主动预算及运行中治理/生产长跑仍待",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "latest_code_review": {
+          "id": "REVIEW-2026-10-27-ASSIGNED-11",
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "scope": "完整在途/目标账本、时钟/策略、宿主主动off和资源准入",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "status": "technical_recheck_complete_with_acceptance_gaps"
+        },
+        "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；既有a435ce1/f973dcc调度补丁待独立确认；真实sampler/主动预算及运行中治理/生产长跑仍待；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      },
+      "evidence": {
+        "date": "2026-10-27",
+        "reviewer": "codex-runtime",
+        "source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+        "scope": "完整在途/目标账本、时钟/策略、宿主主动off和资源准入",
+        "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+        "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+      },
+      "history": {
+        "date": "2026-10-27",
+        "previous_technical_review": {
+          "date": "2026-10-26",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+          "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+          "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+          "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+          "status": "changes_fixed_pending_independent_recheck",
+          "checks": {
+            "backend_passed": 49,
+            "backend_modules": [
+              "test_goal_scheduler",
+              "test_goal_scheduler_host",
+              "test_new_host_review_20261026",
+              "test_assigned_scheduler_review_20261026"
+            ]
+          },
+          "remaining_acceptance_gaps": "本轮新调度补丁待独立复核；默认App真实资源/主动预算配置、运行中unknown/停止及生产长跑/多进程证据未闭合",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "reason": "明确指派11卡接续审核，新源证据与新缺陷补丁；旧审核保留",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      }
+    },
+    "ALN-09-I": {
+      "fields": {
+        "technical_review": {
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "scope": "候选宿主/持久队列、host-bench/2失败边界及受控API",
+          "checks": {
+            "backend_modules": [
+              "test_candidate_host_api",
+              "test_host_benchmark",
+              "test_benchmark_review_20261026",
+              "test_new_host_review_20261026"
+            ],
+            "backend_passed": 53,
+            "backend_skipped": 0,
+            "client_passed": 0,
+            "typecheck_exit": null
+          },
+          "remaining_acceptance_gaps": "candidate_id/dataset到权威仓库的精确绑定、生产并发与完整管理面仍缺",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "latest_code_review": {
+          "id": "REVIEW-2026-10-27-ASSIGNED-11",
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "scope": "候选宿主/持久队列、host-bench/2失败边界及受控API",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "status": "technical_recheck_complete_with_acceptance_gaps"
+        },
+        "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；candidate_id/dataset到权威仓库的精确绑定、生产并发与完整管理面仍缺；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      },
+      "evidence": {
+        "date": "2026-10-27",
+        "reviewer": "codex-runtime",
+        "source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+        "scope": "候选宿主/持久队列、host-bench/2失败边界及受控API",
+        "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+        "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+      },
+      "history": {
+        "date": "2026-10-27",
+        "previous_technical_review": {
+          "date": "2026-10-26",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+          "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+          "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+          "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "checks": {
+            "backend_passed": 53,
+            "backend_modules": [
+              "test_candidate_host_api",
+              "test_host_benchmark",
+              "test_benchmark_review_20261026",
+              "test_new_host_review_20261026"
+            ]
+          },
+          "remaining_acceptance_gaps": "candidate_id/dataset到权威仓库精确绑定、生产并发及完整管理入口未闭合",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "reason": "明确指派11卡接续审核，新源证据与新缺陷补丁；旧审核保留",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      }
+    },
+    "ALN-18-H": {
+      "fields": {
+        "technical_review": {
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "scope": "精确编码包/独立项目注册表、真实语法工具、宿主权限与拒绝",
+          "checks": {
+            "backend_modules": [
+              "test_coding_expert_consumer",
+              "test_coding_consumption",
+              "test_coding_tools",
+              "test_new_host_review_20261026"
+            ],
+            "backend_passed": 73,
+            "backend_skipped": 0,
+            "client_passed": 0,
+            "typecheck_exit": null
+          },
+          "remaining_acceptance_gaps": "真实任务自动选专家→安装→执行→失败回滚再检闭环、真实项目升级恢复仍待",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "latest_code_review": {
+          "id": "REVIEW-2026-10-27-ASSIGNED-11",
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "scope": "精确编码包/独立项目注册表、真实语法工具、宿主权限与拒绝",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "status": "technical_recheck_complete_with_acceptance_gaps"
+        },
+        "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；真实任务自动选专家→安装→执行→失败回滚再检闭环、真实项目升级恢复仍待；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      },
+      "evidence": {
+        "date": "2026-10-27",
+        "reviewer": "codex-runtime",
+        "source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+        "scope": "精确编码包/独立项目注册表、真实语法工具、宿主权限与拒绝",
+        "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+        "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+      },
+      "history": {
+        "date": "2026-10-27",
+        "previous_technical_review": {
+          "date": "2026-10-26",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+          "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+          "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+          "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "checks": {
+            "backend_passed": 73,
+            "backend_modules": [
+              "test_coding_expert_consumer",
+              "test_coding_consumption",
+              "test_coding_tools",
+              "test_new_host_review_20261026"
+            ]
+          },
+          "remaining_acceptance_gaps": "真实任务自动选专家→受信根安装→失败回滚再检闭环、真实项目/升级恢复仍待",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "reason": "明确指派11卡接续审核，新源证据与新缺陷补丁；旧审核保留",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      }
+    },
+    "ALN-25-C": {
+      "fields": {
+        "technical_review": {
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "scope": "真实预留协议/未知提交、幂等、资源准入与停止策略",
+          "checks": {
+            "backend_modules": [
+              "test_proactive_execution",
+              "test_proactive_execution_review_20261026",
+              "test_proactivity",
+              "test_resource_second_review_20261026"
+            ],
+            "backend_passed": 54,
+            "backend_skipped": 0,
+            "client_passed": 0,
+            "typecheck_exit": null
+          },
+          "remaining_acceptance_gaps": "真实资源/预算账户、实际费用settle回接、权威并发/运行中停止及核心质量延迟仍待",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "latest_code_review": {
+          "id": "REVIEW-2026-10-27-ASSIGNED-11",
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "scope": "真实预留协议/未知提交、幂等、资源准入与停止策略",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "status": "technical_recheck_complete_with_acceptance_gaps"
+        },
+        "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；真实资源/预算账户、实际费用settle回接、权威并发/运行中停止及核心质量延迟仍待；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      },
+      "evidence": {
+        "date": "2026-10-27",
+        "reviewer": "codex-runtime",
+        "source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+        "scope": "真实预留协议/未知提交、幂等、资源准入与停止策略",
+        "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+        "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+      },
+      "history": {
+        "date": "2026-10-27",
+        "previous_technical_review": {
+          "date": "2026-10-26",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+          "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+          "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+          "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "checks": {
+            "backend_passed": 54,
+            "backend_modules": [
+              "test_proactive_execution",
+              "test_proactive_execution_review_20261026",
+              "test_proactivity",
+              "test_resource_second_review_20261026"
+            ]
+          },
+          "remaining_acceptance_gaps": "默认宿主真实sampler/预算账户、实际用量对账、权威并发/运行中pause-stop和真实核心质量/延迟仍待",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "reason": "明确指派11卡接续审核，新源证据与新缺陷补丁；旧审核保留",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      }
+    },
+    "ALN-27-C": {
+      "fields": {
+        "technical_review": {
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "scope": "知识持久化/新鲜撤销/事务与迁移、实际上下文注入边界",
+          "checks": {
+            "backend_modules": [
+              "test_knowledge",
+              "test_knowledge_persistence",
+              "test_knowledge_review_20261026"
+            ],
+            "backend_passed": 54,
+            "backend_skipped": 0,
+            "client_passed": 0,
+            "typecheck_exit": null
+          },
+          "remaining_acceptance_gaps": "正式验收项2用户/项目身份可见性绑定仍缺，真实同任务集质量/逆向迁移与多进程仍待",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "latest_code_review": {
+          "id": "REVIEW-2026-10-27-ASSIGNED-11",
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "scope": "知识持久化/新鲜撤销/事务与迁移、实际上下文注入边界",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "status": "technical_recheck_complete_with_acceptance_gaps"
+        },
+        "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；正式验收项2用户/项目身份可见性绑定仍缺，真实同任务集质量/逆向迁移与多进程仍待；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      },
+      "evidence": {
+        "date": "2026-10-27",
+        "reviewer": "codex-runtime",
+        "source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+        "scope": "知识持久化/新鲜撤销/事务与迁移、实际上下文注入边界",
+        "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+        "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+      },
+      "history": {
+        "date": "2026-10-27",
+        "previous_technical_review": {
+          "date": "2026-10-26",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+          "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+          "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+          "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "checks": {
+            "backend_passed": 54,
+            "backend_modules": [
+              "test_knowledge",
+              "test_knowledge_persistence",
+              "test_knowledge_review_20261026"
+            ]
+          },
+          "remaining_acceptance_gaps": "正式验收项2用户/项目可见性绑定仍缺；真实同任务集前后质量/退化、多进程及逆向迁移仍待",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "reason": "明确指派11卡接续审核，新源证据与新缺陷补丁；旧审核保留",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      }
+    },
+    "ALN-24-F": {
+      "fields": {
+        "technical_review": {
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+          "status": "changes_fixed_pending_independent_recheck",
+          "scope": "建表事务所有权修复、跨连接提交/回滚和主体分区迁移拒绝",
+          "checks": {
+            "backend_modules": [
+              "test_multi_principal_scope",
+              "test_evidence_scope_review_20261026",
+              "test_assigned_review_20261027"
+            ],
+            "backend_passed": 38,
+            "backend_skipped": 0,
+            "client_passed": 0,
+            "typecheck_exit": null
+          },
+          "remaining_acceptance_gaps": "真实主体策略→模型/manifest、Grant/撤销及App管理仍缺；e89b4ae初始化事务补丁待独立确认",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "latest_code_review": {
+          "id": "REVIEW-2026-10-27-ASSIGNED-11",
+          "date": "2026-10-27",
+          "reviewer": "codex-runtime",
+          "reviewed_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+          "scope": "建表事务所有权修复、跨连接提交/回滚和主体分区迁移拒绝",
+          "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+          "status": "changes_fixed_pending_independent_recheck"
+        },
+        "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；真实主体策略→模型/manifest、Grant/撤销及App管理仍缺；e89b4ae初始化事务补丁待独立确认；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+        "review_verdict": "changes_fixed_pending_independent_recheck",
+        "blocker": "真实主体策略→模型/manifest、Grant/撤销及App管理仍缺；e89b4ae初始化事务补丁待独立确认"
+      },
+      "evidence": {
+        "date": "2026-10-27",
+        "reviewer": "codex-runtime",
+        "source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+        "scope": "建表事务所有权修复、跨连接提交/回滚和主体分区迁移拒绝",
+        "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+        "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+      },
+      "history": {
+        "date": "2026-10-27",
+        "previous_technical_review": {
+          "date": "2026-10-26",
+          "reviewer": "codex-runtime",
+          "reviewed_source_commit": "f973dcc1fc68ab14f1c0d7d706718dc79ed5b037",
+          "source_tree": "d8abce515acf61eb3fe58dbfb7d8edcfacb15b3a",
+          "report": "docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+          "evidence": ".planning/2026-10-26-assigned-review/committed-evidence.json",
+          "status": "technical_recheck_complete_with_acceptance_gaps",
+          "checks": {
+            "backend_passed": 29,
+            "backend_modules": [
+              "test_multi_principal_scope",
+              "test_evidence_scope_review_20261026"
+            ]
+          },
+          "remaining_acceptance_gaps": "真实API→模型消息/manifest的主体分区与Grant/撤销联验、App管理消费未闭合",
+          "independent_acceptance_added": false,
+          "prior_codex_fixes_require_independent_review": true
+        },
+        "reason": "明确指派11卡接续审核，新源证据与新缺陷补丁；旧审核保留",
+        "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md"
+      }
+    }
+  },
+  "post_candidate_changes": [
+    {
+      "id": "review-fix-e89b4aee1f6c",
+      "title": "fix(review): 补全可变参数注解与策略建表事务边界",
+      "workpackage": "ALN-24",
+      "source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "files": [
+        "evoagent/memory/scope_policy.py",
+        "evoagent/tools/refactor.py",
+        "tests/test_assigned_review_20261027.py"
+      ],
+      "status": "source_registered_pending_validation",
+      "candidate_included": false,
+      "independent_review": false,
+      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+      "scope": "18-L/24-F接续缺陷修复；明确指派11项逐卡复核，待独立补丁确认"
+    }
+  ],
+  "code_review_batches": [
+    {
+      "id": "REVIEW-2026-10-27-ASSIGNED-11",
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "cards": [
+        "ALN-18-L",
+        "ALN-19-A",
+        "ALN-30-B",
+        "ALN-16-Q",
+        "ALN-15-E",
+        "ALN-13-S",
+        "ALN-09-I",
+        "ALN-18-H",
+        "ALN-25-C",
+        "ALN-27-C",
+        "ALN-24-F"
+      ],
+      "fixed_cards": [
+        "ALN-18-L",
+        "ALN-24-F"
+      ],
+      "fix_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+      "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+      "status": "technical_reviews_complete_fixes_pending_independent_recheck",
+      "product_acceptance_added": false,
+      "published_by_review": false,
+      "scope": "明确指定11卡；487/1未选，469客户端/TS；原分工与缺口保留"
+    }
+  ]
+}

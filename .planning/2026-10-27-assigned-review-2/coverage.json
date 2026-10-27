@@ -1,0 +1,93 @@
+{
+  "commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+  "cards": {
+    "ALN-18-L": [
+      "test_refactor",
+      "test_feedback_refactor_review_20261026",
+      "test_developed_review_5",
+      "test_coding_tools",
+      "test_assigned_review_20261027"
+    ],
+    "ALN-19-A": [
+      "test_media_vendor",
+      "test_media_vendor_review_20261026",
+      "test_release_evidence"
+    ],
+    "ALN-30-B": [],
+    "ALN-16-Q": [
+      "test_evidence_api",
+      "test_evidence_scope_review_20261026",
+      "test_observability_repository",
+      "test_observability_evidence"
+    ],
+    "ALN-15-E": [],
+    "ALN-13-S": [
+      "test_goal_scheduler",
+      "test_goal_scheduler_host",
+      "test_new_host_review_20261026",
+      "test_assigned_scheduler_review_20261026"
+    ],
+    "ALN-09-I": [
+      "test_candidate_host_api",
+      "test_host_benchmark",
+      "test_benchmark_review_20261026",
+      "test_new_host_review_20261026"
+    ],
+    "ALN-18-H": [
+      "test_coding_expert_consumer",
+      "test_coding_consumption",
+      "test_coding_tools",
+      "test_new_host_review_20261026"
+    ],
+    "ALN-25-C": [
+      "test_proactive_execution",
+      "test_proactive_execution_review_20261026",
+      "test_proactivity",
+      "test_resource_second_review_20261026"
+    ],
+    "ALN-27-C": [
+      "test_knowledge",
+      "test_knowledge_persistence",
+      "test_knowledge_review_20261026"
+    ],
+    "ALN-24-F": [
+      "test_multi_principal_scope",
+      "test_evidence_scope_review_20261026",
+      "test_assigned_review_20261027"
+    ]
+  },
+  "modules": [
+    "test_assigned_review_20261027",
+    "test_assigned_scheduler_review_20261026",
+    "test_benchmark_review_20261026",
+    "test_candidate_host_api",
+    "test_coding_consumption",
+    "test_coding_expert_consumer",
+    "test_coding_tools",
+    "test_developed_review_5",
+    "test_evidence_api",
+    "test_evidence_scope_review_20261026",
+    "test_feedback_refactor_review_20261026",
+    "test_goal_scheduler",
+    "test_goal_scheduler_host",
+    "test_host_benchmark",
+    "test_knowledge",
+    "test_knowledge_persistence",
+    "test_knowledge_review_20261026",
+    "test_media_vendor",
+    "test_media_vendor_review_20261026",
+    "test_multi_principal_scope",
+    "test_new_host_review_20261026",
+    "test_observability_evidence",
+    "test_observability_repository",
+    "test_proactive_execution",
+    "test_proactive_execution_review_20261026",
+    "test_proactivity",
+    "test_refactor",
+    "test_release_evidence",
+    "test_resource_second_review_20261026",
+    "test_runtime_admission_review_20261026"
+  ],
+  "extra_shared_module": "test_runtime_admission_review_20261026",
+  "note": "Overlapping modules and combined 18-L/24-F probes: per-card counts are not additive."
+}

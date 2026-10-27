@@ -1,0 +1,22 @@
+{
+  "parent_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+  "changed_cards": [
+    "ALN-18-L",
+    "ALN-19-A",
+    "ALN-30-B",
+    "ALN-16-Q",
+    "ALN-15-E",
+    "ALN-13-S",
+    "ALN-09-I",
+    "ALN-18-H",
+    "ALN-25-C",
+    "ALN-27-C",
+    "ALN-24-F"
+  ],
+  "errors": [],
+  "workpackages": 31,
+  "dispatches": 105,
+  "working_board_not_replaced": true,
+  "working_markdown_not_replaced": true,
+  "note": "Only own eleven cards and own source/batch entries reconstructed on HEAD; concurrent changes excluded."
+}

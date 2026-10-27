@@ -1,0 +1,217 @@
+C:\Users\lhang\AppData\Local\Programs\Python\Python310\lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.3.0) or chardet (7.5.1)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+Python version is above 3.10, patching the collections module.
+FFF.FFFFF                                                                [100%]
+================================== FAILURES ===================================
+_ test_forward_annotations_on_variadic_parameters_need_clarification[*items: "Helper"] _
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-iw3808f4/scratch/pytest/test_forward_annotations_on_va0')
+parameter = '*items: "Helper"'
+
+    @pytest.mark.parametrize("parameter", [
+        '*items: "Helper"', '**items: "Helper"', '*items: "list[Helper]"',
+    ])
+    def test_forward_annotations_on_variadic_parameters_need_clarification(tmp_path, parameter):
+        source = f'class Helper:\n    pass\n\ndef collect({parameter}):\n    pass\n'
+        (tmp_path / "sample.py").write_text(source, encoding="utf-8")
+        # The original annotations resolve; accepting a partial rename would break
+        # typing.get_type_hints despite both source versions still compiling.
+        namespace = {}
+        exec(compile(source, "sample.py", "exec"), namespace)
+        assert typing.get_type_hints(namespace["collect"])
+        result = analyze_rename(tmp_path, "Helper", "Renamed")
+        if result.status == "ok":
+            changed = result.edits[0]["new_text"]
+            namespace = {}
+            exec(compile(changed, "sample.py", "exec"), namespace)
+            with pytest.raises(NameError):
+                typing.get_type_hints(namespace["collect"])
+>       assert result.status == "needs_clarification"
+E       AssertionError: assert 'ok' == 'needs_clarification'
+E         
+E         - needs_clarification
+E         + ok
+
+tests\test_assigned_review_20261027.py:29: AssertionError
+_ test_forward_annotations_on_variadic_parameters_need_clarification[**items: "Helper"] _
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-iw3808f4/scratch/pytest/test_forward_annotations_on_va1')
+parameter = '**items: "Helper"'
+
+    @pytest.mark.parametrize("parameter", [
+        '*items: "Helper"', '**items: "Helper"', '*items: "list[Helper]"',
+    ])
+    def test_forward_annotations_on_variadic_parameters_need_clarification(tmp_path, parameter):
+        source = f'class Helper:\n    pass\n\ndef collect({parameter}):\n    pass\n'
+        (tmp_path / "sample.py").write_text(source, encoding="utf-8")
+        # The original annotations resolve; accepting a partial rename would break
+        # typing.get_type_hints despite both source versions still compiling.
+        namespace = {}
+        exec(compile(source, "sample.py", "exec"), namespace)
+        assert typing.get_type_hints(namespace["collect"])
+        result = analyze_rename(tmp_path, "Helper", "Renamed")
+        if result.status == "ok":
+            changed = result.edits[0]["new_text"]
+            namespace = {}
+            exec(compile(changed, "sample.py", "exec"), namespace)
+            with pytest.raises(NameError):
+                typing.get_type_hints(namespace["collect"])
+>       assert result.status == "needs_clarification"
+E       AssertionError: assert 'ok' == 'needs_clarification'
+E         
+E         - needs_clarification
+E         + ok
+
+tests\test_assigned_review_20261027.py:29: AssertionError
+_ test_forward_annotations_on_variadic_parameters_need_clarification[*items: "list[Helper]"] _
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-iw3808f4/scratch/pytest/test_forward_annotations_on_va2')
+parameter = '*items: "list[Helper]"'
+
+    @pytest.mark.parametrize("parameter", [
+        '*items: "Helper"', '**items: "Helper"', '*items: "list[Helper]"',
+    ])
+    def test_forward_annotations_on_variadic_parameters_need_clarification(tmp_path, parameter):
+        source = f'class Helper:\n    pass\n\ndef collect({parameter}):\n    pass\n'
+        (tmp_path / "sample.py").write_text(source, encoding="utf-8")
+        # The original annotations resolve; accepting a partial rename would break
+        # typing.get_type_hints despite both source versions still compiling.
+        namespace = {}
+        exec(compile(source, "sample.py", "exec"), namespace)
+        assert typing.get_type_hints(namespace["collect"])
+        result = analyze_rename(tmp_path, "Helper", "Renamed")
+        if result.status == "ok":
+            changed = result.edits[0]["new_text"]
+            namespace = {}
+            exec(compile(changed, "sample.py", "exec"), namespace)
+            with pytest.raises(NameError):
+                typing.get_type_hints(namespace["collect"])
+>       assert result.status == "needs_clarification"
+E       AssertionError: assert 'ok' == 'needs_clarification'
+E         
+E         - needs_clarification
+E         + ok
+
+tests\test_assigned_review_20261027.py:29: AssertionError
+_ test_scope_store_construction_never_commits_the_host_transaction[False-False] _
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-iw3808f4/scratch/pytest/test_scope_store_construction_0')
+already_initialized = False, commit = False
+
+    @pytest.mark.parametrize("already_initialized", [False, True])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_scope_store_construction_never_commits_the_host_transaction(tmp_path, already_initialized, commit):
+        path = str(tmp_path / "scope.db")
+        conn = sqlite3.connect(path)
+        observer = sqlite3.connect(path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("CREATE TABLE host_pending(value TEXT)")
+            if already_initialized:
+                ScopePolicyStore(conn)
+            conn.execute("INSERT INTO host_pending VALUES ('not decided')")
+            store = ScopePolicyStore(conn)
+>           assert conn.in_transaction
+E           assert False
+E            +  where False = <sqlite3.Connection object at 0x000001E9E61E7040>.in_transaction
+
+tests\test_assigned_review_20261027.py:56: AssertionError
+_ test_scope_store_construction_never_commits_the_host_transaction[False-True] _
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-iw3808f4/scratch/pytest/test_scope_store_construction_1')
+already_initialized = True, commit = False
+
+    @pytest.mark.parametrize("already_initialized", [False, True])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_scope_store_construction_never_commits_the_host_transaction(tmp_path, already_initialized, commit):
+        path = str(tmp_path / "scope.db")
+        conn = sqlite3.connect(path)
+        observer = sqlite3.connect(path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("CREATE TABLE host_pending(value TEXT)")
+            if already_initialized:
+                ScopePolicyStore(conn)
+            conn.execute("INSERT INTO host_pending VALUES ('not decided')")
+            store = ScopePolicyStore(conn)
+>           assert conn.in_transaction
+E           assert False
+E            +  where False = <sqlite3.Connection object at 0x000001E9E61E7240>.in_transaction
+
+tests\test_assigned_review_20261027.py:56: AssertionError
+_ test_scope_store_construction_never_commits_the_host_transaction[True-False] _
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-iw3808f4/scratch/pytest/test_scope_store_construction_2')
+already_initialized = False, commit = True
+
+    @pytest.mark.parametrize("already_initialized", [False, True])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_scope_store_construction_never_commits_the_host_transaction(tmp_path, already_initialized, commit):
+        path = str(tmp_path / "scope.db")
+        conn = sqlite3.connect(path)
+        observer = sqlite3.connect(path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("CREATE TABLE host_pending(value TEXT)")
+            if already_initialized:
+                ScopePolicyStore(conn)
+            conn.execute("INSERT INTO host_pending VALUES ('not decided')")
+            store = ScopePolicyStore(conn)
+>           assert conn.in_transaction
+E           assert False
+E            +  where False = <sqlite3.Connection object at 0x000001E9E61E7440>.in_transaction
+
+tests\test_assigned_review_20261027.py:56: AssertionError
+_ test_scope_store_construction_never_commits_the_host_transaction[True-True] _
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-iw3808f4/scratch/pytest/test_scope_store_construction_3')
+already_initialized = True, commit = True
+
+    @pytest.mark.parametrize("already_initialized", [False, True])
+    @pytest.mark.parametrize("commit", [False, True])
+    def test_scope_store_construction_never_commits_the_host_transaction(tmp_path, already_initialized, commit):
+        path = str(tmp_path / "scope.db")
+        conn = sqlite3.connect(path)
+        observer = sqlite3.connect(path)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("CREATE TABLE host_pending(value TEXT)")
+            if already_initialized:
+                ScopePolicyStore(conn)
+            conn.execute("INSERT INTO host_pending VALUES ('not decided')")
+            store = ScopePolicyStore(conn)
+>           assert conn.in_transaction
+E           assert False
+E            +  where False = <sqlite3.Connection object at 0x000001E9E61E7640>.in_transaction
+
+tests\test_assigned_review_20261027.py:56: AssertionError
+_ test_scope_store_rolls_back_its_own_partial_schema_on_initialization_error __
+
+tmp_path = WindowsPath('E:/evalapp/outputs/review5-iw3808f4/scratch/pytest/test_scope_store_rolls_back_it0')
+
+    def test_scope_store_rolls_back_its_own_partial_schema_on_initialization_error(tmp_path):
+        conn = sqlite3.connect(str(tmp_path / "fresh.db"), factory=FailingSchemaConnection)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.fail_schema = True
+            with pytest.raises(sqlite3.OperationalError, match="initialization interrupted"):
+                ScopePolicyStore(conn)
+            assert not conn.in_transaction
+            tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+>           assert tables == []
+E           assert [<sqlite3.Row...01E9E634FFA0>] == []
+E             
+E             Left contains 2 more items, first extra item: <sqlite3.Row object at 0x000001E9E634EB60>
+E             Use -v to get more diff
+
+tests\test_assigned_review_20261027.py:89: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_assigned_review_20261027.py::test_forward_annotations_on_variadic_parameters_need_clarification[*items: "Helper"]
+FAILED tests/test_assigned_review_20261027.py::test_forward_annotations_on_variadic_parameters_need_clarification[**items: "Helper"]
+FAILED tests/test_assigned_review_20261027.py::test_forward_annotations_on_variadic_parameters_need_clarification[*items: "list[Helper]"]
+FAILED tests/test_assigned_review_20261027.py::test_scope_store_construction_never_commits_the_host_transaction[False-False]
+FAILED tests/test_assigned_review_20261027.py::test_scope_store_construction_never_commits_the_host_transaction[False-True]
+FAILED tests/test_assigned_review_20261027.py::test_scope_store_construction_never_commits_the_host_transaction[True-False]
+FAILED tests/test_assigned_review_20261027.py::test_scope_store_construction_never_commits_the_host_transaction[True-True]
+FAILED tests/test_assigned_review_20261027.py::test_scope_store_rolls_back_its_own_partial_schema_on_initialization_error
+8 failed, 1 passed in 0.30s

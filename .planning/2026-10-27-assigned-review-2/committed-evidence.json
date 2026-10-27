@@ -1,0 +1,412 @@
+{
+  "date": "2026-10-27",
+  "source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+  "fix_commits": [
+    "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77"
+  ],
+  "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+  "validation_records": {
+    "negative-validation": {
+      "pytest_arguments": [
+        "tests/test_assigned_review_20261027.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-iw3808f4",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 1,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "focused-validation": {
+      "pytest_arguments": [
+        "tests/test_assigned_review_20261027.py",
+        "tests/test_refactor.py",
+        "tests/test_feedback_refactor_review_20261026.py",
+        "tests/test_multi_principal_scope.py",
+        "tests/test_evidence_scope_review_20261026.py",
+        "-q"
+      ],
+      "snapshot_commit": null,
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-k57b9hmg",
+      "source_path_when_tested": "E:\\evalapp",
+      "module_source_probe": "E:\\evalapp\\evoagent\\__init__.py\nE:\\evalapp\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "final-validation": {
+      "pytest_arguments": [
+        "tests/test_assigned_review_20261027.py",
+        "tests/test_assigned_scheduler_review_20261026.py",
+        "tests/test_benchmark_review_20261026.py",
+        "tests/test_candidate_host_api.py",
+        "tests/test_coding_consumption.py",
+        "tests/test_coding_expert_consumer.py",
+        "tests/test_coding_tools.py",
+        "tests/test_developed_review_5.py",
+        "tests/test_evidence_api.py",
+        "tests/test_evidence_scope_review_20261026.py",
+        "tests/test_feedback_refactor_review_20261026.py",
+        "tests/test_goal_scheduler.py",
+        "tests/test_goal_scheduler_host.py",
+        "tests/test_host_benchmark.py",
+        "tests/test_knowledge.py",
+        "tests/test_knowledge_persistence.py",
+        "tests/test_knowledge_review_20261026.py",
+        "tests/test_media_vendor.py",
+        "tests/test_media_vendor_review_20261026.py",
+        "tests/test_multi_principal_scope.py",
+        "tests/test_new_host_review_20261026.py",
+        "tests/test_observability_evidence.py",
+        "tests/test_observability_repository.py",
+        "tests/test_proactive_execution.py",
+        "tests/test_proactive_execution_review_20261026.py",
+        "tests/test_proactivity.py",
+        "tests/test_refactor.py",
+        "tests/test_release_evidence.py",
+        "tests/test_resource_second_review_20261026.py",
+        "tests/test_runtime_admission_review_20261026.py",
+        "-q",
+        "-k",
+        "not test_real_host_pressure_yields_and_core_state_untouched",
+        "--junitxml=E:\\evalapp\\.planning\\2026-10-27-assigned-review-2\\junit.xml"
+      ],
+      "snapshot_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "runner_sha256_lf": "e1152ec7e191e42a30a011b6bb05bb223c20556a5548442d9e9349ff1f119a26",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\review5-2y57qe8w",
+      "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+      "archive_sha256": "14cb7d7283cd47c5db036a980a196333108e2ec63925d934df75be47d435c4f1",
+      "source_path_when_tested": "E:\\evalapp\\outputs\\review5-2y57qe8w\\source",
+      "module_source_probe": "E:\\evalapp\\outputs\\review5-2y57qe8w\\source\\evoagent\\__init__.py\nE:\\evalapp\\outputs\\review5-2y57qe8w\\source\\evoagent\\tools\\refactor.py\n",
+      "exit_code": 0,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only the new TemporaryDirectory owned by this runner; no old cache roots touched"
+    },
+    "validation": {
+      "commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+      "runner_sha256_lf": "1816f02d884c3569be8df48f5e66b25dee4df6106dd13475e50fe7ed4aefb1e2",
+      "node": "v24.16.0",
+      "owned_temp_directory": "E:\\evalapp\\outputs\\device-review-nu9akeb1",
+      "archive_sha256": "86f7a1a21e80ce7fe949752951cb3b4082c92e38cbebac7ba23ca62cdd98b112",
+      "tested_source": "E:\\evalapp\\outputs\\device-review-nu9akeb1\\source\\android-app",
+      "typescript": "5.9.3",
+      "commands": {
+        "client-tests": [
+          "node",
+          "--test",
+          "--test-reporter=tap",
+          "test/offline/*.test.ts",
+          "test/device/*.test.ts",
+          "test/update/*.test.ts"
+        ],
+        "typecheck": [
+          "node",
+          "E:\\evalapp\\android-app\\node_modules\\typescript\\bin\\tsc",
+          "--noEmit"
+        ]
+      },
+      "results": {
+        "client-tests": 0,
+        "typecheck": 0
+      },
+      "dependency_junction_removed": true,
+      "installed_dependencies_preserved": true,
+      "temporary_data_removed": true,
+      "cleanup_scope": "only this run's new TemporaryDirectory and junction; no old caches touched"
+    }
+  },
+  "cards": {
+    "ALN-18-L": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+      "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+      "status": "changes_fixed_pending_independent_recheck",
+      "scope": "可变参数注解缺口修复，AST重构/诊断及编码工具消费者",
+      "checks": {
+        "backend_modules": [
+          "test_refactor",
+          "test_feedback_refactor_review_20261026",
+          "test_developed_review_5",
+          "test_coding_tools",
+          "test_assigned_review_20261027"
+        ],
+        "backend_passed": 132,
+        "backend_skipped": 0,
+        "client_passed": 0,
+        "typecheck_exit": null
+      },
+      "remaining_acceptance_gaps": "语义LSP/真实专家自动装配仍缺；e89b4ae新注解拒绝补丁待独立确认",
+      "independent_acceptance_added": false,
+      "prior_codex_fixes_require_independent_review": true
+    },
+    "ALN-19-A": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+      "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "scope": "本地HTTP供应商/未知费用、预算预留与拒绝、发布证据契约",
+      "checks": {
+        "backend_modules": [
+          "test_media_vendor",
+          "test_media_vendor_review_20261026",
+          "test_release_evidence"
+        ],
+        "backend_passed": 62,
+        "backend_skipped": 0,
+        "client_passed": 0,
+        "typecheck_exit": null
+      },
+      "remaining_acceptance_gaps": "真实可播放供应商产物/版本、价格与账单、持久预算及生产凭证未验",
+      "independent_acceptance_added": false,
+      "prior_codex_fixes_require_independent_review": true
+    },
+    "ALN-30-B": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+      "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "scope": "固定源码成果视图/记忆控制及完整离线、设备、更新测试与TS",
+      "checks": {
+        "backend_modules": [],
+        "backend_passed": 0,
+        "backend_skipped": 0,
+        "client_passed": 469,
+        "typecheck_exit": 0
+      },
+      "remaining_acceptance_gaps": "项目工作区节点、全量成果下载、固定APK与模型实际禁用链仍待",
+      "independent_acceptance_added": false,
+      "prior_codex_fixes_require_independent_review": true
+    },
+    "ALN-16-Q": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+      "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "scope": "聚合证据、授权导出下载、删除预览摘要/拒绝及残留对账",
+      "checks": {
+        "backend_modules": [
+          "test_evidence_api",
+          "test_evidence_scope_review_20261026",
+          "test_observability_repository",
+          "test_observability_evidence"
+        ],
+        "backend_passed": 45,
+        "backend_skipped": 0,
+        "client_passed": 0,
+        "typecheck_exit": null
+      },
+      "remaining_acceptance_gaps": "受信主体/授权证据联验、大导出/清理期与设备仍待；跨库删除仅维护窗口",
+      "independent_acceptance_added": false,
+      "prior_codex_fixes_require_independent_review": true
+    },
+    "ALN-15-E": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+      "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "scope": "原生采样TS解析和后台helper；真实index.js接线走读，非Kotlin/设备接受",
+      "checks": {
+        "backend_modules": [],
+        "backend_passed": 0,
+        "backend_skipped": 0,
+        "client_passed": 469,
+        "typecheck_exit": 0
+      },
+      "remaining_acceptance_gaps": "index.js实际HeadlessTask未注入sampler/highWater；策略下发/Kotlin/新APK真机未验",
+      "independent_acceptance_added": false,
+      "prior_codex_fixes_require_independent_review": true
+    },
+    "ALN-13-S": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+      "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "scope": "完整在途/目标账本、时钟/策略、宿主主动off和资源准入",
+      "checks": {
+        "backend_modules": [
+          "test_goal_scheduler",
+          "test_goal_scheduler_host",
+          "test_new_host_review_20261026",
+          "test_assigned_scheduler_review_20261026"
+        ],
+        "backend_passed": 49,
+        "backend_skipped": 0,
+        "client_passed": 0,
+        "typecheck_exit": null
+      },
+      "remaining_acceptance_gaps": "既有a435ce1/f973dcc调度补丁待独立确认；真实sampler/主动预算及运行中治理/生产长跑仍待",
+      "independent_acceptance_added": false,
+      "prior_codex_fixes_require_independent_review": true
+    },
+    "ALN-09-I": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+      "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "scope": "候选宿主/持久队列、host-bench/2失败边界及受控API",
+      "checks": {
+        "backend_modules": [
+          "test_candidate_host_api",
+          "test_host_benchmark",
+          "test_benchmark_review_20261026",
+          "test_new_host_review_20261026"
+        ],
+        "backend_passed": 53,
+        "backend_skipped": 0,
+        "client_passed": 0,
+        "typecheck_exit": null
+      },
+      "remaining_acceptance_gaps": "candidate_id/dataset到权威仓库的精确绑定、生产并发与完整管理面仍缺",
+      "independent_acceptance_added": false,
+      "prior_codex_fixes_require_independent_review": true
+    },
+    "ALN-18-H": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+      "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "scope": "精确编码包/独立项目注册表、真实语法工具、宿主权限与拒绝",
+      "checks": {
+        "backend_modules": [
+          "test_coding_expert_consumer",
+          "test_coding_consumption",
+          "test_coding_tools",
+          "test_new_host_review_20261026"
+        ],
+        "backend_passed": 73,
+        "backend_skipped": 0,
+        "client_passed": 0,
+        "typecheck_exit": null
+      },
+      "remaining_acceptance_gaps": "真实任务自动选专家→安装→执行→失败回滚再检闭环、真实项目升级恢复仍待",
+      "independent_acceptance_added": false,
+      "prior_codex_fixes_require_independent_review": true
+    },
+    "ALN-25-C": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+      "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "scope": "真实预留协议/未知提交、幂等、资源准入与停止策略",
+      "checks": {
+        "backend_modules": [
+          "test_proactive_execution",
+          "test_proactive_execution_review_20261026",
+          "test_proactivity",
+          "test_resource_second_review_20261026"
+        ],
+        "backend_passed": 54,
+        "backend_skipped": 0,
+        "client_passed": 0,
+        "typecheck_exit": null
+      },
+      "remaining_acceptance_gaps": "真实资源/预算账户、实际费用settle回接、权威并发/运行中停止及核心质量延迟仍待",
+      "independent_acceptance_added": false,
+      "prior_codex_fixes_require_independent_review": true
+    },
+    "ALN-27-C": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+      "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+      "status": "technical_recheck_complete_with_acceptance_gaps",
+      "scope": "知识持久化/新鲜撤销/事务与迁移、实际上下文注入边界",
+      "checks": {
+        "backend_modules": [
+          "test_knowledge",
+          "test_knowledge_persistence",
+          "test_knowledge_review_20261026"
+        ],
+        "backend_passed": 54,
+        "backend_skipped": 0,
+        "client_passed": 0,
+        "typecheck_exit": null
+      },
+      "remaining_acceptance_gaps": "正式验收项2用户/项目身份可见性绑定仍缺，真实同任务集质量/逆向迁移与多进程仍待",
+      "independent_acceptance_added": false,
+      "prior_codex_fixes_require_independent_review": true
+    },
+    "ALN-24-F": {
+      "date": "2026-10-27",
+      "reviewer": "codex-runtime",
+      "reviewed_source_commit": "e89b4aee1f6cb1e18ee49baa5a4e2246570ddc77",
+      "source_tree": "b24bee186f568cbde858bd28be21b127b7c7980e",
+      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+      "evidence": ".planning/2026-10-27-assigned-review-2/committed-evidence.json",
+      "status": "changes_fixed_pending_independent_recheck",
+      "scope": "建表事务所有权修复、跨连接提交/回滚和主体分区迁移拒绝",
+      "checks": {
+        "backend_modules": [
+          "test_multi_principal_scope",
+          "test_evidence_scope_review_20261026",
+          "test_assigned_review_20261027"
+        ],
+        "backend_passed": 38,
+        "backend_skipped": 0,
+        "client_passed": 0,
+        "typecheck_exit": null
+      },
+      "remaining_acceptance_gaps": "真实主体策略→模型/manifest、Grant/撤销及App管理仍缺；e89b4ae初始化事务补丁待独立确认",
+      "independent_acceptance_added": false,
+      "prior_codex_fixes_require_independent_review": true
+    }
+  },
+  "results": {
+    "negative": "8 failed, 1 passed",
+    "focused": "77 passed",
+    "fixed_backend": "487 passed, 1 deselected",
+    "fixed_client": "469 passed, TypeScript exit 0"
+  },
+  "owned_validation_scopes_removed": 4,
+  "independent_acceptance_added": false,
+  "not_run": [
+    "full backend",
+    "whole-host CPU saturation",
+    "Kotlin compiler",
+    "device/APK",
+    "production providers"
+  ],
+  "foreign_work_preserved": true,
+  "log_sha256_lf": {
+    "client-run.txt": "a9b6bbfc6623f71413ec3f50dfcab323cf121eb218d1922e62e2042b42783579",
+    "client-tests.txt": "5dcc190e3671f41bd8c38a9d2d50ed5bd6dc9f59993d114e1944888362481d1c",
+    "final-tests.txt": "a41d6885fe6e1c13a5b02071340bc59e783bf95f4c1d25a259bbd92cf6693851",
+    "focused-tests.txt": "bf4fc7c29eedba1e5ed964d252e12172721b3d6360ef142442c9d08738f23da9",
+    "negative-tests.txt": "c016c6859a4c5966940647775fe2c1f6986e1ccc7a6875faaf2e869efb90f51e",
+    "typecheck.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}
