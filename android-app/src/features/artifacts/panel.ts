@@ -47,7 +47,7 @@ export function previewNotice(
   if (!preview) return "未打开预览";
   if (preview.text !== null) {
     return preview.truncated
-      ? "预览已截断（服务端仅提供前 4KB）；完整内容需后续下载能力"
+      ? "预览已截断（服务端前 4KB）；可全量下载获取完整内容"
       : "已打开文本预览";
   }
   if (preview.base64) {
@@ -71,4 +71,17 @@ export function panelHint(state: {
 
 export function emptyTaskIdHint(taskId: string | null | undefined): string | null {
   return taskId ? null : "本地任务尚未关联服务端任务，无成果可查";
+}
+
+/**
+ * 全量下载路径（服务端 ALN-30-B 端点）。无真实文件（bytes<=0 或 sha256
+ * 缺失）时返回 null——不提供下载入口，避免导出空/不可校验内容。
+ */
+export function artifactDownloadPath(
+  taskId: string,
+  meta: TaskArtifactMeta,
+): string | null {
+  if (!taskId || !meta || !meta.sha256 || !(meta.bytes > 0)) return null;
+  return `/tasks/${encodeURIComponent(taskId)}/artifacts/` +
+    `${encodeURIComponent(meta.artifact_id)}/download`;
 }

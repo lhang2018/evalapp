@@ -182,6 +182,11 @@ export interface TaskArtifactPreview {
   base64: string | null;
 }
 
+/** 全量下载（ALN-30-B）：服务端返回完整内容与 sha256。 */
+export interface TaskArtifactDownload extends TaskArtifactPreview {
+  sha256: string;
+}
+
 export interface MemoryControlItem extends MemoryEntry {
   provenance?: {
     source?: string;
@@ -657,6 +662,19 @@ export class EvoAgentClient {
     return this.req<TaskArtifactPreview>(
       `/tasks/${encodeURIComponent(taskId)}/artifacts/` +
         `${encodeURIComponent(artifactId)}/preview`,
+      { headers: this.bearer(adminToken) },
+    );
+  }
+
+  /** 全量下载（ALN-30-B）：完整内容 + sha256，不再只有 4KB 预览。 */
+  artifactDownload(
+    taskId: string,
+    artifactId: string,
+    adminToken?: string,
+  ): Promise<TaskArtifactDownload> {
+    return this.req<TaskArtifactDownload>(
+      `/tasks/${encodeURIComponent(taskId)}/artifacts/` +
+        `${encodeURIComponent(artifactId)}/download`,
       { headers: this.bearer(adminToken) },
     );
   }
