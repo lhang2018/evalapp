@@ -1,0 +1,55 @@
+{
+ "date": "2026-10-27",
+ "reviewer": "dsh-lead（二次复核确认；非各卡作者）",
+ "cards": [
+  "ALN-15-D",
+  "ALN-07-C",
+  "ALN-12-E"
+ ],
+ "commits_reviewed": [
+  "7b16edc（15-D 无效采样/准入旁路）",
+  "7de95f7 + 33c22a1（07-C RG-01~03）",
+  "369981e（12-E 下发前重验）"
+ ],
+ "commands": {
+  "backend": "pytest（资源准入/主动/恢复门禁/绑定/状态机专项）-> 91 passed",
+  "client": "node --test（deviceDispatchBoundary/deviceTaskReview/mainchainReview/deviceTaskApp）-> 62 passed；tsc 0"
+ },
+ "probe": {
+  "invalid_background": {
+   "decision": "defer",
+   "reason": "资源采样不可用或无效，后台任务暂缓",
+   "sample_valid": false
+  },
+  "invalid_foreground": {
+   "decision": "admit"
+  },
+  "nan_json_safe": {
+   "cpu": null,
+   "pressure_finite": true
+  },
+  "valid_admit": {
+   "decision": "admit"
+  },
+  "07c_static": {
+   "side_effect_projection": true,
+   "gate_cleanup": true,
+   "recovering_edge": true
+  },
+  "12e_static": {
+   "can_dispatch_guard": true,
+   "dispatch_fact": true,
+   "unsupported_guard_refused": true
+  }
+ },
+ "checks": {
+  "invalid_sample_defers_background": true,
+  "invalid_sample_foreground_compat": true,
+  "nan_not_serialized": true,
+  "valid_sample_admits": true,
+  "07c_fix_points_present": true,
+  "12e_fix_points_present": true
+ },
+ "all_checks_pass": true,
+ "conclusion": "三项新补丁的修复点与回归验证一致；建议维持 review，由原分配审阅人/终审人确认后接受"
+}
