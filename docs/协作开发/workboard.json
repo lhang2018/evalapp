@@ -4522,6 +4522,15 @@
      "log": ".planning/2026-10-26-assigned-review/committed-evidence.json",
      "scope": "指派卡技术复核；本卡后端相关50项（模块交叉计数不可相加）",
      "result": "technical_recheck_complete_with_acceptance_gaps；本轮未重造真实CPU饱和；旧0.768仅新准入；5bc1725补丁独立复核、真实执行层/固定设备非干扰仍待"
+    },
+    {
+     "date": "2026-10-27",
+     "scope": "终审（claude-main）：codex二审50项通过，判别力已独立确认",
+     "source_commit": "dc7b23358523",
+     "command": "干净 detached worktree 复跑后端全量/客户端全量/typecheck；变异判别力检验（回退 codex 自写修复要求其自带测试必须失败）；逐卡核对任务卡编号验收条件与保留缺口",
+     "result": "独立复现：固定源 f973dcc source_tree d8abce51 与客户端子树 a3e36b9e 核对一致；后端全量 2578 passed/1 skipped/0 failed（594s）、当前 HEAD 2686 passed/1 skipped/0 failed；客户端 459 passed/0 failed（串行 device149+offline234+update76）、typecheck exit 0（tsc 5.9.3）；变异第一批 AS-01~AS-05 6/6 捕获 0 存活；第二批 b2f3b0c/b9d9229/c181bad 首轮 P2 存活——16-Q 的 MAX_CHUNK_BYTES 导出上限无断言（无人守护的死代码，行为本身正确），终审补 test_oversized_limit_is_clamped_to_max_chunk 后 3/3 捕获 0 存活。终审决定：维持 review——codex二审50项通过，判别力已独立确认；卡片自身验收项未完成：25-B验收要求F04-03/04资源压力下实测；本轮未重造整机CPU饱和，真实执行层/固定设备非干扰待，按「场景未跑保持未测，开发完成不替代独立接受」维持 review，不以组件通过替代卡片接受；仍需外部条件：需固定设备真实资源压力实测",
+     "log": ".planning/2026-10-27-final-review/",
+     "delivery": "docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md"
     }
    ],
    "card": "docs/协作开发/任务卡/25-B-主动强度、停止与资源非干扰.md",
@@ -4547,7 +4556,7 @@
     "F04",
     "G5"
    ],
-   "next_step": "codex技术复核已完成（固定f973dcc相关522/客户端同一子树459/tsc0，逐卡范围见报告）；本轮未重造真实CPU饱和；旧0.768仅新准入；5bc1725补丁独立复核、真实执行层/固定设备非干扰仍待；docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+   "next_step": "终审（claude-main，dc7b23358523）已出结论：维持 review。技术层已独立确认（独立复跑+变异判别力检验，见 docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md）；卡片自身验收项未完成：25-B验收要求F04-03/04资源压力下实测；本轮未重造整机CPU饱和，真实执行层/固定设备非干扰待；仍需外部条件：需固定设备真实资源压力实测。本轮不转 accepted，待上述项完成并经独立复核。",
    "working_basis": "2026-10-25 zcode-next 认领。复用 15-D ResourceGovernor（已accepted）、25-A ProactiveAssistService（已accepted）、BudgetLedger 既有池语义；写入边界 goals/ + budget.py + android-app（客户端开关投影）；资源压力实测用可控压力源（真机测量另验）。",
    "prerequisites": "设备或宿主资源测量环境；单纯Mock预算计数不算非干扰验收",
    "latest_code_review": {
@@ -7279,7 +7288,7 @@
     "A-60",
     "A-70"
    ],
-   "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；语义LSP/真实专家自动装配仍缺；e89b4ae新注解拒绝补丁待独立确认；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+   "next_step": "codex-runtime 技术复核（123项）结论记录在案（终审未重复接受）；final_reviewer 仍为 null 待分配——改派前已由用户指示复核方为 codex，终审人分配属另一决策，本会话不自行认领终审。见 docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md。",
    "delivery": "docs/协作开发/交付/ALN-18-L-跨文件语义与LSP能力扩展.md",
    "working_basis": "2026-10-25 zcode-main 认领开工。base_commit e16dbfe 为实际接手锚点（基线仍 candidate，prepared_candidate 21899e6 未发布）。新增独占模块 evoagent/tools/refactor.py（跨文件 AST 引用分析 + 固定语言服务版本与不可用诚实降级 + 诊断前后对照 + 歧义重构澄清），仅新增文件与测试，不改 coding/registry 等共享文件。",
    "prerequisites": "语言服务依赖与真实项目",
@@ -7412,6 +7421,15 @@
      "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
      "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+    },
+    {
+     "date": "2026-10-27",
+     "scope": "终审（claude-main）：codex技术复核62项通过，判别力已独立确认",
+     "source_commit": "dc7b23358523",
+     "command": "干净 detached worktree 复跑后端全量/客户端全量/typecheck；变异判别力检验（回退 codex 自写修复要求其自带测试必须失败）；逐卡核对任务卡编号验收条件与保留缺口",
+     "result": "独立复现：固定源 f973dcc source_tree d8abce51 与客户端子树 a3e36b9e 核对一致；后端全量 2578 passed/1 skipped/0 failed（594s）、当前 HEAD 2686 passed/1 skipped/0 failed；客户端 459 passed/0 failed（串行 device149+offline234+update76）、typecheck exit 0（tsc 5.9.3）；变异第一批 AS-01~AS-05 6/6 捕获 0 存活；第二批 b2f3b0c/b9d9229/c181bad 首轮 P2 存活——16-Q 的 MAX_CHUNK_BYTES 导出上限无断言（无人守护的死代码，行为本身正确），终审补 test_oversized_limit_is_clamped_to_max_chunk 后 3/3 捕获 0 存活。终审决定：维持 review——codex技术复核62项通过，判别力已独立确认；卡片自身验收项未完成：「真实生成可播放产物」未做（仅本地HTTP夹具）；真实凭据/价格账单/持久预算缺，按「场景未跑保持未测，开发完成不替代独立接受」维持 review，不以组件通过替代卡片接受；仍需外部条件：需真实音视频供应商凭据与预算",
+     "log": ".planning/2026-10-27-final-review/",
+     "delivery": "docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md"
     }
    ],
    "card": "docs/协作开发/任务卡/19-A-真实音视频供应商漫剧纵切片.md",
@@ -7430,7 +7448,7 @@
    "requirement_refs": [
     "F02"
    ],
-   "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；真实可播放供应商产物/版本、价格与账单、持久预算及生产凭证未验；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+   "next_step": "终审（claude-main，dc7b23358523）已出结论：维持 review。技术层已独立确认（独立复跑+变异判别力检验，见 docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md）；卡片自身验收项未完成：「真实生成可播放产物」未做（仅本地HTTP夹具）；真实凭据/价格账单/持久预算缺；仍需外部条件：需真实音视频供应商凭据与预算。本轮不转 accepted，待上述项完成并经独立复核。",
    "working_basis": "以bf3a2eab1a1f3906106e60451d39b165c35b672a（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "真实服务配置与预算",
    "ownership_history": [
@@ -7856,7 +7874,7 @@
     "G0",
     "G3"
    ],
-   "next_step": "codex技术复核已完成（固定f973dcc相关522/客户端同一子树459/tsc0，逐卡范围见报告）；本地真实部署三库恢复成功链路已补证；原作者claude-main不能终审，需另分配独立终审，旧codex补丁也需独立确认；docs/协作开发/验收/2026-10-26-指派十三项技术复核.md",
+   "next_step": "终审（claude-main）不适用于本卡：owner 即 claude-main，作者不自批，final_reviewer 维持 null 待另分配独立终审人。技术层已由 dsh-lead 一审接受、codex 复核三库恢复成功链路并补证；终审不重复接受。见 docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md。",
    "working_basis": "claude-main 认领实施：新增 evoagent/integration/wiring.py 独占模块；app.py/cli.py 按精确点外科手术式修改（当前两者均无他人在途）；客户端 App.tsx 装配不在本卡",
    "prerequisites": "仅需仓库与本地测试环境",
    "ownership_history": [
@@ -8007,6 +8025,15 @@
      "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
      "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+    },
+    {
+     "date": "2026-10-27",
+     "scope": "终审（claude-main）：codex技术复核459客户端通过，判别力已独立确认",
+     "source_commit": "dc7b23358523",
+     "command": "干净 detached worktree 复跑后端全量/客户端全量/typecheck；变异判别力检验（回退 codex 自写修复要求其自带测试必须失败）；逐卡核对任务卡编号验收条件与保留缺口",
+     "result": "独立复现：固定源 f973dcc source_tree d8abce51 与客户端子树 a3e36b9e 核对一致；后端全量 2578 passed/1 skipped/0 failed（594s）、当前 HEAD 2686 passed/1 skipped/0 failed；客户端 459 passed/0 failed（串行 device149+offline234+update76）、typecheck exit 0（tsc 5.9.3）；变异第一批 AS-01~AS-05 6/6 捕获 0 存活；第二批 b2f3b0c/b9d9229/c181bad 首轮 P2 存活——16-Q 的 MAX_CHUNK_BYTES 导出上限无断言（无人守护的死代码，行为本身正确），终审补 test_oversized_limit_is_clamped_to_max_chunk 后 3/3 捕获 0 存活。终审决定：维持 review——codex技术复核459客户端通过，判别力已独立确认；卡片自身验收项未完成：项目/工作区节点视图、真机固定APK与后续模型实际禁用链未闭合，按「场景未跑保持未测，开发完成不替代独立接受」维持 review，不以组件通过替代卡片接受；仍需外部条件：需联网真机",
+     "log": ".planning/2026-10-27-final-review/",
+     "delivery": "docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md"
     }
    ],
    "card": "docs/协作开发/任务卡/30-B-客户端工作区成果与记忆控制接线.md",
@@ -8033,7 +8060,7 @@
     "UX-24"
    ],
    "priority": "P0",
-   "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；项目工作区节点、全量成果下载、固定APK与模型实际禁用链仍待；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+   "next_step": "终审（claude-main，dc7b23358523）已出结论：维持 review。技术层已独立确认（独立复跑+变异判别力检验，见 docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md）；卡片自身验收项未完成：项目/工作区节点视图、真机固定APK与后续模型实际禁用链未闭合；仍需外部条件：需联网真机。本轮不转 accepted，待上述项完成并经独立复核。",
    "working_basis": "以2f112276754ae10567e10d62bcfe21b11863037d（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；设备验收需明确空闲窗口",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -8177,6 +8204,15 @@
      "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
      "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+    },
+    {
+     "date": "2026-10-27",
+     "scope": "终审（claude-main）：codex技术复核45项通过，判别力已独立确认；终审另闭合导出上限断言盲区",
+     "source_commit": "dc7b23358523",
+     "command": "干净 detached worktree 复跑后端全量/客户端全量/typecheck；变异判别力检验（回退 codex 自写修复要求其自带测试必须失败）；逐卡核对任务卡编号验收条件与保留缺口",
+     "result": "独立复现：固定源 f973dcc source_tree d8abce51 与客户端子树 a3e36b9e 核对一致；后端全量 2578 passed/1 skipped/0 failed（594s）、当前 HEAD 2686 passed/1 skipped/0 failed；客户端 459 passed/0 failed（串行 device149+offline234+update76）、typecheck exit 0（tsc 5.9.3）；变异第一批 AS-01~AS-05 6/6 捕获 0 存活；第二批 b2f3b0c/b9d9229/c181bad 首轮 P2 存活——16-Q 的 MAX_CHUNK_BYTES 导出上限无断言（无人守护的死代码，行为本身正确），终审补 test_oversized_limit_is_clamped_to_max_chunk 后 3/3 捕获 0 存活。终审决定：维持 review——codex技术复核45项通过，判别力已独立确认；终审另闭合导出上限断言盲区；卡片自身验收项未完成：跨主体真实身份/授权证据消费、大导出/清理期、跨库删除原子性未闭合（不得宣称全域擦除），按「场景未跑保持未测，开发完成不替代独立接受」维持 review，不以组件通过替代卡片接受；仍需外部条件：需真实多主体鉴权联验与设备",
+     "log": ".planning/2026-10-27-final-review/",
+     "delivery": "docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md"
     }
    ],
    "card": "docs/协作开发/任务卡/16-Q-聚合观测与受控导出删除API接线.md",
@@ -8196,7 +8232,7 @@
     "G2"
    ],
    "priority": "P0",
-   "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；受信主体/授权证据联验、大导出/清理期与设备仍待；跨库删除仅维护窗口；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+   "next_step": "终审（claude-main，dc7b23358523）已出结论：维持 review。技术层已独立确认（独立复跑+变异判别力检验，见 docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md）；卡片自身验收项未完成：跨主体真实身份/授权证据消费、大导出/清理期、跨库删除原子性未闭合（不得宣称全域擦除）；仍需外部条件：需真实多主体鉴权联验与设备。本轮不转 accepted，待上述项完成并经独立复核。",
    "working_basis": "以35dfa152a6e378e17e83ce0251f003fa9b205a2f（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -8394,6 +8430,15 @@
      "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
      "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+    },
+    {
+     "date": "2026-10-27",
+     "scope": "终审（claude-main）：codex技术复核459客户端通过，判别力已独立确认",
+     "source_commit": "dc7b23358523",
+     "command": "干净 detached worktree 复跑后端全量/客户端全量/typecheck；变异判别力检验（回退 codex 自写修复要求其自带测试必须失败）；逐卡核对任务卡编号验收条件与保留缺口",
+     "result": "独立复现：固定源 f973dcc source_tree d8abce51 与客户端子树 a3e36b9e 核对一致；后端全量 2578 passed/1 skipped/0 failed（594s）、当前 HEAD 2686 passed/1 skipped/0 failed；客户端 459 passed/0 failed（串行 device149+offline234+update76）、typecheck exit 0（tsc 5.9.3）；变异第一批 AS-01~AS-05 6/6 捕获 0 存活；第二批 b2f3b0c/b9d9229/c181bad 首轮 P2 存活——16-Q 的 MAX_CHUNK_BYTES 导出上限无断言（无人守护的死代码，行为本身正确），终审补 test_oversized_limit_is_clamped_to_max_chunk 后 3/3 捕获 0 存活。终审决定：维持 review——codex技术复核459客户端通过，判别力已独立确认；卡片自身验收项未完成：报告自述「接受仍阻塞」：index.js真实HeadlessTask仍未注入resourceSampler/highWater，按「场景未跑保持未测，开发完成不替代独立接受」维持 review，不以组件通过替代卡片接受；仍需外部条件：需策略下发与真机周期压力",
+     "log": ".planning/2026-10-27-final-review/",
+     "delivery": "docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md"
     }
    ],
    "card": "docs/协作开发/任务卡/15-E-原生资源采样与后台周期准入.md",
@@ -8410,7 +8455,7 @@
     "G5"
    ],
    "priority": "P1",
-   "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；index.js实际HeadlessTask未注入sampler/highWater；策略下发/Kotlin/新APK真机未验；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+   "next_step": "终审（claude-main，dc7b23358523）已出结论：维持 review。技术层已独立确认（独立复跑+变异判别力检验，见 docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md）；卡片自身验收项未完成：报告自述「接受仍阻塞」：index.js真实HeadlessTask仍未注入resourceSampler/highWater；仍需外部条件：需策略下发与真机周期压力。本轮不转 accepted，待上述项完成并经独立复核。",
    "working_basis": "以efe5ac0eccf1538eef086f94ce3c93452349e720（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终需Android硬件与压力测量",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -8592,6 +8637,15 @@
      "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
      "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+    },
+    {
+     "date": "2026-10-27",
+     "scope": "终审（claude-main）：codex新调度补丁AS-01~AS-05经终审变异检验6/6捕获，技术层已独立确认",
+     "source_commit": "dc7b23358523",
+     "command": "干净 detached worktree 复跑后端全量/客户端全量/typecheck；变异判别力检验（回退 codex 自写修复要求其自带测试必须失败）；逐卡核对任务卡编号验收条件与保留缺口",
+     "result": "独立复现：固定源 f973dcc source_tree d8abce51 与客户端子树 a3e36b9e 核对一致；后端全量 2578 passed/1 skipped/0 failed（594s）、当前 HEAD 2686 passed/1 skipped/0 failed；客户端 459 passed/0 failed（串行 device149+offline234+update76）、typecheck exit 0（tsc 5.9.3）；变异第一批 AS-01~AS-05 6/6 捕获 0 存活；第二批 b2f3b0c/b9d9229/c181bad 首轮 P2 存活——16-Q 的 MAX_CHUNK_BYTES 导出上限无断言（无人守护的死代码，行为本身正确），终审补 test_oversized_limit_is_clamped_to_max_chunk 后 3/3 捕获 0 存活。终审决定：维持 review——codex新调度补丁AS-01~AS-05经终审变异检验6/6捕获，技术层已独立确认；卡片自身验收项未完成：默认真实资源/主动预算配置、生产长跑/多进程、运行中unknown/停止未闭合，按「场景未跑保持未测，开发完成不替代独立接受」维持 review，不以组件通过替代卡片接受；仍需外部条件：需生产长跑与多进程压测",
+     "log": ".planning/2026-10-27-final-review/",
+     "delivery": "docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md"
     }
    ],
    "card": "docs/协作开发/任务卡/13-S-长期目标调度启动与持久周期消费.md",
@@ -8612,7 +8666,7 @@
     "B-91"
    ],
    "priority": "P1",
-   "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；既有a435ce1/f973dcc调度补丁待独立确认；真实sampler/主动预算及运行中治理/生产长跑仍待；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+   "next_step": "终审（claude-main，dc7b23358523）已出结论：维持 review。技术层已独立确认（独立复跑+变异判别力检验，见 docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md）；卡片自身验收项未完成：默认真实资源/主动预算配置、生产长跑/多进程、运行中unknown/停止未闭合；仍需外部条件：需生产长跑与多进程压测。本轮不转 accepted，待上述项完成并经独立复核。",
    "working_basis": "以89a88d6aca9245fbcd5f16054ae9991da443844d（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -8810,6 +8864,15 @@
      "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
      "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+    },
+    {
+     "date": "2026-10-27",
+     "scope": "终审（claude-main）：codex技术复核53项通过，判别力已独立确认",
+     "source_commit": "dc7b23358523",
+     "command": "干净 detached worktree 复跑后端全量/客户端全量/typecheck；变异判别力检验（回退 codex 自写修复要求其自带测试必须失败）；逐卡核对任务卡编号验收条件与保留缺口",
+     "result": "独立复现：固定源 f973dcc source_tree d8abce51 与客户端子树 a3e36b9e 核对一致；后端全量 2578 passed/1 skipped/0 failed（594s）、当前 HEAD 2686 passed/1 skipped/0 failed；客户端 459 passed/0 failed（串行 device149+offline234+update76）、typecheck exit 0（tsc 5.9.3）；变异第一批 AS-01~AS-05 6/6 捕获 0 存活；第二批 b2f3b0c/b9d9229/c181bad 首轮 P2 存活——16-Q 的 MAX_CHUNK_BYTES 导出上限无断言（无人守护的死代码，行为本身正确），终审补 test_oversized_limit_is_clamped_to_max_chunk 后 3/3 捕获 0 存活。终审决定：维持 review——codex技术复核53项通过，判别力已独立确认；卡片自身验收项未完成：candidate_id/dataset到权威仓库精确绑定、生产并发、完整管理入口未闭合，按「场景未跑保持未测，开发完成不替代独立接受」维持 review，不以组件通过替代卡片接受",
+     "log": ".planning/2026-10-27-final-review/",
+     "delivery": "docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md"
     }
    ],
    "card": "docs/协作开发/任务卡/09-I-真实候选宿主消费与队列管理入口.md",
@@ -8830,7 +8893,7 @@
     "G3"
    ],
    "priority": "P1",
-   "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；candidate_id/dataset到权威仓库的精确绑定、生产并发与完整管理面仍缺；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+   "next_step": "终审（claude-main，dc7b23358523）已出结论：维持 review。技术层已独立确认（独立复跑+变异判别力检验，见 docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md）；卡片自身验收项未完成：candidate_id/dataset到权威仓库精确绑定、生产并发、完整管理入口未闭合。本轮不转 accepted，待上述项完成并经独立复核。",
    "working_basis": "以1616e3e5e5f972023df88e1d9b60bc6cd5c9291c（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -8979,6 +9042,15 @@
      "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
      "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+    },
+    {
+     "date": "2026-10-27",
+     "scope": "终审（claude-main）：codex技术复核73项通过，判别力已独立确认",
+     "source_commit": "dc7b23358523",
+     "command": "干净 detached worktree 复跑后端全量/客户端全量/typecheck；变异判别力检验（回退 codex 自写修复要求其自带测试必须失败）；逐卡核对任务卡编号验收条件与保留缺口",
+     "result": "独立复现：固定源 f973dcc source_tree d8abce51 与客户端子树 a3e36b9e 核对一致；后端全量 2578 passed/1 skipped/0 failed（594s）、当前 HEAD 2686 passed/1 skipped/0 failed；客户端 459 passed/0 failed（串行 device149+offline234+update76）、typecheck exit 0（tsc 5.9.3）；变异第一批 AS-01~AS-05 6/6 捕获 0 存活；第二批 b2f3b0c/b9d9229/c181bad 首轮 P2 存活——16-Q 的 MAX_CHUNK_BYTES 导出上限无断言（无人守护的死代码，行为本身正确），终审补 test_oversized_limit_is_clamped_to_max_chunk 后 3/3 捕获 0 存活。终审决定：维持 review——codex技术复核73项通过，判别力已独立确认；卡片自身验收项未完成：报告自述「卡片的正式验收条件未满足」：真实项目集成未做，任务→专家自动选中未接线，按「场景未跑保持未测，开发完成不替代独立接受」维持 review，不以组件通过替代卡片接受；仍需外部条件：需真实项目与固定测试依赖",
+     "log": ".planning/2026-10-27-final-review/",
+     "delivery": "docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md"
     }
    ],
    "card": "docs/协作开发/任务卡/18-H-编程专家按项目安装与真实工具消费.md",
@@ -8999,7 +9071,7 @@
     "A-60"
    ],
    "priority": "P1",
-   "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；真实任务自动选专家→安装→执行→失败回滚再检闭环、真实项目升级恢复仍待；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+   "next_step": "终审（claude-main，dc7b23358523）已出结论：维持 review。技术层已独立确认（独立复跑+变异判别力检验，见 docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md）；卡片自身验收项未完成：报告自述「卡片的正式验收条件未满足」：真实项目集成未做，任务→专家自动选中未接线；仍需外部条件：需真实项目与固定测试依赖。本轮不转 accepted，待上述项完成并经独立复核。",
    "working_basis": "以eed09f46ea11ceb38fc38b9fcb674b311254734f（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；选定临时真实项目与固定测试依赖",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -9161,6 +9233,15 @@
      "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
      "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+    },
+    {
+     "date": "2026-10-27",
+     "scope": "终审（claude-main）：codex技术复核54项通过，判别力已独立确认",
+     "source_commit": "dc7b23358523",
+     "command": "干净 detached worktree 复跑后端全量/客户端全量/typecheck；变异判别力检验（回退 codex 自写修复要求其自带测试必须失败）；逐卡核对任务卡编号验收条件与保留缺口",
+     "result": "独立复现：固定源 f973dcc source_tree d8abce51 与客户端子树 a3e36b9e 核对一致；后端全量 2578 passed/1 skipped/0 failed（594s）、当前 HEAD 2686 passed/1 skipped/0 failed；客户端 459 passed/0 failed（串行 device149+offline234+update76）、typecheck exit 0（tsc 5.9.3）；变异第一批 AS-01~AS-05 6/6 捕获 0 存活；第二批 b2f3b0c/b9d9229/c181bad 首轮 P2 存活——16-Q 的 MAX_CHUNK_BYTES 导出上限无断言（无人守护的死代码，行为本身正确），终审补 test_oversized_limit_is_clamped_to_max_chunk 后 3/3 捕获 0 存活。终审决定：维持 review——codex技术复核54项通过，判别力已独立确认；卡片自身验收项未完成：报告自述「接受仍阻塞」：宿主真实sampler/预算账户、实际用量对账、运行中治理、真实质量延迟缺，按「场景未跑保持未测，开发完成不替代独立接受」维持 review，不以组件通过替代卡片接受；仍需外部条件：需真实资源与核心任务质量对照",
+     "log": ".planning/2026-10-27-final-review/",
+     "delivery": "docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md"
     }
    ],
    "card": "docs/协作开发/任务卡/25-C-主动任务准入执行与真实资源非干扰.md",
@@ -9182,7 +9263,7 @@
     "G5"
    ],
    "priority": "P1",
-   "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；真实资源/预算账户、实际费用settle回接、权威并发/运行中停止及核心质量延迟仍待；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+   "next_step": "终审（claude-main，dc7b23358523）已出结论：维持 review。技术层已独立确认（独立复跑+变异判别力检验，见 docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md）；卡片自身验收项未完成：报告自述「接受仍阻塞」：宿主真实sampler/预算账户、实际用量对账、运行中治理、真实质量延迟缺；仍需外部条件：需真实资源与核心任务质量对照。本轮不转 accepted，待上述项完成并经独立复核。",
    "working_basis": "以a3e05d30748e15d29cd40bb85e8d7a7a2d3afe63（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；最终需固定宿主真实压力数据",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -9408,6 +9489,15 @@
      "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
      "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+    },
+    {
+     "date": "2026-10-27",
+     "scope": "终审（claude-main）：codex技术复核54项通过，判别力已独立确认",
+     "source_commit": "dc7b23358523",
+     "command": "干净 detached worktree 复跑后端全量/客户端全量/typecheck；变异判别力检验（回退 codex 自写修复要求其自带测试必须失败）；逐卡核对任务卡编号验收条件与保留缺口",
+     "result": "独立复现：固定源 f973dcc source_tree d8abce51 与客户端子树 a3e36b9e 核对一致；后端全量 2578 passed/1 skipped/0 failed（594s）、当前 HEAD 2686 passed/1 skipped/0 failed；客户端 459 passed/0 failed（串行 device149+offline234+update76）、typecheck exit 0（tsc 5.9.3）；变异第一批 AS-01~AS-05 6/6 捕获 0 存活；第二批 b2f3b0c/b9d9229/c181bad 首轮 P2 存活——16-Q 的 MAX_CHUNK_BYTES 导出上限无断言（无人守护的死代码，行为本身正确），终审补 test_oversized_limit_is_clamped_to_max_chunk 后 3/3 捕获 0 存活。终审决定：维持 review——codex技术复核54项通过，判别力已独立确认；卡片自身验收项未完成：「正式验收项2用户/项目身份可见性」仍未实现，不可当作已关闭，按「场景未跑保持未测，开发完成不替代独立接受」维持 review，不以组件通过替代卡片接受",
+     "log": ".planning/2026-10-27-final-review/",
+     "delivery": "docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md"
     }
    ],
    "card": "docs/协作开发/任务卡/27-C-知识持久化真实注入与迁移质量验证.md",
@@ -9428,7 +9518,7 @@
     "B-88"
    ],
    "priority": "P1",
-   "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；正式验收项2用户/项目身份可见性绑定仍缺，真实同任务集质量/逆向迁移与多进程仍待；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+   "next_step": "终审（claude-main，dc7b23358523）已出结论：维持 review。技术层已独立确认（独立复跑+变异判别力检验，见 docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md）；卡片自身验收项未完成：「正式验收项2用户/项目身份可见性」仍未实现，不可当作已关闭。本轮不转 accepted，待上述项完成并经独立复核。",
    "working_basis": "以39843d62143cb909367007b27876f6d3b83e314b（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "可先做本地组件与拒绝路径；正式集成须核对depends_on的实际交付，未验收不冒称通过；需固定前后任务集与运行版本",
    "split_round": "STATUS-SPLIT-2026-10-26",
@@ -9683,6 +9773,15 @@
      "result": "接续审核487/1未选与469/TS，逐卡范围见technical_review；非完整接受",
      "report": "docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
      "log": ".planning/2026-10-27-assigned-review-2/committed-evidence.json"
+    },
+    {
+     "date": "2026-10-27",
+     "scope": "终审（claude-main）：codex技术复核29项通过，判别力已独立确认",
+     "source_commit": "dc7b23358523",
+     "command": "干净 detached worktree 复跑后端全量/客户端全量/typecheck；变异判别力检验（回退 codex 自写修复要求其自带测试必须失败）；逐卡核对任务卡编号验收条件与保留缺口",
+     "result": "独立复现：固定源 f973dcc source_tree d8abce51 与客户端子树 a3e36b9e 核对一致；后端全量 2578 passed/1 skipped/0 failed（594s）、当前 HEAD 2686 passed/1 skipped/0 failed；客户端 459 passed/0 failed（串行 device149+offline234+update76）、typecheck exit 0（tsc 5.9.3）；变异第一批 AS-01~AS-05 6/6 捕获 0 存活；第二批 b2f3b0c/b9d9229/c181bad 首轮 P2 存活——16-Q 的 MAX_CHUNK_BYTES 导出上限无断言（无人守护的死代码，行为本身正确），终审补 test_oversized_limit_is_clamped_to_max_chunk 后 3/3 捕获 0 存活。终审决定：维持 review——codex技术复核29项通过，判别力已独立确认；卡片自身验收项未完成：真实API→模型消息/manifest主体分区与Grant/撤销联验、App管理消费未接，按「场景未跑保持未测，开发完成不替代独立接受」维持 review，不以组件通过替代卡片接受",
+     "log": ".planning/2026-10-27-final-review/",
+     "delivery": "docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md"
     }
    ],
    "card": "docs/协作开发/任务卡/24-F-多主体记忆范围策略与迁移隔离.md",
@@ -9702,7 +9801,7 @@
     "GLOBAL"
    ],
    "priority": "P2",
-   "next_step": "本轮指定接续审核已完成（固定487/1未选，客户端469/TS，逐卡范围见报告）；真实主体策略→模型/manifest、Grant/撤销及App管理仍缺；e89b4ae初始化事务补丁待独立确认；docs/协作开发/验收/2026-10-27-指定十一项接续审核.md",
+   "next_step": "终审（claude-main，dc7b23358523）已出结论：维持 review。技术层已独立确认（独立复跑+变异判别力检验，见 docs/协作开发/验收/2026-10-27-终审十一项-codex技术复核后.md）；卡片自身验收项未完成：真实API→模型消息/manifest主体分区与Grant/撤销联验、App管理消费未接。本轮不转 accepted，待上述项完成并经独立复核。",
    "working_basis": "以69b0524a6450fc14124a324f82c1a211b23cdb4b（feature/user-direction HEAD）作为实际接手锚点；基线为published 21899e6",
    "prerequisites": "只在明确启用多主体场景前实施；当前单用户过滤修复单独复核",
    "split_round": "STATUS-SPLIT-2026-10-26",
